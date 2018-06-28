@@ -40,6 +40,11 @@ If you think you found a bug, it probably is a bug.
 The Logstash team takes time to digest, consider solutions, and weigh applicability of issues to both the broad
 Logstash user base and our own goals for the project. Through this process, we triage and update issues as we get to them. Please provide context in your issues instead of just adding a +1 comment. If you like a certain idea or enhancement, and have nothing more to add, please just use GitHub :+1: emoji.
 
+## Found a Security Issue?
+
+If you've found a security issue, before submitting anything via a PR, please
+get in touch with our security team [here](https://www.elastic.co/community/security).
+
 # Contributing Documentation and Code Changes
 
 If you have a bugfix or new feature that you would like to contribute to Logstash, and you think it will take
@@ -114,6 +119,10 @@ The meaning of the keywords is as follows (copied from [keepachangelog.com](http
 - **`Removed`** for now removed features.
 - **`Fixed`** for any bug fixes.
 - **`Security`** in case of vulnerabilities.
+  - **Important reminder**: If you're working on a security issue, please make sure
+  you're following the process outlined by our security team. If you haven't
+  done so already, please get in touch with them
+  [here](https://www.elastic.co/community/security) first.
 
 Example:
 
