@@ -81,24 +81,16 @@ Note the Elasticsearch Output Index Template change in the <<breaking-changes>> 
 this change and how it impacts operations.
 
 [[upgrading-logstash-pqs]]
-=== Upgrading Persistent Queues Enabled
+=== Upgrading with the Persistent Queue Enabled
 
-The following applies only if you are upgrading from Logstash installations prior
-to 6.3.0 with the persistent queue enabled.
+The following applies only if you are upgrading Logstash and have the persistent
+queue enabled.
 
-We regret to say that due to several serialization issues prior to Logstash
-6.3.0, users will have to take some extra steps when upgrading Logstash
-instances with the persistent queue enabled. While we strive to maintain
-backward compatibility within a given major release, these bugs forced us to
-break that compatibility in version 6.3.0 to ensure correctness of operation.
-For more technical details on this issue, please check our tracking github issue
-for this matter, https://github.com/elastic/logstash/issues/9494[#9494].
-
+[[drain-pq]]
 ==== Drain the Persistent Queue
 
-If you are upgrading from Logstash 6.2.x or an earlier version and use the persistent
-queue, we strongly recommend that you drain or delete the persistent queue
-before you upgrade.
+If you use the persistent queue, we strongly recommend that you drain or delete
+it before you upgrade.
 
 To drain the queue:
  
