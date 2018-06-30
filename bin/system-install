@@ -1,9 +1,5 @@
 #!/bin/bash
 
-unset CDPATH
-. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
-setup
-
 if [ -z "$1" ]; then
   if [ -r /etc/logstash/startup.options ]; then
     OPTIONS_PATH=/etc/logstash/startup.options
@@ -43,6 +39,10 @@ fi
 
 # Read in the env vars in the selected startup.options file...
 . "${OPTIONS_PATH}"
+
+unset CDPATH
+. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
+setup
 
 old_IFS=$IFS
 IFS=$'\n'
@@ -95,3 +95,4 @@ else
   echo "Successfully created system startup script for Logstash"
 fi
 rm $tempfile
+exit $exit_code
