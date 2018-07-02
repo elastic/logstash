@@ -112,7 +112,7 @@ if (versionMap["jruby-runtime-override"]) {
 } else {
     jRubyVersion = versionMap["jruby"]["version"]
     jRubySha1 = versionMap["jruby"]["sha1"]
-    jRubyURL = "http://jruby.org.s3.amazonaws.com/downloads/${jRubyVersion}/jruby-bin-${jRubyVersion}.tar.gz"
+    jRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${jRubyVersion}/jruby-dist-${jRubyVersion}-bin.tar.gz"
     doChecksum = true
 }
 
@@ -142,7 +142,7 @@ project(":logstash-core") {
   }
 }
 
-def jrubyTarPath = "${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz"
+def jrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz"
 
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
@@ -154,7 +154,7 @@ task downloadJRuby(type: Download) {
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
     outputs.file(jrubyTarPath)
-    dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
+    dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
 }
 
 downloadJRuby.onlyIf { customJRubyDir == "" }
