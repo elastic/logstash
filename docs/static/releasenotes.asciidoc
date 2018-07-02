@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-3-1,Logstash 6.3.1>>
 * <<logstash-6-3-0,Logstash 6.3.0>>
 * <<logstash-6-2-4,Logstash 6.2.4>>
 * <<logstash-6-2-3,Logstash 6.2.3>>
@@ -14,6 +15,98 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
 
+[[logstash-6-3-1]]
+=== Logstash 6.3.1 Release Notes
+
+* Adds a Persistent Queue repair utility, enabling self-recovery of corrupted PQs ({lsissue}9710[Issue 9710]).
+* Fixes two separate issues in Experimental Java Execution mode where complex pipeline configurations could fail to compile ({lsissue}9747[Issue 9747], {lsissue}9745[Issue 9745]).
+* Fixes issue when running Logstash inside of a Docker container with Persistent Queue enabled where we incorrectly reported that there was insufficient space to allocate for the queue ({lsissue}9766[Issue 9766]).
+* Fixes issue in x-pack monitoring where `queue_push_duration_in_millis` was incorrectly reporting _nanoseconds_ ({lsissue}9744[Issue 9744]).
+* Fixes an issue where Logstash could fail to start when its `path.data` is a symlink ({lsissue}9706[Issue 9706]).
+* Fixes issue with Netflow module where it could fail to populate `[geoip_dst][autonomous_system]` ({lsissue}9638[Issue 9638]).
+* Fixes a potential conflict with plugin depenencies that require Guava by explicitly loading Guava 22 ({lsissue}9592[Issue 9592]).
+
+[float]
+==== Plugins
+
+*Netflow Codec*
+
+* Fixes exception when receiving Netflow 9 from H3C devices.
+* Added support for Netflow 9 from H3C devices.
+* Fixes incorrect definitions of IE 231 and IE 232.
+* Fixes exceptions due to concurrent access of IPFIX templates.
+* Added support for Netflow 9 reduced-size encoding support.
+* Added support for Barracuda IPFIX Extended Uniflow.
+
+*Beats Input*
+
+* Fixes an issue that prevented auto-recovery in certain failure modes.
+* Fixes an issue where trace-level logging omitted helpful context.
+
+*Kafka Input*
+
+* Fix race-condition where shutting down a Kafka Input before it completes startup could cause Logstash to crash.
+* Upgrade Kafka client to version 1.1.0.
+
+*S3 Input*
+
+* Avoid plugin crashes when encountering 'bad' files in S3 buckets.
+* Log entry when bucket is empty.
+* Fixes `additional_settings` configuration option to properly symbolize keys for downstream library.
+
+*TCP Input*
+
+* New configuration option to set TCP keep-alive.
+* Fixes an issue where the input could crash during shutdown, affecting pipeline reloads.
+
+*UDP Input*
+
+* Mitigate memory leak in JRuby's UDP implementation.
+
+*DNS Filter*
+
+* Log timeouts as warn instead of error.
+* Allow concurrent queries when cache enabled.
+
+*Elasticsearch Filter*
+
+* Fix: The filter now only calls filter_matched on events that actually matched. This fixes issues where all events would have success-related actions happened when no match had actually happened (`add_tag`, `add_field`, `remove_tag`, `remove_field`).
+
+*JDBC Static Filter*
+
+* Fixed an issue where failing to specify `index_columns` would result in an obscure error message.
+
+*KV Filter*
+
+* improves `trim_key` and `trim_value` to trim any _sequence_ of matching characters from the beginning and ends of the corresponding keys and values; a previous implementation limited trim to a single character from each end, which was surprising.
+* fixes issue where we can fail to correctly break up a sequence that includes a partially-quoted value followed by another fully-quoted value by slightly reducing greediness of quoted-value captures.
+
+*Mutate Filter*
+
+* Fix: when converting to `float` and `float_eu`, explicitly support same range of inputs as their integer counterparts.
+
+*Elasticsearch Output*
+
+* Added support for customizing HTTP headers.
+* Log an error -- not a warning -- when ES raises an invalid_index_name_exception.
+* Improve plugin behavior when Elasticsearch is down on startup.
+
+*File Output*
+
+* Fix a bug where flush interval was being called for each event when enabled
+
+*Kafka Output*
+
+* Changed Kafka send errors to log as warn.
+* Upgrade Kafka client to version 1.1.0.
+
+*S3 Output*
+
+* Fixes `additional_settings` configuration option to properly symbolize keys for downstream library.
+
+*SQS Output*
+
+* Added the ability to send to a different account id's queue.
 
 [[logstash-6-3-0]]
 === Logstash 6.3.0 Release Notes
