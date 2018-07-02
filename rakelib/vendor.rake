@@ -73,7 +73,7 @@ namespace "vendor" do
       /lib\/ruby\/shared\/rdoc/,
     ])
 
-    url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
+    url = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/#{version}/jruby-dist-#{version}-bin.tar.gz"
     download = file_fetch(url, info["sha1"])
 
     parent = vendor(name).gsub(/\/$/, "")
