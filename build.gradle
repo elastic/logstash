@@ -88,7 +88,7 @@ if (versionMap["jruby-runtime-override"]) {
 } else {
     jRubyVersion = versionMap["jruby"]["version"]
     jRubySha1 = versionMap["jruby"]["sha1"]
-    jRubyURL = "http://jruby.org.s3.amazonaws.com/downloads/${jRubyVersion}/jruby-bin-${jRubyVersion}.tar.gz"
+    jRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${jRubyVersion}/jruby-dist-${jRubyVersion}-bin.tar.gz"
     doChecksum = true
 }
 
@@ -117,12 +117,12 @@ task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
-    dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
+    dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
 }
 
 task verifyFile(dependsOn: downloadJRuby, type: Verify) {
     description "Verify the SHA1 of the download JRuby artifact"
-    src new File("${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz")
+    src new File("${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz")
     algorithm 'SHA-1'
     checksum jRubySha1
 }
