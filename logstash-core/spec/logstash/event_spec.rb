@@ -88,7 +88,7 @@ describe LogStash::Event do
       expect(e.set("foo", "bar")).to eq("bar")
       expect(e.get("foo")).to eq("bar")
     end
-
+  
     it "should propagate changes to mutable strings to java APIs" do
       e = LogStash::Event.new()
       e.to_java.setField("foo", "bar")
@@ -414,4 +414,24 @@ describe LogStash::Event do
       expect(event1.get("[@metadata][fancy]")).to eq("pants")
     end
   end
+
+   describe "#event-key-non-ASCII" do
+    it "should set and get values for non-ASCII keys" do
+      e = LogStash::Event.new()
+      expect(e.set("фуу", "bar")).to eq("bar")
+      expect(e.get("фуу")).to eq("bar")
+
+      e = LogStash::Event.new({"фуу" => "test"})
+      expect(e.set("фуу", "bar")).to eq("bar")
+      expect(e.get("фуу")).to eq("bar")
+    end
+
+    it "should set and get values for non-ASCII keys through java APIs" do
+      e = LogStash::Event.new()
+      e.to_java.setField("фуу", "bar")
+      expect(e.to_java.getField("фуу")).to eq("bar")
+    end
+
+  end
+
 end
