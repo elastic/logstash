@@ -120,7 +120,7 @@ GEM
       concurrent-ruby
     jmespath (1.4.0)
     jrjackson (0.4.6-java)
-    jruby-openssl (0.10.0-java)
+    jruby-openssl (0.10.1-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
     json-schema (2.6.2)
