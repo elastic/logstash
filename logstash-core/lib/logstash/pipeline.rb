@@ -445,7 +445,7 @@ module LogStash; class Pipeline < BasePipeline
 
     stop_inputs
 
-    # We make this call blocking, so we know for sure when the method return the shtudown is
+    # We make this call blocking, so we know for sure when the method return the shutdown is
     # stopped
     wait_for_workers
     clear_pipeline_metrics

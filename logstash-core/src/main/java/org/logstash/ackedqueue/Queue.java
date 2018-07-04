@@ -171,7 +171,7 @@ public final class Queue implements Closeable {
 
             // at this point we have a head checkpoint to figure queue recovery
 
-            // as we load pages, compute actuall disk needed substracting existing pages size to the required maxBytes
+            // as we load pages, compute actually disk needed substracting existing pages size to the required maxBytes
             long diskNeeded = this.maxBytes;
 
             // reconstruct all tail pages state upto but excluding the head page
