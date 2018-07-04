@@ -62,7 +62,7 @@ include::static/advanced-pipeline.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
-// Lostash setup
+// Logstash setup
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-logstash.asciidoc
 include::static/setting-up-logstash.asciidoc[]
