@@ -205,7 +205,7 @@ SocketAppender to send JSON to the Logstash TCP input. Alternatively, log4j2
 can also log to a file for collection with FIlebeat. Usage of the log4j1
 SocketAppender is not recommended.
 
-IoT devices like Rasberry Pis, smartphones, and connected vehicles often send
+IoT devices like Raspberry Pis, smartphones, and connected vehicles often send
 telemetry data through one of these protocols.
 
 [float]
