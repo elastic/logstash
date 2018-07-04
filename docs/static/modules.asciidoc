@@ -33,7 +33,7 @@ bin/logstash --modules MODULE_NAME --setup [-M "CONFIG_SETTING=VALUE"]
 ----
 
 
-//TODO: For 6.0, show how to run mutliple modules
+//TODO: For 6.0, show how to run multiple modules
 
 Where:
 
