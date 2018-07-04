@@ -39,7 +39,7 @@ module LogStash module Modules class LogStashConfig
   def get_setting(setting_class)
     raw_value = @settings[setting_class.name]
     # If we dont check for NIL, the Settings class will try to coerce the value
-    # and most of the it will fails when a NIL value is explicitely set.
+    # and most of the it will fails when a NIL value is explicitly set.
     # This will be fixed once we wrap the plugins settings into a Settings class
     setting_class.set(raw_value) unless raw_value.nil?
     setting_class.value
