@@ -27,7 +27,7 @@ module LogStash module Config
           end
 
       if modules_array.empty?
-        # no specifed modules
+        # no specified modules
         return pipelines
       end
       logger.debug("Specified modules", :modules_array => modules_array.to_s)
