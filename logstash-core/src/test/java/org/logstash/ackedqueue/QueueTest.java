@@ -570,7 +570,7 @@ public class QueueTest {
 
             assertThat(q.isFull(), is(false));
 
-            // read 1 page (10 events) here while not full yet so that the read will not singal the not full state
+            // read 1 page (10 events) here while not full yet so that the read will not signal the not full state
             // we want the batch closing below to signal the not full state
             Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1));
 
