@@ -915,7 +915,7 @@ public class QueueTest {
             q.write(element2);
             assertThat(q.tailPages.size(), is(1));
 
-            // work directly on the tail page and not the queue to avoid habing the queue purge the page
+            // work directly on the tail page and not the queue to avoid having the queue purge the page
             // but make sure the tail page checkpoint marks it as fully acked
             Page tp = q.tailPages.get(0);
             Batch b = new Batch(tp.read(1), q);
