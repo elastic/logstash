@@ -163,7 +163,7 @@ documentation>> can be configured with this technique.
 
 NOTE: Defining settings with environment variables causes `logstash.yml` to
 be modified in place. This behaviour is likely undesirable if `logstash.yml` was
-bind-mounted from the host system. Thus, it is not reccomended to
+bind-mounted from the host system. Thus, it is not recommended to
 combine the bind-mount technique with the environment variable technique. It
 is best to choose a single method for defining Logstash settings.
 
