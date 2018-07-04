@@ -12,7 +12,7 @@ require "thread"
 
 module LogStash module Inputs
   # The Metrics input receives periodic metric data snapshot from Logstash core.
-  # This input is responsible for registring itself to the collector.
+  # This input is responsible for registering itself to the collector.
   # The collector class will periodically emits new snapshot of the system, JVM and other metric data.
   # This input further transform it into a `Logstash::Event`, which can be consumed by the shipper and
   # shipped to Elasticsearch
