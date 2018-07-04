@@ -73,9 +73,9 @@ module LogStash module Config
           LogStash::Modules::SettingsMerger.merge_kibana_auth!(module_hash)
           current_module.with_settings(module_hash)
           config_test = settings.get("config.test_and_exit")
-          modul_setup = settings.get("modules_setup")
+          module_setup = settings.get("modules_setup")
           # Only import data if it's not a config test and --setup is true
-          if !config_test && modul_setup
+          if !config_test && module_setup
             logger.info("Setting up the #{module_name} module")
             esclient = LogStash::ElasticsearchClient.build(module_hash)
             kbnclient = LogStash::Modules::KibanaClient.new(module_hash)
