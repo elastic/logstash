@@ -108,8 +108,11 @@ then you should still create an entry in the changelog, using the word `Unreleas
 Most code in logstash-plugins comes from self-contained changes in the form of pull requests, so each entry should:
 
 1. be a summary of the Pull Request and contain a markdown link to it.
-2. start with one of the following keys: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`
-3. keep multiple entries with the same keyword in the same changelog revision together
+2. start with [BREAKING], when it denotes a breaking change.
+  * Note: Breaking changes should warrant a major version bump.
+3. after [BREAKING], start with one of the following keywords:
+    `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+4. keep multiple entries with the same keyword in the same changelog revision together.
 
 The meaning of the keywords is as follows (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#how):
 
@@ -127,10 +130,10 @@ The meaning of the keywords is as follows (copied from [keepachangelog.com](http
 Example:
 
 ```
-## 3.4.0
+## 4.0.0
 - Changed default value of `number_of_threads` from 2 to 1 [#101](http://example.org)
 - Changed default value of `execution_bugs` from 30 to 0 [#104](http://example.org)
-- Removed obsolete option `enable_telnet` option [#100](http://example.org)
+- [BREAKING] Removed obsolete option `enable_telnet` option [#100](http://example.org)
 
 ## 3.3.2
 - Fixed incorrect serialization of input data when encoding was `Emacs-Mule` [#84](http://example.org)
