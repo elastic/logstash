@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (6.3.1-java)
+    logstash-core (6.3.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 1.0, >= 1.0.5)
@@ -26,7 +26,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 6.3.1)
+      logstash-core (= 6.3.2)
 
 GEM
   remote: https://rubygems.org/
@@ -38,17 +38,17 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.8.0)
-    aws-sdk (2.11.67)
-      aws-sdk-resources (= 2.11.67)
-    aws-sdk-core (2.11.67)
+    aws-sdk (2.11.81)
+      aws-sdk-resources (= 2.11.81)
+    aws-sdk-core (2.11.81)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.67)
-      aws-sdk-core (= 2.11.67)
+    aws-sdk-resources (2.11.81)
+      aws-sdk-core (= 2.11.81)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
-    aws-sigv4 (1.0.2)
+    aws-sigv4 (1.0.3)
     backports (3.11.3)
     belzebuth (0.2.3)
       childprocess
@@ -72,7 +72,7 @@ GEM
     diff-lcs (1.3)
     domain_name (0.5.20180417)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.4.0)
+    dotenv (2.5.0)
     edn (1.1.1)
     elasticsearch (5.0.5)
       elasticsearch-api (= 5.0.5)
@@ -120,13 +120,13 @@ GEM
       concurrent-ruby
     jmespath (1.4.0)
     jrjackson (0.4.6-java)
-    jruby-openssl (0.10.0-java)
+    jruby-openssl (0.10.1-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
     json-schema (2.6.2)
       addressable (~> 2.3.8)
     kramdown (1.14.0)
-    logstash-codec-cef (5.0.2-java)
+    logstash-codec-cef (5.0.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -158,7 +158,7 @@ GEM
     logstash-codec-msgpack (3.0.7-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       msgpack (~> 1.1)
-    logstash-codec-multiline (3.0.9)
+    logstash-codec-multiline (3.0.10)
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
@@ -199,7 +199,7 @@ GEM
     logstash-filter-dissect (1.1.4)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
-    logstash-filter-dns (3.0.10)
+    logstash-filter-dns (3.0.11)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
@@ -218,9 +218,9 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
       stud (~> 0.0.22)
-    logstash-filter-jdbc_static (1.0.3)
+    logstash-filter-jdbc_static (1.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      rufus-scheduler
+      rufus-scheduler (< 3.5)
       sequel
       tzinfo
       tzinfo-data
@@ -430,7 +430,7 @@ GEM
       mail (~> 2.6.3)
       mime-types (< 3)
       mustache (>= 0.99.8)
-    logstash-output-file (4.2.4)
+    logstash-output-file (4.2.5)
       logstash-codec-json_lines
       logstash-codec-line
       logstash-core-plugin-api (>= 2.0.0, < 2.99)
@@ -496,7 +496,8 @@ GEM
     lru_redux (1.1.0)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
-    manticore (0.6.3-java)
+    manticore (0.6.4-java)
+      openssl_pkcs8_pure
     march_hare (3.1.1-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -513,10 +514,11 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.8.2-java)
+    nokogiri (1.8.4-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     pleaserun (0.0.30)
       cabin (> 0)
@@ -562,7 +564,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.9.0)
+    sequel (5.10.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
