@@ -47,7 +47,7 @@ public final class FieldReferenceTest {
         final FieldReference emptyReference = FieldReference.from("");
         assertNotNull(emptyReference);
         assertEquals(
-            emptyReference, FieldReference.from(RubyUtil.RUBY.newString("").getByteList())
+            emptyReference, FieldReference.from(RubyUtil.RUBY.newString(""))
         );
     }
 }

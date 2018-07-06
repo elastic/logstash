@@ -98,6 +98,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @return Interned String
      */
     private static String convertKey(final RubyString key) {
-        return FieldReference.from(key.getByteList()).getKey();
+        return FieldReference.from(key).getKey();
     }
 }
