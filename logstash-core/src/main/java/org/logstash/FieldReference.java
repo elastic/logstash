@@ -1,5 +1,7 @@
 package org.logstash;
 
+import org.jruby.RubyString;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,9 +43,15 @@ public final class FieldReference {
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
     /**
-     * Cache of all existing {@link FieldReference}.
+     * Cache of all existing {@link FieldReference} by their {@link RubyString} source.
      */
-    private static final Map<CharSequence, FieldReference> CACHE =
+    private static final Map<RubyString, FieldReference> RUBY_CACHE =
+            new ConcurrentHashMap<>(64, 0.2F, 1);
+
+    /**
+     * Cache of all existing {@link FieldReference} by their {@link String} source.
+     */
+    private static final Map<String, FieldReference> CACHE =
         new ConcurrentHashMap<>(64, 0.2F, 1);
 
     private final String[] path;
@@ -65,7 +73,16 @@ public final class FieldReference {
         hash = calculateHash(this.key, this.path, this.type);
     }
 
-    public static FieldReference from(final CharSequence reference) {
+    public static FieldReference from(final RubyString reference) {
+        // atomicity between the get and put is not important
+        final FieldReference result = RUBY_CACHE.get(reference);
+        if (result != null) {
+            return result;
+        }
+        return RUBY_CACHE.computeIfAbsent(reference.newFrozen(), ref -> from(ref.asJavaString()));
+    }
+
+    public static FieldReference from(final String reference) {
         // atomicity between the get and put is not important
         final FieldReference result = CACHE.get(reference);
         if (result != null) {
@@ -138,7 +155,7 @@ public final class FieldReference {
         return prime * hash + type;
     }
 
-    private static FieldReference parseToCache(final CharSequence reference) {
+    private static FieldReference parseToCache(final String reference) {
         final FieldReference result = parse(reference);
         CACHE.put(reference, result);
         return result;

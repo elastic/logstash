@@ -78,14 +78,14 @@ public final class JrubyEventExtLibrary {
         {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.getUnconvertedField(FieldReference.from(reference.getByteList()))
+                this.event.getUnconvertedField(FieldReference.from(reference))
             );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            final FieldReference r = FieldReference.from(reference.getByteList());
+            final FieldReference r = FieldReference.from(reference);
             if (r  == FieldReference.TIMESTAMP_REFERENCE) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
@@ -120,7 +120,7 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
+                context.runtime, this.event.includes(FieldReference.from(reference))
             );
         }
 
@@ -128,7 +128,7 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.remove(FieldReference.from(reference.getByteList()))
+                this.event.remove(FieldReference.from(reference))
             );
         }
 
