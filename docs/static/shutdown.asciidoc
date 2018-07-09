@@ -24,14 +24,15 @@ initctl stop logstash
 /etc/init.d/logstash stop
 ----
 
-If you're running {ls} directory, you can stop it by entering *Ctrl-C* if you’re 
-running {ls} in the console. Alternatively, you can send SIGTERM to the {ls} 
-process on a POSIX system. For example:
+If you're running {ls} directly in the console on a POSIX system, you can stop 
+it by sending SIGTERM to the {ls} process. For example:
 
 [source,shell]
 ----
 kill -TERM {logstash_pid}
 ----
+
+Alternatively, enter *Ctrl-C* in the console.
 
 
 
