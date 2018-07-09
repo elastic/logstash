@@ -1,7 +1,7 @@
 [[shutdown]]
 === Shutting Down Logstash
 
-To shut down Logstash, use one of the following commands:
+If you're running {ls} as a service, use one of the following commands to stop it:
 
 * On systemd, use:
 +
@@ -24,12 +24,16 @@ initctl stop logstash
 /etc/init.d/logstash stop
 ----
 
-* If you have the PID, use:
-+
+If you're running {ls} directory, you can stop it by entering *Ctrl-C* if you’re 
+running {ls} in the console. Alternatively, you can send SIGTERM to the {ls} 
+process on a POSIX system. For example:
+
 [source,shell]
 ----
 kill -TERM {logstash_pid}
 ----
+
+
 
 ==== What Happens During a Controlled Shutdown?
 
