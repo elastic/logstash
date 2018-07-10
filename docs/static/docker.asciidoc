@@ -7,17 +7,12 @@ A list of all published Docker images and tags can be found at
 https://www.docker.elastic.co[www.docker.elastic.co]. The source code can be
 found on https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
 
-==== Image types
-
 These images are free to use under the Elastic license. They contain open source 
 and free commercial features and access to paid commercial features.  
 {xpack-ref}/license-management.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels.
-
-Alternatively, you can download `-oss` images, which contain only features that 
-are available under the Apache 2.0 license. 
 
 ==== Pulling the image
 Obtaining Logstash for Docker is as simple as issuing a +docker
@@ -38,6 +33,10 @@ For example, Docker images can be retrieved with the following command:
 --------------------------------------------
 docker pull {docker-image}
 --------------------------------------------
+
+Alternatively, you can download other Docker images that contain only features
+that are available under the Apache 2.0 license. See 
+https://www.docker.elastic.co[www.docker.elastic.co]. 
 
 endif::[]
 
