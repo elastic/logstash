@@ -172,7 +172,7 @@ Download and install the public signing key:
 
 [source,sh]
 --------------------------------------------------
-rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 --------------------------------------------------
 
 Add the following in your `/etc/yum.repos.d/` directory
