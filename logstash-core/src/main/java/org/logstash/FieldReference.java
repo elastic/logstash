@@ -3,11 +3,22 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyString;
 
 public final class FieldReference {
+    /**
+     * A custom unchecked {@link RuntimeException} that can be thrown by parsing methods when
+     * when they encounter an input with illegal syntax.
+     */
+    public static class IllegalSyntaxException extends RuntimeException {
+        IllegalSyntaxException(String message) {
+            super(message);
+        }
+    }
 
     /**
      * This type indicates that the referenced that is the metadata of an {@link Event} found in
@@ -31,6 +42,11 @@ public final class FieldReference {
      * Holds all existing {@link FieldReference} instances for de-duplication.
      */
     private static final Map<FieldReference, FieldReference> DEDUP = new HashMap<>(64);
+
+    /**
+     * The tokenizer that will be used when parsing field references
+     */
+    private static final StrictTokenizer TOKENIZER = new StrictTokenizer();
 
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
@@ -164,25 +180,8 @@ public final class FieldReference {
     }
 
     private static FieldReference parse(final CharSequence reference) {
-        final ArrayList<String> path = new ArrayList<>();
-        final int length = reference.length();
-        int splitPoint = 0;
-        for (int i = 0; i < length; ++i) {
-            final char seen = reference.charAt(i);
-            if (seen == '[' || seen == ']') {
-                if (i == 0) {
-                    splitPoint = 1;
-                }
-                if (i > splitPoint) {
-                    path.add(reference.subSequence(splitPoint, i).toString().intern());
-                }
-                splitPoint = i + 1;
-            }
-        }
-        if (splitPoint < length || length == 0) {
-            path.add(reference.subSequence(splitPoint, length).toString().intern());
-        }
-        path.trimToSize();
+        final List<String> path = TOKENIZER.tokenize(reference);
+
         final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
@@ -193,6 +192,98 @@ public final class FieldReference {
             );
         } else {
             return new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD);
+        }
+    }
+
+    /**
+     * The {@link StrictTokenizer} parses field-references in a strict manner; when illegal syntax is encountered,
+     * the input is considered ambiguous and the reference is not expanded.
+     **/
+    private static class StrictTokenizer {
+
+        public List<String> tokenize(CharSequence reference) {
+            ArrayList<String> path = new ArrayList<>();
+            final int length = reference.length();
+
+            boolean potentiallyAmbiguousSyntaxDetected = false;
+            boolean seenBracket = false;
+            int depth = 0;
+            int splitPoint = 0;
+            char current = 0;
+            char previous = 0;
+            scan: for (int i=0 ; i < length; i++) {
+                previous = current;
+                current = reference.charAt(i);
+                switch (current) {
+                    case '[':
+                        seenBracket = true;
+                        if (splitPoint != i) {
+                            // if the current split point isn't the previous character, we have ambiguous input,
+                            // such as a mix of square-bracket and top-level unbracketed chunks, or an embedded
+                            // field reference that doesn't wholly occupy an outer fragment, and cannot
+                            // reasonably recover.
+                            potentiallyAmbiguousSyntaxDetected = true;
+                            break scan;
+                        }
+
+                        depth++;
+                        splitPoint = i + 1;
+                        continue scan;
+
+                    case ']':
+                        seenBracket = true;
+                        if (depth <= 0) {
+                            // if we get to a close-bracket without having previously hit an open-bracket,
+                            // we have an illegal field reference and cannot reasonably recover.
+                            potentiallyAmbiguousSyntaxDetected = true;
+                            break scan;
+                        }
+                        if (splitPoint == i && previous != ']') {
+                            // if we have a zero-length fragment and are not closing an embedded fieldreference,
+                            // we have an illegal field reference and cannot possibly recover.
+                            potentiallyAmbiguousSyntaxDetected = true;
+                            break scan;
+                        }
+
+                        if (splitPoint < i) {
+                            // if we have something to add, add it.
+                            path.add(reference.subSequence(splitPoint, i).toString().intern());
+                        }
+
+                        depth--;
+                        splitPoint = i + 1;
+                        continue scan;
+
+                    default:
+                        if (seenBracket && previous == ']') {
+                            // if we have seen a bracket and encounter one or more characters that are _not_ enclosed
+                            // in brackets, we have illegal syntax and cannot reasonably recover.
+                            potentiallyAmbiguousSyntaxDetected = true;
+                            break scan;
+                        }
+
+                        continue scan;
+                }
+            }
+
+            if (!seenBracket) {
+                // if we saw no brackets, this is a top-level reference that can be emitted as-is without
+                // further processing
+                path.add(reference.toString());
+                return path;
+            } else if (depth > 0) {
+                // when we hit the end-of-input while still in an open bracket, we have an invalid field reference
+                potentiallyAmbiguousSyntaxDetected = true;
+            }
+
+            // if we have encountered ambiguous syntax and are not in strict-mode,
+            // fall back to legacy parser.
+            if (potentiallyAmbiguousSyntaxDetected) {
+                throw new FieldReference.IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
+            }
+
+            path.trimToSize();
+            return path;
         }
     }
 }

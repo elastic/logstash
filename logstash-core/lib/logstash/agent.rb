@@ -45,6 +45,12 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
+    # Set the global FieldReference parsing mode
+    if @settings.set?('config.field_reference.parser')
+      # TODO: i18n
+      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
+    end
+
     # This is for backward compatibility in the tests
     if source_loader.nil?
       @source_loader = LogStash::Config::SourceLoader.new
