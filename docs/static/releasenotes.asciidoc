@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-3-2,Logstash 6.3.2>>
 * <<logstash-6-3-1,Logstash 6.3.1>>
 * <<logstash-6-3-0,Logstash 6.3.0>>
 * <<logstash-6-2-4,Logstash 6.2.4>>
@@ -14,6 +15,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-3-2]]
+=== Logstash 6.3.2 Release Notes
+
+* Fixes a dependency issue with the Guava library ({lsissue}9836[Issue 9836]).
+* Fixes issue when launching logstash from a path that contains white spaces ({lsissue}9832[Issue 9832]).
+* Fixes issue with non-unicode event keys in serialization ({lsissue}9821[Issue 9821]).
+* Fixes jruby-openssl conflict after running bin/logstash-plugin update ({lsissue}9817[Issue 9817]).
+* Fixes development environment jruby artifact downloading ({lsissue}9807[Issue 9807]).
+
+[float]
+==== Plugins
+
+*Dissect Filter*
+
+* Fix Trailing Delimiters requires a false field https://github.com/logstash-plugins/logstash-filter-dissect/pull/57[#57].
+
+*Graphite Output*
+
+* Fixes exception handling during socket writing to prevent logstash termination https://github.com/logstash-plugins/logstash-output-graphite/pull/33[#33].
+
+*Http Output*
+
+* Fixes high CPU usage on retries in json_batch mode https://github.com/logstash-plugins/logstash-output-http/pull/89[#89].
+* Adds compression in json_batch mode https://github.com/logstash-plugins/logstash-output-http/pull/89[#89].
 
 [[logstash-6-3-1]]
 === Logstash 6.3.1 Release Notes
