@@ -1,24 +1,21 @@
 [[contributing-to-logstash]]
 == Contributing to Logstash
 
-Before version 1.5, Logstash included all plugins in each release.  This made it
-easy to make use of any plugin, but it complicated plugin development--a new
-release of Logstash became necessary if a plugin needed patching.  Since version
-1.5, all plugins are independent of the Logstash core. Now you can add your own
-input, codec, filter, or output plugins to Logstash much more easily!
+You can add your own input, codec, filter, or output plugins to Logstash. 
 
 [float]
 === Adding plugins
 
-Since plugins can now be developed and deployed independently of the Logstash
-core, there are documents which guide you through the process of coding and
-deploying your own plugins:
+Plugins can be developed and deployed independently of the Logstash
+core. Here are some documents to guide you through the process of coding and
+deploying your own plugin:
 
 * <<plugin-generator,Generating a New Plugin>>
-* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_input_plugin.html[How to write a Logstash input plugin]
-* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_codec_plugin.html[How to write a Logstash codec plugin]
-* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_filter_plugin.html[How to write a Logstash filter plugin]
-* http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html[How to write a Logstash output plugin]
+* <<input-new-plugin,How to write a Logstash input plugin>>
+* <<input-new-plugin,How to write a Logstash codec plugin>>
+* <<input-new-plugin,How to write a Logstash filter plugin>>
+* <<input-new-plugin,How to write a Logstash output plugin>>
+* <<plugin-doc,Documenting your plugin>>
 * <<contributing-patch-plugin,Contributing a Patch to a Logstash Plugin>>
 * <<community-maintainer,Community Maintainer's Guide>>
 * <<submitting-plugin,Submitting a Plugin>>
@@ -26,8 +23,7 @@ deploying your own plugins:
 [float]
 ==== Plugin Shutdown APIs
 
-Starting in Logstash 2.0, we changed how input plugins shut down to increase shutdown reliability. There are three methods
-for plugin shutdown: `stop`, `stop?`, and `close`.
+You have three options for shutting down a plugin: `stop`, `stop?`, and `close`.
 
 * Call the `stop` method from outside the plugin thread. This method signals the plugin to stop.
 * The `stop?` method returns `true` when the `stop` method has already been called for that plugin.
