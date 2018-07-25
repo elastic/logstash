@@ -1,0 +1,76 @@
+[[plugin-doc]]
+=== Documenting your plugin
+
+Quality documentation with good examples contributes to the adoption of your plugin.
+
+The documentation for your plugin will be generated and published in the
+{logstash-ref}/index.html[Logstash Reference] and the
+{lsplugindocs}[Versioned plugin docs].
+
+[[plugin-doc-file]]
+==== Documentation file
+
+Documentation should be included in your plugin structure as a single file called 'docs/index.asciidoc'.
+
+[[heading-ids]]
+==== Heading IDs
+
+Heading IDs must be in a format that supports generated IDs. This approach
+creates unique IDs when the
+{lsplugindocs}[Versioned plugin docs] are generated.
+
+*Example*
+
+Don't hardcode a heading ID like this: `[[config_models]]`
+
+Instead, define it like this:
+
+[source,txt]
+----------------------------------
+[id="plugins-{type}s-{plugin}-config_models"]
+==== Configuration models
+----------------------------------
+
+If you hardcode an ID, the versioned plugin docs will build correctly the
+first time. The second time the doc build runs, the ID will be flagged as
+a duplicate, and the build will fail.
+
+[[format-code]]
+==== Code samples
+
+We all love code samples. Asciidoc supports code blocks and config examples.
+To include Ruby code, use the asciidoc `[source,ruby]` directive.
+
+Note that the hash marks (#) are present to make the example render correctly.
+Don't include the hash marks in your asciidoc file.
+
+[source,txt]
+[subs="attributes"]
+----------------------------------
+# [source,ruby]
+# ----------------------------------
+# match => {
+#  "field1" => "value1"
+#  "field2" => "value2"
+#  ...
+# }
+# ----------------------------------
+----------------------------------
+
+This sample renders in the documentation like this:
+[source,ruby]
+----------------------------------
+match => {
+  "field1" => "value1"
+  "field2" => "value2"
+  ...
+}
+----------------------------------
+
+
+==== Resources
+
+For more asciidoc formatting tips, see the excellent reference at
+https://github.com/elastic/docs#asciidoc-guide
+
+
