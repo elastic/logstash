@@ -239,6 +239,11 @@ include::static/codec.asciidoc[]
 include::static/filter.asciidoc[]
 include::static/output.asciidoc[]
 
+// Plugin doc guidelines
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/doc-for-plugin.asciidoc
+include::static/doc-for-plugin.asciidoc[]
+
 // Contributing a Patch to a Logstash Plugin
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-patch.asciidoc
