@@ -1,4 +1,4 @@
-
+[id="{plugintype}-new-plugin"]
 
 === How to write a Logstash {plugintype} plugin
 
@@ -344,49 +344,14 @@ them here along with these Logstash dependencies.
 
 Let's go through the various elements of the plugin itself.
 
-==== Inline Documentation
-Logstash provides infrastructure to automatically generate documentation for
-plugins. We use the asciidoc format to write documentation so _any_ comments in
-the source code will be first converted into asciidoc and then into html.
+==== Documentation for your plugin
+Documentation is an important part of your plugin. All plugin documentation is
+rendered and placed in the 
+http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash
+Reference] and the {lsplugindocs}[Versioned plugin docs].
 
-All plugin documentation is then rendered and placed in
-http://www.elasticsearch.org/guide/en/logstash/current/index.html[the Logstash section of the Elasticsearch Guide].
+See <<plugin-doc>> for tips and guidelines.
 
-The inline documentation can include code blocks and config examples! To include
-Ruby code, use the asciidoc `[source,ruby]` directive:
-
-[source,txt]
-[subs="attributes"]
-----------------------------------
-# Using hashes:
-# [source,ruby]
-# ----------------------------------
-# match => {
-#  "field1" => "value1"
-#  "field2" => "value2"
-#  ...
-# }
-# ----------------------------------
-----------------------------------
-
-In the rendered HTML document, this block would look like:
-
-[]
-=========================
-Using hashes:
-[source,ruby]
-----------------------------------
-match => {
-  "field1" => "value1"
-  "field2" => "value2"
-  ...
- }
-----------------------------------
-=========================
-
-
-TIP: For more asciidoc formatting tips, see the excellent reference at
-https://github.com/elastic/docs#asciidoc-guide
 
 ==== `class` Declaration
 The {plugintype} plugin class should be a subclass of
@@ -1275,11 +1240,11 @@ we always welcome new plugins!
 Some of the many benefits of having your plugin in the logstash-plugins
 repository are:
 
-* **Discovery** Your plugin will appear in the http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference],
+* **Discovery.** Your plugin will appear in the http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference],
 where Logstash users look first for plugins and documentation.
-* **Documentation** Your plugin documentation will automatically be added to the
+* **Documentation.** Your plugin documentation will automatically be added to the
  http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference].
-* **Testing** With our testing infrastructure, your plugin will be continuously
+* **Testing.** With our testing infrastructure, your plugin will be continuously
 tested against current and future releases of Logstash.  As a result, users will
 have the assurance that if incompatibilities arise, they will be quickly
 discovered and corrected.
