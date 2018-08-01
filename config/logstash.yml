@@ -242,5 +242,6 @@
 #xpack.management.elasticsearch.ssl.truststore.password: password
 #xpack.management.elasticsearch.ssl.keystore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.keystore.password: password
+#xpack.management.elasticsearch.ssl.verification_mode: certificate
 #xpack.management.elasticsearch.sniffing: false
 #xpack.management.logstash.poll_interval: 5s
