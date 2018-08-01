@@ -23,6 +23,7 @@ module LogStash module Helpers
       opts['user'] = settings.get("xpack.#{feature}.elasticsearch.username")
       opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
       opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
+      opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
 
       if cacert = settings.get("xpack.#{feature}.elasticsearch.ssl.ca")
         opts['cacert'] = cacert
