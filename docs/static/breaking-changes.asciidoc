@@ -29,6 +29,9 @@ and have the persistent queue enabled, we strongly recommend that you drain or
 delete the persistent queue before you upgrade. See <<upgrading-logstash-pqs>>
 for information and instructions.
 
+=== Breaking changes in filebeat input plugin
+Please note that logstash with filebeat input plugin prior to version N.N.NNN is not compatible with filebeat version 6.3.0 or above. See [filbeat breaking change](https://www.elastic.co/guide/en/beats/libbeat/master/breaking-changes-6.0.html#breaking-changes-ls-index) for details.
+
 [float]
 [[breaking-6.0]]
 === Breaking changes in 6.0
