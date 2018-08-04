@@ -50,6 +50,17 @@ RSpec.configure do |c|
       example.run
     end
   end
+
+  c.after(:each) do
+    # Sometime tests instantiate an agent but don't shut it down
+    # We conveniently handle this, to prevent tests from polluting each other
+    current_agent = ::LogStash::Agent::CURRENT.get
+    if current_agent
+      current_agent.shutdown
+
+      FileUtils.rm_rf(current_agent.id_path)
+    end
+  end
 end
 
 def installed_plugins

@@ -19,6 +19,13 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
+  # Only one agent object should be active at a time
+  # This invariant is mostly here for tests, to ensure we don't accidentally start two
+  # We record the backtrace of every agent start to make it possible to locate the source
+  # of the conflict, since it will be the preceeding instantiation that is the likely leak
+  CURRENT = java.util.concurrent.atomic.AtomicReference.new
+  CURRENT_INITIALIZED_BACKTRACE = java.util.concurrent.atomic.AtomicReference.new
+
   attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id, :pipelines, :pipeline_bus
   attr_accessor :logger
 
@@ -28,6 +35,14 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+
+    # Check that we are the sole live instance
+    if (CURRENT.compare_and_set(nil, self))
+      CURRENT_INITIALIZED_BACKTRACE.set(Kernel.caller);
+    else
+      raise "Only one agent may be active at a time! Cannot start a new one, old instance initialized in #{CURRENT_INITIALIZED_BACKTRACE.get.inspect}"
+    end
+
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -185,6 +200,11 @@ class LogStash::Agent
     transition_to_stopped
     converge_result = shutdown_pipelines
     converge_result
+
+    # Allow other agents to be created again
+    if (!CURRENT.compare_and_set(self, nil))
+      raise "Current agent is not the one that is shutting down, #{CURRENT.get.object_id} should be shut down. This should never happen"
+    end
   end
 
   def id
