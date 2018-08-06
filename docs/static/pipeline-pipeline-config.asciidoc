@@ -24,6 +24,8 @@ Here is a simple example of this configuration.
   config.string: input { pipeline { address => myVirtualAddress } }
 ----
 
+IMPORTANT: The `pipeline.id` and the virtual address the pipeline registers must be different!
+
 [[how-pipeline-to-pipeline-works]]
 ===== How it works
 
