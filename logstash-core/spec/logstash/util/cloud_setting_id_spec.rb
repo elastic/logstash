@@ -25,7 +25,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {%w(first second)}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id does not decode. You may need to enable Kibana in the Cloud UI. Received: \"#{raw[0]}$#{raw[1]}\".")
+        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}\".")
       end
     end
 
@@ -128,6 +128,19 @@ describe LogStash::Util::CloudSettingId do
     end
     it "overrides cloud port with the kibana port" do
       expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244")
+    end
+  end
+  context "when cloud id defines extra data" do
+    let(:input) { "extra-items:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2JGE0YzA2MjMwZTQ4YzhmY2U3YmU4OGEwNzRhM2JiM2UwJGFub3RoZXJpZCRhbmRhbm90aGVy" }
+
+    it "captures the elasticsearch host" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:443")
+    end
+    it "captures the kibana host" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:443")
+    end
+    it "captures the remaining identifiers" do
+      expect(subject.other_identifiers).to eq(["anotherid", "andanother"])
     end
   end
 end
