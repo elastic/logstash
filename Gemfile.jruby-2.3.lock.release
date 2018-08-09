@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.103)
-      aws-sdk-resources (= 2.11.103)
-    aws-sdk-core (2.11.103)
+    aws-sdk (2.11.104)
+      aws-sdk-resources (= 2.11.104)
+    aws-sdk-core (2.11.104)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.103)
-      aws-sdk-core (= 2.11.103)
+    aws-sdk-resources (2.11.104)
+      aws-sdk-core (= 2.11.104)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -161,7 +161,7 @@ GEM
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
-    logstash-codec-netflow (4.1.0)
+    logstash-codec-netflow (3.14.1)
       bindata (>= 1.5.0)
       logstash-core-plugin-api (~> 2.0)
     logstash-codec-plain (3.0.6)
@@ -634,7 +634,7 @@ DEPENDENCIES
   logstash-codec-line
   logstash-codec-msgpack
   logstash-codec-multiline
-  logstash-codec-netflow
+  logstash-codec-netflow (>= 3.14.1, < 4.0.0)
   logstash-codec-plain
   logstash-codec-rubydebug
   logstash-core!
