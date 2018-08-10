@@ -122,7 +122,6 @@ clean {
   delete "${projectDir}/Gemfile"
   delete "${projectDir}/Gemfile.lock"
   delete "${projectDir}/vendor"
-  delete "${projectDir}/NOTICE.TXT"
   delete "${projectDir}/.bundle"
   delete "${projectDir}/qa/integration/Gemfile.lock"
   delete "${projectDir}/qa/integration/.bundle"
