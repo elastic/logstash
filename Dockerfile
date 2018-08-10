@@ -9,6 +9,7 @@ RUN /opt/logstash/gradlew wrapper
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE.txt /opt/logstash/LICENSE.txt
+ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
 ADD licenses /opt/logstash/licenses
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
 ADD Gemfile.template /opt/logstash/Gemfile.template
