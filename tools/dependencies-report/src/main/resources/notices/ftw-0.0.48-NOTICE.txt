@@ -1,0 +1,3 @@
+source: https://github.com/jordansissel/ruby-ftw/blob/master/ftw.gemspec#L19
+
+Apache License (2.0)
