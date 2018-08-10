@@ -21,7 +21,7 @@ This section summarizes the changes in the following releases:
 === Logstash 6.4.0 Release Notes
 
 * Adds the Azure Module for integrating Azure activity logs and SQL diagnostic logs with the Elastic Stack.
-* Adds the {logstash-ref}/plugins-input-azure_event_hubs.html[Azure event hub input] as a default plugin.
+* Adds the {logstash-ref}/plugins-inputs-azure_event_hubs.html[azure_event_hubs input plugin] as a default plugin.
 * Adds support for port customization in cloud id ({lsissue}/9877[#9877]).
 * Adds opt-in strict-mode for field reference ({lsissue}/9591[#9591]).
 * Fixes incorrect pipeline shutdown logging ({lsissue}/9688[#9688]).
