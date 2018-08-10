@@ -22,12 +22,12 @@ This section summarizes the changes in the following releases:
 
 * Adds the Azure Module for integrating Azure activity logs and SQL diagnostic logs with the Elastic Stack.
 * Adds the {logstash-ref}/plugins-input-azure_event_hubs.html[Azure event hub input] as a default plugin.
-* Adds support for port customization in cloud id ({lsissue}9877[Issue 9877]).
-* Adds opt-in strict-mode for field reference ({lsissue}9591[Issue 9591]).
-* Fixes incorrect pipeline shutdown logging ({lsissue}9688[Issue 9688]).
-* Fixes incorrect type handling between Java pipeline and Ruby pipeline ({lsissue}9671[Issue 9671]).
-* Fixes possible where Ensure separate output streams to avoid keystore corruption issue by ensuring separate output streams ({lsissue}9582[Issue 9582]).
-* Javafication to continue moving parts of Logstash core from Ruby to Java and some general code cleanup ({lsissue}9414[Issue 9414], {lsissue}9415[Issue 9415], {lsissue}9416[Issue 9416], {lsissue}9422[Issue 9422], {lsissue}9482[Issue 9482], {lsissue}9486[Issue 9486], {lsissue}9489[Issue 9489], {lsissue}9490[Issue 9490], {lsissue}9491[Issue 9491], {lsissue}9496[Issue 9496], {lsissue}9520[Issue 9520], {lsissue}9587[Issue 9587], {lsissue}9574[Issue 9574], {lsissue}9610[Issue 9610], {lsissue}9620[Issue 9620], {lsissue}9631[Issue 9631], {lsissue}9632[Issue 9632], {lsissue}9633[Issue 9633], {lsissue}9661[Issue 9661], {lsissue}9662[Issue 9662], {lsissue}9665[Issue 9665], {lsissue}9667[Issue 9667], {lsissue}9668[Issue 9668], {lsissue}9670[Issue 9670], {lsissue}9676[Issue 9676], {lsissue}9687[Issue 9687], {lsissue}9693[Issue 9693], {lsissue}9697[Issue 9697], {lsissue}9699[Issue 9699], {lsissue}9717[Issue 9717], {lsissue}9723[Issue 9723], {lsissue}9731[Issue 9731], {lsissue}9740[Issue 9740], {lsissue}9742[Issue 9742], {lsissue}9743[Issue 9743], {lsissue}9751[Issue 9751], {lsissue}9752[Issue 9752], {lsissue}9765[Issue 9765]).
+* Adds support for port customization in cloud id ({lsissue}/9877[Issue 9877]).
+* Adds opt-in strict-mode for field reference ({lsissue}/9591[Issue 9591]).
+* Fixes incorrect pipeline shutdown logging ({lsissue}/9688[Issue 9688]).
+* Fixes incorrect type handling between Java pipeline and Ruby pipeline ({lsissue}/9671[Issue 9671]).
+* Fixes possible where Ensure separate output streams to avoid keystore corruption issue by ensuring separate output streams ({lsissue}/9582[Issue 9582]).
+* Javafication to continue moving parts of Logstash core from Ruby to Java and some general code cleanup ({lsissue}/9414[Issue 9414], {lsissue}/9415[Issue 9415], {lsissue}/9416[Issue 9416], {lsissue}/9422[Issue 9422], {lsissue}/9482[Issue 9482], {lsissue}/9486[Issue 9486], {lsissue}/9489[Issue 9489], {lsissue}/9490[Issue 9490], {lsissue}/9491[Issue 9491], {lsissue}/9496[Issue 9496], {lsissue}/9520[Issue 9520], {lsissue}/9587[Issue 9587], {lsissue}/9574[Issue 9574], {lsissue}/9610[Issue 9610], {lsissue}/9620[Issue 9620], {lsissue}/9631[Issue 9631], {lsissue}/9632[Issue 9632], {lsissue}/9633[Issue 9633], {lsissue}/9661[Issue 9661], {lsissue}/9662[Issue 9662], {lsissue}/9665[Issue 9665], {lsissue}/9667[Issue 9667], {lsissue}/9668[Issue 9668], {lsissue}/9670[Issue 9670], {lsissue}/9676[Issue 9676], {lsissue}/9687[Issue 9687], {lsissue}/9693[Issue 9693], {lsissue}/9697[Issue 9697], {lsissue}/9699[Issue 9699], {lsissue}/9717[Issue 9717], {lsissue}/9723[Issue 9723], {lsissue}/9731[Issue 9731], {lsissue}/9740[Issue 9740], {lsissue}/9742[Issue 9742], {lsissue}/9743[Issue 9743], {lsissue}/9751[Issue 9751], {lsissue}/9752[Issue 9752], {lsissue}/9765[Issue 9765]).
 
 [float]
 ==== Plugins
@@ -107,11 +107,11 @@ This section summarizes the changes in the following releases:
 [[logstash-6-3-2]]
 === Logstash 6.3.2 Release Notes
 
-* Fixes a dependency issue with the Guava library ({lsissue}9836[Issue 9836]).
-* Fixes issue when launching logstash from a path that contains white spaces ({lsissue}9832[Issue 9832]).
-* Fixes issue with non-unicode event keys in serialization ({lsissue}9821[Issue 9821]).
-* Fixes jruby-openssl conflict after running bin/logstash-plugin update ({lsissue}9817[Issue 9817]).
-* Fixes development environment jruby artifact downloading ({lsissue}9807[Issue 9807]).
+* Fixes a dependency issue with the Guava library ({lsissue}/9836[Issue 9836]).
+* Fixes issue when launching logstash from a path that contains white spaces ({lsissue}/9832[Issue 9832]).
+* Fixes issue with non-unicode event keys in serialization ({lsissue}/9821[Issue 9821]).
+* Fixes jruby-openssl conflict after running bin/logstash-plugin update ({lsissue}/9817[Issue 9817]).
+* Fixes development environment jruby artifact downloading ({lsissue}/9807[Issue 9807]).
 
 [float]
 ==== Plugins
@@ -132,13 +132,13 @@ This section summarizes the changes in the following releases:
 [[logstash-6-3-1]]
 === Logstash 6.3.1 Release Notes
 
-* Adds a Persistent Queue repair utility, enabling self-recovery of corrupted PQs ({lsissue}9710[Issue 9710]).
-* Fixes two separate issues in Experimental Java Execution mode where complex pipeline configurations could fail to compile ({lsissue}9747[Issue 9747], {lsissue}9745[Issue 9745]).
-* Fixes issue when running Logstash inside of a Docker container with Persistent Queue enabled where we incorrectly reported that there was insufficient space to allocate for the queue ({lsissue}9766[Issue 9766]).
-* Fixes issue in x-pack monitoring where `queue_push_duration_in_millis` was incorrectly reporting _nanoseconds_ ({lsissue}9744[Issue 9744]).
-* Fixes an issue where Logstash could fail to start when its `path.data` is a symlink ({lsissue}9706[Issue 9706]).
-* Fixes issue with Netflow module where it could fail to populate `[geoip_dst][autonomous_system]` ({lsissue}9638[Issue 9638]).
-* Fixes a potential conflict with plugin depenencies that require Guava by explicitly loading Guava 22 ({lsissue}9592[Issue 9592]).
+* Adds a Persistent Queue repair utility, enabling self-recovery of corrupted PQs ({lsissue}/9710[Issue 9710]).
+* Fixes two separate issues in Experimental Java Execution mode where complex pipeline configurations could fail to compile ({lsissue}/9747[Issue 9747], {lsissue}/9745[Issue 9745]).
+* Fixes issue when running Logstash inside of a Docker container with Persistent Queue enabled where we incorrectly reported that there was insufficient space to allocate for the queue ({lsissue}/9766[Issue 9766]).
+* Fixes issue in x-pack monitoring where `queue_push_duration_in_millis` was incorrectly reporting _nanoseconds_ ({lsissue}/9744[Issue 9744]).
+* Fixes an issue where Logstash could fail to start when its `path.data` is a symlink ({lsissue}/9706[Issue 9706]).
+* Fixes issue with Netflow module where it could fail to populate `[geoip_dst][autonomous_system]` ({lsissue}/9638[Issue 9638]).
+* Fixes a potential conflict with plugin depenencies that require Guava by explicitly loading Guava 22 ({lsissue}/9592[Issue 9592]).
 
 [float]
 ==== Plugins
