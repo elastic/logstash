@@ -1,0 +1,4 @@
+source: https://github.com/JodaOrg/joda-time/blob/v2.9.9/NOTICE.txt
+
+This product includes software developed by
+Joda.org (http://www.joda.org/).
