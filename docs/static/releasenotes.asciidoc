@@ -3,7 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-6-4-0,logstash 6.4.0>>
+* <<logstash-6-4-0,Logstash 6.4.0>>
 * <<logstash-6-3-2,Logstash 6.3.2>>
 * <<logstash-6-3-1,Logstash 6.3.1>>
 * <<logstash-6-3-0,Logstash 6.3.0>>
@@ -20,21 +20,21 @@ This section summarizes the changes in the following releases:
 [[logstash-6-4-0]]
 === Logstash 6.4.0 Release Notes
 
-* Adds the Azure Module.
+* Adds the Azure Module for integrating Azure activity logs and SQL diagnostic logs with the Elastic Stack.
 * Adds the {logstash-ref}/plugins-input-azure_event_hubs.html[Azure event hub input] as a default plugin.
 * Adds support for port customization in cloud id ({lsissue}9877[Issue 9877]).
 * Adds opt-in strict-mode for field reference ({lsissue}9591[Issue 9591]).
 * Fixes incorrect pipeline shutdown logging ({lsissue}9688[Issue 9688]).
 * Fixes incorrect type handling between Java pipeline and Ruby pipeline ({lsissue}9671[Issue 9671]).
 * Fixes possible where Ensure separate output streams to avoid keystore corruption issue by ensuring separate output streams ({lsissue}9582[Issue 9582]).
-* Javafication to continue moving parts of Logstash core from Ruby to Java and some general code cleanup ({lsissue}9414[Issue 9414]), {lsissue}9415[Issue 9415], {lsissue}9416[Issue 9416], {lsissue}9422[Issue 9422]), {lsissue}9482[Issue 9482], {lsissue}9486[Issue 9486], {lsissue}9489[Issue 9489], {lsissue}9490[Issue 9490], {lsissue}9491[Issue 9491], {lsissue}9496[Issue 9496], {lsissue}9520[Issue 9520], {lsissue}9587[Issue 9587], {lsissue}9574[Issue 9574], {lsissue}9610[Issue 9610], {lsissue}9620[Issue 9620], {lsissue}9631[Issue 9631], {lsissue}9632[Issue 9632], {lsissue}9633[Issue 9633], {lsissue}9661[Issue 9661], {lsissue}9662[Issue 9662], {lsissue}9665[Issue 9665], {lsissue}9667[Issue 9667], {lsissue}9668[Issue 9668], {lsissue}9670[Issue 9670], {lsissue}9676[Issue 9676], {lsissue}9687[Issue 9687], {lsissue}9693[Issue 9693], {lsissue}9697[Issue 9697], {lsissue}9699[Issue 9699], {lsissue}9717[Issue 9717], {lsissue}9723[Issue 9723], {lsissue}9731[Issue 9731], {lsissue}9740[Issue 9740], {lsissue}9742[Issue 9742], {lsissue}9743[Issue 9743], {lsissue}9751[Issue 9751], {lsissue}9752[Issue 9752], {lsissue}9765[Issue 9765]).
+* Javafication to continue moving parts of Logstash core from Ruby to Java and some general code cleanup ({lsissue}9414[Issue 9414], {lsissue}9415[Issue 9415], {lsissue}9416[Issue 9416], {lsissue}9422[Issue 9422], {lsissue}9482[Issue 9482], {lsissue}9486[Issue 9486], {lsissue}9489[Issue 9489], {lsissue}9490[Issue 9490], {lsissue}9491[Issue 9491], {lsissue}9496[Issue 9496], {lsissue}9520[Issue 9520], {lsissue}9587[Issue 9587], {lsissue}9574[Issue 9574], {lsissue}9610[Issue 9610], {lsissue}9620[Issue 9620], {lsissue}9631[Issue 9631], {lsissue}9632[Issue 9632], {lsissue}9633[Issue 9633], {lsissue}9661[Issue 9661], {lsissue}9662[Issue 9662], {lsissue}9665[Issue 9665], {lsissue}9667[Issue 9667], {lsissue}9668[Issue 9668], {lsissue}9670[Issue 9670], {lsissue}9676[Issue 9676], {lsissue}9687[Issue 9687], {lsissue}9693[Issue 9693], {lsissue}9697[Issue 9697], {lsissue}9699[Issue 9699], {lsissue}9717[Issue 9717], {lsissue}9723[Issue 9723], {lsissue}9731[Issue 9731], {lsissue}9740[Issue 9740], {lsissue}9742[Issue 9742], {lsissue}9743[Issue 9743], {lsissue}9751[Issue 9751], {lsissue}9752[Issue 9752], {lsissue}9765[Issue 9765]).
 
 [float]
 ==== Plugins
 
 *Rubydebug Codec*
 
-* Fixes crash that could occur on startup if $HOME was unset or if ${HOME}/.aprc was unreadable by pinning awesome_print dependency to a release before the bug was introduced. https://github.com/logstash-plugins/logstash-codec-rubydebug/pull/5[#5]
+* Fixes crash that could occur on startup if `$HOME` was unset or if `${HOME}/.aprc` was unreadable by pinning awesome_print dependency to a release before the bug was introduced. https://github.com/logstash-plugins/logstash-codec-rubydebug/pull/5[#5]
 
 *Fingerprint Filter*
 
@@ -42,8 +42,8 @@ This section summarizes the changes in the following releases:
 
 *KV Filter*
 
-* Adds whitespace => strict mode, which allows the parser to behave more predictably when input is known to avoid unnecessary whitespace. https://github.com/logstash-plugins/logstash-filter-kv/pull/67[#67]
-* Adds error handling, which tags the event with _kv_filter_error if an exception is raised while handling an event instead of allowing the plugin to crash. https://github.com/logstash-plugins/logstash-filter-kv/pull/68[#68]
+* Adds `whitespace => strict` mode, which allows the parser to behave more predictably when input is known to avoid unnecessary whitespace. https://github.com/logstash-plugins/logstash-filter-kv/pull/67[#67]
+* Adds error handling, which tags the event with `_kv_filter_error` if an exception is raised while handling an event instead of allowing the plugin to crash. https://github.com/logstash-plugins/logstash-filter-kv/pull/68[#68]
 
 *Azure Event Hubs Input*
 
@@ -54,8 +54,8 @@ This section summarizes the changes in the following releases:
 * Adds `add_hostname` flag to enable/disable the population of the `host` field from the beats.hostname. field https://github.com/logstash-plugins/logstash-input-beats/pull/340[#340]
 * Fixes handling of batches where the sequence numbers do not start with 1. https://github.com/logstash-plugins/logstash-input-beats/pull/342[#342]
 * Changes project to use gradle version 4.8.1. https://github.com/logstash-plugins/logstash-input-beats/pull/334[#334]
-* Adds ssl_peer_metadata option. https://github.com/logstash-plugins/logstash-input-beats/pull/327[#327]
-* Fixes ssl_verify_mode => peer. https://github.com/logstash-plugins/logstash-input-beats/pull/326[#326]
+* Adds `ssl_peer_metadata` option. https://github.com/logstash-plugins/logstash-input-beats/pull/327[#327]
+* Fixes `ssl_verify_mode => peer`. https://github.com/logstash-plugins/logstash-input-beats/pull/326[#326]
 
 *Exec Input*
 
@@ -84,7 +84,7 @@ This section summarizes the changes in the following releases:
 *Http Input*
 
 * Replaces Puma web server with Netty. https://github.com/logstash-plugins/logstash-input-http/pull/73[#73]
-* Adds request_headers_target_field and remote_host_target_field configuration options with default to host and headers respectively. https://github.com/logstash-plugins/logstash-input-http/pull/68[#68]
+* Adds `request_headers_target_field` and `remote_host_target_field` configuration options with default to host and headers respectively. https://github.com/logstash-plugins/logstash-input-http/pull/68[#68]
 * Sanitizes content-type header with getMimeType. https://github.com/logstash-plugins/logstash-input-http/pull/87[#87]
 * Moves most message handling code to Java. https://github.com/logstash-plugins/logstash-input-http/pull/85[#85]
 * Fixes issue to respond with correct http protocol version. https://github.com/logstash-plugins/logstash-input-http/pull/84[#84]
@@ -97,7 +97,7 @@ This section summarizes the changes in the following releases:
 
 *S3 Input*
 
-* Adds ability to optionally include S3 object properties inside @metadata. https://github.com/logstash-plugins/logstash-input-s3/pull/155[#155]
+* Adds ability to optionally include S3 object properties inside `@metadata`. https://github.com/logstash-plugins/logstash-input-s3/pull/155[#155]
 
 *Kafka Output*
 
