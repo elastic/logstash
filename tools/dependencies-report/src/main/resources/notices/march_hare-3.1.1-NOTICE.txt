@@ -1,6 +1,7 @@
-source: https://github.com/jduff/numerizer/blob/v0.1.1/LICENSE
+source: https://github.com/ruby-amqp/march_hare/blob/v3.1.1/LICENSE
 
-Copyright (c) 2009 Tom Preston-Werner
+Copyright (c) 2011-2013 Theo Hultberg
+Copyright (c) 2013-2017 Michael S. Klishin and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
