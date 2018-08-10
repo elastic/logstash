@@ -396,6 +396,12 @@ task generateLicenseReportInputs() {
     }
 }
 
+task generatePluginsVersion(dependsOn: bootstrap) {
+  doLast {
+    rubyGradleUtils.rake('generate_plugins_version')
+  }
+}
+
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
 bootstrap.dependsOn installTestGems
