@@ -1,3 +1,5 @@
+source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
+
 Apache Log4j
 Copyright 1999-2017 Apache Software Foundation
 
