@@ -143,10 +143,11 @@ public class ReportGenerator {
 
             String[] dependencyLicenses = pair.license.split("\\|");
             boolean hasAcceptableLicense = false;
-            for (int k = 0; k < dependencyLicenses.length && !hasAcceptableLicense; k++) {
-                if (pair.url != null && !pair.url.equals("") &&
-                   (acceptableLicenses.stream().anyMatch(dependencyLicenses[k]::equalsIgnoreCase))) {
-                    hasAcceptableLicense = true;
+            if (pair.url != null && !pair.url.equals("")) {
+                for (int k = 0; k < dependencyLicenses.length && !hasAcceptableLicense; k++) {
+                    if (acceptableLicenses.stream().anyMatch(dependencyLicenses[k]::equalsIgnoreCase)) {
+                        hasAcceptableLicense = true;
+                    }
                 }
             }
 
