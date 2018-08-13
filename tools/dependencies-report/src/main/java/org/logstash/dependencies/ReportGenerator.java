@@ -141,8 +141,16 @@ public class ReportGenerator {
         if (licenseMapping.containsKey(nameAndVersion)) {
             LicenseUrlPair pair = licenseMapping.get(nameAndVersion);
 
-            if (pair.url != null && !pair.url.equals("") &&
-               (acceptableLicenses.stream().anyMatch(pair.license::equalsIgnoreCase))) {
+            String[] dependencyLicenses = pair.license.split("\\|");
+            boolean hasAcceptableLicense = false;
+            for (int k = 0; k < dependencyLicenses.length && !hasAcceptableLicense; k++) {
+                if (pair.url != null && !pair.url.equals("") &&
+                   (acceptableLicenses.stream().anyMatch(dependencyLicenses[k]::equalsIgnoreCase))) {
+                    hasAcceptableLicense = true;
+                }
+            }
+
+            if (hasAcceptableLicense) {
                 dependency.spdxLicense = pair.license;
                 dependency.url = pair.url;
             } else {
