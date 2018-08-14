@@ -48,6 +48,20 @@ These delivery guarantees also inform the shutdown behavior of this feature. Whe
 
 When you connect pipelines, keep the data flowing in one direction. Looping data or connecting the pipelines into a cyclic graph can cause problems. Logstash waits for each pipeline's work to complete before shutting down. Pipeline loops can prevent Logstash from shutting down cleanly.
 
+[[pipeline-names]]
+===== Pipeline names
+
+Names of pipelines used with send_to and address can only contain numbers, letters and underscores. Using other characters will cause compilation of the pipeline to fail.
+
+[source,yaml]
+----
+# Good
+output { pipeline { send_to => web_server } }
+
+# Bad
+output { pipeline { send_to => web-server } }
+----
+
 [[architectural-patterns]]
 ==== Architectural patterns
 
@@ -157,17 +171,17 @@ Here is an example of the forked path configuration.
   queue.type: persisted
   config.string: |
     input { beats { port => 5044 } }
-    output { pipeline { send_to => [internal-es, partner-s3] } }
+    output { pipeline { send_to => [internal_es, partner_s3] } }
 - pipeline.id: buffered-es
   queue.type: persisted
   config.string: |
-    input { pipeline { address => internal-es } }
+    input { pipeline { address => internal_es } }
     # Index the full event
     output { elasticsearch { } }
 - pipeline.id: partner
   queue.type: persisted
   config.string: |
-    input { pipeline { address => partner-s3 } }
+    input { pipeline { address => partner_s3 } }
     filter {
       # Remove the sensitive data
       mutate { remove_field => 'sensitive-data' }
