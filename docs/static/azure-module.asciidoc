@@ -494,7 +494,7 @@ the event originated.
 ==== Deploying the module in production 
 
 Use security best practices to secure your configuration.
-See {stack-ov}/xpack-security.html for details and recommendations.
+See {stack-ov}/elasticsearch-security.html[Securing the {stack}] for details and recommendations.
 
 [[azure-resources]]
 ==== Microsoft Azure resources 
