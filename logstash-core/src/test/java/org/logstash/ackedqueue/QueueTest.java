@@ -683,6 +683,7 @@ public class QueueTest {
         }
     }
 
+    @Ignore("This test frequently times out on Windows and Linux. Issue: https://github.com/elastic/logstash/issues/9878")
     @Test(timeout = 50_000)
     public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
 
