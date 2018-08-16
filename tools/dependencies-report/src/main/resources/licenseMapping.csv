@@ -4,10 +4,10 @@ dependency,dependencyUrl,licenseOverride
 "atomic:1.1.99",http://github.com/ruby-concurrency/atomic,Apache-2.0
 "avl_tree:1.2.1",https://github.com/nahi/avl_tree,BSD-2-Clause-FreeBSD
 "awesome_print:1.7.0",https://github.com/awesome-print/awesome_print,MIT
-"aws-sdk-core:2.11.105",http://github.com/aws/aws-sdk-ruby,Apache-2.0
-"aws-sdk-resources:2.11.105",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-core:2.11.111",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-resources:2.11.111",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sdk-v1:1.67.0",http://aws.amazon.com/sdkforruby,Apache-2.0
-"aws-sdk:2.11.105",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk:2.11.111",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sigv4:1.0.3",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "backports:3.11.3",http://github.com/marcandre/backports,MIT
 "bindata:2.4.3",http://github.com/dmendel/bindata,BSD-2-Clause
@@ -33,7 +33,7 @@ dependency,dependencyUrl,licenseOverride
 "com.google.googlejavaformat:google-java-format:1.1",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:22.0",https://github.com/google/guava,Apache-2.0
 "com.google.j2objc:j2objc-annotations:1.1",https://github.com/google/j2objc/,Apache-2.0
-"commons-codec:commons-codec:1.11",http://commons.apache.org/proper/commons-codec/,Apache-2.0
+"commons-codec:commons-codec:1.10.0",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-logging:commons-logging:1.2.0",http://commons.apache.org/proper/commons-logging/,Apache-2.0
 "concurrent-ruby:1.0.5",http://www.concurrent-ruby.com,MIT
 "controls.js:",https://github.com/controlsjs/controls.js,GPL-3.0-only
@@ -83,7 +83,7 @@ dependency,dependencyUrl,licenseOverride
 "joda-time","http://www.joda.org/joda-time/",Apache-2.0
 "joni","https://github.com/jruby/joni/",MIT
 "jrjackson:0.4.6",https://github.com/guyboertje/jrjackson,Apache-2.0
-"jruby-openssl:0.9.21","https://github.com/jruby/jruby-openssl/",EPL-1.0
+"jruby-openssl:0.10.1","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-readline","https://github.com/jruby/jruby-readline",EPL-1.0
 "jruby-stdin-channel:0.2.0","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
 "json-generator","https://github.com/tmattia/json-generator/",MIT
@@ -162,7 +162,7 @@ dependency,dependencyUrl,licenseOverride
 "rufus-scheduler:3.0.9",http://github.com/jmettraux/rufus-scheduler,MIT
 "rumbster:1.1.0",https://github.com/aesterline/rumbster,Apache-2.0
 "safe_yaml:1.0.4",https://github.com/dtao/safe_yaml,MIT
-"sequel:5.11.1",https://github.com/jeremyevans/sequel,MIT
+"sequel:5.11.0",https://github.com/jeremyevans/sequel,MIT
 "simple_oauth:0.3.1",https://github.com/laserlemon/simple_oauth,MIT
 "sinatra:1.4.8",https://github.com/sinatra/sinatra,MIT
 "slop:3.6.0",https://github.com/leejarvis/slop,MIT
