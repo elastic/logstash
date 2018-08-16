@@ -36,7 +36,7 @@ import static org.logstash.common.io.RecordType.START;
 /**
  *
  * File Format
- * | — magic number (4bytes) --|
+ * | - magic number (4bytes) --|
  *
  * [  32kbyte block....
  *    --- 1 byte RecordHeader Type ---
