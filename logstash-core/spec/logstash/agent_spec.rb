@@ -407,6 +407,7 @@ describe LogStash::Agent do
       end
 
       it "increases the successful reload count" do
+        skip("This test fails randomly, tracked in https://github.com/elastic/logstash/issues/8005")
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
         expect(value).to eq(1)
