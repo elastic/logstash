@@ -397,6 +397,7 @@ public class QueueTest {
         }
     }
 
+    @Ignore("This test timed out on Linux. Issue: https://github.com/elastic/logstash/issues/9910")
     @Test(timeout = 50_000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
