@@ -150,7 +150,9 @@ Example:
    asking you to assign copyright to us, but to give us the right to distribute
    your code without restriction. We ask this of all contributors in order to
    assure our users of the origin and continuing existence of the code. You
-   only need to sign the CLA once.
+   need to sign the CLA only once. If your contribution involves changes to 
+   third-party dependencies in Logstash core or the default plugins, you may
+   wish to review the documentation for our [dependency audit process](https://github.com/elastic/logstash/blob/master/tools/dependencies-report/README.md).
 3. Send a pull request! Push your changes to your fork of the repository and
    [submit a pull
    request](https://help.github.com/articles/using-pull-requests). In the pull
