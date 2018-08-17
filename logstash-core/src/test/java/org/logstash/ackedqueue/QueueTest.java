@@ -624,11 +624,13 @@ public class QueueTest {
         }
     }
 
+    @Ignore("This test timed out on Windows. Issue: https://github.com/elastic/logstash/issues/9918")
     @Test
     public void queueStableUnderStressHugeCapacity() throws Exception {
         stableUnderStress(100_000);
     }
 
+    @Ignore("This test timed out on Windows. Issue: https://github.com/elastic/logstash/issues/9918")
     @Test
     public void queueStableUnderStressLowCapacity() throws Exception {
         stableUnderStress(50);
