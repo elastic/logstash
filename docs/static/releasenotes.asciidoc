@@ -24,6 +24,8 @@ This section summarizes the changes in the following releases:
 * Adds the {logstash-ref}/plugins-inputs-azure_event_hubs.html[azure_event_hubs input plugin] as a default plugin.
 * Adds support for port customization in cloud id ({lsissue}/9877[#9877]).
 * Adds opt-in strict-mode for field reference ({lsissue}/9591[#9591]).
+* Adds syntax highlighting for expressions in Grok Debugger https://github.com/elastic/kibana/pull/18572[Kibana#18572]
+* Changes pipeline viewer visualization to use more tree like layout to express structure of pipeline configuration https://github.com/elastic/kibana/pull/18597[Kibana#18597]
 * Fixes incorrect pipeline shutdown logging ({lsissue}/9688[#9688]).
 * Fixes incorrect type handling between Java pipeline and Ruby pipeline ({lsissue}/9671[#9671]).
 * Fixes possible where Ensure separate output streams to avoid keystore corruption issue by ensuring separate output streams ({lsissue}/9582[#9582]).
