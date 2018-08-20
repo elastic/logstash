@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +33,7 @@ public class Main {
         }
         FileWriter licenseCSVWriter = new FileWriter(args[2]);
         FileWriter noticeWriter = new FileWriter(args[3]);
+        StringWriter unusedLicenseWriter = new StringWriter();
 
         boolean reportResult = new ReportGenerator().generateReport(
                 getResourceAsStream(LICENSE_MAPPING_PATH),
@@ -39,12 +41,12 @@ public class Main {
                 rubyDependenciesStream,
                 javaDependenciesStreams,
                 licenseCSVWriter,
-                noticeWriter
+                noticeWriter,
+                unusedLicenseWriter
         );
 
         // If there were unknown results in the report, exit with a non-zero status
-        //System.exit(reportResult ? 0 : 1);
-
+        System.exit(reportResult ? 0 : 1);
     }
 
     static InputStream getResourceAsStream(String resourcePath) {

@@ -15,14 +15,16 @@ import static org.junit.Assert.*;
 import static org.logstash.dependencies.Main.ACCEPTABLE_LICENSES_PATH;
 
 public class ReportGeneratorTest {
-    StringWriter csvOutput;
-    StringWriter noticeOutput;
-    ReportGenerator rg;
+    private StringWriter csvOutput;
+    private StringWriter noticeOutput;
+    private StringWriter unusedLicenseWriter;
+    private ReportGenerator rg;
 
     @Before
     public void setup() {
         csvOutput = new StringWriter();
         noticeOutput = new StringWriter();
+        unusedLicenseWriter = new StringWriter();
     }
 
     @Test
@@ -32,7 +34,7 @@ public class ReportGeneratorTest {
                 Main.getResourceAsStream("/expectedOutput.txt"));
         String expectedNoticeOutput = getStringFromStream(
                 Main.getResourceAsStream("/expectedNoticeOutput.txt"));
-        boolean result = runReportGenerator("/licenseMapping-good.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-good.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertTrue(result);
         assertEquals(normalizeEol(expectedOutput), normalizeEol(csvOutput.toString()));
@@ -41,7 +43,7 @@ public class ReportGeneratorTest {
 
     @Test
     public void testReportWithMissingLicenses() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-missing.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-missing.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
@@ -53,7 +55,7 @@ public class ReportGeneratorTest {
 
     @Test
     public void testReportWithUnacceptableLicenses() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-unacceptable.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-unacceptable.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
@@ -65,7 +67,7 @@ public class ReportGeneratorTest {
 
     @Test
     public void testReportWithMissingUrls() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-missingUrls.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-missingUrls.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
@@ -78,10 +80,11 @@ public class ReportGeneratorTest {
     @Test
     public void testReportWithMissingNotices() throws IOException {
         boolean result = runReportGenerator(
-                "/licenseMapping-missingNotices.csv",
+                "/licenseMapping-good.csv",
                 new InputStream[] {Main.getResourceAsStream("/javaLicensesMissingNotice.csv")},
                 csvOutput,
-                noticeOutput
+                noticeOutput,
+                unusedLicenseWriter
         );
 
         assertFalse(result);
@@ -91,7 +94,22 @@ public class ReportGeneratorTest {
         assertTrue(found.isPresent());
     }
 
-    private boolean runReportGenerator(String licenseMappingPath, StringWriter csvOutput, StringWriter noticeOutput) throws IOException {
+    @Test
+    public void testReportWithUnusedLicenses() throws IOException {
+        boolean result = runReportGenerator(
+                "/licenseMapping-missingNotices.csv",
+                csvOutput,
+                noticeOutput,
+                unusedLicenseWriter
+        );
+
+        assertTrue("Unused licenses should not fail the license checker", result);
+
+        assertThat(unusedLicenseWriter.toString(), containsString("org.eclipse.core:org.eclipse.core.commands:3.6.0"));
+        assertThat(unusedLicenseWriter.toString(), not(containsString("junit:junit:4.12")));
+    }
+
+    private boolean runReportGenerator(String licenseMappingPath, StringWriter csvOutput, StringWriter noticeOutput, StringWriter unusedLicenseWriter) throws IOException {
        return runReportGenerator(
                licenseMappingPath,
                new InputStream[]{
@@ -99,12 +117,14 @@ public class ReportGeneratorTest {
                         Main.getResourceAsStream("/javaLicenses2.csv"),
                 },
                csvOutput,
-               noticeOutput
+               noticeOutput,
+               unusedLicenseWriter
        ) ;
     }
 
-    private boolean runReportGenerator(String licenseMappingPath, InputStream[] javaLicenses, StringWriter csvOutput, StringWriter noticeOutput)
-            throws IOException {
+    private boolean runReportGenerator(
+            String licenseMappingPath, InputStream[] javaLicenses, StringWriter csvOutput,
+            StringWriter noticeOutput, StringWriter unusedLicenseWriter) throws IOException {
         rg = new ReportGenerator();
         return rg.generateReport(
                 Main.getResourceAsStream(licenseMappingPath),
@@ -112,7 +132,8 @@ public class ReportGeneratorTest {
                 Main.getResourceAsStream("/rubyDependencies.csv"),
                 javaLicenses,
                 csvOutput,
-                noticeOutput
+                noticeOutput,
+                unusedLicenseWriter
         );
     }
 
