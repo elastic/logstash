@@ -34,6 +34,7 @@ dependency,dependencyUrl,licenseOverride
 "com.google.guava:guava:22.0",https://github.com/google/guava,Apache-2.0
 "com.google.j2objc:j2objc-annotations:1.1",https://github.com/google/j2objc/,Apache-2.0
 "commons-codec:commons-codec:1.10.0",http://commons.apache.org/proper/commons-codec/,Apache-2.0
+"commons-codec:commons-codec:1.11",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-logging:commons-logging:1.2.0",http://commons.apache.org/proper/commons-logging/,Apache-2.0
 "concurrent-ruby:1.0.5",http://www.concurrent-ruby.com,MIT
 "controls.js:",https://github.com/controlsjs/controls.js,GPL-3.0-only
