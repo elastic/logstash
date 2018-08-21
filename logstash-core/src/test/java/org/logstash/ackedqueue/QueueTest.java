@@ -397,8 +397,7 @@ public class QueueTest {
         }
     }
 
-    @Ignore("This test timed out on Linux. Issue: https://github.com/elastic/logstash/issues/9910")
-    @Test(timeout = 50_000)
+    @Test(timeout = 300_000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = computeCapacityForMmapPageIO(element);
@@ -687,8 +686,7 @@ public class QueueTest {
         }
     }
 
-    @Ignore("This test frequently times out on Windows and Linux. Issue: https://github.com/elastic/logstash/issues/9878")
-    @Test(timeout = 50_000)
+    @Test(timeout = 300_000)
     public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
 
         final int WRITER_COUNT = 5;
