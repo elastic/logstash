@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-11,Logstash 5.6.11>>
 * <<logstash-5-6-10,Logstash 5.6.10>>
 * <<logstash-5-6-9,Logstash 5.6.9>>
 * <<logstash-5-6-8,Logstash 5.6.8>>
@@ -14,6 +15,11 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-11]]
+=== Logstash 5.6.11 Release Notes
+* Fix ArrayIndexOutOfBoundsException from empty string field reference
+* Check free space for PQ on specified path rather than root folder
 
 [[logstash-5-6-10]]
 === Logstash 5.6.10 Release Notes
