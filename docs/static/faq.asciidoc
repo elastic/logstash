@@ -1,0 +1,64 @@
+[[faq]] 
+== Frequently Asked Questions (FAQ)
+
+This is a new section. We will be adding more questions and answers, so check back soon.
+
+Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+forum].
+
+[float]
+[[faq-kafka]]
+=== Kafka
+
+This section is just a quick summary the most common  Kafka questions I answered on Github and Slack over the last few months:
+
+[float]
+[[faq-kafka-settings]]
+===== Kafka settings
+
+[float]
+[[faq-kafka-partitions]]
+===== How many partitions should be used per topic?
+
+At least: Number of LS nodes x consumer threads per node.
+
+Better yet: Use a multiple of the above number. Increasing the number of
+partitions for an existing topic is extremely complicated. Partitions have a
+very low overhead. Using 5 to 10 times the number of partitions suggested by the
+first point is generally fine so long as the overall partition count does not
+exceed 2k (err on the side of over-partitioning 10x when for less than 1k
+partitions overall, over-partition less liberally if it makes you exceed 1k
+partitions).
+
+[float]
+[[faq-kafka-threads]]
+===== How many consumer threads should I configure?
+
+Lower values tend to be more efficient and have less memory overhead. Try a
+value of `1` then iterate your way up. The value should in general be lower than
+the number of pipeline workers. Values larger than 4 rarely result in a
+performance improvement.
+
+
+[float]
+[[faq-kafka-pq-persist]]
+==== Kafka input and persistent queue (PQ)
+[float]
+===== Does Kafka Input commit offsets only after the event has been safely persisted to the PQ?
+
+No, we can’t make the guarantee. Offsets are committed to Kafka periodically. If
+writes to the PQ are slow/blocked, offsets for events that haven’t yet safely
+reached the PQ can be committed.
+
+
+[float]
+[[faq-kafka-offset-commit]]
+===== Does Kafa Input commit offsets only for events that have passed the pipeline fully?
+No, we can’t make the guarantee. Offsets are committed to Kafka periodically. If
+writes to the PQ are slow/blocked offsets for events that haven’t yet safely
+reached the PQ can be committed. 
+
+
+
+
+
