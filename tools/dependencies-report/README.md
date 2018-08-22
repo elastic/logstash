@@ -14,3 +14,7 @@ The dependency audit tool enumerates all the dependencies, Ruby and Java, direct
 for Logstash core and the default plugins. If any dependencies are found that do not conform to
 the criteria above, the name of the dependency(ies) along with instructions for resolving are 
 printed to the console and the tool exits with a non-zero return code.
+
+The dependency audit tool should be run using the script in the `bin` folder:
+
+`$LS_HOME/bin/dependencies-report --csv report.csv`
