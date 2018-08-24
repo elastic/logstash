@@ -1,7 +1,7 @@
 [[troubleshooting]] 
 == Troubleshooting Common Problems
 
-This is a new section. We will be adding more tips and solutions, so check back soon.
+We will be adding more tips and solutions, so please check back soon.
 
 Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
 forum].
@@ -17,13 +17,14 @@ forum].
 === Inaccessible temp directory
 
 Certain versions of the JRuby runtime and libraries
-in certain plugins (e.g., the Netty network library in the TCP input) copy
-executable files to the temp directory which causes subsequent failures when
-/tmp is mounted noexec. 
+in certain plugins (the Netty network library in the TCP input, for example) copy
+executable files to the temp directory. This situation causes subsequent failures when
+`/tmp` is mounted `noexec`. 
 
-Possible solutions:
-. Change setting to mount /tmp with exec.
-. Specify an alternate directory using the `-Djava.io.tmpdir` setting in the jvm.options file.
+*Possible solutions*
+
+* Change setting to mount `/tmp` with `exec`.
+* Specify an alternate directory using the `-Djava.io.tmpdir` setting in the `jvm.options` file.
  
 
 [float] 
@@ -34,15 +35,15 @@ Possible solutions:
 [[ts-429]] 
 === Error response code 429
 
-A 429 message indicates that an application is busy handling other requests. For
-example, Elasticsearch throws a 429 code to notify Logstash (or other indexers)
-that the bulk failed because the ingest queue is full.  Any documents that
+A `429` message indicates that an application is busy handling other requests. For
+example, Elasticsearch throws a `429` code to notify Logstash (or other indexers)
+that the bulk failed because the ingest queue is full. Any documents that
 weren't processed should be retried.
 
 TBD:  Does Logstash retry? Should the user take any action?
 
 *Sample error*
-[source,txt]
+
 -----
 [2018-08-21T20:05:36,111][INFO ][logstash.outputs.elasticsearch] retrying
 failed action with response code: 429
@@ -55,113 +56,150 @@ pool size = 16, active threads = 16, queued tasks = 200, completed tasks =
 -----
 
 
+
+
+
+
+[float] 
+[[ts-performance]] 
+== General performance tuning
+
+For general performance tuning tips and guidelines, see <<performance-tuning>>.
+
+
+
+
+
+
+
 [float] 
 [[ts-kafka]] 
 == Common Kafka support issues and solutions
 
-This section contains a list of the most common Kafka related support issues of
+This section contains a list of common Kafka issues from
 the last few months.  
 
 [float] 
 [[ts-kafka-timeout]] 
 === Kafka session timeout issues (input side)
 
-This is a very common problem. 
+This is a common problem. 
 
-Symptoms: Throughput issues and duplicate event
-processing LS logs warnings:
+*Symptoms* 
 
-`[2017-10-18T03:37:59,302][WARN][org.apache.kafka.clients.consumer.internals.ConsumerCoordinator]
+Throughput issues and duplicate event processing {ls} logs warnings:
+
+-----
+[2017-10-18T03:37:59,302][WARN][org.apache.kafka.clients.consumer.internals.ConsumerCoordinator]
 Auto offset commit failed for group clap_tx1: Commit cannot be completed since
-the group has already rebalanced and assigned the partitions to another member.`
+the group has already rebalanced and assigned the partitions to another member.
+-----
 
-This means that the time between subsequent calls to poll() was longer than the
-configured session.timeout.ms, which typically implies that the poll loop is
-spending too much time message processing. You can address this either by
+The time between subsequent calls to `poll()` was longer than the
+configured `session.timeout.ms`, which typically implies that the poll loop is
+spending too much time processing messages. You can address this by
 increasing the session timeout or by reducing the maximum size of batches
-returned in poll() with max.poll.records. 
+returned in `poll()` with `max.poll.records`. 
 
+-----
 [INFO][org.apache.kafka.clients.consumer.internals.ConsumerCoordinator] Revoking
 previously assigned partitions [] for group log-ronline-node09
 `[2018-01-29T14:54:06,485][INFO]`[org.apache.kafka.clients.consumer.internals.ConsumerCoordinator]
 Setting newly assigned partitions [elk-pmbr-9] for group log-pmbr 
+-----
 
-Example: https://github.com/elastic/support-dev-help/issues/3319
+*Background*
 
-Background:
+Kafka tracks the individual consumers in a consumer group (for example, a number
+of {ls} instances) and tries to give each consumer one or more specific
+partitions of data in the topic they’re consuming. In order to achieve this,
+Kafka tracks whether or not a consumer ({ls} Kafka input thread) is making
+progress on their assigned partition, and reassigns partitions that have not
+made progress in a set timeframe. 
 
-Kafka tracks the individual consumers in a consumer group (i.e. a number of LS
-instances) and tries to give each consumer one or more specific partitions of
-the data in the topic they’re consuming.  In order to achieve this, Kafka has to
-also track whether or not a consumer (LS Kafka input thread) is making any
-progress on their assigned partition and reassign partitions that have not seen
-progress in a set timeframe. This causes a problem when Logstash is requesting
-more events from the Kafka Broker than it can process within the timeout because
-it triggers reassignment of partitions. Reassignment of partitions can cause
-duplicate processing of events and significant throughput problems because of
-the time the reassignment takes. Solution:
+When {ls} requests more events from the Kafka Broker than it can process within
+the timeout, it triggers reassignment of partitions. Reassignment of partitions
+takes time, and can cause duplicate processing of events and significant
+throughput problems. 
 
-Solution:
-Fixing the problem is easy by reducing the number of records per request that LS
-polls from the Kafka Broker in on request, reducing the number of Kafka input
-threads and/or increasing the relevant timeouts in the Kafka Consumer
-configuration.
+*Possible solutions*
 
-The number of records to pull in one request is set by the option
-`max_poll_records`.  If it exceeds the default value of 500, reducing this
-should be the first thing to try. The number of input threads is given by the
-option `consumer_threads`.  If it exceeds the number of pipeline workers
-configured in the `logstash.yml` it should certainly be reduced.  If it is a
-large value (> 4), it likely makes sense to reduce it to 4 (if the client has
-the time/resources for it, it would be ideal to start with a value of 1 and then
-increment from there to find the optimal performance). The relevant timeout is
-set via `session_timeout_ms`. It should be set to a value that ensures that the
-number of events in `max_poll_records` can be safely processed within. Example:
-pipeline throughput is 10k/s and `max_poll_records` is set to 1k => the value
+* Reduce the number of records per request that {ls} polls from the Kafka Broker in one request,
+* Reduce the number of Kafka input threads, and/or 
+* Increase the relevant timeouts in the Kafka Consumer configuration.
+
+*Details*
+
+The `max_poll_records` option sets the number of records to be pulled in one request.
+If it exceeds the default value of 500, try reducing it. 
+
+The `consumer_threads` option sets the number of input threads. If the value exceeds
+the number of pipeline workers configured in the `logstash.yml` file, it should
+certainly be reduced.  
+If the value is greater than 4, try reducing it to `4` or less if the client has
+the time/resources for it. Try starting with a value of `1`, and then
+incrementing from there to find the optimal performance. 
+
+The `session_timeout_ms` option sets the relevant timeout. Set it to a value
+that ensures that the number of events in `max_poll_records` can be safely
+processed within the time limit. 
+
+-----
+EXAMPLE
+Pipeline throughput is `10k/s` and `max_poll_records` is set to 1k =>. The value
 must be at least 100ms if `consumer_threads` is set to `1`. If it is set to a
-higher value n, then the minimum session timeout increases proportionally to `n *
-100ms`. In practice the value must be set much larger than the theoretical value
-because the behaviour of the outputs and filters in a pipeline follows a
-distribution. It should also be larger than the maximum time you expect your
-outputs to stall for. The default setting is 10s == `10000ms`. If a user is
-experiencing periodic problems with an output like Elasticsearch output that
-could stall because of load or similar effects, there is little downside to
-increasing this value significantly to say 60s. Note: Decreasing the
-`max_poll_records` is preferable to increasing this timeout from the performance
-perspective. Increasing this timeout is your only option if the client’s issues
-are caused by periodically stalling outputs. Check logs for evidence of stalling
-outputs (e.g. ES output logging status `429`).
+higher value `n`, then the minimum session timeout increases proportionally to
+`n * 100ms`.
+-----
+
+In practice the value must be set much higher than the theoretical value because
+the behavior of the outputs and filters in a pipeline follows a distribution.
+The value should also be higher than the maximum time you expect your outputs to
+stall. The default setting is `10s == 10000ms`. If you are experiencing
+periodic problems with an output that can stall because of load or similar
+effects (such as the Elasticsearch output), there is little downside to
+increasing this value significantly to say `60s`. 
+
+From a performance perspective, decreasing the `max_poll_records` value is preferable
+to increasing the timeout value. Increasing the timeout is your only option if the
+client’s issues are caused by periodically stalling outputs. Check logs for
+evidence of stalling outputs, such as `ES output logging status 429`.
 
 [float] 
 [[ts-kafka-many-offset-commits]] 
 === Large number of offset commits (input side)
 
-Symptoms: Logstash’s Kafka Input is causing a much higher number of commits to
+*Symptoms*
+
+Logstash’s Kafka Input is causing a much higher number of commits to
 the offset topic than expected. Often the complaint also mentions redundant
 offset commits where the same offset is committed repeatedly.
 
-Examples: https://github.com/elastic/support-dev-help/issues/3702
-https://github.com/elastic/support-dev-help/issues/3060 Solution:
+*Solution*
 
 For Kafka Broker versions 0.10.2.1 to 1.0.x: The problem is caused by a bug in
 Kafka. https://issues.apache.org/jira/browse/KAFKA-6362 The client’s best option
-is upgrading their Kafka Brokers to version 1.1 or newer. For older versions of
+is upgrading their Kafka Brokers to version 1.1 or newer. 
+
+For older versions of
 Kafka or if the above does not fully resolve the issue: The problem can also be
-caused by setting too low of a value for `poll_timeout_ms` relative to the rate
+caused by setting the value for `poll_timeout_ms` too low relative to the rate
 at which the Kafka Brokers receive events themselves (or if Brokers periodically
 idle between receiving bursts of events). Increasing the value set for
-`poll_timeout_ms` will proportionally decrease the number of offsets commits in
-this scenario (i.e. raising it by 10x will lead to 10x fewer offset commits).
+`poll_timeout_ms` proportionally decreases the number of offsets commits in
+this scenario. For example, raising it by 10x will lead to 10x fewer offset commits.
 
 
 [float] 
 [[ts-kafka-codec-errors-input]] 
 === Codec Errors in Kafka Input (before Plugin Version 6.3.4 only) 
 
-Symptoms:
+*Symptoms*
+
 Logstash Kafka input randomly logs errors from the configured codec and/or reads
 events incorrectly (partial reads, mixing data between multiple events etc.).
 
+-----
 Log example:  [2018-02-05T13:51:25,773][FATAL][logstash.runner          ] An
 unexpected error occurred! {:error=>#<TypeError: can't convert nil into String>,
 :backtrace=>["org/jruby/RubyArray.java:1892:in `join'",
@@ -175,16 +213,57 @@ unexpected error occurred! {:error=>#<TypeError: can't convert nil into String>,
 `each'",
 "/usr/share/logstash/vendor/bundle/jruby/1.9/gems/logstash-input-kafka-5.1.11/lib/logstash/inputs/kafka.rb:240:in
 `thread_runner'"]} 
+-----
 
-Examples: https://github.com/elastic/support-dev-help/issues/3308
-https://github.com/elastic/support-dev-help/issues/2107 Background:
+*Background*
 
 There was a bug in the way the Kafka Input plugin was handling codec instances
 when running on multiple threads (`consumer_threads` set to > 1).
-https://github.com/logstash-plugins/logstash-input-kafka/issues/210 Solution:
+https://github.com/logstash-plugins/logstash-input-kafka/issues/210 
 
-Ideally: Upgrade Kafka Input plugin to v. 6.3.4 or later. If (and only if)
-upgrading is impossible: Set `consumer_threads` to `1`.
+*Solution*
+
+* Upgrade Kafka Input plugin to v. 6.3.4 or later. 
+* If (and only if) upgrading is impossible, set `consumer_threads` to `1`.
+
+
+[float] 
+[[ts-other]] 
+== Other issues
+
+[float] 
+[[ts-cli]] 
+=== Command line
+
+[float] 
+[[ts-windows-cli]] 
+==== Shell commands on Windows OS
+
+Command line often show single quotes. 
+On Windows systems, replace a single quote `'' with a double quote `"`. 
+
+*Example*
+
+Instead of:
+
+-----
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
+-----
+
+Use this format on Windows systems:
+
+-----
+bin/logstash -e "input { stdin { } } output { stdout {} }"
+-----
+
+
+
+
+
+
+
+
+
 
 
 
