@@ -53,15 +53,14 @@ public final class FilterDelegatorExt extends RubyObject {
         this.filter = filter;
         filterClass = filter.getSingletonClass().getRealClass();
         filterMethod = filterClass.searchMethod(FILTER_METHOD_NAME);
-        final AbstractNamespacedMetricExt namespacedMetric =
-            (AbstractNamespacedMetricExt) filter.callMethod(context, "metric");
-        metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
-        eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
-        eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
-        eventMetricTime = LongCounter.fromRubyBase(
-            metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY
-        );
-        namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
+        final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) filter.callMethod(context, "metric");
+        synchronized(namespacedMetric.getMetric()) {
+            metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
+            eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
+            eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
+            eventMetricTime = LongCounter.fromRubyBase(metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY);
+            namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
+        }
         flushes = filter.respondsTo("flush");
         return this;
     }
