@@ -36,13 +36,24 @@ module LogStash module Modules class LogStashConfig
     "'#{array.join(',')}'"
   end
 
+  ##
+  # Sets the value on the provided `Setting` from the key/value hash that was supplied to this `LogStashConfig` on
+  # instantiation, returning the resulting effective value; if a block is given and the effective value is non-nil,
+  # the value will be yielded to the block and the result of the block will be returned instead.
   def get_setting(setting_class)
     raw_value = @settings[setting_class.name]
     # If we dont check for NIL, the Settings class will try to coerce the value
     # and most of the it will fails when a NIL value is explicitly set.
     # This will be fixed once we wrap the plugins settings into a Settings class
     setting_class.set(raw_value) unless raw_value.nil?
-    setting_class.value
+
+    value = setting_class.value
+
+    if block_given? && !value.nil?
+      yield(value)
+    else
+      value
+    end
   end
 
   def setting(name, default)

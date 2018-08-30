@@ -11,25 +11,57 @@ alias_settings_keys!(
         "var.input.kafka" => "var.input.eventbroker",
         "var.input.tcp"   => "var.input.smartconnector"
     })
+
+# Settings constructor helper procs; commonly-used Settings instances without so much verbosity
+splittable_string_array = -> (name, default=nil) { LogStash::Setting::SplittableStringArray.new(name, String, default) }
+string = ->(name) { LogStash::Setting::String.new(name) }
+existing_file_path = ->(name) { LogStash::Setting::ExistingFilePath.new(name) }
+optional_enum = -> (name, enum_array) { LogStash::Setting::NullableString.new(name, nil, true, enum_array) }
+boolean = -> (name) { LogStash::Setting::Boolean.new(name, nil, false) }
+port = -> (name) { LogStash::Setting::Port.new(name) }
 %>
 
 input {
   <% if defined_inputs.include?("kafka") %>
   kafka {
+    id => "arcsight-module-input-kafka"
     codec => cef
-    bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", String, "localhost:39092"))) %>
-    topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", String, ["eb-cef"]))) %>
     type => syslog
-  }
+    <%= get_setting(splittable_string_array['var.input.kafka.bootstrap_servers',
+                                            'localhost:39092'                           ]) { |value| %Q(bootstrap_servers => #{csv_string(value)}) } %>
+    <%= get_setting(splittable_string_array['var.input.kafka.topics', ['eb-cef']        ]) { |value| %Q(topics => #{array_to_string(value)})       } %>
+    <%= get_setting(                 string['var.input.kafka.group_id'                  ]) { |value| %Q(group_id => "#{value}")                    } %>
+    <%= get_setting(          optional_enum['var.input.kafka.security_protocol',
+                                            %w(PLAINTEXT SSL SASL_PLAINTEXT SASL_SSL)   ]) { |value| %Q(security_protocol => "#{value}")           } %>
+    <%= get_setting(                 string['var.input.kafka.ssl_key_password'          ]) { |value| %Q(ssl_key_password => "#{value}")            } %>
+    <%= get_setting(     existing_file_path['var.input.kafka.ssl_keystore_location'     ]) { |value| %Q(ssl_keystore_location => "#{value}")       } %>
+    <%= get_setting(                 string['var.input.kafka.ssl_keystore_password'     ]) { |value| %Q(ssl_keystore_password => "#{value}")       } %>
+    <%= get_setting(                 string['var.input.kafka.ssl_keystore_type'         ]) { |value| %Q(ssl_keystore_type => "#{value}")           } %>
+    <%= get_setting(     existing_file_path['var.input.kafka.ssl_truststore_location'   ]) { |value| %Q(ssl_truststore_location => "#{value}")     } %>
+    <%= get_setting(                 string['var.input.kafka.ssl_truststore_password'   ]) { |value| %Q(ssl_truststore_password => "#{value}")     } %>
+    <%= get_setting(                 string['var.input.kafka.sasl_mechanism'            ]) { |value| %Q(sasl_mechanism => "#{value}")              } %>
+    <%= get_setting(                 string['var.input.kafka.sasl_kerberos_service_name']) { |value| %Q(sasl_kerberos_service_name => "#{value}")  } %>
+    <%= get_setting(     existing_file_path['var.input.kafka.kerberos_config'           ]) { |value| %Q(ssl_truststore_password => "#{value}")     } %>
+    <%= get_setting(     existing_file_path['var.input.kafka.jaas_path'                 ]) { |value| %Q(jaas_path => "#{value}")                   } %>
+    }
   <% end %>
 
   <% if defined_inputs.include?("tcp") %>
   tcp {
+    id => "arcsight-module-input-tcp"
     # The delimiter config used is for TCP interpretation
     codec => cef { delimiter => "\r\n" }
-    port => <%= setting("var.input.tcp.port", 5000) %>
     type => syslog
-  }
+
+    <%= get_setting(                 string['var.input.tcp.host'                 ]) { |value| %Q(host => "#{value}")                                 } %>
+    <%= get_setting(                   port['var.input.tcp.port', 5000           ]) { |value| %Q(port => "#{value}")                                 } %>
+    <%= get_setting(                boolean['var.input.tcp.ssl_enable'           ]) { |value| %Q(ssl_enable => "#{value}")                           } %>
+    <%= get_setting(     existing_file_path['var.input.tcp.ssl_cert'             ]) { |value| %Q(ssl_cert => "#{value}")                             } %>
+    <%= get_setting(     existing_file_path['var.input.tcp.ssl_key'              ]) { |value| %Q(ssl_key => "#{value}")                              } %>
+    <%= get_setting(                 string['var.input.tcp.ssl_key_passphrase'   ]) { |value| %Q(ssl_key_passphrase => "#{value}")                   } %>
+    <%= get_setting(splittable_string_array['var.input.tcp.ssl_extra_chain_certs']) { |value| %Q(ssl_extra_chain_certs => #{array_to_string(value)}) } %>
+    <%= get_setting(                boolean['var.input.tcp.ssl_verify'           ]) { |value| %Q(ssl_verify => "#{value}")                           } %>
+    }
   <% end %>
 }
 
