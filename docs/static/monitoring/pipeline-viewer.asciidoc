@@ -18,7 +18,6 @@ image::static/monitoring/images/pipeline-tree.png[Pipeline Viewer]
 
 Before using the pipeline viewer:
 
-* <<setup-xpack,Set up {xpack}>>.
 * <<monitoring-logstash,Configure Logstash monitoring>>.
 * Start the Logstash pipeline that you want to monitor.
 
@@ -29,14 +28,19 @@ Logstash begins shipping metrics to the monitoring cluster.
 
 To view the pipeline:
 
-* Kibana -> Monitoring -> Pipelines
+* Kibana -> Monitoring -> Logstash -> Pipelines
 
 Each pipeline is identified by a pipeline ID (`main` by default). For each
 pipeline, you see the pipeline's throughput and the number
 of nodes on which the pipeline is running during the selected time range.
 
-Many elements in the tree are clickable. Click to
-drill down for details.
+Many elements in the tree are clickable. 
+For example, you can click the plugin name to expand the detail view.
+
+[role="screenshot"]
+image::static/monitoring/images/pipeline-input-detail.png[Pipeline Input Detail]
+
+Click the arrow beside a branch name to collapse or expand it.  
 
 [float]
 ==== Notes and best practices
