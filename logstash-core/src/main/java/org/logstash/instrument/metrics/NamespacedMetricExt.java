@@ -103,4 +103,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
             name instanceof RubyArray ? name : RubyArray.newArray(context.runtime, name)
         ));
     }
+
+    @Override
+    public AbstractMetricExt getMetric() { return this.metric; }
 }

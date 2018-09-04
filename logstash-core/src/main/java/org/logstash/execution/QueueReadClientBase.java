@@ -52,19 +52,22 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @JRubyMethod(name = "set_events_metric")
     public IRubyObject setEventsMetric(final IRubyObject metric) {
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
-        eventMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
-        eventMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-        eventMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        synchronized(namespacedMetric.getMetric()) {
+            eventMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
+            eventMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
+            eventMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        }
         return this;
     }
 
     @JRubyMethod(name = "set_pipeline_metric")
     public IRubyObject setPipelineMetric(final IRubyObject metric) {
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
-        pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
-        pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-        pipelineMetricTime =
-            LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        synchronized(namespacedMetric.getMetric()) {
+            pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
+            pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
+            pipelineMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        }
         return this;
     }
 
