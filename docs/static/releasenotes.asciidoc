@@ -20,6 +20,24 @@ This section summarizes the changes in the following releases:
 [[logstash-6-4-0]]
 === Logstash 6.4.0 Release Notes
 
+[IMPORTANT]
+--
+**Attention to users of Kafka Output in Logstash 6.4.0**
+If you are using Kafka output and have upgraded to Logstash 6.4.0 you will see pipeline startup errors that look like:
+
+```
+`Pipeline aborted due to error {:pipeline_id=>"inls_beats_pri1", :exception=>org.apache.kafka.common.config.ConfigException: Invalid value 32768 for configuration receive.buffer.bytes: Expected value to be a 32-bit integer, but it was a java.lang.Long 
+```
+
+This was due to the incorrect configuration of the default value of the receive_buffer_bytes option (fixed in PR https://github.com/logstash-plugins/logstash-output-kafka/pull/205[logstash-output-kafka#205]), coupled with false negative results on our CI due to incorrect exit code handling (fixed in https://github.com/logstash-plugins/logstash-output-kafka/pull/204[logstash-output-kafka#204]). Version 7.1.3 of the kafka output plugin has been released, so you can upgrade by doing:
+
+```
+bin/logstash-plugin update logstash-output-kafka
+```
+
+This version will be included in the next 6.4.1 patch release.
+--
+
 * Adds the Azure Module for integrating Azure activity logs and SQL diagnostic logs with the Elastic Stack.
 * Adds the {logstash-ref}/plugins-inputs-azure_event_hubs.html[azure_event_hubs input plugin] as a default plugin.
 * Adds support for port customization in cloud id ({lsissue}/9877[#9877]).
