@@ -26,7 +26,7 @@ This section summarizes the changes in the following releases:
 
 If you are using Kafka output and have upgraded to Logstash 6.4.0, you will see pipeline startup errors:
 
-    Pipeline aborted due to error {:pipeline_id=>"inls_beats_pri1", :exception=>org.apache.kafka.common.config.ConfigException: Invalid value 32768 for configuration receive.buffer.bytes: Expected value to be a 32-bit integer, but it was a java.lang.Long 
+    Pipeline aborted due to error {:pipeline_id=>"pipeline1", :exception=>org.apache.kafka.common.config.ConfigException: Invalid value 32768 for configuration receive.buffer.bytes: Expected value to be a 32-bit integer, but it was a java.lang.Long 
 
 This error was due to an incorrectly configured default value for the
 `receive_buffer_bytes` option (fixed in PR
