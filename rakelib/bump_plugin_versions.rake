@@ -75,6 +75,4 @@ task :bump_versions, [:version, :allow_for] => [] do |t, args|
   puts "Done"
 
   puts `git diff`
-
-  desc "set version of logstash, logstash-core"
 end
