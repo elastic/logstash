@@ -236,7 +236,7 @@ RubyGem: jls-grok Version: 0.11.5
    limitations under the License.
 
 ==========================================================================
-RubyGem: awesome_print Version: 1.8.0
+RubyGem: awesome_print Version: 1.7.0
 Copyright (c) 2010-2013 Michael Dvorkin
 http://www.dvorkin.net
 %w(mike dvorkin.net) * "@" || "twitter.com/mid"
@@ -302,7 +302,7 @@ RubyGem: elasticsearch Version: 5.0.4
    limitations under the License.
 
 ==========================================================================
-RubyGem: sequel Version: 5.8.0
+RubyGem: sequel Version: 5.12.0
 Copyright (c) 2007-2008 Sharon Rosner
 Copyright (c) 2008-2018 Jeremy Evans
 
