@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.122)
-      aws-sdk-resources (= 2.11.122)
-    aws-sdk-core (2.11.122)
+    aws-sdk (2.11.127)
+      aws-sdk-resources (= 2.11.127)
+    aws-sdk-core (2.11.127)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.122)
-      aws-sdk-core (= 2.11.122)
+    aws-sdk-resources (2.11.127)
+      aws-sdk-core (= 2.11.127)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -187,7 +187,7 @@ GEM
       murmurhash3
     logstash-filter-cidr (3.1.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-clone (3.0.5)
+    logstash-filter-clone (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-csv (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -229,7 +229,7 @@ GEM
       sequel
     logstash-filter-json (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-kv (4.2.0)
+    logstash-filter-kv (4.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-metrics (4.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -290,7 +290,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.1.5)
+    logstash-input-file (4.1.6)
       addressable
       logstash-codec-multiline (~> 3.0)
       logstash-codec-plain
@@ -314,7 +314,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.2.1-java)
+    logstash-input-http (3.2.2-java)
       jar-dependencies (~> 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -330,7 +330,7 @@ GEM
       mail (~> 2.6.3)
       mime-types (= 2.6.2)
       stud (~> 0.0.22)
-    logstash-input-jdbc (4.3.12)
+    logstash-input-jdbc (4.3.13)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
@@ -354,7 +354,7 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 3)
-    logstash-input-s3 (3.4.0)
+    logstash-input-s3 (3.3.7)
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       stud (~> 0.0.18)
@@ -633,7 +633,7 @@ DEPENDENCIES
   logstash-codec-line
   logstash-codec-msgpack
   logstash-codec-multiline
-  logstash-codec-netflow (>= 3.14.1, < 4.0.0)
+  logstash-codec-netflow
   logstash-codec-plain
   logstash-codec-rubydebug
   logstash-core!
@@ -712,7 +712,7 @@ DEPENDENCIES
   logstash-output-pipe
   logstash-output-rabbitmq
   logstash-output-redis
-  logstash-output-s3 (>= 4.0.9, < 5.0.0)
+  logstash-output-s3
   logstash-output-sns
   logstash-output-sqs
   logstash-output-stdout
