@@ -126,14 +126,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
             )
         );
         settings = pipelineSettings.callMethod(context, "settings");
-        try {
-            queue = QueueFactoryExt.create(context, null, settings);
-        } catch (final Exception ex) {
-            LOGGER.error("Logstash failed to create queue.", ex);
-            throw new IllegalStateException(ex);
-        }
-        inputQueueClient = queue.writeClient(context);
-        filterQueueClient = queue.readClient();
         final IRubyObject id = getSetting(context, "pipeline.id");
         if (id.isNil()) {
             pipelineId = id();
@@ -158,6 +150,28 @@ public class AbstractPipelineExt extends RubyBasicObject {
             configString.asJavaString(),
             getSetting(context, "config.support_escapes").isTrue()
         );
+        return this;
+    }
+
+    /**
+     * queue opening needs to happen out of the the initialize method because the
+     * AbstractPipeline is used for pipeline config validation and the queue
+     * should not be opened for this. This should be called only in the actual
+     * Pipeline/JavaPipeline initialisation.
+     * @param context ThreadContext
+     * @return Nil
+     */
+    @JRubyMethod(name = "open_queue")
+    public final IRubyObject openQueue(final ThreadContext context) throws IOException {
+        try {
+            queue = QueueFactoryExt.create(context, null, settings);
+        } catch (final Exception ex) {
+            LOGGER.error("Logstash failed to create queue.", ex);
+            throw new IllegalStateException(ex);
+        }
+        inputQueueClient = queue.writeClient(context);
+        filterQueueClient = queue.readClient();
+
         filterQueueClient.setEventsMetric(metric.namespace(context, EVENTS_METRIC_NAMESPACE));
         filterQueueClient.setPipelineMetric(
             metric.namespace(
@@ -171,7 +185,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 )
             )
         );
-        return this;
+
+        return context.nil;
     }
 
     @JRubyMethod(name = "filter_queue_client")
