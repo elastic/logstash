@@ -2,6 +2,7 @@ package org.logstash;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,9 +32,6 @@ public final class Valuefier {
 
     private static final Valuefier.Converter FLOAT_CONVERTER =
         input -> RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
-
-    private static final Valuefier.Converter LONG_CONVERTER
-        = input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue());
 
     /**
      * Unwraps a {@link JavaProxy} and passes the result to {@link Valuefier#convert(Object)}.
@@ -120,8 +118,7 @@ public final class Valuefier {
         converters.put(
             BigDecimal.class, value -> new RubyBigDecimal(RubyUtil.RUBY, (BigDecimal) value)
         );
-        converters.put(Long.class, LONG_CONVERTER);
-        converters.put(Integer.class, LONG_CONVERTER);
+        converters.put(Number.class, input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue()));
         converters.put(Boolean.class, input -> RubyUtil.RUBY.newBoolean((Boolean) input));
         converters.put(
             Timestamp.class,
@@ -137,6 +134,11 @@ public final class Valuefier {
         converters.put(
             DateTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
                 RubyUtil.RUBY, new Timestamp((DateTime) input)
+            )
+        );
+        converters.put(
+                Date.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                RubyUtil.RUBY, new Timestamp((Date) input)
             )
         );
         converters.put(RubyHash.class, input -> ConvertedMap.newFromRubyHash((RubyHash) input));
