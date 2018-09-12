@@ -88,6 +88,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     super
+    open_queue
 
     @worker_threads = []
 
