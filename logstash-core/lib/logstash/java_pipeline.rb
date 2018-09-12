@@ -21,6 +21,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger, agent
+    open_queue
+
     @worker_threads = []
 
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
