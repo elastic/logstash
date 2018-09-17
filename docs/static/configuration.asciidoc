@@ -213,7 +213,7 @@ Example:
 
 [source,js]
 ----------------------------------
-  my_password => "password"
+  password => "my_password"
 ----------------------------------
 
 [[uri]]
