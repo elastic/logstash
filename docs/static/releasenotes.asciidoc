@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-12,Logstash 5.6.12>>
 * <<logstash-5-6-11,Logstash 5.6.11>>
 * <<logstash-5-6-10,Logstash 5.6.10>>
 * <<logstash-5-6-9,Logstash 5.6.9>>
@@ -15,6 +16,73 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-12]]
+=== Logstash 5.6.12 Release Notes
+
+*Multiline Codec*
+
+* Fixed `no method map_cleanup for nil class` error when shutting down.
+
+*Rubydebug Codec*
+
+* Fixes crash that could occur on startup if `$HOME` was unset or if `${HOME}/.aprc` was unreadable by pinning `awesome_print` dependency to a release before the bug was introduced.
+
+*Clone Filter*
+
+* Added a warning when 'clones' is empty since that results in a no-op.
+
+*Dns Filter*
+
+* Fixed JRuby resolver bug for versions prior to 9.1.16.0
+
+*Mutate Filter*
+
+* Changed documentation to clarify use of `replace` config option
+
+*Ruby Filter*
+
+* Fixed path based scripting not calling `filter_matched`
+
+*Beats Input*
+
+* Fixed handling of batches where the sequence numbers do not start with 1
+
+*Exec Input*
+
+* Fixed issue where certain log entries were incorrectly writing 'jdbc input' instead of 'exec input'
+
+*Jdbc Input*
+
+* Changed documentation to generalize the PATH location
+* Added check to prevent count sql syntax errors when debug logging
+* Fixed crash that occurs when receiving string input that cannot be coerced to UTF-8 (such as BLOB data)
+* Swapped out mysql for postgresql for testing
+
+*S3 Input*
+
+* Added ability to optionally include S3 object properties inside @metadata
+* Fixed error in documentation by removing illegal commas
+
+*Udp Input*
+
+* Fixed input workers exception handling and shutdown handling
+
+*File Output*
+
+* Fixed a bug introduced in v4.2.4 where events on low-volume pipelines could remain unflushed for long periods when `flush_interval` was non-zero
+* Fixed a bug where flush interval was being called for each event when enabled
+
+*Graphite Output*
+
+* Fixed exception handling during socket writing to prevent logstash termination
+
+*S3 Output*
+
+* Fixed bucket validation failures when bucket policy requires encryption
+* Internal: Revert rake pinning to fix upstream builds
+* Docs: Fix incorrect characterization of parameters as `required` in example configuration.
+* Internal: Pin rake version for jruby-1.7 compatibility
 
 [[logstash-5-6-11]]
 === Logstash 5.6.11 Release Notes
