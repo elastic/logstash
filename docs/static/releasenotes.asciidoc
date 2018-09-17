@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-4-0,Logstash 6.4.1>>
 * <<logstash-6-4-0,Logstash 6.4.0>>
 * <<logstash-6-3-2,Logstash 6.3.2>>
 * <<logstash-6-3-1,Logstash 6.3.1>>
@@ -16,6 +17,36 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-4-1]]
+=== Logstash 6.4.1 Release Notes
+
+* Support ssl verification mode in monitoring and management ({lsissue}/9866[#9866]).
+* Extract kibana and elasticsearch client ssl config ({lsissue}/9945[#9945]).
+* Avoid race condition when initializing events and pipelines metrics ({lsissue}/9958[#9958]).
+* Quotes around pipeline names with dashes ({lsissue}/9903[#9903]).
+* Make worker thread names visbile to OS ({lsissue}/9973[#9973]).
+* Update logstash.bat to enable CLASSPATH with spaces ({lsissue}/9966[#9966]).
+* Pipeline reloading breaks with PQ enabled ({lsissue}/9986[#9986]).
+
+[float]
+==== Plugins
+
+*File Input*
+
+* Fixed Errno::ENOENT exception in Discoverer. https://github.com/logstash-plugins/logstash-input-file/issues/204[#204]
+
+*JDBC Input*
+
+* Changed documentation to generalize the PATH location https://github.com/logstash-plugins/logstash-input-jdbc/pull/297[#297]
+
+*Clone Filter*
+
+* Added a warning when 'clones' is empty since that results in a no-op https://github.com/logstash-plugins/logstash-filter-clone/issues/14[#14]
+
+*KV Filter*
+
+* Fixes performance regression introduced in 4.1.0 https://github.com/logstash-plugins/logstash-filter-kv/issues/70[#70]
 
 [[logstash-6-4-0]]
 === Logstash 6.4.0 Release Notes
