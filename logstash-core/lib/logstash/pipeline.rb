@@ -12,6 +12,8 @@ require "logstash/instrument/collector"
 require "logstash/filter_delegator"
 require "logstash/compiler"
 
+java_import org.apache.logging.log4j.ThreadContext
+
 module LogStash; class BasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
@@ -171,8 +173,9 @@ module LogStash; class Pipeline < BasePipeline
     @finished_run.make_false
 
     @thread = Thread.new do
+      LogStash::Util.set_thread_name("[#{pipeline_id}]-manager")
+      ThreadContext.put("pipeline.id", pipeline_id)
       begin
-        LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
         run
         @finished_run.make_true
       rescue => e
@@ -212,7 +215,6 @@ module LogStash; class Pipeline < BasePipeline
   def run
     @started_at = Time.now
     @thread = Thread.current
-    Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
 
     start_workers
 
@@ -300,7 +302,8 @@ module LogStash; class Pipeline < BasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
-          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          LogStash::Util::set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
           _pipeline.worker_loop(_b_size, _b_delay)
         end
         @worker_threads << thread
@@ -338,6 +341,8 @@ module LogStash; class Pipeline < BasePipeline
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       if batch.filteredSize > 0
+
+        java_import org.apache.logging.log4j.ThreadContext
         output_batch(batch, output_events_map)
         filter_queue_client.close_batch(batch)
       end
@@ -430,6 +435,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
@@ -535,6 +541,8 @@ module LogStash; class Pipeline < BasePipeline
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
 
     @flusher_thread = Thread.new do
+      LogStash::Util.set_thread_name("[#{pipeline_id}]-flusher-thread")
+      ThreadContext.put("pipeline.id", pipeline_id)
       while Stud.stoppable_sleep(5, 0.1) { stopped? }
         flush
         break if stopped?
