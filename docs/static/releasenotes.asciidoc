@@ -26,7 +26,7 @@ This section summarizes the changes in the following releases:
 
 *Rubydebug Codec*
 
-* Fixes crash that could occur on startup if `$HOME` was unset or if `${HOME}/.aprc` was unreadable by pinning `awesome_print` dependency to a release before the bug was introduced.
+* Fixed crash that could occur on startup if `$HOME` was unset or if `${HOME}/.aprc` was unreadable by pinning `awesome_print` dependency to a release before the bug was introduced.
 
 *Clone Filter*
 
