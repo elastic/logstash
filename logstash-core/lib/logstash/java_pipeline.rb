@@ -219,7 +219,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
               lir_execution, filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
         end
-        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+        thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
       end
 
