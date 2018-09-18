@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-4-1,Logstash 6.4.1>>
 * <<logstash-6-4-0,Logstash 6.4.0>>
 * <<logstash-6-3-2,Logstash 6.3.2>>
 * <<logstash-6-3-1,Logstash 6.3.1>>
@@ -16,6 +17,74 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-4-1]]
+=== Logstash 6.4.1 Release Notes
+
+* Support ssl verification mode in monitoring and management ({lsissue}/9866[#9866]).
+* Extract kibana and elasticsearch client ssl config ({lsissue}/9945[#9945]).
+* Avoid race condition when initializing events and pipelines metrics ({lsissue}/9958[#9958]).
+* Make worker thread names visible to OS ({lsissue}/9973[#9973]).
+* Update logstash.bat to enable CLASSPATH with spaces ({lsissue}/9966[#9966]).
+* Pipeline reloading breaks with PQ enabled ({lsissue}/9986[#9986]).
+
+[float]
+==== Plugins
+
+*CEF Codec*
+
+* Fix bug in parsing extension values where a legal unescaped space in a field's value could be interpreted as a field separator https://github.com/logstash-plugins/logstash-codec-cef/issues/54[#54]
+* Fix bug in parsing headers where certain legal escape sequences could cause non-escaped pipe characters to be ignored https://github.com/logstash-plugins/logstash-codec-cef/pull/55[#55]
+* Add explicit handling for extension key names that use array-like syntax that isn't legal with the strict-mode field-reference parser (e.g., `fieldname[0]` becomes `[fieldname][0]`) https://github.com/logstash-plugins/logstash-codec-cef/pull/55[#55]
+
+*File Input*
+
+* Fixed Errno::ENOENT exception in Discoverer. https://github.com/logstash-plugins/logstash-input-file/issues/204[#204]
+
+*JDBC Input*
+
+* Added check to prevent count sql syntax errors when debug logging https://github.com/logstash-plugins/logstash-input-jdbc/pull/294[#294]
+* Changed documentation to generalize the PATH location https://github.com/logstash-plugins/logstash-input-jdbc/pull/297[#297]
+
+*Azure Event Hubs Input*
+
+* Added guidelines for setting number of threads https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/17[#17]
+
+*HTTP Input*
+
+* Fix expensive SslContext creation per connection https://github.com/logstash-plugins/logstash-input-http/pull/93[#93]
+
+*UDP Input*
+
+* Fixed input workers exception handling and shutdown handling https://github.com/logstash-plugins/logstash-input-udp/pull/44[#44]
+
+*Ruby Filter*
+
+* Fixed path based scripting not calling filter\_matched https://github.com/logstash-plugins/logstash-filter-ruby/issues/45[#45]
+
+*Mutate Filter*
+
+* Changed documentation to clarify use of `replace` config option https://github.com/logstash-plugins/logstash-filter-mutate/pull/125[#125]
+
+*Clone Filter*
+
+* Added a warning when 'clones' is empty since that results in a no-op https://github.com/logstash-plugins/logstash-filter-clone/issues/14[#14]
+
+*KV Filter*
+
+* Fixes performance regression introduced in 4.1.0 https://github.com/logstash-plugins/logstash-filter-kv/issues/70[#70]
+
+*Elasticsearch Output*
+
+* Add text offering Elasticsearch Service hosted es https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/792[#792]
+
+*Kafka Output*
+
+* Fixed handling of receive buffer bytes setting https://github.com/logstash-plugins/logstash-output-kafka/pull/204[#204]
+
+*S3 Output*
+
+* Fixed bucket validation failures when bucket policy requires encryption https://github.com/logstash-plugins/logstash-output-s3/pull/191[#191]
 
 [[logstash-6-4-0]]
 === Logstash 6.4.0 Release Notes
