@@ -182,6 +182,19 @@ filter {
         }
 
         # Populate bytes transferred in the flow.
+
+        if [netflow][fwd_flow_delta_bytes] {
+            mutate {
+                id => "netflow-v9-normalize-bytes-from-fwd_flow_bytes"
+                rename => { "[netflow][fwd_flow_delta_bytes]" => "[netflow][bytes]" }
+            }
+        }
+        if [netflow][rev_flow_delta_bytes] {
+            mutate {
+                id => "netflow-v9-normalize-bytes-from-rev_flow-bytes"
+                rename => { "[netflow][rev_flow_delta_bytes]" => "[netflow][bytes]" }
+            }
+        }
         if [netflow][in_bytes] {
             mutate {
                 id => "netflow-v9-normalize-bytes-from-in_bytes"
@@ -206,6 +219,18 @@ filter {
         }
         
         # Populate packets transferred in the flow.
+        if [netflow][initiatorPackets] {
+            mutate {
+                id => "netflow-v9-normalize-packets-from-initiatorpackets"
+                rename => { "[netflow][initiatorPackets]" => "[netflow][packets]" }
+            }
+        }
+        if [netflow][responderPackets] {
+            mutate {
+                id => "netflow-v9-normalize-packets-from-responderPackets"
+                rename => { "[netflow][responderPackets]" => "[netflow][packets]" }
+            }
+        }
         if [netflow][in_pkts] {
             mutate {
                 id => "netflow-v9-normalize-packets-from-in_pkts"
