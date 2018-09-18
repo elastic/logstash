@@ -33,6 +33,9 @@ public final class Valuefier {
     private static final Valuefier.Converter FLOAT_CONVERTER =
         input -> RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
 
+    private static final Valuefier.Converter LONG_CONVERTER
+        = input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue());
+
     /**
      * Unwraps a {@link JavaProxy} and passes the result to {@link Valuefier#convert(Object)}.
      * Handles {code IRubyObject[]} as a special case, since we do only receive this type wrapped
@@ -118,7 +121,10 @@ public final class Valuefier {
         converters.put(
             BigDecimal.class, value -> new RubyBigDecimal(RubyUtil.RUBY, (BigDecimal) value)
         );
-        converters.put(Number.class, input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue()));
+        converters.put(Long.class, LONG_CONVERTER);
+        converters.put(Integer.class, LONG_CONVERTER);
+        converters.put(Short.class, LONG_CONVERTER);
+        converters.put(Byte.class, LONG_CONVERTER);
         converters.put(Boolean.class, input -> RubyUtil.RUBY.newBoolean((Boolean) input));
         converters.put(
             Timestamp.class,
