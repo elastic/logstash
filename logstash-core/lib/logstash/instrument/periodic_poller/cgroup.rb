@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "pathname"
 
 # Logic from elasticsearch/core/src/main/java/org/elasticsearch/monitor/os/OsProbe.java
 # Move to ruby to remove any existing dependency
@@ -22,12 +21,6 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
-    class NullOverride
-      def override(other)
-        other
-      end
-    end
-
     ## `/proc/self/cgroup` contents look like this
     # 5:cpu,cpuacct:/
     # 4:cpuset:/
@@ -40,67 +33,64 @@ module LogStash module Instrument module PeriodicPoller
     # `/sys/fs/cgroup/cpu` -> `/sys/fs/cgroup/cpu,cpuacct
     # `/sys/fs/cgroup/cpuacct` -> `/sys/fs/cgroup/cpu,cpuacct
 
-    class CGroupResources
-      attr_reader :cgroup_file, :cpu_dir, :cpuacct_dir
-      attr_reader :cpu_path_override, :cpuacct_path_override
-      attr_reader :controller_cpuacct, :controller_cpu
+    CGROUP_FILE = "/proc/self/cgroup"
+    CPUACCT_DIR = "/sys/fs/cgroup/cpuacct"
+    CPU_DIR = "/sys/fs/cgroup/cpu"
+    CRITICAL_PATHS = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
 
+    CONTROLLER_CPUACCT_LABEL = "cpuacct"
+    CONTROLLER_CPU_LABEL = "cpu"
+
+    class CGroupResources
       CONTROL_GROUP_RE = Regexp.compile("\\d+:([^:,]+(?:,[^:,]+)?):(/.*)")
       CONTROLLER_SEPARATOR_RE = ","
 
-      def initialize
-        @cgroup_file = Pathname.new("/proc/self/cgroup")
-        @cpuacct_dir = Pathname.new("/sys/fs/cgroup/cpuacct")
-        @cpu_dir = Pathname.new("/sys/fs/cgroup/cpu")
-        @cpu_path_override = Override.new("ls.cgroup.cpu.path.override")
-        @cpuacct_path_override = Override.new("ls.cgroup.cpuacct.path.override")
-        @controller_cpuacct = "cpuacct"
-        @controller_cpu = "cpu"
-      end
-
       def cgroup_available?
         # don't cache to ivar, in case the files are mounted after logstash starts??
-        @cgroup_file.exist? && @cpuacct_dir.exist? && @cpu_dir.exist?
+        CRITICAL_PATHS.all?{|path| ::File.exist?(path)}
       end
 
       def controller_groups
         response = {}
-        read_lines.each do |line|
+        IO.readlines(CGROUP_FILE).each do |line|
           matches = CONTROL_GROUP_RE.match(line)
           next if matches.nil?
           # multiples controls, same hierarchy
           controllers = matches[1].split(CONTROLLER_SEPARATOR_RE)
-          controllers.each_with_object(response) do |controller|
+          controllers.each do |controller|
             case controller
-            when @controller_cpu
-              response[controller] = CpuResource.new(@cpu_dir, @cpu_path_override, matches[2])
-            when @controller_cpuacct
-              response[controller] = CpuAcctResource.new(@cpuacct_dir, @cpuacct_path_override, matches[2])
+            when CONTROLLER_CPU_LABEL
+              response[controller] = CpuResource.new(matches[2])
+            when CONTROLLER_CPUACCT_LABEL
+              response[controller] = CpuAcctResource.new(matches[2])
             else
-              response[controller] = UnhandledResource.new(Pathname.new("/sys/fs/cgroup").join(controller), NullOverride.new, matches[2])
+              response[controller] = UnimplementedResource.new(controller, matches[2])
             end
           end
         end
         response
       end
-
-      def read_lines
-        IO.readlines(@cgroup_file)
-      end
     end
 
     module ControllerResource
       attr_reader :base_path, :override, :offset_path
-      def initialize(base_path, override, offset_path)
-        @base_path = base_path
-        # override is needed here for the logging statements
-        # so we do the override here and not in the caller
-        @override = override
-        @offset_path = @override.override(offset_path)
+      def implemented?
+        true
       end
-      def check_path(path, not_found_value)
-        if exist?(path)
-          yield
+      private
+      def common_initialize(base, override_key, original_path)
+        @base_path = base
+        # override is needed here for the logging statements
+        @override = Override.new(override_key)
+        @offset_path = @override.override(original_path)
+        @procs = {}
+        @procs[:read_int] = lambda {|path| IO.readlines(path).first.to_i }
+        @procs[:read_lines] = lambda {|path| IO.readlines(path) }
+      end
+      def call_if_file_exists(call_key, file, not_found_value)
+        path = ::File.join(@base_path, @offset_path, file)
+        if ::File.exist?(path)
+          @procs[call_key].call(path)
         else
           message = "File #{path} cannot be found, "
           if override.nil?
@@ -112,120 +102,109 @@ module LogStash module Instrument module PeriodicPoller
           not_found_value
         end
       end
-      def exist?(path)
-        ::File.exist?(path)
-      end
-      def read_first_line(path)
-        read_lines(path).first
-      end
-      def read_lines(path)
-        IO.readlines(path)
-      end
-      def join(filename)
-        ::File.join(@base_path, @offset_path, filename)
-      end
     end
 
     class CpuAcctResource
       include LogStash::Util::Loggable
       include ControllerResource
-      def fill(hash)
-        hash[:control_group] = offset_path
-        hash[:usage_nanos] = cpuacct_usage
+      def initialize(original_path)
+        common_initialize(CPUACCT_DIR, "ls.cgroup.cpuacct.path.override", original_path)
+      end
+      def to_hash
+        {:control_group => offset_path, :usage_nanos => cpuacct_usage}
       end
       private
       def cpuacct_usage
-        path = join("cpuacct.usage")
-        check_path(path, -1) { read_first_line(path).to_i }
+        call_if_file_exists(:read_int, "cpuacct.usage", -1)
       end
     end
 
     class CpuResource
       include LogStash::Util::Loggable
       include ControllerResource
-      def fill(hash)
-        hash[:control_group] = offset_path
-        hash[:cfs_period_micros] = cfs_period_us
-        hash[:cfs_quota_micros] = cfs_quota_us
-
-        cpu_stats = build_cpu_stats
-
-        hash[:stat] = {
-         :number_of_elapsed_periods => cpu_stats.number_of_elapsed_periods,
-         :number_of_times_throttled => cpu_stats.number_of_times_throttled,
-         :time_throttled_nanos => cpu_stats.time_throttled_nanos
+      def initialize(original_path)
+        common_initialize(CPU_DIR, "ls.cgroup.cpu.path.override", original_path)
+      end
+      def to_hash
+        {
+          :control_group => offset_path,
+          :cfs_period_micros => cfs_period_us,
+          :cfs_quota_micros => cfs_quota_us,
+          :stat => build_cpu_stats_hash
         }
       end
       private
       def cfs_period_us
-        path = join("cpu.cfs_period_us")
-        check_path(path, -1) { read_first_line(path).to_i }
+        call_if_file_exists(:read_int, "cpu.cfs_period_us", -1)
       end
       def cfs_quota_us
-        path = join("cpu.cfs_quota_us")
-        check_path(path, -1) { read_first_line(path).to_i }
+        call_if_file_exists(:read_int, "cpu.cfs_quota_us", -1)
       end
-      def build_cpu_stats
-        path = join("cpu.stat")
-        not_found = ["nr_periods -1", "nr_throttled -1", "throttled_time -1"]
-        lines = check_path(path, not_found) { read_lines(path) }
-
-        number_of_elapsed_periods = -1
-        number_of_times_throttled = -1
-        time_throttled_nanos = -1
-
-        lines.each do |line|
-          fields = line.split(/\s+/)
-          case fields.first
-          when "nr_periods" then number_of_elapsed_periods = fields[1].to_i
-          when "nr_throttled" then number_of_times_throttled = fields[1].to_i
-          when "throttled_time" then time_throttled_nanos = fields[1].to_i
-          end
-        end
-
-        CpuStats.new(number_of_elapsed_periods, number_of_times_throttled, time_throttled_nanos)
+      def build_cpu_stats_hash
+        stats = CpuStats.new
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        stats.update(lines)
+        stats.to_hash
       end
     end
 
-    class UnhandledResource
-      include LogStash::Util::Loggable
-      include ControllerResource
+    class UnimplementedResource
+      attr_reader :controller, :original_path
+      def initialize(controller, original_path)
+        @controller, @original_path = controller, original_path
+      end
+      def implemented?
+        false
+      end
     end
 
     class CpuStats
-      attr_reader :number_of_elapsed_periods, :number_of_times_throttled, :time_throttled_nanos
-
-      def initialize(number_of_elapsed_periods, number_of_times_throttled, time_throttled_nanos)
-        @number_of_elapsed_periods = number_of_elapsed_periods
-        @number_of_times_throttled = number_of_times_throttled
-        @time_throttled_nanos = time_throttled_nanos
+      def initialize
+        @number_of_elapsed_periods = -1
+        @number_of_times_throttled = -1
+        @time_throttled_nanos = -1
+      end
+      def update(lines)
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          next unless fields.size > 1
+          case fields.first
+          when "nr_periods" then @number_of_elapsed_periods = fields[1].to_i
+          when "nr_throttled" then @number_of_times_throttled = fields[1].to_i
+          when "throttled_time" then @time_throttled_nanos = fields[1].to_i
+          end
+        end
+      end
+      def to_hash
+        {
+          :number_of_elapsed_periods => @number_of_elapsed_periods,
+          :number_of_times_throttled => @number_of_times_throttled,
+          :time_throttled_nanos => @time_throttled_nanos
+        }
       end
     end
 
+    CGROUP_RESOURCES = CGroupResources.new
+
     class << self
-      def get_all(resources = CGroupResources.new)
-        unless resources.cgroup_available?
-          files = [resources.cgroup_file, resources.cpu_dir, resources.cpuacct_dir]
-          logger.debug("One or more required cgroup files or directories not found: #{files.join(', ')}")
+      def get_all
+        unless CGROUP_RESOURCES.cgroup_available?
+          logger.debug("One or more required cgroup files or directories not found: #{CRITICAL_PATHS.join(', ')}")
           return
         end
 
-        groups = resources.controller_groups
+        groups = CGROUP_RESOURCES.controller_groups
 
         if groups.empty?
-          logger.debug("The main cgroup file did not have any controllers: #{resources.cgroup_file}")
+          logger.debug("The main cgroup file did not have any controllers: #{CGROUP_FILE}")
           return
         end
 
-        cpuacct_controller = groups[resources.controller_cpuacct]
-        cpu_controller = groups[resources.controller_cpu]
-
-        cgroups_stats = {
-         :cpuacct => {},
-         :cpu => {}
-        }
-        cpuacct_controller.fill(cgroups_stats[:cpuacct])
-        cpu_controller.fill(cgroups_stats[:cpu])
+        cgroups_stats = {}
+        groups.each do |name, controller|
+          next unless controller.implemented?
+          cgroups_stats[name.to_sym] = controller.to_hash
+        end
         cgroups_stats
       rescue => e
         logger.debug("Error, cannot retrieve cgroups information", :exception => e.class.name, :message => e.message, :backtrace => e.backtrace.take(4)) if logger.debug?
