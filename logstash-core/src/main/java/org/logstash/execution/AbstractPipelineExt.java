@@ -162,7 +162,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
      * @return Nil
      */
     @JRubyMethod(name = "open_queue")
-    public final IRubyObject openQueue(final ThreadContext context) throws IOException {
+    public final IRubyObject openQueue(final ThreadContext context) {
         try {
             queue = QueueFactoryExt.create(context, null, settings);
         } catch (final Exception ex) {
