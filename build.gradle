@@ -238,6 +238,7 @@ task installTestGems(dependsOn: assemblyDeps) {
   outputs.dir("${projectDir}/logstash-core/lib/jars")
   outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
+    rubyGradleUtils.gem("rake", "12.3.1", "${qaBundledGemPath}")
     rubyGradleUtils.rake('test:install-core')
   }
 }
