@@ -26,7 +26,7 @@ task :bump_versions, [:version, :allow_for] => [] do |t, args|
   puts "Computing #{allow_bump_for} plugin dependency bump from #{base_logstash_version}.."
 
   puts "Fetching lock file for #{base_logstash_version}.."
-  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.3.lock.release")
+  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
   result = Net::HTTP.get(uri)
 
   base_plugin_versions = {}
@@ -51,7 +51,7 @@ task :bump_versions, [:version, :allow_for] => [] do |t, args|
 
   puts "Cleaning up before running 'rake artifact:tar'"
   FileUtils.rm_f("Gemfile")
-  FileUtils.rm_f("Gemfile.jruby-2.3.lock.release")
+  FileUtils.rm_f("Gemfile.jruby-2.5.lock.release")
   FileUtils.rm_rf("vendor")
 
   # compute new lock file
@@ -69,7 +69,7 @@ task :bump_versions, [:version, :allow_for] => [] do |t, args|
 
   # rename file
   puts "Finishing up.."
-  FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.3.lock.release")
+  FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.5.lock.release")
 
   `git checkout -- Gemfile.template`
   puts "Done"
