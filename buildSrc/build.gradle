@@ -8,5 +8,5 @@ repositories {
 }
 
 dependencies {
-  compile group: 'org.jruby', name: 'jruby-complete', version: '9.1.13.0'
+  compile group: 'org.jruby', name: 'jruby-complete', version: '9.2.0.0'
 }
