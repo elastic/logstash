@@ -13,8 +13,8 @@ jruby:
 # not for the compile-time jars
 #
 #jruby-runtime-override:
-#  url: http://ci.jruby.org/snapshots/previous/jruby-bin-9.1.13.0-SNAPSHOT.tar.gz
-#  version: 9.1.13.0-SNAPSHOT
+#  url: http://ci.jruby.org/snapshots/previous/jruby-bin-9.2.0.0-SNAPSHOT.tar.gz
+#  version: 9.2.0.0-SNAPSHOT
 #  sha1: IGNORE
 
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when
