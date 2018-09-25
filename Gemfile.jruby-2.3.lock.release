@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (6.4.1-java)
+    logstash-core (6.4.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 1.0, >= 1.0.5)
@@ -26,7 +26,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 6.4.1)
+      logstash-core (= 6.4.2)
 
 GEM
   remote: https://rubygems.org/
@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.127)
-      aws-sdk-resources (= 2.11.127)
-    aws-sdk-core (2.11.127)
+    aws-sdk (2.11.136)
+      aws-sdk-resources (= 2.11.136)
+    aws-sdk-core (2.11.136)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.127)
-      aws-sdk-core (= 2.11.127)
+    aws-sdk-resources (2.11.136)
+      aws-sdk-core (= 2.11.136)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -125,7 +125,7 @@ GEM
     json-schema (2.6.2)
       addressable (~> 2.3.8)
     kramdown (1.14.0)
-    logstash-codec-cef (5.0.4-java)
+    logstash-codec-cef (5.0.6-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -255,7 +255,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-urldecode (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-useragent (3.2.2-java)
+    logstash-filter-useragent (3.2.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-xml (4.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -310,7 +310,7 @@ GEM
     logstash-input-graphite (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-input-tcp
-    logstash-input-heartbeat (3.0.6)
+    logstash-input-heartbeat (3.0.7)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
