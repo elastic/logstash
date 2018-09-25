@@ -208,6 +208,9 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     exclude "**/stdlib/rdoc/**"
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
+    doLast {
+      rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+    }	
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
@@ -238,8 +241,7 @@ task installTestGems(dependsOn: assemblyDeps) {
   outputs.dir("${projectDir}/logstash-core/lib/jars")
   outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
-    rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
-    rubyGradleUtils.rake('test:install-core')
+    //rubyGradleUtils.rake('test:install-core')
   }
 }
 
