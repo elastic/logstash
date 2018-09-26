@@ -91,12 +91,6 @@ include::static/shutdown.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
 include::static/setup/setting-up-xpack.asciidoc[]
 
-// Breaking Changes
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
-include::static/breaking-changes.asciidoc[]
-
-
 // Upgrading Logstash
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/upgrading.asciidoc
@@ -248,6 +242,11 @@ include::static/glossary.asciidoc[]
 
 // This is in the pluginbody.asciidoc itself
 //
+
+// Breaking Changes
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
+include::static/breaking-changes.asciidoc[]
 
 // Release Notes
 
