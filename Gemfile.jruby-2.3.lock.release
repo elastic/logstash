@@ -255,7 +255,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-urldecode (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-useragent (3.2.3-java)
+    logstash-filter-useragent (3.2.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-xml (4.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
