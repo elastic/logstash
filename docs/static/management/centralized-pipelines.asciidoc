@@ -18,6 +18,10 @@ You can control multiple Logstash instances from the pipeline management UI in
 side, you simply need to enable configuration management and register Logstash
 to use the centrally managed pipeline configurations.
 
+IMPORTANT: After you configure {ls} to use centralized pipeline management, you can
+no longer specify local pipeline configurations. The `pipelines.yml` file and
+settings such as `path.config` and `config.string` are inactive when centralized
+pipeline management is enabled.
 
 ==== Manage pipelines
 
