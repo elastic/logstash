@@ -213,6 +213,14 @@ include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
 include::{plugins-repo-dir}/plugins/filters.asciidoc[]
 include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
+// FAQ and Troubleshooting
+
+// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/faq.asciidoc
+include::static/faq.asciidoc[]
+
+// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/troubleshooting.asciidoc
+include::static/troubleshooting.asciidoc[]
+
 :edit_url:
 
 // Contributing to Logstash
@@ -242,13 +250,6 @@ include::static/maintainer-guide.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
 include::static/submitting-a-plugin.asciidoc[]
 
-// FAQ and Troubleshooting
-
-// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/faq.asciidoc
-include::static/faq.asciidoc[]
-
-// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/troubleshooting.asciidoc
-include::static/troubleshooting.asciidoc[]
 
 // Glossary of Terms
 
