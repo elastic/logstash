@@ -10,7 +10,9 @@ in the {logstash-ref}/index.html[Logstash Reference] and the
 [[plugin-doc-file]]
 ==== Documentation file
 
-Include documentation in your plugin structure as a single file called 'docs/index.asciidoc'.
+Documentation is a required component of your plugin.
+It belongs in a single file called 'docs/index.asciidoc'.
+The <<plugin-generator,plugin generation utility>> creates a starter file for you.  
 
 [[heading-ids]]
 ==== Heading IDs
@@ -79,7 +81,7 @@ Use external link syntax for links that point to documentation for other plugins
 {logstash-ref}/getting-started-with-logstash.html
 -----
 
-===== Links specifying link text
+===== Link text
 
 If you don't specify link text, the URL is used as the link text.
 
