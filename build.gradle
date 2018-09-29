@@ -57,6 +57,7 @@ allprojects {
       exceptionFormat "full"
       showCauses true
       showStackTraces true
+      enableAssertions false
 
       // set options for log level DEBUG and INFO
       debug {
@@ -208,6 +209,9 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     exclude "**/stdlib/rdoc/**"
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
+    doLast {
+      rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+    }
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
@@ -256,6 +260,7 @@ task assembleTarDistribution(dependsOn: assemblyDeps) {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
+    rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('artifact:tar')
   }
 }
