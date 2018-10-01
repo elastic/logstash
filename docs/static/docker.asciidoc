@@ -101,14 +101,14 @@ files:
 
 ["source","sh",subs="attributes"]
 --------------------------------------------
-docker run --rm -it -v ~/settings/:/usr/share/logstash/config/ {docker-image}
+docker run --rm -it -p 5044:5044 -v ~/settings/:/usr/share/logstash/config/ {docker-image}
 --------------------------------------------
 
 Alternatively, a single file can be mounted:
 
 ["source","sh",subs="attributes"]
 --------------------------------------------
-docker run --rm -it -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml {docker-image}
+docker run --rm -it -p 5044:5044 -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml {docker-image}
 --------------------------------------------
 
 NOTE: Bind-mounted configuration files will retain the same permissions and
