@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-4-2,Logstash 6.4.2>>
 * <<logstash-6-4-1,Logstash 6.4.1>>
 * <<logstash-6-4-0,Logstash 6.4.0>>
 * <<logstash-6-3-2,Logstash 6.3.2>>
@@ -17,6 +18,23 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-4-2]]
+=== Logstash 6.4.2 Release Notes
+
+* Make cgroups support more robust and provide the override similar to ES ({lsissue}/10012[#10012]).
+
+[float]
+==== Plugins
+*Cef Codec*
+
+* Added reverse_mapping option, which can be used to make encoder compliant to spec https://github.com/logstash-plugins/logstash-codec-cef/pull/51[#51]
+
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) https://github.com/logstash-plugins/logstash-codec-cef/issues/56[#56]
+
+*Heartbeat Input*
+
+* Fixed shutdown concurrency issues by simplifying shutdown signal handling https://github.com/logstash-plugins/logstash-input-heartbeat/pull/15[#15]
 
 [[logstash-6-4-1]]
 === Logstash 6.4.1 Release Notes
