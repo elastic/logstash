@@ -30,7 +30,7 @@ This section summarizes the changes in the following releases:
 
 * Added reverse_mapping option, which can be used to make encoder compliant to spec https://github.com/logstash-plugins/logstash-codec-cef/pull/51[#51]
 
-* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) (https://github.com/logstash-plugins/logstash-codec-cef/issues/56[#56])
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) https://github.com/logstash-plugins/logstash-codec-cef/issues/56[#56]
 
 *Heartbeat Input*
 
