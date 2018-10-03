@@ -241,6 +241,30 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @Test
+    public void conditionalWithNullField() throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                "input {mockinput{}} filter { if [foo] == [bar] { mockaddfilter {} } } output {mockoutput{} }",
+                false
+        );
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        filters,
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+        MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.is("bar"));
+    }
+
+    @Test
     public void conditionalNestedMetaFieldPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
             "input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }",
