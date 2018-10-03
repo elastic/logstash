@@ -363,8 +363,12 @@ public interface EventCondition {
             final EventValueExpression second) {
             final FieldReference field1 = FieldReference.from(first.getFieldName());
             final FieldReference field2 = FieldReference.from(second.getFieldName());
-            return event -> event.getEvent().getUnconvertedField(field1)
-                .equals(event.getEvent().getUnconvertedField(field2));
+            return event -> {
+                Event java = event.getEvent();
+                return Objects.equals(
+                        java.getUnconvertedField(field1),
+                        java.getUnconvertedField(field2));
+            };
         }
 
         private static EventCondition truthy(final EventValueExpression evalE) {
