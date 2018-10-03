@@ -73,6 +73,26 @@ namespace "artifact" do
     @oss_excluder ||= self.method(:exclude_oss?)
   end
 
+  def exclude_windows?(path)
+    exclude?(path) || path_matches_extension_exclude?(path)
+  end
+
+  def exclude_oss_windows?(path)
+    exclude_oss?(path) || path_matches_extension_exclude?(path)
+  end
+
+  def windows_excluder
+    @windows_excluder ||= self.method(:exclude_windows?)
+  end
+
+  def windows_oss_excluder
+    @windows_oss_excluder ||= self.method(:exclude_oss_windows?)
+  end
+
+  def path_matches_extension_exclude?(path)
+    [".bat"].include? File.extname(path)
+  end
+
   def path_matches_exclude?(path, ex)
     path == ex || (File.directory?(ex) && path =~ /^#{ex}\//)
   end
@@ -342,12 +362,11 @@ namespace "artifact" do
     metadata_source_file_path = BUILD_METADATA_FILE.path
     dir.input("#{metadata_source_file_path}=/usr/share/logstash/#{metadata_file_path}")
 
-
     suffix = ""
-    excluder = nil
+    excluder = windows_excluder
     if oss
       suffix= "-oss"
-      excluder = oss_excluder
+      excluder = windows_oss_excluder
     end
 
     files(excluder).each do |path|
