@@ -6,7 +6,7 @@ Filebeat comes packaged with pre-built  {filebeat-ref}/filebeat-modules.html[mod
 that contain the configurations needed to collect, parse, enrich, and visualize
 data from various log file formats. Each Filebeat module consists of one or more
 filesets that contain ingest node pipelines, Elasticsearch templates, Filebeat
-prospector configurations, and Kibana dashboards.
+input configurations, and Kibana dashboards.
 
 Filebeat modules are a great way to get started, but you might find that ingest
 pipelines don't offer the processing power that you require. If that's the case,
