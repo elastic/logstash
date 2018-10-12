@@ -8,7 +8,7 @@ if [ -n "${FILEBEAT_VERSION}" ]; then
   echo "Filebeat version is $FILEBEAT_VERSION"
   version=$FILEBEAT_VERSION
 else
-  version=5.0.1
+  version=6.4.2
 fi
 
 FB_HOME=$INSTALL_DIR/filebeat
