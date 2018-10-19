@@ -11,6 +11,7 @@ alias_settings_keys!(
         "var.input.kafka" => "var.input.eventbroker",
         "var.input.tcp"   => "var.input.smartconnector"
     })
+require 'arcsight_module_config_helper'
 %>
 
 input {
@@ -19,6 +20,7 @@ input {
     codec => cef
     bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", String, "localhost:39092"))) %>
     topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", String, ["eb-cef"]))) %>
+    <%= kafka_input_ssl_sasl_config %>
     type => syslog
   }
   <% end %>
@@ -28,6 +30,7 @@ input {
     # The delimiter config used is for TCP interpretation
     codec => cef { delimiter => "\r\n" }
     port => <%= setting("var.input.tcp.port", 5000) %>
+    <%= tcp_input_ssl_config %>
     type => syslog
   }
   <% end %>
