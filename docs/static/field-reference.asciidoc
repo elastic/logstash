@@ -1,5 +1,5 @@
-[[field-references]]
-== Field References
+[role="exclude",id="field-references-deepdive"]
+== Field References Deep Dive
 
 It is often useful to be able to refer to a field or collection of fields by name. To do this,
 you can use the Logstash field reference syntax.
@@ -25,11 +25,13 @@ filter {
   }
 }
 
+[float]
 [[formal-grammar]]
 === Formal Grammar
 
 Below is the formal grammar of the Field Reference, with notes and examples.
 
+[float]
 [[formal-grammar-field-reference-literal]]
 ==== Field Reference Literal
 
@@ -40,6 +42,7 @@ fieldReferenceLiteral
   : ( pathFragment )+
   ;
 
+[float]
 [[formal-grammar-field-reference]]
 ==== Field Reference (Event APIs)
 
@@ -59,6 +62,7 @@ eventApiFieldReference
   | compositeFieldReference
   ;
 
+[float]
 [[formal-grammar-path-fragment]]
 ==== Path Fragment
 
@@ -69,6 +73,7 @@ pathFragment
   : '[' fieldName ']'
   ;
 
+[float]
 [[formal-grammar-field-name]]
 ==== Field Name
 
@@ -79,6 +84,7 @@ fieldName
   : ( ~( '[' | ']' ) )+
   ;
 
+[float]
 [[formal-grammar-event-api-composite-field-reference]]
 ==== Composite Field Reference
 
@@ -92,7 +98,8 @@ such as when manipulating fields in a plugin or while using the Ruby Filter plug
 
 // NOTE: table below uses "plus for passthrough" quoting to prevent double square-brackets
 //       from being interpreted as asciidoc anchors when converted to HTML.
-.Canonical Representations of Composite Field References
+[float]
+===== Canonical Representations of Composite Field References
 |===
 | Acceptable _Composite Field Reference_ | Canonical _Field Reference_ Representation
 
@@ -110,6 +117,7 @@ compositeFieldReference
 
 _Composite Field References_ are supported by the Event API, but are _not_ supported as literals in the Pipeline Configuration.
 
+[float]
 [[formal-grammar-event-api-embedded-field-reference]]
 ==== Embedded Field Reference
 
@@ -119,4 +127,3 @@ embeddedFieldReference
   ;
 
 An _Embedded Field Reference_ is a _Field Reference_ that is itself wrapped in square brackets (`[` and `]`), and can be a component of a _Composite Field Reference_.
-
