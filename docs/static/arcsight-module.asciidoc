@@ -320,7 +320,7 @@ The JKS truststore path to validate the Kafka broker's certificate.
 --
 * Value type is <<password,password>>
 * There is no default value for this setting.
-
+--
 The truststore password.
 
 *`var.input.eventbroker.ssl_truststore_type`*::
@@ -390,7 +390,6 @@ Optional path to kerberos config file. This is krb5.conf style as detailed in ht
 * Value type is <<number,number>>
 * Default value is 5000
 --
-+
 The TCP port to listen on when receiving data from SCs.
 
 *`var.input.smartconnector.ssl_enable`*::

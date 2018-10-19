@@ -1,0 +1,10 @@
+modules:
+  - name: arcsight
+    var.inputs: "tcp"
+    var.input.tcp.port: 5050
+    var.input.tcp.ssl_enable: true
+    var.input.tcp.ssl_cert: "/some/path/to/a/cert.p12"
+    var.input.tcp.ssl_extra_chain_certs: ["/some/path/to/a/cert.p12"]
+    var.input.tcp.ssl_key: "/some/path/to/a/cert.p12"
+    var.input.tcp.ssl_key_passphrase: "foobar"
+    var.input.tcp.ssl_verify: false

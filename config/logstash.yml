@@ -83,7 +83,7 @@
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
 #
-# config.debug: false
+config.debug: false
 #
 # When enabled, process escaped characters such as \n and \" in strings in the
 # pipeline configuration files.
@@ -93,7 +93,7 @@
 # ------------ Module Settings ---------------
 # Define modules here.  Modules definitions must be defined as an array.
 # The simple way to see this is to prepend each `name` with a `-`, and keep
-# all associated variables under the `name` they are associated with, and 
+# all associated variables under the `name` they are associated with, and
 # above the next, like this:
 #
 # modules:
@@ -103,11 +103,20 @@
 #     var.PLUGINTYPE2.PLUGINNAME1.KEY1: VALUE
 #     var.PLUGINTYPE3.PLUGINNAME3.KEY1: VALUE
 #
-# Module variable names must be in the format of 
+# Module variable names must be in the format of
 #
 # var.PLUGIN_TYPE.PLUGIN_NAME.KEY
 #
-# modules:
+modules:
+  - name: arcsight
+    var.input.smartconnector.port: 5050
+    var.input.smartconnector.ssl_enable: true
+    var.input.smartconnector.ssl_cert: "/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"
+    var.input.smartconnector.ssl_extra_chain_certs: ["/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"]
+    var.input.smartconnector.ssl_key: "/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"
+    var.input.smartconnector.ssl_key_passphrase: "foobar"
+    var.input.smartconnector.ssl_verify: false
+
 #
 # ------------ Cloud Settings ---------------
 # Define Elastic Cloud settings here.
@@ -204,7 +213,8 @@
 #   * debug
 #   * trace
 #
-# log.level: info
+log.level: debug
+
 # path.logs:
 #
 # ------------ Other Settings --------------

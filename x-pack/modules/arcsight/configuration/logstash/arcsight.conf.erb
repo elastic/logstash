@@ -20,7 +20,7 @@ input {
     codec => cef
     bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", String, "localhost:39092"))) %>
     topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", String, ["eb-cef"]))) %>
-    <%= kafka_input_ssl_sasl_config %>
+    <%= LogStash::Arcsight::ConfigHelper.kafka_input_ssl_sasl_config(self) %>
     type => syslog
   }
   <% end %>
@@ -30,7 +30,7 @@ input {
     # The delimiter config used is for TCP interpretation
     codec => cef { delimiter => "\r\n" }
     port => <%= setting("var.input.tcp.port", 5000) %>
-    <%= tcp_input_ssl_config %>
+    <%= LogStash::Arcsight::ConfigHelper.tcp_input_ssl_config(self) %>
     type => syslog
   }
   <% end %>
