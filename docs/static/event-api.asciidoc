@@ -35,7 +35,7 @@ The getter is a read-only access of field-based data in an Event.
 numeric or timestamp scalar value.
 
 `field` is a structured field sent to Logstash or created after the transformation process. `field` can also 
-be a nested field reference such as `[field][bar]`.
+be a nested <<field-references,field reference>> such as `[field][bar]`.
 
 Examples:
 
