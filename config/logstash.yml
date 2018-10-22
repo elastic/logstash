@@ -107,16 +107,6 @@ config.debug: false
 #
 # var.PLUGIN_TYPE.PLUGIN_NAME.KEY
 #
-modules:
-  - name: arcsight
-    var.input.smartconnector.port: 5050
-    var.input.smartconnector.ssl_enable: true
-    var.input.smartconnector.ssl_cert: "/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"
-    var.input.smartconnector.ssl_extra_chain_certs: ["/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"]
-    var.input.smartconnector.ssl_key: "/Users/guy/.mitmproxy/mitmproxy-ca-cert.p12"
-    var.input.smartconnector.ssl_key_passphrase: "foobar"
-    var.input.smartconnector.ssl_verify: false
-
 #
 # ------------ Cloud Settings ---------------
 # Define Elastic Cloud settings here.
