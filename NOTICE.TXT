@@ -302,7 +302,7 @@ RubyGem: elasticsearch Version: 5.0.4
    limitations under the License.
 
 ==========================================================================
-RubyGem: sequel Version: 5.12.0
+RubyGem: sequel Version: 5.13.0
 Copyright (c) 2007-2008 Sharon Rosner
 Copyright (c) 2008-2018 Jeremy Evans
 
@@ -346,7 +346,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========================================================================
-RubyGem: tzinfo-data Version: 1.2018.5
+RubyGem: tzinfo-data Version: 1.2018.6
 Copyright (c) 2005-2018 Philip Ross
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
