@@ -15,3 +15,8 @@ modules:
     var.input.kafka.kerberos_config: "/some/path/to/a/file"
     var.input.kafka.bootstrap_servers: "kcluster.local:1234"
     var.input.kafka.topics: ["foo", "bar", "baz"]
+
+# although this file is named eventbroker..., the arcsight config ERB
+# file duplicates the eventbroker based settings to be kafka based ones
+# plus, the arcsight_module_config_helper's module methods expect
+# kafka based settings

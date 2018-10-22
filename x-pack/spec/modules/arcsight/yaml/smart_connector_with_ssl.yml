@@ -8,3 +8,8 @@ modules:
     var.input.tcp.ssl_key: "/some/path/to/a/cert.p12"
     var.input.tcp.ssl_key_passphrase: "foobar"
     var.input.tcp.ssl_verify: false
+
+# although this file is named smartconnector..., the arcsight config ERB
+# file duplicates the smartconnector based settings to be tcp based ones
+# plus, the arcsight_module_config_helper's module methods expect
+# tcp based settings
