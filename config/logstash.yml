@@ -83,7 +83,7 @@
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
 #
-config.debug: false
+# config.debug: false
 #
 # When enabled, process escaped characters such as \n and \" in strings in the
 # pipeline configuration files.
@@ -107,6 +107,7 @@ config.debug: false
 #
 # var.PLUGIN_TYPE.PLUGIN_NAME.KEY
 #
+# modules:
 #
 # ------------ Cloud Settings ---------------
 # Define Elastic Cloud settings here.
@@ -203,8 +204,7 @@ config.debug: false
 #   * debug
 #   * trace
 #
-log.level: debug
-
+# log.level: info
 # path.logs:
 #
 # ------------ Other Settings --------------
