@@ -13,11 +13,11 @@ bin/logstash –f apache.config --config.reload.automatic
 ----------------------------------
 
 NOTE: The `--config.reload.automatic` option is not available when you specify the `-e` flag to pass
-in  configuration settings from the command-line.
+in configuration settings from the command-line.
 
 By default, Logstash checks for configuration changes every 3 seconds. To change this interval,
 use the `--config.reload.interval <interval>` option,  where `interval` specifies how often Logstash
-checks the config files for changes. 
+checks the config files for changes (in seconds).
 
 If Logstash is already running without auto-reload enabled, you can force Logstash to
 reload the config file and restart the pipeline by sending a SIGHUP (signal hangup) to the
