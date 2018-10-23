@@ -297,8 +297,8 @@ en:
           Sets the ID of the pipeline.
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
-        experimental-java-execution: |+
-          (Experimental) Use new Java execution engine.
+        java-execution: |+
+          (Beta) Use new Java execution engine.
         pipeline-batch-size: |+
           Size of batches the pipeline is to work in.
         pipeline-batch-delay: |+
