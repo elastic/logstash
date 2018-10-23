@@ -461,6 +461,13 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
+	"logstash-output-appsearch": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
 	"logstash-output-cloudwatch": {
 		"default-plugins": true,
 		"core-specs": false,
