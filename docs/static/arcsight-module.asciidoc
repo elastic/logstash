@@ -273,6 +273,7 @@ A list of Event Broker topics to subscribe to.
 * Value can be any of: `PLAINTEXT`, `SSL`, `SASL_PLAINTEXT`, `SASL_SSL`
 * Default value is `"PLAINTEXT"`
 --
++
 Security protocol to use, which can be either of PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL. If you specify anything other than PLAINTEXT then you need to also specify some of the options listed below. When specifying `SSL` or `SASL_SSL` you should supply values for the options prefixed with `ssl_`, when specifying `SASL_PLAINTEXT` or `SASL_SSL` you should supply values for `jaas_path`, `kerberos_config`, `sasl_mechanism` and `sasl_kerberos_service_name`.
 
 *`var.input.eventbroker.ssl_key_password`*::
@@ -281,6 +282,7 @@ Security protocol to use, which can be either of PLAINTEXT, SSL, SASL_PLAINTEXT,
 * Value type is <<password,password>>
 * There is no default value for this setting.
 --
++
 The password of the private key in the key store file.
 
 *`var.input.eventbroker.ssl_keystore_location`*::
@@ -289,6 +291,7 @@ The password of the private key in the key store file.
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 If client authentication is required, this setting stores the keystore path.
 
 *`var.input.eventbroker.ssl_keystore_password`*::
@@ -297,6 +300,7 @@ If client authentication is required, this setting stores the keystore path.
 * Value type is <<password,password>>
 * There is no default value for this setting.
 --
++
 If client authentication is required, this setting stores the keystore password.
 
 *`var.input.eventbroker.ssl_keystore_type`*::
@@ -305,6 +309,7 @@ If client authentication is required, this setting stores the keystore password.
 * Value type is <<string,string>>
 * There is no default value for this setting.
 --
++
 The keystore type.
 
 *`var.input.eventbroker.ssl_truststore_location`*::
@@ -313,6 +318,7 @@ The keystore type.
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 The JKS truststore path to validate the Kafka broker's certificate.
 
 *`var.input.eventbroker.ssl_truststore_password`*::
@@ -321,6 +327,7 @@ The JKS truststore path to validate the Kafka broker's certificate.
 * Value type is <<password,password>>
 * There is no default value for this setting.
 --
++
 The truststore password.
 
 *`var.input.eventbroker.ssl_truststore_type`*::
@@ -329,6 +336,7 @@ The truststore password.
 * Value type is <<string,string>>
 * There is no default value for this setting.
 --
++
 The truststore type.
 
 *`var.input.eventbroker.sasl_kerberos_service_name`*::
@@ -337,6 +345,7 @@ The truststore type.
 * Value type is <<string,string>>
 * There is no default value for this setting.
 --
++
 The Kerberos principal name that Kafka broker runs as.
 This can be defined either in Kafka's JAAS config or in Kafka's config.
 
@@ -346,6 +355,7 @@ This can be defined either in Kafka's JAAS config or in Kafka's config.
 * Value type is <<string,string>>
 * Default value is `"GSSAPI"`
 --
++
 http://kafka.apache.org/documentation.html#security_sasl[SASL mechanism] used for client connections.
 This may be any mechanism for which a security provider is available.
 GSSAPI is the default mechanism.
@@ -356,8 +366,10 @@ GSSAPI is the default mechanism.
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 The Java Authentication and Authorization Service (JAAS) API supplies user authentication and authorization
 services for Kafka. This setting provides the path to the JAAS file. Sample JAAS file for Kafka client:
++
 [source,java]
 ----------------------------------
 KafkaClient {
@@ -367,6 +379,7 @@ KafkaClient {
   serviceName="kafka";
   };
 ----------------------------------
++
 
 Please note that specifying `jaas_path` and `kerberos_config` here will add these
 to the global JVM system properties. This means if you have multiple Kafka inputs,
@@ -374,12 +387,14 @@ all of them would be sharing the same `jaas_path` and `kerberos_config`.
 If this is not desirable, you would have to run separate instances of Logstash on
 different JVM instances.
 
+
 *`var.input.eventbroker.kerberos_config`*::
 +
 --
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 Optional path to kerberos config file. This is krb5.conf style as detailed in https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html
 
 *ArcSight Module Smart Connector specific Options*
@@ -390,6 +405,7 @@ Optional path to kerberos config file. This is krb5.conf style as detailed in ht
 * Value type is <<number,number>>
 * Default value is 5000
 --
++
 The TCP port to listen on when receiving data from SCs.
 
 *`var.input.smartconnector.ssl_enable`*::
@@ -398,6 +414,7 @@ The TCP port to listen on when receiving data from SCs.
 * Value type is <<boolean,boolean>>
 * Default value is `false`
 --
++
 Enable SSL (must be set for other `ssl_` options to take effect).
 
 *`var.input.smartconnector.ssl_cert`*::
@@ -406,6 +423,7 @@ Enable SSL (must be set for other `ssl_` options to take effect).
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 SSL certificate path.
 
 *`var.input.smartconnector.ssl_extra_chain_certs`*::
@@ -414,6 +432,7 @@ SSL certificate path.
 * Value type is <<array,array>>
 * Default value is `[]`
 --
++
 An Array of paths to extra X509 certificates to be added to the certificate chain.
 Useful when the CA chain is not necessary in the system store.
 
@@ -423,6 +442,7 @@ Useful when the CA chain is not necessary in the system store.
 * Value type is <<path,path>>
 * There is no default value for this setting.
 --
++
 SSL key path
 
 *`var.input.smartconnector.ssl_key_passphrase`*::
@@ -431,6 +451,7 @@ SSL key path
 * Value type is <<password,password>>
 * Default value is `nil`
 --
++
 SSL key passphrase
 
 *`var.input.smartconnector.ssl_verify`*::
@@ -439,6 +460,7 @@ SSL key passphrase
 * Value type is <<boolean,boolean>>
 * Default value is `true`
 --
++
 Verify the identity of the other end of the SSL connection against the CA.
 For input, sets the field `sslsubject` to that of the client certificate.
 
