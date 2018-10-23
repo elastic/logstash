@@ -56,9 +56,23 @@ module LogStash module Modules class LogStashConfig
         get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
       when Numeric
         get_setting(LogStash::Setting::Numeric.new(name, default))
+      when true, false
+        get_setting(LogStash::Setting::Boolean.new(name, default))
       else
         get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
       end
+  end
+
+  def has_setting?(name)
+    @settings.key?(name)
+  end
+
+  def raw_setting(name)
+    @settings[name]
+  end
+
+  def fetch_raw_setting(name, default)
+    @settings.fetch(name, default)
   end
 
   def elasticsearch_output_config(type_string = nil)
