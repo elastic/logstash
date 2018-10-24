@@ -391,6 +391,13 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
+	"logstash-input-snmp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
 	"logstash-input-snmptrap": {
 		"default-plugins": true,
 		"core-specs": false,
