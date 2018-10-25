@@ -379,7 +379,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (5.0.9-java)
+    logstash-input-tcp (5.0.10-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
