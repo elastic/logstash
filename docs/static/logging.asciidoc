@@ -16,10 +16,10 @@ excessive logging and helps you focus on the problem area.
 You can configure logging using the `log4j2.properties` file or the Logstash API.
 
 * *`log4j2.properties` file.*  Changes made through the `log4j2.properties`
-file require a Logstash restart to take effect.  Changes *persist*
+file require you to restart Logstash for the changes to take effect.  Changes *persist*
 through subsequent restarts. 
 * *Logging API.* Changes made through the Logging API are effective immediately 
-and do not require a Logstash restart. The changes *do not persist* after Logstash
+without a restart. The changes *do not persist* after Logstash
 is restarted.
 
 [[log4j2]]
