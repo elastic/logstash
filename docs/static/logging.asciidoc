@@ -42,6 +42,16 @@ logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
 logger.elasticsearchoutput.level = debug
 --------------------------------------------------
 
+==== Logging APIs
+
+For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
+downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective
+immediately and do not need a restart. 
+
+NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
+instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+<<command-line-flags>> for more information.
+
 ===== Retrieve list of logging configurations
 
 To retrieve a list of logging subsystems available at runtime, you can do a `GET` request to `_node/logging`
@@ -83,16 +93,6 @@ Example response:
 }
 --------------------------------------------------
 
-==== Logging APIs
-
-For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
-downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective
-immediately and do not need a restart. 
-
-NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
-<<command-line-flags>> for more information.
-
 ===== Update logging levels
 
 Prepend the name of the subsystem, module, or plugin with `logger.`. 
@@ -129,8 +129,8 @@ You can specify the log file location using `--path.logs` setting.
 
 ==== Slowlog
 
-Slow-log for Logstash adds the ability to log when a specific event takes an abnormal amount of time to make its way
-through the pipeline. Just like the normal application log, you can find slow-logs in your `--path.logs` directory.
+Slowlog for Logstash adds the ability to log when a specific event takes an abnormal amount of time to make its way
+through the pipeline. Just like the normal application log, you can find slowlogs in your `--path.logs` directory.
 Slowlog is configured in the `logstash.yml` settings file with the following options:
 
 [source,yaml]
@@ -141,12 +141,19 @@ slowlog.threshold.debug (default: -1)
 slowlog.threshold.trace (default: -1)
 ------------------------------
 
-By default, these values are set to `-1nanos` to represent an infinite threshold where no slowlog will be invoked. These `slowlog.threshold`
-fields are configured using a time-value format which enables a wide range of trigger intervals. The positive numeric ranges
-can be specified using the following time units: `nanos` (nanoseconds), `micros` (microseconds), `ms` (milliseconds), `s` (second), `m` (minute),
-`h` (hour), `d` (day).
+Slowlog is disabled by default. The default threshold values are set to
+`-1nanos` to represent an infinite threshold. No slowlog will be invoked. 
 
-Here is an example:
+===== Enable slowlog
+
+The `slowlog.threshold` fields use a time-value format which enables a wide
+range of trigger intervals. You can specify ranges using the following time
+units: `nanos` (nanoseconds), `micros` (microseconds), `ms` (milliseconds), `s`
+(second), `m` (minute), `h` (hour), `d` (day).
+
+Slowlog becomes more sensitive and logs more events as you raise the log level. 
+
+Example:
 
 [source,yaml]
 ------------------------------
@@ -156,5 +163,12 @@ slowlog.threshold.debug: 500ms
 slowlog.threshold.trace: 100ms
 ------------------------------
 
-In the above configuration, events that take longer than two seconds to be processed within a filter will be logged.
-The logs will include the full event and filter configuration that are responsible for the slowness.
+In this example:
+
+* If the log level is set to `warn`, the log shows events that took longer than 2 seconds to process.
+* If the log level is set to `info`, the log shows events that took longer than 1s to process.
+* If the log level is set to `trace`, the log shows events that took longer than 100ms to process.
+* If the log level is set to `debug`, the log shows events that took longer than 500ms to process.
+
+The logs include the full event and filter configuration that are responsible
+for the slowness.
