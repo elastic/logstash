@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.136)
-      aws-sdk-resources (= 2.11.136)
-    aws-sdk-core (2.11.136)
+    aws-sdk (2.11.154)
+      aws-sdk-resources (= 2.11.154)
+    aws-sdk-core (2.11.154)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.136)
-      aws-sdk-core (= 2.11.136)
+    aws-sdk-resources (2.11.154)
+      aws-sdk-core (= 2.11.154)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -53,7 +53,7 @@ GEM
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.7.2)
-    bindata (2.4.3)
+    bindata (2.4.4)
     buftok (0.2.0)
     builder (3.2.3)
     cabin (0.9.0)
@@ -211,7 +211,7 @@ GEM
       murmurhash3
     logstash-filter-geoip (5.0.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-grok (4.0.3)
+    logstash-filter-grok (4.0.4)
       jls-grok (~> 0.11.3)
       logstash-core (>= 5.6.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -235,7 +235,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
-    logstash-filter-mutate (3.3.3)
+    logstash-filter-mutate (3.3.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-ruby (3.1.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -379,7 +379,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (5.0.9-java)
+    logstash-input-tcp (5.0.10-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -466,7 +466,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 3)
       stud
-    logstash-output-s3 (4.1.5)
+    logstash-output-s3 (4.1.6)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -514,7 +514,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.8.4-java)
+    nokogiri (1.8.5-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
@@ -548,7 +548,7 @@ GEM
       rspec-mocks (~> 3.8.0)
     rspec-core (3.8.0)
       rspec-support (~> 3.8.0)
-    rspec-expectations (3.8.1)
+    rspec-expectations (3.8.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.8.0)
     rspec-mocks (3.8.0)
@@ -599,7 +599,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    tzinfo-data (1.2018.5)
+    tzinfo-data (1.2018.6)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.8.0)
