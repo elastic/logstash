@@ -437,7 +437,7 @@ public interface EventCondition {
             final String field) {
             final FieldReference reference = FieldReference.from(field);
             return event ->
-                left.equals((IRubyObject) event.getEvent().getUnconvertedField(reference));
+                    left.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
         }
 
         private static EventCondition constant(final boolean value) {
