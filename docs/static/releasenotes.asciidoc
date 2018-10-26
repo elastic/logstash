@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-4-3,Logstash 6.4.3>>
 * <<logstash-6-4-2,Logstash 6.4.2>>
 * <<logstash-6-4-1,Logstash 6.4.1>>
 * <<logstash-6-4-0,Logstash 6.4.0>>
@@ -18,6 +19,23 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-4-3]]
+=== Logstash 6.4.3 Release Notes
+
+* No changes to Logstash-core for 6.4.3
+
+[float]
+==== Plugins
+
+*Tcp Input*
+
+* Added new configuration option dns_reverse_lookup_enabled to allow users to disable costly DNS reverse lookups https://github.com/logstash-plugins/logstash-input-tcp/issues/100[#100]
+
+*S3 Output*
+
+* Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/issues/190[#190]
+
 
 [[logstash-6-4-2]]
 === Logstash 6.4.2 Release Notes
