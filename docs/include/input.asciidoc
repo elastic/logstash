@@ -47,6 +47,7 @@ endif::[]
 
 Add a field to an event
 
+ifndef::no_codec[]
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-codec"]
 endif::[]
@@ -64,6 +65,7 @@ ifndef::default_codec[]
 endif::[]
 
 The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
+endif::no_codec[]
 
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-enable_metric"]
