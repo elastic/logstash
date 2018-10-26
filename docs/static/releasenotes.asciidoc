@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-13,Logstash 5.6.13>>
 * <<logstash-5-6-12,Logstash 5.6.12>>
 * <<logstash-5-6-11,Logstash 5.6.11>>
 * <<logstash-5-6-10,Logstash 5.6.10>>
@@ -16,6 +17,20 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-13]]
+=== Logstash 5.6.13 Release Notes
+
+* Make cgroups support more robust and provide the override similar to ES ({lsissue}/10012[#10010]).
+
+*Heartbeat Input*
+
+* Fixed shutdown concurrency issues by simplifying shutdown signal handling https://github.com/logstash-plugins/logstash-input-heartbeat/pull/15[#15]
+
+*S3 Output*
+
+* Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/issues/190[#190]
+
 
 [[logstash-5-6-12]]
 === Logstash 5.6.12 Release Notes
