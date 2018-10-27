@@ -10,7 +10,9 @@ ifeval::["{versioned_docs}"!="true"]
 [cols="<,<,<",options="header",]
 |=======================================================================
 |Setting |Input type|Required
+ifndef::no_codec[]
 | <<plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+endif::no_codec[]
 | <<plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
 | <<plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 |=======================================================================
@@ -19,7 +21,9 @@ ifeval::["{versioned_docs}"=="true"]
 [cols="<,<,<",options="header",]
 |=======================================================================
 |Setting |Input type|Required
+ifndef::no_codec[]
 | <<{version}-plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+endif::no_codec[]
 | <<{version}-plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
 | <<{version}-plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 |=======================================================================
