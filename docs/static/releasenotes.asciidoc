@@ -21,7 +21,7 @@ This section summarizes the changes in the following releases:
 [[logstash-5-6-13]]
 === Logstash 5.6.13 Release Notes
 
-* Make cgroups support more robust and provide the override similar to ES ({lsissue}/10012[#10010]).
+* Made cgroups support more robust and provide the override similar to ES ({lsissue}/10012[#10010]).
 
 *Heartbeat Input*
 
@@ -29,7 +29,7 @@ This section summarizes the changes in the following releases:
 
 *S3 Output*
 
-* Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/issues/190[#190]
+* Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/pull/193[#193]
 
 
 [[logstash-5-6-12]]
