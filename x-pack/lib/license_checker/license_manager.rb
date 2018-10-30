@@ -39,9 +39,6 @@ module LogStash
       def fetch_xpack_info
         xpack_info = @license_reader.fetch_xpack_info
 
-        # TODO: we should be more lenient when we're having issues
-        xpack_info ||= XPackInfo.xpack_not_installed
-
         update_xpack_info(xpack_info)
       end
 
