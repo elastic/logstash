@@ -33,15 +33,18 @@ describe LogStash::PipelineAction::Reload do
 
   context "when existing pipeline and new pipeline are both reloadable" do
     it "stop the previous pipeline" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect { subject.execute(agent, pipelines) }.to change(pipeline, :running?).from(true).to(false)
     end
 
     it "start the new pipeline" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       subject.execute(agent, pipelines)
       expect(pipelines[pipeline_id].running?).to be_truthy
     end
 
     it "run the new pipeline code" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       subject.execute(agent, pipelines)
       expect(pipelines[pipeline_id].config_hash).to eq(new_pipeline_config.config_hash)
     end
@@ -61,6 +64,7 @@ describe LogStash::PipelineAction::Reload do
     let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
@@ -69,6 +73,7 @@ describe LogStash::PipelineAction::Reload do
     let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
@@ -79,6 +84,7 @@ describe LogStash::PipelineAction::Reload do
     end
 
     it "cannot successfully execute the action" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
