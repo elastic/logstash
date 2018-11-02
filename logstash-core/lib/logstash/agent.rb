@@ -33,6 +33,10 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
+    # Mutex to synchonize in the exclusive method
+    # Initial usage for the Ruby pipeline initialization which is not thread safe
+    @exclusive_lock = Mutex.new
+
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
 
@@ -78,6 +82,10 @@ class LogStash::Agent
     dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
+  end
+
+  def exclusive(&block)
+    @exclusive_lock.synchronize { block.call }
   end
 
   def execute
