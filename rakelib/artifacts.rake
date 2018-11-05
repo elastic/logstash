@@ -1,7 +1,18 @@
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
-  PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
+  if VERSION_QUALIFIER
+    if SNAPSHOT_BUILD
+      PACKAGE_SUFFIX = "-#{VERSION_QUALIFIER}-SNAPSHOT"
+    else
+      PACKAGE_SUFFIX = "-#{VERSION_QUALIFIER}"
+    end
+  elsif SNAPSHOT_BUILD
+      PACKAGE_SUFFIX = "-SNAPSHOT"
+  else
+    PACKAGE_SUFFIX = ""
+  end
 
   def package_files
     [

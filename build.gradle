@@ -99,6 +99,10 @@ subprojects {
 // fetch version from Logstash's master versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
 version = versionMap['logstash-core']
+def versionQualifier = System.getenv('VERSION_QUALIFIER')
+if (versionQualifier) {
+    version = "$version-$versionQualifier"
+}
 
 String jRubyURL
 String jRubyVersion
@@ -366,11 +370,9 @@ task generateLicenseReport(type: JavaExec) {
 
     classpath = project.files([jarFile])
     main = "org.logstash.dependencies.Main"
-    args \
-      licenseReportInputCSV, \
-      project.getBuildDir().toString() + "/licenseReportFolders.txt", \
-      licenseReportOutputCSV, \
-      noticePath
+    args licenseReportInputCSV,
+      project.getBuildDir().toString() + "/licenseReportFolders.txt",
+      licenseReportOutputCSV, noticePath
 }
 
 task generateLicenseReportInputs() {
