@@ -417,6 +417,10 @@ String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${vers
 
 task downloadEs(type: Download) {
     description "Download ES Snapshot for current branch version: ${version}"
+    doFirst {
+        System.out.println "Attempting to download: ${elasticsearchSnapshotURL}"
+    }
+    System.out.println "Downloaded to ${elasticsearchDownloadLocation}"
     src elasticsearchSnapshotURL
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
