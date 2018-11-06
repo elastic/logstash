@@ -417,14 +417,12 @@ String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
 def dlVersions = new JsonSlurper().parseText(artifactsVersionApi.toURL().text)
 String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
 String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${qualifiedVersion}.tar.gz"
-String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
+
+String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}"
+String elasticsearchDownloadLocation = "${projectDir}/build/${downloadedElasticsearchName}.tar.gz"
 
 task downloadEs(type: Download) {
     description "Download ES Snapshot for current branch version: ${version}"
-    doFirst {
-        System.out.println "Attempting to download: ${elasticsearchSnapshotURL}"
-    }
-    System.out.println "Downloaded to ${elasticsearchDownloadLocation}"
     src elasticsearchSnapshotURL
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
@@ -443,7 +441,7 @@ task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
     from tarTree(resources.gzip(elasticsearchDownloadLocation))
     into "./build/"
     doLast {
-        file("./build/elasticsearch-${version}-SNAPSHOT").renameTo('./build/elasticsearch')
+        file("./build/${downloadedElasticsearchName}").renameTo('./build/elasticsearch')
     }
 }
 
