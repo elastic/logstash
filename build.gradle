@@ -20,10 +20,12 @@ apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
-import java.nio.file.Files
-import java.nio.file.Paths
+import groovy.json.JsonSlurper
 import org.logstash.gradle.RubyGradleUtils
 import org.yaml.snakeyaml.Yaml
+
+import java.nio.file.Files
+import java.nio.file.Paths
 
 allprojects {
   group = 'org.logstash'
@@ -411,8 +413,10 @@ bootstrap.dependsOn installTestGems
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-
-String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
+String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
+def dlVersions = new JsonSlurper().parseText(artifactsVersionApi.toURL().text)
+String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
+String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${qualifiedVersion}.tar.gz"
 String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
 
 task downloadEs(type: Download) {
