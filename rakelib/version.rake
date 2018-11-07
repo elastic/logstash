@@ -2,7 +2,7 @@ require 'yaml'
 
 VERSION_FILE = "versions.yml"
 README_FILE = "README.md"
-INDEX_SHARED1_FILE = "docs/index-shared1.asciidoc"
+INDEX_SHARED1_FILE = "docs/index.asciidoc"
 
 def get_versions
   yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))

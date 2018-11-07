@@ -1,0 +1,5 @@
+https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
+
+LICENSE applicable to this library:
+
+Apache License 2.0 see http://www.apache.org/licenses/LICENSE-2.0

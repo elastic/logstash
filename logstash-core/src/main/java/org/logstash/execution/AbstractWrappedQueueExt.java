@@ -22,7 +22,7 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "read_client")
-    public final IRubyObject readClient() {
+    public final QueueReadClientBase readClient() {
         return getReadClient();
     }
 
@@ -35,5 +35,5 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
 
     protected abstract JRubyAbstractQueueWriteClientExt getWriteClient(ThreadContext context);
 
-    protected abstract IRubyObject getReadClient();
+    protected abstract QueueReadClientBase getReadClient();
 }

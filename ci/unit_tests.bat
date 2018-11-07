@@ -6,7 +6,7 @@ if "%WORKSPACE%" == "" (
   exit /B 1
 )
 
-:: see if %WORKSPACE% is alread mapped to a drive
+:: see if %WORKSPACE% is already mapped to a drive
 for /f "tokens=1* delims==> " %%G IN ('subst') do (
   set sdrive=%%G
   :: removing extra space

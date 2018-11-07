@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 
@@ -396,7 +397,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 50_000)
+    @Test(timeout = 300_000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = computeCapacityForMmapPageIO(element);
@@ -570,7 +571,7 @@ public class QueueTest {
 
             assertThat(q.isFull(), is(false));
 
-            // read 1 page (10 events) here while not full yet so that the read will not singal the not full state
+            // read 1 page (10 events) here while not full yet so that the read will not signal the not full state
             // we want the batch closing below to signal the not full state
             Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1));
 
@@ -622,11 +623,13 @@ public class QueueTest {
         }
     }
 
+    @Ignore("This test timed out on Windows. Issue: https://github.com/elastic/logstash/issues/9918")
     @Test
     public void queueStableUnderStressHugeCapacity() throws Exception {
         stableUnderStress(100_000);
     }
 
+    @Ignore("This test timed out on Windows. Issue: https://github.com/elastic/logstash/issues/9918")
     @Test
     public void queueStableUnderStressLowCapacity() throws Exception {
         stableUnderStress(50);
@@ -683,7 +686,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 50_000)
+    @Test(timeout = 300_000)
     public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
 
         final int WRITER_COUNT = 5;
@@ -915,7 +918,7 @@ public class QueueTest {
             q.write(element2);
             assertThat(q.tailPages.size(), is(1));
 
-            // work directly on the tail page and not the queue to avoid habing the queue purge the page
+            // work directly on the tail page and not the queue to avoid having the queue purge the page
             // but make sure the tail page checkpoint marks it as fully acked
             Page tp = q.tailPages.get(0);
             Batch b = new Batch(tp.read(1), q);

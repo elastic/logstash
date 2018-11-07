@@ -108,7 +108,7 @@ rake bootstrap
 rake plugin:install-default
 ```
 
-This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinatins.
+This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinations.
 
 To verify your environment, run the following to send your first event:
 
@@ -233,6 +233,17 @@ and:
 ```sh
 rake artifact:rpm_oss
 rake artifact:deb_oss
+```
+
+## Using a Custom JRuby Distribution
+
+If you want the build to use a custom JRuby you can do so by setting a path to a custom 
+JRuby distribution's source root via the `custom.jruby.path` Gradle property.
+
+E.g.
+
+```sh
+./gradlew clean test -Pcustom.jruby.path="/path/to/jruby"
 ```
 
 ## Project Principles

@@ -50,7 +50,7 @@ class LogstashService < Service
 
   def alive?
     if @process.nil? || @process.exited?
-      raise "Logstash process is not up because of an errot, or it stopped"
+      raise "Logstash process is not up because of an error, or it stopped"
     else
       @process.alive?
     end

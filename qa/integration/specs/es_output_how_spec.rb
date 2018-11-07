@@ -36,6 +36,6 @@ describe "Test Elasticsearch output" do
     expect(s["geoip"]["longitude"]).to be_between(-180, 180)
     expect(s["geoip"]["latitude"]).to be_between(-90, 90)
     expect(s["verb"]).to eq("GET")
-    expect(s["useragent"]["os"]).to eq("Windows 7")
+    expect(s["useragent"]["os"]).to match(/Windows/)
   end
 end

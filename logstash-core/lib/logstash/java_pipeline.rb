@@ -14,23 +14,17 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     :events_consumed,
     :events_filtered,
     :started_at,
-    :thread,
-    :filter_queue_client
+    :thread
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger, agent
+    open_queue
+
     @worker_threads = []
     @java_inputs_controller = org.logstash.execution.InputsController.new(lir_execution.javaInputs)
-    @filter_queue_client = queue.read_client
-    # Note that @inflight_batches as a central mechanism for tracking inflight
-    # batches will fail if we have multiple read clients here.
-    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
-    @filter_queue_client.set_pipeline_metric(
-        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-    )
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
@@ -157,12 +151,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     return 0
   end # def run
 
-  def close
-    @filter_queue_client.close
-    queue.close
-    close_dlq_writer
-  end
-
   def transition_to_running
     @running.make_true
   end
@@ -223,15 +211,15 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
 
-      @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
+      filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
       pipeline_workers.times do |t|
         thread = Thread.new do
           org.logstash.execution.WorkerLoop.new(
-              lir_execution, @filter_queue_client, @events_filtered, @events_consumed,
+              lir_execution, filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
         end
-        thread.name="[#{pipeline_id}]>worker#{t}"
+        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
         @worker_threads << thread
       end
 
@@ -282,7 +270,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
+      plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -322,7 +310,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     stop_inputs
 
-    # We make this call blocking, so we know for sure when the method return the shtudown is
+    # We make this call blocking, so we know for sure when the method return the shutdown is
     # stopped
     wait_for_workers
     clear_pipeline_metrics

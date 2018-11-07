@@ -33,6 +33,10 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
+    # Mutex to synchonize in the exclusive method
+    # Initial usage for the Ruby pipeline initialization which is not thread safe
+    @exclusive_lock = Mutex.new
+
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
 
@@ -44,6 +48,12 @@ class LogStash::Agent
     @http_environment = setting("http.environment")
     # Generate / load the persistent uuid
     id
+
+    # Set the global FieldReference parsing mode
+    if @settings.set?('config.field_reference.parser')
+      # TODO: i18n
+      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
+    end
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
@@ -72,6 +82,10 @@ class LogStash::Agent
     dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
+  end
+
+  def exclusive(&block)
+    @exclusive_lock.synchronize { block.call }
   end
 
   def execute
@@ -334,7 +348,7 @@ class LogStash::Agent
       when LogStash::PipelineAction::Reload
         dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
       when LogStash::PipelineAction::Stop
-        dispatcher.fire(:pipeline_started, get_pipeline(action.pipeline_id))
+        dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
       end
     end
   end
