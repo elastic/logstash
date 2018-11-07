@@ -33,21 +33,25 @@ describe LogStash::PipelineAction::Create do
     let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1 } } output { null {} }") }
 
     it "returns a successful execution status" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect(subject.execute(agent, pipelines)).to be_truthy
     end
   end
 
   context "when the pipeline successfully start" do
     it "adds the pipeline to the current pipelines" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect { subject.execute(agent, pipelines) }.to change(pipelines, :size).by(1)
     end
 
     it "starts the pipeline" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       subject.execute(agent, pipelines)
       expect(pipelines[:main].running?).to be_truthy
     end
 
     it "returns a successful execution status" do
+      allow(agent).to receive(:exclusive) { |&arg| arg.call }
       expect(subject.execute(agent, pipelines)).to be_truthy
     end
   end
@@ -65,6 +69,7 @@ describe LogStash::PipelineAction::Create do
       let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } filter { ruby { init => '1/0' code => '1+2' } } output { null {} }") }
 
       it "returns false" do
+        allow(agent).to receive(:exclusive) { |&arg| arg.call }
         expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
       end
     end
