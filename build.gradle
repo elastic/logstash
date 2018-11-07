@@ -20,10 +20,12 @@ apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
-import java.nio.file.Files
-import java.nio.file.Paths
+import groovy.json.JsonSlurper
 import org.logstash.gradle.RubyGradleUtils
 import org.yaml.snakeyaml.Yaml
+
+import java.nio.file.Files
+import java.nio.file.Paths
 
 allprojects {
   group = 'org.logstash'
@@ -99,6 +101,10 @@ subprojects {
 // fetch version from Logstash's master versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
 version = versionMap['logstash-core']
+def versionQualifier = System.getenv('VERSION_QUALIFIER')
+if (versionQualifier) {
+    version = "$version-$versionQualifier"
+}
 
 String jRubyURL
 String jRubyVersion
@@ -366,11 +372,9 @@ task generateLicenseReport(type: JavaExec) {
 
     classpath = project.files([jarFile])
     main = "org.logstash.dependencies.Main"
-    args \
-      licenseReportInputCSV, \
-      project.getBuildDir().toString() + "/licenseReportFolders.txt", \
-      licenseReportOutputCSV, \
-      noticePath
+    args licenseReportInputCSV,
+      project.getBuildDir().toString() + "/licenseReportFolders.txt",
+      licenseReportOutputCSV, noticePath
 }
 
 task generateLicenseReportInputs() {
@@ -409,12 +413,25 @@ bootstrap.dependsOn installTestGems
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-
-String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
-String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
+String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
+String apiResponse = artifactsVersionApi.toURL().text
+def dlVersions = new JsonSlurper().parseText(apiResponse)
+// the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
+// in the normal PR type builds it is plain '7.0.0'
+// in the build invoked by the release manager it is '7.0.0-alpha1' etc.
+// the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
+String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
+String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}"
+String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/${downloadedElasticsearchName}.tar.gz"
+String elasticsearchDownloadLocation = "${projectDir}/build/${downloadedElasticsearchName}.tar.gz"
 
 task downloadEs(type: Download) {
     description "Download ES Snapshot for current branch version: ${version}"
+    doFirst {
+        if (qualifiedVersion == "null") {
+            throw new GradleException("could not find the current artifact from the artifact-api for version: ${version}, api response was: ${apiResponse}")
+        }
+    }
     src elasticsearchSnapshotURL
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
@@ -433,7 +450,7 @@ task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
     from tarTree(resources.gzip(elasticsearchDownloadLocation))
     into "./build/"
     doLast {
-        file("./build/elasticsearch-${version}-SNAPSHOT").renameTo('./build/elasticsearch')
+        file("./build/${downloadedElasticsearchName}").renameTo('./build/elasticsearch')
     }
 }
 

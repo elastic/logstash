@@ -1,4 +1,10 @@
 # -*- encoding: utf-8 -*-
+
+# NOTE: please use `rake artifact:gems` or `rake artifact:build-logstash-core` to build LS gems
+# You can add a version qualifier (e.g. alpha1) via the VERSION_QUALIFIER env var, e.g.
+# VERSION_QUALIFIER=beta2 RELEASE=1 rake artifact:build-logstash-core
+# `require 'logstash-core/version'` is aware of this env var
+
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
@@ -28,7 +34,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{The core components of logstash, the scalable log and event management tool}
   gem.summary       = %q{logstash-core - The core components of logstash}
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
-  gem.license       = "Apache License (2.0)"
+  gem.license       = "Apache-2.0"
 
   gem.files         = Dir.glob(
     %w(versions-gem-copy.yml logstash-core.gemspec gemspec_jars.rb lib/**/*.rb spec/**/*.rb locales/*
