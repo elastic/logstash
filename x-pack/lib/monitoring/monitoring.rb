@@ -95,7 +95,7 @@ module LogStash
 
         logger.trace("registering the metrics pipeline")
         LogStash::SETTINGS.set("node.uuid", runner.agent.id)
-        internal_pipeline_source = LogStash::Monitoring::InternalPipelineSource.new(setup_metrics_pipeline)
+        internal_pipeline_source = LogStash::Monitoring::InternalPipelineSource.new(setup_metrics_pipeline, runner.agent)
         runner.source_loader.add_source(internal_pipeline_source)
       rescue => e
         logger.error("Failed to set up the metrics pipeline", :message => e.message, :backtrace => e.backtrace)

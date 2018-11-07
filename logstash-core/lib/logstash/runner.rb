@@ -348,6 +348,8 @@ class LogStash::Runner < Clamp::StrictCommand
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
+
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
     @dispatcher.fire(:after_agent)
@@ -356,8 +358,6 @@ class LogStash::Runner < Clamp::StrictCommand
     # to properly handle a stalled agent
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
-
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
 
     @agent_task = Stud::Task.new { @agent.execute }
 
