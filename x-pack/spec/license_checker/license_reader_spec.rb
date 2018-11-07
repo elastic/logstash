@@ -64,8 +64,8 @@ describe LogStash::LicenseChecker::LicenseReader do
       before(:each) do
         expect(mock_client).to receive(:get).with('_xpack').and_raise(Puma::ConnectionError)
       end
-      it 'returns nil' do
-        expect(subject.fetch_xpack_info).to be_nil
+      it 'returns failed to fetch' do
+        expect(subject.fetch_xpack_info.failed?).to be_truthy
       end
     end
     context 'when client raises a 5XX' do
@@ -74,7 +74,7 @@ describe LogStash::LicenseChecker::LicenseReader do
         expect(mock_client).to receive(:get).with('_xpack').and_raise(exception_500)
       end
       it 'returns nil' do
-        expect(subject.fetch_xpack_info).to be_nil
+        expect(subject.fetch_xpack_info.failed?).to be_truthy
       end
     end
     context 'when client raises a 404' do

@@ -4,6 +4,7 @@
 
 require "modules/module_license_checker"
 require "logstash/modules/settings_merger"
+require 'license_checker/x_pack_info'
 
 describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
@@ -15,7 +16,8 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
     before(:each) {
       expect(subject).to receive(:license_reader).and_return(mock_reader)
-      expect(mock_reader).to receive(:fetch_xpack_info).and_return(nil)
+      expect(mock_reader).to receive(:fetch_xpack_info).and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
+
     }
     let(:mock_reader) {double("reader")}
 
