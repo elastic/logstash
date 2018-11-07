@@ -18,6 +18,7 @@ module LogStash
         @namespace = "xpack.#{feature}"
         @settings = settings
         @es_options = options
+        @es_options.merge!("resurrect_delay" => 30)
       end
 
       ##
@@ -37,8 +38,12 @@ module LogStash
           XPackInfo.xpack_not_installed
         end
       rescue => e
-        logger.error('Unable to retrieve license information from license server', :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
-        nil
+        if logger.debug?
+          logger.error('Unable to retrieve license information from license server', :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
+        else
+          logger.error('Unable to retrieve license information from license server', :message => e.message)
+        end
+        XPackInfo.failed_to_fetch
       end
 
       ##
