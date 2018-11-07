@@ -208,16 +208,8 @@ public final class DatasetCompiler {
         final ValueSyntaxElement ifData, final ValueSyntaxElement elseData) {
         final ValueSyntaxElement eventVal = event.access();
         return Closure.wrap(
-            SyntaxFactory.forLoop(
-                event, inputBuffer,
-                Closure.wrap(
-                    SyntaxFactory.ifCondition(
-                        condition.call("fulfilled", eventVal),
-                        Closure.wrap(ifData.call("add", eventVal)),
-                        Closure.wrap(elseData.call("add", eventVal))
-                    )
-                )
-            )
+                SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                        .call("filterEvents", inputBuffer, condition, ifData, elseData)
         );
     }
 
@@ -245,22 +237,10 @@ public final class DatasetCompiler {
      */
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
-        final VariableDefinition event =
-            new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "e");
-        final ValueSyntaxElement eventVar = event.access();
         return Closure.wrap(
-            parents.stream().map(par ->
-                SyntaxFactory.forLoop(
-                    event, computeDataset(par),
-                    Closure.wrap(
-                        SyntaxFactory.ifCondition(
-                            SyntaxFactory.not(
-                                eventVar.call("getEvent").call("isCancelled")
-                            ), Closure.wrap(inputBuffer.call("add", eventVar))
-                        )
-                    )
-                )
-            ).toArray(MethodLevelSyntaxElement[]::new)
+                parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
+                ).toArray(MethodLevelSyntaxElement[]::new)
         ).add(compute).add(clear(inputBuffer));
     }
 
