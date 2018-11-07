@@ -229,7 +229,7 @@ describe LogStash::Agent do
         # since the pipeline is async, it can actually take some time to have metrics recordings
         # so we try a few times
         try(20) do
-          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipelien stats should exist"
+          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipeline stats should exist"
           expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
         end
 

@@ -1,0 +1,8 @@
+TODO 
+
+
+
+Racc is distributed under the terms of the GNU Lesser General
+Public License version 2. Note that you do NOT need to follow
+LGPL for your own parser (racc outputs). You can distribute those
+files under any licenses you want.Racc is

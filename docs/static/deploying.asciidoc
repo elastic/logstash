@@ -123,8 +123,8 @@ Enterprise-grade security is available across the entire delivery chain.
 {logstash-ref}/ls-security.html[Logstash to Elasticsearch].
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
-To enable Elasticsearch security, consult the
-{xpack-ref}/xpack-security.html[X-Pack documentation].
+To enable Elasticsearch security, see 
+{stack-ov}/elasticsearch-security.html[Securing the {stack}].
 
 [float]
 ==== Monitoring
@@ -205,7 +205,7 @@ SocketAppender to send JSON to the Logstash TCP input. Alternatively, log4j2
 can also log to a file for collection with FIlebeat. Usage of the log4j1
 SocketAppender is not recommended.
 
-IoT devices like Rasberry Pis, smartphones, and connected vehicles often send
+IoT devices like Raspberry Pis, smartphones, and connected vehicles often send
 telemetry data through one of these protocols.
 
 [float]

@@ -158,7 +158,7 @@ public final class Queue implements Closeable {
 
                 logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
-                this.ensureDiskAvailable(this.maxBytes);
+                this.ensureDiskAvailable(this.maxBytes, 0);
 
                 this.seqNum = 0;
                 headPageNum = 0;
@@ -171,8 +171,8 @@ public final class Queue implements Closeable {
 
             // at this point we have a head checkpoint to figure queue recovery
 
-            // as we load pages, compute actuall disk needed substracting existing pages size to the required maxBytes
-            long diskNeeded = this.maxBytes;
+            // as we load pages, compute actually disk needed substracting existing pages size to the required maxBytes
+            long pqSizeBytes = 0;
 
             // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
@@ -192,7 +192,7 @@ public final class Queue implements Closeable {
                 } else {
                     pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
                     addTailPage(PageFactory.newTailPage(cp, this, pageIO));
-                    diskNeeded -= (long)pageIO.getHead();
+                    pqSizeBytes += pageIO.getCapacity();
                 }
 
                 // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
@@ -209,7 +209,8 @@ public final class Queue implements Closeable {
             PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
-            ensureDiskAvailable(diskNeeded - (long)pageIO.getHead());
+            pqSizeBytes += (long)pageIO.getHead();
+            ensureDiskAvailable(this.maxBytes, pqSizeBytes);
 
             if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
                 // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
@@ -784,9 +785,11 @@ public final class Queue implements Closeable {
         return !isHeadPage(p);
     }
 
-    private void ensureDiskAvailable(final long diskNeeded) throws IOException {
-        if (!FsUtil.hasFreeSpace(this.dirPath, diskNeeded)) {
-            throw new IOException("Not enough free disk space available to allocate persisted queue.");
+    private void ensureDiskAvailable(final long maxPqSize, long currentPqSize) throws IOException {
+        if (!FsUtil.hasFreeSpace(this.dirPath, maxPqSize - currentPqSize)) {
+            throw new IOException(
+                    String.format("Unable to allocate %d more bytes for persisted queue on top of its current usage of %d bytes",
+                            maxPqSize - currentPqSize, currentPqSize));
         }
     }
 

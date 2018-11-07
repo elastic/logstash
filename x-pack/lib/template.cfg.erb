@@ -35,6 +35,7 @@ output {
         keystore => "<%= keystore_path %>"
         keystore_password => "<%= keystore_password %>"
     <% end %>
+    ssl_certificate_verification => <%= ssl_certificate_verification %>
   <% else %>
     # In the case where the user does not want SSL we don't set ssl => false
     # the reason being that the user can still turn ssl on by using https in their URL

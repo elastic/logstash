@@ -40,6 +40,11 @@ If you think you found a bug, it probably is a bug.
 The Logstash team takes time to digest, consider solutions, and weigh applicability of issues to both the broad
 Logstash user base and our own goals for the project. Through this process, we triage and update issues as we get to them. Please provide context in your issues instead of just adding a +1 comment. If you like a certain idea or enhancement, and have nothing more to add, please just use GitHub :+1: emoji.
 
+## Found a Security Issue?
+
+If you've found a security issue, before submitting anything via a PR, please
+get in touch with our security team [here](https://www.elastic.co/community/security).
+
 # Contributing Documentation and Code Changes
 
 If you have a bugfix or new feature that you would like to contribute to Logstash, and you think it will take
@@ -62,6 +67,81 @@ Using IntelliJ? See a detailed getting started guide [here](https://docs.google.
 
 Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own!
 
+### Logstash Plugin Changelog Guidelines
+
+This document provides guidelines on editing a logstash plugin's CHANGELOG file.
+
+#### What's a CHANGELOG file?
+
+According to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/):
+
+> A changelog is a file which contains a curated, chronologically ordered list of notable changes for each version of a project.
+
+Each logstash plugin contains a CHANGELOG.md markdown file. Here's an example: https://github.com/logstash-plugins/logstash-input-file/blob/master/CHANGELOG.md
+
+#### How is the CHANGELOG.md populated?
+
+Updates are done manually, according to the following rules:
+
+#### When should I add an entry to the CHANGELOG.md?
+
+Update the changelog before you push a new release to rubygems.org.
+
+To prevent merged pull requests from sitting in the master branch until someone decides to cut a release,
+we strive to publish a new version for each pull request. (This is not mandatory. See below.)
+You are therefore encouraged to bump the gemspec version and add a changelog entry in the same pull request as the change. See [logstash-input-snmp#8](https://github.com/logstash-plugins/logstash-input-snmp/pull/8/files) as an example.
+
+If have no intentions to release the change immediately after merging the pull request
+then you should still create an entry in the changelog, using the word `Unreleased` as the version. Example:
+
+```markdown
+## Unreleased
+  - Removed `sleep(0.0001)` from inner loop that was making things a bit slower [#133](http://example.org)
+
+## 3.3.3
+  - Fix when no delimiter is found in a chunk, the chunk is reread - no forward progress
+    is made in the file [#185](http://example.org)
+```
+
+#### What is the format of the Changelog entries?
+
+Most code in logstash-plugins comes from self-contained changes in the form of pull requests, so each entry should:
+
+1. be a summary of the Pull Request and contain a markdown link to it.
+2. start with [BREAKING], when it denotes a breaking change.
+  * Note: Breaking changes should warrant a major version bump.
+3. after [BREAKING], start with one of the following keywords:
+    `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+4. keep multiple entries with the same keyword in the same changelog revision together.
+
+The meaning of the keywords is as follows (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#how):
+
+- **`Added`** for new features.
+- **`Changed`** for changes in existing functionality.
+- **`Deprecated`** for soon-to-be removed features.
+- **`Removed`** for now removed features.
+- **`Fixed`** for any bug fixes.
+- **`Security`** in case of vulnerabilities.
+  - **Important reminder**: If you're working on a security issue, please make sure
+  you're following the process outlined by our security team. If you haven't
+  done so already, please get in touch with them
+  [here](https://www.elastic.co/community/security) first.
+
+Example:
+
+```
+## 4.0.0
+- Changed default value of `number_of_threads` from 2 to 1 [#101](http://example.org)
+- Changed default value of `execution_bugs` from 30 to 0 [#104](http://example.org)
+- [BREAKING] Removed obsolete option `enable_telnet` option [#100](http://example.org)
+
+## 3.3.2
+- Fixed incorrect serialization of input data when encoding was `Emacs-Mule` [#84](http://example.org)
+
+## 3.3.1
+- Fixed memory leak by removing calls to `leak_lots_of_memory` [#86](http://example.org)
+```
+
 ## Contribution Steps
 
 1. Test your changes! [Run](https://github.com/elastic/logstash#testing) the test suite
@@ -70,7 +150,9 @@ Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contr
    asking you to assign copyright to us, but to give us the right to distribute
    your code without restriction. We ask this of all contributors in order to
    assure our users of the origin and continuing existence of the code. You
-   only need to sign the CLA once.
+   need to sign the CLA only once. If your contribution involves changes to 
+   third-party dependencies in Logstash core or the default plugins, you may
+   wish to review the documentation for our [dependency audit process](https://github.com/elastic/logstash/blob/master/tools/dependencies-report/README.md).
 3. Send a pull request! Push your changes to your fork of the repository and
    [submit a pull
    request](https://help.github.com/articles/using-pull-requests). In the pull

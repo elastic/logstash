@@ -21,6 +21,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.QueueFactoryExt;
@@ -31,8 +32,10 @@ import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
+import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 @JRubyClass(name = "AbstractPipeline")
@@ -65,20 +68,15 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol PATH = RubyUtil.RUBY.newSymbol("path");
 
-    private static final RubySymbol STATS_KEY = RubyUtil.RUBY.newSymbol("stats");
-
-    private static final RubySymbol PIPELINES_KEY = RubyUtil.RUBY.newSymbol("pipelines");
-
-    private static final RubySymbol EVENTS_KEY = RubyUtil.RUBY.newSymbol("events");
-
     private static final RubySymbol TYPE_KEY = RubyUtil.RUBY.newSymbol("type");
 
     private static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
-    private static final RubySymbol DLQ_SIZE_KEY =
-        RubyUtil.RUBY.newSymbol("queue_size_in_bytes");
+    private static final RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
+        RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
+    );
 
     protected PipelineIR lir;
 
@@ -106,6 +104,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private JRubyAbstractQueueWriteClientExt inputQueueClient;
 
+    private QueueReadClientBase filterQueueClient;
+
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
@@ -126,13 +126,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
             )
         );
         settings = pipelineSettings.callMethod(context, "settings");
-        try {
-            queue = QueueFactoryExt.create(context, null, settings);
-        } catch (final Exception ex) {
-            LOGGER.error("Logstash failed to create queue.", ex);
-            throw new IllegalStateException(ex);
-        }
-        inputQueueClient = queue.writeClient(context);
         final IRubyObject id = getSetting(context, "pipeline.id");
         if (id.isNil()) {
             pipelineId = id();
@@ -158,6 +151,47 @@ public class AbstractPipelineExt extends RubyBasicObject {
             getSetting(context, "config.support_escapes").isTrue()
         );
         return this;
+    }
+
+    /**
+     * queue opening needs to happen out of the the initialize method because the
+     * AbstractPipeline is used for pipeline config validation and the queue
+     * should not be opened for this. This should be called only in the actual
+     * Pipeline/JavaPipeline initialisation.
+     * @param context ThreadContext
+     * @return Nil
+     */
+    @JRubyMethod(name = "open_queue")
+    public final IRubyObject openQueue(final ThreadContext context) {
+        try {
+            queue = QueueFactoryExt.create(context, null, settings);
+        } catch (final Exception ex) {
+            LOGGER.error("Logstash failed to create queue.", ex);
+            throw new IllegalStateException(ex);
+        }
+        inputQueueClient = queue.writeClient(context);
+        filterQueueClient = queue.readClient();
+
+        filterQueueClient.setEventsMetric(metric.namespace(context, EVENTS_METRIC_NAMESPACE));
+        filterQueueClient.setPipelineMetric(
+            metric.namespace(
+                context,
+                RubyArray.newArray(
+                    context.runtime,
+                    new IRubyObject[]{
+                        MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
+                        pipelineId.convertToString().intern19(), MetricKeys.EVENTS_KEY
+                    }
+                )
+            )
+        );
+
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "filter_queue_client")
+    public final QueueReadClientBase filterQueueClient() {
+        return filterQueueClient;
     }
 
     @JRubyMethod(name = "config_str")
@@ -243,7 +277,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject collectDlqStats(final ThreadContext context) {
         if (dlqEnabled(context).isTrue()) {
             getDlqMetric(context).gauge(
-                context, DLQ_SIZE_KEY,
+                context, QUEUE_SIZE_IN_BYTES,
                 dlqWriter(context).callMethod(context, "get_current_queue_size")
             );
         }
@@ -266,7 +300,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             context,
             RubyArray.newArray(
                 context.runtime,
-                Arrays.asList(STATS_KEY, PIPELINES_KEY, pipelineId.asString().intern(), QUEUE_KEY)
+                Arrays.asList(MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId.asString().intern(), QUEUE_KEY)
             )
         );
         pipelineMetric.gauge(context, TYPE_KEY, getSetting(context, "queue.type"));
@@ -296,7 +330,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             );
             dataMetrics.gauge(context, STORAGE_TYPE, context.runtime.newString(fileStore.type()));
             dataMetrics.gauge(context, PATH, dirPath);
-            pipelineMetric.gauge(context, EVENTS_KEY, inner.ruby_unread_count(context));
+            pipelineMetric.gauge(context, MetricKeys.EVENTS_KEY, inner.ruby_unread_count(context));
         }
         return context.nil;
     }
@@ -311,6 +345,21 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return queue;
     }
 
+    @JRubyMethod
+    public final IRubyObject close(final ThreadContext context) throws IOException {
+        filterQueueClient.close();
+        queue.close(context);
+        closeDlqWriter(context);
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "wrapped_write_client", visibility = Visibility.PROTECTED)
+    public final JRubyWrappedWriteClientExt wrappedWriteClient(final ThreadContext context,
+        final IRubyObject pluginId) {
+        return new JRubyWrappedWriteClientExt(context.runtime, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
+            .initialize(inputQueueClient, pipelineId.asJavaString(), metric, pluginId);
+    }
+
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
     }
@@ -321,7 +370,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 context, RubyArray.newArray(
                     context.runtime,
                     Arrays.asList(
-                        STATS_KEY, PIPELINES_KEY, pipelineId.asString().intern(), DLQ_KEY
+                        MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
+                        pipelineId.asString().intern(), DLQ_KEY
                     )
                 )
             );

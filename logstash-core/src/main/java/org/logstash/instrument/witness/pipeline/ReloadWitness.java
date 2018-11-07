@@ -26,7 +26,6 @@ public final class ReloadWitness implements SerializableWitness {
     private final RubyTimeStampGauge lastSuccessTimestamp;
     private final RubyTimeStampGauge lastFailureTimestamp;
     private final Snitch snitch;
-    private static final Serializer SERIALIZER = new Serializer();
 
     private static final String KEY = "reloads";
 

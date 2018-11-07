@@ -90,7 +90,7 @@ describe LogStash::ConvergeResult do
   end
 
   context "when all the actions are executed" do
-    context "all succesfull" do
+    context "all successful" do
       let(:success_action) { LogStash::PipelineAction::Stop.new(:success) }
       let(:success_action_2) { LogStash::PipelineAction::Stop.new(:success_2) }
 

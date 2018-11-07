@@ -68,6 +68,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
+  option ["--field-reference-parser"], "MODE",
+         I18n.t("logstash.runner.flag.field-reference-parser"),
+         :attribute_name => "config.field_reference.parser",
+         :default => LogStash::SETTINGS.get_default("config.field_reference.parser")
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
@@ -103,8 +108,8 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
-  option ["--experimental-java-execution"], :flag,
-         I18n.t("logstash.runner.flag.experimental-java-execution"),
+  option ["--java-execution"], :flag,
+         I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
 
