@@ -416,7 +416,7 @@ GEM
     logstash-mixin-rabbitmq_connection (5.0.2-java)
       march_hare (~> 3.0)
       stud (~> 0.0.22)
-    logstash-output-appsearch (1.0.0.beta1)
+    logstash-output-elastic_app_search (1.0.0.beta1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
     logstash-output-cloudwatch (3.0.8)
@@ -706,7 +706,7 @@ DEPENDENCIES
   logstash-input-twitter
   logstash-input-udp
   logstash-input-unix
-  logstash-output-appsearch
+  logstash-output-elastic_app_search
   logstash-output-cloudwatch
   logstash-output-csv
   logstash-output-elasticsearch
