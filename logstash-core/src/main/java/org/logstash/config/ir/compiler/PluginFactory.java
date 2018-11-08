@@ -43,7 +43,7 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
             return rubyFactory.buildOutput(name, line, column, args);
         }
 
