@@ -468,7 +468,7 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-output-appsearch": {
+	"logstash-output-elastic_app_search": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
