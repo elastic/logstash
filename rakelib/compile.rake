@@ -8,8 +8,9 @@ end
 
 namespace "compile" do
   desc "Compile the config grammar"
-  task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
 
+  task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
+  
   def safe_system(*args)
     if !system(*args)
       status = $?
@@ -18,10 +19,8 @@ namespace "compile" do
   end
 
   task "logstash-core-java" do
-    unless File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
-      puts("Building logstash-core using gradle")
-      safe_system("./gradlew", "assemble")
-    end
+    puts("Building logstash-core using gradle")
+    safe_system("./gradlew", "assemble")
   end
 
   desc "Build everything"

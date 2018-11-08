@@ -4,7 +4,7 @@ namespace "vendor" do
   end
 
   task "jruby" do |task, args|
-    system('./gradlew downloadAndInstallJRuby') unless File.exists?(File.join("vendor", "jruby"))
+    system('./gradlew downloadAndInstallJRuby')
   end # jruby
 
   task "all" => "jruby"

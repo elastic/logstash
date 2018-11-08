@@ -12,7 +12,7 @@ describe SecretStoreExt do
     end
 
     it "should be not exist" do
-      expect(subject.exists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)).to be_falsey
+      expect(subject.exists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)).to be_falsy
       expect(subject.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)).to be_nil
     end
   end

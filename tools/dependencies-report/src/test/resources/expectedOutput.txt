@@ -1,5 +1,5 @@
 name,version,revision,url,license,copyright
-bundler,1.16.0,,https://rubygems.org/gems/bundler/versions/1.16.0,UnacceptableLicense|MIT,
+bundler,1.16.0,,https://rubygems.org/gems/bundler/versions/1.16.0,MIT,
 bundler,1.16.1,,https://rubygems.org/gems/bundler/versions/1.16.1,MIT,
 com.fasterxml.jackson.core:jackson-core,2.7.3,,https://github.com/FasterXML/jackson-core/tree/jackson-core-2.7.3,Apache-2.0,
 com.fasterxml.jackson.core:jackson-core,2.9.1,,https://github.com/FasterXML/jackson-core/tree/jackson-core-2.9.1,Apache-2.0,

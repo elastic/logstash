@@ -279,13 +279,6 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-input-azure_event_hubs": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-input-elasticsearch": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -391,13 +384,6 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-input-snmp": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-input-snmptrap": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -462,13 +448,6 @@
 		"skip-list": false
 	},
 	"logstash-input-beats": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
-	"logstash-output-appsearch": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,

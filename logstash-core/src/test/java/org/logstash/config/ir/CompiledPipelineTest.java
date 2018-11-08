@@ -1,29 +1,5 @@
 package org.logstash.config.ir;
 
-import com.google.common.base.Strings;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.jruby.RubyInteger;
-import org.jruby.RubyString;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.logstash.ConvertedList;
-import org.logstash.ConvertedMap;
-import org.logstash.Event;
-import org.logstash.RubyUtil;
-import org.logstash.common.IncompleteSourceWithMetadataException;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
-import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.PluginFactory;
-import org.logstash.execution.Filter;
-import org.logstash.execution.Input;
-import org.logstash.execution.LsConfiguration;
-import org.logstash.execution.LsContext;
-import org.logstash.ext.JrubyEventExtLibrary;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,8 +7,28 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.jruby.RubyArray;
+import org.jruby.RubyInteger;
+import org.jruby.RubyString;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.logstash.Event;
+import org.logstash.RubyUtil;
+import org.logstash.config.ir.compiler.FilterDelegatorExt;
+import org.logstash.config.ir.compiler.OutputDelegatorExt;
+import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.config.ir.compiler.PluginFactory;
+import org.logstash.execution.Filter;
+import org.logstash.execution.Input;
+import org.logstash.execution.LsConfiguration;
+import org.logstash.execution.LsContext;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -165,145 +161,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @Test
-    public void correctlyCompilesEquals() throws Exception {
-        final String eq = "==";
-        assertCorrectFieldComparison(eq, 6, false);
-        assertCorrectFieldComparison(eq, 7, true);
-        assertCorrectFieldComparison(eq, 8, false);
-        assertCorrectValueComparison(eq, 6, false);
-        assertCorrectValueComparison(eq, 7, true);
-        assertCorrectValueComparison(eq, 8, false);
-        assertCorrectFieldToFieldComparison(eq, 7, 6, false);
-        assertCorrectFieldToFieldComparison(eq, 7, 7, true);
-        assertCorrectFieldToFieldComparison(eq, 7, 8, false);
-    }
-
-    @Test
-    public void correctlyCompilesNotEquals() throws Exception {
-        final String eq = "!=";
-        assertCorrectFieldComparison(eq, 6, true);
-        assertCorrectFieldComparison(eq, 7, false);
-        assertCorrectFieldComparison(eq, 8, true);
-        assertCorrectValueComparison(eq, 6, true);
-        assertCorrectValueComparison(eq, 7, false);
-        assertCorrectValueComparison(eq, 8, true);
-        assertCorrectFieldToFieldComparison(eq, 7, 6, true);
-        assertCorrectFieldToFieldComparison(eq, 7, 7, false);
-        assertCorrectFieldToFieldComparison(eq, 7, 8, true);
-    }
-
-    @Test
-    public void correctlyCompilesGreaterThan() throws Exception {
-        final String gt = ">";
-        assertCorrectFieldComparison(gt, 6, true);
-        assertCorrectFieldComparison(gt, 7, false);
-        assertCorrectFieldComparison(gt, 8, false);
-        assertCorrectValueComparison(gt, 6, true);
-        assertCorrectValueComparison(gt, 7, false);
-        assertCorrectValueComparison(gt, 8, false);
-        assertCorrectFieldToFieldComparison(gt, 7, 6, true);
-        assertCorrectFieldToFieldComparison(gt, 7, 7, false);
-        assertCorrectFieldToFieldComparison(gt, 7, 8, false);
-    }
-
-    @Test
-    public void correctlyCompilesLessThan() throws Exception {
-        final String lt = "<";
-        assertCorrectFieldComparison(lt, 6, false);
-        assertCorrectFieldComparison(lt, 7, false);
-        assertCorrectFieldComparison(lt, 8, true);
-        assertCorrectValueComparison(lt, 6, false);
-        assertCorrectValueComparison(lt, 7, false);
-        assertCorrectValueComparison(lt, 8, true);
-        assertCorrectFieldToFieldComparison(lt, 7, 6, false);
-        assertCorrectFieldToFieldComparison(lt, 7, 7, false);
-        assertCorrectFieldToFieldComparison(lt, 7, 8, true);
-    }
-
-    @Test
-    public void correctlyCompilesLessOrEqualThan() throws Exception {
-        final String lte = "<=";
-        assertCorrectFieldComparison(lte, 6, false);
-        assertCorrectFieldComparison(lte, 7, true);
-        assertCorrectFieldComparison(lte, 8, true);
-        assertCorrectValueComparison(lte, 6, false);
-        assertCorrectValueComparison(lte, 7, true);
-        assertCorrectValueComparison(lte, 8, true);
-        assertCorrectFieldToFieldComparison(lte, 7, 6, false);
-        assertCorrectFieldToFieldComparison(lte, 7, 7, true);
-        assertCorrectFieldToFieldComparison(lte, 7, 8, true);
-    }
-
-    @Test
-    public void correctlyCompilesGreaterOrEqualThan() throws Exception {
-        final String gte = ">=";
-        assertCorrectFieldComparison(gte, 6, true);
-        assertCorrectFieldComparison(gte, 7, true);
-        assertCorrectFieldComparison(gte, 8, false);
-        assertCorrectValueComparison(gte, 6, true);
-        assertCorrectValueComparison(gte, 7, true);
-        assertCorrectValueComparison(gte, 8, false);
-        assertCorrectFieldToFieldComparison(gte, 7, 6, true);
-        assertCorrectFieldToFieldComparison(gte, 7, 7, true);
-        assertCorrectFieldToFieldComparison(gte, 7, 8, false);
-    }
-
-    @Test
-    public void equalityCheckOnCompositeField() throws Exception {
-        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { if 4 == [list] { mockaddfilter {} } if 5 == [map] { mockaddfilter {} } } output {mockoutput{} }",
-                false
-        );
-        final Collection<String> s = new ArrayList<>();
-        s.add("foo");
-        final Map<String, Object> m = new HashMap<>();
-        m.put("foo", "bar");
-        final JrubyEventExtLibrary.RubyEvent testEvent =
-                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
-        testEvent.getEvent().setField("list", ConvertedList.newFromList(s));
-        testEvent.getEvent().setField("map", ConvertedMap.newFromMap(m));
-
-        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
-        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
-        new CompiledPipeline(
-                pipelineIR,
-                new CompiledPipelineTest.MockPluginFactory(
-                        Collections.singletonMap("mockinput", () -> null),
-                        filters,
-                        Collections.singletonMap("mockoutput", mockOutputSupplier())
-                )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
-        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
-        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
-        MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
-    }
-
-    @Test
-    public void conditionalWithNullField() throws Exception {
-        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { if [foo] == [bar] { mockaddfilter {} } } output {mockoutput{} }",
-                false
-        );
-        final JrubyEventExtLibrary.RubyEvent testEvent =
-                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
-        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
-        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
-        new CompiledPipeline(
-                pipelineIR,
-                new CompiledPipelineTest.MockPluginFactory(
-                        Collections.singletonMap("mockinput", () -> null),
-                        filters,
-                        Collections.singletonMap("mockoutput", mockOutputSupplier())
-                )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
-        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
-        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
-        MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.is("bar"));
-    }
-
-    @Test
     public void conditionalNestedMetaFieldPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
             "input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }",
@@ -328,92 +185,15 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
     }
 
-    @Test
-    public void moreThan255Parents() throws Exception {
-        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { " +
-                "if [foo] != \"bar\" { " +
-                "mockfilter {} " +
-                "mockaddfilter {} " +
-                "if [foo] != \"bar\" { " +
-                "mockfilter {} " +
-                Strings.repeat("} else if [foo] != \"bar\" {" +
-                    "mockfilter {} ", 300) + " } } " +
-                "} output {mockoutput{} }",
-            false
-        );
-        final JrubyEventExtLibrary.RubyEvent testEvent =
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
-        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
-        filters.put("mockfilter", () -> IDENTITY_FILTER);
-        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
-        new CompiledPipeline(
-            pipelineIR,
-            new CompiledPipelineTest.MockPluginFactory(
-                Collections.singletonMap("mockinput", () -> null),
-                filters,
-                Collections.singletonMap("mockoutput", mockOutputSupplier())
-            )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
-        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
-        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
-    }
-
-    private void assertCorrectValueComparison(final String op, final int value,
-        final boolean expected) throws Exception {
-        final Event event = new Event();
-        verifyComparison(expected, String.format("7 %s %d ", op, value), event);
-    }
-
-    private void assertCorrectFieldComparison(final String op, final int value,
-        final boolean expected) throws Exception {
-        final Event event = new Event();
-        event.setField("baz", value);
-        verifyComparison(expected, String.format("7 %s [baz]", op), event);
-    }
-
-    private void assertCorrectFieldToFieldComparison(final String op, final int value1,
-        final int value2, final boolean expected) throws Exception {
-        final Event event = new Event();
-        event.setField("brr", value1);
-        event.setField("baz", value2);
-        verifyComparison(expected, String.format("[brr] %s [baz]", op), event);
-    }
-
-    private void verifyComparison(final boolean expected, final String conditional,
-        final Event event) throws IncompleteSourceWithMetadataException {
-        final JrubyEventExtLibrary.RubyEvent testEvent =
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
-        new CompiledPipeline(
-            ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
-                    String.format("if %s { ", conditional) +
-                    " mockaddfilter {} " +
-                    "} " +
-                    "} output {mockoutput{} }",
-                false
-            ),
-            new CompiledPipelineTest.MockPluginFactory(
-                Collections.singletonMap("mockinput", () -> null),
-                Collections.singletonMap("mockaddfilter", () -> ADD_FIELD_FILTER),
-                Collections.singletonMap("mockoutput", mockOutputSupplier())
-            )
-        ).buildExecution()
-            .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
-        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
-        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
-        MatcherAssert.assertThat(
-            event.getField("foo"), CoreMatchers.is(expected ? "bar" : null)
-        );
-        outputEvents.clear();
-    }
-
-    private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> mockOutputSupplier() {
-        return () -> events -> events.forEach(
-            event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event)
-        );
+    private Supplier<OutputStrategyExt.AbstractOutputStrategyExt> mockOutputSupplier() {
+        return () -> new OutputStrategyExt.SimpleAbstractOutputStrategyExt(RubyUtil.RUBY, RubyUtil.RUBY.getObject()) {
+            @Override
+            @SuppressWarnings("unchecked")
+            protected IRubyObject output(final ThreadContext context, final IRubyObject events) {
+                ((RubyArray) events).forEach(event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event));
+                return this;
+            }
+        };
     }
 
     /**
@@ -425,12 +205,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         private final Map<String, Supplier<IRubyObject>> filters;
 
-        private final Map<String, Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>>> outputs;
+        private final Map<String, Supplier<OutputStrategyExt.AbstractOutputStrategyExt>> outputs;
 
         MockPluginFactory(final Map<String, Supplier<IRubyObject>> inputs,
             final Map<String, Supplier<IRubyObject>> filters,
-            final Map<String, Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>>> outputs
-        ) {
+            final Map<String, Supplier<OutputStrategyExt.AbstractOutputStrategyExt>> outputs) {
             this.inputs = inputs;
             this.filters = filters;
             this.outputs = outputs;
@@ -443,16 +222,18 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
+        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
-            return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
+            return new OutputDelegatorExt(
+                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
+                .initForTesting(setupPlugin(name, outputs));
         }
 
         @Override
         public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
             return new FilterDelegatorExt(
-                RubyUtil.RUBY, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS)
+                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
                 .initForTesting(setupPlugin(name, filters));
         }
 

@@ -7,7 +7,6 @@ require_relative "../shared_examples/cli/logstash-plugin/uninstall"
 require_relative "../shared_examples/cli/logstash-plugin/remove"
 require_relative "../shared_examples/cli/logstash-plugin/update"
 require_relative "../shared_examples/cli/logstash-plugin/generate"
-require_relative "../shared_examples/cli/logstash-plugin/integration_plugin"
 
 # This is the collection of test for the CLI interface, this include the plugin manager behaviour, 
 # it also include the checks for other CLI options.
@@ -21,7 +20,6 @@ describe "CLI operation" do
     it_behaves_like "logstash uninstall", logstash
     it_behaves_like "logstash remove", logstash
     it_behaves_like "logstash update", logstash
-    it_behaves_like "integration plugins compatible", logstash
 #    it_behaves_like "logstash generate", logstash
   end
 end

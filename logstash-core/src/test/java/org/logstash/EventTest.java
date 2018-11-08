@@ -435,7 +435,7 @@ public final class EventTest {
     }
 
     @Test
-    public void metadataRootShouldBeValuefied() {
+    public void metadataRootShouldBeValueified() {
         final Event event = new Event();
 
         final Map<String, Object> metadata = new HashMap<>();

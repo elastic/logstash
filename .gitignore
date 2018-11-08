@@ -44,6 +44,7 @@ Gemfile
 .idea
 logs
 .lock
+NOTICE.TXT
 qa/integration/services/installed/
 .gradle
 **/.settings

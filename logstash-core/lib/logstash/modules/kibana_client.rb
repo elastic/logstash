@@ -1,12 +1,9 @@
 # encoding: utf-8
 require "logstash/json"
 require "manticore"
-require 'logstash/util/manticore_ssl_config_helper'
 
 module LogStash module Modules class KibanaClient
   include LogStash::Util::Loggable
-
-  include LogStash::Util::ManticoreSSLConfigHelper
 
   class Response
     # to create a custom response with body as an Object (Hash or Array)
@@ -40,8 +37,17 @@ module LogStash module Modules class KibanaClient
       pool_max_per_route: 2
     }
 
-    ssl_options = manticore_ssl_options_from_config('kibana', settings)
-    ssl_enabled = ssl_options.any?
+    ssl_options = {}
+
+    # boolean settings may be strings if set through the cli
+    # or booleans if set through the yaml file, so we use .to_s
+    ssl_enabled = @settings["var.kibana.ssl.enabled"].to_s == "true"
+    if ssl_enabled
+      ssl_options[:verify] = @settings.fetch("var.kibana.ssl.verification_mode", "strict").to_sym
+      ssl_options[:ca_file] = @settings.fetch("var.kibana.ssl.certificate_authority", nil)
+      ssl_options[:client_cert] = @settings.fetch("var.kibana.ssl.certificate", nil)
+      ssl_options[:client_key] = @settings.fetch("var.kibana.ssl.key", nil)
+    end
 
     client_options[:ssl] = ssl_options
 

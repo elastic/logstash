@@ -69,7 +69,7 @@ describe "Test Logstash service when multiple pipelines are used" do
           "pipeline.id" => "test2",
           "pipeline.workers" => 1,
           "pipeline.batch.size" => 1,
-          "config.string" => "input { pipeline { address => testaddr } } output { file { path => \"#{temporary_out_file_1}\" flush_interval => 0} }"
+          "config.string" => "input { pipeline { address => testaddr } } output { file { path => \"#{temporary_out_file_1}\" } }"
         }
       ]
     end

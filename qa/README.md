@@ -123,7 +123,7 @@ Important bits here are:
 have to go under specific bootstrap scripts (see ```specific: true ```
 in the platform definition).
 
-This file is the one that you will use to know about different OS's
+This file is the one that you will use to know about differnt OS's
 testes, add new ones, etc..
 
 ### I want to add a test, what should I do?

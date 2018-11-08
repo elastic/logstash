@@ -173,7 +173,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         return this.uniqueHash();
     }
 
-    // Can be overridden in subclasses to define multiple
+    // Can be overriden in subclasses to define multiple
     // expected Edge classes this Vertex can take.
     // If any EdgeFactory instances are returned this Vertex is considered
     // a partial leaf.

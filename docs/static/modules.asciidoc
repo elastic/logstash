@@ -4,13 +4,6 @@
 Logstash modules provide a quick, end-to-end solution for ingesting data and
 visualizing it with purpose-built dashboards.
 
-These modules are available:
-
-* <<connecting-to-cloud,Elastic Cloud>>
-* <<arcsight-module>>
-* <<netflow-module>>
-* <<azure-module, Microsoft Azure Module>>
-
 Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
 and other meta files that make it easier for you to set up the Elastic Stack for
 specific use cases or data sources.
@@ -40,7 +33,7 @@ bin/logstash --modules MODULE_NAME --setup [-M "CONFIG_SETTING=VALUE"]
 ----
 
 
-//TODO: For 6.0, show how to run multiple modules
+//TODO: For 6.0, show how to run mutliple modules
 
 Where:
 

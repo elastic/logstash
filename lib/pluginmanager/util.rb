@@ -103,30 +103,6 @@ module LogStash::PluginManager
     !!gemfile.find(plugin) && find_plugins_gem_specs(plugin).any?
   end
 
-  # @param spec [Gem::Specification] plugin specification
-  # @return [Boolean] true if the gemspec is from an integration plugin
-  def self.integration_plugin_spec?(spec)
-    spec.metadata &&
-      spec.metadata["logstash_plugin"] == "true" &&
-      spec.metadata["logstash_group"] == "integration"
-  end
-
-  # @param spec [Gem::Specification] plugin specification
-  # @return [Array] array of [plugin name] representing plugins a given integration plugin provides
-  def self.integration_plugin_provides(spec)
-    spec.metadata["integration_plugins"].split(",")
-  end
-
-  # @param name [String] plugin name
-  # @return [Gem::Specification] Gem specification of integration plugin that provides plugin
-  def self.which_integration_plugin_provides(name, gemfile)
-    all_installed_plugins_gem_specs(gemfile) \
-      .select {|spec| integration_plugin_spec?(spec) }
-      .find do |integration_plugin|
-        integration_plugin_provides(integration_plugin).any? {|plugin| plugin == name }
-      end
-  end
-
   # @param plugin_list [Array] array of [plugin name, version] tuples
   # @return [Array] array of [plugin name, version, ...] tuples when duplicate names have been merged and non duplicate version requirements added
   def self.merge_duplicates(plugin_list)

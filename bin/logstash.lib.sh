@@ -46,7 +46,6 @@ export LOGSTASH_HOME
 export LS_HOME="${LOGSTASH_HOME}"
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
-LOGSTASH_JARS=${LOGSTASH_HOME}/logstash-core/lib/jars
 
 # iterate over the command line args and look for the argument
 # after --path.settings to see if the jvm.options file is in

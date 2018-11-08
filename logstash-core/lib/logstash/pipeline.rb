@@ -20,6 +20,7 @@ module LogStash; class BasePipeline < AbstractPipeline
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger
+    @mutex = Mutex.new
 
     @inputs = nil
     @filters = nil
@@ -82,18 +83,24 @@ module LogStash; class Pipeline < BasePipeline
     :events_consumed,
     :events_filtered,
     :started_at,
-    :thread
+    :thread,
+    :filter_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     super
-    open_queue
 
     @worker_threads = []
 
+    @filter_queue_client = queue.read_client
     @signal_queue = java.util.concurrent.LinkedBlockingQueue.new
-
+    # Note that @inflight_batches as a central mechanism for tracking inflight
+    # batches will fail if we have multiple read clients here.
+    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
+    @filter_queue_client.set_pipeline_metric(
+        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+    )
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
 
@@ -219,6 +226,12 @@ module LogStash; class Pipeline < BasePipeline
     return 0
   end # def run
 
+  def close
+    @filter_queue_client.close
+    queue.close
+    close_dlq_writer
+  end
+
   def transition_to_running
     @running.make_true
   end
@@ -285,7 +298,7 @@ module LogStash; class Pipeline < BasePipeline
         thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
           _pipeline.worker_loop(_b_size, _b_delay)
         end
-        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+        thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
       end
 
@@ -308,12 +321,12 @@ module LogStash; class Pipeline < BasePipeline
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
-    filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
+    @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
     output_events_map = Hash.new { |h, k| h[k] = [] }
     while true
       signal = @signal_queue.poll || NO_SIGNAL
 
-      batch = filter_queue_client.read_batch.to_java # metrics are started in read_batch
+      batch = @filter_queue_client.read_batch.to_java # metrics are started in read_batch
       batch_size = batch.filteredSize
       if batch_size > 0
         @events_consumed.add(batch_size)
@@ -322,7 +335,7 @@ module LogStash; class Pipeline < BasePipeline
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       if batch.filteredSize > 0
         output_batch(batch, output_events_map)
-        filter_queue_client.close_batch(batch)
+        @filter_queue_client.close_batch(batch)
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
       break if (@worker_shutdown.get && !draining_queue?)
@@ -330,11 +343,11 @@ module LogStash; class Pipeline < BasePipeline
 
     # we are shutting down, queue is drained if it was required, now  perform a final flush.
     # for this we need to create a new empty batch to contain the final flushed events
-    batch = filter_queue_client.to_java.newBatch
-    filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
+    batch = @filter_queue_client.to_java.newBatch
+    @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
     flush_filters_to_batch(batch, :final => true)
     output_batch(batch, output_events_map)
-    filter_queue_client.close_batch(batch)
+    @filter_queue_client.close_batch(batch)
   end
 
   def filter_batch(batch)
@@ -342,7 +355,7 @@ module LogStash; class Pipeline < BasePipeline
       #these are both original and generated events
       batch.merge(e) unless e.cancelled?
     end
-    filter_queue_client.add_filtered_metrics(batch.filtered_size)
+    @filter_queue_client.add_filtered_metrics(batch.filtered_size)
     @events_filtered.add(batch.filteredSize)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
@@ -374,7 +387,7 @@ module LogStash; class Pipeline < BasePipeline
       events.clear
     end
 
-    filter_queue_client.add_output_metrics(batch.filtered_size)
+    @filter_queue_client.add_output_metrics(batch.filtered_size)
   end
 
   def wait_inputs
@@ -446,7 +459,7 @@ module LogStash; class Pipeline < BasePipeline
 
     stop_inputs
 
-    # We make this call blocking, so we know for sure when the method return the shutdown is
+    # We make this call blocking, so we know for sure when the method return the shtudown is
     # stopped
     wait_for_workers
     clear_pipeline_metrics
@@ -603,6 +616,13 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def draining_queue?
-    @drain_queue ? !filter_queue_client.empty? : false
+    @drain_queue ? !@filter_queue_client.empty? : false
+  end
+
+  def wrapped_write_client(plugin_id)
+    #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
+    @mutex.synchronize do
+      LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin_id)
+    end
   end
 end; end

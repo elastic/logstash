@@ -32,12 +32,7 @@ module LogStash module PipelineAction
           if @pipeline_config.settings.get_value("pipeline.java_execution")
             LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil)
           else
-            agent.exclusive do
-              # The Ruby pipeline initialization is not thread safe because of the module level
-              # shared state in LogsStash::Config::AST. When using multiple pipelines this can gets
-              # executed simultaneously in different threads and we need to synchonize this initialization.
-              LogStash::BasePipeline.new(@pipeline_config)
-            end
+            LogStash::BasePipeline.new(@pipeline_config)
           end
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)

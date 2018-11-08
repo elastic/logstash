@@ -194,20 +194,20 @@ public class AccessorsTest {
         set(data, "[foo][bar]", "Another String");
     }
 
-    private static Object get(final ConvertedMap data, final String reference) {
+    private static Object get(final ConvertedMap data, final CharSequence reference) {
         return Accessors.get(data, FieldReference.from(reference));
     }
 
-    private static Object set(final ConvertedMap data, final String reference,
+    private static Object set(final ConvertedMap data, final CharSequence reference,
         final Object value) {
         return Accessors.set(data, FieldReference.from(reference), value);
     }
 
-    private static Object del(final ConvertedMap data, final String reference) {
+    private static Object del(final ConvertedMap data, final CharSequence reference) {
         return Accessors.del(data, FieldReference.from(reference));
     }
 
-    private static boolean includes(final ConvertedMap data, final String reference) {
+    private static boolean includes(final ConvertedMap data, final CharSequence reference) {
         return Accessors.includes(data, FieldReference.from(reference));
     }
 }

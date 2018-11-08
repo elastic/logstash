@@ -28,8 +28,14 @@ fi
 . "$(cd `dirname ${SOURCEPATH}`/..; pwd)/bin/logstash.lib.sh"
 setup
 
-unset CLASSPATH
-for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
-  CLASSPATH=${LOGSTASH_JARS}/${J}:${CLASSPATH}
-done
+
+function classpath() {
+    echo -n "$1"
+    shift
+    while [ $# -gt 0 ] ; do
+      echo -n ":${1}"
+      shift
+    done
+}
+CLASSPATH="$(classpath ${LOGSTASH_HOME}/logstash-core/lib/jars/*.jar)"
 exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.ackedqueue.PqCheck "$@"

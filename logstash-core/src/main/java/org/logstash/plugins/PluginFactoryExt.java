@@ -21,7 +21,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.config.ir.PipelineIR;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -30,7 +29,6 @@ import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 public final class PluginFactoryExt {
@@ -40,6 +38,8 @@ public final class PluginFactoryExt {
         implements RubyIntegration.PluginFactory {
 
         private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
+
+        private static final RubySymbol NAME_KEY = RubyUtil.RUBY.newSymbol("name");
 
         private final Collection<String> pluginsById = new HashSet<>();
 
@@ -59,7 +59,7 @@ public final class PluginFactoryExt {
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
             filterInstance.callMethod(
                 context, "metric=",
-                ((AbstractMetricExt) args[3]).namespace(context, id.intern19())
+                args[3].callMethod(context, "namespace", id.intern19())
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return args[0].callMethod(context, "new", new IRubyObject[]{filterInstance, id});
@@ -110,7 +110,7 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
+        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
             return (OutputDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
@@ -120,7 +120,7 @@ public final class PluginFactoryExt {
         }
 
         @JRubyMethod(required = 4)
-        public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
+        public OutputDelegatorExt buildOutput(final ThreadContext context,
             final IRubyObject[] args) {
             return buildOutput(
                 (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3]
@@ -214,7 +214,7 @@ public final class PluginFactoryExt {
                 final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
                 rubyArgs.putAll(newArgs);
                 if (type == PluginLookup.PluginType.OUTPUT) {
-                    return new OutputDelegatorExt(context.runtime, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS).initialize(
+                    return new OutputDelegatorExt(context.runtime, RubyUtil.OUTPUT_DELEGATOR_CLASS).init(
                         context,
                         new IRubyObject[]{
                             klass, typeScopedMetric, executionCntx,
@@ -232,7 +232,7 @@ public final class PluginFactoryExt {
                 } else {
                     final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
-                    scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
+                    scopedMetric.gauge(context, NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                     pluginInstance.callMethod(context, "metric=", scopedMetric);
                     pluginInstance.callMethod(context, "execution_context=", executionCntx);
                     return pluginInstance;
@@ -279,6 +279,10 @@ public final class PluginFactoryExt {
     @JRubyClass(name = "PluginMetricFactory")
     public static final class Metrics extends RubyBasicObject {
 
+        private static final RubySymbol STATS = RubyUtil.RUBY.newSymbol("stats");
+
+        private static final RubySymbol PIPELINES = RubyUtil.RUBY.newSymbol("pipelines");
+
         private static final RubySymbol PLUGINS = RubyUtil.RUBY.newSymbol("plugins");
 
         private RubySymbol pipelineId;
@@ -306,10 +310,7 @@ public final class PluginFactoryExt {
             return metric.namespace(
                 context,
                 RubyArray.newArray(
-                    context.runtime,
-                    Arrays.asList(
-                        MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS
-                    )
+                    context.runtime, Arrays.asList(STATS, PIPELINES, pipelineId, PLUGINS)
                 )
             ).namespace(
                 context, RubyUtil.RUBY.newSymbol(String.format("%ss", pluginType.asJavaString()))

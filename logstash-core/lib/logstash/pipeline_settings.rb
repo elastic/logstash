@@ -46,7 +46,7 @@ module LogStash
 
     def register(setting)
       unless SETTINGS_WHITE_LIST.include?(setting.name)
-        raise ArgumentError.new("Only pipeline related settings can be registered in a PipelineSettings object. Received \"#{setting.name}\". Allowed settings: #{SETTINGS_WHITE_LIST}")
+        raise ArgumentError.new("Only pipeline related settings can be registed in a PipelineSettings object. Received \"#{setting.name}\". Allowed settings: #{SETTINGS_WHITE_LIST}")
       end
       super(setting)
     end

@@ -157,17 +157,17 @@ Here is an example of the forked path configuration.
   queue.type: persisted
   config.string: |
     input { beats { port => 5044 } }
-    output { pipeline { send_to => ["internal-es", "partner-s3"] } }
+    output { pipeline { send_to => [internal-es, partner-s3] } }
 - pipeline.id: buffered-es
   queue.type: persisted
   config.string: |
-    input { pipeline { address => "internal-es" } }
+    input { pipeline { address => internal-es } }
     # Index the full event
     output { elasticsearch { } }
 - pipeline.id: partner
   queue.type: persisted
   config.string: |
-    input { pipeline { address => "partner-s3" } }
+    input { pipeline { address => partner-s3 } }
     filter {
       # Remove the sensitive data
       mutate { remove_field => 'sensitive-data' }

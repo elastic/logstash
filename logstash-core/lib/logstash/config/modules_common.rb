@@ -27,7 +27,7 @@ module LogStash module Config
           end
 
       if modules_array.empty?
-        # no specified modules
+        # no specifed modules
         return pipelines
       end
       logger.debug("Specified modules", :modules_array => modules_array.to_s)
@@ -73,9 +73,9 @@ module LogStash module Config
           LogStash::Modules::SettingsMerger.merge_kibana_auth!(module_hash)
           current_module.with_settings(module_hash)
           config_test = settings.get("config.test_and_exit")
-          module_setup = settings.get("modules_setup")
+          modul_setup = settings.get("modules_setup")
           # Only import data if it's not a config test and --setup is true
-          if !config_test && module_setup
+          if !config_test && modul_setup
             logger.info("Setting up the #{module_name} module")
             esclient = LogStash::ElasticsearchClient.build(module_hash)
             kbnclient = LogStash::Modules::KibanaClient.new(module_hash)

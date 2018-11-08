@@ -11,7 +11,6 @@ import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -52,12 +51,12 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod
-        public IRubyObject classes() {
+        public IRubyObject classes(final ThreadContext context) {
             return map.rb_values();
         }
 
         @JRubyMethod
-        public IRubyObject types() {
+        public IRubyObject types(final ThreadContext context) {
             return map.keys();
         }
 
@@ -88,10 +87,6 @@ public final class OutputStrategyExt {
     @JRubyClass(name = "AbstractStrategy")
     public abstract static class AbstractOutputStrategyExt extends RubyObject {
 
-        private DynamicMethod outputMethod;
-
-        private RubyClass outputClass;
-
         public AbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -108,23 +103,10 @@ public final class OutputStrategyExt {
             return close(context);
         }
 
-        @JRubyMethod(name = AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME)
+        @JRubyMethod(name = "multi_receive")
         public final IRubyObject multiReceive(final ThreadContext context, final IRubyObject events)
             throws InterruptedException {
             return output(context, events);
-        }
-
-        protected final void initOutputCallsite(final RubyClass outputClass) {
-            outputMethod = outputClass.searchMethod(AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME);
-            this.outputClass = outputClass;
-        }
-
-        protected final void invokeOutput(final ThreadContext context, final IRubyObject batch,
-            final IRubyObject pluginInstance) {
-            outputMethod.call(
-                context, pluginInstance, outputClass, AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
-                batch
-            );
         }
 
         protected abstract IRubyObject output(ThreadContext context, IRubyObject events)
@@ -148,8 +130,8 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
+        @JRubyMethod(name = "initialize", optional = 4)
+        public IRubyObject init(final ThreadContext context, final IRubyObject[] args) {
             final RubyHash pluginArgs = (RubyHash) args[3];
             workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
             if (workerCount.isNil()) {
@@ -159,10 +141,8 @@ public final class OutputStrategyExt {
             workerQueue = new ArrayBlockingQueue<>(count);
             workers = context.runtime.newArray(count);
             for (int i = 0; i < count; ++i) {
-                final RubyClass outputClass = (RubyClass) args[0];
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-                final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
-                initOutputCallsite(outputClass);
+                final IRubyObject output = args[0].callMethod(context, "new", pluginArgs);
                 output.callMethod(context, "metric=", args[1]);
                 output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);
@@ -172,12 +152,12 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod(name = "worker_count")
-        public IRubyObject workerCount() {
+        public IRubyObject workerCount(final ThreadContext context) {
             return workerCount;
         }
 
         @JRubyMethod
-        public IRubyObject workers() {
+        public IRubyObject workers(final ThreadContext context) {
             return workers;
         }
 
@@ -185,8 +165,7 @@ public final class OutputStrategyExt {
         protected IRubyObject output(final ThreadContext context, final IRubyObject events) throws InterruptedException {
             final IRubyObject worker = workerQueue.take();
             try {
-                invokeOutput(context, events, worker);
-                return context.nil;
+                return worker.callMethod(context, "multi_receive", events);
             } finally {
                 workerQueue.put(worker);
             }
@@ -217,12 +196,10 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final RubyClass outputClass = (RubyClass) args[0];
+        @JRubyMethod(name = "initialize", optional = 4)
+        public IRubyObject init(final ThreadContext context, final IRubyObject[] args) {
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
             output = args[0].callMethod(context, "new", args[3]);
-            initOutputCallsite(outputClass);
             output.callMethod(context, "metric=", args[1]);
             output.callMethod(context, "execution_context=", args[2]);
             return this;
@@ -239,8 +216,7 @@ public final class OutputStrategyExt {
         }
 
         protected final IRubyObject doOutput(final ThreadContext context, final IRubyObject events) {
-            invokeOutput(context, events, output);
-            return context.nil;
+            return output.callMethod(context, "multi_receive", events);
         }
     }
 

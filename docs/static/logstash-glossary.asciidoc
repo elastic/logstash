@@ -39,7 +39,7 @@ file::
 	A resource storing binary data (which might be text, image, application, etc.) on a physical storage media. In the Logstash context, a common input source which monitors a growing collection of text-based log lines.
 
 filter:
-	An intermediary processing mechanism in the Logstash pipeline. Typically, filters act upon event data after it has been ingested via inputs, by mutating, enriching, and/or modifying the data according to configuration rules. The second phase of the typical Logstash pipeline (inputs->filters->outputs).
+	An intermediary processing mechanism in the Lostash pipeline. Typically, filters act upon event data after it has been ingested via inputs, by mutating, enriching, and/or modifying the data according to configuration rules. The second phase of the typical Logstash pipeline (inputs->filters->outputs).
 
 fluentd::
 	Like Logstash, another open-source tool for collecting logs and events, with plugins to extend functionality.

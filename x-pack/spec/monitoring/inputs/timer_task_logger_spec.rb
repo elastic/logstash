@@ -13,7 +13,7 @@ describe LogStash::Inputs::TimerTaskLogger do
     let(:result) { :dummy_result }
 
     context "when there is no exception" do
-      it "successfully run" do
+      it "succesfully run" do
         expect { subject.update(run_at, result, nil) }.not_to raise_error
       end
     end

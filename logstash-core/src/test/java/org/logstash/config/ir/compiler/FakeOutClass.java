@@ -13,19 +13,17 @@ import static org.logstash.RubyUtil.RUBY;
 @JRubyClass(name = "FakeOutClass")
 public class FakeOutClass extends RubyObject {
 
-    public static FakeOutClass latestInstance;
-
-    private static IRubyObject OUT_STRATEGY = RUBY.newSymbol("single");
-
     private int multiReceiveDelay = 0;
     private int multiReceiveCallCount = 0;
     private int registerCallCount = 0;
     private int closeCallCount = 0;
     private IRubyObject multiReceiveArgs;
     private IRubyObject metricArgs;
+    private IRubyObject outStrategy;
 
     FakeOutClass(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+        outStrategy = RUBY.newSymbol("single");
     }
 
     static FakeOutClass create() {
@@ -37,41 +35,45 @@ public class FakeOutClass extends RubyObject {
         return RUBY.newString("example");
     }
 
-    @JRubyMethod(name = "config_name", meta = true)
-    public static IRubyObject configName(final ThreadContext context, final IRubyObject recv) {
+    @JRubyMethod(name = "config_name")
+    public IRubyObject configName(final ThreadContext context) {
         return RUBY.newString("dummy_plugin");
     }
 
     @JRubyMethod
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject args) {
-        latestInstance = this;
+    public IRubyObject initialize(final ThreadContext context) {
         return this;
     }
 
-    @JRubyMethod(meta = true)
-    public static IRubyObject concurrency(final ThreadContext context, final IRubyObject recv) {
-        return OUT_STRATEGY;
+    @JRubyMethod
+    public IRubyObject concurrency(final ThreadContext context) {
+        return outStrategy;
     }
 
     @JRubyMethod
-    public IRubyObject register() {
+    public IRubyObject register(final ThreadContext context) {
         registerCallCount++;
         return this;
     }
 
+    @JRubyMethod(name = "new")
+    public IRubyObject newMethod(final ThreadContext context, IRubyObject args) {
+        return this;
+    }
+
     @JRubyMethod(name = "metric=")
-    public IRubyObject metric(final IRubyObject args) {
+    public IRubyObject metric(final ThreadContext context, IRubyObject args) {
         this.metricArgs = args;
         return this;
     }
 
     @JRubyMethod(name = "execution_context=")
-    public IRubyObject executionContext(IRubyObject args) {
+    public IRubyObject executionContext(final ThreadContext context, IRubyObject args) {
         return this;
     }
 
-    @JRubyMethod(name = AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME)
-    public IRubyObject multiReceive(final IRubyObject args) {
+    @JRubyMethod(name = "multi_receive")
+    public IRubyObject multiReceive(final ThreadContext context, IRubyObject args) {
         multiReceiveCallCount++;
         multiReceiveArgs = args;
         if (multiReceiveDelay > 0) {
@@ -91,10 +93,9 @@ public class FakeOutClass extends RubyObject {
     }
 
     @JRubyMethod(name = "set_out_strategy")
-    public static IRubyObject setOutStrategy(final ThreadContext context, final IRubyObject recv,
-        final IRubyObject outStrategy) {
-        OUT_STRATEGY = outStrategy;
-        return context.nil;
+    public IRubyObject setOutStrategy(final ThreadContext context, IRubyObject outStrategy) {
+        this.outStrategy = outStrategy;
+        return this;
     }
 
     public IRubyObject getMetricArgs() {

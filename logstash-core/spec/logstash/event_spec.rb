@@ -76,17 +76,6 @@ describe LogStash::Event do
         expect(e.get("[foo][-1]")).to eq(list[-1])
       end
     end
-
-    context 'with illegal-syntax field reference' do
-      # NOTE: in true-legacy-mode FieldReference parsing, the input `[` caused Logstash
-      # to crash entirely with a Java ArrayIndexOutOfBounds exception; this spec ensures that
-      # we instead raise a RuntimeException that can be handled normally within the
-      # Ruby runtime.
-      it 'raises a RuntimeError' do
-        e = LogStash::Event.new
-        expect { e.get('[') }.to raise_exception(::RuntimeError)
-      end
-    end
   end
 
   context "#set" do
@@ -165,17 +154,6 @@ describe LogStash::Event do
       # s2 = e.get("test")
       # expect(s2.encoding.name).to eq("UTF-8")
       # expect(s2.valid_encoding?).to eq(true)
-    end
-
-    context 'with illegal-syntax field reference' do
-      # NOTE: in true-legacy-mode FieldReference parsing, the input `[` caused Logstash
-      # to crash entirely with a Java ArrayIndexOutOfBounds exception; this spec ensures that
-      # we instead raise a RuntimeException that can be handled normally within the
-      # Ruby runtime.
-      it 'raises a RuntimeError' do
-        e = LogStash::Event.new
-        expect { e.set('[', 'value') }.to raise_exception(::RuntimeError)
-      end
     end
   end
 

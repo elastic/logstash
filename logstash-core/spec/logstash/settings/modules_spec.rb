@@ -34,19 +34,19 @@ describe LogStash::Setting::Modules do
     subject { described_class.new("mycloudid", LogStash::Util::CloudSettingId) }
     context "when given a string which is not a cloud id" do
       it "should raise an exception" do
-        expect { subject.set("foobarbaz") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
+        expect { subject.set("foobarbaz") }.to raise_error(ArgumentError, /Cloud Id does not decode/)
       end
     end
 
     context "when given a string which is empty" do
       it "should raise an exception" do
-        expect { subject.set("") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
+        expect { subject.set("") }.to raise_error(ArgumentError, /Cloud Id does not decode/)
       end
     end
 
     context "when given a string which is has environment prefix only" do
       it "should raise an exception" do
-        expect { subject.set("testing:") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
+        expect { subject.set("testing:") }.to raise_error(ArgumentError, /Cloud Id does not decode/)
       end
     end
 

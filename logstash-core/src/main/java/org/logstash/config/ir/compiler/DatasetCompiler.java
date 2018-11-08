@@ -157,7 +157,7 @@ public final class DatasetCompiler {
      * @return Output Dataset
      */
     public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
-        final AbstractOutputDelegatorExt output, final boolean terminal) {
+        final OutputDelegatorExt output, final boolean terminal) {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;

@@ -49,7 +49,7 @@ public class FileLockFactory {
     private static final Map<FileLock, String> LOCK_MAP =  Collections.synchronizedMap(new HashMap<>());
 
     public static FileLock obtainLock(Path dirPath, String lockName) throws IOException {
-        if (!Files.isDirectory(dirPath)) { Files.createDirectories(dirPath); }
+        Files.createDirectories(dirPath);
         Path lockPath = dirPath.resolve(lockName);
 
         try {

@@ -9,7 +9,7 @@ require "stud/temporary"
 require "fileutils"
 
 # Theses tests doesn't currently work on Travis, since we need to run them in a sudo
-# environment and we do that other tests are failings. This is probably due to IPv4 vs IPv6 settings
+# environment and we do that other tests are faillings. This is probably due to IPv4 vs IPv6 settings
 # in the VM vs the container.
 #
 # We are working to bring the test to our internal Jenkins environment.

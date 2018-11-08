@@ -11,9 +11,7 @@ ifeval::["{versioned_docs}"!="true"]
 |=======================================================================
 |Setting |Input type|Required
 | <<plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
-ifndef::no_codec[]
 | <<plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
-endif::no_codec[]
 | <<plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
 | <<plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 | <<plugins-{type}s-{plugin}-tags>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
@@ -24,9 +22,7 @@ ifeval::["{versioned_docs}"=="true"]
 |=======================================================================
 |Setting |Input type|Required
 | <<{version}-plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
-ifndef::no_codec[]
 | <<{version}-plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
-endif::no_codec[]
 | <<{version}-plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
 | <<{version}-plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 | <<{version}-plugins-{type}s-{plugin}-tags>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
@@ -51,7 +47,6 @@ endif::[]
 
 Add a field to an event
 
-ifndef::no_codec[]
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-codec"]
 endif::[]
@@ -69,8 +64,6 @@ ifndef::default_codec[]
 endif::[]
 
 The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
-endif::no_codec[]
-
 
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-enable_metric"]

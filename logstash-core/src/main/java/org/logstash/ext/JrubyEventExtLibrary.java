@@ -82,14 +82,14 @@ public final class JrubyEventExtLibrary {
         {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.getUnconvertedField(extractFieldReference(reference))
+                this.event.getUnconvertedField(FieldReference.from(reference.getByteList()))
             );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            final FieldReference r = extractFieldReference(reference);
+            final FieldReference r = FieldReference.from(reference.getByteList());
             if (r.equals(FieldReference.TIMESTAMP_REFERENCE)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
@@ -124,7 +124,7 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(extractFieldReference(reference))
+                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
             );
         }
 
@@ -132,7 +132,7 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.remove(extractFieldReference(reference))
+                this.event.remove(FieldReference.from(reference.getByteList()))
             );
         }
 
@@ -303,23 +303,6 @@ public final class JrubyEventExtLibrary {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
         }
-
-        /**
-         * Shared logic to wrap {@link FieldReference.IllegalSyntaxException}s that are raised by
-         * {@link FieldReference#from(RubyString)} when encountering illegal syntax in a ruby-exception
-         * that can be easily handled within the ruby plugins
-         *
-         * @param reference a {@link RubyString} representing the path to a field
-         * @return the corresponding {@link FieldReference} (see: {@link FieldReference#from(RubyString)})
-         */
-        private static FieldReference extractFieldReference(final RubyString reference) {
-            try {
-                return FieldReference.from(reference);
-            } catch (FieldReference.IllegalSyntaxException ise) {
-                throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
-            }
-        }
-
 
         private void setEvent(Event event) {
             this.event = event;

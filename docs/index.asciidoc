@@ -62,7 +62,7 @@ include::static/advanced-pipeline.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
-// Logstash setup
+// Lostash setup
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-logstash.asciidoc
 include::static/setting-up-logstash.asciidoc[]
@@ -90,6 +90,12 @@ include::static/shutdown.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
 include::static/setup/setting-up-xpack.asciidoc[]
+
+// Breaking Changes
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
+include::static/breaking-changes.asciidoc[]
+
 
 // Upgrading Logstash
 
@@ -149,9 +155,6 @@ include::static/arcsight-module.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/netflow-module.asciidoc
 include::static/netflow-module.asciidoc[]
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/azure-module.asciidoc
-include::static/azure-module.asciidoc[]
 
 // Working with Filebeat Modules
 
@@ -242,11 +245,6 @@ include::static/glossary.asciidoc[]
 
 // This is in the pluginbody.asciidoc itself
 //
-
-// Breaking Changes
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
-include::static/breaking-changes.asciidoc[]
 
 // Release Notes
 

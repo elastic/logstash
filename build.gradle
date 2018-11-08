@@ -20,8 +20,6 @@ apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
-import java.nio.file.Files
-import java.nio.file.Paths
 import org.logstash.gradle.RubyGradleUtils
 import org.yaml.snakeyaml.Yaml
 
@@ -112,7 +110,7 @@ if (versionMap["jruby-runtime-override"]) {
 } else {
     jRubyVersion = versionMap["jruby"]["version"]
     jRubySha1 = versionMap["jruby"]["sha1"]
-    jRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${jRubyVersion}/jruby-dist-${jRubyVersion}-bin.tar.gz"
+    jRubyURL = "http://jruby.org.s3.amazonaws.com/downloads/${jRubyVersion}/jruby-bin-${jRubyVersion}.tar.gz"
     doChecksum = true
 }
 
@@ -122,6 +120,7 @@ clean {
   delete "${projectDir}/Gemfile"
   delete "${projectDir}/Gemfile.lock"
   delete "${projectDir}/vendor"
+  delete "${projectDir}/NOTICE.TXT"
   delete "${projectDir}/.bundle"
   delete "${projectDir}/qa/integration/Gemfile.lock"
   delete "${projectDir}/qa/integration/.bundle"
@@ -141,11 +140,7 @@ project(":logstash-core") {
   }
 }
 
-def jrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz"
-
-def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
-def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
-def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
+def jrubyTarPath = "${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz"
 
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
@@ -153,10 +148,8 @@ task downloadJRuby(type: Download) {
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
     outputs.file(jrubyTarPath)
-    dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
+    dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
 }
-
-downloadJRuby.onlyIf { customJRubyDir == "" }
 
 task verifyFile(dependsOn: downloadJRuby, type: Verify) {
     description "Verify the SHA1 of the download JRuby artifact"
@@ -167,37 +160,7 @@ task verifyFile(dependsOn: downloadJRuby, type: Verify) {
     checksum jRubySha1
 }
 
-verifyFile.onlyIf { customJRubyDir == "" }
-
-task buildCustomJRuby(type: Exec) {
-  description "Build tar.gz and .jar artifacts from JRuby source directory"
-  workingDir customJRubyDir
-  commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
-  standardOutput = new ByteArrayOutputStream()
-  errorOutput = new ByteArrayOutputStream()
-  ext.output = {
-    standardOutput.toString() + errorOutput.toString()
-  }
-}
-
-buildCustomJRuby.onlyIf { customJRubyDir != "" }
-
-task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
-  description "Install custom built JRuby in the vendor directory"
-  inputs.file(customJRubyTar)
-  outputs.dir("${projectDir}/vendor/jruby")
-  from tarTree(customJRubyTar == "" ? jrubyTarPath : customJRubyTar)
-  eachFile { f ->
-    f.path = f.path.replaceFirst("^jruby-${customJRubyVersion}", '')
-  }
-  exclude "**/stdlib/rdoc/**"
-  includeEmptyDirs = false
-  into "${projectDir}/vendor/jruby"
-}
-
-installCustomJRuby.onlyIf { customJRubyDir != "" }
-
-task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: Copy) {
+task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -209,8 +172,6 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
 }
-
-downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
 
 task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
@@ -225,11 +186,7 @@ task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
   }
 }
 
-def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
-  it.tasks.findByName("assemble")
-}
-
-task installTestGems(dependsOn: assemblyDeps) {
+task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files file("${projectDir}/versions.yml")
@@ -242,7 +199,7 @@ task installTestGems(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleTarDistribution(dependsOn: assemblyDeps) {
+task assembleTarDistribution(dependsOn: downloadAndInstallJRuby) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -258,7 +215,7 @@ task assembleTarDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleOssTarDistribution(dependsOn: assemblyDeps) {
+task assembleOssTarDistribution() {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -272,7 +229,7 @@ task assembleOssTarDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleZipDistribution(dependsOn: assemblyDeps) {
+task assembleZipDistribution(dependsOn: downloadAndInstallJRuby) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -288,7 +245,7 @@ task assembleZipDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleOssZipDistribution(dependsOn: assemblyDeps) {
+task assembleOssZipDistribution(dependsOn: downloadAndInstallJRuby) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -394,12 +351,6 @@ task generateLicenseReportInputs() {
             licenseReportFolder.text = licenseReportFolders.toString()
         }
     }
-}
-
-task generatePluginsVersion(dependsOn: bootstrap) {
-  doLast {
-    rubyGradleUtils.rake('generate_plugins_version')
-  }
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.

@@ -13,17 +13,15 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.BufferedTokenizerExt;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.ConvergeResultExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
@@ -96,11 +94,7 @@ public final class RubyUtil {
 
     public static final RubyClass ACKED_QUEUE_CLASS;
 
-    public static final RubyClass ABSTRACT_OUTPUT_DELEGATOR_CLASS;
-
-    public static final RubyClass RUBY_OUTPUT_DELEGATOR_CLASS;
-
-    public static final RubyClass JAVA_OUTPUT_DELEGATOR_CLASS;
+    public static final RubyClass OUTPUT_DELEGATOR_CLASS;
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
@@ -405,17 +399,8 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
-        ABSTRACT_OUTPUT_DELEGATOR_CLASS = LOGSTASH_MODULE.defineClassUnder(
-            "AbstractOutputDelegator", RUBY.getObject(),
-            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
-        );
-        ABSTRACT_OUTPUT_DELEGATOR_CLASS.defineAnnotatedMethods(AbstractOutputDelegatorExt.class);
-        RUBY_OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
-            ABSTRACT_OUTPUT_DELEGATOR_CLASS, OutputDelegatorExt::new, OutputDelegatorExt.class
-        );
-        JAVA_OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
-            ABSTRACT_OUTPUT_DELEGATOR_CLASS, JavaOutputDelegatorExt::new,
-            JavaOutputDelegatorExt.class
+        OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
+            OutputDelegatorExt::new, OutputDelegatorExt.class
         );
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
             FilterDelegatorExt::new, FilterDelegatorExt.class

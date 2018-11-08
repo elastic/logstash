@@ -35,7 +35,6 @@ module LogStash
         @keystore_path = es_settings['keystore']
         @keystore_password = es_settings['keystore_password']
         @sniffing = es_settings['sniffing']
-        @ssl_certificate_verification = (es_settings['verification_mode'] == 'certificate')
       end
 
       attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid

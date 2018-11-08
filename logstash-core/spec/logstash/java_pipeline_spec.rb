@@ -125,6 +125,10 @@ class NilFlushingFilterPeriodic < DummyFlushingFilter
   end
 end
 
+class JavaTestPipeline < LogStash::JavaPipeline
+  attr_reader :outputs, :settings
+end
+
 describe LogStash::JavaPipeline do
   let(:worker_thread_count)     { 5 }
   let(:safe_thread_count)       { 1 }

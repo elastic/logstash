@@ -1,4 +1,4 @@
-# encoding: utf-8
+# encoeing: utf-8
 require "pluginmanager/proxy_support"
 require "rexml/document"
 require "fileutils"

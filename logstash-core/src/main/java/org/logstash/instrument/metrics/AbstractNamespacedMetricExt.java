@@ -68,6 +68,4 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
-
-    public abstract AbstractMetricExt getMetric();
 }

@@ -118,6 +118,10 @@ class DummyFlushingFilterPeriodic < DummyFlushingFilter
   end
 end
 
+class TestPipeline < LogStash::Pipeline
+  attr_reader :outputs, :settings
+end
+
 describe LogStash::Pipeline do
   let(:worker_thread_count)     { 5 }
   let(:safe_thread_count)       { 1 }

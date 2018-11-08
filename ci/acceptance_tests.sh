@@ -28,13 +28,14 @@ QA_DIR="$PWD/qa"
 # Always run the halt, even if the test times out or an exit is sent
 cleanup() {
   cd $QA_DIR
-  bundle check || bundle install
   bundle exec rake qa:vm:halt
 }
 trap cleanup EXIT
 
 # Cleanup any stale VMs from old jobs first
-cleanup
+
+cd $QA_DIR
+bundle exec rake qa:vm:halt
 
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."

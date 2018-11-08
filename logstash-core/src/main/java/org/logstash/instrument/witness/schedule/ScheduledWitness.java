@@ -10,7 +10,7 @@ public interface ScheduledWitness {
     /**
      * The duration between updates for this witness
      *
-     * @return the {@link Duration} between scheduled updates. For example {@link Duration#ofMinutes(long)} with a value of 5 would schedule this implementation to
+     * @return the {@link Duration} between scheduled updates. For example {@link Duration#ofMinutes(long)} with a value of 5 would schedule this implemenation to
      * self-populate every 5 minute. Defaults to every 60 seconds. - Note, implementations may not allow schedules faster then every 1 second.
      */
     default Duration every() {

@@ -1,7 +1,7 @@
 # List of pipelines to be loaded by Logstash
 #
 # This document must be a list of dictionaries/hashes, where the keys/values are pipeline settings.
-# Default values for omitted settings are read from the `logstash.yml` file.
+# Default values for ommitted settings are read from the `logstash.yml` file.
 # When declaring multiple pipelines, each MUST have its own `pipeline.id`.
 #
 # Example of two pipelines:

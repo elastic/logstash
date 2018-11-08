@@ -60,11 +60,7 @@ namespace "modules" do
   end
 
   desc "Unpack all kibana resources from a folder of JSON files."
-  # from Kibana / saved objects -> export all
-  # rake modules:unpack_all[my_module,/User/me/Downloads/my_module,/User/me/workspace/logstash/modules/my_module/6.x/configuration/kibana]
-  # Note - you can not currently export index-patterns from the UI, see: https://github.com/elastic/kibana/issues/4288
-  # To get the index-pattern, you need to pull from the .kibana index and manually update
-  # curl -XGET 'https://<user>:<password>@<es-host>:<es-port>/.kibana/_search?q=type:index-pattern&size=100&pretty' -o idx-patterns.json
+  # invoke like: rake modules:unpack_all[cef,~/elastic/logstash_cef_module/dashboards,~/elastic/logstash/modules/cef/configuration/kibana]
   task "unpack_all", :module_name, :kibana_source_dir, :dest_dir do |task, args|
     module_name = args[:module_name]
     kibana_source_dir = args[:kibana_source_dir]

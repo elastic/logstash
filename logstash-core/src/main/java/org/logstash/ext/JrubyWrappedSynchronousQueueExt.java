@@ -10,7 +10,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.execution.AbstractWrappedQueueExt;
-import org.logstash.execution.QueueReadClientBase;
 
 @JRubyClass(name = "WrappedSynchronousQueue")
 public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueExt {
@@ -36,7 +35,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     }
 
     @Override
-    protected QueueReadClientBase getReadClient() {
+    protected IRubyObject getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
         return JrubyMemoryReadClientExt.create(queue, 125, 50);

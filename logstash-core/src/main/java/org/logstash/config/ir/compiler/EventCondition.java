@@ -4,16 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
+import org.jruby.RubyInteger;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
 import org.logstash.ConvertedMap;
-import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
-import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -56,13 +55,15 @@ public interface EventCondition {
      */
     final class Compiler {
 
-        private static final Predicate<Integer> LESS_THAN = i -> i < 0;
+        /**
+         * {@link EventCondition} that is always {@code true}.
+         */
+        private static final EventCondition TRUE = event -> true;
 
-        private static final Predicate<Integer> LESS_OR_EQUAL_THAN = i -> i <= 0;
-
-        private static final Predicate<Integer> GREATER_THAN = i -> i > 0;
-
-        private static final Predicate<Integer> GREATER_OR_EQUAL_THAN = i -> i >= 0;
+        /**
+         * {@link EventCondition} that is always {@code false}.
+         */
+        private static final EventCondition FALSE = event -> false;
 
         /**
          * Cache of all compiled {@link EventCondition}.
@@ -95,17 +96,24 @@ public interface EventCondition {
                     condition = regex((RegexEq) expression);
                 } else if (expression instanceof In) {
                     condition = in((In) expression);
-                } else if (expression instanceof Or || expression instanceof And) {
-                    condition = booleanCondition((BinaryBooleanExpression) expression);
+                } else if (expression instanceof Or) {
+                    condition = or(booleanPair((BinaryBooleanExpression) expression));
                 } else if (expression instanceof Truthy) {
                     condition = truthy((Truthy) expression);
                 } else if (expression instanceof Not) {
                     condition = not((Not) expression);
-                } else if (expression instanceof Gt || expression instanceof Gte
-                    || expression instanceof Lt || expression instanceof Lte) {
-                    condition = comparison((BinaryBooleanExpression) expression);
+                } else if (expression instanceof Gt) {
+                    condition = gt((Gt) expression);
+                } else if (expression instanceof Gte) {
+                    condition = gte((Gte) expression);
+                } else if (expression instanceof Lt) {
+                    condition = lt((Lt) expression);
+                } else if (expression instanceof Lte) {
+                    condition = lte((Lte) expression);
+                } else if (expression instanceof And) {
+                    condition = and(booleanPair((BinaryBooleanExpression) expression));
                 } else if (expression instanceof Neq) {
-                    condition = not(eq((BinaryBooleanExpression) expression));
+                    condition = neq((Neq) expression);
                 } else {
                     throw new EventCondition.Compiler.UnexpectedTypeException(expression);
                 }
@@ -114,7 +122,7 @@ public interface EventCondition {
             }
         }
 
-        private EventCondition booleanCondition(final BinaryBooleanExpression expression) {
+        private EventCondition[] booleanPair(final BinaryBooleanExpression expression) {
             final Expression left = expression.getLeft();
             final Expression right = expression.getRight();
             final EventCondition first;
@@ -135,13 +143,7 @@ public interface EventCondition {
             } else {
                 throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
-            if (expression instanceof And) {
-                return event -> first.fulfilled(event) && second.fulfilled(event);
-            } else if (expression instanceof Or) {
-                return event -> first.fulfilled(event) || second.fulfilled(event);
-            } else {
-                throw new EventCondition.Compiler.UnexpectedTypeException(expression);
-            }
+            return new EventCondition[]{first, second};
         }
 
         private EventCondition not(final Not not) {
@@ -184,6 +186,18 @@ public interface EventCondition {
                 expression.getRight() instanceof EventValueExpression;
         }
 
+        private static EventCondition neq(final Neq neq) {
+            final EventCondition condition;
+            final Expression uleft = neq.getLeft();
+            final Expression uright = neq.getRight();
+            if (eAndV(neq)) {
+                condition = not(eq((EventValueExpression) uleft, (ValueExpression) uright));
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
         private static EventCondition truthy(final Truthy truthy) {
             final EventCondition condition;
             final Expression inner = truthy.getExpression();
@@ -210,43 +224,42 @@ public interface EventCondition {
             return condition;
         }
 
-        private static EventCondition comparison(final BinaryBooleanExpression expression) {
-            final Predicate<Integer> conditional;
-            final Predicate<Integer> converse;
-            if (expression instanceof Gte) {
-                conditional = GREATER_OR_EQUAL_THAN;
-                converse = LESS_OR_EQUAL_THAN;
-            } else if (expression instanceof Lte) {
-                conditional = LESS_OR_EQUAL_THAN;
-                converse = GREATER_OR_EQUAL_THAN;
-            } else if (expression instanceof Lt) {
-                conditional = LESS_THAN;
-                converse = GREATER_THAN;
-            } else if (expression instanceof Gt) {
-                conditional = GREATER_THAN;
-                converse = LESS_THAN;
-            } else {
-                throw new EventCondition.Compiler.UnexpectedTypeException(expression);
-            }
+        private static EventCondition gte(final Gte gte) {
             final EventCondition condition;
-            final Expression uleft = expression.getLeft();
-            final Expression uright = expression.getRight();
-            if (eAndV(expression)) {
-                condition = compareFieldToConstant(
-                    (EventValueExpression) uleft, (ValueExpression) uright, conditional
-                );
-            } else if (vAndE(expression)) {
-                condition = compareFieldToConstant(
-                    (EventValueExpression) uright, (ValueExpression) uleft, converse
-                );
-            } else if (vAndV(expression)) {
-                return compareConstants(
-                    (ValueExpression) uleft, (ValueExpression) uright, conditional
-                );
+            final Expression uleft = gte.getLeft();
+            final Expression uright = gte.getRight();
+            if (eAndV(gte)) {
+                final EventValueExpression left = (EventValueExpression) uleft;
+                final ValueExpression right = (ValueExpression) uright;
+                condition = or(gt(left, right), eq(left, right));
             } else {
-                return compareFields(
-                    (EventValueExpression) uleft, (EventValueExpression) uright, conditional
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
+        private static EventCondition lte(final Lte lte) {
+            final EventCondition condition;
+            final Expression uleft = lte.getLeft();
+            final Expression uright = lte.getRight();
+            if (eAndV(lte)) {
+                condition = not(gt((EventValueExpression) uleft, (ValueExpression) uright));
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
+        private static EventCondition lt(final Lt lt) {
+            final EventCondition condition;
+            final Expression uleft = lt.getLeft();
+            final Expression uright = lt.getRight();
+            if (eAndV(lt)) {
+                final EventValueExpression left = (EventValueExpression) uleft;
+                final ValueExpression right = (ValueExpression) uright;
+                condition = not(or(gt(left, right), eq(left, right)));
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
             }
             return condition;
         }
@@ -293,27 +306,27 @@ public interface EventCondition {
 
         /**
          * Compiles a constant (due to both of its sides being constant {@link ValueExpression})
-         * conditional.
+         * conditional into either {@link EventCondition.Compiler#TRUE} or
+         * {@link EventCondition.Compiler#FALSE}.
          * @param left Constant left side {@link ValueExpression}
          * @param right Constant right side {@link ValueExpression}
-         * @return Constant {@link EventCondition}
+         * @return Either {@link EventCondition.Compiler#TRUE} or
+         * {@link EventCondition.Compiler#FALSE}
          */
         private static EventCondition in(final ValueExpression left, final ValueExpression right) {
             final Object found = right.get();
             final Object other = left.get();
-            final boolean res;
             if (found instanceof ConvertedList && other instanceof RubyString) {
-                res = ((ConvertedList) found).stream().anyMatch(item -> item.toString()
-                    .equals(other.toString()));
+                return ((ConvertedList) found).stream().anyMatch(item -> item.toString()
+                    .equals(other.toString())) ? TRUE : FALSE;
             } else if (found instanceof RubyString && other instanceof RubyString) {
-                res = found.toString().contains(other.toString());
+                return found.toString().contains(other.toString()) ? TRUE : FALSE;
             } else if (found instanceof RubyString && other instanceof ConvertedList) {
-                res = ((ConvertedList) other).stream()
-                    .anyMatch(item -> item.toString().equals(found.toString()));
+                return ((ConvertedList) other).stream()
+                    .anyMatch(item -> item.toString().equals(found.toString())) ? TRUE : FALSE;
             } else {
-                res = found != null && found.equals(other);
+                return found != null && other != null && found.equals(other) ? TRUE : FALSE;
             }
-            return constant(res);
         }
 
         private static boolean listValueRight(final In in) {
@@ -332,16 +345,22 @@ public interface EventCondition {
             );
         }
 
-        @SuppressWarnings("unchecked")
         private static EventCondition eq(final EventValueExpression evalE,
             final ValueExpression valE) {
-            return rubyFieldEquals(
-                (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, valE.get()),
-                evalE.getFieldName()
-            );
+            final Object value = valE.get();
+            final String field = evalE.getFieldName();
+            if (value instanceof String) {
+                return new EventCondition.Compiler.FieldEqualsString(field, (String) value);
+            } else if (value instanceof Long || value instanceof Integer ||
+                value instanceof Short) {
+                return new EventCondition.Compiler.FieldEqualsLong(
+                    field, ((Number) value).longValue()
+                );
+            }
+            throw new EventCondition.Compiler.UnexpectedTypeException(value);
         }
 
-        private static EventCondition eq(final BinaryBooleanExpression equals) {
+        private static EventCondition eq(final Eq equals) {
             final Expression left = equals.getLeft();
             final Expression right = equals.getRight();
             final EventCondition condition;
@@ -351,24 +370,47 @@ public interface EventCondition {
                 condition = eq((EventValueExpression) right, (ValueExpression) left);
             } else if (eAndE(equals)) {
                 condition = eq((EventValueExpression) left, (EventValueExpression) right);
+            } else if (vAndV(equals)) {
+                condition = ((ValueExpression) left).get()
+                    .equals(((ValueExpression) right).get()) ? TRUE : FALSE;
             } else {
-                condition = constant(
-                    ((ValueExpression) left).get().equals(((ValueExpression) right).get())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
             return condition;
         }
 
         private static EventCondition eq(final EventValueExpression first,
             final EventValueExpression second) {
-            final FieldReference field1 = FieldReference.from(first.getFieldName());
-            final FieldReference field2 = FieldReference.from(second.getFieldName());
-            return event -> {
-                Event java = event.getEvent();
-                return Objects.equals(
-                        java.getUnconvertedField(field1),
-                        java.getUnconvertedField(field2));
-            };
+            return new EventCondition.Compiler.FieldEqualsField(
+                FieldReference.from(first.getFieldName()), FieldReference.from(second.getFieldName())
+            );
+        }
+
+        private static EventCondition gt(final Gt greater) {
+            final EventCondition condition;
+            final Expression left = greater.getLeft();
+            final Expression right = greater.getRight();
+            if (eAndV(greater)) {
+                condition = gt((EventValueExpression) left, (ValueExpression) right);
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
+            }
+            return condition;
+        }
+
+        private static EventCondition gt(final EventValueExpression left,
+            final ValueExpression right) {
+            final Object value = right.get();
+            final String field = left.getFieldName();
+            if (value instanceof String) {
+                return new EventCondition.Compiler.FieldGreaterThanString(field, (String) value);
+            } else if (value instanceof Long || value instanceof Integer ||
+                value instanceof Short) {
+                return new EventCondition.Compiler.FieldGreaterThanNumber(
+                    field, RubyUtil.RUBY.newFixnum(((Number) value).longValue())
+                );
+            }
+            throw new EventCondition.Compiler.UnexpectedTypeException(value);
         }
 
         private static EventCondition truthy(final EventValueExpression evalE) {
@@ -376,46 +418,15 @@ public interface EventCondition {
         }
 
         private static EventCondition not(final EventCondition condition) {
-            return event -> !condition.fulfilled(event);
+            return new EventCondition.Compiler.Negated(condition);
         }
 
-        private static EventCondition compareConstants(final ValueExpression left,
-            final ValueExpression right, final Predicate<Integer> operator) {
-            return constant(operator.test(compare(left.get(), right.get())));
+        private static EventCondition or(final EventCondition... conditions) {
+            return new EventCondition.Compiler.OrCondition(conditions[0], conditions[1]);
         }
 
-        private static EventCondition compareFields(final EventValueExpression left,
-            final EventValueExpression right, final Predicate<Integer> operator) {
-            final FieldReference one = FieldReference.from(left.getFieldName());
-            final FieldReference other = FieldReference.from(right.getFieldName());
-            return event -> {
-                final Event javaEvent = event.getEvent();
-                return operator.test(
-                    compare(
-                        javaEvent.getUnconvertedField(one), javaEvent.getUnconvertedField(other)
-                    )
-                );
-            };
-        }
-
-        @SuppressWarnings("unchecked")
-        private static EventCondition compareFieldToConstant(final EventValueExpression left,
-            final ValueExpression right, final Predicate<Integer> operator) {
-            final FieldReference one = FieldReference.from(left.getFieldName());
-            final Comparable<IRubyObject> other =
-                (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
-            return event -> {
-                final Event javaEvent = event.getEvent();
-                return operator.test(compare(javaEvent.getUnconvertedField(one), other));
-            };
-        }
-
-        @SuppressWarnings("unchecked")
-        private static int compare(final Object left, final Object right) {
-            if (left instanceof Comparable<?>) {
-                return ((Comparable) left).compareTo(right);
-            }
-            throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
+        private static EventCondition and(final EventCondition... conditions) {
+            return new EventCondition.Compiler.AndCondition(conditions[0], conditions[1]);
         }
 
         /**
@@ -433,15 +444,144 @@ public interface EventCondition {
             return false;
         }
 
-        private static EventCondition rubyFieldEquals(final Comparable<IRubyObject> left,
-            final String field) {
-            final FieldReference reference = FieldReference.from(field);
-            return event ->
-                    left.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
+        private static final class Negated implements EventCondition {
+
+            private final EventCondition condition;
+
+            Negated(final EventCondition condition) {
+                this.condition = condition;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return !condition.fulfilled(event);
+            }
         }
 
-        private static EventCondition constant(final boolean value) {
-            return value ? event -> true : event -> false;
+        private static final class AndCondition implements EventCondition {
+
+            private final EventCondition first;
+
+            private final EventCondition second;
+
+            AndCondition(final EventCondition first, final EventCondition second) {
+                this.first = first;
+                this.second = second;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return first.fulfilled(event) && second.fulfilled(event);
+            }
+        }
+
+        private static final class OrCondition implements EventCondition {
+
+            private final EventCondition first;
+
+            private final EventCondition second;
+
+            OrCondition(final EventCondition first, final EventCondition second) {
+                this.first = first;
+                this.second = second;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return first.fulfilled(event) || second.fulfilled(event);
+            }
+        }
+
+        private static final class FieldGreaterThanString implements EventCondition {
+
+            private final FieldReference field;
+
+            private final RubyString value;
+
+            private FieldGreaterThanString(final String field, final String value) {
+                this.field = FieldReference.from(field);
+                this.value = RubyUtil.RUBY.newString(value);
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return value.compareTo(
+                    (IRubyObject) event.getEvent().getUnconvertedField(field)
+                ) < 0;
+            }
+        }
+
+        private static final class FieldGreaterThanNumber implements EventCondition {
+
+            private final FieldReference field;
+
+            private final RubyNumeric value;
+
+            private FieldGreaterThanNumber(final String field, final RubyNumeric value) {
+                this.field = FieldReference.from(field);
+                this.value = value;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return value.compareTo(
+                    (IRubyObject) event.getEvent().getUnconvertedField(field)
+                ) < 0;
+            }
+        }
+
+        private static final class FieldEqualsString implements EventCondition {
+
+            private final FieldReference field;
+
+            private final RubyString value;
+
+            private FieldEqualsString(final String field, final String value) {
+                this.field = FieldReference.from(field);
+                this.value = RubyUtil.RUBY.newString(value);
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object val = event.getEvent().getUnconvertedField(field);
+                return value.equals(val);
+            }
+        }
+
+        private static final class FieldEqualsLong implements EventCondition {
+
+            private final FieldReference field;
+
+            private final long value;
+
+            private FieldEqualsLong(final String field, final long value) {
+                this.field = FieldReference.from(field);
+                this.value = value;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object val = event.getEvent().getUnconvertedField(field);
+                return val instanceof RubyInteger && ((RubyInteger) val).getLongValue() == value;
+            }
+        }
+
+        private static final class FieldEqualsField implements EventCondition {
+
+            private final FieldReference one;
+
+            private final FieldReference other;
+
+            private FieldEqualsField(final FieldReference one, final FieldReference other) {
+                this.one = one;
+                this.other = other;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return event.getEvent().getUnconvertedField(one)
+                    .equals(event.getEvent().getUnconvertedField(other));
+            }
         }
 
         private static final class FieldMatches implements EventCondition {
@@ -547,7 +687,7 @@ public interface EventCondition {
                 } else if (rfound instanceof ConvertedList) {
                     return contains((ConvertedList) rfound, lfound);
                 } else {
-                    return lfound != null && lfound.equals(rfound);
+                    return lfound != null && rfound != null && lfound.equals(rfound);
                 }
             }
         }
@@ -608,14 +748,6 @@ public interface EventCondition {
 
             UnexpectedTypeException(final Object inner) {
                 super(String.format("Unexpected input type %s", inner.getClass()));
-            }
-
-            UnexpectedTypeException(final Object left, final Object right) {
-                super(
-                    String.format(
-                        "Unexpected input type combination %s %s", left.getClass(), right.getClass()
-                    )
-                );
             }
         }
     }

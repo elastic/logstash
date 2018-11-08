@@ -95,5 +95,3 @@ else
   echo "Successfully created system startup script for Logstash"
 fi
 rm $tempfile
-
-exit $exit_code

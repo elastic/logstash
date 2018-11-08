@@ -1,27 +1,9 @@
 [[breaking-changes]]
 == Breaking Changes
 
-We strive to maintain backward compatibility between minor versions (6.x to 6.y,
-for example) so that you can upgrade without changing any configuration files.
-Breaking changes are usually introduced only between major versions (such as 5.x
-to 6.y). On occasion, we are forced to break compatibility within a given major release
-to ensure correctness of operation.
-
-This section covers the changes that you need to be aware of when migrating to
-Logstash 6.0.0 and later.
-
-NOTE: Migrating directly between non-consecutive major versions (1.x to
-6.x) is not recommended.
-
-See these topics for a description of breaking changes:
-
-* <<breaking-pq>>
-* <<breaking-6.0>>
-
-See also <<releasenotes>>. 
+This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
 [float]
-[[breaking-pq]]
 === Breaking change across PQ versions prior to Logstash 6.3.0
 
 If you are upgrading from Logstash 6.2.x or any earlier version (including 5.x)
@@ -29,38 +11,35 @@ and have the persistent queue enabled, we strongly recommend that you drain or
 delete the persistent queue before you upgrade. See <<upgrading-logstash-pqs>>
 for information and instructions.
 
-[float]
-[[breaking-6.0]]
-=== Breaking changes in 6.0
-
-Here are the breaking changes for 6.0. 
+We are working to resolve issues with data incompatibilities in our 6.3.0
+release so that additional steps won't be required for future upgrades. 
 
 [float]
-==== Changes in Logstash Core
+=== Changes in Logstash Core
 
 These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
 [float]
-===== Application Settings
+==== Application Settings
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
   Previously, users had to convert this to a millisecond time value themselves.
 
 [float]
-===== RPM/Deb package changes
+==== RPM/Deb package changes
 
 * For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
   or the files will not be loaded.
 
 [float]
-===== Command Line Interface behavior
+==== Command Line Interface behavior
 
 * The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and
   `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
 * Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
 
 [float]
-===== List of plugins bundled with Logstash
+==== List of plugins bundled with Logstash
 
 The following plugins were removed from the 5.0 default bundle based on usage data. You can still install these plugins manually:
 
