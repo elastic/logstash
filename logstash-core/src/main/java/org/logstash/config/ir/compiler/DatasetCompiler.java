@@ -278,18 +278,18 @@ public final class DatasetCompiler {
      */
     private static DatasetCompiler.ComputeAndClear withOutputBuffering(final Closure compute,
         final Closure clear, final ValueSyntaxElement outputBuffer, final ClassFields fields) {
-        final ValueSyntaxElement done = fields.add(boolean.class);
+        final SyntaxFactory.MethodCallReturnValue done = new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "isDone");
         return computeAndClear(
             Closure.wrap(
                 SyntaxFactory.ifCondition(done, Closure.wrap(SyntaxFactory.ret(outputBuffer)))
             ).add(compute)
-                .add(SyntaxFactory.assignment(done, SyntaxFactory.identifier("true")))
+                .add(new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"))
                 .add(SyntaxFactory.ret(outputBuffer)),
             Closure.wrap(
                 SyntaxFactory.ifCondition(
                     done, Closure.wrap(
                         clear.add(clear(outputBuffer)),
-                        SyntaxFactory.assignment(done, SyntaxFactory.identifier("false"))
+                        new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "clearDone")
                     )
                 )
             ), fields
