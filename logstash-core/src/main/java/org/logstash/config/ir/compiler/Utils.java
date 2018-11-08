@@ -1,10 +1,9 @@
 package org.logstash.config.ir.compiler;
 
-import org.jruby.RubyArray;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Static utility methods that replace common blocks of generated code in the Java execution.
@@ -12,7 +11,7 @@ import java.util.Collection;
 public class Utils {
 
     // has field1.compute(batchArg, flushArg, shutdownArg) passed as input
-    public static void copyNonCancelledEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, RubyArray output) {
+    public static void copyNonCancelledEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, List output) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {
             if (!(e.getEvent().isCancelled())) {
                 output.add(e);
@@ -21,7 +20,7 @@ public class Utils {
     }
 
     public static void filterEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
-                                    ArrayList fulfilled, ArrayList unfulfilled) {
+                                    List fulfilled, List unfulfilled) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {
             if (filter.fulfilled(e)) {
                 fulfilled.add(e);
