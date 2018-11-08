@@ -17,6 +17,12 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
 
     private IRubyObject collector;
 
+    public static NullMetricExt create() {
+        return new NullMetricExt(
+            RubyUtil.RUBY, RubyUtil.NULL_METRIC_CLASS
+        ).initialize(RubyUtil.RUBY.getCurrentContext(), new IRubyObject[0]);
+    }
+
     public NullMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

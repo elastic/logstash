@@ -68,6 +68,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
+  option ["--field-reference-parser"], "MODE",
+         I18n.t("logstash.runner.flag.field-reference-parser"),
+         :attribute_name => "config.field_reference.parser",
+         :default => LogStash::SETTINGS.get_default("config.field_reference.parser")
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
@@ -103,8 +108,8 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
-  option ["--experimental-java-execution"], :flag,
-         I18n.t("logstash.runner.flag.experimental-java-execution"),
+  option ["--java-execution"], :flag,
+         I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
 
@@ -343,6 +348,8 @@ class LogStash::Runner < Clamp::StrictCommand
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
+
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
     @dispatcher.fire(:after_agent)
@@ -351,8 +358,6 @@ class LogStash::Runner < Clamp::StrictCommand
     # to properly handle a stalled agent
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
-
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
 
     @agent_task = Stud::Task.new { @agent.execute }
 

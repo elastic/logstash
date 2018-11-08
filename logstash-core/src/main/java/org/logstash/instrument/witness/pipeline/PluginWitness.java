@@ -238,7 +238,7 @@ public class PluginWitness implements SerializableWitness {
             private final PluginWitness.CustomWitness witness;
 
             /**
-             * Construtor
+             * Constructor
              *
              * @param witness the witness
              */

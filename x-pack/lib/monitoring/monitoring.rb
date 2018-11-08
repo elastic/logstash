@@ -35,6 +35,7 @@ module LogStash
         @keystore_path = es_settings['keystore']
         @keystore_password = es_settings['keystore_password']
         @sniffing = es_settings['sniffing']
+        @ssl_certificate_verification = (es_settings['verification_mode'] == 'certificate')
       end
 
       attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid
@@ -94,7 +95,7 @@ module LogStash
 
         logger.trace("registering the metrics pipeline")
         LogStash::SETTINGS.set("node.uuid", runner.agent.id)
-        internal_pipeline_source = LogStash::Monitoring::InternalPipelineSource.new(setup_metrics_pipeline)
+        internal_pipeline_source = LogStash::Monitoring::InternalPipelineSource.new(setup_metrics_pipeline, runner.agent)
         runner.source_loader.add_source(internal_pipeline_source)
       rescue => e
         logger.error("Failed to set up the metrics pipeline", :message => e.message, :backtrace => e.backtrace)

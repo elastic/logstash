@@ -18,12 +18,12 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
 import org.logstash.config.ir.graph.IfVertex;
@@ -96,7 +96,7 @@ public final class CompiledPipeline {
     /**
      * Configured outputs.
      */
-    private final Map<String, OutputDelegatorExt> outputs;
+    private final Map<String, AbstractOutputDelegatorExt> outputs;
 
     /**
      * Parsed pipeline configuration graph.
@@ -145,9 +145,9 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
-    private Map<String, OutputDelegatorExt> setupOutputs() {
+    private Map<String, AbstractOutputDelegatorExt> setupOutputs() {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
-        final Map<String, OutputDelegatorExt> res = new HashMap<>(outs.size());
+        final Map<String, AbstractOutputDelegatorExt> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();

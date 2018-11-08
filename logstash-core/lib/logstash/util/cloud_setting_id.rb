@@ -7,9 +7,12 @@ module LogStash module Util class CloudSettingId
     Base64.urlsafe_encode64(args.join("$"))
   end
   DOT_SEPARATOR = "."
-  CLOUD_PORT = ":443"
+  CLOUD_PORT = "443"
 
-  attr_reader :original, :decoded, :label, :elasticsearch_host, :elasticsearch_scheme, :kibana_host, :kibana_scheme
+  attr_reader :original, :decoded, :label
+  attr_reader :elasticsearch_host, :elasticsearch_scheme, :elasticsearch_port
+  attr_reader :kibana_host, :kibana_scheme, :kibana_port
+  attr_reader :other_identifiers
 
   # The constructor is expecting a 'cloud.id', a string in 2 variants.
   # 1 part example: 'dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy'
@@ -39,8 +42,8 @@ module LogStash module Util class CloudSettingId
 
     @decoded = @decoded.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace)
 
-    unless @decoded.count("$") == 2
-      raise ArgumentError.new("Cloud Id does not decode. You may need to enable Kibana in the Cloud UI. Received: \"#{@decoded}\".")
+    if @decoded.count("$") < 2
+      raise ArgumentError.new("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{@decoded}\".")
     end
 
     segments = @decoded.split("$")
@@ -48,20 +51,30 @@ module LogStash module Util class CloudSettingId
       raise ArgumentError.new("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{@decoded}\".")
     end
     cloud_base = segments.shift
-    cloud_host = "#{DOT_SEPARATOR}#{cloud_base}#{CLOUD_PORT}"
+    cloud_host = "#{DOT_SEPARATOR}#{cloud_base}"
+    cloud_host, cloud_port = cloud_host.split(":")
+    cloud_port ||= CLOUD_PORT
 
-    @elasticsearch_host, @kibana_host = segments
+    @elasticsearch_host, @kibana_host, *@other_identifiers = segments
+    @elasticsearch_host, @elasticsearch_port = @elasticsearch_host.split(":")
+    @kibana_host, @kibana_port = @kibana_host.split(":")
+    @elasticsearch_port ||= cloud_port
+    @kibana_port ||= cloud_port
+    @other_identifiers ||= []
+
     if @elasticsearch_host == "undefined"
       raise ArgumentError.new("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.")
     end
     @elasticsearch_scheme = "https"
     @elasticsearch_host.concat(cloud_host)
+    @elasticsearch_host.concat(":#{@elasticsearch_port}")
 
     if @kibana_host == "undefined"
       raise ArgumentError.new("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.")
     end
     @kibana_scheme = "https"
     @kibana_host.concat(cloud_host)
+    @kibana_host.concat(":#{@kibana_port}")
   end
 
   def to_s

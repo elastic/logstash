@@ -25,7 +25,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {%w(first second)}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id does not decode. You may need to enable Kibana in the Cloud UI. Received: \"#{raw[0]}$#{raw[1]}\".")
+        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}\".")
       end
     end
 
@@ -88,6 +88,59 @@ describe LogStash::Util::CloudSettingId do
     end
     it '#to_s has a value of #decoded' do
       expect(subject.to_s).to eq(subject.decoded)
+    end
+  end
+  context "when cloud id contains port descriptions for ES and Kibana" do
+    let(:input) { "different-es-kb-port:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2OjkyNDMkYTRjMDYyMzBlNDhjOGZjZTdiZTg4YTA3NGEzYmIzZTA6OTI0NA==" }
+
+    it "decodes the elasticsearch port corretly" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243")
+    end
+    it "decodes the kibana port corretly" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244")
+    end
+  end
+  context "when cloud id contains cloud port" do
+    let(:input) { "custom-port:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjkyNDMkYWMzMWViYjkwMjQxNzczMTU3MDQzYzM0ZmQyNmZkNDYkYTRjMDYyMzBlNDhjOGZjZTdiZTg4YTA3NGEzYmIzZTA=" }
+
+    it "decodes the elasticsearch port corretly" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243")
+    end
+    it "decodes the kibana port corretly" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9243")
+    end
+  end
+  context "when cloud id only defines kibana port" do
+    let(:input) { "only-kb-set:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2JGE0YzA2MjMwZTQ4YzhmY2U3YmU4OGEwNzRhM2JiM2UwOjkyNDQ=" }
+
+    it "defaults the elasticsearch port to 443" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:443")
+    end
+    it "decodes the kibana port corretly" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244")
+    end
+  end
+  context "when cloud id defines cloud port and kibana port" do
+    let(:input) { "host-and-kb-set:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjkyNDMkYWMzMWViYjkwMjQxNzczMTU3MDQzYzM0ZmQyNmZkNDYkYTRjMDYyMzBlNDhjOGZjZTdiZTg4YTA3NGEzYmIzZTA6OTI0NA==" }
+
+    it "sets the elasticsearch port to cloud port" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243")
+    end
+    it "overrides cloud port with the kibana port" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244")
+    end
+  end
+  context "when cloud id defines extra data" do
+    let(:input) { "extra-items:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2JGE0YzA2MjMwZTQ4YzhmY2U3YmU4OGEwNzRhM2JiM2UwJGFub3RoZXJpZCRhbmRhbm90aGVy" }
+
+    it "captures the elasticsearch host" do
+      expect(subject.elasticsearch_host).to eq("ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:443")
+    end
+    it "captures the kibana host" do
+      expect(subject.kibana_host).to eq("a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:443")
+    end
+    it "captures the remaining identifiers" do
+      expect(subject.other_identifiers).to eq(["anotherid", "andanother"])
     end
   end
 end

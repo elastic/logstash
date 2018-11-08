@@ -228,6 +228,24 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
+        field-reference-parser: |+
+          (DEPRECATED) This option is no longer
+          configurable.
+
+          Use the given MODE when parsing field
+          references.
+
+          The field reference parser is used to expand
+          field references in your pipeline configs,
+          and has become more strict to better handle
+          ambiguous- and illegal-syntax inputs.
+
+          The only available MODE is:
+           - `STRICT`: parse in a strict manner; when
+             given ambiguous- or illegal-syntax input,
+             raises a runtime exception that should
+             be handled by the calling plugin.
+
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances
@@ -270,8 +288,8 @@ en:
           Sets the ID of the pipeline.
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
-        experimental-java-execution: |+
-          (Experimental) Use new Java execution engine.
+        java-execution: |+
+          (Beta) Use new Java execution engine.
         pipeline-batch-size: |+
           Size of batches the pipeline is to work in.
         pipeline-batch-delay: |+
@@ -348,4 +366,4 @@ en:
           DEPRECATED: use --log.level=info instead.
         quiet: |+
           Set the log level to info.
-          DEPRECATED: use --log.level=quiet instead.
+          DEPRECATED: use --log.level=info instead.

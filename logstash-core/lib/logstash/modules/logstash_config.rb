@@ -39,7 +39,7 @@ module LogStash module Modules class LogStashConfig
   def get_setting(setting_class)
     raw_value = @settings[setting_class.name]
     # If we dont check for NIL, the Settings class will try to coerce the value
-    # and most of the it will fails when a NIL value is explicitely set.
+    # and most of the it will fails when a NIL value is explicitly set.
     # This will be fixed once we wrap the plugins settings into a Settings class
     setting_class.set(raw_value) unless raw_value.nil?
     setting_class.value
@@ -56,9 +56,23 @@ module LogStash module Modules class LogStashConfig
         get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
       when Numeric
         get_setting(LogStash::Setting::Numeric.new(name, default))
+      when true, false
+        get_setting(LogStash::Setting::Boolean.new(name, default))
       else
         get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
       end
+  end
+
+  def has_setting?(name)
+    @settings.key?(name)
+  end
+
+  def raw_setting(name)
+    @settings[name]
+  end
+
+  def fetch_raw_setting(name, default)
+    @settings.fetch(name, default)
   end
 
   def elasticsearch_output_config(type_string = nil)

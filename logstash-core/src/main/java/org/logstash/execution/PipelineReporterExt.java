@@ -166,7 +166,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
             final OutputDelegatorExt delegator = (OutputDelegatorExt) output;
             final RubyHash hash = RubyHash.newHash(context.runtime);
             hash.op_aset(context, TYPE_KEY, delegator.configName(context));
-            hash.op_aset(context, ID_KEY, delegator.id(context));
+            hash.op_aset(context, ID_KEY, delegator.getId());
             hash.op_aset(context, CONCURRENCY_KEY, delegator.concurrency(context));
             result.add(hash);
         });

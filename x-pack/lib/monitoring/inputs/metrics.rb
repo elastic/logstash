@@ -5,28 +5,22 @@
 require "logstash/event"
 require "logstash/inputs/base"
 require "logstash/instrument/collector"
-require 'license_checker/licensed'
 require 'helpers/elasticsearch_options'
 require "concurrent"
 require "thread"
 
 module LogStash module Inputs
-  # The Metrics input recieves periodic metric data snapshot from Logstash core.
-  # This input is responsible for registring itself to the collector.
+  # The Metrics input receives periodic metric data snapshot from Logstash core.
+  # This input is responsible for registering itself to the collector.
   # The collector class will periodically emits new snapshot of the system, JVM and other metric data.
   # This input further transform it into a `Logstash::Event`, which can be consumed by the shipper and
   # shipped to Elasticsearch
   class Metrics < LogStash::Inputs::Base
-    include LogStash::LicenseChecker::Licensed, LogStash::Helpers::ElasticsearchOptions
-
     require "monitoring/inputs/metrics/state_event_factory"
     require "monitoring/inputs/metrics/stats_event_factory"
     
     @pipelines_mutex = Mutex.new
     @pipelines = {}
-
-    VALID_LICENSES = %w(basic trial standard gold platinum)
-    FEATURE = 'monitoring'
 
     require "monitoring/inputs/timer_task_logger"
     
@@ -52,17 +46,12 @@ module LogStash module Inputs
       @agent = nil
       @settings = LogStash::SETTINGS.clone
       @last_updated_pipeline_hashes = []
-      @es_options = es_options_from_settings_or_modules(FEATURE, @settings)
-      setup_license_checker(FEATURE)
-      configure_snapshot_poller
+      @agent = execution_context.agent if execution_context
     end
 
     def pipeline_started(agent, pipeline)
       @agent = agent
-
-      with_license_check do
-        update_pipeline_state(pipeline)
-      end
+      update_pipeline_state(pipeline)
     end
 
     def configure_snapshot_poller
@@ -70,7 +59,7 @@ module LogStash module Inputs
         :execution_interval => @collection_interval,
         :timeout_interval => @collection_timeout_interval
       }) do
-        update(metric.collector.snapshot_metric)
+        update(metric.collector.snapshot_metric) unless @agent.nil?
       end
 
       @timer_task.add_observer(TimerTaskLogger.new)
@@ -79,6 +68,8 @@ module LogStash module Inputs
       def run(arg_queue)
         @logger.debug("Metric: input started")
         @queue = arg_queue
+
+        configure_snapshot_poller
 
         # This must be invoked here because we need a queue to store the data
         LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
@@ -103,10 +94,8 @@ module LogStash module Inputs
     end
 
     def update(snapshot)
-      with_license_check do
-        update_stats(snapshot)
-        update_states
-      end
+      update_stats(snapshot)
+      update_states
     end
 
     def update_stats(snapshot)
@@ -163,40 +152,6 @@ module LogStash module Inputs
 
     def emit_event(event)
       queue << event
-    end
-
-    def populate_license_state(xpack_info)
-      if !xpack_info.installed?
-        {
-            :state => :error,
-            :log_level => :error,
-            :log_message => "X-Pack is installed on Logstash but not on Elasticsearch. Please install X-Pack on Elasticsearch to use the monitoring feature. Other features may be available."
-        }
-      elsif !xpack_info.license_available?
-        {
-            :state => :error,
-            :log_level => :error,
-            :log_message => 'Monitoring is not available: License information is currently unavailable. Please make sure you have added your production elasticsearch connection info in the xpack.monitoring.elasticsearch settings.'
-        }
-      elsif !xpack_info.license_one_of?(VALID_LICENSES)
-        {
-            :state => :error,
-            :log_level => :error,
-            :log_message => "Monitoring is not available: #{xpack_info.license_type} is not a valid license for this feature."
-        }
-      elsif !xpack_info.license_active?
-        {
-            :state => :ok,
-            :log_level => :warn,
-            :log_message => 'Monitoring requires a valid license. You can continue to monitor Logstash, but please contact your administrator to update your license'
-        }
-      else
-        unless xpack_info.feature_enabled?(FEATURE)
-          logger.warn('Monitoring installed and enabled in Logstash, but not enabled in Elasticsearch')
-        end
-
-        { :state => :ok, :log_level => :info, :log_message => 'Monitoring License OK' }
-      end
     end
 
     private

@@ -1,7 +1,12 @@
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
-  PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
+  if VERSION_QUALIFIER
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-#{VERSION_QUALIFIER}-SNAPSHOT" : "-#{VERSION_QUALIFIER}"
+  else
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  end
 
   def package_files
     [
@@ -89,51 +94,51 @@ namespace "artifact" do
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar('ELASTIC-LICENSE')
   end
 
   desc "Build an OSS tar.gz of default logstash plugins with all dependencies"
-  task "tar_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder)
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip('ELASTIC-LICENSE')
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder)
   end
 
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5", :oss)
   end
 
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04", :oss)
   end
