@@ -107,7 +107,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
         try {
             return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
                 String.format(
-                    "package org.logstash.generated;\npublic final class %s implements %s { %s }",
+                    "package org.logstash.generated;\npublic final class %s extends org.logstash.config.ir.compiler.BaseDataset implements %s { %s }",
                     name,
                     type.getName(),
                     SyntaxFactory.join(
