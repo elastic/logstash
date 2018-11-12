@@ -30,6 +30,7 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.execution.Codec;
 import org.logstash.execution.Filter;
 import org.logstash.execution.Input;
 import org.logstash.execution.LsConfiguration;
@@ -52,6 +53,7 @@ public final class CompiledPipeline {
     private static final Map<String, Class<Input>> JAVA_INPUTS = new HashMap<>();
     private static final Map<String, Class<Filter>> JAVA_FILTERS = new HashMap<>();
     private static final Map<String, Class<Output>> JAVA_OUTPUTS = new HashMap<>();
+    private static final Map<String, Class<Codec>> JAVA_CODECS = new HashMap<>();
 
     static {
         populatePluginDefinitions();
@@ -69,6 +71,9 @@ public final class CompiledPipeline {
             }
             if (Input.class.isAssignableFrom(cls)) {
                 JAVA_INPUTS.put(name, (Class<Input>) cls);
+            }
+            if (Codec.class.isAssignableFrom(cls)) {
+                JAVA_CODECS.put(name, (Class<Codec>) cls);
             }
         });
     }
