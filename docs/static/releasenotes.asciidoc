@@ -3,6 +3,11 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-5-0,Logstash 6.5.0>>
+* <<logstash-6-4-3,Logstash 6.4.3>>
+* <<logstash-6-4-2,Logstash 6.4.2>>
+* <<logstash-6-4-1,Logstash 6.4.1>>
+* <<logstash-6-4-0,Logstash 6.4.0>>
 * <<logstash-6-3-2,Logstash 6.3.2>>
 * <<logstash-6-3-1,Logstash 6.3.1>>
 * <<logstash-6-3-0,Logstash 6.3.0>>
@@ -15,6 +20,301 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-5-0]]
+=== Logstash 6.5.0 Release Notes
+
+* BUGFIX: Count unused space in page files towards current PQ size https://github.com/elastic/logstash/pull/10105[#10105]
+* BUGFIX: Handle equality checks on list and map types in Java execution https://github.com/elastic/logstash/pull/10074[#10074]
+* BUGFIX: Handle equality comparison where one or more fields are null in Java execution https://github.com/elastic/logstash/pull/10039[#10039]
+* Make cgroups more robust and provide the override similar to ES https://github.com/elastic/logstash/pull/10011[#10011]
+* BUGFIX: Pipeline reloading breaks with PQ enabled https://github.com/elastic/logstash/pull/9987[#9987]
+* BUGFIX: Avoid race condition when initializing event and pipeline metrics https://github.com/elastic/logstash/pull/9959[#9959]
+* Support port customization in cloud id https://github.com/elastic/logstash/pull/9877[#9877]
+* Support for integration plugins in plugin manager https://github.com/elastic/logstash/pull/9811[#9811]
+* Promote Java execution from experimental to beta https://github.com/elastic/logstash/pull/10063[#10063]
+
+==== Plugins
+
+*Elastic App Search output*
+
+* New: Added as default plugin
+
+*SNMP input*
+
+* New: Added as default plugin
+
+*Elasticsearch filter*
+
+* Adds [@metadata][total_hits] with total hits returned from the query https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/106[#106]
+* Improves error logging to fully inspect caught exceptions https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/105[#105]
+
+*Translate filter*
+
+* Fix to align with docs - looked-up values are always strings. Coerce better.
+* Fix bug in dictionary/file the always applied RegexExact, manifested when dictionary keys are not regex compatible
+* Added info to dictionary_path description to explain why integers must be quoted
+* Fix bug in csv_file when LS config has CSV filter plugin specified as well as a csv dictionary.
+* Updated formatting of examples in documentation for consistent rendering
+* Add iterate_on setting to support fields that are arrays, see the docs for detailed explanation.
+* Add Rufus::Scheduler to provide asynchronous loading of dictionary.
+* Re-organise code, yields performance improvement of around 360%
+
+*Useragent filter*
+
+* Update source mapping to latest from uap-core https://github.com/logstash-plugins/logstash-filter-useragent/issues/53[#53]
+
+*Kafka input*
+
+* Upgrade Kafka client to version 2.0.0
+* Docs: Correct list formatting for decorate_events
+* Docs: Add kafka default to partition_assignment_strategy
+
+*Redis input*
+
+* Added support for renamed redis commands
+* Add channel to the event
+
+*S3 input*
+
+* Docs: Fixed link formatting for input type
+* Skips objects that are archived to AWS Glacier with a helpful log message (previously they would log as matched, but then fail to load events) https://github.com/logstash-plugins/logstash-input-s3/pull/160[#160]
+* Added watch_for_new_files option, enabling single-batch imports https://github.com/logstash-plugins/logstash-input-s3/pull/159[#159]
+
+*TCP input*
+
+* Added support for pkcs1 and pkcs8 key formats https://github.com/logstash-plugins/logstash-input-tcp/issues/122[#122]
+* Changed server-mode SSL to run on top of Netty https://github.com/logstash-plugins/logstash-input-tcp/issues/122[#122]
+* Changed travis testing infra to use logstash tarballs https://github.com/logstash-plugins/logstash-input-tcp/issues/122[#122]
+* Fixed certificate chain handling and validation https://github.com/logstash-plugins/logstash-input-tcp/issues/124[#124]
+* Added new configuration option dns_reverse_lookup_enabled to allow users to disable costly DNS reverse lookups https://github.com/logstash-plugins/logstash-input-tcp/issues/100[#100]
+
+*Netflow codec*
+
+* Added Cisco ACI to list of known working Netflow v9 exporters
+* Added support for IXIA Packet Broker IPFIX
+* Fixed issue with Procera float fields
+* Fixed issue where TTL in template registry was not being respected.
+* Reduced complexity of creating, persisting, loading an retrieving template caches.
+* Added support for Netflow v9 devices with VarString fields (H3C Netstream)
+* Fixed incorrect parsing of zero-filled Netflow 9 packets from Palo Alto
+* Fixed IPFIX options template parsing for Juniper MX240 JunOS 15.1
+
+[[logstash-6-4-3]]
+=== Logstash 6.4.3 Release Notes
+
+* No changes to Logstash core for 6.4.3
+
+[float]
+==== Plugins
+
+*Tcp Input*
+
+* Added new configuration option dns_reverse_lookup_enabled to allow users to disable costly DNS reverse lookups https://github.com/logstash-plugins/logstash-input-tcp/issues/100[#100]
+
+*S3 Output*
+
+* Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/pull/193[#193]
+
+
+[[logstash-6-4-2]]
+=== Logstash 6.4.2 Release Notes
+
+* Make cgroups support more robust and provide the override similar to ES ({lsissue}/10012[#10012]).
+
+[float]
+==== Plugins
+*Cef Codec*
+
+* Added reverse_mapping option, which can be used to make encoder compliant to spec https://github.com/logstash-plugins/logstash-codec-cef/pull/51[#51]
+
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) https://github.com/logstash-plugins/logstash-codec-cef/issues/56[#56]
+
+*Heartbeat Input*
+
+* Fixed shutdown concurrency issues by simplifying shutdown signal handling https://github.com/logstash-plugins/logstash-input-heartbeat/pull/15[#15]
+
+[[logstash-6-4-1]]
+=== Logstash 6.4.1 Release Notes
+
+* Support ssl verification mode in monitoring and management ({lsissue}/9866[#9866]).
+* Extract kibana and elasticsearch client ssl config ({lsissue}/9945[#9945]).
+* Avoid race condition when initializing events and pipelines metrics ({lsissue}/9958[#9958]).
+* Make worker thread names visible to OS ({lsissue}/9973[#9973]).
+* Update logstash.bat to enable CLASSPATH with spaces ({lsissue}/9966[#9966]).
+* Pipeline reloading breaks with PQ enabled ({lsissue}/9986[#9986]).
+
+[float]
+==== Plugins
+
+*CEF Codec*
+
+* Fix bug in parsing extension values where a legal unescaped space in a field's value could be interpreted as a field separator https://github.com/logstash-plugins/logstash-codec-cef/issues/54[#54]
+* Fix bug in parsing headers where certain legal escape sequences could cause non-escaped pipe characters to be ignored https://github.com/logstash-plugins/logstash-codec-cef/pull/55[#55]
+* Add explicit handling for extension key names that use array-like syntax that isn't legal with the strict-mode field-reference parser (e.g., `fieldname[0]` becomes `[fieldname][0]`) https://github.com/logstash-plugins/logstash-codec-cef/pull/55[#55]
+
+*File Input*
+
+* Fixed Errno::ENOENT exception in Discoverer. https://github.com/logstash-plugins/logstash-input-file/issues/204[#204]
+
+*JDBC Input*
+
+* Added check to prevent count sql syntax errors when debug logging https://github.com/logstash-plugins/logstash-input-jdbc/pull/294[#294]
+* Changed documentation to generalize the PATH location https://github.com/logstash-plugins/logstash-input-jdbc/pull/297[#297]
+
+*Azure Event Hubs Input*
+
+* Added guidelines for setting number of threads https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/17[#17]
+
+*HTTP Input*
+
+* Fix expensive SslContext creation per connection https://github.com/logstash-plugins/logstash-input-http/pull/93[#93]
+
+*UDP Input*
+
+* Fixed input workers exception handling and shutdown handling https://github.com/logstash-plugins/logstash-input-udp/pull/44[#44]
+
+*Ruby Filter*
+
+* Fixed path based scripting not calling filter\_matched https://github.com/logstash-plugins/logstash-filter-ruby/issues/45[#45]
+
+*Mutate Filter*
+
+* Changed documentation to clarify use of `replace` config option https://github.com/logstash-plugins/logstash-filter-mutate/pull/125[#125]
+
+*Clone Filter*
+
+* Added a warning when 'clones' is empty since that results in a no-op https://github.com/logstash-plugins/logstash-filter-clone/issues/14[#14]
+
+*KV Filter*
+
+* Fixes performance regression introduced in 4.1.0 https://github.com/logstash-plugins/logstash-filter-kv/issues/70[#70]
+
+*Elasticsearch Output*
+
+* Add text offering Elasticsearch Service hosted es https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/792[#792]
+
+*Kafka Output*
+
+* Fixed handling of receive buffer bytes setting https://github.com/logstash-plugins/logstash-output-kafka/pull/204[#204]
+
+*S3 Output*
+
+* Fixed bucket validation failures when bucket policy requires encryption https://github.com/logstash-plugins/logstash-output-s3/pull/191[#191]
+
+[[logstash-6-4-0]]
+=== Logstash 6.4.0 Release Notes
+
+[IMPORTANT]
+--
+**Attention users of Kafka Output in Logstash 6.4.0**
+
+If you are using Kafka output and have upgraded to Logstash 6.4.0, you will see pipeline startup errors:
+
+    Pipeline aborted due to error {:pipeline_id=>"pipeline1", :exception=>org.apache.kafka.common.config.ConfigException: Invalid value 32768 for configuration receive.buffer.bytes: Expected value to be a 32-bit integer, but it was a java.lang.Long
+
+This error was due to an incorrectly configured default value for the
+`receive_buffer_bytes` option (fixed in PR
+https://github.com/logstash-plugins/logstash-output-kafka/pull/205[logstash-output-kafka #205]),
+and false negative results on our CI due to incorrect exit code
+handling (fixed in
+https://github.com/logstash-plugins/logstash-output-kafka/pull/204[logstash-output-kafka#204]).
+
+Kafka output plugin version 7.1.3 has been released. You can upgrade
+using:
+
+[source,sh]
+-----
+bin/logstash-plugin update logstash-output-kafka
+-----
+
+This version will be included in the next 6.4.1 patch release.
+--
+
+* Adds the Azure Module for integrating Azure activity logs and SQL diagnostic logs with the Elastic Stack.
+* Adds the {logstash-ref}/plugins-inputs-azure_event_hubs.html[azure_event_hubs input plugin] as a default plugin.
+* Adds support for port customization in cloud id ({lsissue}/9877[#9877]).
+* Adds opt-in strict-mode for field reference ({lsissue}/9591[#9591]).
+* Adds syntax highlighting for expressions in Grok Debugger https://github.com/elastic/kibana/pull/18572[Kibana#18572]
+* Changes pipeline viewer visualization to use more tree like layout to express structure of pipeline configuration https://github.com/elastic/kibana/pull/18597[Kibana#18597]
+* Fixes incorrect pipeline shutdown logging ({lsissue}/9688[#9688]).
+* Fixes incorrect type handling between Java pipeline and Ruby pipeline ({lsissue}/9671[#9671]).
+* Fixes possible where Ensure separate output streams to avoid keystore corruption issue by ensuring separate output streams ({lsissue}/9582[#9582]).
+* Javafication to continue moving parts of Logstash core from Ruby to Java and some general code cleanup ({lsissue}/9414[#9414], {lsissue}/9415[#9415], {lsissue}/9416[#9416], {lsissue}/9422[#9422], {lsissue}/9482[#9482], {lsissue}/9486[#9486], {lsissue}/9489[#9489], {lsissue}/9490[#9490], {lsissue}/9491[#9491], {lsissue}/9496[#9496], {lsissue}/9520[#9520], {lsissue}/9587[#9587], {lsissue}/9574[#9574], {lsissue}/9610[#9610], {lsissue}/9620[#9620], {lsissue}/9631[#9631], {lsissue}/9632[#9632], {lsissue}/9633[#9633], {lsissue}/9661[#9661], {lsissue}/9662[#9662], {lsissue}/9665[#9665], {lsissue}/9667[#9667], {lsissue}/9668[#9668], {lsissue}/9670[#9670], {lsissue}/9676[#9676], {lsissue}/9687[#9687], {lsissue}/9693[#9693], {lsissue}/9697[#9697], {lsissue}/9699[#9699], {lsissue}/9717[#9717], {lsissue}/9723[#9723], {lsissue}/9731[#9731], {lsissue}/9740[#9740], {lsissue}/9742[#9742], {lsissue}/9743[#9743], {lsissue}/9751[#9751], {lsissue}/9752[#9752], {lsissue}/9765[#9765]).
+
+[float]
+==== Plugins
+
+*Rubydebug Codec*
+
+* Fixes crash that could occur on startup if `$HOME` was unset or if `${HOME}/.aprc` was unreadable by pinning awesome_print dependency to a release before the bug was introduced. https://github.com/logstash-plugins/logstash-codec-rubydebug/pull/5[#5]
+
+*Fingerprint Filter*
+
+* Adds support for non-keyed, regular hash functions. https://github.com/logstash-plugins/logstash-filter-fingerprint/issues/18[#18]
+
+*KV Filter*
+
+* Adds `whitespace => strict` mode, which allows the parser to behave more predictably when input is known to avoid unnecessary whitespace. https://github.com/logstash-plugins/logstash-filter-kv/pull/67[#67]
+* Adds error handling, which tags the event with `_kv_filter_error` if an exception is raised while handling an event instead of allowing the plugin to crash. https://github.com/logstash-plugins/logstash-filter-kv/pull/68[#68]
+
+*Azure Event Hubs Input*
+
+* Initial version of the {logstash-ref}/plugins-inputs-azure_event_hubs.html[azure_event_hubs input plugin], which supersedes logstash-input-azureeventhub.
+
+*Beats Input*
+
+* Adds `add_hostname` flag to enable/disable the population of the `host` field from the beats.hostname. field https://github.com/logstash-plugins/logstash-input-beats/pull/340[#340]
+* Fixes handling of batches where the sequence numbers do not start with 1. https://github.com/logstash-plugins/logstash-input-beats/pull/342[#342]
+* Changes project to use gradle version 4.8.1. https://github.com/logstash-plugins/logstash-input-beats/pull/334[#334]
+* Adds `ssl_peer_metadata` option. https://github.com/logstash-plugins/logstash-input-beats/pull/327[#327]
+* Fixes `ssl_verify_mode => peer`. https://github.com/logstash-plugins/logstash-input-beats/pull/326[#326]
+
+*Exec Input*
+
+* Fixes issue where certain log entries were incorrectly writing 'jdbc input' instead of 'exec input'. https://github.com/logstash-plugins/logstash-input-exec/pull/21[#21]
+
+*File Input*
+
+* Adds new feature: `mode` setting. Introduces two modes, `tail` mode is the existing behaviour for tailing, `read` mode is new behaviour that is optimized for the read complete content scenario. Please read the docs to fully appreciate the benefits of `read` mode.
+* Adds new feature: File completion actions. Settings `file_completed_action` and `file_completed_log_path` control what actions to do after a file is completely read. Applicable: `read` mode only.
+* Adds new feature: in `read` mode, compressed files can be processed, GZIP only.
+* Adds new feature: Files are sorted after being discovered. Settings `file_sort_by` and `file_sort_direction` control the sort order. Applicable: any mode.
+* Adds new feature: Banded or striped file processing. Settings: `file_chunk_size` and `file_chunk_count` control banded or striped processing. Applicable: any mode.
+* Adds new feature: `sincedb_clean_after` setting. Introduces expiry of sincedb records. The default is 14 days. If, after `sincedb_clean_after` days, no activity has been detected on a file (inode) the record expires and is not written to disk. The persisted record now includes the "last activity seen" timestamp. Applicable: any mode.
+* Moves Filewatch code into the plugin folder, rework Filewatch code to use Logstash facilities like logging and environment.
+* Adds much better support for file rotation schemes of copy/truncate and rename cascading. Applies to tail mode only.
+* Adds support for processing files over remote mounts e.g. NFS. Before, it was possible to read into memory allocated but not filled with data resulting in ASCII NUL (0) bytes in the message field. Now, files are read up to the size as given by the remote filesystem client. Applies to tail and read modes.
+* Fixes `read` mode of regular files sincedb write is requested in each read loop iteration rather than waiting for the end-of-file to be reached. Note: for gz files, the sincedb entry can only be updated at the end of the file as it is not possible to seek into a compressed file and begin reading from that position. https://github.com/logstash-plugins/logstash-input-file/pull/196[#196]
+* Adds support for String Durations in some settings e.g. `stat_interval => "750 ms"`. https://github.com/logstash-plugins/logstash-input-file/pull/194[#194]
+* Fixes `require winhelper` error in WINDOWS. https://github.com/logstash-plugins/logstash-input-file/issues/184[#184]
+* Fixes issue, where when no delimiter is found in a chunk, the chunk is reread - no forward progress is made in the file. https://github.com/logstash-plugins/logstash-input-file/issues/185[#185]
+* Fixes JAR_VERSION read problem, prevented Logstash from starting. https://github.com/logstash-plugins/logstash-input-file/issues/180[#180]
+* Fixes sincedb write error when using /dev/null, repeatedly causes a plugin restart. https://github.com/logstash-plugins/logstash-input-file/issues/182[#182]
+* Fixes a regression where files discovered after first discovery were not always read from the beginning. Applies to tail mode only. https://github.com/logstash-plugins/logstash-input-file/issues/198[#198]
+
+
+*Http Input*
+
+* Replaces Puma web server with Netty. https://github.com/logstash-plugins/logstash-input-http/pull/73[#73]
+* Adds `request_headers_target_field` and `remote_host_target_field` configuration options with default to host and headers respectively. https://github.com/logstash-plugins/logstash-input-http/pull/68[#68]
+* Sanitizes content-type header with getMimeType. https://github.com/logstash-plugins/logstash-input-http/pull/87[#87]
+* Moves most message handling code to Java. https://github.com/logstash-plugins/logstash-input-http/pull/85[#85]
+* Fixes issue to respond with correct http protocol version. https://github.com/logstash-plugins/logstash-input-http/pull/84[#84]
+* Adds support for crt/key certificates.
+* Deprecates jks support.
+
+*Jdbc Input*
+
+* Fixes crash that occurs when receiving string input that cannot be coerced to UTF-8 (such as BLOB data). https://github.com/logstash-plugins/logstash-input-jdbc/pull/291[#291]
+
+*S3 Input*
+
+* Adds ability to optionally include S3 object properties inside `@metadata`. https://github.com/logstash-plugins/logstash-input-s3/pull/155[#155]
+
+*Kafka Output*
+
+* Fixes handling of two settings that weren't wired to the kafka client. https://github.com/logstash-plugins/logstash-output-kafka/pull/198[#198]
 
 [[logstash-6-3-2]]
 === Logstash 6.3.2 Release Notes
