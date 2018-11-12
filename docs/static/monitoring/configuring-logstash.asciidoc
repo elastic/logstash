@@ -14,7 +14,7 @@ the _production cluster_. For examples of typical monitoring architectures, see
 --
 IMPORTANT: To visualize Logstash as part of the Elastic Stack (as shown in Step
 6), send metrics to your _production_ cluster. Sending metrics to a dedicated
-monitoring cluster will show the Logstash metrics under the _monitoring_ cluster.
+monitoring cluster will result in Logstash metrics showing up in the monitoring cluster and not the production cluster. 
 
 --
 
