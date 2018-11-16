@@ -47,10 +47,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 0.8.3"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1.0", ">= 1.0.5"
-
-  # Later versions are ruby 2.0 only. We should remove the rack dep once we support 9k
-  gem.add_runtime_dependency "rack", '1.6.6'
-
+  gem.add_runtime_dependency "rack", '~> 1.6', '>= 1.6.11'
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
   gem.add_runtime_dependency "jruby-openssl", ">= 0.9.20" # >= 0.9.13 Required to support TLSv1.2
