@@ -40,7 +40,7 @@ directory, and replace the contents with the following lines. Make sure `paths` 
 
 [source,yaml]
 --------------------------------------------------------------------------------
-filebeat.prospectors:
+filebeat.input:
 - type: log
   paths:
     - /path/to/file/logstash-tutorial.log <1>
