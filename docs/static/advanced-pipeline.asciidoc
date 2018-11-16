@@ -93,8 +93,7 @@ output {
 
 This skeleton is non-functional, because the input and output sections don’t have any valid options defined.
 
-To get started, copy and paste the skeleton configuration pipeline into a file named `first-pipeline.conf` in your home
-Logstash directory.
+To get started, copy and paste the skeleton configuration pipeline into a file named `first-pipeline.conf` in your /Logstash/conf.d directory.
 
 Next, configure your Logstash instance to use the Beats input plugin by adding the following lines to the `input` section
 of the `first-pipeline.conf` file:
@@ -137,7 +136,7 @@ To verify your configuration, run the following command:
 
 [source,shell]
 --------------------------------------------------------------------------------
-bin/logstash -f first-pipeline.conf --config.test_and_exit
+/usr/share/logstash/bin/logstash -f /etc/logstash/conf.d/first-pipelines.conf --path.settings /etc/logstash --config.test_and_exit
 --------------------------------------------------------------------------------
 
 The `--config.test_and_exit` option parses your configuration file and reports any errors.
@@ -146,7 +145,7 @@ If the configuration file passes the configuration test, start Logstash with the
 
 [source,shell]
 --------------------------------------------------------------------------------
-bin/logstash -f first-pipeline.conf --config.reload.automatic
+/usr/share/logstash/bin/logstash -f /etc/logstash/conf.d/first-pipelines.conf --path.settings /etc/logstash --config.reload.automatic
 --------------------------------------------------------------------------------
 
 The `--config.reload.automatic` option enables automatic config reloading so that you don't have to stop and restart Logstash
