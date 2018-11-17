@@ -45,7 +45,8 @@ ADD config/pipelines.yml config/pipelines.yml
 ADD config/logstash-{{ image_flavor }}.yml config/logstash.yml
 ADD config/log4j2.properties config/
 ADD pipeline/default.conf pipeline/logstash.conf
-RUN chown --recursive logstash:root config/ pipeline/
+RUN chown --recursive logstash:root config/ pipeline/ && \
+    chmod -R g=u config/ pipeline/
 
 # Ensure Logstash gets a UTF-8 locale by default.
 ENV LANG='en_US.UTF-8' LC_ALL='en_US.UTF-8'
