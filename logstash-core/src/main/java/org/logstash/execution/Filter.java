@@ -48,7 +48,7 @@ public interface Filter extends LsPlugin {
         }
     }
 
-    @LogstashPlugin(name = "clone")
+    @LogstashPlugin(name = "java-clone")
     final class Clone implements Filter {
 
         private Event clone;
@@ -65,7 +65,9 @@ public interface Filter extends LsPlugin {
 
         @Override
         public Collection<Event> filter(final Collection<Event> events) {
-            //TODO: Impl.
+            for (Event e : events) {
+                e.setField("java-clone", "was here");
+            }
             return events;
         }
 

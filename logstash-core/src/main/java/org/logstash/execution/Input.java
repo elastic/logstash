@@ -31,6 +31,34 @@ public interface Input extends LsPlugin {
      */
     void awaitStop() throws InterruptedException;
 
+    @LogstashPlugin(name = "java-one-input-event")
+    final class OneInputEvent implements Input {
+
+        public OneInputEvent(final LsConfiguration configuration, final LsContext context) {
+            // do nothing
+        }
+
+        @Override
+        public void start(QueueWriter writer) {
+            writer.push(Collections.singletonMap("oneEvent", "isDone"));
+        }
+
+        @Override
+        public void stop() {
+
+        }
+
+        @Override
+        public void awaitStop() throws InterruptedException {
+
+        }
+
+        @Override
+        public Collection<PluginConfigSpec<?>> configSchema() {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
     @LogstashPlugin(name = "stream")
     final class StreamInput implements Input {
 

@@ -19,8 +19,7 @@ public final class PluginLookup {
         // Utility Class
     }
 
-    public static PluginLookup.PluginClass lookup(final PluginLookup.PluginType type,
-        final String name) {
+    public static PluginLookup.PluginClass lookup(final PluginLookup.PluginType type, final String name) {
         return new PluginLookup.PluginClass() {
             @Override
             public PluginLookup.PluginLanguage language() {

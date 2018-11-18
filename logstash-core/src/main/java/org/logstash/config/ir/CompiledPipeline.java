@@ -1,5 +1,32 @@
 package org.logstash.config.ir;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
+import org.logstash.Rubyfier;
+import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
+import org.logstash.config.ir.compiler.Dataset;
+import org.logstash.config.ir.compiler.DatasetCompiler;
+import org.logstash.config.ir.compiler.EventCondition;
+import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.graph.IfVertex;
+import org.logstash.config.ir.graph.PluginVertex;
+import org.logstash.config.ir.graph.Vertex;
+import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.execution.Filter;
+import org.logstash.execution.Input;
+import org.logstash.execution.LsConfiguration;
+import org.logstash.execution.LsContext;
+import org.logstash.execution.Output;
+import org.logstash.execution.plugins.discovery.PluginRegistry;
+import org.logstash.ext.JrubyEventExtLibrary;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -11,33 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jruby.RubyHash;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.RubyUtil;
-import org.logstash.Rubyfier;
-import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
-import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
-import org.logstash.config.ir.compiler.Dataset;
-import org.logstash.config.ir.compiler.DatasetCompiler;
-import org.logstash.config.ir.compiler.EventCondition;
-import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.RubyIntegration;
-import org.logstash.config.ir.compiler.SplitDataset;
-import org.logstash.config.ir.graph.IfVertex;
-import org.logstash.config.ir.graph.PluginVertex;
-import org.logstash.config.ir.graph.Vertex;
-import org.logstash.config.ir.imperative.PluginStatement;
-import org.logstash.execution.Codec;
-import org.logstash.execution.Filter;
-import org.logstash.execution.Input;
-import org.logstash.execution.LsConfiguration;
-import org.logstash.execution.LsContext;
-import org.logstash.execution.Output;
-import org.logstash.execution.plugins.discovery.DiscoverPlugins;
-import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * <h3>Compiled Logstash Pipeline Configuration.</h3>
@@ -49,34 +49,6 @@ import org.logstash.ext.JrubyEventExtLibrary;
 public final class CompiledPipeline {
 
     private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
-
-    private static final Map<String, Class<Input>> JAVA_INPUTS = new HashMap<>();
-    private static final Map<String, Class<Filter>> JAVA_FILTERS = new HashMap<>();
-    private static final Map<String, Class<Output>> JAVA_OUTPUTS = new HashMap<>();
-    private static final Map<String, Class<Codec>> JAVA_CODECS = new HashMap<>();
-
-    static {
-        populatePluginDefinitions();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void populatePluginDefinitions() {
-        final Map<String, Class<?>> plugins = DiscoverPlugins.discoverPlugins();
-        plugins.forEach((name, cls) -> {
-            if (Filter.class.isAssignableFrom(cls)) {
-                JAVA_FILTERS.put(name, (Class<Filter>) cls);
-            }
-            if (Output.class.isAssignableFrom(cls)) {
-                JAVA_OUTPUTS.put(name, (Class<Output>) cls);
-            }
-            if (Input.class.isAssignableFrom(cls)) {
-                JAVA_INPUTS.put(name, (Class<Input>) cls);
-            }
-            if (Codec.class.isAssignableFrom(cls)) {
-                JAVA_CODECS.put(name, (Class<Codec>) cls);
-            }
-        });
-    }
 
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
@@ -96,7 +68,7 @@ public final class CompiledPipeline {
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
-    private final Map<String, FilterDelegatorExt> filters;
+    private final Map<String, AbstractFilterDelegatorExt> filters;
 
     /**
      * Configured outputs.
@@ -126,7 +98,7 @@ public final class CompiledPipeline {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
-    public Collection<FilterDelegatorExt> filters() {
+    public Collection<AbstractFilterDelegatorExt> filters() {
         return Collections.unmodifiableCollection(filters.values());
     }
 
@@ -148,7 +120,7 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Sets up all Ruby outputs learnt from {@link PipelineIR}.
+     * Sets up all outputs learned from {@link PipelineIR}.
      */
     private Map<String, AbstractOutputDelegatorExt> setupOutputs() {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
@@ -156,10 +128,23 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-            ));
+            final Class<Output> cls = PluginRegistry.getOutputClass(def.getName());
+            if (cls != null) {
+                Output output;
+                try {
+                    final Constructor<Output> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
+                    output = ctor.newInstance(new LsConfiguration(Collections.EMPTY_MAP /* def.getArguments()*/), new LsContext());
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                res.put(v.getId(), pluginFactory.buildJavaOutput(def.getName(), source.getLine(),
+                        source.getColumn(), output, convertArgs(def)));
+            } else {
+                res.put(v.getId(), pluginFactory.buildOutput(
+                        RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                        RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                ));
+            }
         });
         return res;
     }
@@ -167,12 +152,31 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private Map<String, FilterDelegatorExt> setupFilters() {
+    private Map<String, AbstractFilterDelegatorExt> setupFilters() {
         final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
-        final Map<String, FilterDelegatorExt> res =
-            new HashMap<>(filterPlugins.size(), 1.0F);
-        for (final PluginVertex plugin : filterPlugins) {
-            res.put(plugin.getId(), buildFilter(plugin));
+        final Map<String, AbstractFilterDelegatorExt> res = new HashMap<>(filterPlugins.size(), 1.0F);
+
+        for (final PluginVertex vertex : filterPlugins) {
+            final PluginDefinition def = vertex.getPluginDefinition();
+            final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            final Class<Filter> cls = PluginRegistry.getFilterClass(def.getName());
+            if (cls != null) {
+                Filter filter;
+                try {
+                    final Constructor<Filter> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
+                    filter = ctor.newInstance(new LsConfiguration(Collections.EMPTY_MAP /* def.getArguments()*/), new LsContext());
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                res.put(vertex.getId(), pluginFactory.buildJavaFilter(def.getName(), source.getLine(),
+                        source.getColumn(), filter, convertArgs(def)));
+
+            } else {
+                res.put(vertex.getId(), pluginFactory.buildFilter(
+                        RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                        RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                ));
+            }
         }
         return res;
     }
@@ -185,11 +189,10 @@ public final class CompiledPipeline {
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            if (JAVA_INPUTS.containsKey(def.getName())) {
-                final Class<Input> cls = JAVA_INPUTS.get(def.getName());
+            final Class<Input> cls = PluginRegistry.getInputClass(def.getName());
+            if (cls != null) {
                 try {
-                    final Constructor<Input> ctor =
-                        cls.getConstructor(LsConfiguration.class, LsContext.class);
+                    final Constructor<Input> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
                     javaInputs.add(ctor.newInstance(new LsConfiguration(Collections.emptyMap()), new LsContext()));
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
@@ -233,23 +236,9 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles a {@link FilterDelegatorExt} from a given {@link PluginVertex}.
-     * @param vertex Filter {@link PluginVertex}
-     * @return Compiled {@link FilterDelegatorExt}
-     */
-    private FilterDelegatorExt buildFilter(final PluginVertex vertex) {
-        final PluginDefinition def = vertex.getPluginDefinition();
-        final SourceWithMetadata source = vertex.getSourceWithMetadata();
-        return pluginFactory.buildFilter(
-            RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-            RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-        );
-    }
-
-    /**
-     * Checks if a certain {@link Vertex} represents a {@link FilterDelegatorExt}.
+     * Checks if a certain {@link Vertex} represents a {@link AbstractFilterDelegatorExt}.
      * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents a {@link FilterDelegatorExt}
+     * @return True iff {@link Vertex} represents a {@link AbstractFilterDelegatorExt}
      */
     private boolean isFilter(final Vertex vertex) {
         return filters.containsKey(vertex.getId());

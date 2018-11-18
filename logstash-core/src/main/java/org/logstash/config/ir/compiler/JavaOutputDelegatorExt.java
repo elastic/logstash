@@ -1,7 +1,10 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
@@ -9,7 +12,9 @@ import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.execution.Output;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 
@@ -25,6 +30,8 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
     private Runnable closeAction;
 
     private Runnable registerAction;
+
+    private Output output;
 
     public JavaOutputDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -42,6 +49,33 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
         instance.closeAction = closeAction;
         instance.registerAction = registerAction;
         return instance;
+    }
+
+    public static JavaOutputDelegatorExt create(final String configName, final String id,
+                                                final AbstractMetricExt metric,
+                                                final Output output) {
+        final JavaOutputDelegatorExt instance =
+                new JavaOutputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_OUTPUT_DELEGATOR_CLASS);
+        instance.initMetrics(id, metric);
+        instance.configName = RubyUtil.RUBY.newString(configName);
+        instance.output = output;
+        instance.outputFunction = instance::outputRubyEvents;
+        instance.closeAction = instance::outputClose;
+        instance.registerAction = instance::outputRegister;
+        return instance;
+    }
+
+    void outputRubyEvents(Collection<JrubyEventExtLibrary.RubyEvent> e) {
+        List<Event> events = e.stream().map(JrubyEventExtLibrary.RubyEvent::getEvent).collect(Collectors.toList());
+        output.output(events);
+    }
+
+    void outputClose() {
+        output.stop();
+    }
+
+    void outputRegister() {
+
     }
 
     @Override
