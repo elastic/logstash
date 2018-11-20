@@ -6,7 +6,7 @@ require "support/shared_contexts"
 
 java_import org.logstash.RubyUtil
 
-describe LogStash::JavaFilterDelegator do
+describe LogStash::FilterDelegator do
 
   class MockGauge
     def increment(_)

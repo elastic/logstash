@@ -1,6 +1,5 @@
 package org.logstash;
 
-import java.util.stream.Stream;
 import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -13,8 +12,10 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.BufferedTokenizerExt;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -51,6 +52,8 @@ import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
+
+import java.util.stream.Stream;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -98,9 +101,13 @@ public final class RubyUtil {
 
     public static final RubyClass ABSTRACT_OUTPUT_DELEGATOR_CLASS;
 
+    public static final RubyClass ABSTRACT_FILTER_DELEGATOR_CLASS;
+
     public static final RubyClass RUBY_OUTPUT_DELEGATOR_CLASS;
 
     public static final RubyClass JAVA_OUTPUT_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_FILTER_DELEGATOR_CLASS;
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
@@ -417,8 +424,18 @@ public final class RubyUtil {
             ABSTRACT_OUTPUT_DELEGATOR_CLASS, JavaOutputDelegatorExt::new,
             JavaOutputDelegatorExt.class
         );
+        ABSTRACT_FILTER_DELEGATOR_CLASS = LOGSTASH_MODULE.defineClassUnder(
+                "AbstractFilterDelegator", RUBY.getObject(),
+                ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_FILTER_DELEGATOR_CLASS.defineAnnotatedMethods(AbstractFilterDelegatorExt.class);
+        JAVA_FILTER_DELEGATOR_CLASS = setupLogstashClass(
+                ABSTRACT_FILTER_DELEGATOR_CLASS, JavaFilterDelegatorExt::new,
+                JavaFilterDelegatorExt.class
+        );
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
-            FilterDelegatorExt::new, FilterDelegatorExt.class
+                ABSTRACT_FILTER_DELEGATOR_CLASS, FilterDelegatorExt::new,
+                FilterDelegatorExt.class
         );
         final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);

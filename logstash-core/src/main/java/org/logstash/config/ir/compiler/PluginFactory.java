@@ -3,10 +3,8 @@ package org.logstash.config.ir.compiler;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.execution.Filter;
-import org.logstash.execution.Input;
-import org.logstash.execution.LsConfiguration;
-import org.logstash.execution.LsContext;
+import org.logstash.execution.*;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Factory that can instantiate Java plugins as well as Ruby plugins.
@@ -48,8 +46,18 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
+        public AbstractOutputDelegatorExt buildJavaOutput(String name, int line, int column, Output output, IRubyObject args) {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
             return rubyFactory.buildFilter(name, line, column, args);
+        }
+
+        @Override
+        public AbstractFilterDelegatorExt buildJavaFilter(String name, int line, int column, Filter filter, IRubyObject args) {
+            throw new NotImplementedException();
         }
 
         @Override

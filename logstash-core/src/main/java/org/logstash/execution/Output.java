@@ -25,7 +25,7 @@ public interface Output extends LsPlugin {
     @LogstashPlugin(name = "output")
     final class StreamOutput implements Output {
 
-        private final PrintStream outpt;
+        private final PrintStream output;
 
         private volatile boolean stopped;
 
@@ -37,7 +37,7 @@ public interface Output extends LsPlugin {
          * @param context Logstash Context
          */
         public StreamOutput(final LsConfiguration configuration, final LsContext context) {
-            this.outpt = new PrintStream(System.out);
+            this.output = new PrintStream(System.out);
         }
 
         @Override
@@ -52,7 +52,7 @@ public interface Output extends LsPlugin {
 
         @Override
         public void stop() {
-            outpt.close();
+            output.close();
             stopped = true;
         }
 

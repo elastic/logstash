@@ -1,12 +1,5 @@
 package org.logstash.plugins;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
@@ -21,17 +14,30 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.config.ir.PipelineIR;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
+import org.logstash.execution.Filter;
+import org.logstash.execution.Output;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 public final class PluginFactoryExt {
 
@@ -62,7 +68,9 @@ public final class PluginFactoryExt {
                 ((AbstractMetricExt) args[3]).namespace(context, id.intern19())
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
-            return args[0].callMethod(context, "new", new IRubyObject[]{filterInstance, id});
+            FilterDelegatorExt fd = (FilterDelegatorExt) new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
+                    .initialize(context, filterInstance, id);
+            return fd;
         }
 
         public Plugins(final Ruby runtime, final RubyClass metaClass) {
@@ -127,11 +135,19 @@ public final class PluginFactoryExt {
             );
         }
 
+        @Override
+        public AbstractOutputDelegatorExt buildJavaOutput(final String name, final int line, final int column,
+                                                          Output output, final IRubyObject args) {
+            return (AbstractOutputDelegatorExt) plugin(
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
+                    name, line, column, (Map<String, IRubyObject>) args, true, output);
+        }
+
         @SuppressWarnings("unchecked")
         @Override
-        public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
-            return (FilterDelegatorExt) plugin(
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
+                                                      final RubyInteger column, final IRubyObject args) {
+            return (AbstractFilterDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
                 name.asJavaString(), line.getIntValue(), column.getIntValue(),
                 (Map<String, IRubyObject>) args
@@ -144,6 +160,14 @@ public final class PluginFactoryExt {
                 (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
                 args[3]
             );
+        }
+
+        @Override
+        public AbstractFilterDelegatorExt buildJavaFilter(final String name, final int line, final int column,
+                                                          Filter filter, final IRubyObject args) {
+            return (AbstractFilterDelegatorExt) plugin(
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
+                    name, line, column, (Map<String, IRubyObject>) args, true, filter);
         }
 
         @SuppressWarnings("unchecked")
@@ -174,8 +198,14 @@ public final class PluginFactoryExt {
         }
 
         private IRubyObject plugin(final ThreadContext context,
+                                   final PluginLookup.PluginType type, final String name, final int line, final int column,
+                                   final Map<String, IRubyObject> args) {
+            return plugin(context, type, name, line, column, args, false, null);
+        }
+
+        private IRubyObject plugin(final ThreadContext context,
             final PluginLookup.PluginType type, final String name, final int line, final int column,
-            final Map<String, IRubyObject> args) {
+            final Map<String, IRubyObject> args, boolean isJava, Object javaPlugin) {
             final String id;
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
@@ -201,10 +231,10 @@ public final class PluginFactoryExt {
                 );
             }
             pluginsById.add(id);
-            final AbstractNamespacedMetricExt typeScopedMetric =
-                metrics.create(context, type.rubyLabel());
-            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
-            if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
+            final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
+
+            if (!isJava) {
+                final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
                 final Map<String, Object> newArgs = new HashMap<>(args);
                 newArgs.put("id", id);
                 final RubyClass klass = (RubyClass) pluginClass.klass();
@@ -238,7 +268,13 @@ public final class PluginFactoryExt {
                     return pluginInstance;
                 }
             } else {
-                return context.nil;
+                if (type == PluginLookup.PluginType.OUTPUT) {
+                    return JavaOutputDelegatorExt.create(name, id, typeScopedMetric, (Output)javaPlugin);
+                } else if (type == PluginLookup.PluginType.FILTER) {
+                    return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, (Filter)javaPlugin);
+                } else {
+                    return context.nil;
+                }
             }
         }
     }

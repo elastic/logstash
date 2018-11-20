@@ -7,8 +7,8 @@ import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.LsContext;
 import org.logstash.execution.PluginHelper;
 import org.logstash.execution.plugins.PluginConfigSpec;
+import org.logstash.execution.plugins.discovery.PluginRegistry;
 import org.logstash.execution.queue.QueueWriter;
-import org.logstash.execution.codecs.CodecFactory;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -57,8 +57,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
         } catch (UnknownHostException e) {
             hostname = "[unknownHost]";
         }
-        codec = CodecFactory.getInstance().getCodec(configuration.getRawValue(CODEC_CONFIG),
-                configuration, context);
+        codec = PluginRegistry.getCodec(configuration.getRawValue(CODEC_CONFIG), configuration, context);
         input = inputChannel;
     }
 
