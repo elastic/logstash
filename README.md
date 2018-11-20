@@ -28,14 +28,14 @@ These builds are created nightly and have undergone no formal QA, so they should
 | [deb-complete][]      | [deb-oss][]            |
 | [rpm-complete][]      | [rpm-oss][]            |
 
-[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.1-SNAPSHOT.tar.gz
-[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.1-SNAPSHOT.zip
-[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.1-SNAPSHOT.deb
-[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.1-SNAPSHOT.rpm
-[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.1-SNAPSHOT.tar.gz
-[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.1-SNAPSHOT.zip
-[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.1-SNAPSHOT.deb
-[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.1-SNAPSHOT.rpm
+[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.2-SNAPSHOT.tar.gz
+[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.2-SNAPSHOT.zip
+[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.2-SNAPSHOT.deb
+[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-6.5.2-SNAPSHOT.rpm
+[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.2-SNAPSHOT.tar.gz
+[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.2-SNAPSHOT.zip
+[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.2-SNAPSHOT.deb
+[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-6.5.2-SNAPSHOT.rpm
 
 ## Need Help?
 
