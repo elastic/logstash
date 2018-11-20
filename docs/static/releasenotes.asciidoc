@@ -28,14 +28,22 @@ This section summarizes the changes in the following releases:
 [float]
 ==== Plugins
 
+*Grok Filter*
+
+* Added info and link to documentation for logstash-filter-dissect as another option for extracting unstructured event data into fields https://github.com/logstash-plugins/logstash-filter-grok/issues/144[#144]
+
+*Mutate Filter*
+
+* Changed documentation to clarify execution order and to provide workaround 
+ https://github.com/logstash-plugins/logstash-filter-mutate/pull/128[#128]
+
 *Tcp Input*
 
-* Added new configuration option dns_reverse_lookup_enabled to allow users to disable costly DNS reverse lookups https://github.com/logstash-plugins/logstash-input-tcp/issues/100[#100]
+* Correctly set up the certificate chain so that the server will present cert + chain to client https://github.com/logstash-plugins/logstash-input-tcp/pull/125[#125]
 
 *S3 Output*
 
 * Fixed leak of file handles that prevented temporary files from being cleaned up before pipeline restart https://github.com/logstash-plugins/logstash-output-s3/pull/193[#193]
-
 
 [[logstash-6-4-2]]
 === Logstash 6.4.2 Release Notes
