@@ -3,7 +3,11 @@ package org.logstash.config.ir.compiler;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.execution.*;
+import org.logstash.plugins.api.Filter;
+import org.logstash.plugins.api.Input;
+import org.logstash.plugins.api.LsConfiguration;
+import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Output;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -13,7 +17,7 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
 
     Input buildInput(String name, String id, LsConfiguration configuration, LsContext context);
 
-    org.logstash.execution.Filter buildFilter(
+    Filter buildFilter(
         String name, String id, LsConfiguration configuration, LsContext context
     );
 

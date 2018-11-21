@@ -19,12 +19,12 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
-import org.logstash.execution.Filter;
-import org.logstash.execution.Input;
-import org.logstash.execution.LsConfiguration;
-import org.logstash.execution.LsContext;
-import org.logstash.execution.Output;
-import org.logstash.execution.plugins.discovery.PluginRegistry;
+import org.logstash.plugins.api.Filter;
+import org.logstash.plugins.api.Input;
+import org.logstash.plugins.api.LsConfiguration;
+import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Output;
+import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.lang.reflect.Constructor;

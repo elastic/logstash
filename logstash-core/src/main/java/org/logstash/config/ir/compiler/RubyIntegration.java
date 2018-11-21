@@ -3,8 +3,8 @@ package org.logstash.config.ir.compiler;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.execution.Filter;
-import org.logstash.execution.Output;
+import org.logstash.plugins.api.Filter;
+import org.logstash.plugins.api.Output;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
