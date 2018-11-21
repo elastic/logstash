@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.logstash.plugins.api.Codec;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.api.Filter;
 import org.logstash.plugins.api.Input;
 import org.logstash.plugins.api.LogstashPlugin;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.Output;
 
 /**
@@ -73,16 +73,16 @@ public final class PluginRegistry {
         return OUTPUTS.get(name);
     }
 
-    public static Codec getCodec(String name, LsConfiguration configuration, LsContext context) {
+    public static Codec getCodec(String name, Configuration configuration, Context context) {
         if (name != null && CODECS.containsKey(name)) {
             return instantiateCodec(CODECS.get(name), configuration, context);
         }
         return null;
     }
 
-    private static Codec instantiateCodec(Class clazz, LsConfiguration configuration, LsContext context) {
+    private static Codec instantiateCodec(Class clazz, Configuration configuration, Context context) {
         try {
-            Constructor<Codec> constructor = clazz.getConstructor(LsConfiguration.class, LsContext.class);
+            Constructor<Codec> constructor = clazz.getConstructor(Configuration.class, Context.class);
             return constructor.newInstance(configuration, context);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to instantiate codec", e);

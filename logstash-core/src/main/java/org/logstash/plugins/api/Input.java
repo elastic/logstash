@@ -10,7 +10,7 @@ import org.logstash.execution.queue.QueueWriter;
 /**
  * A Logstash Pipeline Input pushes to a {@link QueueWriter}.
  */
-public interface Input extends LsPlugin {
+public interface Input extends Plugin {
 
     /**
      * Start pushing {@link org.logstash.Event} to given {@link QueueWriter}.
@@ -34,7 +34,7 @@ public interface Input extends LsPlugin {
     @LogstashPlugin(name = "java-one-input-event")
     final class OneInputEvent implements Input {
 
-        public OneInputEvent(final LsConfiguration configuration, final LsContext context) {
+        public OneInputEvent(final Configuration configuration, final Context context) {
             // do nothing
         }
 
@@ -69,11 +69,11 @@ public interface Input extends LsPlugin {
         private volatile boolean stopped;
 
         /**
-         * Required Constructor Signature only taking a {@link LsConfiguration}.
+         * Required Constructor Signature only taking a {@link Configuration}.
          * @param configuration Logstash Configuration
          * @param context Logstash Context
          */
-        public StreamInput(final LsConfiguration configuration, final LsContext context) {
+        public StreamInput(final Configuration configuration, final Context context) {
             // Do whatever
             System.out.println("Stream instantiated");
         }

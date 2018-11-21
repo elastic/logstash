@@ -9,7 +9,7 @@ import org.logstash.Event;
 /**
  * A Logstash Pipeline Output.
  */
-public interface Output extends LsPlugin {
+public interface Output extends Plugin {
 
     /**
      * Outputs Collection of {@link Event}.
@@ -31,11 +31,11 @@ public interface Output extends LsPlugin {
         private final CountDownLatch done = new CountDownLatch(1);
 
         /**
-         * Required Constructor Signature only taking a {@link LsConfiguration}.
+         * Required Constructor Signature only taking a {@link Configuration}.
          * @param configuration Logstash Configuration
          * @param context Logstash Context
          */
-        public StreamOutput(final LsConfiguration configuration, final LsContext context) {
+        public StreamOutput(final Configuration configuration, final Context context) {
             this.output = new PrintStream(System.out);
         }
 

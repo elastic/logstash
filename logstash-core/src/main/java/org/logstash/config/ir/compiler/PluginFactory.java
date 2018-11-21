@@ -3,10 +3,10 @@ package org.logstash.config.ir.compiler;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.api.Filter;
 import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.Output;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -15,10 +15,10 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public interface PluginFactory extends RubyIntegration.PluginFactory {
 
-    Input buildInput(String name, String id, LsConfiguration configuration, LsContext context);
+    Input buildInput(String name, String id, Configuration configuration, Context context);
 
     Filter buildFilter(
-        String name, String id, LsConfiguration configuration, LsContext context
+            String name, String id, Configuration configuration, Context context
     );
 
     final class Default implements PluginFactory {
@@ -30,12 +30,12 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public Input buildInput(final String name, final String id, final LsConfiguration configuration, final LsContext context) {
+        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
             return null;
         }
 
         @Override
-        public Filter buildFilter(final String name, final String id, final LsConfiguration configuration, final LsContext context) {
+        public Filter buildFilter(final String name, final String id, final Configuration configuration, final Context context) {
             return null;
         }
 

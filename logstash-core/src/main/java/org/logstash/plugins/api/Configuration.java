@@ -7,14 +7,14 @@ import java.util.Map;
 /**
  * LS Configuration example. Should be implemented like Spark config or Hadoop job config classes.
  */
-public final class LsConfiguration {
+public final class Configuration {
 
     private final Map<String, String> rawSettings;
 
     /**
      * @param raw Configuration Settings Map. Values are serialized.
      */
-    public LsConfiguration(final Map<String, String> raw) {
+    public Configuration(final Map<String, String> raw) {
         this.rawSettings = raw;
     }
 
@@ -88,7 +88,7 @@ public final class LsConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    public static PluginConfigSpec<Map<String, LsConfiguration>> requiredNestedHashSetting(
+    public static PluginConfigSpec<Map<String, Configuration>> requiredNestedHashSetting(
         final String name, final Collection<PluginConfigSpec<?>> spec) {
         return new PluginConfigSpec(
             name, Map.class, null, false, true, spec

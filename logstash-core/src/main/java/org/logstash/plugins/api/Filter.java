@@ -8,7 +8,7 @@ import org.logstash.Event;
 /**
  * A Logstash Filter.
  */
-public interface Filter extends LsPlugin {
+public interface Filter extends Plugin {
 
     Collection<Event> filter(Collection<Event> events);
 
@@ -16,21 +16,21 @@ public interface Filter extends LsPlugin {
     final class Mutate implements Filter {
 
         private static final PluginConfigSpec<String> FIELD_CONFIG =
-            LsConfiguration.requiredStringSetting("field");
+            Configuration.requiredStringSetting("field");
 
         private static final PluginConfigSpec<String> VALUE_CONFIG =
-            LsConfiguration.requiredStringSetting("value");
+            Configuration.requiredStringSetting("value");
 
         private final String field;
 
         private final String value;
 
         /**
-         * Required Constructor Signature only taking a {@link LsConfiguration}.
+         * Required Constructor Signature only taking a {@link Configuration}.
          * @param configuration Logstash Configuration
          * @param context Logstash Context
          */
-        public Mutate(final LsConfiguration configuration, final LsContext context) {
+        public Mutate(final Configuration configuration, final Context context) {
             this.field = configuration.get(FIELD_CONFIG);
             this.value = configuration.get(VALUE_CONFIG);
         }
@@ -55,11 +55,11 @@ public interface Filter extends LsPlugin {
         private long lastSeq = -1L;
 
         /**
-         * Required Constructor Signature only taking a {@link LsConfiguration}.
+         * Required Constructor Signature only taking a {@link Configuration}.
          * @param configuration Logstash Configuration
          * @param context Logstash Context
          */
-        public Clone(final LsConfiguration configuration, final LsContext context) {
+        public Clone(final Configuration configuration, final Context context) {
         }
 
         @Override

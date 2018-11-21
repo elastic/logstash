@@ -10,34 +10,34 @@ import java.util.Map;
 public final class PluginHelper {
 
     public static final PluginConfigSpec<Map<String, String>> ADD_FIELD_CONFIG =
-            LsConfiguration.hashSetting("add_field");
+            Configuration.hashSetting("add_field");
 
     //public static final PluginConfigSpec<Array> ADD_TAG_CONFIG =
-    //        LsConfiguration.arraySetting("add_tag");
+    //        Configuration.arraySetting("add_tag");
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
-            LsConfiguration.stringSetting("codec");
+            Configuration.stringSetting("codec");
 
     public static final PluginConfigSpec<Boolean> ENABLE_METRIC_CONFIG =
-            LsConfiguration.booleanSetting("enable_metric");
+            Configuration.booleanSetting("enable_metric");
 
     public static final PluginConfigSpec<String> ID_CONFIG =
-            LsConfiguration.stringSetting("id");
+            Configuration.stringSetting("id");
 
     public static final PluginConfigSpec<Boolean> PERIODIC_FLUSH_CONFIG =
-            LsConfiguration.booleanSetting("periodic_flush");
+            Configuration.booleanSetting("periodic_flush");
 
     //public static final PluginConfigSpec<Array> REMOVE_FIELD_CONFIG =
-    //        LsConfiguration.arraySetting("remove_field");
+    //        Configuration.arraySetting("remove_field");
 
     //public static final PluginConfigSpec<Array> REMOVE_TAG_CONFIG =
-    //        LsConfiguration.arraySetting("remove_tag");
+    //        Configuration.arraySetting("remove_tag");
 
     //public static final PluginConfigSpec<Array> TAGS_CONFIG =
-    //        LsConfiguration.arraySetting("tags");
+    //        Configuration.arraySetting("tags");
 
     public static final PluginConfigSpec<String> TYPE_CONFIG =
-            LsConfiguration.stringSetting("type");
+            Configuration.stringSetting("type");
 
 
     /**
