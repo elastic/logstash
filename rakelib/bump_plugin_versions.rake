@@ -3,7 +3,9 @@ require 'uri'
 require 'fileutils'
 
 def compute_dependecy(version, allow_for)
-  major, minor, patch = Gem::Version.new(version).release.segments
+  gem_version = Gem::Version.new(version)
+  return version if gem_version.prerelease?
+  major, minor, patch = gem_version.release.segments
   case allow_for
   when "major"
     then "~> #{major}"
