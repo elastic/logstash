@@ -15,7 +15,7 @@ PATH
       minitar (~> 0.6.1)
       pry (~> 0.10.1)
       puma (~> 2.16)
-      rack (= 1.6.6)
+      rack (~> 1.6, >= 1.6.11)
       rubyzip (~> 1.2.1)
       sinatra (~> 1.4, >= 1.4.6)
       stud (~> 0.0.19)
@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.157)
-      aws-sdk-resources (= 2.11.157)
-    aws-sdk-core (2.11.157)
+    aws-sdk (2.11.175)
+      aws-sdk-resources (= 2.11.175)
+    aws-sdk-core (2.11.175)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.157)
-      aws-sdk-core (= 2.11.157)
+    aws-sdk-resources (2.11.175)
+      aws-sdk-core (= 2.11.175)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -217,7 +217,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
       stud (~> 0.0.22)
-    logstash-filter-jdbc_static (1.0.5)
+    logstash-filter-jdbc_static (1.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler (< 3.5)
       sequel
@@ -258,7 +258,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-useragent (3.2.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.0.5)
+    logstash-filter-xml (4.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
@@ -291,7 +291,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.1.6)
+    logstash-input-file (4.1.7)
       addressable
       logstash-codec-multiline (~> 3.0)
       logstash-codec-plain
@@ -359,7 +359,7 @@ GEM
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       stud (~> 0.0.18)
-    logstash-input-snmp (1.0.0)
+    logstash-input-snmp (1.0.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
@@ -367,7 +367,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snmp
-    logstash-input-sqs (3.1.1)
+    logstash-input-sqs (3.1.2)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -416,9 +416,6 @@ GEM
     logstash-mixin-rabbitmq_connection (5.0.2-java)
       march_hare (~> 3.0)
       stud (~> 0.0.22)
-    logstash-output-elastic_app_search (1.0.0.beta1)
-      logstash-codec-plain
-      logstash-core-plugin-api (~> 2.0)
     logstash-output-cloudwatch (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
@@ -428,7 +425,10 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (9.2.1-java)
+    logstash-output-elastic_app_search (1.0.0.beta1)
+      logstash-codec-plain
+      logstash-core-plugin-api (~> 2.0)
+    logstash-output-elasticsearch (9.2.4-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -474,7 +474,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 3)
       stud
-    logstash-output-s3 (4.1.6)
+    logstash-output-s3 (4.1.7)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -543,7 +543,7 @@ GEM
       spoon (~> 0.0)
     public_suffix (1.4.6)
     puma (2.16.0-java)
-    rack (1.6.6)
+    rack (1.6.11)
     rack-protection (1.5.5)
       rack
     rack-test (1.1.0)
@@ -572,7 +572,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.13.0)
+    sequel (5.14.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
@@ -607,7 +607,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    tzinfo-data (1.2018.6)
+    tzinfo-data (1.2018.7)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.8.0)
@@ -706,9 +706,9 @@ DEPENDENCIES
   logstash-input-twitter
   logstash-input-udp
   logstash-input-unix
-  logstash-output-elastic_app_search
   logstash-output-cloudwatch
   logstash-output-csv
+  logstash-output-elastic_app_search
   logstash-output-elasticsearch
   logstash-output-email
   logstash-output-file
