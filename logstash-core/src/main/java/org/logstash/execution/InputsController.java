@@ -1,5 +1,7 @@
 package org.logstash.execution;
 
+import org.logstash.plugins.api.Input;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
