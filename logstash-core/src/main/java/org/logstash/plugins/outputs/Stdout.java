@@ -2,8 +2,8 @@ package org.logstash.plugins.outputs;
 
 import org.logstash.Event;
 import org.logstash.plugins.api.LogstashPlugin;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Configuration;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.Output;
 import org.logstash.plugins.api.PluginConfigSpec;
 import org.logstash.plugins.api.PluginHelper;
@@ -22,16 +22,16 @@ public class Stdout implements Output {
     private final CountDownLatch done = new CountDownLatch(1);
 
     /**
-     * Required Constructor Signature only taking a {@link LsConfiguration}.
+     * Required Constructor Signature only taking a {@link Configuration}.
      *
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdout(final LsConfiguration configuration, final LsContext context) {
+    public Stdout(final Configuration configuration, final Context context) {
         this(configuration, context, System.out);
     }
 
-    Stdout(final LsConfiguration configuration, final LsContext context, OutputStream targetStream) {
+    Stdout(final Configuration configuration, final Context context, OutputStream targetStream) {
         printer = new PrintStream(targetStream); // replace this with a codec
     }
 

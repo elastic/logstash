@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public interface Codec extends LsPlugin {
+public interface Codec extends Plugin {
 
     /**
      * Decodes events from the specified {@link ByteBuffer} and passes them to the provided

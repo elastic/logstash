@@ -2,7 +2,7 @@ package org.logstash.plugins.codecs;
 
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.plugins.api.LsConfiguration;
+import org.logstash.plugins.api.Configuration;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -212,7 +212,7 @@ public class LineTest {
         if (charset != null) {
             config.put("charset", charset);
         }
-        return new Line(new LsConfiguration(config), null);
+        return new Line(new Configuration(config), null);
     }
 
     @Test
@@ -220,7 +220,7 @@ public class LineTest {
         TestEventConsumer flushConsumer = new TestEventConsumer();
 
         // decode with cp-1252
-        Line cp1252decoder = new Line(new LsConfiguration(Collections.singletonMap("charset", "cp1252")), null);
+        Line cp1252decoder = new Line(new Configuration(Collections.singletonMap("charset", "cp1252")), null);
         byte[] rightSingleQuoteInCp1252 = {(byte) 0x92};
         ByteBuffer b1 = ByteBuffer.wrap(rightSingleQuoteInCp1252);
         cp1252decoder.decode(b1, flushConsumer);
@@ -231,7 +231,7 @@ public class LineTest {
 
         // decode with UTF-8
         flushConsumer.events.clear();
-        Line utf8decoder = new Line(new LsConfiguration(Collections.EMPTY_MAP), null);
+        Line utf8decoder = new Line(new Configuration(Collections.EMPTY_MAP), null);
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
         ByteBuffer b2 = ByteBuffer.wrap(rightSingleQuoteInUtf8);
         utf8decoder.decode(b2, flushConsumer);
@@ -245,7 +245,7 @@ public class LineTest {
     @Test
     public void testEncode() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new LsConfiguration(Collections.emptyMap()), null);
+        Line line = new Line(new Configuration(Collections.emptyMap()), null);
         Event e = new Event();
         e.setField("myfield1", "myvalue1");
         e.setField("myfield2", 42L);
@@ -266,7 +266,7 @@ public class LineTest {
     public void testEncodeWithCustomDelimiter() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         String delimiter = "xyz";
-        Line line = new Line(new LsConfiguration(Collections.singletonMap("delimiter", delimiter)), null);
+        Line line = new Line(new Configuration(Collections.singletonMap("delimiter", delimiter)), null);
         Event e = new Event();
         e.setField("myfield1", "myvalue1");
         e.setField("myfield2", 42L);
@@ -285,7 +285,7 @@ public class LineTest {
     @Test
     public void testEncodeWithFormat() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new LsConfiguration(Collections.singletonMap("format", "%{host}-%{message}")), null);
+        Line line = new Line(new Configuration(Collections.singletonMap("format", "%{host}-%{message}")), null);
         String message = "Hello world";
         String host = "test";
         String expectedOutput = host + "-" + message + Line.DEFAULT_DELIMITER;

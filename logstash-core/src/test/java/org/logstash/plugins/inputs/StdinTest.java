@@ -1,7 +1,7 @@
 package org.logstash.plugins.inputs;
 
 import org.junit.Test;
-import org.logstash.plugins.api.LsConfiguration;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.codecs.Line;
 import org.logstash.execution.queue.QueueWriter;
 
@@ -52,7 +52,7 @@ public class StdinTest {
     private static TestQueueWriter testStdin(byte[] input) throws IOException {
         TestQueueWriter queueWriter = new TestQueueWriter();
         try (FileChannel inChannel = getTestFileChannel(input)) {
-            Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, inChannel);
+            Stdin stdin = new Stdin(new Configuration(Collections.EMPTY_MAP), null, inChannel);
             Thread t = new Thread(() -> stdin.start(queueWriter));
             t.start();
             try {

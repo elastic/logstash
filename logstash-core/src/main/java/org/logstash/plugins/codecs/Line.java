@@ -3,9 +3,9 @@ package org.logstash.plugins.codecs;
 import org.logstash.Event;
 import org.logstash.StringInterpolation;
 import org.logstash.plugins.api.Codec;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.api.LogstashPlugin;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.PluginHelper;
 import org.logstash.plugins.api.PluginConfigSpec;
 
@@ -30,13 +30,13 @@ public class Line implements Codec {
     public static final String DEFAULT_DELIMITER = "\n";
 
     private static final PluginConfigSpec<String> CHARSET_CONFIG =
-            LsConfiguration.stringSetting("charset", "UTF-8");
+            Configuration.stringSetting("charset", "UTF-8");
 
     private static final PluginConfigSpec<String> DELIMITER_CONFIG =
-            LsConfiguration.stringSetting("delimiter", DEFAULT_DELIMITER);
+            Configuration.stringSetting("delimiter", DEFAULT_DELIMITER);
 
     private static final PluginConfigSpec<String> FORMAT_CONFIG =
-            LsConfiguration.stringSetting("format");
+            Configuration.stringSetting("format");
 
     static final String MESSAGE_FIELD = "message";
 
@@ -48,7 +48,7 @@ public class Line implements Codec {
     private final CharsetDecoder decoder;
     private String remainder = "";
 
-    public Line(final LsConfiguration configuration, final LsContext context) {
+    public Line(final Configuration configuration, final Context context) {
         delimiter = configuration.getRawValue(DELIMITER_CONFIG);
         charset = Charset.forName(configuration.getRawValue(CHARSET_CONFIG));
         format = configuration.getRawValue(FORMAT_CONFIG);

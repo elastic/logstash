@@ -29,10 +29,10 @@ import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.api.Filter;
 import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.Output;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -485,13 +485,13 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public Input buildInput(final String name, final String id, final LsConfiguration configuration, final LsContext context) {
+        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
             return null;
         }
 
         @Override
         public Filter buildFilter(final String name, final String id,
-            final LsConfiguration configuration, final LsContext context) {
+                                  final Configuration configuration, final Context context) {
             return null;
         }
     }

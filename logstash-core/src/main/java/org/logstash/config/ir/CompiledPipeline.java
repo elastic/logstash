@@ -21,8 +21,8 @@ import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.plugins.api.Filter;
 import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Configuration;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.Output;
 import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -132,8 +132,8 @@ public final class CompiledPipeline {
             if (cls != null) {
                 Output output;
                 try {
-                    final Constructor<Output> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
-                    output = ctor.newInstance(new LsConfiguration(Collections.EMPTY_MAP /* def.getArguments()*/), new LsContext());
+                    final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
+                    output = ctor.newInstance(new Configuration(Collections.EMPTY_MAP /* def.getArguments()*/), new Context());
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -163,8 +163,8 @@ public final class CompiledPipeline {
             if (cls != null) {
                 Filter filter;
                 try {
-                    final Constructor<Filter> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
-                    filter = ctor.newInstance(new LsConfiguration(Collections.EMPTY_MAP /* def.getArguments()*/), new LsContext());
+                    final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
+                    filter = ctor.newInstance(new Configuration(Collections.EMPTY_MAP /* def.getArguments()*/), new Context());
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -192,8 +192,8 @@ public final class CompiledPipeline {
             final Class<Input> cls = PluginRegistry.getInputClass(def.getName());
             if (cls != null) {
                 try {
-                    final Constructor<Input> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
-                    javaInputs.add(ctor.newInstance(new LsConfiguration(Collections.emptyMap()), new LsContext()));
+                    final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
+                    javaInputs.add(ctor.newInstance(new Configuration(Collections.emptyMap()), new Context()));
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
                 }

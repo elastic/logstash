@@ -1,10 +1,10 @@
 package org.logstash.plugins.inputs;
 
 import org.logstash.plugins.api.Codec;
+import org.logstash.plugins.api.Configuration;
 import org.logstash.plugins.api.Input;
 import org.logstash.plugins.api.LogstashPlugin;
-import org.logstash.plugins.api.LsConfiguration;
-import org.logstash.plugins.api.LsContext;
+import org.logstash.plugins.api.Context;
 import org.logstash.plugins.api.PluginHelper;
 import org.logstash.plugins.api.PluginConfigSpec;
 import org.logstash.plugins.discovery.PluginRegistry;
@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
-            LsConfiguration.stringSetting("codec", "line");
+            Configuration.stringSetting("codec", "line");
 
     private static final int BUFFER_SIZE = 64 * 1024;
 
@@ -42,16 +42,16 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private QueueWriter writer;
 
     /**
-     * Required Constructor Signature only taking a {@link LsConfiguration}.
+     * Required Constructor Signature only taking a {@link Configuration}.
      *
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdin(final LsConfiguration configuration, final LsContext context) {
+    public Stdin(final Configuration configuration, final Context context) {
         this(configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
     }
 
-    Stdin(final LsConfiguration configuration, final LsContext context, FileChannel inputChannel) {
+    Stdin(final Configuration configuration, final Context context, FileChannel inputChannel) {
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
