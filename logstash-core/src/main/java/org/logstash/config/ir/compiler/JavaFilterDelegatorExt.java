@@ -37,8 +37,8 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
                                                 final Filter filter) {
         final JavaFilterDelegatorExt instance =
                 new JavaFilterDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_FILTER_DELEGATOR_CLASS);
-        instance.initMetrics(id, metric);
         instance.configName = RubyUtil.RUBY.newString(configName);
+        instance.initMetrics(id, metric);
         instance.filter = filter;
         return instance;
     }
