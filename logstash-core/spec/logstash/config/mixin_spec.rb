@@ -132,8 +132,8 @@ describe LogStash::Config::Mixin do
     context "with an empty list" do
       let(:strings) { [] }
 
-      it "should return nil" do
-        expect(subject.strings).to be_nil
+      it "should return an empty list" do
+        expect(subject.strings).to be_empty
       end
     end
 
