@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.175)
-      aws-sdk-resources (= 2.11.175)
-    aws-sdk-core (2.11.175)
+    aws-sdk (2.11.177)
+      aws-sdk-resources (= 2.11.177)
+    aws-sdk-core (2.11.177)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.175)
-      aws-sdk-core (= 2.11.175)
+    aws-sdk-resources (2.11.177)
+      aws-sdk-core (= 2.11.177)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -206,7 +206,7 @@ GEM
     logstash-filter-elasticsearch (3.4.0)
       elasticsearch (>= 5.0.3, < 6.0.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-fingerprint (3.2.0)
+    logstash-filter-fingerprint (3.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       murmurhash3
     logstash-filter-geoip (5.0.3-java)
@@ -338,7 +338,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (8.2.0)
+    logstash-input-kafka (8.2.1)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -447,7 +447,7 @@ GEM
     logstash-output-http (5.2.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 6.0.0, < 7.0.0)
-    logstash-output-kafka (7.2.0)
+    logstash-output-kafka (7.2.1)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
