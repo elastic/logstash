@@ -323,7 +323,7 @@ module LogStash::Config::Mixin
       if config_settings[:list]
         value = Array(value) # coerce scalars to lists
         # Empty lists are converted to nils
-        return true, nil if value.empty?
+        return true, [] if value.empty?
 
         validated_items = value.map {|v| validate_value(v, config_val)}
         is_valid = validated_items.all? {|sr| sr[0] }
