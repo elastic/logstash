@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-14,Logstash 5.6.14>>
 * <<logstash-5-6-13,Logstash 5.6.13>>
 * <<logstash-5-6-12,Logstash 5.6.12>>
 * <<logstash-5-6-11,Logstash 5.6.11>>
@@ -17,6 +18,11 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-14]]
+=== Logstash 5.6.14 Release Notes
+
+* There are no user-facing changes in this release
 
 [[logstash-5-6-13]]
 === Logstash 5.6.13 Release Notes
