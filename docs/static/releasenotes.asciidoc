@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-5-2,Logstash 6.5.2>>
 * <<logstash-6-5-1,Logstash 6.5.1>>
 * <<logstash-6-5-0,Logstash 6.5.0>>
 * <<logstash-6-4-3,Logstash 6.4.3>>
@@ -21,6 +22,67 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-5-2]]
+=== Logstash 6.5.2 Release Notes
+
+* BUGFIX: setting a list config to empty array should not result in nil https://github.com/elastic/logstash/pull/10179[#10179]
+
+==== Plugins
+
+*Fingerprint Filter*
+
+* Fixed concurrent SHA fingerprinting by making the instances thread local
+
+*Jdbc_static Filter*
+
+* Added info to documentation to emphasize significance of table order https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/36[#36]
+
+*Xml Filter*
+
+* Fixed force_array behavior with nested elements https://github.com/logstash-plugins/logstash-filter-xml/pull/57[#57]
+
+*File Input*
+
+* Fixed problem in tail and read modes where the read loop could get stuck if an IO error occurs in the loop.
+    The file appears to be being read but it is not, suspected with file truncation schemes. https://github.com/logstash-plugins/logstash-input-file/issues/205[#205]
+
+* Fixed problem in rotation handling where the target file being rotated was
+  subjected to the start_position setting when it must always start from the beginning.
+  https://github.com/logstash-plugins/logstash-input-file/issues/214[#214]
+
+*Kafka Input*
+
+* Changed Kafka client version to 2.0.1 https://github.com/logstash-plugins/logstash-input-kafka/pull/295[#295]
+
+*Snmp Input*
+
+* Added no_codec condition to the documentation and bumped version https://github.com/logstash-plugins/logstash-input-snmp/pull/39[#39]
+* Changed docs to improve options layout https://github.com/logstash-plugins/logstash-input-snmp/pull/38[#38]
+
+*Sqs Input*
+
+* Added support for multiple events inside same message from SQS https://github.com/logstash-plugins/logstash-input-sqs/pull/48[#48]
+
+*Elasticsearch Output*
+
+* Fixed support for Elasticsearch 7.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/812[#812]
+
+* Tweaked logging statements to reduce verbosity
+
+* Fixed numerous issues relating to builds on Travis https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/799[#799]
+
+*Http Output*
+
+* Fixed handling of empty `retryable_codes` https://github.com/logstash-plugins/logstash-output-http/pull/99[#99]
+
+*Kafka Output*
+
+* Changed Kafka client to version 2.0.1 https://github.com/logstash-plugins/logstash-output-kafka/pull/209[#209]
+
+*S3 Output*
+
+* Fixed issue where on restart, 0 byte files could erroneously be uploaded to s3 https://github.com/logstash-plugins/logstash-output-s3/issues/195[#195]
 
 [[logstash-6-5-1]]
 === Logstash 6.5.1 Release Notes
