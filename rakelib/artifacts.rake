@@ -29,7 +29,6 @@ namespace "artifact" do
       "logstash-core/*.gemspec",
 
       "logstash-core-plugin-api/lib/**/*",
-      "logstash-core-plugin-api/versions-gem-copy.yml",
       "logstash-core-plugin-api/*.gemspec",
 
       "patterns/**/*",

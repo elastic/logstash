@@ -33,8 +33,7 @@ describe "Project licenses" do
       # Skipped because version 2.6.2 which we use has multiple licenses: MIT, ARTISTIC 2.0, GPL-2
       # See https://rubygems.org/gems/mime-types/versions/2.6.2
       # version 3.0 of mime-types (which is only compatible with Ruby 2.0) is MIT licensed
-      "mime-types",
-      "logstash-core-plugin-api"
+      "mime-types"
     ]
   end
 
