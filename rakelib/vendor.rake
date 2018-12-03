@@ -7,6 +7,8 @@ namespace "vendor" do
     system('./gradlew downloadAndInstallJRuby') unless File.exists?(File.join("vendor", "jruby"))
   end # jruby
 
+  task "all" => "jruby"
+
   namespace "force" do
     task "gems" => ["vendor:gems"]
   end
