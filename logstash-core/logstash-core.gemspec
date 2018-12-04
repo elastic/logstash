@@ -53,7 +53,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
-  gem.add_runtime_dependency "jruby-openssl", "0.9.19" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.10.1" # >= 0.9.13 Required to support TLSv1.2
   gem.add_runtime_dependency "chronic_duration", "0.10.6"
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
