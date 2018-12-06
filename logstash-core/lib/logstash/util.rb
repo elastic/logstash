@@ -191,7 +191,7 @@ module LogStash::Util
       o.inject({}) {|h, (k,v)| h[k] = deep_clone(v); h }
     when Array
       o.map {|v| deep_clone(v) }
-    when Fixnum, Symbol, IO, TrueClass, FalseClass, NilClass
+    when Integer, Symbol, IO, TrueClass, FalseClass, NilClass
       o
     when LogStash::Codecs::Base
       o.clone

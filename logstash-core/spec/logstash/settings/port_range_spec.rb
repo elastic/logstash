@@ -5,7 +5,7 @@ require "spec_helper"
 
 describe LogStash::Setting::PortRange do
 
-  context "When the value is a Fixnum" do
+  context "When the value is an Integer" do
     subject { LogStash::Setting::PortRange.new("mynewtest", 9000) }
 
     it "coerces the value in a range" do

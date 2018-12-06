@@ -368,7 +368,7 @@ module LogStash
         case value
         when ::Range
           value
-        when ::Fixnum
+        when ::Integer
           value..value
         when ::String
           first, last = value.split(PORT_SEPARATOR)
@@ -481,11 +481,11 @@ module LogStash
 
     class Bytes < Coercible
       def initialize(name, default=nil, strict=true)
-        super(name, ::Fixnum, default, strict=true) { |value| valid?(value) }
+        super(name, ::Integer, default, strict=true) { |value| valid?(value) }
       end
 
       def valid?(value)
-        value.is_a?(Fixnum) && value >= 0
+        value.is_a?(::Integer) && value >= 0
       end
 
       def coerce(value)
@@ -508,11 +508,11 @@ module LogStash
 
     class TimeValue < Coercible
       def initialize(name, default, strict=true, &validator_proc)
-        super(name, ::Fixnum, default, strict, &validator_proc)
+        super(name, ::Integer, default, strict, &validator_proc)
       end
 
       def coerce(value)
-        return value if value.is_a?(::Fixnum)
+        return value if value.is_a?(::Integer)
         Util::TimeValue.from_value(value).to_nanos
       end
     end
