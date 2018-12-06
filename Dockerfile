@@ -10,6 +10,7 @@ WORKDIR /root
 RUN adduser --disabled-password --gecos "" --home /home/logstash logstash && \
     mkdir -p /usr/local/share/ruby-build && \
     mkdir -p /opt/logstash && \
+    mkdir -p /opt/logstash/data && \
     mkdir -p /mnt/host && \
     chown logstash:logstash /opt/logstash
 
