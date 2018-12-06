@@ -1,6 +1,23 @@
-FROM container-registry-test.elastic.co/logstash-test/logstash-base:latest
+FROM ubuntu:xenial
 
-RUN ln -s /tmp/vendor /opt/logstash/vendor
+RUN apt-get update && \
+    apt-get install -y zlib1g-dev build-essential vim rake git curl libssl-dev libreadline-dev libyaml-dev  \
+      libxml2-dev libxslt-dev openjdk-8-jdk-headless curl iputils-ping netcat && \
+    apt-get clean
+
+WORKDIR /root
+
+RUN adduser --disabled-password --gecos "" --home /home/logstash logstash && \
+    mkdir -p /usr/local/share/ruby-build && \
+    mkdir -p /opt/logstash && \
+    mkdir -p /mnt/host && \
+    chown logstash:logstash /opt/logstash
+
+USER logstash
+WORKDIR /home/logstash
+
+# used by the purge policy
+LABEL retention="keep"
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
