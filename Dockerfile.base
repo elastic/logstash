@@ -17,29 +17,5 @@ RUN adduser --disabled-password --gecos "" --home /home/logstash logstash && \
 USER logstash
 WORKDIR /home/logstash
 
-RUN git clone https://github.com/sstephenson/rbenv.git .rbenv && \
-    git clone https://github.com/sstephenson/ruby-build.git .rbenv/plugins/ruby-build && \
-    echo 'export PATH=/home/logstash/.rbenv/bin:$PATH' >> /home/logstash/.bashrc
-
-ENV PATH "/home/logstash/.rbenv/bin:$PATH"
-
-#Only used to help bootstrap the build (not to run Logstash itself)
-RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
-    rbenv install jruby-9.1.12.0 && \
-    rbenv global jruby-9.1.12.0 && \
-    bash -i -c 'gem install bundler' && \
-    rbenv local jruby-9.1.12.0 && \
-    mkdir -p /opt/logstash/data
-
-
-# Create a cache for the dependencies based on the current master, any dependencies not cached will be downloaded at runtime
-RUN git clone https://github.com/elastic/logstash.git /tmp/logstash && \
-    cd /tmp/logstash && \
-    ./gradlew bootstrap compileJava compileTestJava && \
-    cd qa/integration && \
-    /home/logstash/.rbenv/shims/bundle install && \
-    mv /tmp/logstash/vendor /tmp/vendor && \
-    rm -rf /tmp/logstash
-
 # used by the purge policy
 LABEL retention="keep"
