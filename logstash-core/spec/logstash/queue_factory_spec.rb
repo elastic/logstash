@@ -46,7 +46,7 @@ describe LogStash::QueueFactory do
       let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
 
       after :each do
-        FileUtils.rmdir(queue_path)
+        FileUtils.rm_rf(queue_path)
       end
 
       it "creates a queue directory based on the pipeline id" do
