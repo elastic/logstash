@@ -178,7 +178,7 @@ class LogStash::Agent
 
   # Calculate the Logstash uptime in milliseconds
   #
-  # @return [Fixnum] Uptime in milliseconds
+  # @return [Integer] Uptime in milliseconds
   def uptime
     ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end

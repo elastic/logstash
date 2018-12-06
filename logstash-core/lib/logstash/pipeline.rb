@@ -525,7 +525,7 @@ module LogStash; class Pipeline < BasePipeline
 
   # Calculate the uptime in milliseconds
   #
-  # @return [Fixnum] Uptime in milliseconds, 0 if the pipeline is not started
+  # @return [Integer] Uptime in milliseconds, 0 if the pipeline is not started
   def uptime
     return 0 if started_at.nil?
     ((Time.now.to_f - started_at.to_f) * 1000.0).to_i

@@ -82,7 +82,7 @@ describe LogStash::Event do
         expect(event.get("reference_test")).not_to eq(data)
       end
 
-      it "should not return a Fixnum reference" do
+      it "should not return an Integer reference" do
         data = 1
         event = LogStash::Event.new({ "reference" => data })
         LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
