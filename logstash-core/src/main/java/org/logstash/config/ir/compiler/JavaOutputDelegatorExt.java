@@ -43,8 +43,8 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
         final Runnable closeAction, final Runnable registerAction) {
         final JavaOutputDelegatorExt instance =
             new JavaOutputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_OUTPUT_DELEGATOR_CLASS);
-        instance.initMetrics(id, metric);
         instance.configName = RubyUtil.RUBY.newString(configName);
+        instance.initMetrics(id, metric);
         instance.outputFunction = outputFunction;
         instance.closeAction = closeAction;
         instance.registerAction = registerAction;
@@ -56,8 +56,8 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
                                                 final Output output) {
         final JavaOutputDelegatorExt instance =
                 new JavaOutputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_OUTPUT_DELEGATOR_CLASS);
-        instance.initMetrics(id, metric);
         instance.configName = RubyUtil.RUBY.newString(configName);
+        instance.initMetrics(id, metric);
         instance.output = output;
         instance.outputFunction = instance::outputRubyEvents;
         instance.closeAction = instance::outputClose;

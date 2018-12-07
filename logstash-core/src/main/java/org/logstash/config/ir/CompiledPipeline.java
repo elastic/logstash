@@ -128,23 +128,10 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            final Class<Output> cls = PluginRegistry.getOutputClass(def.getName());
-            if (cls != null) {
-                Output output;
-                try {
-                    final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    output = ctor.newInstance(new Configuration(Collections.EMPTY_MAP /* def.getArguments()*/), new Context());
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                    throw new IllegalStateException(ex);
-                }
-                res.put(v.getId(), pluginFactory.buildJavaOutput(def.getName(), source.getLine(),
-                        source.getColumn(), output, convertArgs(def)));
-            } else {
-                res.put(v.getId(), pluginFactory.buildOutput(
-                        RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                        RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-                ));
-            }
+            res.put(v.getId(), pluginFactory.buildOutput(
+                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+            ));
         });
         return res;
     }
@@ -159,24 +146,10 @@ public final class CompiledPipeline {
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
-            final Class<Filter> cls = PluginRegistry.getFilterClass(def.getName());
-            if (cls != null) {
-                Filter filter;
-                try {
-                    final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    filter = ctor.newInstance(new Configuration(Collections.EMPTY_MAP /* def.getArguments()*/), new Context());
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                    throw new IllegalStateException(ex);
-                }
-                res.put(vertex.getId(), pluginFactory.buildJavaFilter(def.getName(), source.getLine(),
-                        source.getColumn(), filter, convertArgs(def)));
-
-            } else {
-                res.put(vertex.getId(), pluginFactory.buildFilter(
-                        RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                        RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-                ));
-            }
+            res.put(vertex.getId(), pluginFactory.buildFilter(
+                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+            ));
         }
         return res;
     }

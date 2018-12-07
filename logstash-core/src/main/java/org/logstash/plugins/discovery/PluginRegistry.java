@@ -1,21 +1,22 @@
 package org.logstash.plugins.discovery;
 
+import org.logstash.plugins.PluginLookup;
+import org.logstash.plugins.api.Codec;
+import org.logstash.plugins.api.Configuration;
+import org.logstash.plugins.api.Context;
+import org.logstash.plugins.api.Filter;
+import org.logstash.plugins.api.Input;
+import org.logstash.plugins.api.LogstashPlugin;
+import org.logstash.plugins.api.Output;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.logstash.plugins.api.Codec;
-import org.logstash.plugins.api.Configuration;
-import org.logstash.plugins.api.Filter;
-import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.LogstashPlugin;
-import org.logstash.plugins.api.Context;
-import org.logstash.plugins.api.Output;
-
 /**
- * Logstash Java Plugin Registry.
+ * Registry for built-in Java plugins (not installed via logstash-plugin)
  */
 public final class PluginRegistry {
 
@@ -55,6 +56,24 @@ public final class PluginRegistry {
                 }
             }
         }
+    }
+
+    public static Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
+        if (pluginType == PluginLookup.PluginType.FILTER) {
+            return getFilterClass(pluginName);
+        }
+        if (pluginType == PluginLookup.PluginType.OUTPUT) {
+            return getOutputClass(pluginName);
+        }
+        if (pluginType == PluginLookup.PluginType.INPUT) {
+            return getInputClass(pluginName);
+        }
+        if (pluginType == PluginLookup.PluginType.CODEC) {
+            return getCodecClass(pluginName);
+        }
+
+        throw new IllegalStateException("Unknown plugin type: " + pluginType);
+
     }
 
     public static Class<Input> getInputClass(String name) {
