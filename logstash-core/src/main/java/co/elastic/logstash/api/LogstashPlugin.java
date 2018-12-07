@@ -1,4 +1,4 @@
-package org.logstash.plugins.api;
+package co.elastic.logstash.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -29,11 +29,11 @@ import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
-import org.logstash.plugins.api.Configuration;
-import org.logstash.plugins.api.Filter;
-import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.Context;
-import org.logstash.plugins.api.Output;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Output;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

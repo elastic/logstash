@@ -1,7 +1,7 @@
 package org.logstash.plugins.inputs;
 
 import org.junit.Test;
-import org.logstash.plugins.api.Configuration;
+import co.elastic.logstash.api.Configuration;
 import org.logstash.plugins.codecs.Line;
 import org.logstash.execution.queue.QueueWriter;
 
