@@ -317,10 +317,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def precedence(op)
       #  Believe this is right for logstash?
-      case op
-      when AND_METHOD
+      if op == AND_METHOD
         2
-      when OR_METHOD
+      elsif op == OR_METHOD
         1
       else
         raise ArgumentError, "Unexpected operator #{op}"
