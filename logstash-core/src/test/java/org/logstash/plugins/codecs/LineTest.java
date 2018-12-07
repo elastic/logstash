@@ -2,7 +2,7 @@ package org.logstash.plugins.codecs;
 
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.plugins.api.Configuration;
+import co.elastic.logstash.api.Configuration;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;

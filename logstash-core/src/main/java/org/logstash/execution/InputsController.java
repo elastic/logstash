@@ -1,6 +1,6 @@
 package org.logstash.execution;
 
-import org.logstash.plugins.api.Input;
+import co.elastic.logstash.api.Input;
 
 import java.util.ArrayList;
 import java.util.Collection;

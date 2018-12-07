@@ -1,4 +1,4 @@
-package org.logstash.plugins.api;
+package co.elastic.logstash.api;
 
 import java.util.Collection;
 import java.util.Collections;

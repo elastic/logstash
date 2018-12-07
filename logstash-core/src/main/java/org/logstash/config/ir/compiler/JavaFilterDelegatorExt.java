@@ -11,7 +11,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
-import org.logstash.plugins.api.Filter;
+import co.elastic.logstash.api.Filter;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 

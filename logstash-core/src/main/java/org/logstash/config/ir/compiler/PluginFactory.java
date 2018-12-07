@@ -3,10 +3,10 @@ package org.logstash.config.ir.compiler;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.plugins.api.Configuration;
-import org.logstash.plugins.api.Context;
-import org.logstash.plugins.api.Filter;
-import org.logstash.plugins.api.Input;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 
 /**
  * Factory that can instantiate Java plugins as well as Ruby plugins.

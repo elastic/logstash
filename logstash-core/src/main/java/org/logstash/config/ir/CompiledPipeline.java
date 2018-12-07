@@ -19,11 +19,9 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
-import org.logstash.plugins.api.Filter;
-import org.logstash.plugins.api.Input;
-import org.logstash.plugins.api.Configuration;
-import org.logstash.plugins.api.Context;
-import org.logstash.plugins.api.Output;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
 import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
 
