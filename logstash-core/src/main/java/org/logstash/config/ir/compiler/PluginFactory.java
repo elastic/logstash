@@ -8,6 +8,8 @@ import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 
+import java.util.Map;
+
 /**
  * Factory that can instantiate Java plugins as well as Ruby plugins.
  */
@@ -38,23 +40,28 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
-            return rubyFactory.buildInput(name, line, column, args);
+        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+            return rubyFactory.buildInput(name, line, column, args, pluginArgs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
-            return rubyFactory.buildOutput(name, line, column, args);
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      final Map<String, Object> pluginArgs) {
+            return rubyFactory.buildOutput(name, line, column, args, pluginArgs);
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line, final RubyInteger column, final IRubyObject args) {
-            return rubyFactory.buildFilter(name, line, column, args);
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      final Map<String, Object> pluginArgs) {
+            return rubyFactory.buildFilter(name, line, column, args, pluginArgs);
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
-            return rubyFactory.buildCodec(name, args);
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+            return rubyFactory.buildCodec(name, args, pluginArgs);
         }
     }
 }

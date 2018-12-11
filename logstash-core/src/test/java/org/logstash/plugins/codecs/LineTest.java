@@ -205,7 +205,7 @@ public class LineTest {
     }
 
     private static Line getLineCodec(String delimiter, String charset) {
-        Map<String, String> config = new HashMap<>();
+        Map<String, Object> config = new HashMap<>();
         if (delimiter != null) {
             config.put("delimiter", delimiter);
         }

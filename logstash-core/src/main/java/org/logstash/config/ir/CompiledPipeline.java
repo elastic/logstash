@@ -22,6 +22,7 @@ import org.logstash.config.ir.imperative.PluginStatement;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -128,7 +129,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
             ));
         });
         return res;
@@ -146,7 +147,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
             ));
         }
         return res;
@@ -164,16 +165,21 @@ public final class CompiledPipeline {
             if (cls != null) {
                 try {
                     final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    javaInputs.add(ctor.newInstance(new Configuration(Collections.emptyMap()), new Context()));
+                    javaInputs.add(ctor.newInstance(new Configuration(def.getArguments()), new Context()));
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
                 }
             } else {
                 final SourceWithMetadata source = v.getSourceWithMetadata();
-                nodes.add(pluginFactory.buildInput(
+                IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-                ));
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments());
+
+                if (o instanceof PluginFactoryExt.JavaInputWrapperExt) {
+                    javaInputs.add(((PluginFactoryExt.JavaInputWrapperExt)o).getInput());
+                } else {
+                    nodes.add(o);
+                }
             }
         });
         return nodes;
@@ -196,7 +202,8 @@ public final class CompiledPipeline {
                 final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
+                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                    def.getArguments()
                 );
             } else {
                 toput = value;

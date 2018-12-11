@@ -52,7 +52,6 @@ public final class PluginLookup {
                     : klass;
 
             return new PluginLookup.PluginClass() {
-
                 @Override
                 public PluginLookup.PluginLanguage language() {
                     return language;
@@ -70,6 +69,10 @@ public final class PluginLookup {
         PluginLookup.PluginLanguage language();
 
         Object klass();
+
+        default String toReadableString() {
+            return String.format("Plugin class [%s], language [%s]", klass(), language());
+        }
     }
 
     public enum PluginLanguage {
