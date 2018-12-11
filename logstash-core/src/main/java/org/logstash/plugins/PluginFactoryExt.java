@@ -1,11 +1,13 @@
 package org.logstash.plugins;
 
+import co.elastic.logstash.api.Input;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyInteger;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
@@ -37,7 +39,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -103,12 +104,12 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-                                      final RubyInteger column, final IRubyObject args) {
+        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
                     name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args
+                    (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -116,18 +117,19 @@ public final class PluginFactoryExt {
         public IRubyObject buildInput(final ThreadContext context, final IRubyObject[] args) {
             return buildInput(
                     (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3]
+                    args[3], null
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args) {
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
                     name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args
+                    (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -135,18 +137,19 @@ public final class PluginFactoryExt {
         public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
                                                       final IRubyObject[] args) {
             return buildOutput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3]
+                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3], null
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args) {
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
                     name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args
+                    (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -154,22 +157,22 @@ public final class PluginFactoryExt {
         public IRubyObject buildFilter(final ThreadContext context, final IRubyObject[] args) {
             return buildFilter(
                     (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3]
+                    args[3], null
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args
+                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
         @JRubyMethod(required = 4)
         public IRubyObject buildCodec(final ThreadContext context, final IRubyObject[] args) {
-            return buildCodec((RubyString) args[0], args[1]);
+            return buildCodec((RubyString) args[0], args[1], null);
         }
 
         @SuppressWarnings("unchecked")
@@ -181,13 +184,15 @@ public final class PluginFactoryExt {
                     args[1].asJavaString(),
                     args[2].convertToInteger().getIntValue(),
                     args[3].convertToInteger().getIntValue(),
-                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>()
+                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>(),
+                    null
             );
         }
 
         @SuppressWarnings("unchecked")
         private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                                   final int line, final int column, final Map<String, IRubyObject> args) {
+                                   final int line, final int column, final Map<String, IRubyObject> args,
+                                   Map<String, Object> pluginArgs) {
             final String id;
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
@@ -257,7 +262,7 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            output = ctor.newInstance(new Configuration(Collections.EMPTY_MAP  /*def.getArguments()*/), new Context());
+                            output = ctor.newInstance(new Configuration(pluginArgs), new Context());
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -274,7 +279,7 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            filter = ctor.newInstance(new Configuration(Collections.EMPTY_MAP /*def.getArguments()*/), new Context());
+                            filter = ctor.newInstance(new Configuration(pluginArgs), new Context());
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -285,10 +290,47 @@ public final class PluginFactoryExt {
                     } else {
                         throw new IllegalStateException("Unable to instantiate filter: " + pluginClass);
                     }
+                } else if (type == PluginLookup.PluginType.INPUT) {
+                    final Class<Input> cls = (Class<Input>) pluginClass.klass();
+                    Input input = null;
+                    if (cls != null) {
+                        try {
+                            final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            input = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                            throw new IllegalStateException(ex);
+                        }
+                    }
+
+                    if (input != null) {
+                        return JavaInputWrapperExt.create(context, input);
+                    } else {
+                        throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
+                    }
                 } else {
-                    return context.nil;
+                    throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());
                 }
             }
+        }
+    }
+
+    @JRubyClass(name = "JavaInputWrapper")
+    public static final class JavaInputWrapperExt extends RubyObject {
+
+        private Input input;
+
+        public JavaInputWrapperExt(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
+        }
+
+        public static JavaInputWrapperExt create(ThreadContext context, Input input) {
+            JavaInputWrapperExt inputWrapper = new JavaInputWrapperExt(context.runtime, RubyUtil.JAVA_INPUT_WRAPPER_CLASS);
+            inputWrapper.input = input;
+            return inputWrapper;
+        }
+
+        public Input getInput() {
+            return input;
         }
     }
 

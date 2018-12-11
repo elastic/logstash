@@ -207,6 +207,8 @@ public final class RubyUtil {
 
     public static final RubyClass JAVA_PIPELINE_CLASS;
 
+    public static final RubyClass JAVA_INPUT_WRAPPER_CLASS;
+
     /**
      * Logstash Ruby Module.
      */
@@ -450,6 +452,8 @@ public final class RubyUtil {
         JAVA_PIPELINE_CLASS = setupLogstashClass(
             ABSTRACT_PIPELINE_CLASS, JavaBasePipelineExt::new, JavaBasePipelineExt.class
         );
+        JAVA_INPUT_WRAPPER_CLASS = setupLogstashClass(PluginFactoryExt.JavaInputWrapperExt::new,
+                PluginFactoryExt.JavaInputWrapperExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(

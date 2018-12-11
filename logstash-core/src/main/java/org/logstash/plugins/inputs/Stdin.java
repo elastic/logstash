@@ -57,7 +57,11 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
         } catch (UnknownHostException e) {
             hostname = "[unknownHost]";
         }
-        codec = PluginRegistry.getCodec(configuration.getRawValue(CODEC_CONFIG), configuration, context);
+        String codecName = (String)configuration.get(CODEC_CONFIG);
+        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        if (codec == null) {
+            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+        }
         input = inputChannel;
     }
 

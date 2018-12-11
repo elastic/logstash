@@ -33,8 +33,6 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Output;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -440,36 +438,27 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         @Override
         public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
             return setupPlugin(name, inputs);
         }
 
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildJavaOutput(String name, int line, int column, Output output, IRubyObject args) {
-            throw new NotImplementedException();
-        }
-
-        @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args) {
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      Map<String, Object> pluginArgs) {
             return new FilterDelegatorExt(
                 RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
                 .initForTesting(setupPlugin(name, filters));
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildJavaFilter(String name, int line, int column, Filter filter, IRubyObject args) {
-            throw new NotImplementedException();
-        }
-
-        @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 

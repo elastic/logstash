@@ -31,8 +31,8 @@ public interface Filter extends Plugin {
          * @param context Logstash Context
          */
         public Mutate(final Configuration configuration, final Context context) {
-            this.field = configuration.get(FIELD_CONFIG);
-            this.value = configuration.get(VALUE_CONFIG);
+            this.field = (String)configuration.get(FIELD_CONFIG);
+            this.value = (String)configuration.get(VALUE_CONFIG);
         }
 
         @Override

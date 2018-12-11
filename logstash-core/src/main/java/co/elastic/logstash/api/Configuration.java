@@ -9,28 +9,21 @@ import java.util.Map;
  */
 public final class Configuration {
 
-    private final Map<String, String> rawSettings;
+    private final Map<String, Object> rawSettings;
 
     /**
      * @param raw Configuration Settings Map. Values are serialized.
      */
-    public Configuration(final Map<String, String> raw) {
+    public Configuration(final Map<String, Object> raw) {
         this.rawSettings = raw;
     }
 
-    public <T> T get(final PluginConfigSpec<T> configSpec) {
-        // TODO: Implement
-        return null;
-    }
-
-    public String getRawValue(PluginConfigSpec<?> configSpec) {
-        String rawValue = rawSettings.get(configSpec.name());
-        return rawValue == null ? (String)configSpec.defaultValue() : rawValue;
+    public Object get(final PluginConfigSpec<?> configSpec) {
+        return rawSettings.get(configSpec.name());
     }
 
     public boolean contains(final PluginConfigSpec<?> configSpec) {
-        // TODO: Implement
-        return false;
+        return rawSettings.containsKey(configSpec.name());
     }
 
     public Collection<String> allKeys() {
