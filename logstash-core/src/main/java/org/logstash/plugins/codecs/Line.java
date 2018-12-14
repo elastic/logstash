@@ -49,9 +49,9 @@ public class Line implements Codec {
     private String remainder = "";
 
     public Line(final Configuration configuration, final Context context) {
-        delimiter = (String)configuration.get(DELIMITER_CONFIG);
-        charset = Charset.forName((String)configuration.get(CHARSET_CONFIG));
-        format = (String)configuration.get(FORMAT_CONFIG);
+        delimiter = configuration.get(DELIMITER_CONFIG);
+        charset = Charset.forName(configuration.get(CHARSET_CONFIG));
+        format = configuration.get(FORMAT_CONFIG);
         decoder = charset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
     }
