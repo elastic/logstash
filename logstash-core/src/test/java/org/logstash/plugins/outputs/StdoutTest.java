@@ -3,7 +3,6 @@ package org.logstash.plugins.outputs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.plugins.outputs.Stdout;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -60,6 +59,6 @@ public class StdoutTest {
         e2.setField("myField", "event2");
         Event e3 = new Event();
         e3.setField("myField", "event3");
-        return Arrays.asList(new Event[]{e1, e2, e3});
+        return Arrays.asList(e1, e2, e3);
     }
 }
