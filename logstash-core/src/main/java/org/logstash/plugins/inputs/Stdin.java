@@ -2,13 +2,15 @@ package org.logstash.plugins.inputs;
 
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.PluginConfigSpec;
-import org.logstash.plugins.discovery.PluginRegistry;
+import co.elastic.logstash.api.PluginHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.execution.queue.QueueWriter;
+import org.logstash.plugins.discovery.PluginRegistry;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -27,6 +29,8 @@ import java.util.function.Consumer;
 
 @LogstashPlugin(name = "java-stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
+
+    private static final Logger logger = LogManager.getLogger(Stdin.class);
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
             Configuration.stringSetting("codec", "line");
@@ -77,8 +81,10 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
             }
         } catch (AsynchronousCloseException e2) {
             // do nothing -- this happens when stop is called during a pending read
+            logger.warn("Stop request interrupted pending read");
         } catch (IOException e) {
             stopRequested = true;
+            logger.error("Stopping stdin after read error", e);
             throw new IllegalStateException(e);
         } finally {
             try {

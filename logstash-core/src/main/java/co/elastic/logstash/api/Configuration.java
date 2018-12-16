@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * LS Configuration example. Should be implemented like Spark config or Hadoop job config classes.
+ * Configuration for Logstash Java plugins.
  */
 public final class Configuration {
 
