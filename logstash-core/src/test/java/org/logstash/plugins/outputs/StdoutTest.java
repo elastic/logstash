@@ -1,5 +1,6 @@
 package org.logstash.plugins.outputs;
 
+import co.elastic.logstash.api.Configuration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 import org.logstash.Event;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +31,7 @@ public class StdoutTest {
                 super.close();
             }
         };
-        Stdout stdout = new Stdout(null, null, dummyOutputStream);
+        Stdout stdout = new Stdout(new Configuration(Collections.EMPTY_MAP), null, dummyOutputStream);
         stdout.output(getTestEvents());
         stdout.stop();
 
@@ -45,7 +47,7 @@ public class StdoutTest {
         }
 
         OutputStream dummyOutputStream = new ByteArrayOutputStream(0);
-        Stdout stdout = new Stdout(null, null, dummyOutputStream);
+        Stdout stdout = new Stdout(new Configuration(Collections.EMPTY_MAP), null, dummyOutputStream);
         stdout.output(testEvents);
         stdout.stop();
 
