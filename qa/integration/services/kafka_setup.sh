@@ -45,7 +45,7 @@ wait_for_messages() {
     
     echo "Checking if Kafka topic has been populated with data"
     while [[ $read_lines -ne $KAFKA_MESSAGES ]] && [[ $count -ne 0 ]]; do
-        read_lines=`$KAFKA_HOME/bin/kafka-console-consumer.sh --topic $KAFKA_TOPIC --new-consumer --bootstrap-server localhost:9092 --from-beginning --max-messages $KAFKA_MESSAGES --timeout-ms 10000 | wc -l`
+        read_lines=`$KAFKA_HOME/bin/kafka-console-consumer.sh --topic $KAFKA_TOPIC --bootstrap-server localhost:9092 --from-beginning --max-messages $KAFKA_MESSAGES --timeout-ms 10000 | wc -l`
         count=$(( $count - 1 ))
         [[ $count -eq 0 ]] && return 1
         sleep 0.5
