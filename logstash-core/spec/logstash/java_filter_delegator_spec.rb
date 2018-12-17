@@ -6,7 +6,7 @@ require "support/shared_contexts"
 
 java_import org.logstash.RubyUtil
 
-describe LogStash::JavaFilterDelegator do
+describe LogStash::FilterDelegator do
 
   class MockGauge
     def increment(_)
@@ -182,14 +182,4 @@ describe LogStash::JavaFilterDelegator do
     end
   end
 
-  context "delegate methods to the original plugin" do
-    # I am not testing the behavior of these methods
-    # this is done in the plugin tests. I just want to make sure
-    # the proxy delegates the methods.
-    LogStash::FilterDelegator::DELEGATED_METHODS.each do |method|
-      it "delegate method: `#{method}` to the filter" do
-        expect(subject.respond_to?(method))
-      end
-    end
-  end
 end

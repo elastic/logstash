@@ -51,7 +51,7 @@ describe LogStash::FilterDelegator do
     end
 
     it "defines a flush method" do
-      expect(subject.respond_to?(:flush)).to be_truthy
+      expect(subject.has_flush).to be_truthy
     end
 
     context "when the flush return events" do
@@ -128,7 +128,7 @@ describe LogStash::FilterDelegator do
     end
 
     it "doesnt define a flush method" do
-      expect(subject.respond_to?(:flush)).to be_falsey
+      expect(subject.has_flush).to be_falsey
     end
 
     it "increments the in/out of the metric" do
@@ -145,14 +145,4 @@ describe LogStash::FilterDelegator do
     end
   end
 
-  context "delegate methods to the original plugin" do
-    # I am not testing the behavior of these methods
-    # this is done in the plugin tests. I just want to make sure
-    # the proxy delegates the methods.
-    LogStash::FilterDelegator::DELEGATED_METHODS.each do |method|
-      it "delegate method: `#{method}` to the filter" do
-        expect(subject.respond_to?(method))
-      end
-    end
-  end
 end

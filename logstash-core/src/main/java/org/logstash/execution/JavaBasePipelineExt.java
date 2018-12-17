@@ -17,6 +17,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.CompiledPipeline;
+import org.logstash.execution.queue.QueueWriter;
+import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.plugins.PluginFactoryExt;
 
 @JRubyClass(name = "JavaBasePipeline")
@@ -108,4 +110,14 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         return result;
     }
 
+    public QueueWriter getQueueWriter(final String inputName) {
+        return new JRubyWrappedWriteClientExt(RubyUtil.RUBY, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
+            .initialize(
+                RubyUtil.RUBY.getCurrentContext(),
+                new IRubyObject[]{
+                    inputQueueClient(), pipelineId().convertToString().intern(),
+                    metric(), RubyUtil.RUBY.newSymbol(inputName)
+                }
+            );
+    }
 }

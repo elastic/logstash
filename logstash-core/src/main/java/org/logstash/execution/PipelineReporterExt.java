@@ -1,6 +1,5 @@
 package org.logstash.execution;
 
-import java.util.Collection;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
@@ -14,7 +13,9 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.config.ir.compiler.OutputDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+
+import java.util.Collection;
 
 @JRubyClass(name = "PipelineReporter")
 public final class PipelineReporterExt extends RubyBasicObject {
@@ -163,7 +164,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
             outputIterable = (Iterable<IRubyObject>) outputs.toJava(Iterable.class);
         }
         outputIterable.forEach(output -> {
-            final OutputDelegatorExt delegator = (OutputDelegatorExt) output;
+            final AbstractOutputDelegatorExt delegator = (AbstractOutputDelegatorExt) output;
             final RubyHash hash = RubyHash.newHash(context.runtime);
             hash.op_aset(context, TYPE_KEY, delegator.configName(context));
             hash.op_aset(context, ID_KEY, delegator.getId());
