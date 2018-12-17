@@ -1,6 +1,6 @@
 package org.logstash.plugins.inputs;
 
-import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Input;

@@ -1,18 +1,15 @@
 package org.logstash.plugins.outputs;
 
-import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.v0.Codec;
 import org.logstash.Event;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Output;
 import co.elastic.logstash.api.PluginConfigSpec;
-import co.elastic.logstash.api.PluginHelper;
 import org.logstash.plugins.discovery.PluginRegistry;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
