@@ -1,11 +1,13 @@
 package org.logstash.ext;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 
@@ -43,5 +45,14 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
         final Collection<JrubyEventExtLibrary.RubyEvent> batch) throws InterruptedException {
         LsQueueUtils.addAll(queue, batch);
         return this;
+    }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.put(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event(event)));
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

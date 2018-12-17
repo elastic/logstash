@@ -85,7 +85,7 @@ public final class DatasetCompiler {
      * @return Dataset representing the filter plugin
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
-        final FilterDelegatorExt plugin) {
+        final AbstractFilterDelegatorExt plugin) {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
@@ -192,7 +192,7 @@ public final class DatasetCompiler {
 
     private static Closure filterBody(final ValueSyntaxElement outputBuffer,
         final ValueSyntaxElement inputBuffer, final ClassFields fields,
-        final FilterDelegatorExt plugin) {
+        final AbstractFilterDelegatorExt plugin) {
         final ValueSyntaxElement filterField = fields.add(plugin);
         final Closure body = Closure.wrap(
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))

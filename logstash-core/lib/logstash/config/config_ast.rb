@@ -136,7 +136,7 @@ module LogStash; module Config; module AST
               events.each{|e| block.call(e)}
             end
 
-            if @generated_objects[:#{name}].respond_to?(:flush)
+            if !@generated_objects[:#{name}].nil? && @generated_objects[:#{name}].has_flush
               @periodic_flushers << @generated_objects[:#{name}_flush] if @generated_objects[:#{name}].periodic_flush
               @shutdown_flushers << @generated_objects[:#{name}_flush]
             end

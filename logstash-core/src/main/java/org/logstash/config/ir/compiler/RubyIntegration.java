@@ -4,6 +4,8 @@ import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.util.Map;
+
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
  */
@@ -19,14 +21,14 @@ public final class RubyIntegration {
     public interface PluginFactory {
 
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+            IRubyObject args, Map<String, Object> pluginArgs);
 
         AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+            IRubyObject args, Map<String, Object> pluginArgs);
 
-        FilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args,
+            Map<String, Object> pluginArgs);
 
-        IRubyObject buildCodec(RubyString name, IRubyObject args);
+        IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs);
     }
 }

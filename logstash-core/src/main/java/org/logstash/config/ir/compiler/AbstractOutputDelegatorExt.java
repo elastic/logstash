@@ -95,9 +95,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         eventMetricIn.increment((long) count);
         final long start = System.nanoTime();
         doOutput(batch);
-        eventMetricTime.increment(
-            TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)
-        );
+        eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
         eventMetricOut.increment((long) count);
         return this;
     }
@@ -109,14 +107,10 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         synchronized (metric) {
             namespacedMetric = metric.namespace(context, context.runtime.newSymbol(id));
             metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
-            namespacedMetric.gauge(
-                context, MetricKeys.NAME_KEY, configName(context)
-            );
+            namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
             eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
             eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
-            eventMetricTime = LongCounter.fromRubyBase(
-                metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY
-            );
+            eventMetricTime = LongCounter.fromRubyBase(metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY);
         }
     }
 
