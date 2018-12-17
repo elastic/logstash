@@ -1,6 +1,6 @@
 package org.logstash.plugins;
 
-import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.v0.Input;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
@@ -28,8 +28,8 @@ import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Filter;
-import co.elastic.logstash.api.Output;
+import co.elastic.logstash.api.v0.Filter;
+import co.elastic.logstash.api.v0.Output;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;

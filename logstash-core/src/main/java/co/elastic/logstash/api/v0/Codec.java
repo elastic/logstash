@@ -1,6 +1,5 @@
 package co.elastic.logstash.api.v0;
 
-import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Plugin;
 import org.logstash.Event;
 

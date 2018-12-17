@@ -5,7 +5,7 @@ import org.logstash.Event;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Output;
+import co.elastic.logstash.api.v0.Output;
 import co.elastic.logstash.api.PluginConfigSpec;
 import org.logstash.plugins.discovery.PluginRegistry;
 

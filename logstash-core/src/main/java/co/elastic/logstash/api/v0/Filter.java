@@ -1,5 +1,6 @@
-package co.elastic.logstash.api;
+package co.elastic.logstash.api.v0;
 
+import co.elastic.logstash.api.Plugin;
 import org.logstash.Event;
 
 import java.util.Collection;

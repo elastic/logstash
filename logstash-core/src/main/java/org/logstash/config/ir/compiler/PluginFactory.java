@@ -5,8 +5,8 @@ import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Filter;
-import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.v0.Filter;
+import co.elastic.logstash.api.v0.Input;
 
 import java.util.Map;
 
