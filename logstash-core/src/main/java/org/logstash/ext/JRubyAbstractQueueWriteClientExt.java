@@ -8,9 +8,10 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.execution.queue.QueueWriter;
 
 @JRubyClass(name = "AbstractQueueWriteClient")
-public abstract class JRubyAbstractQueueWriteClientExt extends RubyBasicObject {
+public abstract class JRubyAbstractQueueWriteClientExt extends RubyBasicObject implements QueueWriter {
 
     protected JRubyAbstractQueueWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

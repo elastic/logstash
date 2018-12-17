@@ -262,11 +262,14 @@ module LogStash module Plugins
     # @param name [String] plugin name
     # @return [Boolean] true if klass is a valid plugin for name
     def is_a_plugin?(klass, name)
-      klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name
+      (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
+      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name)
     end
 
     def add_plugin(type, name, klass)
-      if !exists?(type, name)
+      if klass.respond_to?("javaClass", true)
+        @registry[key_for(type, name)] = PluginSpecification.new(type, name, klass.javaClass)
+      elsif !exists?(type, name)
         specification_klass = type == :universal ? UniversalPluginSpecification : PluginSpecification
         @registry[key_for(type, name)] = specification_klass.new(type, name, klass)
       else

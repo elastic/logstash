@@ -1,6 +1,16 @@
 package org.logstash.config.ir;
 
 import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jruby.RubyInteger;
@@ -14,21 +24,15 @@ import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.v0.Filter;
+import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Context;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -413,9 +417,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Configurable Mock {@link RubyIntegration.PluginFactory}
+     * Configurable Mock {@link PluginFactory}
      */
-    private static final class MockPluginFactory implements RubyIntegration.PluginFactory {
+    private static final class MockPluginFactory implements PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
@@ -434,26 +438,27 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         @Override
         public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
             return setupPlugin(name, inputs);
         }
 
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
+                                                      final RubyInteger column, final IRubyObject args,
+                                                      Map<String, Object> pluginArgs) {
             return new FilterDelegatorExt(
-                RubyUtil.RUBY, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS)
+                RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
                 .initForTesting(setupPlugin(name, filters));
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 
@@ -466,6 +471,17 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
+        }
+
+        @Override
+        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
+            return null;
+        }
+
+        @Override
+        public Filter buildFilter(final String name, final String id,
+                                  final Configuration configuration, final Context context) {
+            return null;
         }
     }
 }
