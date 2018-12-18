@@ -10,7 +10,7 @@ module LogStash
         # return hot threads information
         get "/jvm/hot_threads" do
           begin
-            top_threads_count = params["threads"] || 3
+            top_threads_count = params["threads"] || 10
             ignore_idle_threads = params["ignore_idle_threads"] || true
             options = {
               :threads => top_threads_count.to_i,
