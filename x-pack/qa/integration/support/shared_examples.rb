@@ -19,7 +19,7 @@ shared_examples "record monitoring data to es" do
       Stud.try(max_retry.times, retryable_errors) do
         elasticsearch_client.indices.refresh
         api_response = elasticsearch_client.search :index => MONITORING_INDEXES, :body => {:query => {:term => {"type" => "logstash_stats"}}}
-        expect(api_response["hits"]["total"]).to be > 0
+        expect(api_response["hits"]["total"]["value"]).to be > 0
         api_response["hits"]["hits"].each do |full_document|
           document = full_document["_source"]["logstash_stats"]
           expect(JSON::Validator.fully_validate(schema_file, document)).to be_empty
@@ -35,7 +35,7 @@ shared_examples "record monitoring data to es" do
       Stud.try(max_retry.times, retryable_errors) do
         elasticsearch_client.indices.refresh
         api_response = elasticsearch_client.search :index => MONITORING_INDEXES, :body => {:query => {:term => {"type" => "logstash_state"}}}
-        expect(api_response["hits"]["total"]).to be > 0
+        expect(api_response["hits"]["total"]["value"]).to be > 0
         api_response["hits"]["hits"].each do |full_document|
           document = full_document["_source"]["logstash_state"]
           expect(JSON::Validator.fully_validate(schema_file, document)).to be_empty
