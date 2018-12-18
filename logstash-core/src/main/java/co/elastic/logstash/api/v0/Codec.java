@@ -14,6 +14,7 @@ public interface Codec extends Plugin {
      * Decodes events from the specified {@link ByteBuffer} and passes them to the provided
      * {@link Consumer}.
      *
+     * <ul>
      * <li>The client (typically an {@link Input}) must provide a {@link ByteBuffer} that
      * is ready for reading with with {@link ByteBuffer#position} indicating the next
      * position to read and {@link ByteBuffer#limit} indicating the first byte in the
@@ -25,6 +26,7 @@ public interface Codec extends Plugin {
      * <li>The client is then responsible for returning the buffer
      * to write mode via either {@link ByteBuffer#clear} or {@link ByteBuffer#compact} before
      * resuming writes.</li>
+     * </ul>
      *
      * @param buffer Input buffer from which events will be decoded.
      * @param eventConsumer Consumer to which decoded events will be passed.
