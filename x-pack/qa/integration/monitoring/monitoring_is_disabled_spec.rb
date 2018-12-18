@@ -33,6 +33,6 @@ describe "Monitoring is disabled" do
   let(:monitoring_index) { ".monitoring-logstash-2-*" }
 
   it "doesn't record any metrics" do
-    expect(elasticsearch_client.search(:index => monitoring_index)["hits"]["total"]).to  eq(0)
+    expect(elasticsearch_client.search(:index => monitoring_index)["hits"]["total"]["value"]).to  eq(0)
   end
 end
