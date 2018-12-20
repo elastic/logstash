@@ -1,13 +1,13 @@
 package org.logstash.plugins.codecs;
 
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.LogstashPlugin;
+import co.elastic.logstash.api.PluginConfigSpec;
+import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.v0.Codec;
 import org.logstash.Event;
 import org.logstash.StringInterpolation;
-import co.elastic.logstash.api.v0.Codec;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.PluginHelper;
-import co.elastic.logstash.api.PluginConfigSpec;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java-line")
 public class Line implements Codec {
 
-    public static final String DEFAULT_DELIMITER = "\n";
+    public static final String DEFAULT_DELIMITER = System.lineSeparator();
 
     private static final PluginConfigSpec<String> CHARSET_CONFIG =
             Configuration.stringSetting("charset", "UTF-8");
