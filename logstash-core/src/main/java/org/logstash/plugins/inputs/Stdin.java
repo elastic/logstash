@@ -1,12 +1,12 @@
 package org.logstash.plugins.inputs;
 
-import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.v0.Input;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.execution.queue.QueueWriter;
@@ -44,6 +44,8 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private final CountDownLatch isStopped = new CountDownLatch(1);
     private FileChannel input;
     private QueueWriter writer;
+    private String name;
+    private String id;
 
     /**
      * Required Constructor Signature only taking a {@link Configuration}.
@@ -56,6 +58,10 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     }
 
     Stdin(final Configuration configuration, final Context context, FileChannel inputChannel) {
+        this.name = PluginHelper.pluginName(this);
+        PluginHelper.validateConfig(this, logger, configuration);
+        this.id = PluginHelper.pluginId(this);
+
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -124,5 +130,15 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 }

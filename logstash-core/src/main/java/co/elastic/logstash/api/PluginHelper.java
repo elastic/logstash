@@ -1,11 +1,15 @@
 package co.elastic.logstash.api;
 
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class PluginHelper {
 
@@ -106,6 +110,48 @@ public final class PluginHelper {
             }
         }
         return options;
+    }
+
+    public static void validateConfig(Plugin plugin, Logger logger, Configuration config) {
+        List<String> configErrors = new ArrayList<>();
+
+        List<String> configSchemaNames = plugin.configSchema().stream().map(PluginConfigSpec::name)
+                .collect(Collectors.toList());
+
+        // find config options that are invalid for the specified plugin
+        Collection<String> providedConfig = config.allKeys();
+        for (String configKey : providedConfig) {
+            if (!configSchemaNames.contains(configKey)) {
+                configErrors.add(String.format("Unknown config option '%s' specified for plugin '%s'",
+                        configKey, plugin.getName()));
+            }
+        }
+
+        // find required config options that are missing
+        for (PluginConfigSpec<?> configSpec : plugin.configSchema()) {
+            if (configSpec.required() && !providedConfig.contains(configSpec.name())) {
+                configErrors.add(String.format("Required config option '%s' not specified for plugin '%s'",
+                        configSpec.name(), plugin.getName()));
+            }
+        }
+
+        if (configErrors.size() > 0) {
+            for (String err : configErrors) {
+                logger.error(err);
+            }
+            throw new IllegalStateException("Config errors found for plugin '" + plugin.getName() + "'");
+        }
+    }
+
+    public static String pluginName(Plugin plugin) {
+        LogstashPlugin annotation = plugin.getClass().getDeclaredAnnotation(LogstashPlugin.class);
+        return (annotation.name() != null && !annotation.name().equals(""))
+                ? annotation.name()
+                : plugin.getClass().getName();
+    }
+
+    public static String pluginId(Plugin plugin) {
+        return plugin.getName() + "_" + UUID.randomUUID().toString();
     }
 
 }
