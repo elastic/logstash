@@ -4,9 +4,6 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 
-/**
- * Created by andrewvc on 9/6/16.
- */
 public abstract class BinaryBooleanExpression extends BooleanExpression {
     @Override
     public boolean sourceComponentEquals(SourceComponent sourceComponent) {

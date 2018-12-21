@@ -8,9 +8,6 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.expression.BooleanExpression;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public class IfVertex extends Vertex {
 
     public BooleanExpression getBooleanExpression() {

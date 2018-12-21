@@ -6,9 +6,6 @@ import org.logstash.config.ir.graph.Graph;
 
 import java.util.List;
 
-/**
- * Created by andrewvc on 9/22/16.
- */
 public class ComposedParallelStatement extends ComposedStatement {
     public ComposedParallelStatement(SourceWithMetadata meta, List<Statement> statements) throws InvalidIRException {
         super(meta, statements);

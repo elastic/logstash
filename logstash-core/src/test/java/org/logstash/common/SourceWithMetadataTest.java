@@ -6,9 +6,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-/**
- * Created by andrewvc on 6/12/17.
- */
 @RunWith(Parameterized.class)
 public class SourceWithMetadataTest {
     private final ParameterGroup parameterGroup;

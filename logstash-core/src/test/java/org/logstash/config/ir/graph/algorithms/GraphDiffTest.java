@@ -12,9 +12,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.config.ir.IRHelpers.createTestVertex;
 
-/**
- * Created by andrewvc on 1/5/17.
- */
 public class GraphDiffTest {
     @Test
     public void testIdenticalGraphs() throws InvalidIRException {

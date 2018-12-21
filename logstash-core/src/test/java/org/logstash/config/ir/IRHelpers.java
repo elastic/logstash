@@ -10,22 +10,16 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
-import org.logstash.config.ir.imperative.Statement;
 
-import javax.xml.transform.Source;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.stream.IntStream;
 
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 
-/**
- * Created by andrewvc on 9/19/16.
- */
 public class IRHelpers {
     public static void assertSyntaxEquals(SourceComponent left, SourceComponent right) {
         String message = String.format("Expected '%s' to equal '%s'", left, right);
