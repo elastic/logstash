@@ -3,11 +3,8 @@ package org.logstash.config.ir;
 import org.logstash.common.SourceWithMetadata;
 
 /**
- * Created by andrewvc on 9/6/16.
- *
  * This class is useful to inherit from for things that need to be source components
  * since it handles storage of the meta property for you and reduces a lot of boilerplate.
- *
  */
 public abstract class BaseSourceComponent implements SourceComponent {
     private final SourceWithMetadata meta;

@@ -11,9 +11,6 @@ import static org.logstash.config.ir.IRHelpers.assertSyntaxEquals;
 import static org.logstash.config.ir.IRHelpers.randMeta;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public class ImperativeToGraphtest {
 
     @Test

@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Based on code created by purbon on 13/12/15.
- */
 public final class MemoryMonitor {
 
     private MemoryMonitor() {

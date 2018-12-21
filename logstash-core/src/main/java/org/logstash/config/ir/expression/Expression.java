@@ -10,7 +10,6 @@ import org.logstash.config.ir.HashableWithSource;
  *
  * if [foo]
  * notnull(eEventValue("foo"))
- * Created by andrewvc on 9/6/16.
  */
 public abstract class Expression extends BaseSourceComponent implements HashableWithSource {
 

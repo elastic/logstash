@@ -9,9 +9,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Created by andrewvc on 9/6/16.
- */
 public class SourceWithMetadata implements HashableWithSource {
     // Either 'file' or something else
     private final String protocol;

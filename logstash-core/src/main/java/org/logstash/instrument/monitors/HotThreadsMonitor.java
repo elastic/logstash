@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 /**
  * Hot threads monitoring class. This class pulls information out of the JVM #
  * provided beans and lest the different consumers query it.
- * Created by purbon on 12/12/15.
  */
 public final class HotThreadsMonitor {
 

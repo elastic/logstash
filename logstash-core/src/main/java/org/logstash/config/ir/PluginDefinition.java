@@ -8,9 +8,6 @@ import java.util.Set;
 import org.logstash.ObjectMappers;
 import org.logstash.common.SourceWithMetadata;
 
-/**
- * Created by andrewvc on 9/20/16.
- */
 public final class PluginDefinition implements SourceComponent, HashableWithSource {
 
     @Override
