@@ -4,9 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * Created by andrewvc on 12/23/16.
- */
 public class Util {
     // Modified from http://stackoverflow.com/a/11009612/11105
 

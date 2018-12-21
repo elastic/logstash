@@ -4,9 +4,6 @@ import org.logstash.config.ir.SourceComponent;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public class NoopStatement extends Statement {
 
     public NoopStatement(SourceWithMetadata meta) {

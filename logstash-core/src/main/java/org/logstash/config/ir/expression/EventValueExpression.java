@@ -3,9 +3,6 @@ package org.logstash.config.ir.expression;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.common.SourceWithMetadata;
 
-/**
- * Created by andrewvc on 9/13/16.
- */
 public class EventValueExpression extends Expression {
     private final String fieldName;
 

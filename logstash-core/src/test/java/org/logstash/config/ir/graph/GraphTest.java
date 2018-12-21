@@ -2,15 +2,11 @@ package org.logstash.config.ir.graph;
 
 import org.junit.Test;
 import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.DSL;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.PluginDefinition;
-import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -19,9 +15,6 @@ import static org.logstash.config.ir.IRHelpers.createTestExpression;
 import static org.logstash.config.ir.IRHelpers.createTestVertex;
 import static org.logstash.config.ir.IRHelpers.randMeta;
 
-/**
- * Created by andrewvc on 11/18/16.
- */
 public class GraphTest {
     @Test
     public void testGraphBasics() throws InvalidIRException {

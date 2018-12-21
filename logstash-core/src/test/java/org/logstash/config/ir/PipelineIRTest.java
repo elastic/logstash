@@ -9,9 +9,6 @@ import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 import static org.logstash.config.ir.IRHelpers.randMeta;
 
-/**
- * Created by andrewvc on 9/20/16.
- */
 public class PipelineIRTest {
     public Graph makeInputSection() throws InvalidIRException {
         return iComposeParallel(iPlugin(randMeta(), INPUT, "generator"), iPlugin(randMeta(), INPUT, "stdin")).toGraph();

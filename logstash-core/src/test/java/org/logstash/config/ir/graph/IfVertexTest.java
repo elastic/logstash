@@ -7,9 +7,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.logstash.config.ir.IRHelpers.*;
 
-/**
- * Created by andrewvc on 11/22/16.
- */
 public class IfVertexTest {
     @Test
     public void testIfVertexCreation() throws InvalidIRException {

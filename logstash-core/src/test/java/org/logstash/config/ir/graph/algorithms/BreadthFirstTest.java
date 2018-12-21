@@ -11,9 +11,6 @@ import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-/**
- * Created by andrewvc on 1/5/17.
- */
 public class BreadthFirstTest {
     @Test
     public void testBFSBasic() throws InvalidIRException {
