@@ -44,6 +44,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         getSetting(context, settings, "queue.checkpoint.writes"),
                         getSetting(context, settings, "queue.checkpoint.acks"),
                         getSetting(context, settings, "queue.checkpoint.interval"),
+                        getSetting(context, settings, "queue.checkpoint.retry"),
                         getSetting(context, settings, "queue.max_bytes")
                     }
                 );

@@ -77,7 +77,7 @@ public final class Queue implements Closeable {
         }
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
-        this.checkpointIO = new FileCheckpointIO(dirPath);
+        this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
         this.elementClass = settings.getElementClass();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
