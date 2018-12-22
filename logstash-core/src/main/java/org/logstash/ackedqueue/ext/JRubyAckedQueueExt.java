@@ -34,13 +34,16 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
-    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                            int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
-        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, maxBytes);
+        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, checkpointRetry,
+                maxBytes);
         return queueExt;
     }
 
-    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                 int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         this.queue = new Queue(
             SettingsImpl.fileSettingsBuilder(path)
                 .capacity(capacity)
@@ -48,6 +51,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
                 .queueMaxBytes(maxBytes)
                 .checkpointMaxAcks(checkpointMaxAcks)
                 .checkpointMaxWrites(checkpointMaxWrites)
+                .checkpointRetry(checkpointRetry)
                 .elementClass(Event.class)
                 .build()
         );
