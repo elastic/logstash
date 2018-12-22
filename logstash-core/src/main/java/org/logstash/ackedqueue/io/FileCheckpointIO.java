@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.CRC32;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.Checkpoint;
 
 public class FileCheckpointIO implements CheckpointIO {
@@ -19,6 +22,8 @@ public class FileCheckpointIO implements CheckpointIO {
 //    long firstUnackedSeqNum;
 //    long minSeqNum;
 //    int elementCount;
+
+    private static final Logger logger = LogManager.getLogger(FileCheckpointIO.class);
 
     public static final int BUFFER_SIZE = Short.BYTES // version
             + Integer.BYTES  // pageNum
@@ -36,12 +41,19 @@ public class FileCheckpointIO implements CheckpointIO {
 
     private final CRC32 crc32 = new CRC32();
 
+    private final boolean retry;
+
     private static final String HEAD_CHECKPOINT = "checkpoint.head";
     private static final String TAIL_CHECKPOINT = "checkpoint.";
     private final Path dirPath;
 
     public FileCheckpointIO(Path dirPath) {
+        this(dirPath, false);
+    }
+
+    public FileCheckpointIO(Path dirPath, boolean retry) {
         this.dirPath = dirPath;
+        this.retry = retry;
     }
 
     @Override
@@ -67,7 +79,24 @@ public class FileCheckpointIO implements CheckpointIO {
             out.getChannel().write(buffer);
             out.getFD().sync();
         }
-        Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+
+        try {
+            Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException ex) {
+            if (retry) {
+                try {
+                    logger.error("Retrying after exception writing checkpoint: " + ex);
+                    Thread.sleep(500);
+                    Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+                } catch (Exception ex2) {
+                    logger.error("Aborting after second exception writing checkpoint: " + ex2);
+                    throw ex;
+                }
+            } else {
+                logger.error("Error writing checkpoint: " + ex);
+                throw ex;
+            }
+        }
     }
 
     @Override
