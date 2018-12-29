@@ -6,7 +6,7 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * <p>A data structure backed by a {@link RubyArray} that represents one step of execution flow of a
- * batch is lazily filled with {@link JrubyEventExtLibrary.RubyEvent} computed from its dependent
+ * batch is lazily filled with {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} computed from its dependent
  * {@link Dataset}.</p>
  * <p>Each {@link Dataset} either represents a filter, output or one branch of an {@code if}
  * statement in a Logstash configuration file.</p>
@@ -36,12 +36,12 @@ public interface Dataset {
     /**
      * Compute the actual contents of the backing {@link RubyArray} and cache them.
      * Repeated invocations will be effectively free.
-     * @param batch Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
+     * @param batch Input {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} received at the root
      * of the execution
      * @param flush True if flushing flushable nodes while traversing the execution
      * @param shutdown True if this is the last call to this instance's compute method because
      * the pipeline it belongs to is shut down
-     * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
+     * @return Computed {@link RubyArray} of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}
      */
     Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyArray batch,
         boolean flush, boolean shutdown);

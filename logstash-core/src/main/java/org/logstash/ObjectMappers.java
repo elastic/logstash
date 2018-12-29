@@ -295,7 +295,7 @@ public final class ObjectMappers {
     }
 
     /**
-     * Serializer for {@link JrubyTimestampExtLibrary.RubyTimestamp} that serializes it exactly the
+     * Serializer for {@link org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp} that serializes it exactly the
      * same way {@link ObjectMappers.TimestampSerializer} serializes
      * {@link Timestamp} to ensure consistent serialization across Java and Ruby
      * representation of {@link Timestamp}.
