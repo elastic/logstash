@@ -11,6 +11,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "UniversalPlugin")
 public final class UniversalPluginExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     public UniversalPluginExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

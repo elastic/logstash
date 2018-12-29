@@ -10,6 +10,7 @@ import java.util.List;
  */
 public class Utils {
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     // has field1.compute(batchArg, flushArg, shutdownArg) passed as input
     public static void copyNonCancelledEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, List output) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {
@@ -19,6 +20,7 @@ public class Utils {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void filterEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
                                     List fulfilled, List unfulfilled) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {

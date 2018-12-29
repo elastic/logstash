@@ -15,6 +15,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "NamespacedNullMetric", parent = "AbstractNamespacedMetric")
 public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol NULL = RubyUtil.RUBY.newSymbol("null");
 
     private RubyArray namespaceName;
@@ -104,6 +106,8 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     @JRubyClass(name = "NullCounter")
     public static final class NullCounter extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         public static final NullNamespacedMetricExt.NullCounter INSTANCE =
             new NullNamespacedMetricExt.NullCounter(RubyUtil.RUBY, RubyUtil.NULL_COUNTER_CLASS);

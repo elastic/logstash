@@ -22,6 +22,7 @@ public final class PluginLookup {
         // Utility Class
     }
 
+    @SuppressWarnings("rawtypes")
     public static PluginLookup.PluginClass lookup(final PluginLookup.PluginType type, final String name) {
         Class javaClass = PluginRegistry.getPluginClass(type, name);
         if (javaClass != null) {

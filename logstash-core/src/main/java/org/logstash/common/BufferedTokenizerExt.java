@@ -14,6 +14,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "BufferedTokenizer")
 public class BufferedTokenizerExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final IRubyObject MINUS_ONE = RubyUtil.RUBY.newFixnum(-1);
 
     private RubyArray input = RubyUtil.RUBY.newArray();

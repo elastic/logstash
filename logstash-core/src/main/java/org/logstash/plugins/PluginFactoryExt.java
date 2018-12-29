@@ -51,6 +51,8 @@ public final class PluginFactoryExt {
     public static final class Plugins extends RubyBasicObject
         implements RubyIntegration.PluginFactory {
 
+        private static final long serialVersionUID = 1L;
+
         private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
 
         private final Collection<String> pluginsById = new HashSet<>();
@@ -317,6 +319,8 @@ public final class PluginFactoryExt {
     @JRubyClass(name = "JavaInputWrapper")
     public static final class JavaInputWrapperExt extends RubyObject {
 
+        private static final long serialVersionUID = 1L;
+
         private Input input;
 
         public JavaInputWrapperExt(Ruby runtime, RubyClass metaClass) {
@@ -336,6 +340,8 @@ public final class PluginFactoryExt {
 
     @JRubyClass(name = "ExecutionContextFactory")
     public static final class ExecutionContext extends RubyBasicObject {
+
+        private static final long serialVersionUID = 1L;
 
         private IRubyObject agent;
 
@@ -369,6 +375,8 @@ public final class PluginFactoryExt {
 
     @JRubyClass(name = "PluginMetricFactory")
     public static final class Metrics extends RubyBasicObject {
+
+        private static final long serialVersionUID = 1L;
 
         private static final RubySymbol PLUGINS = RubyUtil.RUBY.newSymbol("plugins");
 

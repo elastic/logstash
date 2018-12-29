@@ -22,6 +22,7 @@ public interface Dataset {
      * Dataset that does not modify the input events.
      */
     Dataset IDENTITY = new Dataset() {
+        @SuppressWarnings("unchecked")
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch, final boolean flush, final boolean shutdown) {
             return batch;

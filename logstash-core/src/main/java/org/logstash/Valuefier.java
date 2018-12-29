@@ -98,6 +98,7 @@ public final class Valuefier {
         throw new MissingConverterException(cls);
     }
 
+    @SuppressWarnings("unchecked")
     private static Map<Class<?>, Valuefier.Converter> initConverters() {
         final Map<Class<?>, Valuefier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);

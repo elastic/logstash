@@ -12,6 +12,8 @@ import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 @JRubyClass(name = "AbstractWrappedQueue")
 public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     public AbstractWrappedQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

@@ -14,12 +14,15 @@ import org.logstash.execution.QueueReadClientBase;
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
 public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
-    private BlockingQueue queue;
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("rawtypes") private BlockingQueue queue;
 
     public JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
+    @SuppressWarnings("rawtypes")
     private JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass,
                                      BlockingQueue queue, int batchSize, int waitForMillis) {
         super(runtime, metaClass);
@@ -29,6 +32,7 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
         this.waitForMillis = waitForMillis;
     }
 
+    @SuppressWarnings("rawtypes")
     public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
                                                   int waitForMillis) {
         return new JrubyMemoryReadClientExt(RubyUtil.RUBY,
@@ -51,6 +55,7 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public QueueBatch readBatch() throws InterruptedException {
         MemoryReadBatch batch = MemoryReadBatch.create(
                 LsQueueUtils.drain(queue, batchSize, waitForNanos));

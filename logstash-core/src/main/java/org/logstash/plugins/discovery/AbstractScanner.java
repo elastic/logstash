@@ -67,11 +67,11 @@ public abstract class AbstractScanner implements Scanner {
         return fqn != null && resultFilter.apply(fqn);
     }
 
+    @SuppressWarnings("rawtypes")
     protected MetadataAdapter getMetadataAdapter() {
         return configuration.getMetadataAdapter();
     }
 
-    //
     @Override
     public boolean equals(Object o) {
         return this == o || o != null && getClass() == o.getClass();

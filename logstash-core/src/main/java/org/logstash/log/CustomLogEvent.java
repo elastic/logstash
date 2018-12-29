@@ -30,6 +30,9 @@ import java.util.List;
 
 @JsonSerialize(using = CustomLogEventSerializer.class)
 public class CustomLogEvent extends Log4jLogEvent {
+
+    private static final long serialVersionUID = 1L;
+
     public CustomLogEvent(final String loggerName, final Marker marker, final String loggerFQCN, final Level level,
                           final Message message, final List<Property> properties, final Throwable t) {
         super(loggerName, marker, loggerFQCN, level, message, properties, t);
