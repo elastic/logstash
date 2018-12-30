@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java-stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
-    private static final Logger logger = LogManager.getLogger(Stdin.class);
+    private static final Logger LOGGER = LogManager.getLogger(Stdin.class);
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
             Configuration.stringSetting("codec", "java-line");
@@ -44,7 +44,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private final CountDownLatch isStopped = new CountDownLatch(1);
     private FileChannel input;
     private QueueWriter writer;
-    private String name;
     private String id;
 
     /**
@@ -58,8 +57,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     }
 
     Stdin(final Configuration configuration, final Context context, FileChannel inputChannel) {
-        this.name = PluginHelper.pluginName(this);
-        PluginHelper.validateConfig(this, logger, configuration);
         this.id = PluginHelper.pluginId(this);
 
         try {
@@ -70,7 +67,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
         String codecName = configuration.get(CODEC_CONFIG);
         codec = PluginRegistry.getCodec(codecName, configuration, context);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+            throw new IllegalStateException(String.format("Unable to obtain codec '%s'", codecName));
         }
         input = inputChannel;
     }
@@ -87,10 +84,10 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
             }
         } catch (AsynchronousCloseException e2) {
             // do nothing -- this happens when stop is called during a pending read
-            logger.warn("Stop request interrupted pending read");
+            LOGGER.warn("Stop request interrupted pending read");
         } catch (IOException e) {
             stopRequested = true;
-            logger.error("Stopping stdin after read error", e);
+            LOGGER.error("Stopping stdin after read error", e);
             throw new IllegalStateException(e);
         } finally {
             try {
@@ -130,11 +127,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

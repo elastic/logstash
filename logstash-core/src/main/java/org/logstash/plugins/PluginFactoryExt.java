@@ -1,5 +1,6 @@
 package org.logstash.plugins;
 
+import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Input;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -264,7 +265,9 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            output = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            Configuration config = new Configuration(pluginArgs);
+                            output = ctor.newInstance(config, new Context());
+                            PluginHelper.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -281,7 +284,9 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            Configuration config = new Configuration(pluginArgs);
                             filter = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            PluginHelper.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -298,7 +303,9 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            Configuration config = new Configuration(pluginArgs);
                             input = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            PluginHelper.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }

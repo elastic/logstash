@@ -47,7 +47,6 @@ public class Line implements Codec {
     private final String delimiter;
     private final Charset charset;
     private String format = null;
-    private String name;
     private String id;
 
     private final CharBuffer charBuffer = ByteBuffer.allocateDirect(64 * 1024).asCharBuffer();
@@ -55,8 +54,6 @@ public class Line implements Codec {
     private String remainder = "";
 
     public Line(final Configuration configuration, final Context context) {
-        this.name = PluginHelper.pluginName(this);
-        PluginHelper.validateConfig(this, logger, configuration);
         this.id = PluginHelper.pluginId(this);
         delimiter = configuration.get(DELIMITER_CONFIG);
         charset = Charset.forName(configuration.get(CHARSET_CONFIG));
@@ -133,11 +130,6 @@ public class Line implements Codec {
     public Collection<PluginConfigSpec<?>> configSchema() {
         return PluginHelper.commonInputOptions(
                 Arrays.asList(CHARSET_CONFIG, DELIMITER_CONFIG, FORMAT_CONFIG));
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.logstash.config.ir;
 
+import co.elastic.logstash.api.PluginHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
@@ -165,7 +166,10 @@ public final class CompiledPipeline {
             if (cls != null) {
                 try {
                     final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    javaInputs.add(ctor.newInstance(new Configuration(def.getArguments()), new Context()));
+                    Configuration config = new Configuration(def.getArguments());
+                    Input input = ctor.newInstance(config, new Context());
+                    PluginHelper.validateConfig(input, config);
+                    javaInputs.add(input);
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                     throw new IllegalStateException(ex);
                 }

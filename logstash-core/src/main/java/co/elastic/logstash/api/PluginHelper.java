@@ -1,5 +1,6 @@
 package co.elastic.logstash.api;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
@@ -12,6 +13,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class PluginHelper {
+
+    private static final Logger LOGGER = LogManager.getLogger(PluginHelper.class);
 
     public static final PluginConfigSpec<Map<String, String>> ADD_FIELD_CONFIG =
             Configuration.hashSetting("add_field");
@@ -112,7 +115,7 @@ public final class PluginHelper {
         return options;
     }
 
-    public static void validateConfig(Plugin plugin, Logger logger, Configuration config) {
+    public static void validateConfig(Plugin plugin, Configuration config) {
         List<String> configErrors = new ArrayList<>();
 
         List<String> configSchemaNames = plugin.configSchema().stream().map(PluginConfigSpec::name)
@@ -137,7 +140,7 @@ public final class PluginHelper {
 
         if (configErrors.size() > 0) {
             for (String err : configErrors) {
-                logger.error(err);
+                LOGGER.error(err);
             }
             throw new IllegalStateException("Config errors found for plugin '" + plugin.getName() + "'");
         }
