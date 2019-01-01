@@ -52,7 +52,7 @@ public class StdinTest {
     private static TestQueueWriter testStdin(byte[] input) throws IOException {
         TestQueueWriter queueWriter = new TestQueueWriter();
         try (FileChannel inChannel = getTestFileChannel(input)) {
-            Stdin stdin = new Stdin(new Configuration(Collections.EMPTY_MAP), null, inChannel);
+            Stdin stdin = new Stdin(new Configuration(Collections.emptyMap()), null, inChannel);
             Thread t = new Thread(() -> stdin.start(queueWriter));
             t.start();
             try {

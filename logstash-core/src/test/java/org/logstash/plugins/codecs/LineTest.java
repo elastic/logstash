@@ -231,7 +231,7 @@ public class LineTest {
 
         // decode with UTF-8
         flushConsumer.events.clear();
-        Line utf8decoder = new Line(new Configuration(Collections.EMPTY_MAP), null);
+        Line utf8decoder = new Line(new Configuration(Collections.emptyMap()), null);
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
         ByteBuffer b2 = ByteBuffer.wrap(rightSingleQuoteInUtf8);
         utf8decoder.decode(b2, flushConsumer);
