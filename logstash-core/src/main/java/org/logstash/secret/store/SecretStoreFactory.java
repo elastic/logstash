@@ -57,6 +57,7 @@ public class SecretStoreFactory {
 
     /**
      * Determine if this secret store currently exists
+     * @param secureConfig The configuration to pass to the implementation
      * @return true if the secret store exists, false otherwise
      */
     public boolean exists(SecureConfig secureConfig) {

@@ -59,14 +59,17 @@ public abstract class Vfs {
     }
 
     /**
-     * tries to create a Dir from the given url, using the defaultUrlTypes
+     * @param url URL from which to create a Dir
+     * @return Dir created from the given url, using the defaultUrlTypes
      */
     public static Vfs.Dir fromURL(final URL url) {
         return fromURL(url, defaultUrlTypes);
     }
 
     /**
-     * tries to create a Dir from the given url, using the given urlTypes
+     * @param url URL from which to create a Dir
+     * @param urlTypes given URL types
+     * @return Dir created from the given url, using the given urlTypes
      */
     public static Vfs.Dir fromURL(final URL url, final List<Vfs.UrlType> urlTypes) {
         for (final Vfs.UrlType type : urlTypes) {
@@ -88,7 +91,8 @@ public abstract class Vfs {
     }
 
     /**
-     * try to get {@link Vfs.File} from url
+     * @param url provided URL
+     * @return {@link Vfs.File} from provided URL
      */
     public static java.io.File getFile(final URL url) {
         java.io.File file;
