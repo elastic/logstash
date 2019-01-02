@@ -135,7 +135,7 @@ public final class Queue implements Closeable {
 
     /**
      * Open an existing {@link Queue} or create a new one in the configured path.
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void open() throws IOException {
         final int headPageNum;
@@ -323,7 +323,7 @@ public final class Queue implements Closeable {
      *
      * @param element the {@link Queueable} element to write
      * @return the written sequence number
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public long write(Queueable element) throws IOException {
         byte[] data = element.serialize();
@@ -398,7 +398,7 @@ public final class Queue implements Closeable {
      * mark head page as read-only (behead) and add it to the tailPages and unreadTailPages collections accordingly
      * also deactivate it if it's not next-in-line for reading
      *
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     private void behead() throws IOException {
         // beheading includes checkpoint+fsync if required
@@ -485,7 +485,7 @@ public final class Queue implements Closeable {
      * guarantee persistence up to a given sequence number.
      *
      * @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
@@ -501,7 +501,7 @@ public final class Queue implements Closeable {
      *
      * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than the requested limit if fewer elements are available
      * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
         lock.lock();
@@ -518,7 +518,7 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
      * @param timeout the maximum time to wait in milliseconds on write operations
      * @return the read {@link Batch} or null if no element upon timeout
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {
         lock.lock();
@@ -536,7 +536,7 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read.
      * @param timeout  the maximum time to wait in milliseconds on write operations.
      * @return {@link Batch} with read elements or null if nothing was read
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     private Batch readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
@@ -626,7 +626,7 @@ public final class Queue implements Closeable {
      *
      * @param firstAckSeqNum First Sequence Number to Ack
      * @param ackCount Number of Elements to Ack
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void ack(final long firstAckSeqNum, final int ackCount) throws IOException {
         // as a first implementation we assume that all batches are created from the same page

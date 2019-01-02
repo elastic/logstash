@@ -41,7 +41,7 @@ public final class PluginHelper {
 
 
     /**
-     * Returns a list of the options that are common to all input plugins.
+     * @return Options that are common to all input plugins.
      */
     @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonInputOptions() {
@@ -52,6 +52,8 @@ public final class PluginHelper {
      * Combines the provided list of options with the options that are common to all input plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
      * defaults and other values on the common config options.
+     * @param options provided list of options.
+     * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonInputOptions(Collection<PluginConfigSpec<?>> options) {
         return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, ENABLE_METRIC_CONFIG,
@@ -59,7 +61,7 @@ public final class PluginHelper {
     }
 
     /**
-     * Returns a list of the options that are common to all output plugins.
+     * @return Options that are common to all output plugins.
      */
     @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonOutputOptions() {
@@ -70,13 +72,15 @@ public final class PluginHelper {
      * Combines the provided list of options with the options that are common to all output plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
      * defaults and other values on the common config options.
+     * @param options provided list of options.
+     * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonOutputOptions(Collection<PluginConfigSpec<?>> options) {
         return combineOptions(options, Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG,  ID_CONFIG));
     }
 
     /**
-     * Returns a list of the options that are common to all filter plugins.
+     * @return Options that are common to all filter plugins.
      */
     @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonFilterOptions() {
@@ -87,6 +91,8 @@ public final class PluginHelper {
      * Combines the provided list of options with the options that are common to all filter plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
      * defaults and other values on the common config options.
+     * @param options provided list of options.
+     * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonFilterOptions(Collection<PluginConfigSpec<?>> options) {
         return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, /*ADD_TAG_CONFIG,*/
