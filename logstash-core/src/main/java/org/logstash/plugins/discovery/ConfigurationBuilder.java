@@ -29,7 +29,7 @@ public final class ConfigurationBuilder implements Configuration {
         urls = Sets.newHashSet();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static ConfigurationBuilder build(final Object... params) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 

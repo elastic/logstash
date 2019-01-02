@@ -18,7 +18,7 @@ public class BufferedTokenizerExt extends RubyObject {
 
     private static final IRubyObject MINUS_ONE = RubyUtil.RUBY.newFixnum(-1);
 
-    private RubyArray input = RubyUtil.RUBY.newArray();
+    private @SuppressWarnings("rawtypes") RubyArray input = RubyUtil.RUBY.newArray();
     private IRubyObject delimiter = RubyUtil.RUBY.newString("\n");
     private int sizeLimit;
     private boolean hasSizeLimit;
@@ -53,6 +53,7 @@ public class BufferedTokenizerExt extends RubyObject {
      * @return Extracted tokens
      */
     @JRubyMethod
+    @SuppressWarnings("rawtypes")
     public RubyArray extract(final ThreadContext context, IRubyObject data) {
         final RubyArray entities = ((RubyString) data).split(context, delimiter, MINUS_ONE);
         if (hasSizeLimit) {

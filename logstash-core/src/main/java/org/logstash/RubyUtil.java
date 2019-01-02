@@ -1,6 +1,5 @@
 package org.logstash;
 
-import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -562,9 +561,10 @@ public final class RubyUtil {
      * @param e the Java exception to wrap
      * @return RaiseException the wrapped IOError
      */
+    @SuppressWarnings("deprecation")
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
-        return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
+        return new RaiseException(e, new org.jruby.NativeException(runtime, runtime.getIOError(), e));
     }
 
     /**
