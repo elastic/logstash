@@ -65,6 +65,7 @@ public final class RubyJavaIntegration {
          * Enable class equivalence between Array and ArrayList so that ArrayList will work with
          * case o when Array.
          * @param context Ruby Context
+         * @param rcvd Ruby class to compare against if not a Java ArrayList
          * @param obj Object to Compare Types with
          * @return True iff Ruby's `===` is fulfilled between {@code this} and {@code obj}
          */
@@ -89,6 +90,8 @@ public final class RubyJavaIntegration {
 
         /**
          * Enable class equivalence between Ruby's Hash and Java's Map.
+         * @param context Ruby Context
+         * @param rcvd Ruby class to compare against if not a Java Map
          * @param obj Object to Compare Types with
          * @return True iff Ruby's `===` is fulfilled between {@code this} and {@code obj}
          */
@@ -157,6 +160,10 @@ public final class RubyJavaIntegration {
 
         /**
          * Support the Ruby intersection method on Java Collection.
+         * @param context Thread context
+         * @param self First Ruby collection object
+         * @param other Second Ruby collection object
+         * @return Ruby collection containing intersection of self and other
          */
         @JRubyMethod(name = "&")
         public static IRubyObject and(final ThreadContext context, final IRubyObject self,
@@ -168,6 +175,10 @@ public final class RubyJavaIntegration {
 
         /**
          * Support the Ruby union method on Java Collection.
+         * @param context Thread context
+         * @param self First Ruby collection object
+         * @param other Second Ruby collection object
+         * @return Ruby collection containing union of self and other
          */
         @JRubyMethod(name = "|")
         public static IRubyObject or(final ThreadContext context, final IRubyObject self,
@@ -226,6 +237,11 @@ public final class RubyJavaIntegration {
          * relevant JRuby files:
          * https://github.com/jruby/jruby/blob/master/core/src/main/ruby/jruby/java/java_ext/java.util.rb
          * https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/java/proxies/MapJavaProxy.java
+         *
+         * @param context Thread context
+         * @param self Ruby map object
+         * @param key Key to find
+         * @return RubyBoolean of true if the map contains the key
          */
         @JRubyMethod(name = {"has_key?", "include?", "member?", "key?"})
         public static IRubyObject containsKey(final ThreadContext context, final IRubyObject self,

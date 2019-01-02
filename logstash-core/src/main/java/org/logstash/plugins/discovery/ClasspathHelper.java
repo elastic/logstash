@@ -44,6 +44,7 @@ public abstract class ClasspathHelper {
      * <p>
      * If the input is null or empty, it defaults to both {@link #contextClassLoader()} and {@link #staticClassLoader()}
      *
+     * @param classLoaders provided ClassLoaders
      * @return the array of class loaders, not null
      */
     public static ClassLoader[] classLoaders(ClassLoader... classLoaders) {
@@ -76,6 +77,8 @@ public abstract class ClasspathHelper {
      * <p>
      * The returned URLs retains the order of the given {@code classLoaders}.
      *
+     * @param resourceName resource name on which to search
+     * @param classLoaders optional ClassLoaders to search
      * @return the collection of URLs, not null
      */
     public static Collection<URL> forResource(String resourceName, ClassLoader... classLoaders) {
@@ -108,6 +111,8 @@ public abstract class ClasspathHelper {
      * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
      * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
      *
+     * @param aClass class for which to search
+     * @param classLoaders optional ClassLoaders to search
      * @return the URL containing the class, null if not found
      */
     public static URL forClass(Class<?> aClass, ClassLoader... classLoaders) {
@@ -151,6 +156,7 @@ public abstract class ClasspathHelper {
      * <p>
      * The returned URLs retains the order of the given {@code classLoaders}.
      *
+     * @param classLoaders optional ClassLoaders to search
      * @return the collection of URLs, not null
      */
     public static Collection<URL> forClassLoader(ClassLoader... classLoaders) {

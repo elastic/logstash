@@ -115,6 +115,8 @@ public final class ConfigurationBuilder implements Configuration {
 
     /**
      * set the scanners instances for scanning different metadata
+     * @param scanners provided scanners
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder setScanners(final Scanner... scanners) {
         this.scanners.clear();
@@ -123,6 +125,8 @@ public final class ConfigurationBuilder implements Configuration {
 
     /**
      * set the scanners instances for scanning different metadata
+     * @param scanners provided scanners
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder addScanners(final Scanner... scanners) {
         this.scanners.addAll(Sets.newHashSet(scanners));
@@ -138,6 +142,8 @@ public final class ConfigurationBuilder implements Configuration {
     /**
      * add urls to be scanned
      * <p>use {@link ClasspathHelper} convenient methods to get the relevant urls
+     * @param urls provided URLs
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder addUrls(final Collection<URL> urls) {
         this.urls.addAll(urls);
@@ -147,6 +153,8 @@ public final class ConfigurationBuilder implements Configuration {
     /**
      * add urls to be scanned
      * <p>use {@link ClasspathHelper} convenient methods to get the relevant urls
+     * @param urls provided URLs
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder addUrls(final URL... urls) {
         this.urls.addAll(Sets.newHashSet(urls));
@@ -154,7 +162,7 @@ public final class ConfigurationBuilder implements Configuration {
     }
 
     /**
-     * returns the metadata adapter.
+     * @return the metadata adapter.
      * if javassist library exists in the classpath, this method returns {@link JavassistAdapter} otherwise defaults to {@link JavaReflectionAdapter}.
      * <p>the {@link JavassistAdapter} is preferred in terms of performance and class loading.
      */
@@ -180,6 +188,8 @@ public final class ConfigurationBuilder implements Configuration {
     /**
      * sets the input filter for all resources to be scanned.
      * <p> supply a {@link Predicate} or use the {@link FilterBuilder}
+     * @param inputsFilter provided inputs filter
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder filterInputsBy(Predicate<String> inputsFilter) {
         this.inputsFilter = inputsFilter;
@@ -193,6 +203,8 @@ public final class ConfigurationBuilder implements Configuration {
 
     /**
      * sets the executor service used for scanning.
+     * @param executorService provided executor service
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
@@ -200,9 +212,8 @@ public final class ConfigurationBuilder implements Configuration {
     }
 
     /**
-     * get class loader, might be used for scanning or resolving methods/fields
+     * @return class loader, might be used for scanning or resolving methods/fields
      */
-
     @Override
     public ClassLoader[] getClassLoaders() {
         return classLoaders;
@@ -215,6 +226,8 @@ public final class ConfigurationBuilder implements Configuration {
 
     /**
      * add class loader, might be used for resolving methods/fields
+     * @param classLoaders provided class loaders
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder addClassLoaders(ClassLoader... classLoaders) {
         this.classLoaders = this.classLoaders == null ? classLoaders : ObjectArrays.concat(this.classLoaders, classLoaders, ClassLoader.class);
@@ -223,6 +236,8 @@ public final class ConfigurationBuilder implements Configuration {
 
     /**
      * add class loader, might be used for resolving methods/fields
+     * @param classLoaders provided class loaders
+     * @return updated {@link ConfigurationBuilder} instance
      */
     public ConfigurationBuilder addClassLoaders(Collection<ClassLoader> classLoaders) {
         return addClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]));
