@@ -13,6 +13,8 @@ import org.logstash.execution.queue.QueueWriter;
 @JRubyClass(name = "AbstractQueueWriteClient")
 public abstract class JRubyAbstractQueueWriteClientExt extends RubyBasicObject implements QueueWriter {
 
+    private static final long serialVersionUID = 1L;
+
     protected JRubyAbstractQueueWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

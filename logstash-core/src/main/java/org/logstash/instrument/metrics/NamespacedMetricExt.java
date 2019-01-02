@@ -14,6 +14,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "NamespacedMetric")
 public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     private RubyArray namespaceName;
 
     private MetricExt metric;

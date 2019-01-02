@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * a garbage can of convenient methods
+ * Convenient methods for plugin discovery.
  */
 public abstract class Utils {
 
@@ -45,7 +45,7 @@ public abstract class Utils {
         }
     }
 
-    public static String name(Class type) {
+    public static String name(@SuppressWarnings("rawtypes") Class type) {
         if (!type.isArray()) {
             return type.getName();
         } else {
@@ -68,7 +68,7 @@ public abstract class Utils {
         return names(Arrays.asList(types));
     }
 
-    public static String name(Constructor constructor) {
+    public static String name(@SuppressWarnings("rawtypes") Constructor constructor) {
         return constructor.getName() + "." + "<init>" + "(" + Joiner.on(", ").join(names(constructor.getParameterTypes())) + ")";
     }
 

@@ -35,6 +35,7 @@ public final class RubyJavaIntegration {
         // Utility class
     }
 
+    @SuppressWarnings("rawtypes")
     public static void setupRubyJavaIntegration(final Ruby ruby) {
         ruby.getArray().defineAnnotatedMethods(RubyJavaIntegration.RubyArrayOverride.class);
         ruby.getHash().defineAnnotatedMethods(RubyJavaIntegration.RubyHashOverride.class);

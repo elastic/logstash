@@ -12,6 +12,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "AbstractNamespacedMetric")
 public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     AbstractNamespacedMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

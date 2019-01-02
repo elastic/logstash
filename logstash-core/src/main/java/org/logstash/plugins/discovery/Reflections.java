@@ -46,7 +46,7 @@ public class Reflections {
         this(ConfigurationBuilder.build(params));
     }
 
-    //
+    @SuppressWarnings("rawtypes")
     protected void scan() {
         if (configuration.getUrls() == null || configuration.getUrls().isEmpty()) {
             return;

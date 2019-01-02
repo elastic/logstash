@@ -85,9 +85,8 @@ public abstract class ReflectionUtils {
         return result;
     }
 
-    //
     private static List<String> primitiveNames;
-    private static List<Class> primitiveTypes;
+    @SuppressWarnings("rawtypes") private static List<Class> primitiveTypes;
     private static List<String> primitiveDescriptors;
 
     private static void initPrimitives() {
@@ -103,6 +102,7 @@ public abstract class ReflectionUtils {
         return primitiveNames;
     }
 
+    @SuppressWarnings("rawtypes")
     private static List<Class> getPrimitiveTypes() {
         initPrimitives();
         return primitiveTypes;

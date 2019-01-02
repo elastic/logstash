@@ -2,6 +2,7 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -141,6 +142,11 @@ final class SyntaxFactory {
             }
             return this.value.equals(((SyntaxFactory.ValueStatement) other).value);
         }
+
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
     }
 
     /**
@@ -192,6 +198,11 @@ final class SyntaxFactory {
                 (SyntaxFactory.MethodCallReturnValue) other;
             return this.instance.equals(that.instance) && this.method.equals(that.method)
                 && this.args.size() == that.args.size() && this.args.containsAll(that.args);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(instance, method, args);
         }
     }
 

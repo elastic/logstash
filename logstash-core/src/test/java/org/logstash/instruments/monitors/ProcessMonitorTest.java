@@ -34,6 +34,7 @@ public class ProcessMonitorTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testReportMemStats() {
         Map<String, Object> processStats = ProcessMonitor.detect().toMap();
         assumeTrue((Boolean) processStats.get("is_unix"));

@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
 
+    @SuppressWarnings("unchecked")
     @Before
     public void clearParsingCache() throws Exception {
         final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
@@ -23,6 +24,7 @@ public final class FieldReferenceTest {
         cache.clear();
     }
 
+    @SuppressWarnings("unchecked")
     @Before
     public void clearDedupCache() throws Exception  {
         final Field cacheField = FieldReference.class.getDeclaredField("DEDUP");
@@ -46,6 +48,7 @@ public final class FieldReferenceTest {
         );
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
         final Field cacheField = FieldReference.class.getDeclaredField("CACHE");

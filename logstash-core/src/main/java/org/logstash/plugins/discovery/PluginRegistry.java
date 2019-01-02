@@ -99,6 +99,7 @@ public final class PluginRegistry {
         return null;
     }
 
+    @SuppressWarnings({"unchecked","rawtypes"})
     private static Codec instantiateCodec(Class clazz, Configuration configuration, Context context) {
         try {
             Constructor<Codec> constructor = clazz.getConstructor(Configuration.class, Context.class);

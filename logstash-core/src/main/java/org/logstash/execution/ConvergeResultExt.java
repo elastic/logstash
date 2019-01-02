@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @JRubyClass(name = "ConvergeResult")
 public class ConvergeResultExt extends RubyObject {
+
+    private static final long serialVersionUID = 1L;
+
     private IRubyObject expectedActionsCount;
     private ConcurrentHashMap<IRubyObject, ActionResultExt> actions;
 
@@ -81,6 +84,9 @@ public class ConvergeResultExt extends RubyObject {
 
     @JRubyClass(name = "ActionResult")
     public static abstract class ActionResultExt extends RubyBasicObject {
+
+        private static final long serialVersionUID = 1L;
+
         private IRubyObject executedAt;
 
         protected ActionResultExt(Ruby runtime, RubyClass metaClass) {
@@ -129,6 +135,9 @@ public class ConvergeResultExt extends RubyObject {
 
     @JRubyClass(name = "FailedAction")
     public static final class FailedActionExt extends ActionResultExt {
+
+        private static final long serialVersionUID = 1L;
+
         private IRubyObject message;
         private IRubyObject backtrace;
 
@@ -182,6 +191,9 @@ public class ConvergeResultExt extends RubyObject {
 
     @JRubyClass(name = "SuccessfulAction")
     public static final class SuccessfulActionExt extends ActionResultExt {
+
+        private static final long serialVersionUID = 1L;
+
         public SuccessfulActionExt(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }

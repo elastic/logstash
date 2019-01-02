@@ -42,8 +42,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
 public interface EventCondition {
 
     /**
-     * Checks if {@link JrubyEventExtLibrary.RubyEvent} fulfils the condition.
-     * @param event RubyEvent to check
+     * Checks if {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} fulfils the condition.
+     * @param event org.logstash.ext.RubyEvent to check
      * @return True iff event fulfils condition
      */
     boolean fulfilled(JrubyEventExtLibrary.RubyEvent event);

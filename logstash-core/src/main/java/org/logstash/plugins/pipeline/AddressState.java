@@ -1,6 +1,5 @@
 package org.logstash.plugins.pipeline;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +18,7 @@ public class AddressState {
     /**
      * Add the given output and ensure associated input's receivers are updated
      * @param output
-     * @return
+     * @return true if the output was not already added
      */
     public boolean addOutput(PipelineOutput output) {
         return outputs.add(output);
