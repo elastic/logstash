@@ -24,6 +24,8 @@ import org.logstash.plugins.PluginFactoryExt;
 @JRubyClass(name = "JavaBasePipeline")
 public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOGGER = LogManager.getLogger(JavaBasePipelineExt.class);
 
     private CompiledPipeline lirExecution;

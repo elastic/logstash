@@ -65,6 +65,7 @@ public final class Event implements Cloneable, Queueable {
      * makes to its underlying data will be propagated to it.
      * @param data Converted Map
      */
+    @SuppressWarnings("unchecked")
     public Event(ConvertedMap data) {
         this.data = data;
         if (!this.data.containsKey(VERSION)) {
@@ -150,6 +151,7 @@ public final class Event implements Cloneable, Queueable {
         setField(FieldReference.from(reference), value);
     }
 
+    @SuppressWarnings("unchecked")
     public void setField(final FieldReference field, final Object value) {
         switch (field.type()) {
             case FieldReference.META_PARENT:
@@ -201,6 +203,7 @@ public final class Event implements Cloneable, Queueable {
         return JSON_MAPPER.writeValueAsString(this.data);
     }
 
+    @SuppressWarnings("unchecked")
     public static Event[] fromJson(String json)
             throws IOException
     {
@@ -348,6 +351,7 @@ public final class Event implements Cloneable, Queueable {
      * @param tags Existing Tag(s)
      * @param tag Tag to add
      */
+    @SuppressWarnings("unchecked")
     private void existingTag(final Object tags, final String tag) {
         if (tags instanceof List) {
             appendTag((List<String>) tags, tag);

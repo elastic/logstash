@@ -19,7 +19,7 @@ public interface Configuration {
     /**
      * the metadata adapter used to fetch metadata from classes
      */
-    @SuppressWarnings("RawUseOfParameterizedType")
+    @SuppressWarnings("rawtypes")
     MetadataAdapter getMetadataAdapter();
 
     /**

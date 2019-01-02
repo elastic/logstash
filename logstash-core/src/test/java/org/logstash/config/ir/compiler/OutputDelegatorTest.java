@@ -25,6 +25,7 @@ import static org.logstash.RubyUtil.NAMESPACED_METRIC_CLASS;
 import static org.logstash.RubyUtil.RUBY;
 import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 
+@SuppressWarnings("rawtypes")
 @NotThreadSafe
 public class OutputDelegatorTest extends RubyEnvTestCase {
 

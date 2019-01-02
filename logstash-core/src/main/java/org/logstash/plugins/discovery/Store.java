@@ -7,6 +7,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +47,7 @@ public final class Store {
         if (mmap == null) {
             SetMultimap<String, String> multimap =
                 Multimaps.newSetMultimap(new HashMap<>(),
-                    () -> Sets.newSetFromMap(new ConcurrentHashMap<>()));
+                    () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
             mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;
             storeMap.put(index, mmap);
         }

@@ -422,6 +422,7 @@ public final class EventTest {
         assertThat(event.getField("timestamp"), is(timestamp));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void metadataFieldsShouldBeValuefied() {
         final Event event = new Event();
@@ -434,6 +435,7 @@ public final class EventTest {
         assertEquals(list, Arrays.asList("hello"));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void metadataRootShouldBeValueified() {
         final Event event = new Event();

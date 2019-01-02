@@ -20,6 +20,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "Metric")
 public final class MetricExt extends AbstractSimpleMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     public static final RubySymbol COUNTER = RubyUtil.RUBY.newSymbol("counter");
 
     private static final RubyFixnum ONE = RubyUtil.RUBY.newFixnum(1);
@@ -157,6 +159,8 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     @JRubyClass(name = "TimedExecution")
     public static final class TimedExecution extends RubyObject {
 
+        private static final long serialVersionUID = 1L;
+
         private final long startTime = System.nanoTime();
 
         private MetricExt metric;
@@ -194,6 +198,8 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     @JRubyClass(name = "MetricException")
     public static class MetricException extends RubyException {
 
+        private static final long serialVersionUID = 1L;
+
         public MetricException(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -201,6 +207,8 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     @JRubyClass(name = "MetricNoKeyProvided", parent = "MetricException")
     public static final class MetricNoKeyProvided extends MetricException {
+
+        private static final long serialVersionUID = 1L;
 
         public MetricNoKeyProvided(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
@@ -210,6 +218,8 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     @JRubyClass(name = "MetricNoBlockProvided", parent = "MetricException")
     public static final class MetricNoBlockProvided extends MetricException {
 
+        private static final long serialVersionUID = 1L;
+
         public MetricNoBlockProvided(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -217,6 +227,8 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     @JRubyClass(name = "MetricNoNamespaceProvided", parent = "MetricException")
     public static final class MetricNoNamespaceProvided extends MetricException {
+
+        private static final long serialVersionUID = 1L;
 
         public MetricNoNamespaceProvided(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);

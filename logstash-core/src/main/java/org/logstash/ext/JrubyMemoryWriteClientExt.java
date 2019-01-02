@@ -14,6 +14,8 @@ import org.logstash.common.LsQueueUtils;
 @JRubyClass(name = "MemoryWriteClient")
 public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClientExt {
 
+    private static final long serialVersionUID = 1L;
+
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
     public JrubyMemoryWriteClientExt(final Ruby runtime, final RubyClass metaClass) {

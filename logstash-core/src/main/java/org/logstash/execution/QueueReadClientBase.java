@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 
+    private static final long serialVersionUID = 1L;
+
     protected int batchSize = 125;
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
     protected long waitForMillis = 50;

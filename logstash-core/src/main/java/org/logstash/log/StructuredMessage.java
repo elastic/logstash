@@ -8,6 +8,9 @@ import java.util.Map;
 
 @JsonSerialize(using = CustomLogEventSerializer.class)
 public class StructuredMessage implements Message {
+
+    private static final long serialVersionUID = 1L;
+
     private final String message;
     private final Map<Object, Object> params;
 

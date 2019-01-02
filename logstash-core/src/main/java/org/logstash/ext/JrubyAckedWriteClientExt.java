@@ -17,6 +17,8 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 @JRubyClass(name = "AckedWriteClient")
 public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClientExt {
 
+    private static final long serialVersionUID = 1L;
+
     private JRubyAckedQueueExt queue;
 
     private AtomicBoolean closed = new AtomicBoolean();

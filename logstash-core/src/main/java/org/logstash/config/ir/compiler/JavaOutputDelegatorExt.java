@@ -21,6 +21,8 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 @JRubyClass(name = "JavaOutputDelegator")
 public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol CONCURRENCY = RubyUtil.RUBY.newSymbol("java");
 
     private RubyString configName;

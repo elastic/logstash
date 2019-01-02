@@ -13,6 +13,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "EventDispatcher")
 public final class EventDispatcherExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     private final Collection<IRubyObject> listeners = new CopyOnWriteArraySet<>();
 
     private IRubyObject emitter;

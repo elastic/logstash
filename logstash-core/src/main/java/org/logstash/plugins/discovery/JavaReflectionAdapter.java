@@ -4,16 +4,14 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-/** */
+@SuppressWarnings("rawtypes")
 public final class JavaReflectionAdapter implements MetadataAdapter<Class> {
 
     public List<String> getClassAnnotationNames(Class aClass) {
         return getAnnotationNames(aClass.getDeclaredAnnotations());
     }
 
-    public Class getOfCreateClassObject(Vfs.File file) {
-        return getOfCreateClassObject(file, null);
-    }
+    public Class getOfCreateClassObject(Vfs.File file) { return getOfCreateClassObject(file, new ClassLoader[]{}); }
 
     public Class getOfCreateClassObject(Vfs.File file, ClassLoader... loaders) {
         String name = file.getRelativePath().replace("/", ".").replace(".class", "");
@@ -42,7 +40,6 @@ public final class JavaReflectionAdapter implements MetadataAdapter<Class> {
         return file.endsWith(".class");
     }
 
-    //
     private List<String> getAnnotationNames(Annotation[] annotations) {
         List<String> names = new ArrayList<>(annotations.length);
         for (Annotation annotation : annotations) {
@@ -62,7 +59,7 @@ public final class JavaReflectionAdapter implements MetadataAdapter<Class> {
                 }
                 return cl.getName() + Utils.repeat("[]", dim);
             } catch (Throwable e) {
-                //
+                // do nothing
             }
         }
         return type.getName();

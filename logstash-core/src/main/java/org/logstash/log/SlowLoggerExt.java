@@ -17,6 +17,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "SlowLogger")
 public class SlowLoggerExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol PLUGIN_PARAMS = RubyUtil.RUBY.newSymbol("plugin_params");
     private static final RubySymbol TOOK_IN_NANOS = RubyUtil.RUBY.newSymbol("took_in_nanos");
     private static final RubySymbol TOOK_IN_MILLIS = RubyUtil.RUBY.newSymbol("took_in_millis");

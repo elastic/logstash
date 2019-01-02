@@ -21,6 +21,8 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 @JRubyClass(name = "AbstractOutputDelegator")
 public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String OUTPUT_METHOD_NAME = "multi_receive";
 
     private AbstractMetricExt metric;
@@ -88,6 +90,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         return metricEvents;
     }
 
+    @SuppressWarnings("unchecked")
     @JRubyMethod(name = OUTPUT_METHOD_NAME)
     public IRubyObject multiReceive(final IRubyObject events) {
         final RubyArray batch = (RubyArray) events;

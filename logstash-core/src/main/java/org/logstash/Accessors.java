@@ -100,6 +100,8 @@ public final class Accessors {
     }
 
     public static class InvalidFieldSetException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
         public InvalidFieldSetException(final Object target, final String key, final Object value) {
             super(String.format(
                     "Could not set field '%s' on object '%s' to value '%s'." +
