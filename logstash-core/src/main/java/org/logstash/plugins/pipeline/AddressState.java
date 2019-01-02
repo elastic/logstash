@@ -17,7 +17,7 @@ public class AddressState {
 
     /**
      * Add the given output and ensure associated input's receivers are updated
-     * @param output
+     * @param output output to be added
      * @return true if the output was not already added
      */
     public boolean addOutput(PipelineOutput output) {
@@ -34,7 +34,7 @@ public class AddressState {
 
     /**
      * Assigns an input to listen on this address. Will return false if another input is already listening.
-     * @param newInput
+     * @param newInput input to assign as listener
      * @return true if successful, false if another input is listening
      */
     public synchronized boolean assignInputIfMissing(PipelineInput newInput) {
@@ -50,7 +50,7 @@ public class AddressState {
 
     /**
      * Unsubscribes the given input from this address
-     * @param unsubscribingInput
+     * @param unsubscribingInput input to unsubscribe from this address
      * @return true if this input was listening, false otherwise
      */
     public synchronized boolean unassignInput(PipelineInput unsubscribingInput) {

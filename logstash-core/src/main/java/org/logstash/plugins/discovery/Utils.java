@@ -26,7 +26,8 @@ public abstract class Utils {
     }
 
     /**
-     * isEmpty compatible with Java 5
+     * @param s string to test
+     * @return Java5-compatible isEmpty result
      */
     public static boolean isEmpty(String s) {
         return s == null || s.length() == 0;

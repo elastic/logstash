@@ -15,6 +15,8 @@ public class FilterBuilder implements Predicate<String> {
 
     /**
      * exclude a regular expression
+     * @param regex regex to exclude
+     * @return updated {@link FilterBuilder} instance
      */
     public FilterBuilder exclude(final String regex) {
         add(new FilterBuilder.Exclude(regex));
@@ -23,6 +25,8 @@ public class FilterBuilder implements Predicate<String> {
 
     /**
      * add a Predicate to the chain of predicates
+     * @param filter predicate to add
+     * @return updated {@link FilterBuilder} instance
      */
     public FilterBuilder add(Predicate<String> filter) {
         chain.add(filter);
@@ -31,6 +35,8 @@ public class FilterBuilder implements Predicate<String> {
 
     /**
      * include a package of a given class
+     * @param aClass provided class
+     * @return updated {@link FilterBuilder} instance
      */
     public FilterBuilder includePackage(final Class<?> aClass) {
         return add(new FilterBuilder.Include(packageNameRegex(aClass)));
@@ -38,6 +44,8 @@ public class FilterBuilder implements Predicate<String> {
 
     /**
      * include packages of given prefixes
+     * @param prefixes package prefixes
+     * @return updated {@link FilterBuilder} instance
      */
     public FilterBuilder includePackage(final String... prefixes) {
         for (String prefix : prefixes) {
