@@ -1,5 +1,6 @@
 package co.elastic.logstash.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -116,6 +117,17 @@ public final class PluginHelper {
     }
 
     public static void validateConfig(Plugin plugin, Configuration config) {
+        List<String> configErrors = doValidateConfig(plugin, config);
+        if (configErrors.size() > 0) {
+            for (String err : configErrors) {
+                LOGGER.error(err);
+            }
+            throw new IllegalStateException("Config errors found for plugin '" + plugin.getName() + "'");
+        }
+    }
+
+    @VisibleForTesting
+    static List<String> doValidateConfig(Plugin plugin, Configuration config) {
         List<String> configErrors = new ArrayList<>();
 
         List<String> configSchemaNames = plugin.configSchema().stream().map(PluginConfigSpec::name)
@@ -138,19 +150,7 @@ public final class PluginHelper {
             }
         }
 
-        if (configErrors.size() > 0) {
-            for (String err : configErrors) {
-                LOGGER.error(err);
-            }
-            throw new IllegalStateException("Config errors found for plugin '" + plugin.getName() + "'");
-        }
-    }
-
-    public static String pluginName(Plugin plugin) {
-        LogstashPlugin annotation = plugin.getClass().getDeclaredAnnotation(LogstashPlugin.class);
-        return (annotation.name() != null && !annotation.name().equals(""))
-                ? annotation.name()
-                : plugin.getClass().getName();
+        return configErrors;
     }
 
     public static String pluginId(Plugin plugin) {

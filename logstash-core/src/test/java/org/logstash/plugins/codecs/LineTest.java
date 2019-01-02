@@ -125,41 +125,27 @@ public class LineTest {
         byte[] bytes = input.getBytes();
         assertTrue(bytes.length > input.length());
         ByteBuffer b1 = ByteBuffer.allocate(BUFFER_SIZE);
-        System.out.println(b1);
         b1.put(bytes, lastPos, 12);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
 
         Line line = getLineCodec(null, null);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
 
         int remaining = b1.remaining();
         lastPos += BUFFER_SIZE;
         b1.put(bytes, lastPos, remaining);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
 
         remaining = b1.remaining();
         lastPos += remaining;
         b1.put(bytes, lastPos, bytes.length - lastPos);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.flush(b1, eventConsumer);
     }
 
