@@ -23,6 +23,7 @@ import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 /**
  * Unit tests for {@link SecretStoreFactory}
  */
+@SuppressWarnings({"serial", "rawtypes", "unchecked"})
 public class SecretStoreFactoryTest {
 
     @Rule

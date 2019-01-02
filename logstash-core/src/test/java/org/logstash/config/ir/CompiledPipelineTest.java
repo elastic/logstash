@@ -412,7 +412,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> mockOutputSupplier() {
         return () -> events -> events.forEach(
-            event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event)
+            event -> EVENT_SINKS.get(runId).add(event)
         );
     }
 

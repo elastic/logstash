@@ -82,12 +82,12 @@ public final class Configuration {
         return new PluginConfigSpec<>(name, Boolean.class, null, false, false);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static PluginConfigSpec<Map<String, String>> hashSetting(final String name) {
         return new PluginConfigSpec(name, Map.class, null, false, false);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> PluginConfigSpec<Map<String, T>> requiredFlatHashSetting(
         final String name, Class<T> type) {
         //TODO: enforce subtype
@@ -96,7 +96,7 @@ public final class Configuration {
         );
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static PluginConfigSpec<Map<String, Configuration>> requiredNestedHashSetting(
         final String name, final Collection<PluginConfigSpec<?>> spec) {
         return new PluginConfigSpec(

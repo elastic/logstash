@@ -59,7 +59,7 @@ public class SecretIdentifier {
         SecretIdentifier that = (SecretIdentifier) o;
 
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        return VERSION != null ? VERSION.equals(that.VERSION) : that.VERSION == null;
+        return true;
     }
 
     /**

@@ -15,6 +15,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @JRubyClass(name = "HooksRegistry")
 public final class HooksRegistryExt extends RubyObject {
+
+    private static final long serialVersionUID = 1L;
+
     private ConcurrentHashMap<IRubyObject, IRubyObject> registeredEmitters;
     private ConcurrentHashMap<IRubyObject, List<IRubyObject>> registeredHooks;
 

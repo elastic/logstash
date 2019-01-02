@@ -41,6 +41,8 @@ import org.logstash.instrument.metrics.NullMetricExt;
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
     private static final RubyArray CAPACITY_NAMESPACE =

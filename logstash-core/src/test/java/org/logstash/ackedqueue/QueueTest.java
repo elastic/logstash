@@ -793,6 +793,7 @@ public class QueueTest {
         }
     }
 
+    @SuppressWarnings("try")
     @Test
     public void getsPersistedByteSizeCorrectlyForFullyAckedDeletedTailPages() throws Exception {
         final Queueable element = new StringElement("0123456789"); // 10 bytes

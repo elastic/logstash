@@ -16,7 +16,7 @@ public final class LsQueueUtils {
     }
 
     /**
-     * Adds all {@link JrubyEventExtLibrary.RubyEvent} in the given collection to the given queue
+     * Adds all {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} in the given collection to the given queue
      * in a blocking manner, only returning once all events have been added to the queue.
      * @param queue Queue to add Events to
      * @param events Events to add to Queue
@@ -30,17 +30,17 @@ public final class LsQueueUtils {
     }
 
     /**
-     * <p>Drains {@link JrubyEventExtLibrary.RubyEvent} from {@link BlockingQueue} with a timeout.</p>
-     * <p>The timeout will be reset as soon as a single {@link JrubyEventExtLibrary.RubyEvent} was
-     * drained from the {@link BlockingQueue}. Draining {@link JrubyEventExtLibrary.RubyEvent}
-     * stops as soon as either the required number of {@link JrubyEventExtLibrary.RubyEvent}s
+     * <p>Drains {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} from {@link BlockingQueue} with a timeout.</p>
+     * <p>The timeout will be reset as soon as a single {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} was
+     * drained from the {@link BlockingQueue}. Draining {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}
+     * stops as soon as either the required number of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}s
      * were pulled from the queue or the timeout value has gone by without an event drained.</p>
-     * @param queue Blocking Queue to drain {@link JrubyEventExtLibrary.RubyEvent}s
+     * @param queue Blocking Queue to drain {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}s
      * from
-     * @param count Number of {@link JrubyEventExtLibrary.RubyEvent}s to drain from
+     * @param count Number of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}s to drain from
      * {@link BlockingQueue}
      * @param nanos Timeout in Nanoseconds
-     * @return Collection of {@link JrubyEventExtLibrary.RubyEvent} drained from
+     * @return Collection of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} drained from
      * {@link BlockingQueue}
      * @throws InterruptedException On Interrupt during {@link BlockingQueue#poll()} or
      * {@link BlockingQueue#drainTo(Collection)}
@@ -63,14 +63,14 @@ public final class LsQueueUtils {
     }
 
     /**
-     * Tries to drain a given number of {@link JrubyEventExtLibrary.RubyEvent} from
+     * Tries to drain a given number of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} from
      * {@link BlockingQueue} with a timeout.
-     * @param queue Blocking Queue to drain {@link JrubyEventExtLibrary.RubyEvent}s
+     * @param queue Blocking Queue to drain {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}s
      * from
-     * @param count Number of {@link JrubyEventExtLibrary.RubyEvent}s to drain from
+     * @param count Number of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}s to drain from
      * {@link BlockingQueue}
      * @param nanos Timeout in Nanoseconds
-     * @return Collection of {@link JrubyEventExtLibrary.RubyEvent} drained from
+     * @return Collection of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent} drained from
      * {@link BlockingQueue}
      * @throws InterruptedException On Interrupt during {@link BlockingQueue#poll()} or
      * {@link BlockingQueue#drainTo(Collection)}

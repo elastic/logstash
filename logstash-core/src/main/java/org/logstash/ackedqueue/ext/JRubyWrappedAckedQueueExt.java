@@ -22,6 +22,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
+    private static final long serialVersionUID = 1L;
+
     private JRubyAckedQueueExt queue;
     private final AtomicBoolean isClosed = new AtomicBoolean();
 

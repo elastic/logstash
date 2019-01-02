@@ -31,7 +31,7 @@ public class StdoutTest {
                 super.close();
             }
         };
-        Stdout stdout = new Stdout(new Configuration(Collections.EMPTY_MAP), null, dummyOutputStream);
+        Stdout stdout = new Stdout(new Configuration(Collections.emptyMap()), null, dummyOutputStream);
         stdout.output(getTestEvents());
         stdout.stop();
 
@@ -47,7 +47,7 @@ public class StdoutTest {
         }
 
         OutputStream dummyOutputStream = new ByteArrayOutputStream(0);
-        Stdout stdout = new Stdout(new Configuration(Collections.EMPTY_MAP), null, dummyOutputStream);
+        Stdout stdout = new Stdout(new Configuration(Collections.emptyMap()), null, dummyOutputStream);
         stdout.output(testEvents);
         stdout.stop();
 

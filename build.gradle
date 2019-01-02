@@ -35,13 +35,13 @@ allprojects {
   project.targetCompatibility = JavaVersion.VERSION_1_8
 
   tasks.withType(JavaCompile).all {
-      def env = System.getenv()
-      boolean ci = env['CI']
+      options.compilerArgs.add("-Xlint:all")
+      options.compilerArgs.add("-Xlint:-processing")
+      options.compilerArgs.add("-Werror")
+  }
 
-      //don't lint when running CI builds
-      if(!ci){
-          options.compilerArgs.add("-Xlint:all")
-      }
+  tasks.withType(Javadoc) {
+      options.addStringOption("Xwerror", "-quiet")
   }
 
   clean {

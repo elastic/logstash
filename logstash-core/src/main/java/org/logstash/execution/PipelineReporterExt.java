@@ -20,6 +20,8 @@ import java.util.Collection;
 @JRubyClass(name = "PipelineReporter")
 public final class PipelineReporterExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol EVENTS_FILTERED_KEY =
         RubyUtil.RUBY.newSymbol("events_filtered");
 
@@ -189,6 +191,8 @@ public final class PipelineReporterExt extends RubyBasicObject {
      */
     @JRubyClass(name = "Snapshot")
     public static final class SnapshotExt extends RubyBasicObject {
+
+        private static final long serialVersionUID = 1L;
 
         private static final RubyString INFLIGHT_COUNT_KEY =
             RubyUtil.RUBY.newString("inflight_count").newFrozen();

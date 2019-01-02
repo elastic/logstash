@@ -85,6 +85,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     }
 
     @Override
+    public int hashCode() {
+        return time.hashCode();
+    }
+
+    @Override
     public byte[] serialize() {
         return toString().getBytes();
     }

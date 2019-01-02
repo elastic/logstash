@@ -292,6 +292,7 @@ public final class JrubyEventExtLibrary {
          * @param data Either {@code null}, {@link org.jruby.RubyNil} or an instance of
          * {@link MapJavaProxy}
          */
+        @SuppressWarnings("unchecked")
         private void initializeFallback(final ThreadContext context, final IRubyObject data) {
             if (data == null || data.isNil()) {
                 this.event = new Event();

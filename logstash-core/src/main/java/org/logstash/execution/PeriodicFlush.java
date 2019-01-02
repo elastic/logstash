@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings("try")
 public final class PeriodicFlush implements AutoCloseable {
 
     private static final Logger LOGGER = LogManager.getLogger(PeriodicFlush.class);

@@ -21,6 +21,7 @@ public final class FieldReference {
      * when they encounter an input with illegal syntax.
      */
     public static class IllegalSyntaxException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
         IllegalSyntaxException(String message) {
             super(message);
         }

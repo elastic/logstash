@@ -15,7 +15,7 @@ public final class ConfigurationBuilder implements Configuration {
     private final Set<Scanner> scanners;
 
     private Set<URL> urls;
-    /*lazy*/ protected MetadataAdapter metadataAdapter;
+    @SuppressWarnings("rawtypes") protected MetadataAdapter metadataAdapter;
 
     private Predicate<String> inputsFilter;
 
@@ -158,6 +158,7 @@ public final class ConfigurationBuilder implements Configuration {
      * if javassist library exists in the classpath, this method returns {@link JavassistAdapter} otherwise defaults to {@link JavaReflectionAdapter}.
      * <p>the {@link JavassistAdapter} is preferred in terms of performance and class loading.
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public MetadataAdapter getMetadataAdapter() {
         if (metadataAdapter != null) {

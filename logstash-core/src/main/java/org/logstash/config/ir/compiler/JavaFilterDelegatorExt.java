@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @JRubyClass(name = "JavaFilterDelegator")
 public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol CONCURRENCY = RubyUtil.RUBY.newSymbol("java");
 
     private RubyString configName;
