@@ -81,6 +81,10 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The ID of the pipeline.
 | `main`
 
+| `pipeline.java-execution`
+| Use the Java execution engine.
+| false
+
 | `pipeline.workers`
 | The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
   If you find that events are backing up, or that the
