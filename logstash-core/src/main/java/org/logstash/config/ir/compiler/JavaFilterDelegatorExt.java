@@ -45,7 +45,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     @Override
     protected RubyArray doMultiFilter(final RubyArray batch) {
         List<Event> inputEvents = (List<Event>)batch.stream()

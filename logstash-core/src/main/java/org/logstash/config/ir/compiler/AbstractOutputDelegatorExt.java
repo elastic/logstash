@@ -93,6 +93,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
     @SuppressWarnings("unchecked")
     @JRubyMethod(name = OUTPUT_METHOD_NAME)
     public IRubyObject multiReceive(final IRubyObject events) {
+        @SuppressWarnings("rawtypes")
         final RubyArray batch = (RubyArray) events;
         final int count = batch.size();
         eventMetricIn.increment((long) count);

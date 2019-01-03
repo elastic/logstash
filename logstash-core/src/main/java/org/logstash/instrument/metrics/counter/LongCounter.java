@@ -37,7 +37,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         counter.callMethod(context, "increment", context.runtime.newFixnum(0));
         final LongCounter javaCounter;
         if (LongCounter.class.isAssignableFrom(counter.getJavaClass())) {
-            javaCounter = (LongCounter) counter.toJava(LongCounter.class);
+            javaCounter = counter.toJava(LongCounter.class);
         } else {
             javaCounter = DUMMY_COUNTER;
         }

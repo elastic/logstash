@@ -40,6 +40,6 @@ public final class ConfigCompiler {
                     RubyUtil.RUBY.newBoolean(supportEscapes)
                 }
             );
-        return (PipelineIR) code.toJava(PipelineIR.class);
+        return code.toJava(PipelineIR.class);
     }
 }

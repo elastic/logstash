@@ -73,7 +73,7 @@ public final class PluginFactoryExt {
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
             filterInstance.callMethod(
                     context, "metric=",
-                    ((AbstractMetricExt) args[3]).namespace(context, id.intern19())
+                    ((AbstractMetricExt) args[3]).namespace(context, id.intern())
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
@@ -88,7 +88,7 @@ public final class PluginFactoryExt {
         public PluginFactoryExt.Plugins initialize(final ThreadContext context,
                                                    final IRubyObject[] args) {
             return init(
-                    (PipelineIR) args[0].toJava(PipelineIR.class),
+                    args[0].toJava(PipelineIR.class),
                     (PluginFactoryExt.Metrics) args[1], (PluginFactoryExt.ExecutionContext) args[2],
                     (RubyClass) args[3]
             );
@@ -391,7 +391,7 @@ public final class PluginFactoryExt {
         @JRubyMethod
         public PluginFactoryExt.Metrics initialize(final ThreadContext context,
             final IRubyObject pipelineId, final IRubyObject metrics) {
-            this.pipelineId = pipelineId.convertToString().intern19();
+            this.pipelineId = pipelineId.convertToString().intern();
             if (metrics.isNil()) {
                 this.metric = new NullMetricExt(context.runtime, RubyUtil.NULL_METRIC_CLASS);
             } else {

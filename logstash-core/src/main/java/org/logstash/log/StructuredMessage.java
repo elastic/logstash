@@ -14,7 +14,7 @@ public class StructuredMessage implements Message {
     private final String message;
     private final Map<Object, Object> params;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public StructuredMessage(String message) {
         this(message, (Map) null);
     }

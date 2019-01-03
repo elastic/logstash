@@ -30,6 +30,7 @@ public final class MemoryReadBatch implements QueueBatch {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes"})
     public RubyArray to_a() {
         ThreadContext context = RUBY.getCurrentContext();
         final RubyArray result = context.runtime.newArray(events.size());

@@ -19,12 +19,12 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     private static final RubySymbol NULL = RubyUtil.RUBY.newSymbol("null");
 
-    private RubyArray namespaceName;
+    private @SuppressWarnings("rawtypes") RubyArray namespaceName;
 
     private NullMetricExt metric;
 
     public static AbstractNamespacedMetricExt create(final NullMetricExt metric,
-        final RubyArray namespaceName) {
+        final @SuppressWarnings("rawtypes") RubyArray namespaceName) {
         final NullNamespacedMetricExt res =
             new NullNamespacedMetricExt(RubyUtil.RUBY, RubyUtil.NULL_NAMESPACED_METRIC_CLASS);
         res.metric = metric;
@@ -88,6 +88,7 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected RubyArray getNamespaceName(final ThreadContext context) {
         return namespaceName;
     }
