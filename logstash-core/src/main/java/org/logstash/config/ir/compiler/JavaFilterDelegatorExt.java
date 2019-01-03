@@ -54,7 +54,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     @Override
     protected RubyArray doMultiFilter(final RubyArray batch) {
         List<Event> inputEvents = (List<Event>) batch.stream()
@@ -76,7 +76,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
         if (filter.requiresFlush()) {
             Collection<Event> outputEvents = filter.flush(filterMatchListener);
-            RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
+            @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
             for (Event outputEvent : outputEvents) {
                 newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
             }
