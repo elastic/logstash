@@ -107,7 +107,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     }
 
     @JRubyMethod(name = "multi_filter")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public RubyArray multiFilter(final IRubyObject input) {
         RubyArray batch = (RubyArray) input;
         eventMetricIn.increment((long) batch.size());
@@ -124,9 +124,11 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         return result;
     }
 
+    @SuppressWarnings({"rawtypes"})
     protected abstract RubyArray doMultiFilter(final RubyArray batch);
 
     @JRubyMethod(name = "flush")
+    @SuppressWarnings("rawtypes")
     public RubyArray flush(final IRubyObject input) {
         RubyHash options = (RubyHash) input;
         final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();

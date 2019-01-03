@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public interface QueueBatch {
     int filteredSize();
-    RubyArray to_a();
+    @SuppressWarnings({"rawtypes"}) RubyArray to_a();
     void merge(IRubyObject event);
     void close() throws IOException;
 }

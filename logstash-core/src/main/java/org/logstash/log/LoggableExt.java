@@ -54,7 +54,7 @@ public final class LoggableExt {
         return ((RubyString) ((RubyString) name).gsub(
             context, RubyUtil.RUBY.newString("::"), RubyUtil.RUBY.newString("."),
             Block.NULL_BLOCK
-        )).downcase19(context);
+        )).downcase(context);
     }
 
     /**

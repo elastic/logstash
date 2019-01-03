@@ -52,6 +52,7 @@ public class RubyfierTest {
         List<String> data = new ArrayList<>();
         data.add("foo");
 
+        @SuppressWarnings("rawtypes")
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
@@ -88,6 +89,7 @@ public class RubyfierTest {
         List<Integer> data = new ArrayList<>();
         data.add(1);
 
+        @SuppressWarnings("rawtypes")
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
@@ -124,6 +126,7 @@ public class RubyfierTest {
         List<Float> data = new ArrayList<>();
         data.add(1.0F);
 
+        @SuppressWarnings("rawtypes")
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
@@ -160,6 +163,7 @@ public class RubyfierTest {
         List<Double> data = new ArrayList<>();
         data.add(1.0D);
 
+        @SuppressWarnings("rawtypes")
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
@@ -197,6 +201,7 @@ public class RubyfierTest {
         List<BigDecimal> data = new ArrayList<>();
         data.add(new BigDecimal(1));
 
+        @SuppressWarnings("rawtypes")
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/

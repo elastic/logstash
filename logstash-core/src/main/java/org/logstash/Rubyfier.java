@@ -55,6 +55,7 @@ public final class Rubyfier {
         return fallbackConvert(runtime, input, cls);
     }
 
+    @SuppressWarnings("rawtypes")
     private static RubyArray deepList(final Ruby runtime, final Collection<?> list) {
         final int length = list.size();
         final RubyArray array = runtime.newArray(length);
