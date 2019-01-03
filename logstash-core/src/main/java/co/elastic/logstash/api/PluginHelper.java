@@ -51,9 +51,8 @@ public final class PluginHelper {
     /**
      * Returns a list of the options that are common to all input plugins.
      */
-    @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonInputOptions() {
-        return commonInputOptions(Collections.EMPTY_LIST);
+        return commonInputOptions(Collections.emptyList());
     }
 
     /**
@@ -69,9 +68,8 @@ public final class PluginHelper {
     /**
      * Returns a list of the options that are common to all output plugins.
      */
-    @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonOutputOptions() {
-        return commonOutputOptions(Collections.EMPTY_LIST);
+        return commonOutputOptions(Collections.emptyList());
     }
 
     /**
@@ -86,9 +84,8 @@ public final class PluginHelper {
     /**
      * Returns a list of the options that are common to all filter plugins.
      */
-    @SuppressWarnings("unchecked")
     public static Collection<PluginConfigSpec<?>> commonFilterOptions() {
-        return commonFilterOptions(Collections.EMPTY_LIST);
+        return commonFilterOptions(Collections.emptyList());
     }
 
     /**
@@ -156,5 +153,4 @@ public final class PluginHelper {
     public static String pluginId(Plugin plugin) {
         return plugin.getName() + "_" + UUID.randomUUID().toString();
     }
-
 }

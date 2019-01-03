@@ -11,7 +11,6 @@ import java.util.Collection;
 public class InputsController {
 
     private final Collection<Input> inputs;
-    private ArrayList<Thread> threads = new ArrayList<>();
 
     public InputsController(final Collection<Input> inputs) {
         this.inputs = inputs;
@@ -20,10 +19,9 @@ public class InputsController {
     public void startInputs(final JavaBasePipelineExt provider) {
         int inputCounter = 0;
         for (Input input : inputs) {
-            String pluginName = input.getClass().getName(); // TODO: get annotated plugin name
+            String pluginName = input.getName();
             Thread t = new Thread(() -> input.start(provider.getQueueWriter(pluginName)));
             t.setName("input_" + (inputCounter++) + "_" + pluginName);
-            threads.add(t);
             t.start();
         }
     }

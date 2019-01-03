@@ -83,8 +83,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
                 buffer.compact();
             }
         } catch (AsynchronousCloseException e2) {
-            // do nothing -- this happens when stop is called during a pending read
-            LOGGER.warn("Stop request interrupted pending read");
+            // do nothing -- this happens when stop is called while the read loop is blocked on input.read()
         } catch (IOException e) {
             stopRequested = true;
             LOGGER.error("Stopping stdin after read error", e);

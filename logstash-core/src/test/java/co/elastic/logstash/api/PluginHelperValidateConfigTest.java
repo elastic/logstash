@@ -22,6 +22,7 @@ public class PluginHelperValidateConfigTest {
         this.testCase = v;
     }
 
+    @SuppressWarnings("rawtypes")
     @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection testParameters() {
         List<ValidateConfigTestCase> testParameters = new ArrayList<>();
