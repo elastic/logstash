@@ -88,7 +88,7 @@ public class FileCheckpointIO implements CheckpointIO {
                     logger.error("Retrying after exception writing checkpoint: " + ex);
                     Thread.sleep(500);
                     Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
-                } catch (Exception ex2) {
+                } catch (IOException | InterruptedException ex2) {
                     logger.error("Aborting after second exception writing checkpoint: " + ex2);
                     throw ex;
                 }
