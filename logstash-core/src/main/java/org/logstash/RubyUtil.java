@@ -16,6 +16,7 @@ import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -108,6 +109,8 @@ public final class RubyUtil {
     public static final RubyClass JAVA_OUTPUT_DELEGATOR_CLASS;
 
     public static final RubyClass JAVA_FILTER_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_INPUT_DELEGATOR_CLASS;
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
@@ -206,8 +209,6 @@ public final class RubyUtil {
     public static final RubyClass ABSTRACT_PIPELINE_CLASS;
 
     public static final RubyClass JAVA_PIPELINE_CLASS;
-
-    public static final RubyClass JAVA_INPUT_WRAPPER_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -439,6 +440,7 @@ public final class RubyUtil {
                 ABSTRACT_FILTER_DELEGATOR_CLASS, FilterDelegatorExt::new,
                 FilterDelegatorExt.class
         );
+        JAVA_INPUT_DELEGATOR_CLASS = setupLogstashClass(JavaInputDelegatorExt::new, JavaInputDelegatorExt.class);
         final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
         LOGGER.defineAnnotatedMethods(LoggerExt.class);
@@ -452,8 +454,6 @@ public final class RubyUtil {
         JAVA_PIPELINE_CLASS = setupLogstashClass(
             ABSTRACT_PIPELINE_CLASS, JavaBasePipelineExt::new, JavaBasePipelineExt.class
         );
-        JAVA_INPUT_WRAPPER_CLASS = setupLogstashClass(PluginFactoryExt.JavaInputWrapperExt::new,
-                PluginFactoryExt.JavaInputWrapperExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(

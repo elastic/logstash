@@ -1,14 +1,17 @@
 package org.logstash.plugins;
 
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.v0.Filter;
 import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.v0.Output;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyInteger;
-import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
@@ -16,21 +19,21 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.common.AbstractDeadLetterQueueWriterExt;
+import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Output;
+import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -266,7 +269,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            output = ctor.newInstance(config, new Context());
+                            output = ctor.newInstance(config, executionContext.toContext());
                             PluginHelper.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -285,7 +288,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            filter = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            filter = ctor.newInstance(new Configuration(pluginArgs), executionContext.toContext());
                             PluginHelper.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -304,7 +307,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            input = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            input = ctor.newInstance(new Configuration(pluginArgs), executionContext.toContext());
                             PluginHelper.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -312,7 +315,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (input != null) {
-                        return JavaInputWrapperExt.create(context, input);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }
@@ -320,28 +323,6 @@ public final class PluginFactoryExt {
                     throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());
                 }
             }
-        }
-    }
-
-    @JRubyClass(name = "JavaInputWrapper")
-    public static final class JavaInputWrapperExt extends RubyObject {
-
-        private static final long serialVersionUID = 1L;
-
-        private Input input;
-
-        public JavaInputWrapperExt(Ruby runtime, RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        public static JavaInputWrapperExt create(ThreadContext context, Input input) {
-            JavaInputWrapperExt inputWrapper = new JavaInputWrapperExt(context.runtime, RubyUtil.JAVA_INPUT_WRAPPER_CLASS);
-            inputWrapper.input = input;
-            return inputWrapper;
-        }
-
-        public Input getInput() {
-            return input;
         }
     }
 
@@ -377,6 +358,23 @@ public final class PluginFactoryExt {
             ).initialize(
                 context, new IRubyObject[]{pipeline, agent, id, classConfigName, dlqWriter}
             );
+        }
+
+        public Context toContext() {
+            DeadLetterQueueWriter dlq = null;
+            if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
+                IRubyObject innerWriter =
+                        ((AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt)dlqWriter)
+                                .innerWriter(RubyUtil.RUBY.getCurrentContext());
+
+                if (innerWriter != null) {
+                    if (innerWriter.getJavaClass().equals(DeadLetterQueueWriter.class)) {
+                        dlq = (DeadLetterQueueWriter) innerWriter.toJava(DeadLetterQueueWriter.class);
+                    }
+                }
+            }
+
+            return new Context(dlq);
         }
     }
 

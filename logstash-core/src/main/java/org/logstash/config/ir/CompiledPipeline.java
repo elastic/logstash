@@ -1,6 +1,5 @@
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.PluginHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
@@ -20,16 +19,8 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
-import co.elastic.logstash.api.v0.Input;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import org.logstash.plugins.PluginFactoryExt;
-import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,11 +50,6 @@ public final class CompiledPipeline {
      * Configured inputs.
      */
     private final Collection<IRubyObject> inputs;
-
-    /**
-     * Configured Java Inputs.
-     */
-    private final Collection<Input> javaInputs = new ArrayList<>();
 
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
@@ -104,10 +90,6 @@ public final class CompiledPipeline {
 
     public Collection<IRubyObject> inputs() {
         return inputs;
-    }
-
-    public Collection<Input> javaInputs() {
-        return javaInputs;
     }
 
     /**
@@ -162,29 +144,11 @@ public final class CompiledPipeline {
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            final Class<Input> cls = PluginRegistry.getInputClass(def.getName());
-            if (cls != null) {
-                try {
-                    final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    Configuration config = new Configuration(def.getArguments());
-                    Input input = ctor.newInstance(config, new Context());
-                    PluginHelper.validateConfig(input, config);
-                    javaInputs.add(input);
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            } else {
-                final SourceWithMetadata source = v.getSourceWithMetadata();
-                IRubyObject o = pluginFactory.buildInput(
+            final SourceWithMetadata source = v.getSourceWithMetadata();
+            IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
                     RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments());
-
-                if (o instanceof PluginFactoryExt.JavaInputWrapperExt) {
-                    javaInputs.add(((PluginFactoryExt.JavaInputWrapperExt)o).getInput());
-                } else {
-                    nodes.add(o);
-                }
-            }
+            nodes.add(o);
         });
         return nodes;
     }
