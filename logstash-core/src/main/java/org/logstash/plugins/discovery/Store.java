@@ -33,14 +33,15 @@ public final class Store {
     }
 
     /**
-     * return all indices
+     * @return all indices
      */
     public Set<String> keySet() {
         return storeMap.keySet();
     }
 
     /**
-     * get or create the multimap object for the given {@code index}
+     * @param index specified index
+     * @return existing or newly-created multimap object for the given {@code index}
      */
     public Multimap<String, String> getOrCreate(String index) {
         Multimap<String, String> mmap = storeMap.get(index);
@@ -63,14 +64,18 @@ public final class Store {
     }
 
     /**
-     * get the values stored for the given {@code index} and {@code keys}
+     * @param index specified index
+     * @param keys specified keys
+     * @return values stored for the given {@code index} and {@code keys}
      */
     public Iterable<String> get(String index, String... keys) {
         return get(index, Arrays.asList(keys));
     }
 
     /**
-     * get the values stored for the given {@code index} and {@code keys}
+     * @param index specified index
+     * @param keys specified keys
+     * @return values stored for the given {@code index} and {@code keys}
      */
     public Iterable<String> get(String index, Iterable<String> keys) {
         Multimap<String, String> mmap = get(index);
@@ -82,7 +87,10 @@ public final class Store {
     }
 
     /**
-     * recursively get the values stored for the given {@code index} and {@code keys}, including keys
+     * @param index specified index
+     * @param keys specified keys
+     * @param result accumulates intermediate results
+     * @return values stored for the given {@code index} and {@code keys}, including keys
      */
     private Iterable<String> getAllIncluding(String index, Iterable<String> keys, IterableChain<String> result) {
         result.addAll(keys);
@@ -96,7 +104,9 @@ public final class Store {
     }
 
     /**
-     * recursively get the values stored for the given {@code index} and {@code keys}, not including keys
+     * @param index specified index
+     * @param keys specified keys
+     * @return values stored for the given {@code index} and {@code keys}, not including keys
      */
     public Iterable<String> getAll(String index, Iterable<String> keys) {
         return getAllIncluding(index, get(index, keys), new IterableChain<>());

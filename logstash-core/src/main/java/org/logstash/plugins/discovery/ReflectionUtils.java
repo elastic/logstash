@@ -14,7 +14,8 @@ public abstract class ReflectionUtils {
     public static boolean includeObject;
 
     /**
-     * get the immediate supertype and interfaces of the given {@code type}
+     * @param type type to query
+     * @return immediate supertype and interfaces of the given {@code type}
      */
     public static Set<Class<?>> getSuperTypes(Class<?> type) {
         Set<Class<?>> result = new LinkedHashSet<>();
@@ -72,7 +73,10 @@ public abstract class ReflectionUtils {
     }
 
     /**
-     * try to resolve all given string representation of types to a list of java types
+     * @param <T> Search will include subclasses of this type
+     * @param classes list of names of Java types
+     * @param classLoaders class loaders to search
+     * @return list of Java types given string representations of their names
      */
     public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader... classLoaders) {
         List<Class<? extends T>> result = new ArrayList<>();

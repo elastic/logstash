@@ -61,8 +61,8 @@ public class PipelineBus {
 
     /**
      * Should be called by an output on register
-     * @param output
-     * @param addresses
+     * @param output output to be registered
+     * @param addresses collection of addresses on which to register this sender
      */
     public void registerSender(final PipelineOutput output, final Iterable<String> addresses) {
         addresses.forEach((String address) -> {
@@ -99,7 +99,7 @@ public class PipelineBus {
     /**
      * Updates the internal state for this output to reflect the fact that there may be a change
      * in the inputs receiving events from it.
-     * @param output
+     * @param output output to update
      */
     private void updateOutputReceivers(final PipelineOutput output) {
         outputsToAddressStates.compute(output, (k, value) -> {
@@ -116,8 +116,8 @@ public class PipelineBus {
     /**
      * Listens to a given address with the provided listener
      * Only one listener can listen on an address at a time
-     * @param address
-     * @param input
+     * @param input Input to register as listener
+     * @param address Address on which to listen
      * @return true if the listener successfully subscribed
      */
     public boolean listen(final PipelineInput input, final String address) {
@@ -143,8 +143,9 @@ public class PipelineBus {
      * Stop listening on the given address with the given listener
      * Will change behavior depending on whether {@link #isBlockOnUnlisten()} is true or not.
      * Will call a blocking method if it is, a non-blocking one if it isn't
-     * @param input
-     * @param address
+     * @param input Input that should stop listening
+     * @param address Address on which the input should stop listening
+     * @throws InterruptedException if interrupted while attempting to stop listening
      */
     public void unlisten(final PipelineInput input, final String address) throws InterruptedException {
         if (isBlockOnUnlisten()) {
@@ -155,9 +156,10 @@ public class PipelineBus {
     }
 
     /**
-     * Stop listing on the given address with the given listener
-     * @param address
-     * @param input
+     * Stop listening on the given address with the given listener
+     * @param input Input that should stop listening
+     * @param address Address on which to stop listening
+     * @throws InterruptedException if interrupted while attempting to stop listening
      */
     public void unlistenBlock(final PipelineInput input, final String address) throws InterruptedException {
         final boolean[] waiting = {true};
@@ -193,8 +195,8 @@ public class PipelineBus {
 
     /**
      * Unlisten to use during reloads. This lets upstream outputs block while this input is missing
-     * @param input
-     * @param address
+     * @param input Input that should stop listening
+     * @param address Address on which to stop listening
      */
     public void unlistenNonblock(final PipelineInput input, final String address) {
         addressStates.computeIfPresent(address, (k, state) -> {

@@ -45,7 +45,7 @@ public final class Page implements Closeable {
     /**
      * @param limit the maximum number of elements to read, actual number readcan be smaller
      * @return {@link SequencedList} collection of serialized elements read
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public SequencedList<byte[]> read(int limit) throws IOException {
         // first make sure this page is activated, activating previously activated is harmless
@@ -118,7 +118,7 @@ public final class Page implements Closeable {
      * @param count Number of elements to ack
      * @param checkpointMaxAcks number of acks before forcing a checkpoint
      * @return true if Page and its checkpoint were purged as a result of being fully acked
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public boolean ack(long firstSeqNum, int count, int checkpointMaxAcks) throws IOException {
         assert firstSeqNum >= this.minSeqNum :
@@ -221,7 +221,7 @@ public final class Page implements Closeable {
 
     /**
      * signal that this page is not active and resources can be released
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void deactivate() throws IOException {
         this.getPageIO().deactivate();

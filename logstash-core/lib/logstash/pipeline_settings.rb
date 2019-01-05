@@ -28,6 +28,7 @@ module LogStash
       "queue.checkpoint.acks",
       "queue.checkpoint.interval",
       "queue.checkpoint.writes",
+      "queue.checkpoint.retry",
       "queue.drain",
       "queue.max_bytes",
       "queue.max_events",
