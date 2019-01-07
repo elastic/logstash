@@ -30,6 +30,10 @@ task :bump_versions, [:version, :allow_for] => [] do |t, args|
   puts "Fetching lock file for #{base_logstash_version}.."
   uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.3.lock.release")
   result = Net::HTTP.get(uri)
+  if result.match(/404/)
+    puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
+    exit(1)
+  end
 
   base_plugin_versions = {}
   skip_elements = ["logstash-core", "logstash-devutils", "logstash-core-plugin-api"]
