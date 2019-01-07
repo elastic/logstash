@@ -32,7 +32,7 @@ public final class UserInput {
     public static final String TEST_CASE_PARAM = "testcase";
 
     public static final String TEST_CASE_HELP =
-        "Currently available test cases are 'baseline' and 'apache'.";
+        "Currently available test cases are 'baseline', 'apache' and 'custom'.";
 
     public static final String LS_WORKER_THREADS = "ls-workers";
 
@@ -78,6 +78,9 @@ public final class UserInput {
 
     public static final String WORKING_DIRECTORY_HELP =
             "Working directory to store cached files in.";
+
+    public static final String TEST_CASE_CONFIG_PARAM = "config";
+    public static final String TEST_CASE_CONFIG_HELP =  " Path to custom logstash config. Required if testcase is set to 'custom'";
 
     /**
      * Constructor.
