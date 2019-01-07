@@ -25,9 +25,9 @@ public class ConfigurationTest {
     public void testConfiguration() {
         Configuration config = getTestConfiguration();
 
-        PluginConfigSpec<String> stringConfig = new PluginConfigSpec<>(stringKey, String.class, "", false, false);
-        PluginConfigSpec<Long> numberConfig = new PluginConfigSpec<>(numberKey, Long.class, 0L, false, false);
-        PluginConfigSpec<Boolean> booleanConfig = new PluginConfigSpec<>(booleanKey, Boolean.class, false, false, false);
+        PluginConfigSpec<String> stringConfig = PluginConfigSpec.stringSetting(stringKey, "", false, false);
+        PluginConfigSpec<Long> numberConfig = PluginConfigSpec.numSetting(numberKey, 0L, false, false);
+        PluginConfigSpec<Boolean> booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, false, false, false);
 
         Assert.assertEquals(stringValue, config.get(stringConfig));
         Assert.assertEquals(longValue, (long) config.get(numberConfig));
@@ -42,9 +42,9 @@ public class ConfigurationTest {
         long defaultLongValue = 43L;
         boolean defaultBooleanValue = false;
 
-        PluginConfigSpec<String> stringConfig = new PluginConfigSpec<>(stringKey, String.class, defaultStringValue, false, false);
-        PluginConfigSpec<Long> numberConfig = new PluginConfigSpec<>(numberKey, Long.class, defaultLongValue, false, false);
-        PluginConfigSpec<Boolean> booleanConfig = new PluginConfigSpec<>(booleanKey, Boolean.class, defaultBooleanValue, false, false);
+        PluginConfigSpec<String> stringConfig = PluginConfigSpec.stringSetting(stringKey, defaultStringValue, false, false);
+        PluginConfigSpec<Long> numberConfig = PluginConfigSpec.numSetting(numberKey, defaultLongValue, false, false);
+        PluginConfigSpec<Boolean> booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, defaultBooleanValue, false, false);
 
         Assert.assertEquals(defaultStringValue, unsetConfig.get(stringConfig));
         Assert.assertEquals(defaultLongValue, (long) unsetConfig.get(numberConfig));
@@ -60,9 +60,9 @@ public class ConfigurationTest {
     public void testBrokenConfig() {
         Configuration config = getTestConfiguration();
 
-        PluginConfigSpec<Long> brokenLongConfig = new PluginConfigSpec<>(stringKey, Long.class, 0L, false, false);
-        PluginConfigSpec<Boolean> brokenBooleanConfig = new PluginConfigSpec<>(numberKey, Boolean.class, false, false, false);
-        PluginConfigSpec<String> brokenStringConfig = new PluginConfigSpec<>(booleanKey, String.class, "", false, false);
+        PluginConfigSpec<Long> brokenLongConfig = PluginConfigSpec.numSetting(stringKey, 0L, false, false);
+        PluginConfigSpec<Boolean> brokenBooleanConfig = PluginConfigSpec.booleanSetting(numberKey, false, false, false);
+        PluginConfigSpec<String> brokenStringConfig = PluginConfigSpec.stringSetting(booleanKey, "", false, false);
 
         try {
             Long l = config.get(brokenLongConfig);

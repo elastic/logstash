@@ -32,7 +32,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private static final Logger LOGGER = LogManager.getLogger(Stdin.class);
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec", "java-line");
+            PluginConfigSpec.stringSetting("codec", "java-line");
 
     private static final int BUFFER_SIZE = 64 * 1024;
 

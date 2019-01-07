@@ -16,35 +16,35 @@ public final class PluginHelper {
 
     private static final Logger LOGGER = LogManager.getLogger(PluginHelper.class);
 
-    public static final PluginConfigSpec<Map<String, String>> ADD_FIELD_CONFIG =
-            Configuration.hashSetting("add_field");
+    public static final PluginConfigSpec<Map<String, Object>> ADD_FIELD_CONFIG =
+            PluginConfigSpec.hashSetting("add_field");
 
-    //public static final PluginConfigSpec<Array> ADD_TAG_CONFIG =
-    //        Configuration.arraySetting("add_tag");
+    public static final PluginConfigSpec<List<Object>> ADD_TAG_CONFIG =
+            PluginConfigSpec.arraySetting("add_tag");
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec");
+            PluginConfigSpec.stringSetting("codec");
 
     public static final PluginConfigSpec<Boolean> ENABLE_METRIC_CONFIG =
-            Configuration.booleanSetting("enable_metric");
+            PluginConfigSpec.booleanSetting("enable_metric");
 
     public static final PluginConfigSpec<String> ID_CONFIG =
-            Configuration.stringSetting("id");
+            PluginConfigSpec.stringSetting("id");
 
     public static final PluginConfigSpec<Boolean> PERIODIC_FLUSH_CONFIG =
-            Configuration.booleanSetting("periodic_flush");
+            PluginConfigSpec.booleanSetting("periodic_flush");
 
-    //public static final PluginConfigSpec<Array> REMOVE_FIELD_CONFIG =
-    //        Configuration.arraySetting("remove_field");
+    public static final PluginConfigSpec<List<Object>> REMOVE_FIELD_CONFIG =
+            PluginConfigSpec.arraySetting("remove_field");
 
-    //public static final PluginConfigSpec<Array> REMOVE_TAG_CONFIG =
-    //        Configuration.arraySetting("remove_tag");
+    public static final PluginConfigSpec<List<Object>> REMOVE_TAG_CONFIG =
+            PluginConfigSpec.arraySetting("remove_tag");
 
-    //public static final PluginConfigSpec<Array> TAGS_CONFIG =
-    //        Configuration.arraySetting("tags");
+    public static final PluginConfigSpec<List<Object>> TAGS_CONFIG =
+            PluginConfigSpec.arraySetting("tags");
 
     public static final PluginConfigSpec<String> TYPE_CONFIG =
-            Configuration.stringSetting("type");
+            PluginConfigSpec.stringSetting("type");
 
 
     /**
@@ -63,7 +63,7 @@ public final class PluginHelper {
      */
     public static Collection<PluginConfigSpec<?>> commonInputOptions(Collection<PluginConfigSpec<?>> options) {
         return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, ENABLE_METRIC_CONFIG,
-                CODEC_CONFIG,  ID_CONFIG, /*TAGS_CONFIG,*/ TYPE_CONFIG));
+                CODEC_CONFIG,  ID_CONFIG, TAGS_CONFIG, TYPE_CONFIG));
     }
 
     /**
@@ -81,7 +81,7 @@ public final class PluginHelper {
      * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonOutputOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG,  ID_CONFIG));
+        return combineOptions(options, Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG, ID_CONFIG));
     }
 
     /**
@@ -99,9 +99,9 @@ public final class PluginHelper {
      * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonFilterOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, /*ADD_TAG_CONFIG,*/
-                ENABLE_METRIC_CONFIG, ID_CONFIG, PERIODIC_FLUSH_CONFIG /*, REMOVE_FIELD_CONFIG,
-                REMOVE_TAG_CONFIG*/));
+        return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, ADD_TAG_CONFIG,
+                ENABLE_METRIC_CONFIG, ID_CONFIG, PERIODIC_FLUSH_CONFIG , REMOVE_FIELD_CONFIG,
+                REMOVE_TAG_CONFIG));
     }
 
     @SuppressWarnings("rawtypes")

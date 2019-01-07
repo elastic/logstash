@@ -16,10 +16,10 @@ import java.util.UUID;
 public class Uuid implements Filter {
 
     public static final PluginConfigSpec<String> TARGET_CONFIG =
-            Configuration.requiredStringSetting("target");
+            PluginConfigSpec.requiredStringSetting("target");
 
     public static final PluginConfigSpec<Boolean> OVERWRITE_CONFIG =
-            Configuration.booleanSetting("overwrite", false);
+            PluginConfigSpec.booleanSetting("overwrite", false);
 
     private String id;
     private String target;

@@ -35,13 +35,13 @@ public class Line implements Codec {
     public static final String DEFAULT_DELIMITER = System.lineSeparator();
 
     private static final PluginConfigSpec<String> CHARSET_CONFIG =
-            Configuration.stringSetting("charset", "UTF-8");
+            PluginConfigSpec.stringSetting("charset", "UTF-8");
 
     private static final PluginConfigSpec<String> DELIMITER_CONFIG =
-            Configuration.stringSetting("delimiter", DEFAULT_DELIMITER);
+            PluginConfigSpec.stringSetting("delimiter", DEFAULT_DELIMITER);
 
     private static final PluginConfigSpec<String> FORMAT_CONFIG =
-            Configuration.stringSetting("format");
+            PluginConfigSpec.stringSetting("format");
 
     static final String MESSAGE_FIELD = "message";
 

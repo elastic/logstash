@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
 public class Stdout implements Output {
 
     public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec", "java-line");
+            PluginConfigSpec.stringSetting("codec", "java-line");
 
     private Codec codec;
     private OutputStream outputStream;

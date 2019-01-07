@@ -29,7 +29,7 @@ public class PluginHelperValidateConfigTest {
 
         // optional config items, none provided
         List<PluginConfigSpec<?>> configSpec01 = Arrays.asList(
-                Configuration.stringSetting("foo1"), Configuration.stringSetting("foo2"));
+                PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p01 = new TestingPlugin(configSpec01);
         Configuration config01 = new Configuration(Collections.emptyMap());
         testParameters.add(
@@ -38,7 +38,7 @@ public class PluginHelperValidateConfigTest {
 
         // optional config items, some provided
         List<PluginConfigSpec<?>> configSpec02 = Arrays.asList(
-                Configuration.stringSetting("foo1"), Configuration.stringSetting("foo2"));
+                PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p02 = new TestingPlugin(configSpec02);
         Configuration config02 = new Configuration(Collections.singletonMap("foo1", "bar"));
         testParameters.add(
@@ -47,7 +47,7 @@ public class PluginHelperValidateConfigTest {
 
         // optional config items, all provided
         List<PluginConfigSpec<?>> configSpec03 = Arrays.asList(
-                Configuration.stringSetting("foo1"), Configuration.stringSetting("foo2"));
+                PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p03 = new TestingPlugin(configSpec03);
         Map<String, Object> configMap03 = new HashMap<>();
         configMap03.put("foo1", "bar");
@@ -59,7 +59,7 @@ public class PluginHelperValidateConfigTest {
 
         // optional config items, too many provided
         List<PluginConfigSpec<?>> configSpec04 = Arrays.asList(
-                Configuration.stringSetting("foo1"), Configuration.stringSetting("foo2"));
+                PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p04 = new TestingPlugin(configSpec04);
         Map<String, Object> configMap04 = new HashMap<>();
         configMap04.put("foo1", "bar");
@@ -71,7 +71,7 @@ public class PluginHelperValidateConfigTest {
                         p04, config04, Collections.singletonList("foo3"), Collections.emptyList()));
 
         // required config items, all provided
-        List<PluginConfigSpec<?>> configSpec05 = Arrays.asList(Configuration.requiredStringSetting("foo"));
+        List<PluginConfigSpec<?>> configSpec05 = Arrays.asList(PluginConfigSpec.requiredStringSetting("foo"));
         TestingPlugin p05 = new TestingPlugin(configSpec05);
         Configuration config05 = new Configuration(Collections.singletonMap("foo", "bar"));
         testParameters.add(
@@ -80,7 +80,7 @@ public class PluginHelperValidateConfigTest {
 
         // required config items, some provided
         List<PluginConfigSpec<?>> configSpec06 = Arrays.asList(
-                Configuration.requiredStringSetting("foo1"), Configuration.requiredStringSetting("foo2"));
+                PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"));
         TestingPlugin p06 = new TestingPlugin(configSpec06);
         Configuration config06 = new Configuration(Collections.singletonMap("foo1", "bar"));
         testParameters.add(
@@ -89,7 +89,7 @@ public class PluginHelperValidateConfigTest {
 
         // required config items, too many provided
         List<PluginConfigSpec<?>> configSpec07 = Arrays.asList(
-                Configuration.requiredStringSetting("foo1"), Configuration.requiredStringSetting("foo2"));
+                PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"));
         TestingPlugin p07 = new TestingPlugin(configSpec07);
         Map<String, Object> configMap07 = new HashMap<>();
         configMap07.put("foo1", "bar");
@@ -101,8 +101,8 @@ public class PluginHelperValidateConfigTest {
 
         // optional+required config items, some provided
         List<PluginConfigSpec<?>> configSpec08 = Arrays.asList(
-                Configuration.requiredStringSetting("foo1"), Configuration.requiredStringSetting("foo2"),
-                Configuration.stringSetting("foo3"), Configuration.stringSetting("foo4"));
+                PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"),
+                PluginConfigSpec.stringSetting("foo3"), PluginConfigSpec.stringSetting("foo4"));
 
         TestingPlugin p08 = new TestingPlugin(configSpec08);
         Map<String, Object> configMap08 = new HashMap<>();
@@ -116,8 +116,8 @@ public class PluginHelperValidateConfigTest {
 
         // optional+required config items, some missing
         List<PluginConfigSpec<?>> configSpec09 = Arrays.asList(
-                Configuration.requiredStringSetting("foo1"), Configuration.requiredStringSetting("foo2"),
-                Configuration.stringSetting("foo3"), Configuration.stringSetting("foo4"));
+                PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"),
+                PluginConfigSpec.stringSetting("foo3"), PluginConfigSpec.stringSetting("foo4"));
 
         TestingPlugin p09 = new TestingPlugin(configSpec09);
         Map<String, Object> configMap09 = new HashMap<>();
@@ -130,8 +130,8 @@ public class PluginHelperValidateConfigTest {
 
         // optional+required config items, some missing, some invalid
         List<PluginConfigSpec<?>> configSpec10 = Arrays.asList(
-                Configuration.requiredStringSetting("foo1"), Configuration.requiredStringSetting("foo2"),
-                Configuration.stringSetting("foo3"), Configuration.stringSetting("foo4"));
+                PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"),
+                PluginConfigSpec.stringSetting("foo3"), PluginConfigSpec.stringSetting("foo4"));
 
         TestingPlugin p10 = new TestingPlugin(configSpec10);
         Map<String, Object> configMap10 = new HashMap<>();
