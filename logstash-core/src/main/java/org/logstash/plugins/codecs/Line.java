@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @LogstashPlugin(name = "java-line")
@@ -53,8 +54,14 @@ public class Line implements Codec {
     private final CharsetDecoder decoder;
     private String remainder = "";
 
+    /**
+     * Required constructor.
+     *
+     * @param configuration Logstash Configuration
+     * @param context       Logstash Context
+     */
     public Line(final Configuration configuration, final Context context) {
-        this.id = PluginHelper.pluginId(this);
+        this.id = UUID.randomUUID().toString();
         delimiter = configuration.get(DELIMITER_CONFIG);
         charset = Charset.forName(configuration.get(CHARSET_CONFIG));
         format = configuration.get(FORMAT_CONFIG);

@@ -1,0 +1,74 @@
+package org.logstash.plugins.filters;
+
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.PluginHelper;
+import org.junit.Assert;
+import org.junit.Test;
+import org.logstash.Event;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+public class UuidTest {
+
+    private static final String ID = "uuid_test_id";
+
+    @Test
+    public void testUuidWithoutRequiredConfigThrows() {
+        try {
+            Configuration config = new Configuration(Collections.emptyMap());
+            Uuid uuid = new Uuid(ID, config, new Context(null));
+            PluginHelper.validateConfig(uuid, config);
+            Assert.fail("java-uuid filter without required config should have thrown exception");
+        } catch (IllegalStateException ex) {
+            Assert.assertTrue(ex.getMessage().contains("Config errors found for plugin 'java-uuid'"));
+        } catch (Exception ex2) {
+            Assert.fail("Unexpected exception for java-uuid filter without required config");
+        }
+    }
+
+    @Test
+    public void testUuidWithoutOverwrite() {
+        String targetField = "target_field";
+        String originalValue = "originalValue";
+        Map<String, Object> rawConfig = new HashMap<>();
+        rawConfig.put(Uuid.TARGET_CONFIG.name(), targetField);
+        Configuration config = new Configuration(rawConfig);
+        Uuid uuid = new Uuid(ID, config, new Context(null));
+        PluginHelper.validateConfig(uuid, config);
+
+        Event e = new Event();
+        e.setField(targetField, originalValue);
+        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e));
+
+        Assert.assertEquals(1, filteredEvents.size());
+        Event finalEvent = filteredEvents.stream().findFirst().orElse(null);
+        Assert.assertNotNull(finalEvent);
+        Assert.assertEquals(originalValue, finalEvent.getField(targetField));
+    }
+
+    @Test
+    public void testUuidWithOverwrite() {
+        String targetField = "target_field";
+        String originalValue = "originalValue";
+        Map<String, Object> rawConfig = new HashMap<>();
+        rawConfig.put(Uuid.TARGET_CONFIG.name(), targetField);
+        rawConfig.put(Uuid.OVERWRITE_CONFIG.name(), true);
+        Configuration config = new Configuration(rawConfig);
+        Uuid uuid = new Uuid(ID, config, new Context(null));
+        PluginHelper.validateConfig(uuid, config);
+
+        Event e = new Event();
+        e.setField(targetField, originalValue);
+        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e));
+
+        Assert.assertEquals(1, filteredEvents.size());
+        Event finalEvent = filteredEvents.stream().findFirst().orElse(null);
+        Assert.assertNotNull(finalEvent);
+        Assert.assertNotEquals(originalValue, finalEvent.getField(targetField));
+        Assert.assertTrue(((String)finalEvent.getField(targetField)).matches("\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b"));
+    }
+}

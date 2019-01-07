@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class StdoutTest {
+    private static final String ID = "stdout_test_id";
     private static boolean streamWasClosed = false;
 
     /**
@@ -31,7 +32,7 @@ public class StdoutTest {
                 super.close();
             }
         };
-        Stdout stdout = new Stdout(new Configuration(Collections.emptyMap()), null, dummyOutputStream);
+        Stdout stdout = new Stdout(ID, new Configuration(Collections.emptyMap()), null, dummyOutputStream);
         stdout.output(getTestEvents());
         stdout.stop();
 
@@ -47,7 +48,7 @@ public class StdoutTest {
         }
 
         OutputStream dummyOutputStream = new ByteArrayOutputStream(0);
-        Stdout stdout = new Stdout(new Configuration(Collections.emptyMap()), null, dummyOutputStream);
+        Stdout stdout = new Stdout(ID, new Configuration(Collections.emptyMap()), null, dummyOutputStream);
         stdout.output(testEvents);
         stdout.stop();
 

@@ -200,6 +200,8 @@ public final class PluginFactoryExt {
                                    final int line, final int column, final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
+            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
+
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
             } else {
@@ -225,7 +227,6 @@ public final class PluginFactoryExt {
             }
             pluginsById.add(id);
             final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
-            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
 
             if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
@@ -267,9 +268,9 @@ public final class PluginFactoryExt {
                     Output output = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            final Constructor<Output> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            output = ctor.newInstance(config, executionContext.toContext());
+                            output = ctor.newInstance(id, config, executionContext.toContext());
                             PluginHelper.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -286,9 +287,9 @@ public final class PluginFactoryExt {
                     Filter filter = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            final Constructor<Filter> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            filter = ctor.newInstance(new Configuration(pluginArgs), executionContext.toContext());
+                            filter = ctor.newInstance(id, new Configuration(pluginArgs), executionContext.toContext());
                             PluginHelper.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -305,9 +306,9 @@ public final class PluginFactoryExt {
                     Input input = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            final Constructor<Input> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new Configuration(pluginArgs);
-                            input = ctor.newInstance(new Configuration(pluginArgs), executionContext.toContext());
+                            input = ctor.newInstance(id, new Configuration(pluginArgs), executionContext.toContext());
                             PluginHelper.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);

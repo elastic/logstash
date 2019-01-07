@@ -44,7 +44,7 @@ public class JavaInputDelegatorExt extends RubyObject {
     @JRubyMethod(name = "start")
     public IRubyObject start(final ThreadContext context) {
         Thread t = new Thread(() -> input.start(pipeline.getQueueWriter(input.getId())));
-        t.setName(input.getId());
+        t.setName(pipeline.pipelineId().asJavaString() + "_" + input.getName() + "_" + input.getId());
         t.start();
         return JavaObject.wrap(context.getRuntime(), t);
     }

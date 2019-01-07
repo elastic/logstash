@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 public class StdinTest {
 
+    private static final String ID = "stdin_test_id";
 
     @Test
     public void testSimpleEvent() throws IOException {
@@ -52,7 +53,7 @@ public class StdinTest {
     private static TestQueueWriter testStdin(byte[] input) throws IOException {
         TestQueueWriter queueWriter = new TestQueueWriter();
         try (FileChannel inChannel = getTestFileChannel(input)) {
-            Stdin stdin = new Stdin(new Configuration(Collections.emptyMap()), null, inChannel);
+            Stdin stdin = new Stdin(ID, new Configuration(Collections.emptyMap()), null, inChannel);
             Thread t = new Thread(() -> stdin.start(queueWriter));
             t.start();
             try {

@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 
 @LogstashPlugin(name = "java-stdin")
@@ -37,7 +36,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     private static final int BUFFER_SIZE = 64 * 1024;
 
-    private final LongAdder eventCounter = new LongAdder();
     private String hostname;
     private Codec codec;
     private volatile boolean stopRequested = false;
@@ -47,18 +45,18 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private String id;
 
     /**
-     * Required Constructor Signature only taking a {@link Configuration}.
+     * Required constructor.
      *
+     * @param id            Plugin id
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdin(final Configuration configuration, final Context context) {
-        this(configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
+    public Stdin(final String id, final Configuration configuration, final Context context) {
+        this(id, configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
     }
 
-    Stdin(final Configuration configuration, final Context context, FileChannel inputChannel) {
-        this.id = PluginHelper.pluginId(this);
-
+    Stdin(final String id, final Configuration configuration, final Context context, FileChannel inputChannel) {
+        this.id = id;
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -105,7 +103,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     public void accept(Map<String, Object> event) {
         event.putIfAbsent("hostname", hostname);
         writer.push(event);
-        eventCounter.increment();
     }
 
     @Override

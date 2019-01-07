@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class PluginHelper {
@@ -154,9 +153,5 @@ public final class PluginHelper {
         }
 
         return configErrors;
-    }
-
-    public static String pluginId(Plugin plugin) {
-        return plugin.getName() + "_" + UUID.randomUUID().toString();
     }
 }

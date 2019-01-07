@@ -82,6 +82,10 @@ public final class Configuration {
         return new PluginConfigSpec<>(name, Boolean.class, null, false, false);
     }
 
+    public static PluginConfigSpec<Boolean> booleanSetting(final String name, final boolean defaultValue) {
+        return new PluginConfigSpec<>(name, Boolean.class, defaultValue, false, false);
+    }
+
     @SuppressWarnings({"unchecked","rawtypes"})
     public static PluginConfigSpec<Map<String, String>> hashSetting(final String name) {
         return new PluginConfigSpec(name, Map.class, null, false, false);

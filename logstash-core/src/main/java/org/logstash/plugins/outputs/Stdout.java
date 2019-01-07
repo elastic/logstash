@@ -27,17 +27,18 @@ public class Stdout implements Output {
     private String id;
 
     /**
-     * Required Constructor Signature only taking a {@link Configuration}.
+     * Required constructor.
      *
+     * @param id            Plugin id
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdout(final Configuration configuration, final Context context) {
-        this(configuration, context, System.out);
+    public Stdout(final String id, final Configuration configuration, final Context context) {
+        this(id, configuration, context, System.out);
     }
 
-    Stdout(final Configuration configuration, final Context context, OutputStream targetStream) {
-        this.id = PluginHelper.pluginId(this);
+    Stdout(final String id, final Configuration configuration, final Context context, OutputStream targetStream) {
+        this.id = id;
         this.outputStream = targetStream;
         String codecName = configuration.get(CODEC_CONFIG);
         codec = PluginRegistry.getCodec(codecName, configuration, context);
