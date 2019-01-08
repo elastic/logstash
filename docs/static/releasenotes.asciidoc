@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-5-5,Logstash 6.5.5>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
 * <<logstash-6-5-2,Logstash 6.5.2>>
@@ -24,6 +25,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-5-5]]
+=== Logstash 6.5.5 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.5.5
+
+* Add option for PQ checkpoint retry https://github.com/elastic/logstash/pull/10234[#10234]
+* Catch only specific exceptions in PQ checkpoint retry https://github.com/elastic/logstash/pull/10250[#10250]
+
+=== Logstash Commits between 6.5 and 6.5.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.5.4..6.5"
+
+3f2c531 - (HEAD -> 6.5, origin/update_release_notes_1546909573, origin/update_release_notes_1546907493, origin/update_release_notes_1546907168, origin/6.5) abort plugin bump script if base version not found (13 hours ago) <Joao Duarte>
+3e46fb5 - Catch only specific exceptions (3 days ago) <Dan Hermann>
+1af4d9b - add option for PQ checkpoint retry (5 days ago) <Dan Hermann>
+9df1229 - Bump version to 6.5.5 (3 weeks ago) <Rob Bavey>
+7129b4f - Release Notes for Logstash 6.5.4 (3 weeks ago) <Rob Bavey>
+eba7f48 - Bump doc version to 6.5.4 (3 weeks ago) <Rob Bavey>
+fca5739 - tests: remove kafka deprecated `--new-consumer` flag in setup (3 weeks ago) <Ry Biesemeyer>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.5.4..6.5 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-5-4]]
 === Logstash 6.5.4 Release Notes
