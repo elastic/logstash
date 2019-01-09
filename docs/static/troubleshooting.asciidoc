@@ -1,8 +1,8 @@
 [[troubleshooting]] 
 == Troubleshooting Common Problems
 
-We will be adding more troubleshooting tips, so please check back soon. If you
-have something you would like to see added, please:
+We are adding more troubleshooting tips, so please check back soon. If you
+have something to add, please:
 
 * create an issue at
 https://github.com/elastic/logstash/issues, or
@@ -237,7 +237,7 @@ https://github.com/logstash-plugins/logstash-input-kafka/issues/210
 *Solution*
 
 * Upgrade Kafka Input plugin to v. 6.3.4 or later. 
-* If (and only if) upgrading is impossible, set `consumer_threads` to `1`.
+* If (and only if) upgrading is not possible, set `consumer_threads` to `1`.
 
 
 [float] 
