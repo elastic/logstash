@@ -1,8 +1,8 @@
 [[tips]] 
 == Tips and Best Practices
 
-We will be adding more tips and best practices, so please check back soon. 
-If you have something you would like to see added, please:
+We are adding more tips and best practices, so please check back soon. 
+If you have something to add, please:
 
 * create an issue at
 https://github.com/elastic/logstash/issues, or
@@ -21,8 +21,8 @@ forum].
 [[tip-windows-cli]] 
 ==== Shell commands on Windows OS
 
-Command line often show single quotes. 
-On Windows systems, replace a single quote `'' with a double quote `"`. 
+Command line examples often show single quotes. 
+On Windows systems, replace a single quote `'` with a double quote `"`. 
 
 *Example*
 
@@ -69,9 +69,9 @@ pipeline management is enabled.
 
 "How many partitions should I use per topic?"
 
-At least: Number of {ls} nodes multiplied by consumer threads per node.
+At least the number of {ls} nodes multiplied by consumer threads per node.
 
-Better yet: Use a multiple of the above number. Increasing the number of
+Better yet, use a multiple of the above number. Increasing the number of
 partitions for an existing topic is extremely complicated. Partitions have a
 very low overhead. Using 5 to 10 times the number of partitions suggested by the
 first point is generally fine, so long as the overall partition count does not
@@ -88,7 +88,7 @@ partitions overall. Try not to exceed 1000 partitions.
 
 Lower values tend to be more efficient and have less memory overhead. Try a
 value of `1` then iterate your way up. The value should in general be lower than
-the number of pipeline workers. Values larger than 4 rarely result in a
+the number of pipeline workers. Values larger than 4 rarely result in
 performance improvement.
 
 [float]
