@@ -283,9 +283,9 @@ module LogStash; class Pipeline < BasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
+          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           _pipeline.worker_loop(_b_size, _b_delay)
         end
-        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
         @worker_threads << thread
       end
 
