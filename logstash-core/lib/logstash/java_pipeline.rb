@@ -216,11 +216,11 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new do
+          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           org.logstash.execution.WorkerLoop.new(
               lir_execution, filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
         end
-        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
         @worker_threads << thread
       end
 
