@@ -1,5 +1,5 @@
 PATH
-  remote: ./logstash-core
+  remote: logstash-core
   specs:
     logstash-core (6.6.0-java)
       chronic_duration (= 0.10.6)
@@ -23,7 +23,7 @@ PATH
       treetop (< 1.5.0)
 
 PATH
-  remote: ./logstash-core-plugin-api
+  remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
       logstash-core (= 6.6.0)
@@ -751,3 +751,4 @@ DEPENDENCIES
   term-ansicolor (~> 1.3.2)
   tins (= 1.6)
   webrick (~> 1.3.1)
+  
