@@ -178,7 +178,7 @@ verifyFile.onlyIf { customJRubyDir == "" }
 
 task buildCustomJRuby(type: Exec) {
   description "Build tar.gz and .jar artifacts from JRuby source directory"
-  workingDir customJRubyDir
+  workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
   commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
   standardOutput = new ByteArrayOutputStream()
   errorOutput = new ByteArrayOutputStream()
