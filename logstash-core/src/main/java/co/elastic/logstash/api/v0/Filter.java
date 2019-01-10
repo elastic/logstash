@@ -10,6 +10,6 @@ import java.util.Collection;
  */
 public interface Filter extends Plugin {
 
-    Collection<Event> filter(Collection<Event> events);
+    Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener);
 
 }

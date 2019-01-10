@@ -80,7 +80,7 @@ public final class CompiledPipeline {
         outputs = setupOutputs();
     }
 
-    public Collection<IRubyObject> outputs() {
+    public Collection<AbstractOutputDelegatorExt> outputs() {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
@@ -89,7 +89,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<IRubyObject> inputs() {
-        return inputs;
+        return Collections.unmodifiableCollection(inputs);
     }
 
     /**

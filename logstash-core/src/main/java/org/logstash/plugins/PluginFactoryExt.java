@@ -297,7 +297,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (filter != null) {
-                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter);
+                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs);
                     } else {
                         throw new IllegalStateException("Unable to instantiate filter: " + pluginClass);
                     }
@@ -316,7 +316,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (input != null) {
-                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }

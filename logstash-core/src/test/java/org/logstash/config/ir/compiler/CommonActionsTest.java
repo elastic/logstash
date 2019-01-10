@@ -3,13 +3,13 @@ package org.logstash.config.ir.compiler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CommonActionsTest {
 
@@ -21,14 +21,12 @@ public class CommonActionsTest {
         Event e = new Event();
         String testField = "test_field";
         String testStringValue = "test_value";
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testStringValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testStringValue));
         Assert.assertEquals(testStringValue, e.getField(testField));
 
         // add to existing field and convert to array value
         e = new Event(Collections.singletonMap(testField, testStringValue));
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testStringValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testStringValue));
         Object value = e.getField(testField);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(2, ((List) value).size());
@@ -39,8 +37,7 @@ public class CommonActionsTest {
         String testStringValue2 = "test_value2";
         List<String> stringVals = Arrays.asList(testStringValue, testStringValue2);
         e = new Event(Collections.singletonMap(testField, stringVals));
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testStringValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testStringValue));
         value = e.getField(testField);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(3, ((List) value).size());
@@ -51,14 +48,12 @@ public class CommonActionsTest {
         // add non-string value to empty event
         Long testLongValue = 42L;
         e = new Event();
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testLongValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testLongValue));
         Assert.assertEquals(testLongValue, e.getField(testField));
 
         // add non-string value to existing field
         e = new Event(Collections.singletonMap(testField, testStringValue));
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testLongValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testLongValue));
         value = e.getField(testField);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(2, ((List) value).size());
@@ -67,8 +62,7 @@ public class CommonActionsTest {
 
         // add non-string value to existing array field
         e = new Event(Collections.singletonMap(testField, stringVals));
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(testField, testLongValue));
+        CommonActions.addField(e, Collections.singletonMap(testField, testLongValue));
         value = e.getField(testField);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(3, ((List) value).size());
@@ -80,8 +74,7 @@ public class CommonActionsTest {
         e = new Event(Collections.singletonMap(testField, testStringValue));
         String newField = "%{" + testField + "}_field";
         String newValue = "%{" + testField + "}_value";
-        CommonActions.addField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonMap(newField, newValue));
+        CommonActions.addField(e, Collections.singletonMap(newField, newValue));
         Assert.assertEquals(testStringValue + "_value", e.getField(testStringValue + "_field"));
     }
 
@@ -91,8 +84,7 @@ public class CommonActionsTest {
         // add tag to empty event
         Event e = new Event();
         String testTag = "test_tag";
-        CommonActions.addTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testTag));
+        CommonActions.addTag(e, Collections.singletonList(testTag));
         Object value = e.getField(TAGS);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(1, ((List) value).size());
@@ -101,8 +93,7 @@ public class CommonActionsTest {
         // add two tags to empty event
         e = new Event();
         String testTag2 = "test_tag2";
-        CommonActions.addTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Arrays.asList(testTag, testTag2));
+        CommonActions.addTag(e, Arrays.asList(testTag, testTag2));
         value = e.getField(TAGS);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(2, ((List) value).size());
@@ -112,8 +103,7 @@ public class CommonActionsTest {
         // add duplicate tag
         e = new Event();
         e.tag(testTag);
-        CommonActions.addTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testTag));
+        CommonActions.addTag(e, Collections.singletonList(testTag));
         value = e.getField(TAGS);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(1, ((List) value).size());
@@ -121,28 +111,36 @@ public class CommonActionsTest {
 
         // add dynamically-named tag
         e = new Event(Collections.singletonMap(testTag, testTag2));
-        CommonActions.addTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList("%{" + testTag + "}_foo"));
+        CommonActions.addTag(e, Collections.singletonList("%{" + testTag + "}_foo"));
         value = e.getField(TAGS);
         Assert.assertTrue(value instanceof List);
         Assert.assertEquals(1, ((List) value).size());
         Assert.assertEquals(testTag2 + "_foo", ((List) value).get(0));
+
+        // add non-string tag
+        e = new Event();
+        Long nonStringTag = 42L;
+        CommonActions.addTag(e, Collections.singletonList(nonStringTag));
+        value = e.getField(TAGS);
+        Assert.assertTrue(value instanceof List);
+        Assert.assertEquals(1, ((List) value).size());
+        Assert.assertEquals(nonStringTag.toString(), ((List) value).get(0));
     }
 
     @Test
     public void testAddType() {
         // add tag to empty event
-        Event e = new Event();
+        Map<String, Object> e = new HashMap<>();
         String testType = "test_type";
-        CommonActions.addType(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e), testType);
-        Assert.assertEquals(testType, e.getField("type"));
+        Map<String, Object> e2 = CommonActions.addType(e, testType);
+        Assert.assertEquals(testType, e2.get("type"));
 
         // add type to already-typed event
-        e = new Event();
+        e = new HashMap<>();
         String existingType = "existing_type";
-        e.setField("type", existingType);
-        CommonActions.addType(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e), testType);
-        Assert.assertEquals(existingType, e.getField("type"));
+        e.put("type", existingType);
+        e2 = CommonActions.addType(e, testType);
+        Assert.assertEquals(existingType, e2.get("type"));
     }
 
     @Test
@@ -152,16 +150,14 @@ public class CommonActionsTest {
         String testField = "test_field";
         String testValue = "test_value";
         e.setField(testField, testValue);
-        CommonActions.removeField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testField));
+        CommonActions.removeField(e, Collections.singletonList(testField));
         Assert.assertFalse(e.getData().keySet().contains(testField));
 
         // remove non-existent field
         e = new Event();
         String testField2 = "test_field2";
         e.setField(testField2, testValue);
-        CommonActions.removeField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testField));
+        CommonActions.removeField(e, Collections.singletonList(testField));
         Assert.assertFalse(e.getData().keySet().contains(testField));
         Assert.assertTrue(e.getData().keySet().contains(testField2));
 
@@ -174,8 +170,8 @@ public class CommonActionsTest {
             fields.add(field);
         }
         e.setField(testField, testValue);
-        CommonActions.removeField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e), fields);
-        for (String field:fields) {
+        CommonActions.removeField(e, fields);
+        for (String field : fields) {
             Assert.assertFalse(e.getData().keySet().contains(field));
         }
         Assert.assertTrue(e.getData().keySet().contains(testField));
@@ -187,8 +183,7 @@ public class CommonActionsTest {
         e.setField(otherField, otherValue);
         String derivativeField = otherValue + "_foo";
         e.setField(derivativeField, otherValue);
-        CommonActions.removeField(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList("%{" + otherField + "}_foo"));
+        CommonActions.removeField(e, Collections.singletonList("%{" + otherField + "}_foo"));
         Assert.assertFalse(e.getData().keySet().contains(derivativeField));
         Assert.assertTrue(e.getData().keySet().contains(otherField));
     }
@@ -200,8 +195,7 @@ public class CommonActionsTest {
         Event e = new Event();
         String testTag = "test_tag";
         e.tag(testTag);
-        CommonActions.removeTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testTag));
+        CommonActions.removeTag(e, Collections.singletonList(testTag));
         Object o = e.getField(TAGS);
         Assert.assertTrue(o instanceof List);
         Assert.assertEquals(0, ((List) o).size());
@@ -209,8 +203,7 @@ public class CommonActionsTest {
         // remove non-existent tag
         e = new Event();
         e.tag(testTag);
-        CommonActions.removeTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testTag + "non-existent"));
+        CommonActions.removeTag(e, Collections.singletonList(testTag + "non-existent"));
         o = e.getField(TAGS);
         Assert.assertTrue(o instanceof List);
         Assert.assertEquals(1, ((List) o).size());
@@ -224,7 +217,7 @@ public class CommonActionsTest {
             tags.add(tag);
             e.tag(tag);
         }
-        CommonActions.removeTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e), tags);
+        CommonActions.removeTag(e, tags);
         o = e.getField(TAGS);
         Assert.assertTrue(o instanceof List);
         Assert.assertEquals(0, ((List) o).size());
@@ -233,8 +226,7 @@ public class CommonActionsTest {
         e = new Event();
         Long nonTagValue = 42L;
         e.setField(TAGS, nonTagValue);
-        CommonActions.removeTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList(testTag));
+        CommonActions.removeTag(e, Collections.singletonList(testTag));
         o = e.getField(TAGS);
         Assert.assertFalse(o instanceof List);
         Assert.assertEquals(nonTagValue, o);
@@ -245,8 +237,7 @@ public class CommonActionsTest {
         String otherValue = "other_value";
         e.setField(otherField, otherValue);
         e.tag(otherValue + "_foo");
-        CommonActions.removeTag(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e),
-                Collections.singletonList("%{" + otherField + "}_foo"));
+        CommonActions.removeTag(e, Collections.singletonList("%{" + otherField + "}_foo"));
         o = e.getField(TAGS);
         Assert.assertTrue(o instanceof List);
         Assert.assertEquals(0, ((List) o).size());

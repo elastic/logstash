@@ -3,6 +3,7 @@ package org.logstash.plugins.filters;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.v0.FilterMatchListener;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;
@@ -15,6 +16,7 @@ import java.util.Map;
 public class UuidTest {
 
     private static final String ID = "uuid_test_id";
+    private static final NoopFilterMatchListener NO_OP_MATCH_LISTENER = new NoopFilterMatchListener();
 
     @Test
     public void testUuidWithoutRequiredConfigThrows() {
@@ -42,7 +44,7 @@ public class UuidTest {
 
         Event e = new Event();
         e.setField(targetField, originalValue);
-        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e));
+        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e), NO_OP_MATCH_LISTENER);
 
         Assert.assertEquals(1, filteredEvents.size());
         Event finalEvent = filteredEvents.stream().findFirst().orElse(null);
@@ -63,12 +65,20 @@ public class UuidTest {
 
         Event e = new Event();
         e.setField(targetField, originalValue);
-        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e));
+        Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e), NO_OP_MATCH_LISTENER);
 
         Assert.assertEquals(1, filteredEvents.size());
         Event finalEvent = filteredEvents.stream().findFirst().orElse(null);
         Assert.assertNotNull(finalEvent);
         Assert.assertNotEquals(originalValue, finalEvent.getField(targetField));
         Assert.assertTrue(((String)finalEvent.getField(targetField)).matches("\\b[0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b"));
+    }
+
+    private static class NoopFilterMatchListener implements FilterMatchListener {
+
+        @Override
+        public void filterMatched(Event e) {
+
+        }
     }
 }

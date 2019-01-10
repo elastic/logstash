@@ -11,8 +11,14 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.execution.JavaBasePipelineExt;
+import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @JRubyClass(name = "JavaInputDelegator")
 public class JavaInputDelegatorExt extends RubyObject {
@@ -24,26 +30,37 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     private Input input;
 
+    private DecoratingQueueWriter decoratingQueueWriter;
+
     public JavaInputDelegatorExt(Ruby runtime, RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
     public static JavaInputDelegatorExt create(final JavaBasePipelineExt pipeline,
-            final AbstractNamespacedMetricExt metric, final Input input) {
+                                               final AbstractNamespacedMetricExt metric, final Input input,
+                                               final Map<String, Object> pluginArgs) {
         final JavaInputDelegatorExt instance =
                 new JavaInputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_INPUT_DELEGATOR_CLASS);
-
         AbstractNamespacedMetricExt scopedMetric = metric.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newSymbol(input.getId()));
         scopedMetric.gauge(RubyUtil.RUBY.getCurrentContext(), MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(input.getName()));
         instance.setMetric(RubyUtil.RUBY.getCurrentContext(), scopedMetric);
         instance.input = input;
         instance.pipeline = pipeline;
+        instance.initializeQueueWriter(pluginArgs);
         return instance;
     }
 
     @JRubyMethod(name = "start")
     public IRubyObject start(final ThreadContext context) {
-        Thread t = new Thread(() -> input.start(pipeline.getQueueWriter(input.getId())));
+        QueueWriter qw = pipeline.getQueueWriter(input.getId());
+        final QueueWriter queueWriter;
+        if (decoratingQueueWriter != null) {
+            decoratingQueueWriter.setInnerQueueWriter(qw);
+            queueWriter = decoratingQueueWriter;
+        } else {
+            queueWriter = qw;
+        }
+        Thread t = new Thread(() -> input.start(queueWriter));
         t.setName(pipeline.pipelineId().asJavaString() + "_" + input.getName() + "_" + input.getId());
         t.start();
         return JavaObject.wrap(context.getRuntime(), t);
@@ -51,8 +68,7 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     @JRubyMethod(name = "metric=")
     public IRubyObject setMetric(final ThreadContext context, final IRubyObject metric) {
-        this.metric = (AbstractNamespacedMetricExt)metric;
-
+        this.metric = (AbstractNamespacedMetricExt) metric;
         return this;
     }
 
@@ -102,4 +118,44 @@ public class JavaInputDelegatorExt extends RubyObject {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
+    private void initializeQueueWriter(Map<String, Object> pluginArgs) {
+        List<Function<Map<String, Object>, Map<String, Object>>> inputActions = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : pluginArgs.entrySet()) {
+            Function<Map<String, Object>, Map<String, Object>> inputAction =
+                    CommonActions.getInputAction(entry);
+            if (inputAction != null) {
+                inputActions.add(inputAction);
+            }
+        }
+
+        if (inputActions.size() == 0) {
+            this.decoratingQueueWriter = null;
+        } else {
+            this.decoratingQueueWriter = new DecoratingQueueWriter(inputActions);
+        }
+    }
+
+    static class DecoratingQueueWriter implements QueueWriter {
+
+        private QueueWriter innerQueueWriter;
+
+        private final List<Function<Map<String, Object>, Map<String, Object>>> inputActions;
+
+        DecoratingQueueWriter(List<Function<Map<String, Object>, Map<String, Object>>> inputActions) {
+            this.inputActions = inputActions;
+        }
+
+        @Override
+        public void push(Map<String, Object> event) {
+            for (Function<Map<String, Object>, Map<String, Object>> action : inputActions) {
+                event = action.apply(event);
+            }
+            innerQueueWriter.push(event);
+        }
+
+        private void setInnerQueueWriter(QueueWriter innerQueueWriter) {
+            this.innerQueueWriter = innerQueueWriter;
+        }
+    }
 }

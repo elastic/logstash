@@ -6,6 +6,7 @@ import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Filter;
+import co.elastic.logstash.api.v0.FilterMatchListener;
 import org.logstash.Event;
 
 import java.util.Arrays;
@@ -39,11 +40,12 @@ public class Uuid implements Filter {
     }
 
     @Override
-    public Collection<Event> filter(Collection<Event> events) {
+    public Collection<Event> filter(Collection<Event> events, final FilterMatchListener filterMatchListener) {
         for (Event e : events) {
             if (overwrite || e.getField(target) == null) {
                 e.setField(target, UUID.randomUUID().toString());
             }
+            filterMatchListener.filterMatched(e);
         }
         return events;
     }
