@@ -35,7 +35,7 @@ public final class EventTest {
         inner.put("innerFoo", 42L);
         final RubySymbol symbol = RubyUtil.RUBY.newSymbol("val");
         e.setField("symbol", symbol);
-        e.setField("null", null);
+        e.setField("null", (Object) null);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         final BigInteger bigint = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TEN);

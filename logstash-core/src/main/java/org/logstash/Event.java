@@ -38,11 +38,10 @@ public final class Event implements Cloneable, Queueable {
     private static final String META_MAP_KEY = "META";
 
     private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
-    
+
     private static final Logger logger = LogManager.getLogger(Event.class);
 
-    public Event()
-    {
+    public Event() {
         this.metadata = new ConvertedMap(10);
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
@@ -112,7 +111,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Timestamp getTimestamp() throws IOException {
-        final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
+        final JrubyTimestampExtLibrary.RubyTimestamp timestamp =
             (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
         if (timestamp != null) {
             return timestamp.getTimestamp();
@@ -144,6 +143,79 @@ public final class Event implements Cloneable, Queueable {
                 return Accessors.get(metadata, field);
             default:
                 return Accessors.get(data, field);
+        }
+    }
+
+    public void setField(final String reference, final String value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final String value) {
+        setField(field, RubyUtil.RUBY.newString(value));
+    }
+
+    public void setField(final String reference, final RubyString value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final RubyString value) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                throwWrongMetaType(RubyString.class);
+            case FieldReference.META_CHILD:
+                Accessors.set(metadata, field, value);
+                break;
+            default:
+                Accessors.set(data, field, value);
+        }
+    }
+
+    public void setField(final String reference, final Collection<Object> value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final Collection<Object> value) {
+        setField(field, ConvertedList.newFromList(value));
+    }
+
+    public void setField(final String reference, final ConvertedList value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final ConvertedList value) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                throwWrongMetaType(Collection.class);
+            case FieldReference.META_CHILD:
+                Accessors.set(metadata, field, value);
+                break;
+            default:
+                Accessors.set(data, field, value);
+        }
+    }
+
+    public void setField(final String reference, final Map<String, Object> value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final Map<String, Object> value) {
+        setField(field, ConvertedMap.newFromMap(value));
+    }
+
+    public void setField(final String reference, final ConvertedMap value) {
+        setField(FieldReference.from(reference), value);
+    }
+
+    public void setField(final FieldReference field, final ConvertedMap value) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                metadata = value;
+                break;
+            case FieldReference.META_CHILD:
+                Accessors.set(metadata, field, value);
+                break;
+            default:
+                Accessors.set(data, field, value);
         }
     }
 
@@ -205,20 +277,19 @@ public final class Event implements Cloneable, Queueable {
 
     @SuppressWarnings("unchecked")
     public static Event[] fromJson(String json)
-            throws IOException
-    {
+        throws IOException {
         // empty/blank json string does not generate an event
         if (json == null || json.trim().isEmpty()) {
-            return new Event[]{ };
+            return new Event[]{};
         }
 
         Event[] result;
         Object o = JSON_MAPPER.readValue(json, Object.class);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            result = new Event[]{ new Event((Map<String, Object>)o) };
+            result = new Event[]{new Event((Map<String, Object>) o)};
         } else if (o instanceof List) {
-            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o; 
+            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o;
             result = new Event[list.size()];
             int i = 0;
             for (final Map<String, Object> e : list) {
@@ -399,5 +470,14 @@ public final class Event implements Cloneable, Queueable {
             return new Event();
         }
         return fromSerializableMap(data);
+    }
+
+    private static void throwWrongMetaType(final Class<?> cls) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Cannot set %s as value for '@metadata' field, only Map type is allowed!",
+                cls.getName()
+            )
+        );
     }
 }
