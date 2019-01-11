@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
 # Example:
 # ruby generate_release_notes.rb 6.4 6.4.1
 # 
