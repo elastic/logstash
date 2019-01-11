@@ -1,12 +1,14 @@
 package org.logstash.instrument.metrics;
 
+import java.io.Serializable;
+
 /**
  * Top level contract for metrics within Logstash.
  *
  * @param <T> The underlying type for this metric. For example {@link Long} for Counter, or {@link String} for Gauge.
  * @since 6.0
  */
-public interface Metric<T> {
+public interface Metric<T extends Serializable> {
 
     /**
      * This metric's name. May be used for display purposes.
