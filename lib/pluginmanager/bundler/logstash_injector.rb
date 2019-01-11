@@ -78,9 +78,9 @@ module Bundler
             gemfile.update(dependency.name, dependency.requirement)
           end
         end
+        builder.eval_gemfile("bundler file", gemfile.generate_without_groups(:build, :development))
+        definition = builder.to_definition(lockfile_path, true)
 
-        builder.eval_gemfile("bundler file", gemfile.generate())
-        definition = builder.to_definition(lockfile_path, {})
         definition.lock(lockfile_path)
         gemfile.save
       rescue => e

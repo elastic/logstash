@@ -193,6 +193,34 @@ describe "logstash Gemfile Manager" do
         )
       end
     end
+
+    context "generation" do
+      it "generate" do
+        file = <<-END
+          gem "foo", "> 1.0", :b => "b"
+          gem "bar", "> 2.0", "< 3.0", :c => "c", :d => "d"
+        END
+
+        gemfile = LogStash::Gemfile.new(StringIO.new(file)).load
+        as_string = gemfile.generate
+        expect(as_string).to include('gem "foo", "> 1.0", :b => "b"')
+        expect(as_string).to include('gem "bar", "> 2.0", "< 3.0", :c => "c", :d => "d"')
+      end
+
+      it "generate_without_groups" do
+        file = <<-END
+          gem "foo", "> 1.0", :b => "b"
+          gem "bar", "> 2.0", "< 3.0", :group => :fancy
+          gem "baz", "> 2.0", "< 3.0", :group => :pants
+        END
+
+        gemfile = LogStash::Gemfile.new(StringIO.new(file)).load
+        as_string = gemfile.generate_without_groups(:fancy, :pants)
+        expect(as_string).to include('gem "foo", "> 1.0", :b => "b"')
+        expect(as_string).not_to include('gem "bar", "> 2.0", "< 3.0", :group => :fancy')
+        expect(as_string).not_to include('gem "baz", "> 2.0", "< 3.0", :group => :pants')
+      end
+    end
   end
 
   context LogStash::DSL do

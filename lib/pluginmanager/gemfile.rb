@@ -36,6 +36,14 @@ module LogStash
       "#{HEADER}#{gemset.to_s}"
     end
 
+    def generate_without_groups(*groups)
+      result = HEADER.dup
+      gemset.without_groups(groups) do |gs|
+        result << gs.to_s
+      end
+      result
+    end
+
     def find(name)
       @gemset.find_gem(name)
     end
@@ -96,6 +104,15 @@ module LogStash
       @gems = []         # list of Gem class
       @gems_by_name = {} # hash of name => Gem
       @gemspec = {}      # gemspec is a options hash
+      @exclude_groups = []
+    end
+
+    def without_groups(groups)
+      old_exclude_groups = @exclude_groups
+      @exclude_groups = groups
+      yield self
+    ensure
+      @exclude_groups = old_exclude_groups
     end
 
     def to_s
@@ -169,11 +186,22 @@ module LogStash
 
     def gems_to_s
       return "" if @gems.empty?
-      @gems.map do |gem|
+      group_excluded_gems.map do |gem|
         requirements = gem.requirements.empty? ? nil : gem.requirements.map{|r| r.inspect}.join(", ")
         options = gem.options.empty? ? nil : gem.options.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
         "gem " + [gem.name.inspect, requirements, options].compact.join(", ")
       end.join("\n")
+    end
+
+    def group_excluded_gems
+      return @gems if @exclude_groups.empty?
+      @gems.reject{|pg| group_excluded?(pg) }
+    end
+
+    def group_excluded?(parsed_gem)
+      # typical options: :group => :development
+      return false if parsed_gem.options.empty?
+      @exclude_groups.include?(parsed_gem.options[:group])
     end
 
     def gemspec_to_s
