@@ -6,9 +6,7 @@ describe "LogStash::Util::JavaVersion" do
   subject(:mod) { LogStash::Util::JavaVersion }
 
   it "should get the current java version if we're on Java" do
-    if LogStash::Environment.jruby?
-      expect(LogStash::Util::JavaVersion.version).to be_a(String)
-    end
+    expect(LogStash::Util::JavaVersion.version).to be_a(String)
   end
 
   it "should mark a bad beta version as bad" do

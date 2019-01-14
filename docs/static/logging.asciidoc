@@ -124,3 +124,11 @@ Example response:
   }
 }
 --------------------------------------------------
+
+To reset any logging levels that may have been dynamically changed via the logging API, send a `PUT` request to
+`_node/logging/reset`. All logging levels will revert to the values specified in the `log4j2.properties` file.
+
+[source,js]
+--------------------------------------------------
+curl -XPUT 'localhost:9600/_node/logging/reset?pretty'
+--------------------------------------------------

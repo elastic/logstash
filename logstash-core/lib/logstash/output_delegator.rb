@@ -7,8 +7,7 @@ require "logstash/output_delegator_strategies/legacy"
 module LogStash class OutputDelegator
   attr_reader :metric, :metric_events, :strategy, :namespaced_metric, :metric_events, :id
 
-  def initialize(logger, output_class, metric, execution_context, strategy_registry, plugin_args)
-    @logger = logger
+  def initialize(output_class, metric, execution_context, strategy_registry, plugin_args)
     @output_class = output_class
     @metric = metric
     @id = plugin_args["id"]
@@ -24,7 +23,7 @@ module LogStash class OutputDelegator
     @time_metric = @metric_events.counter(:duration_in_millis)
     @strategy = strategy_registry.
                   class_for(self.concurrency).
-                  new(@logger, @output_class, @namespaced_metric, execution_context, plugin_args)
+                  new(@output_class, @namespaced_metric, execution_context, plugin_args)
   end
 
   def config_name
@@ -44,11 +43,12 @@ module LogStash class OutputDelegator
   end
 
   def multi_receive(events)
-    @in_counter.increment(events.length)
+    count = events.size
+    @in_counter.increment(count)
     start_time = java.lang.System.nano_time
     @strategy.multi_receive(events)
     @time_metric.increment((java.lang.System.nano_time - start_time) / 1_000_000)
-    @out_counter.increment(events.length)
+    @out_counter.increment(count)
   end
 
   def do_close

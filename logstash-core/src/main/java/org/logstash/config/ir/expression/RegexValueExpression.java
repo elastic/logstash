@@ -1,18 +1,14 @@
 package org.logstash.config.ir.expression;
 
-import org.joni.Option;
-import org.joni.Regex;
-import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.InvalidIRException;
 import org.logstash.common.SourceWithMetadata;
-
-import java.nio.charset.StandardCharsets;
+import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.SourceComponent;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public class RegexValueExpression extends ValueExpression {
-    private final Regex regex;
+    private final String regex;
 
     public RegexValueExpression(SourceWithMetadata meta, Object value) throws InvalidIRException {
         super(meta, value);
@@ -21,8 +17,7 @@ public class RegexValueExpression extends ValueExpression {
             throw new InvalidIRException("Regex value expressions can only take strings!");
         }
 
-        byte[] patternBytes = getSource().getBytes(StandardCharsets.UTF_8);
-        this.regex = new Regex(patternBytes, 0, patternBytes.length, Option.NONE);
+        this.regex = getSource();
     }
 
     @Override

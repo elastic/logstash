@@ -9,8 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
+
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -82,6 +81,22 @@ public final class EventTest {
         assertEquals(timestamp, er.getField("time"));
         assertEquals(list, er.getField("list"));
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
+    }
+
+    /**
+     * Test for proper BigInteger and BigDecimal serialization
+     * related to Jackson/CBOR issue https://github.com/elastic/logstash/issues/8379
+     */
+    @Test
+    public void bigNumsBinaryRoundtrip() throws Exception {
+        final Event e = new Event();
+        final BigInteger bi = new BigInteger("9223372036854776000");
+        final BigDecimal bd =  new BigDecimal("9223372036854776001.99");
+        e.setField("bi", bi);
+        e.setField("bd", bd);
+        final Event deserialized = Event.deserialize(e.serialize());
+        assertEquals(bi, deserialized.getField("bi"));
+        assertEquals(bd, deserialized.getField("bd"));
     }
 
     @Test
@@ -327,6 +342,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnEmptyTagsField() throws Exception {
         Event e = new Event();
         e.tag("foo");
@@ -337,6 +353,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnExistingTagsField() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("tags", "foo");
@@ -350,7 +367,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithTimestamp() throws Exception {
+    public void toStringWithTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
@@ -359,7 +376,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithoutTimestamp() throws Exception {
+    public void toStringWithoutTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
@@ -377,7 +394,7 @@ public final class EventTest {
         final Event event = new Event();
         final Timestamp timestamp = new Timestamp();
         event.setField("timestamp", new ConcreteJavaProxy(RubyUtil.RUBY,
-            JrubyTimestampExtLibrary.createTimestamp(RubyUtil.RUBY).getRealClass(), timestamp
+            RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp
         ));
         assertThat(event.getField("timestamp"), is(timestamp));
     }

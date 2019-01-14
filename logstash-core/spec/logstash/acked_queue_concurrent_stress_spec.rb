@@ -3,7 +3,7 @@ require "logstash/util/wrapped_acked_queue"
 require "logstash/event"
 require "logstash/instrument/namespaced_metric"
 
-describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
+describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
 
   context "with multiple writers" do
@@ -15,7 +15,7 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue) do
-      described_class.create_file_based(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
+      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
     end
 
     let(:writer_threads) do

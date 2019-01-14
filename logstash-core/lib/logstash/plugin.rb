@@ -73,7 +73,7 @@ class LogStash::Plugin
   # close is called during shutdown, after the plugin worker
   # main task terminates
   def do_close
-    @logger.debug("closing", :plugin => self.class.name)
+    @logger.debug("Closing", :plugin => self.class.name)
     close
   end
 

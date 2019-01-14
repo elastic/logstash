@@ -1,14 +1,23 @@
 [[docker]]
 === Running Logstash on Docker
 Docker images for Logstash are available from the Elastic Docker
-registry.
+registry. The base image is https://hub.docker.com/_/centos/[centos:7].
 
-The base image is https://hub.docker.com/_/centos/[centos:7] and the source
-code can be found on
-https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
+A list of all published Docker images and tags can be found at
+https://www.docker.elastic.co[www.docker.elastic.co]. The source code can be
+found on https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
 
-The images are shipped with https://www.elastic.co/products/x-pack[X-Pack]
-installed.
+==== Image types
+
+The images are available in two different configurations or "flavors". The
+`x-pack` flavor, which is the default, ships with X-Pack features
+pre-installed. The `oss` flavor does not include X-Pack, and contains only
+open source Logstash.
+
+NOTE: https://www.elastic.co/guide/en/x-pack/current/index.html[X-Pack] is
+pre-installed in the default image. With X-Pack installed, Logstash expects to
+connect to an Elasticsearch cluster that is also running X-Pack, in order to
+publish data for the {xpack-ref}/xpack-monitoring.html[Monitoring] component.
 
 ==== Pulling the image
 Obtaining Logstash for Docker is as simple as issuing a +docker
@@ -23,22 +32,22 @@ endif::[]
 
 ifeval::["{release-state}"!="unreleased"]
 
-The Docker image for Logstash {logstash_version} can be retrieved with
-the following command:
+Docker images can be retrieved with the following commands:
 
 ["source","sh",subs="attributes"]
 --------------------------------------------
 docker pull {docker-image}
+docker pull {docker-repo}-oss:{logstash_version}
 --------------------------------------------
 
 endif::[]
 
-==== Configuring Logstash for Docker
+=== Configuring Logstash for Docker
 
 Logstash differentiates between two types of configuration:
 <<config-setting-files,Settings and Pipeline Configuration>>.
 
-===== Pipeline Configuration
+==== Pipeline Configuration
 
 It is essential to place your pipeline configuration where it can be
 found by Logstash. By default, the container will look in
@@ -77,14 +86,14 @@ behaviour that you are observing, ensure that your pipeline
 configuration is being picked up correctly, and that you are replacing
 either +logstash.conf+ or the entire +pipeline+ directory.
 
-===== Settings
+==== Settings
 
 The image provides several methods for configuring settings. The conventional
 approach is to provide a custom `logstash.yml` file, but it's
 also possible to use environment variables to define settings.
 
 [[docker-bind-mount-settings]]
-==== Bind-mounted settings files
+===== Bind-mounted settings files
 
 Settings files can also be provided through bind-mounts. Logstash
 expects to find them at +/usr/share/logstash/config/+.
@@ -127,7 +136,8 @@ ADD config/ /usr/share/logstash/config/
 Be sure to replace or delete `logstash.conf` in your custom image, so
 that you don't retain the example config from the base image.
 
-==== Environment variable configuration
+[[docker-env-config]]
+===== Environment variable configuration
 
 Under Docker, Logstash settings can be configured via environment
 variables. When the container starts, a helper process checks the environment
@@ -155,6 +165,29 @@ be modified in place. This behaviour is likely undesirable if `logstash.yml` was
 bind-mounted from the host system. Thus, it is not reccomended to
 combine the bind-mount technique with the environment variable technique. It
 is best to choose a single method for defining Logstash settings.
+
+==== Docker defaults
+The following settings have different default values when using the Docker
+images:
+
+[horizontal]
+`http.host`:: `0.0.0.0`
+`path.config`:: `/usr/share/logstash/pipeline`
+
+In the `x-pack` image, the following additional defaults are also set:
+
+[horizontal]
+`xpack.monitoring.elasticsearch.url`:: `http://elasticsearch:9200`
+`xpack.monitoring.elasticsearch.username`:: `logstash_system`
+`xpack.monitoring.elasticsearch.password`:: `changeme`
+
+These settings are defined in the default `logstash.yml`. They can be overridden
+with a <<docker-bind-mount-settings,custom `logstash.yml`>> or via
+<<docker-env-config,environment variables>>.
+
+IMPORTANT: If replacing `logstash.yml` with a custom version, be sure to copy the
+above defaults to the custom file if you want to retain them. If not, they will
+be "masked" by the new file.
 
 ==== Logging Configuration
 

@@ -11,13 +11,19 @@ module LogStash
         end
 
         get "/hot_threads" do
-          ignore_idle_threads = params["ignore_idle_threads"] || true
+          begin
+            ignore_idle_threads = params["ignore_idle_threads"] || true
 
-          options = { :ignore_idle_threads => as_boolean(ignore_idle_threads) }
-          options[:threads] = params["threads"].to_i if params.has_key?("threads")
+            options = {:ignore_idle_threads => as_boolean(ignore_idle_threads)}
+            options[:threads] = params["threads"].to_i if params.has_key?("threads")
 
-          as = human? ? :string : :json
-          respond_with(node.hot_threads(options), {:as => as})
+            as = human? ? :string : :json
+            respond_with(node.hot_threads(options), {:as => as})
+          rescue ArgumentError => e
+            response = respond_with({"error" => e.message})
+            status(400)
+            response
+          end
         end
 
         get "/pipelines/:id" do

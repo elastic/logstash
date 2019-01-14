@@ -33,7 +33,7 @@ qa/.vm_ssh_config
 qa/.vagrant
 qa/acceptance/.vagrant
 qa/Gemfile.lock
-Gemfile.jruby-2.3.lock
+Gemfile.lock
 Gemfile
 *.ipr
 *.iws
@@ -52,3 +52,6 @@ tools/benchmark-cli/out/
 qa/integration/fixtures/offline_wrapper/offline
 qa/integration/fixtures/offline_wrapper/offline.o
 logstash-core/versions-gem-copy.yml
+logstash-core-plugin-api/versions-gem-copy.yml
+config/logstash.keystore
+html_docs

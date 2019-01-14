@@ -380,7 +380,7 @@ filter {
 --------------------------------------------------------------------------------
 
 
-<<plugins-filters-elasticsearch,elasticsearch>>::
+<<plugins-filters-elasticsearch,elasticsearch filter>>::
 
 Copies fields from previous log events in Elasticsearch to current events.
 +
@@ -450,7 +450,88 @@ For example:
     }
 --------------------------------------------------------------------------------
 
-<<plugins-filters-jdbc_streaming,jdbc_streaming>>::
+
+<<plugins-filters-jdbc_static,jdbc_static filter>>::
+
+Enriches events with data pre-loaded from a remote database.
++
+The following example fetches data from a remote database, caches it in a local
+database, and uses lookups to enrich events with data cached in the local
+database.
++
+["source","json",subs="callouts"]
+-----
+filter {
+  jdbc_static {
+    loaders => [ <1>
+      {
+        id => "remote-servers"
+        query => "select ip, descr from ref.local_ips order by ip"
+        local_table => "servers"
+      },
+      {
+        id => "remote-users"
+        query => "select firstname, lastname, userid from ref.local_users order by userid"
+        local_table => "users"
+      }
+    ]
+    local_db_objects => [ <2>
+      {
+        name => "servers"
+        index_columns => ["ip"]
+        columns => [
+          ["ip", "varchar(15)"],
+          ["descr", "varchar(255)"]
+        ]
+      },
+      {
+        name => "users"
+        index_columns => ["userid"]
+        columns => [
+          ["firstname", "varchar(255)"],
+          ["lastname", "varchar(255)"],
+          ["userid", "int"]
+        ]
+      }
+    ]
+    local_lookups => [ <3>
+      {
+        id => "local-servers"
+        query => "select descr as description from servers WHERE ip = :ip"
+        parameters => {ip => "[from_ip]"}
+        target => "server"
+      },
+      {
+        id => "local-users" 
+        query => "select firstname, lastname from users WHERE userid = :id"
+        parameters => {id => "[loggedin_userid]"}
+        target => "user" <4>
+      }
+    ]
+    # using add_field here to add & rename values to the event root
+    add_field => { server_name => "%{[server][0][description]}" }
+    add_field => { user_firstname => "%{[user][0][firstname]}" } <5>
+    add_field => { user_lastname => "%{[user][0][lastname]}" } <5>
+    remove_field => ["server", "user"]
+    jdbc_user => "logstash"
+    jdbc_password => "example"
+    jdbc_driver_class => "org.postgresql.Driver"
+    jdbc_driver_library => "/tmp/logstash/vendor/postgresql-42.1.4.jar"
+    jdbc_connection_string => "jdbc:postgresql://remotedb:5432/ls_test_2"
+  }
+}
+-----
+<1> Queries an external database to fetch the dataset that will be cached
+locally.
+<2> Defines the columns, types, and indexes used to build the local database
+structure. The column names and types should match the external database.
+<3> Performs lookup queries on the local database to enrich the events.
+<4> Specifies the event field that will store the looked-up data. If the lookup
+returns multiple columns, the data is stored as a JSON object within the field.
+<5> Takes data from the JSON object and stores it in top-level event fields for
+easier analysis in Kibana.
+
+<<plugins-filters-jdbc_streaming,jdbc_streaming filter>>::
 
 Enriches events with database data.
 +

@@ -28,6 +28,36 @@ describe LogStash::Modules::SettingsMerger do
     end
   end
 
+  describe "#merge_kibana_auth" do
+
+    before do
+      described_class.merge_kibana_auth!(mod_settings)
+    end
+
+    context 'only elasticsearch username and password is set' do
+      let(:mod_settings) { {"name"=>"mod1", "var.input.tcp.port"=>2222, "var.elasticsearch.username"=>"rupert", "var.elasticsearch.password"=>"fotherington" } }
+      it "sets kibana username and password" do
+        expect(mod_settings["var.elasticsearch.username"]).to eq("rupert")
+        expect(mod_settings["var.elasticsearch.password"]).to eq("fotherington")
+        expect(mod_settings["var.kibana.username"]).to eq("rupert")
+        expect(mod_settings["var.kibana.password"]).to eq("fotherington")
+      end
+    end
+
+    context 'elasticsearch and kibana usernames and passwords are set' do
+      let(:mod_settings) { {"name"=>"mod1", "var.input.tcp.port"=>2222, "var.elasticsearch.username"=>"rupert", "var.elasticsearch.password"=>"fotherington",
+                                                               "var.kibana.username"=>"davey", "var.kibana.password"=>"stott"} }
+
+      it "keeps existing kibana username and password" do
+        expect(mod_settings["var.elasticsearch.username"]).to eq("rupert")
+        expect(mod_settings["var.elasticsearch.password"]).to eq("fotherington")
+        expect(mod_settings["var.kibana.username"]).to eq("davey")
+        expect(mod_settings["var.kibana.password"]).to eq("stott")
+      end
+    end
+
+  end
+
   describe "#merge_cloud_settings" do
     let(:cloud_id) { LogStash::Util::CloudSettingId.new("label:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy") }
     let(:cloud_auth) { LogStash::Util::CloudSettingAuth.new("elastix:bigwhoppingfairytail") }
@@ -38,7 +68,7 @@ describe LogStash::Modules::SettingsMerger do
         {
           "var.kibana.scheme" => "https",
           "var.kibana.host" => "identifier.us-east-1.aws.found.io:443",
-          "var.elasticsearch.hosts" => "notareal.us-east-1.aws.found.io:443",
+          "var.elasticsearch.hosts" => "https://notareal.us-east-1.aws.found.io:443",
           "var.elasticsearch.username" => "elastix",
           "var.kibana.username" => "elastix"
         }
@@ -63,7 +93,7 @@ describe LogStash::Modules::SettingsMerger do
         {
           "var.kibana.scheme" => "https",
           "var.kibana.host" => "identifier.us-east-1.aws.found.io:443",
-          "var.elasticsearch.hosts" => "notareal.us-east-1.aws.found.io:443",
+          "var.elasticsearch.hosts" => "https://notareal.us-east-1.aws.found.io:443",
         }
       end
       let(:ls_settings) { SubstituteSettingsForRSpec.new({"cloud.id" => cloud_id}) }

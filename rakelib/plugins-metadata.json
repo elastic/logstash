@@ -776,6 +776,13 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
+	"logstash-filter-jdbc_static": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
 	"logstash-filter-jdbc_streaming": {
 		"default-plugins": true,
 		"core-specs": false,

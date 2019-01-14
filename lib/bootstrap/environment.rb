@@ -18,7 +18,7 @@ module LogStash
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
     CACHE_PATH = ::File.join(LOGSTASH_HOME, "vendor", "cache")
-    LOCKFILE = Pathname.new(::File.join(LOGSTASH_HOME, "Gemfile.jruby-2.3.lock"))
+    LOCKFILE = Pathname.new(::File.join(LOGSTASH_HOME, "Gemfile.lock"))
     GEMFILE = Pathname.new(::File.join(LOGSTASH_HOME, "Gemfile"))
 
     # @return [String] the ruby version string bundler uses to craft its gem path
@@ -38,10 +38,6 @@ module LogStash
 
     def windows?
       ::Gem.win_platform?
-    end
-
-    def jruby?
-      @jruby ||= !!(RUBY_PLATFORM == "java")
     end
 
     def logstash_gem_home

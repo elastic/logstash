@@ -2,7 +2,7 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/json"
-require "manticore/client"
+require "manticore"
 
 module LogStash module Modules class KibanaClient
   include LogStash::Util::Loggable
@@ -24,9 +24,11 @@ module LogStash module Modules class KibanaClient
     end
   end
 
-  attr_reader :version
+  SCHEME_REGEX = /^https?$/
 
-  def initialize(settings)
+  attr_reader :version, :endpoint
+
+  def initialize(settings, client = nil) # allow for test mock injection
     @settings = settings
 
     client_options = {
@@ -38,8 +40,8 @@ module LogStash module Modules class KibanaClient
     }
 
     ssl_options = {}
-
-    if @settings["var.kibana.ssl.enabled"] == "true"
+    ssl_enabled = @settings["var.kibana.ssl.enabled"] == "true"
+    if ssl_enabled
       ssl_options[:verify] = @settings.fetch("var.kibana.ssl.verification_mode", "strict").to_sym
       ssl_options[:ca_file] = @settings.fetch("var.kibana.ssl.certificate_authority", nil)
       ssl_options[:client_cert] = @settings.fetch("var.kibana.ssl.certificate", nil)
@@ -48,9 +50,34 @@ module LogStash module Modules class KibanaClient
 
     client_options[:ssl] = ssl_options
 
-    @client = Manticore::Client.new(client_options)
     @host = @settings.fetch("var.kibana.host", "localhost:5601")
-    @scheme = @settings.fetch("var.kibana.scheme", "http")
+    implicit_scheme, colon_slash_slash, host = @host.partition("://")
+    explicit_scheme = @settings["var.kibana.scheme"]
+    @scheme = "http"
+    if !colon_slash_slash.empty?
+      if !explicit_scheme.nil? && implicit_scheme != explicit_scheme
+        # both are set and not the same - error
+        msg = sprintf("Detected differing Kibana host schemes as sourced from var.kibana.host: '%s' and var.kibana.scheme: '%s'", implicit_scheme, explicit_scheme)
+        raise ArgumentError.new(msg)
+      end
+      @scheme = implicit_scheme
+      @host = host
+    elsif !explicit_scheme.nil?
+      @scheme = explicit_scheme
+    end
+
+    if SCHEME_REGEX.match(@scheme).nil?
+      msg = sprintf("Kibana host scheme given is invalid, given value: '%s' - acceptable values: 'http', 'https'", @scheme)
+      raise ArgumentError.new(msg)
+    end
+
+    if ssl_enabled && @scheme != "https"
+      @scheme = "https"
+    end
+
+    @endpoint = "#{@scheme}://#{@host}"
+
+    @client = client || Manticore::Client.new(client_options)
     @http_options = {:headers => {'Content-Type' => 'application/json'}}
     username = @settings["var.kibana.username"]
     if username
@@ -77,7 +104,7 @@ module LogStash module Modules class KibanaClient
   end
 
   def version_parts
-    @version.split(/\.|\-/)
+    @version.split(/[.-]/)
   end
 
   def host_settings
@@ -119,6 +146,6 @@ module LogStash module Modules class KibanaClient
   end
 
   def full_url(relative)
-    "#{@scheme}://#{@host}/#{relative}"
+    "#{@endpoint}/#{relative}"
   end
 end end end

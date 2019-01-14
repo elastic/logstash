@@ -9,14 +9,20 @@ module LogStash
 
         # return hot threads information
         get "/jvm/hot_threads" do
-          top_threads_count = params["threads"] || 3
-          ignore_idle_threads = params["ignore_idle_threads"] || true
-          options = {
-            :threads => top_threads_count.to_i,
-            :ignore_idle_threads => as_boolean(ignore_idle_threads)
-          }
+          begin
+            top_threads_count = params["threads"] || 3
+            ignore_idle_threads = params["ignore_idle_threads"] || true
+            options = {
+              :threads => top_threads_count.to_i,
+              :ignore_idle_threads => as_boolean(ignore_idle_threads)
+            }
 
-          respond_with(stats_command.hot_threads(options))
+            respond_with(stats_command.hot_threads(options))
+          rescue ArgumentError => e
+            response = respond_with({"error" => e.message})
+            status(400)
+            response
+          end
         end
 
         # return hot threads information

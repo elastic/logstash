@@ -1,5 +1,5 @@
 
 // Breaking Changes
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/breaking-changes.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
 include::static/breaking-changes.asciidoc[]

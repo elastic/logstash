@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash-core/logstash-core"
 require "logstash/errors"
 require "logstash/java_integration"
 require "logstash/config/cpu_core_strategy"
@@ -38,8 +39,9 @@ module LogStash
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.output.workers", 1),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
-           Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
+           Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
+           Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
@@ -51,9 +53,9 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
-            Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
+            Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
             Setting::Boolean.new("queue.drain", false),
-            Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Bytes.new("queue.page_capacity", "64mb"),
             Setting::Bytes.new("queue.max_bytes", "1024mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
@@ -64,8 +66,13 @@ module LogStash
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
             Setting::TimeValue.new("slowlog.threshold.info", "-1"),
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
-            Setting::TimeValue.new("slowlog.threshold.trace", "-1")
+            Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
+            Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
+            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false) # will be populated on
+  # post_process
   ].each {|setting| SETTINGS.register(setting) }
+
+
 
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
@@ -73,6 +80,7 @@ module LogStash
   # Compute the default dead_letter_queue path based on `path.data`
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
   SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
+
 
   SETTINGS.on_post_process do |settings|
     # If the data path is overridden but the queue path isn't recompute the queue path
@@ -131,8 +139,6 @@ module LogStash
     end
 
     def load_jars!(pattern)
-      raise(LogStash::EnvironmentError, I18n.t("logstash.environment.jruby-required")) unless LogStash::Environment.jruby?
-
       jar_files = find_jars(pattern)
       require_jars! jar_files
     end
@@ -153,10 +159,6 @@ module LogStash
 
     def ruby_bin
       ENV["USE_RUBY"] == "1" ? "ruby" : File.join("vendor", "jruby", "bin", "jruby")
-    end
-
-    def jruby?
-      @jruby ||= !!(RUBY_PLATFORM == "java")
     end
 
     def windows?

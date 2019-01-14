@@ -209,7 +209,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testBlockBoundary() throws Exception {
 
-        final int PAD_FOR_BLOCK_SIZE_EVENT = 32513;
+        final int PAD_FOR_BLOCK_SIZE_EVENT = 32516;
         Event event = new Event();
         char[] field = new char[PAD_FOR_BLOCK_SIZE_EVENT];
         Arrays.fill(field, 'e');
@@ -234,7 +234,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testBlockBoundaryMultiple() throws Exception {
         Event event = new Event(Collections.emptyMap());
-        char[] field = new char[7952];
+        char[] field = new char[7934];
         Arrays.fill(field, 'x');
         event.setField("message", new String(field));
         long startTime = System.currentTimeMillis();
@@ -256,11 +256,10 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
-
     // This test tests for a single event that ends on a block and segment boundary
     @Test
     public void testBlockAndSegmentBoundary() throws Exception {
-        final int PAD_FOR_BLOCK_SIZE_EVENT = 32513;
+        final int PAD_FOR_BLOCK_SIZE_EVENT = 32516;
         Event event = new Event();
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
         Timestamp timestamp = new Timestamp();
@@ -278,7 +277,6 @@ public class DeadLetterQueueReaderTest {
             }
         }
     }
-
 
     @Test
     public void testWriteReadRandomEventSize() throws Exception {

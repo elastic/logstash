@@ -42,4 +42,8 @@ public class PluginStatement extends Statement {
         g.addVertex(pluginVertex);
         return g;
     }
+
+    public PluginDefinition getPluginDefinition() {
+        return pluginDefinition;
+    }
 }

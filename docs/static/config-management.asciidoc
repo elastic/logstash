@@ -1,5 +1,5 @@
 [[config-management]]
-== Configuration Management
+== Managing Logstash
 
 Logstash provides configuration management features to make it easier for you to
 manage updates to your configuration over time.
@@ -7,88 +7,9 @@ manage updates to your configuration over time.
 The topics in this section describe Logstash configuration management features
 only. For information about other config management tools, such as Puppet and
 Chef, see the documentation for those projects. Also take a look at the
-https://forge.puppet.com/elastic/logstash[Logstash Puppet module documentation]. 
+https://forge.puppet.com/elastic/logstash[Logstash Puppet module documentation].
 
-[role="xpack"]
-[[logstash-centralized-pipeline-management]]
-=== Centralized Pipeline Configuration Management
-
-NOTE: Centralized pipeline configuration management is an {xpack} feature that
-requires a paid {xpack} license. See the
-https://www.elastic.co/subscriptions[Elastic Subscriptions] page for information
-about obtaining a license.
-
-The pipeline configuration management feature in {xpack} centralizes the
-creation and management of Logstash configuration pipelines. From within the
-pipeline management UI, you can control multiple Logstash instances. You can
-add, edit, and delete pipeline configurations. On the Logstash side, you simply
-need to register Logstash to use the centrally managed pipeline configurations. 
-
-The pipeline configurations, along with some metadata, are stored in
-Elasticsearch. Any changes that you make to a pipeline definition in the UI are
-picked up and loaded automatically by all Logstash instances registered to use
-the pipeline. The changes are applied immediately; you do not have to restart
-Logstash to pick up the changes, as long as Logtash is already registered to
-use the pipeline. 
-
-To use centralized pipeline configuration management, you must install {xpack}
-and specify the
-{logstash-ref}/settings-xpack.html#configuration-management-settings[configuration management settings]
-described under {logstash-ref}/setup-xpack.html[Setting up {xpack}].
-
-IMPORTANT: After you've configured Logstash to use centralized pipeline
-configuration management, you can no longer specify local pipeline
-configurations. This means that the `pipelines.yml` file and settings like
-`path.config` and `config.string` are inactive when this feature is enabled.
-
-==== Pipeline management UI
-
-To access the pipeline management UI, open {kib} in your browser and go to
-the Management tab. If you've set up configuration management correctly, you'll
-see an area for managing Logstash. Click the *Pipelines* link.
-
-image::static/images/centralized_config.png[]
-
-Here you can add, edit, or delete Logstash pipeline configurations.
-
-To add a new pipeline, click the *Add* button and specify values for the
-following fields:
-
-[horizontal]
-Pipeline ID::
-A name that uniquely identifies the pipeline. You use this ID when you
-{logstash-ref}/settings-xpack.html[configure {xpack}] and specify a list of
-pipeline IDs in the `xpack.management.pipeline.id` setting.
-
-Version::
-A string value that you can use as metadata to track the version of the pipeline
-configuration. For example, `v1.0.0`. This information is for your use. Logtash
-doesn't currently manage or validate the version information.
-
-Description::
-A description of the pipeline configuration. This information is for your use.
-
-Pipeline::
-The pipeline configuration. You can treat the editor in the pipeline management
-UI like any other editor. You don't have to worry about whitespace or indentation. 
-
-image::static/images/new_pipeline.png[]
-
-When you click *Save*, the pipeline runs on all Logstash instances that are
-registered to use the pipeline. There is no validation done at the UI level.
-The UI will save the new configuration, and Logstash will attempt to load it.
-You need to check the local Logstash logs for configuration errors. If you're
-using the Logstash monitoring feature in {xpack}, you can also navigate to the
-Monitoring tab to check the status of your Logstash nodes.
-
-You can specify multiple pipeline configurations that run in parallel on the
-same Logstash node.
-
-If you edit a pipeline configuration and save the changes, Logstash reloads
-the configuration in the background and continues processing events.
-
-If you delete a pipeline (for example, `apache`) from the UI, Logstash will
-attempt to stop the pipeline if it's running. Logstash will wait until all
-events have been fully processed by the pipeline. Before deleting a pipeline,
-make sure you understand your data sources because stopping a pipeline may
-lead to data loss. 
+ifdef::include-xpack[]
+:edit_url!:
+include::{xls-repo-dir}/management/centralized-pipelines.asciidoc[]
+endif::include-xpack[]

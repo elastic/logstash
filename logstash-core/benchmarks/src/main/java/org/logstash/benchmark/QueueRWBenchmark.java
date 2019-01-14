@@ -15,12 +15,6 @@ import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MemoryCheckpointIO;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -34,10 +28,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
@@ -48,7 +38,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class QueueRWBenchmark {
 
     private static final int EVENTS_PER_INVOCATION = 500_000;
-    
+
     private static final int BATCH_SIZE = 100;
 
     private static final int ACK_INTERVAL = 1024;
@@ -58,16 +48,14 @@ public class QueueRWBenchmark {
     private ArrayBlockingQueue<Event> queueArrayBlocking;
 
     private Queue queuePersisted;
-    
-    private Queue queueMemory;
 
     private String path;
-    
+
     private ExecutorService exec;
 
     @Setup
     public void setUp() throws IOException {
-        final Settings settingsPersisted = settings(true);
+        final Settings settingsPersisted = settings();
         EVENT.setField("Foo", "Bar");
         EVENT.setField("Foo1", "Bar1");
         EVENT.setField("Foo2", "Bar2");
@@ -76,16 +64,13 @@ public class QueueRWBenchmark {
         path = settingsPersisted.getDirPath();
         queuePersisted = new Queue(settingsPersisted);
         queueArrayBlocking = new ArrayBlockingQueue<>(ACK_INTERVAL);
-        queueMemory = new Queue(settings(false));
         queuePersisted.open();
-        queueMemory.open();
         exec = Executors.newSingleThreadExecutor();
     }
 
     @TearDown
     public void tearDown() throws IOException {
         queuePersisted.close();
-        queueMemory.close();
         queueArrayBlocking.clear();
         FileUtils.deleteDirectory(new File(path));
         exec.shutdownNow();
@@ -104,29 +89,7 @@ public class QueueRWBenchmark {
             }
         });
         for (int i = 0; i < EVENTS_PER_INVOCATION / BATCH_SIZE; ++i) {
-            try (Batch batch = queuePersisted.readBatch(BATCH_SIZE)) {
-                for (final Queueable elem : batch.getElements()) {
-                    blackhole.consume(elem);
-                }
-            }
-        }
-        future.get();
-    }
-
-    @Benchmark
-    @OperationsPerInvocation(EVENTS_PER_INVOCATION)
-    public final void readFromMemoryQueue(final Blackhole blackhole) throws Exception {
-        final Future<?> future = exec.submit(() -> {
-            for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
-                try {
-                    this.queueMemory.write(EVENT);
-                } catch (final IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
-        });
-        for (int i = 0; i < EVENTS_PER_INVOCATION / BATCH_SIZE; ++i) {
-            try (Batch batch = queueMemory.readBatch(BATCH_SIZE)) {
+            try (Batch batch = queuePersisted.readBatch(BATCH_SIZE, TimeUnit.SECONDS.toMillis(1))) {
                 for (final Queueable elem : batch.getElements()) {
                     blackhole.consume(elem);
                 }
@@ -153,31 +116,12 @@ public class QueueRWBenchmark {
         future.get();
     }
 
-    public static void main(final String... args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-            .include(QueueRWBenchmark.class.getSimpleName())
-            .forks(2)
-            .build();
-        new Runner(opt).run();
-    }
-
-    private static Settings settings(final boolean persisted) {
-        final PageIOFactory pageIOFactory;
-        final CheckpointIOFactory checkpointIOFactory;
-        if (persisted) {
-            pageIOFactory = MmapPageIO::new;
-            checkpointIOFactory = FileCheckpointIO::new;
-        } else {
-            pageIOFactory = ByteBufferPageIO::new;
-            checkpointIOFactory = MemoryCheckpointIO::new;
-        }
+    private static Settings settings() {
         return SettingsImpl.fileSettingsBuilder(Files.createTempDir().getPath())
             .capacity(256 * 1024 * 1024)
             .queueMaxBytes(Long.MAX_VALUE)
-            .elementIOFactory(pageIOFactory)
             .checkpointMaxWrites(ACK_INTERVAL)
             .checkpointMaxAcks(ACK_INTERVAL)
-            .checkpointIOFactory(checkpointIOFactory)
             .elementClass(Event.class).build();
     }
 }

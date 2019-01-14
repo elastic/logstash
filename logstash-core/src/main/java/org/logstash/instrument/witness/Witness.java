@@ -8,6 +8,8 @@ import org.logstash.instrument.witness.pipeline.EventsWitness;
 import org.logstash.instrument.witness.pipeline.PipelineWitness;
 import org.logstash.instrument.witness.pipeline.PipelinesWitness;
 import org.logstash.instrument.witness.pipeline.ReloadWitness;
+import org.logstash.instrument.witness.process.ProcessWitness;
+import org.logstash.instrument.witness.schedule.WitnessScheduler;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,8 +30,10 @@ public final class Witness implements SerializableWitness {
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final PipelinesWitness pipelinesWitness;
+    private final ProcessWitness processWitness;
+    private final WitnessScheduler processWitnessScheduler;
 
-    private static Witness _instance;
+    private static Witness instance;
 
     /**
      * Constructor. Consumers should use {@link #instance()} method to obtain an instance of this class.
@@ -39,6 +43,8 @@ public final class Witness implements SerializableWitness {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.pipelinesWitness = new PipelinesWitness();
+        this.processWitness = new ProcessWitness();
+        this.processWitnessScheduler = new WitnessScheduler(processWitness);
     }
 
     /**
@@ -46,10 +52,19 @@ public final class Witness implements SerializableWitness {
      * active instance at any time.  Exposing this allows Ruby to create the instance for use in it's agent constructor, then set it here for all to use as a singleton.
      * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      *
-     * @param __instance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
+     * @param newInstance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
      */
-    public static void setInstance(Witness __instance) {
-        _instance = __instance;
+    public static synchronized void setInstance(Witness newInstance) {
+        //Ruby agent restart
+        if (instance != null) {
+            instance.processWitnessScheduler.shutdown();
+        }
+
+        instance = newInstance;
+
+        if (instance != null) {
+            instance.processWitnessScheduler.schedule();
+        }
     }
 
     /**
@@ -59,10 +74,10 @@ public final class Witness implements SerializableWitness {
      * @throws IllegalStateException if attempted to be used before being set.
      */
     public static Witness instance() {
-        if (_instance == null) {
+        if (instance == null) {
             throw new IllegalStateException("The stats witness instance must be set before it used. Called from: " + Arrays.toString(new Throwable().getStackTrace()));
         }
-        return _instance;
+        return instance;
     }
 
     public EventsWitness events() {
@@ -85,6 +100,15 @@ public final class Witness implements SerializableWitness {
      */
     public PipelinesWitness pipelines() {
         return pipelinesWitness;
+    }
+
+    /**
+     * Obtain a reference to the associated process witness.
+     *
+     * @return The associated {@link ProcessWitness}
+     */
+    public ProcessWitness process() {
+        return processWitness;
     }
 
     /**
@@ -133,6 +157,7 @@ public final class Witness implements SerializableWitness {
         }
 
         static void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            witness.process().genJson(gen, provider);
             witness.events().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.pipelinesWitness.genJson(gen, provider);

@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-require "jruby_acked_queue_ext"
-require "jruby_acked_batch_ext"
 require "concurrent"
 # This is an adapted copy of the wrapped_synchronous_queue file
 # ideally this should be moved to Java/JRuby
@@ -20,12 +18,6 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, capacity, max_events, max_bytes)
-      self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
-      )
-    end
-
     def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       self.allocate.with_queue(
         LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
@@ -39,12 +31,12 @@ module LogStash; module Util
     def with_queue(queue)
       @queue = queue
       @queue.open
-      @closed = Concurrent::AtomicBoolean.new(false)
+      @closed = java.util.concurrent.atomic.AtomicBoolean.new(false)
       self
     end
 
     def closed?
-      @closed.true?
+      @closed.get
     end
 
     # Push an object to the queue if the queue is full
@@ -57,27 +49,21 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
-    # Block for X millis
-    def poll(millis)
-      check_closed("read")
-      @queue.read_batch(1, millis).get_elements.first
-    end
-
     def read_batch(size, wait)
       check_closed("read a batch")
       @queue.read_batch(size, wait)
     end
 
     def write_client
-      WriteClient.new(self)
+      LogStash::AckedWriteClient.create(@queue, @closed)
     end
 
     def read_client()
-      ReadClient.new(self)
+      LogStash::AckedReadClient.create(self)
     end
 
     def check_closed(action)
-      if closed?
+      if @closed.get
         raise QueueClosedError.new("Attempted to #{action} on a closed AckedQueue")
       end
     end
@@ -88,274 +74,7 @@ module LogStash; module Util
 
     def close
       @queue.close
-      @closed.make_true
-    end
-
-    class ReadClient
-      # We generally only want one thread at a time able to access pop/take/poll operations
-      # from this queue. We also depend on this to be able to block consumers while we snapshot
-      # in-flight buffers
-
-      def initialize(queue, batch_size = 125, wait_for = 250)
-        @queue = queue
-        @mutex = Mutex.new
-        # Note that @inflight_batches as a central mechanism for tracking inflight
-        # batches will fail if we have multiple read clients in the pipeline.
-        @inflight_batches = {}
-        # allow the worker thread to report the execution time of the filter + output
-        @inflight_clocks = Concurrent::Map.new
-        @batch_size = batch_size
-        @wait_for = wait_for
-      end
-
-      def close
-        @queue.close
-      end
-
-      def empty?
-        @mutex.lock
-        begin
-          @queue.is_empty?
-        ensure
-          @mutex.unlock
-        end
-      end
-
-      def set_batch_dimensions(batch_size, wait_for)
-        @batch_size = batch_size
-        @wait_for = wait_for
-      end
-
-      def set_events_metric(metric)
-        @event_metric = metric
-        define_initial_metrics_values(@event_metric)
-      end
-
-      def set_pipeline_metric(metric)
-        @pipeline_metric = metric
-        define_initial_metrics_values(@pipeline_metric)
-      end
-
-      def define_initial_metrics_values(namespaced_metric)
-        namespaced_metric.report_time(:duration_in_millis, 0)
-        namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:out, 0)
-      end
-
-      def inflight_batches
-        @mutex.lock
-        begin
-          yield(@inflight_batches)
-        ensure
-          @mutex.unlock
-        end
-      end
-
-      def current_inflight_batch
-        @inflight_batches.fetch(Thread.current, [])
-      end
-
-      # create a new empty batch
-      # @return [ReadBatch] a new empty read batch
-      def new_batch
-        ReadBatch.new(@queue, @batch_size, @wait_for)
-      end
-
-      def read_batch
-        if @queue.closed?
-          raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
-        end
-
-        batch = new_batch
-        @mutex.lock
-        begin
-          batch.read_next
-        ensure
-          @mutex.unlock
-        end
-        start_metrics(batch)
-        batch
-      end
-
-      def start_metrics(batch)
-        @mutex.lock
-        begin
-          set_current_thread_inflight_batch(batch)
-        ensure
-          @mutex.unlock
-        end
-        start_clock
-      end
-
-      def set_current_thread_inflight_batch(batch)
-        @inflight_batches[Thread.current] = batch
-      end
-
-      def close_batch(batch)
-        @mutex.lock
-        begin
-          batch.close
-          @inflight_batches.delete(Thread.current)
-        ensure
-          @mutex.unlock
-        end
-        stop_clock(batch)
-      end
-
-      def start_clock
-        @inflight_clocks[Thread.current] = java.lang.System.nano_time
-      end
-
-      def stop_clock(batch)
-        start_time = @inflight_clocks.get_and_set(Thread.current, nil)
-        unless start_time.nil?
-          if batch.size > 0
-            # only stop (which also records) the metrics if the batch is non-empty.
-            # start_clock is now called at empty batch creation and an empty batch could
-            # stay empty all the way down to the close_batch call.
-            time_taken = (java.lang.System.nano_time - start_time) / 1_000_000
-            @event_metric.report_time(:duration_in_millis, time_taken)
-            @pipeline_metric.report_time(:duration_in_millis, time_taken)
-          end
-        end
-      end
-
-      def add_starting_metrics(batch)
-        return if @event_metric.nil? || @pipeline_metric.nil?
-        @event_metric.increment(:in, batch.starting_size)
-        @pipeline_metric.increment(:in, batch.starting_size)
-      end
-
-      def add_filtered_metrics(batch)
-        @event_metric.increment(:filtered, batch.filtered_size)
-        @pipeline_metric.increment(:filtered, batch.filtered_size)
-      end
-
-      def add_output_metrics(batch)
-        @event_metric.increment(:out, batch.filtered_size)
-        @pipeline_metric.increment(:out, batch.filtered_size)
-      end
-    end
-
-    class ReadBatch
-      def initialize(queue, size, wait)
-        @queue = queue
-        @size = size
-        @wait = wait
-
-        @originals = Hash.new
-
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        # @cancelled = Hash.new
-
-        @generated = Hash.new
-        @iterating_temp = Hash.new
-        @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
-        @acked_batch = nil
-      end
-
-      def read_next
-        @acked_batch = @queue.read_batch(@size, @wait)
-        return if @acked_batch.nil?
-        @acked_batch.get_elements.each { |e| @originals[e] = true }
-      end
-
-      def close
-        # this will ack the whole batch, regardless of whether some
-        # events were cancelled or failed
-        return if @acked_batch.nil?
-        @acked_batch.close
-      end
-
-      def merge(event)
-        return if event.nil? || @originals.key?(event)
-        # take care not to cause @generated to change during iteration
-        # @iterating_temp is merged after the iteration
-        if @is_iterating
-          @iterating_temp[event] = true
-        else
-          # the periodic flush could generate events outside of an each iteration
-          @generated[event] = true
-        end
-      end
-
-      def cancel(event)
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        raise("cancel is unsupported")
-        # @cancelled[event] = true
-      end
-
-      def each(&blk)
-        # take care not to cause @originals or @generated to change during iteration
-
-        # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
-        # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @is_iterating = true
-        @originals.each do |e, _|
-          blk.call(e) unless e.cancelled?
-        end
-        @generated.each do |e, _|
-          blk.call(e) unless e.cancelled?
-        end
-        @is_iterating = false
-        update_generated
-      end
-
-      def size
-        filtered_size
-      end
-
-      def starting_size
-        @originals.size
-      end
-
-      def filtered_size
-        @originals.size + @generated.size
-      end
-
-      def cancelled_size
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        raise("cancelled_size is unsupported ")
-        # @cancelled.size
-      end
-
-      def shutdown_signal_received?
-        false
-      end
-
-      def flush_signal_received?
-        false
-      end
-
-      private
-
-      def update_generated
-        @generated.update(@iterating_temp)
-        @iterating_temp.clear
-      end
-    end
-
-    class WriteClient
-      def initialize(queue)
-        @queue = queue
-      end
-
-      def push(event)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write an event to a closed AckedQueue")
-        end
-        @queue.push(event)
-      end
-      alias_method(:<<, :push)
-
-      def push_batch(batch)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write a batch to a closed AckedQueue")
-        end
-        batch.each do |event|
-          push(event)
-        end
-      end
+      @closed.set(true)
     end
   end
 end end

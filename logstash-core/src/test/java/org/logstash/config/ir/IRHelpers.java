@@ -10,10 +10,15 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
+import org.logstash.config.ir.imperative.Statement;
 
+import javax.xml.transform.Source;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.stream.IntStream;
 
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
@@ -37,24 +42,24 @@ public class IRHelpers {
     }
 
     public static Vertex createTestVertex(String id) {
-        return new TestVertex(id);
+        return createTestVertex(randMeta(), id);
+    }
+
+    public static Vertex createTestVertex(SourceWithMetadata meta, String id) {
+        return new TestVertex(meta, id);
     }
 
     static class TestVertex extends Vertex {
         private String id;
 
-        public TestVertex(String id) {
+        public TestVertex(SourceWithMetadata meta, String id) {
+            super(meta, id);
             this.id = id;
         }
 
         @Override
         public Vertex copy() {
-            return new TestVertex(id);
-        }
-
-        @Override
-        public String calculateIndividualHashSource() {
-            return "TVertex" + "|" + id;
+            return new TestVertex(this.getSourceWithMetadata(), id);
         }
 
         @Override
@@ -73,11 +78,6 @@ public class IRHelpers {
                 return Objects.equals(getId(), ((TestVertex) other).getId());
             }
             return false;
-        }
-
-        @Override
-        public SourceWithMetadata getSourceWithMetadata() {
-            return null;
         }
     }
 
@@ -125,17 +125,50 @@ public class IRHelpers {
         return new PluginDefinition(PluginDefinition.Type.FILTER, "testDefinition", new HashMap<String, Object>());
     }
 
-    public static PipelineIR samplePipeline() throws InvalidIRException {
-        Graph inputSection = iComposeParallel(iPlugin(INPUT, "generator"), iPlugin(INPUT, "stdin")).toGraph();
-        Graph filterSection = iIf(eEq(eEventValue("[foo]"), eEventValue("[bar]")),
-                                    iPlugin(FILTER, "grok"),
-                                    iPlugin(FILTER, "kv")).toGraph();
-        Graph outputSection = iIf(eGt(eEventValue("[baz]"), eValue(1000)),
+    public static PipelineIR samplePipeline() throws Exception {
+        Random rng = new Random(81892198);
+        Callable<SourceWithMetadata> meta = () -> randMeta(rng);
+
+        Graph inputSection = iComposeParallel(iPlugin(meta.call(), INPUT, "generator"), iPlugin(meta.call(), INPUT, "stdin")).toGraph();
+        Graph filterSection = iIf(meta.call(), eEq(eEventValue("[foo]"), eEventValue("[bar]")),
+                                    iPlugin(meta.call(), FILTER, "grok"),
+                                    iPlugin(meta.call(), FILTER, "kv")).toGraph();
+        Graph outputSection = iIf(meta.call(), eGt(eEventValue("[baz]"), eValue(1000)),
                                     iComposeParallel(
-                                            iPlugin(OUTPUT, "s3"),
-                                            iPlugin(OUTPUT, "elasticsearch")),
-                                    iPlugin(OUTPUT, "stdout")).toGraph();
+                                            iPlugin(meta.call(), OUTPUT, "s3"),
+                                            iPlugin(meta.call(), OUTPUT, "elasticsearch")),
+                                    iPlugin(meta.call(), OUTPUT, "stdout")).toGraph();
 
         return new PipelineIR(inputSection, filterSection, outputSection);
+    }
+
+    public static SourceWithMetadata randMeta() {
+        try {
+            return randMeta(new Random());
+        } catch (IncompleteSourceWithMetadataException e) {
+            // Never happens, or if it does, the whole test suite is broken anyway
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static SourceWithMetadata randMeta(Random rng) throws IncompleteSourceWithMetadataException {
+        return new SourceWithMetadata(
+                        randomString(rng, 10),
+                        randomString(rng, 10),
+                        rng.nextInt(),
+                        rng.nextInt(),
+                        randomString(rng, 20)
+                    );
+    }
+
+    public static String RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+    public static String randomString(Random rng, int length) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int pos = Math.abs(rng.nextInt()) % RANDOM_CHARS.length();
+            out.append(RANDOM_CHARS.charAt(pos));
+        }
+        return out.toString();
     }
 }

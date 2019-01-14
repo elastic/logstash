@@ -81,7 +81,7 @@ class LogStash::Agent
 
   def execute
     @thread = Thread.current # this var is implicitly used by Stud.stop?
-    logger.debug("starting agent")
+    logger.debug("Starting agent")
 
     start_webserver
 
@@ -272,24 +272,6 @@ class LogStash::Agent
     end
   end
 
-  def close_pipeline(id)
-    with_pipelines do |pipelines|
-      pipeline = pipelines[id]
-      if pipeline
-        @logger.warn("closing pipeline", :id => id)
-        pipeline.close
-      end
-    end
-  end
-
-  def close_pipelines
-    with_pipelines do |pipelines|
-      pipelines.each  do |id, _|
-        close_pipeline(id)
-      end
-    end
-  end
-
   private
   def transition_to_stopped
     @running.make_false
@@ -310,11 +292,9 @@ class LogStash::Agent
   # for other tasks.
   #
   def converge_state(pipeline_actions)
-    logger.debug("Converging pipelines")
+    logger.debug("Converging pipelines state", :actions_count => pipeline_actions.size)
 
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
-
-    logger.debug("Needed actions to converge", :actions_count => pipeline_actions.size) unless pipeline_actions.empty?
 
     pipeline_actions.each do |action|
       # We execute every task we need to converge the current state of pipelines
@@ -409,7 +389,7 @@ class LogStash::Agent
     @collector = LogStash::Instrument::Collector.new
 
     @metric = if collect_metrics?
-      @logger.debug("Agent: Configuring metric collection")
+      @logger.debug("Setting up metric collection")
       LogStash::Instrument::Metric.new(@collector)
     else
       LogStash::Instrument::NullMetric.new(@collector)

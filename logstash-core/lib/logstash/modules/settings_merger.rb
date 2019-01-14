@@ -40,9 +40,10 @@ module LogStash module Modules module SettingsMerger
       settings_copy = LogStash::Util.deep_clone(module_settings)
     end
 
-    module_settings["var.kibana.scheme"] = "https"
+    module_settings["var.kibana.scheme"] = cloud_id.kibana_scheme
     module_settings["var.kibana.host"] = cloud_id.kibana_host
-    module_settings["var.elasticsearch.hosts"] = cloud_id.elasticsearch_host
+    # elasticsearch client does not use scheme, it URI parses the host setting
+    module_settings["var.elasticsearch.hosts"] = "#{cloud_id.elasticsearch_scheme}://#{cloud_id.elasticsearch_host}"
     unless cloud_auth.nil?
       module_settings["var.elasticsearch.username"] = cloud_auth.username
       module_settings["var.elasticsearch.password"] = cloud_auth.password
@@ -52,6 +53,11 @@ module LogStash module Modules module SettingsMerger
     if logger.debug?
       format_module_settings(settings_copy, module_settings).each {|line| logger.debug(line)}
     end
+  end
+
+  def merge_kibana_auth!(module_settings)
+    module_settings["var.kibana.username"] = module_settings["var.elasticsearch.username"] if module_settings["var.kibana.username"].nil?
+    module_settings["var.kibana.password"] = module_settings["var.elasticsearch.password"] if module_settings["var.kibana.password"].nil?
   end
 
   def format_module_settings(settings_before, settings_after)

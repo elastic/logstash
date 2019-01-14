@@ -101,12 +101,25 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         else
           [k,v]
         end
-      }.reduce({}) do |hash,kv|
-        k,v = kv
-        hash[k] = v
+      }.reduce({}) do |hash, kv|
+        k, v = kv
+        existing = hash[k]
+        if existing.nil?
+          hash[k] = v
+        elsif existing.kind_of?(::Hash)
+          # For legacy reasons, a config can contain multiple `AST::Attribute`s with the same name
+          # and a hash-type value (e.g., "match" in the grok filter), which are merged into a single
+          # hash value; e.g., `{"match" => {"baz" => "bar"}, "match" => {"foo" => "bulb"}}` is
+          # interpreted as `{"match" => {"baz" => "bar", "foo" => "blub"}}`.
+          # (NOTE: this bypasses `AST::Hash`'s ability to detect duplicate keys)
+          hash[k] = existing.merge(v)
+        elsif existing.kind_of?(::Array)
+          hash[k] = existing.push(*v)
+        else
+          hash[k] = existing + v
+        end
         hash
       end
-
     end
   end
 
@@ -187,7 +200,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def expr
       validate!
-      ::Hash[recursive_select(HashEntry).map(&:expr)]
+      jdsl.eValue(source_meta, ::Hash[recursive_select(HashEntry).map(&:expr)])
     end
   end
 
@@ -249,7 +262,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         java_f_branch = f_branch && javaify_sexpr(f_branch)
 
         if java_t_branch || java_f_branch
-          jdsl.iIf(condition, java_t_branch || jdsl.noop, java_f_branch || jdsl.noop)
+          # We use the condition as the source with metadata because it hashes correctly
+          # It's hard to use the 'real' source due to the re-branching from if / elsif into if/else only
+          # branches. We should come back and improve this at some point if that makes a difference
+          jdsl.iIf(condition.source_with_metadata, condition, java_t_branch || jdsl.noop, java_f_branch || jdsl.noop)
         else
           jdsl.noop()
         end
@@ -284,7 +300,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
       all_elements = [first_element, *rest_elements]
 
-      if all_elements.size == 1
+
+      res = if all_elements.size == 1
         elem = all_elements.first
         if elem.is_a?(Selector)
           eventValue = elem.recursive_select(SelectorElement).first.expr
@@ -297,6 +314,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       else
         join_conditions(all_elements)
       end
+      res
     end
 
     def precedence(op)
@@ -326,9 +344,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
       case op
       when :and
-        return jdsl.eAnd(left, right);
+        return jdsl.eAnd(source_meta, left, right);
+      when :nand
+        return jdsl.eNand(source_meta, left, right);
       when :or
-        return jdsl.eOr(left, right);
+        return jdsl.eOr(source_meta, left, right);
+      when :xor
+        return jdsl.eXor(source_meta, left, right);
       else
         raise "Unknown op #{jop}"
       end
@@ -377,7 +399,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       while elem = stack.pop
         if elem.is_a?(::Method)
           right, left = working_stack.pop, working_stack.pop
-          working_stack << elem.call(left, right)
+          working_stack << elem.call(source_meta, left, right)
         else
           working_stack << elem
         end
@@ -455,13 +477,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       # Handle string rvalues, they just get turned into regexps
       # Maybe we really shouldn't handle these anymore...
       if regexp.class == org.logstash.config.ir.expression.ValueExpression
-        regexp = jdsl.eRegex(regexp.get)
+        regexp = jdsl.eRegex(source_meta, regexp.get)
       end
       
       raise "Expected a selector in #{text_value}!" unless selector
       raise "Expected a regexp in #{text_value}!" unless regexp
 
-      operator_method.call(source_meta, selector, regexp);
+      operator_method.call(source_meta, selector, regexp)
     end
   end
 
@@ -495,9 +517,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     
     def expr
       if self.text_value == '!~'
-        jdsl.method(:eRegexNeq)
+        jdsl.java_method(:eRegexNeq, [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.ValueExpression])
       elsif self.text_value == '=~'
-        jdsl.method(:eRegexEq)
+        jdsl.java_method(:eRegexEq, [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.ValueExpression])
       else
         raise "Unknown regex operator #{self.text_value}"
       end
@@ -511,8 +533,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       case self.text_value
       when "and"
         AND_METHOD
+      when "nand"
+        NAND_METHOD
       when "or"
         OR_METHOD
+      when "xor"
+        XOR_METHOD
       else
         raise "Unknown operator #{self.text_value}"
       end

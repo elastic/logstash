@@ -8,7 +8,6 @@ import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
@@ -18,52 +17,14 @@ import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.FieldReference;
-import org.logstash.PathCache;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
 
-public final class JrubyEventExtLibrary implements Library {
-
-    private static RubyClass PARSER_ERROR = null;
-    private static RubyClass GENERATOR_ERROR = null;
-    private static RubyClass LOGSTASH_ERROR = null;
-
-    @Override
-    public void load(Ruby runtime, boolean wrap) {
-        final RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-
-        RubyClass clazz = runtime.defineClassUnder(
-            "Event", runtime.getObject(), RubyEvent::new, module
-        );
-
-        clazz.setConstant("METADATA", runtime.newString(Event.METADATA));
-        clazz.setConstant("METADATA_BRACKETS", runtime.newString(Event.METADATA_BRACKETS));
-        clazz.setConstant("TIMESTAMP", runtime.newString(Event.TIMESTAMP));
-        clazz.setConstant("TIMESTAMP_FAILURE_TAG", runtime.newString(Event.TIMESTAMP_FAILURE_TAG));
-        clazz.setConstant("TIMESTAMP_FAILURE_FIELD", runtime.newString(Event.TIMESTAMP_FAILURE_FIELD));
-        clazz.setConstant("VERSION", runtime.newString(Event.VERSION));
-        clazz.setConstant("VERSION_ONE", runtime.newString(Event.VERSION_ONE));
-        clazz.defineAnnotatedMethods(RubyEvent.class);
-        clazz.defineAnnotatedConstants(RubyEvent.class);
-
-        PARSER_ERROR = module.defineOrGetModuleUnder("Json").getClass("ParserError");
-        if (PARSER_ERROR == null) {
-            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::ParserError class", true);
-        }
-        GENERATOR_ERROR = module.defineOrGetModuleUnder("Json").getClass("GeneratorError");
-        if (GENERATOR_ERROR == null) {
-            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::GeneratorError class", true);
-        }
-        LOGSTASH_ERROR = module.getClass("Error");
-        if (LOGSTASH_ERROR == null) {
-            throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Error class", true);
-        }
-    }
+public final class JrubyEventExtLibrary {
 
     @JRubyClass(name = "Event")
     public static final class RubyEvent extends RubyObject {
@@ -83,13 +44,13 @@ public final class JrubyEventExtLibrary implements Library {
 
         private Event event;
 
-        private RubyEvent(final Ruby runtime, final RubyClass klass) {
+        public RubyEvent(final Ruby runtime, final RubyClass klass) {
             super(runtime, klass);
         }
 
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
             final RubyEvent ruby =
-                new RubyEvent(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("Event"));
+                new RubyEvent(runtime, RubyUtil.RUBY_EVENT_CLASS);
             ruby.setEvent(event);
             return ruby;
         }
@@ -117,14 +78,14 @@ public final class JrubyEventExtLibrary implements Library {
         {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.getUnconvertedField(PathCache.cache(reference.getByteList()))
+                this.event.getUnconvertedField(FieldReference.from(reference.getByteList()))
             );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            final FieldReference r = PathCache.cache(reference.getByteList());
+            final FieldReference r = FieldReference.from(reference.getByteList());
             if (r  == FieldReference.TIMESTAMP_REFERENCE) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
@@ -159,7 +120,7 @@ public final class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(PathCache.cache(reference.getByteList()))
+                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
             );
         }
 
@@ -167,7 +128,7 @@ public final class JrubyEventExtLibrary implements Library {
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.remove(PathCache.cache(reference.getByteList()))
+                this.event.remove(FieldReference.from(reference.getByteList()))
             );
         }
 
@@ -204,7 +165,7 @@ public final class JrubyEventExtLibrary implements Library {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(), LOGSTASH_ERROR, "timestamp field is missing", true);
+                throw new RaiseException(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", true);
             }
         }
 
@@ -242,7 +203,7 @@ public final class JrubyEventExtLibrary implements Library {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, GENERATOR_ERROR, e.getMessage(), true);
+                throw new RaiseException(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage(), true);
             }
         }
 
@@ -256,7 +217,7 @@ public final class JrubyEventExtLibrary implements Library {
             try {
                 events = Event.fromJson(value.asJavaString());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, PARSER_ERROR, e.getMessage(), true);
+                throw new RaiseException(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage(), true);
             }
 
             RubyArray result = RubyArray.newArray(context.runtime, events.length);

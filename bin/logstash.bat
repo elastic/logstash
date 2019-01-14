@@ -32,7 +32,7 @@ for /F "usebackq tokens=1-2* delims= " %%A in (!params!) do (
 
 rem if explicit jvm.options is not found use default location
 if "%LS_JVM_OPTIONS_CONFIG%" == "" (
-  set LS_JVM_OPTIONS_CONFIG=%LS_HOME%\config\jvm.options
+  set LS_JVM_OPTIONS_CONFIG="%LS_HOME%\config\jvm.options"
 )
 
 rem extract the options from the JVM options file %LS_JVM_OPTIONS_CONFIG%
@@ -45,7 +45,18 @@ if exist %LS_JVM_OPTIONS_CONFIG% (
 )
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
-rem jruby launcher will pickup JAVA_OPTS set above to set the JVM options before launching jruby
-%JRUBY_BIN% "%LS_HOME%\lib\bootstrap\environment.rb" "logstash\runner.rb" %*
+for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
+	call :concat "%%i"
+)
+
+%JAVA% %JAVA_OPTS% -cp %CLASSPATH% org.logstash.Logstash %*
 
 endlocal
+
+goto :eof
+:concat
+IF not defined CLASSPATH (
+  set CLASSPATH="%~1"
+) ELSE (
+  set CLASSPATH=%CLASSPATH%;"%~1"
+)

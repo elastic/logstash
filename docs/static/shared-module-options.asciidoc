@@ -102,6 +102,16 @@ with Elasticsearch.
 Sets the hostname and port of the Kibana instance to use for importing
 dashboards and visualizations. For example: "myhost:5601".
 
+*`var.kibana.scheme`*::
++
+--
+* Value type is <<string,string>>
+* Default value is "http"
+--
++
+Sets the protocol to use for reaching the Kibana instance. The options are:
+"http" or "https". The default is "http". 
+
 *`var.kibana.username`*::
 +
 --

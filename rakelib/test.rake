@@ -8,7 +8,7 @@ namespace "test" do
 
   desc "run the java unit tests"
   task "core-java" do
-    exit(1) unless system './gradlew clean test'
+    exit(1) unless system('./gradlew clean javaTests')
   end
 
   desc "run the ruby unit tests"
@@ -24,8 +24,8 @@ namespace "test" do
   end
 
   desc "run all core specs"
-  task "core-slow" => ["core-java"] do
-    exit 1 unless system(*default_spec_command)
+  task "core-slow" do
+    exit 1 unless system('./gradlew clean test')
   end
 
   desc "run core specs excluding slower tests like stress tests"
@@ -33,13 +33,8 @@ namespace "test" do
     exit 1 unless system(*(default_spec_command.concat(["--tag", "~stress_test"])))
   end
 
-  desc "run all core specs in fail-fast mode"
-  task "core-fail-fast" do
-    exit 1 unless system(*(default_spec_command.concat(["--fail-fast"])))
-  end
-  
   desc "run all installed plugins specs"
-  task "plugins" do
+  task "plugins"  => "bootstrap" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
@@ -55,7 +50,7 @@ namespace "test" do
     end.flatten.compact
 
     # "--format=documentation"
-    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
+    exit 1 unless system(*(["bin/rspec", "-fd", "--order", "rand"].concat(test_files)))
   end
 
   desc "install core plugins and dev dependencies"
@@ -69,29 +64,6 @@ namespace "test" do
 
   desc "install jar dependencies and dev dependencies"
   task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
-
-  # Setup simplecov to group files per functional modules, like this is easier to spot places with small coverage
-  task "setup-simplecov" do
-    require "simplecov"
-    SimpleCov.start do
-      # Skip non core related directories and files.
-      ["vendor/", "spec/", "bootstrap/rspec", "Gemfile", "gemspec"].each do |pattern|
-        add_filter pattern
-      end
-
-      add_group "bootstrap", "bootstrap/" # This module is used during bootstrapping of LS
-      add_group "plugin manager", "pluginmanager/" # Code related to the plugin manager
-      add_group "core" do |src_file| # The LS core codebase
-        /logstash\/\w+.rb/.match(src_file.filename)
-      end
-      add_group "core-util", "logstash/util" # Set of LS utils module
-      add_group "core-config", "logstash/config" # LS Configuration modules
-      add_group "core-patches", "logstash/patches" # Patches used to overcome known issues in dependencies.
-      # LS Core plugins code base.
-      add_group "core-plugins", [ "logstash/codecs", "logstash/filters", "logstash/outputs", "logstash/inputs" ]
-    end
-    task.reenable
-  end
 end
 
 task "test" => [ "test:core" ]

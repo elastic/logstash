@@ -10,7 +10,7 @@ describe LogStash::PluginManager::Utils::HttpClient do
       let(:uri) { URI.parse("https://localhost:8888") }
 
       it "requires ssl" do
-        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, hash_including(:use_ssl => true))
+        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, anything, anything, anything, anything, hash_including(:use_ssl => true))
         described_class.start(uri)
       end
     end
@@ -19,7 +19,35 @@ describe LogStash::PluginManager::Utils::HttpClient do
       let(:uri) { URI.parse("http://localhost:8888") }
 
       it "doesn't requires ssl" do
-        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, hash_including(:use_ssl => false))
+        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, anything, anything, anything, anything, hash_including(:use_ssl => false))
+        described_class.start(uri)
+      end
+    end
+
+    context "with a proxy" do
+      let(:uri) { URI.parse("http://localhost:8888") }
+      let(:proxy) { "http://user:pass@host.local:8080" }
+
+      before(:each) do
+        allow(ENV).to receive(:[]).with("https_proxy").and_return(proxy)
+      end
+
+      it "sets proxy arguments" do
+        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, "host.local", 8080, "user", "pass", hash_including(:use_ssl => false))
+        described_class.start(uri)
+      end
+    end
+
+    context "without a proxy" do
+      let(:uri) { URI.parse("http://localhost:8888") }
+
+      before(:each) do
+        allow(ENV).to receive(:[]).with("https_proxy").and_return(nil)
+        allow(ENV).to receive(:[]).with("HTTPS_PROXY").and_return(nil)
+      end
+
+      it "doesn't set proxy arguments" do
+        expect(Net::HTTP).to receive(:start).with(uri.host, uri.port, nil, nil, nil, nil, hash_including(:use_ssl => false))
         described_class.start(uri)
       end
     end

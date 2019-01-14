@@ -135,6 +135,10 @@ describe "Test Monitoring API" do
           expect(v).to eq("ERROR")
         end
       end
+
+      # all log levels should be reset to original values
+      logging_put_assert logstash_service.monitoring_api.logging_reset
+      logging_get_assert logstash_service, "INFO", "TRACE"
     end
   end
 

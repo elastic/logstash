@@ -15,6 +15,8 @@ apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
+import org.logstash.gradle.ExecLogOutputStream
+import org.logstash.gradle.RubyGradleUtils
 import org.yaml.snakeyaml.Yaml
 
 allprojects {
@@ -72,6 +74,7 @@ allprojects {
 
 // fetch version from Logstash's master versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
+version = versionMap['logstash-core']
 
 String jRubyURL
 String jRubyVersion
@@ -90,24 +93,53 @@ if (versionMap["jruby-runtime-override"]) {
 }
 
 // Tasks
+
+clean {
+  delete "${projectDir}/Gemfile"
+  delete "${projectDir}/Gemfile.lock"
+  delete "${projectDir}/vendor"
+  delete "${projectDir}/NOTICE.TXT"
+  delete "${projectDir}/.bundle"
+  delete "${projectDir}/qa/integration/Gemfile.lock"
+  delete "${projectDir}/qa/integration/.bundle"
+}
+
 task bootstrap {}
+
+RubyGradleUtils rubyGradleUtils = new RubyGradleUtils(buildDir, projectDir)
+
+project(":logstash-core") {
+  ["rubyTests", "test"].each { tsk ->
+    tasks.getByPath(":logstash-core:" + tsk).configure {
+      dependsOn bootstrap
+    }
+  }
+}
+
+def jrubyTarPath = "${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz"
 
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
+    inputs.file("${projectDir}/versions.yml")
+    outputs.file(jrubyTarPath)
     dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
 }
 
 task verifyFile(dependsOn: downloadJRuby, type: Verify) {
     description "Verify the SHA1 of the download JRuby artifact"
-    src new File("${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz")
+    inputs.file(jrubyTarPath)
+    outputs.file(jrubyTarPath)
+    src new File(jrubyTarPath)
     algorithm 'SHA-1'
     checksum jRubySha1
 }
 
 task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     description "Install JRuby in the vendor directory"
+    inputs.file(jrubyTarPath)
+    outputs.dir("${projectDir}/vendor/jruby")
     from tarTree(downloadJRuby.dest)
     eachFile { f ->
       f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
@@ -117,6 +149,107 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
+task installTestGems(dependsOn: downloadAndInstallJRuby) {
+  inputs.files file("${projectDir}/Gemfile.template")
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files file("${projectDir}/versions.yml")
+  outputs.file("${projectDir}/Gemfile")
+  outputs.file("${projectDir}/Gemfile.lock")
+  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
+  doLast {
+    rubyGradleUtils.rake('test:install-core')
+  }
+}
+
+task assembleTarDistribution(dependsOn: downloadAndInstallJRuby) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
+  doLast {
+    rubyGradleUtils.rake('artifact:tar')
+  }
+}
+
+task assembleZipDistribution(dependsOn: downloadAndInstallJRuby) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+    rubyGradleUtils.rake('artifact:zip')
+  }
+}
+
+def logstashBuildDir = "${buildDir}/logstash-${project.version}-SNAPSHOT"
+
+task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
+  def tar = file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
+  inputs.files tar
+  outputs.files fileTree(logstashBuildDir)
+  from tarTree(tar)
+  into {buildDir}
+}
+
+def qaVendorPath = "${buildDir}/qa/integration/vendor"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
+def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
+
+task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
+  standardOutput = new ExecLogOutputStream(System.out)
+  errorOutput =  new ExecLogOutputStream(System.err)
+  // directly invoke bin/gem to install bundlers and force install dir "-i" into qaBundledGemPath
+  commandLine "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0", "-i", qaBundledGemPath
+}
+
+task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
+  workingDir "${projectDir}/qa/integration"
+  inputs.files file("${projectDir}/qa/integration/Gemfile")
+  inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
+  inputs.files file("${logstashBuildDir}/Gemfile")
+  inputs.files file("${logstashBuildDir}/Gemfile.lock")
+  inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
+  outputs.files fileTree("${qaVendorPath}")
+  outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
+  standardOutput = new ExecLogOutputStream(System.out)
+  errorOutput =  new ExecLogOutputStream(System.err)
+  // directly invoke bin/bundler and force install gem path to qaVendorPath
+  // note that bundler appends jruby/2.3.0 to the install path
+  commandLine qaBundleBin, "install", "--path", qaVendorPath
+}
+
+def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
+def rubyBin = "${projectDir}" +
+  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
+
+task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
+  workingDir "${projectDir}/qa/integration"
+  environment "LS_GEM_PATH", qaBundledGemPath
+  environment "LS_GEM_HOME", qaBundledGemPath
+  // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
+  environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
+  standardOutput = new ExecLogOutputStream(System.out)
+  errorOutput =  new ExecLogOutputStream(System.err)
+  // indirect launching of bin/bundle via bin/ruby so that the bundle exec command inherit
+  // the correct gem path environment which is not settable by command line
+  commandLine([rubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+}
+
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
-bootstrap.dependsOn downloadAndInstallJRuby
+bootstrap.dependsOn installTestGems
+
+runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
+check.dependsOn runIntegrationTests
+

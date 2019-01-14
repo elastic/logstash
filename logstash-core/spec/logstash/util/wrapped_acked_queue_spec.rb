@@ -2,7 +2,7 @@
 require "spec_helper"
 require "logstash/util/wrapped_acked_queue"
 
-describe LogStash::Util::WrappedAckedQueue do
+describe LogStash::WrappedAckedQueue do
   shared_examples "queue tests" do
     it "is_empty? on creation" do
       expect(queue.is_empty?).to be_truthy
@@ -30,20 +30,6 @@ describe LogStash::Util::WrappedAckedQueue do
     end
   end
 
-  context "memory" do
-    let(:page_capacity) { 1024 }
-    let(:max_events) { 0 }
-    let(:max_bytes) { 0 }
-    let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::Util::WrappedAckedQueue.create_memory_based(path, page_capacity, max_events, max_bytes) }
-
-    after do
-      queue.close
-    end
-
-    include_examples "queue tests"
-  end
-
   context "persisted" do
     let(:page_capacity) { 1024 }
     let(:max_events) { 0 }
@@ -52,7 +38,7 @@ describe LogStash::Util::WrappedAckedQueue do
     let(:checkpoint_writes) { 1024 }
     let(:checkpoint_interval) { 0 }
     let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::Util::WrappedAckedQueue.create_file_based(path, page_capacity, max_events, checkpoint_acks, checkpoint_writes, checkpoint_interval, max_bytes) }
+    let(:queue) { LogStash::WrappedAckedQueue.new(path, page_capacity, max_events, checkpoint_acks, checkpoint_writes, checkpoint_interval, max_bytes) }
 
     after do
       queue.close

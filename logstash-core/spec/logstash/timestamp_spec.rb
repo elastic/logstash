@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 require "spec_helper"
-require "logstash/timestamp"
 
 describe LogStash::Timestamp do
   context "constructors" do
@@ -34,6 +33,11 @@ describe LogStash::Timestamp do
 
     it "should raise exception on invalid format" do
       expect{LogStash::Timestamp.new("foobar")}.to raise_error
+    end
+
+    it "compares to any type" do
+      t = LogStash::Timestamp.new
+      expect(t == '-').to be_falsey
     end
 
   end

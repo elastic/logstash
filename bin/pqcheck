@@ -1,0 +1,31 @@
+#!/usr/bin/env bin/ruby
+
+DEFAULT_PQ_DIR = "data/queue/main"
+
+argv0 = ARGV[0].to_s.strip
+if argv0 == "-h" || argv0 == "--help"
+  puts("usage: pqcheck [PQ dir path]\n  default [PQ dir path] is #{DEFAULT_PQ_DIR}")
+  exit(0)
+end
+
+dir = argv0.empty? ? DEFAULT_PQ_DIR : argv0
+if (!Dir.exist?(dir))
+  puts("error: invalid PQ dir path: #{dir}")
+  exit(1)
+end
+
+puts("checking queue dir: #{dir}")
+
+Dir.glob("#{dir}/checkpoint.*").sort_by { |x| x[/[0-9]+$/].to_i }.each do |checkpoint|
+  data = File.read(checkpoint)
+
+  if data.size == 33
+    version, page, firstUnackedPage, firstUnackedSeq, minSeq, elementCount, crc32 = data.unpack("nNNQ>Q>NN")
+    fa = firstUnackedSeq >= (minSeq + elementCount)
+    ps = File.exist?("#{dir}/page.#{page}") ? File.size("#{dir}/page.#{page}") : nil
+    print("#{File.basename(checkpoint)}, fully-acked: #{fa ? "YES" : "NO"}, page.#{page} size: #{ps ? ps : "NOT FOUND"}, ")
+    p(version: version, page: page, firstUnackedPage: firstUnackedPage, firstUnackedSeq: firstUnackedSeq, minSeq: minSeq, elementCount: elementCount, crc32: crc32)
+  else
+    puts("#{File.basename(checkpoint)}, invalid size: #{data.size} ")
+  end
+end

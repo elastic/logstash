@@ -2,6 +2,8 @@ package org.logstash;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,12 +11,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.NonTypedScalarSerializerBase;
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
@@ -24,6 +27,7 @@ import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.jruby.util.ByteList;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class ObjectMappers {
@@ -41,11 +45,10 @@ public final class ObjectMappers {
 
     private static final SimpleModule CBOR_DESERIALIZERS =
         new SimpleModule("CborRubyDeserializers")
-            .addDeserializer(RubyBigDecimal.class, new RubyBigDecimalDeserializer())
-            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer())
+            .addDeserializer(RubyString.class, new RubyStringDeserializer())
             .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
-    public static final ObjectMapper JSON_MAPPER = 
+    public static final ObjectMapper JSON_MAPPER =
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
@@ -63,14 +66,31 @@ public final class ObjectMappers {
     }
 
     /**
+     * Serializer for scalar types that does not write type information when called via
+     * {@link ObjectMappers.NonTypedScalarSerializer#serializeWithType(Object, JsonGenerator, SerializerProvider, TypeSerializer)}.
+     * @param <T> Scalar Type
+     */
+    private abstract static class NonTypedScalarSerializer<T> extends StdScalarSerializer<T> {
+
+        NonTypedScalarSerializer(final Class<T> t) {
+            super(t);
+        }
+
+        @Override
+        public final void serializeWithType(final T value, final JsonGenerator gen,
+            final SerializerProvider provider, final TypeSerializer typeSer) throws IOException {
+            serialize(value, gen, provider);
+        }
+    }
+
+    /**
      * Serializer for {@link RubyString} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link String}.
      */
-    private static final class RubyStringSerializer
-        extends NonTypedScalarSerializerBase<RubyString> {
+    private static final class RubyStringSerializer extends StdSerializer<RubyString> {
 
         RubyStringSerializer() {
-            super(RubyString.class, true);
+            super(RubyString.class);
         }
 
         @Override
@@ -79,6 +99,30 @@ public final class ObjectMappers {
             throws IOException {
             generator.writeString(value.asJavaString());
         }
+
+        @Override
+        public void serializeWithType(final RubyString value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            final WritableTypeId typeId =
+                typeSer.typeId(value, RubyString.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
+            final ByteList bytes = value.getByteList();
+            jgen.writeBinary(bytes.getUnsafeBytes(), 0, bytes.length());
+            typeSer.writeTypeSuffix(jgen, typeId);
+        }
+    }
+
+    public static final class RubyStringDeserializer extends StdDeserializer<RubyString> {
+
+        RubyStringDeserializer() {
+            super(RubyString.class);
+        }
+
+        @Override
+        public RubyString deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return RubyString.newString(RubyUtil.RUBY, p.getBinaryValue());
+        }
     }
 
     /**
@@ -86,16 +130,15 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@link String}.
      */
     private static final class RubySymbolSerializer
-        extends NonTypedScalarSerializerBase<RubySymbol> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubySymbol> {
 
         RubySymbolSerializer() {
-            super(RubySymbol.class, true);
+            super(RubySymbol.class);
         }
 
         @Override
         public void serialize(final RubySymbol value, final JsonGenerator generator,
-            final SerializerProvider provider)
-            throws IOException {
+            final SerializerProvider provider) throws IOException {
             generator.writeString(value.asJavaString());
         }
     }
@@ -105,7 +148,7 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@code double}.
      */
     private static final class RubyFloatSerializer
-        extends NonTypedScalarSerializerBase<RubyFloat> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyFloat> {
 
         RubyFloatSerializer() {
             super(RubyFloat.class);
@@ -123,7 +166,7 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@code boolean}.
      */
     private static final class RubyBooleanSerializer
-        extends NonTypedScalarSerializerBase<RubyBoolean> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBoolean> {
 
         RubyBooleanSerializer() {
             super(RubyBoolean.class);
@@ -141,10 +184,10 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@code long}.
      */
     private static final class RubyFixnumSerializer
-        extends NonTypedScalarSerializerBase<RubyFixnum> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyFixnum> {
 
         RubyFixnumSerializer() {
-            super(RubyFixnum.class, true);
+            super(RubyFixnum.class);
         }
 
         @Override
@@ -166,17 +209,19 @@ public final class ObjectMappers {
         }
 
         @Override
-        public void serialize(final Timestamp value, final JsonGenerator jgen, 
+        public void serialize(final Timestamp value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
             jgen.writeString(value.toString());
         }
 
         @Override
-        public void serializeWithType(final Timestamp value, final JsonGenerator jgen, 
+        public void serializeWithType(final Timestamp value, final JsonGenerator jgen,
             final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, Timestamp.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeString(value.toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 
@@ -195,10 +240,10 @@ public final class ObjectMappers {
 
     /**
      * Serializer for {@link RubyBignum} since Jackson can't handle that type natively, so we
-     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
-     * deserialization happens via {@link ObjectMappers.RubyBignumDeserializer}.
+     * simply serialize it as if it were a {@link BigInteger}.
      */
-    private static final class RubyBignumSerializer extends StdSerializer<RubyBignum> {
+    private static final class RubyBignumSerializer
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBignum> {
 
         RubyBignumSerializer() {
             super(RubyBignum.class);
@@ -207,37 +252,16 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyBignum value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeString(value.toString());
-        }
-
-        @Override
-        public void serializeWithType(final RubyBignum value, final JsonGenerator jgen,
-            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyBignum.class);
-            jgen.writeString(value.toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
-        }
-    }
-
-    private static final class RubyBignumDeserializer extends StdDeserializer<RubyBignum> {
-
-        RubyBignumDeserializer() {
-            super(RubyBignum.class);
-        }
-
-        @Override
-        public RubyBignum deserialize(final JsonParser p, final DeserializationContext ctxt)
-            throws IOException {
-            return RubyBignum.newBignum(RubyUtil.RUBY, p.getText());
+            jgen.writeNumber(value.getBigIntegerValue());
         }
     }
 
     /**
-     * Serializer for {@link RubyBigDecimal} since Jackson can't handle that type natively, so we
-     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
-     * deserialization happens via {@link ObjectMappers.RubyBigDecimalDeserializer}.
+     * Serializer for {@link BigDecimal} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@link BigDecimal}.
      */
-    private static final class RubyBigDecimalSerializer extends StdSerializer<RubyBigDecimal> {
+    private static final class RubyBigDecimalSerializer
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBigDecimal> {
 
         RubyBigDecimalSerializer() {
             super(RubyBigDecimal.class);
@@ -246,28 +270,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyBigDecimal value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeString(value.getBigDecimalValue().toString());
-        }
-
-        @Override
-        public void serializeWithType(final RubyBigDecimal value, final JsonGenerator jgen,
-            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyBigDecimal.class);
-            jgen.writeString(value.getBigDecimalValue().toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
-        }
-    }
-
-    private static final class RubyBigDecimalDeserializer extends StdDeserializer<RubyBigDecimal> {
-
-        RubyBigDecimalDeserializer() {
-            super(RubyBigDecimal.class);
-        }
-
-        @Override
-        public RubyBigDecimal deserialize(final JsonParser p, final DeserializationContext ctxt)
-            throws IOException {
-            return new RubyBigDecimal(RubyUtil.RUBY, new BigDecimal(p.getText()));
+            jgen.writeNumber(value.getBigDecimalValue());
         }
     }
 
@@ -295,9 +298,11 @@ public final class ObjectMappers {
             final JsonGenerator jgen, final SerializerProvider serializers,
             final TypeSerializer typeSer)
             throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, Timestamp.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeObject(value.getTimestamp());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 
@@ -320,9 +325,11 @@ public final class ObjectMappers {
         @Override
         public void serializeWithType(final RubyNil value, final JsonGenerator jgen,
             final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyNil.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, RubyNil.class, JsonToken.VALUE_NULL);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeNull();
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 

@@ -8,6 +8,7 @@ import org.logstash.config.ir.graph.PluginVertex;
 
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.IRHelpers.assertSyntaxEquals;
+import static org.logstash.config.ir.IRHelpers.randMeta;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 
 /**
@@ -17,22 +18,28 @@ public class ImperativeToGraphtest {
 
     @Test
     public void convertSimpleExpression() throws InvalidIRException {
-        Graph imperative =  iComposeSequence(iPlugin(FILTER, "json"), iPlugin(FILTER, "stuff")).toGraph();
+        Graph imperative =  iComposeSequence(randMeta(), iPlugin(randMeta(), FILTER, "json"), iPlugin(randMeta(), FILTER, "stuff")).toGraph();
         imperative.validate(); // Verify this is a valid graph
 
         Graph regular = Graph.empty();
-        regular.chainVertices(gPlugin(FILTER, "json"), gPlugin(FILTER, "stuff"));
+        regular.chainVertices(gPlugin(randMeta(), FILTER, "json"), gPlugin(randMeta(), FILTER, "stuff"));
 
         assertSyntaxEquals(imperative, regular);
     }
 
     @Test
     public void testIdsDontAffectSourceComponentEquality() throws InvalidIRException {
-        Graph imperative =  iComposeSequence(iPlugin(FILTER, "json", "oneid"), iPlugin(FILTER, "stuff", "anotherid")).toGraph();
+        Graph imperative =  iComposeSequence(
+                iPlugin(randMeta(), FILTER, "json", "oneid"),
+                iPlugin(randMeta(), FILTER, "stuff", "anotherid")
+        ).toGraph();
         imperative.validate(); // Verify this is a valid graph
 
         Graph regular = Graph.empty();
-        regular.chainVertices(gPlugin(FILTER, "json", "someotherid"), gPlugin(FILTER, "stuff", "graphid"));
+        regular.chainVertices(
+                gPlugin(randMeta(), FILTER, "json", "someotherid"),
+                gPlugin(randMeta(), FILTER, "stuff", "graphid")
+        );
 
         assertSyntaxEquals(imperative, regular);
     }
@@ -40,21 +47,21 @@ public class ImperativeToGraphtest {
     @Test
     public void convertComplexExpression() throws InvalidIRException {
         Graph imperative = iComposeSequence(
-                iPlugin(FILTER, "p1"),
-                iPlugin(FILTER, "p2"),
-                iIf(eAnd(eTruthy(eValue(5l)), eTruthy(eValue(null))),
-                        iPlugin(FILTER, "p3"),
-                        iComposeSequence(iPlugin(FILTER, "p4"), iPlugin(FILTER, "p5"))
+                iPlugin(randMeta(), FILTER, "p1"),
+                iPlugin(randMeta(), FILTER, "p2"),
+                iIf(randMeta(), eAnd(eTruthy(eValue(5l)), eTruthy(eValue(null))),
+                        iPlugin(randMeta(), FILTER, "p3"),
+                        iComposeSequence(iPlugin(randMeta(), FILTER, "p4"), iPlugin(randMeta(), FILTER, "p5"))
                 )
         ).toGraph();
         imperative.validate(); // Verify this is a valid graph
 
-        PluginVertex p1 = gPlugin(FILTER, "p1");
-        PluginVertex p2 = gPlugin(FILTER, "p2");
-        PluginVertex p3 = gPlugin(FILTER, "p3");
-        PluginVertex p4 = gPlugin(FILTER, "p4");
-        PluginVertex p5 = gPlugin(FILTER, "p5");
-        IfVertex testIf = gIf(eAnd(eTruthy(eValue(5l)), eTruthy(eValue(null))));
+        PluginVertex p1 = gPlugin(randMeta(), FILTER, "p1");
+        PluginVertex p2 = gPlugin(randMeta(), FILTER, "p2");
+        PluginVertex p3 = gPlugin(randMeta(), FILTER, "p3");
+        PluginVertex p4 = gPlugin(randMeta(), FILTER, "p4");
+        PluginVertex p5 = gPlugin(randMeta(), FILTER, "p5");
+        IfVertex testIf = gIf(randMeta(), eAnd(eTruthy(eValue(5l)), eTruthy(eValue(null))));
 
         Graph expected = Graph.empty();
         expected.chainVertices(p1,p2,testIf);
@@ -69,32 +76,32 @@ public class ImperativeToGraphtest {
     // partial leaves. This makes sure they all wire-up right
     @Test
     public void deepDanglingPartialLeaves() throws InvalidIRException {
-         Graph imperative = iComposeSequence(
-                 iPlugin(FILTER, "p0"),
-                 iIf(eTruthy(eValue(1)),
-                         iPlugin(FILTER, "p1"),
-                         iIf(eTruthy(eValue(3)),
-                             iPlugin(FILTER, "p5"))
+        Graph imperative = iComposeSequence(
+                 iPlugin(randMeta(), FILTER, "p0"),
+                 iIf(randMeta(), eTruthy(eValue(1)),
+                         iPlugin(randMeta(), FILTER, "p1"),
+                         iIf(randMeta(), eTruthy(eValue(3)),
+                             iPlugin(randMeta(), FILTER, "p5"))
                  ),
-                 iIf(eTruthy(eValue(2)),
-                         iPlugin(FILTER, "p3"),
-                         iPlugin(FILTER, "p4")
+                 iIf(randMeta(), eTruthy(eValue(2)),
+                         iPlugin(randMeta(), FILTER, "p3"),
+                         iPlugin(randMeta(), FILTER, "p4")
                  ),
-                 iPlugin(FILTER, "pLast")
+                 iPlugin(randMeta(), FILTER, "pLast")
 
          ).toGraph();
         imperative.validate(); // Verify this is a valid graph
 
-        IfVertex if1 = gIf(eTruthy(eValue(1)));
-        IfVertex if2 = gIf(eTruthy(eValue(2)));
-        IfVertex if3 = gIf(eTruthy(eValue(3)));
-        PluginVertex p0 = gPlugin(FILTER, "p0");
-        PluginVertex p1 = gPlugin(FILTER, "p1");
-        PluginVertex p2 = gPlugin(FILTER, "p2");
-        PluginVertex p3 = gPlugin(FILTER, "p3");
-        PluginVertex p4 = gPlugin(FILTER, "p4");
-        PluginVertex p5 = gPlugin(FILTER, "p5");
-        PluginVertex pLast = gPlugin(FILTER, "pLast");
+        IfVertex if1 = gIf(randMeta(), eTruthy(eValue(1)));
+        IfVertex if2 = gIf(randMeta(), eTruthy(eValue(2)));
+        IfVertex if3 = gIf(randMeta(), eTruthy(eValue(3)));
+        PluginVertex p0 = gPlugin(randMeta(), FILTER, "p0");
+        PluginVertex p1 = gPlugin(randMeta(), FILTER, "p1");
+        PluginVertex p2 = gPlugin(randMeta(), FILTER, "p2");
+        PluginVertex p3 = gPlugin(randMeta(), FILTER, "p3");
+        PluginVertex p4 = gPlugin(randMeta(), FILTER, "p4");
+        PluginVertex p5 = gPlugin(randMeta(), FILTER, "p5");
+        PluginVertex pLast = gPlugin(randMeta(), FILTER, "pLast");
 
         Graph expected = Graph.empty();
         expected.chainVertices(p0, if1);
@@ -118,32 +125,32 @@ public class ImperativeToGraphtest {
     @Test
     public void convertComplexExpressionWithTerminal() throws InvalidIRException {
         Graph imperative = iComposeSequence(
-            iPlugin(FILTER, "p1"),
-            iIf(eTruthy(eValue(1)),
+            iPlugin(randMeta(), FILTER, "p1"),
+            iIf(randMeta(), eTruthy(eValue(1)),
                 iComposeSequence(
-                    iIf(eTruthy(eValue(2)), noop(), iPlugin(FILTER, "p2")),
-                    iIf(eTruthy(eValue(3)), iPlugin(FILTER, "p3"), noop())
+                    iIf(randMeta(), eTruthy(eValue(2)), noop(), iPlugin(randMeta(), FILTER, "p2")),
+                    iIf(randMeta(), eTruthy(eValue(3)), iPlugin(randMeta(), FILTER, "p3"), noop())
                 ),
                 iComposeSequence(
-                    iIf(eTruthy(eValue(4)), iPlugin(FILTER, "p4")),
-                    iPlugin(FILTER, "p5")
+                    iIf(randMeta(), eTruthy(eValue(4)), iPlugin(randMeta(), FILTER, "p4")),
+                    iPlugin(randMeta(), FILTER, "p5")
                 )
             ),
-            iPlugin(FILTER, "terminal")
+            iPlugin(randMeta(), FILTER, "terminal")
         ).toGraph();
         imperative.validate(); // Verify this is a valid graph
 
-        PluginVertex p1 = gPlugin(FILTER,"p1");
-        PluginVertex p2 = gPlugin(FILTER, "p2");
-        PluginVertex p3 = gPlugin(FILTER, "p3");
-        PluginVertex p4 = gPlugin(FILTER, "p4");
-        PluginVertex p5 = gPlugin(FILTER, "p5");
-        PluginVertex terminal = gPlugin(FILTER, "terminal");
+        PluginVertex p1 = gPlugin(randMeta(), FILTER,"p1");
+        PluginVertex p2 = gPlugin(randMeta(), FILTER, "p2");
+        PluginVertex p3 = gPlugin(randMeta(), FILTER, "p3");
+        PluginVertex p4 = gPlugin(randMeta(), FILTER, "p4");
+        PluginVertex p5 = gPlugin(randMeta(), FILTER, "p5");
+        PluginVertex terminal = gPlugin(randMeta(), FILTER, "terminal");
 
-        IfVertex if1 = gIf(eTruthy(eValue(1)));
-        IfVertex if2 = gIf(eTruthy(eValue(2)));
-        IfVertex if3 = gIf(eTruthy(eValue(3)));
-        IfVertex if4 = gIf(eTruthy(eValue(4)));
+        IfVertex if1 = gIf(randMeta(), eTruthy(eValue(1)));
+        IfVertex if2 = gIf(randMeta(), eTruthy(eValue(2)));
+        IfVertex if3 = gIf(randMeta(), eTruthy(eValue(3)));
+        IfVertex if4 = gIf(randMeta(), eTruthy(eValue(4)));
 
         Graph expected = Graph.empty();
         expected.chainVertices(p1, if1);

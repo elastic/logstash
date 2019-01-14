@@ -31,10 +31,10 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
         return left;
     }
 
-    public BinaryBooleanExpression(SourceWithMetadata meta,
-                                   Expression left,
-                                   Expression right) {
+    protected BinaryBooleanExpression(SourceWithMetadata meta, Expression left, Expression right) {
         super(meta);
+        ensureNotNull(left, "left", meta);
+        ensureNotNull(right, "right", meta);
         this.left = left;
         this.right = right;
     }
@@ -48,5 +48,16 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
 
     public String uniqueHash() {
         return Util.digest(this.getClass().getCanonicalName() + "[" + getLeft().hashSource() + "|" + getRight().hashSource() + "]");
+    }
+
+    private static void ensureNotNull(final Expression expression, final String side,
+        final SourceWithMetadata meta) {
+        if (expression == null) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "Failed to parse %s-hand side of conditional %s", side, String.valueOf(meta)
+                )
+            );
+        }
     }
 }

@@ -9,8 +9,10 @@ Before upgrading Logstash:
 * Test upgrades in a development environment before upgrading your production cluster.
 ===========================================
 
-If you are installing Logstash with other components in the Elastic Stack, also see the
-{stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
+If you're upgrading other products in the stack, also read the
+{stack-ref}/index.html[Elastic Stack Installation and Upgrade Guide]. Want an
+upgrade list that's tailored to your stack? Try out our
+{upgrade_guide}[Interactive Upgrade Guide].
 
 See the following topics for information about upgrading Logstash:
 

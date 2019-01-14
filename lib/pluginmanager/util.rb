@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "rubygems/package"
+require_relative "../bootstrap/patches/remote_fetcher"
 
 module LogStash::PluginManager
 

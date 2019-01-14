@@ -10,5 +10,8 @@ require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'
 
-status = RSpec::Core::Runner.run(ARGV.empty? ? ["spec"] : ARGV).to_i
+status = RSpec::Core::Runner.run(ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV).to_i
+if ENV["IS_JUNIT_RUN"]
+  return status
+end
 exit status if status != 0

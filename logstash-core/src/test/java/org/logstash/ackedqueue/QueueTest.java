@@ -23,7 +23,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.AbstractByteBufferPageIO;
+import org.logstash.ackedqueue.io.LongVector;
+import org.logstash.ackedqueue.io.MmapPageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -31,7 +32,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
-import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForByteBufferPageIO;
+import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
 public class QueueTest {
 
@@ -58,7 +59,7 @@ public class QueueTest {
 
     @Test
     public void newQueue() throws IOException {
-        try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(10))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(10, dataPath))) {
             q.open();
 
             assertThat(q.nonBlockReadBatch(1), nullValue());
@@ -67,7 +68,7 @@ public class QueueTest {
 
     @Test
     public void singleWriteRead() throws IOException {
-        try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
 
             Queueable element = new StringElement("foobarbaz");
@@ -90,10 +91,10 @@ public class QueueTest {
     @Test(timeout = 5000)
     public void writeToFullyAckedHeadpage() throws IOException {
         final Queueable element = new StringElement("foobarbaz");
-        final int page = element.serialize().length * 2 + AbstractByteBufferPageIO.MIN_CAPACITY;
+        final int page = element.serialize().length * 2 + MmapPageIO.MIN_CAPACITY;
         // Queue that can only hold one element per page.
-        try (Queue q = new TestQueue(
-            TestSettings.volatileQueueSettings(page, page * 2 - 1))) {
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(page, page * 2 - 1, dataPath))) {
             q.open();
             for (int i = 0; i < 5; ++i) {
                 q.write(element);
@@ -106,9 +107,32 @@ public class QueueTest {
         }
     }
 
+    /**
+     * This test ensures that the {@link Queue} functions properly when pagesize is equal to overall
+     * queue size (i.e. there is only a single page).
+     * @throws IOException On Failure
+     */
+    @Test(timeout = 5000)
+    public void writeWhenPageEqualsQueueSize() throws IOException {
+        final Queueable element = new StringElement("foobarbaz");
+        // Queue that can only hold one element per page.
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(1024, 1024L, dataPath))) {
+            q.open();
+            for (int i = 0; i < 3; ++i) {
+                q.write(element);
+                try (Batch b = q.readBatch(1, 500L)) {
+                    assertThat(b.getElements().size(), is(1));
+                    assertThat(b.getElements().get(0).toString(), is(element.toString()));
+                }
+            }
+            assertThat(q.nonBlockReadBatch(1), nullValue());
+        }
+    }
+
     @Test
     public void singleWriteMultiRead() throws IOException {
-        try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
 
             Queueable element = new StringElement("foobarbaz");
@@ -124,7 +148,7 @@ public class QueueTest {
 
     @Test
     public void multiWriteSamePage() throws IOException {
-        try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
             List<Queueable> elements = Arrays
                 .asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"),
@@ -150,9 +174,8 @@ public class QueueTest {
     @Test
     public void writeMultiPage() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
-        try (TestQueue q = new TestQueue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(elements.get(0), 2), dataPath))) {
             q.open();
 
             for (Queueable e : elements) {
@@ -160,30 +183,30 @@ public class QueueTest {
             }
 
             // total of 2 pages: 1 head and 1 tail
-            assertThat(q.getTailPages().size(), is(1));
+            assertThat(q.tailPages.size(), is(1));
 
-            assertThat(q.getTailPages().get(0).isFullyRead(), is(false));
-            assertThat(q.getTailPages().get(0).isFullyAcked(), is(false));
-            assertThat(q.getHeadPage().isFullyRead(), is(false));
-            assertThat(q.getHeadPage().isFullyAcked(), is(false));
+            assertThat(q.tailPages.get(0).isFullyRead(), is(false));
+            assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
+            assertThat(q.headPage.isFullyRead(), is(false));
+            assertThat(q.headPage.isFullyAcked(), is(false));
 
             Batch b = q.nonBlockReadBatch(10);
             assertThat(b.getElements().size(), is(2));
 
-            assertThat(q.getTailPages().size(), is(1));
+            assertThat(q.tailPages.size(), is(1));
 
-            assertThat(q.getTailPages().get(0).isFullyRead(), is(true));
-            assertThat(q.getTailPages().get(0).isFullyAcked(), is(false));
-            assertThat(q.getHeadPage().isFullyRead(), is(false));
-            assertThat(q.getHeadPage().isFullyAcked(), is(false));
+            assertThat(q.tailPages.get(0).isFullyRead(), is(true));
+            assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
+            assertThat(q.headPage.isFullyRead(), is(false));
+            assertThat(q.headPage.isFullyAcked(), is(false));
 
             b = q.nonBlockReadBatch(10);
             assertThat(b.getElements().size(), is(2));
 
-            assertThat(q.getTailPages().get(0).isFullyRead(), is(true));
-            assertThat(q.getTailPages().get(0).isFullyAcked(), is(false));
-            assertThat(q.getHeadPage().isFullyRead(), is(true));
-            assertThat(q.getHeadPage().isFullyAcked(), is(false));
+            assertThat(q.tailPages.get(0).isFullyRead(), is(true));
+            assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
+            assertThat(q.headPage.isFullyRead(), is(true));
+            assertThat(q.headPage.isFullyAcked(), is(false));
 
             b = q.nonBlockReadBatch(10);
             assertThat(b, nullValue());
@@ -194,9 +217,8 @@ public class QueueTest {
     @Test
     public void writeMultiPageWithInOrderAcking() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
-        try (TestQueue q = new TestQueue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(elements.get(0), 2), dataPath))) {
             q.open();
 
             for (Queueable e : elements) {
@@ -206,29 +228,29 @@ public class QueueTest {
             Batch b = q.nonBlockReadBatch(10);
 
             assertThat(b.getElements().size(), is(2));
-            assertThat(q.getTailPages().size(), is(1));
+            assertThat(q.tailPages.size(), is(1));
 
             // lets keep a ref to that tail page before acking
-            TailPage tailPage = q.getTailPages().get(0);
+            Page tailPage = q.tailPages.get(0);
 
             assertThat(tailPage.isFullyRead(), is(true));
 
             // ack first batch which includes all elements from tailPages
             b.close();
 
-            assertThat(q.getTailPages().size(), is(0));
+            assertThat(q.tailPages.size(), is(0));
             assertThat(tailPage.isFullyRead(), is(true));
             assertThat(tailPage.isFullyAcked(), is(true));
 
             b = q.nonBlockReadBatch(10);
 
             assertThat(b.getElements().size(), is(2));
-            assertThat(q.getHeadPage().isFullyRead(), is(true));
-            assertThat(q.getHeadPage().isFullyAcked(), is(false));
+            assertThat(q.headPage.isFullyRead(), is(true));
+            assertThat(q.headPage.isFullyAcked(), is(false));
 
             b.close();
 
-            assertThat(q.getHeadPage().isFullyAcked(), is(true));
+            assertThat(q.headPage.isFullyAcked(), is(true));
         }
     }
 
@@ -236,16 +258,15 @@ public class QueueTest {
     public void writeMultiPageWithInOrderAckingCheckpoints() throws IOException {
         List<Queueable> elements1 = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"));
         List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements1.get(0));
 
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity)
+            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(elements1.get(0), 2), dataPath)
         ).checkpointMaxWrites(1024) // arbitrary high enough threshold so that it's not reached (default for TestSettings is 1)
         .build();
-        try (TestQueue q = new TestQueue(settings)) {
+        try (Queue q = new Queue(settings)) {
             q.open();
 
-            assertThat(q.getHeadPage().getPageNum(), is(0));
+            assertThat(q.headPage.getPageNum(), is(0));
             Checkpoint c = q.getCheckpointIO().read("checkpoint.head");
             assertThat(c.getPageNum(), is(0));
             assertThat(c.getElementCount(), is(0));
@@ -326,7 +347,7 @@ public class QueueTest {
 
         // 10 tests of random queue sizes
         for (int loop = 0; loop < 10; loop++) {
-            int page_count = random.nextInt(10000) + 1;
+            int page_count = random.nextInt(100) + 1;
 
             // String format call below needs to at least print one digit
             final int digits = Math.max((int) Math.ceil(Math.log10(page_count)), 1);
@@ -336,16 +357,15 @@ public class QueueTest {
             for (int i = 0; i < page_count; i++) {
                 elements.add(new StringElement(String.format("%0" + digits + "d", i)));
             }
-            int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
-            try (TestQueue q = new TestQueue(
-                TestSettings.volatileQueueSettings(singleElementCapacity))) {
+            try (Queue q = new Queue(
+                TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(elements.get(0)), dataPath))) {
                 q.open();
 
                 for (Queueable e : elements) {
                     q.write(e);
                 }
 
-                assertThat(q.getTailPages().size(), is(page_count - 1));
+                assertThat(q.tailPages.size(), is(page_count - 1));
 
                 // first read all elements
                 List<Batch> batches = new ArrayList<>();
@@ -359,24 +379,24 @@ public class QueueTest {
                 for (Batch b : batches) {
                     b.close();
                 }
-                
-                assertThat(q.getTailPages().size(), is(0));
+
+                assertThat(q.tailPages.size(), is(0));
             }
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
+        int singleElementCapacity = computeCapacityForMmapPageIO(element);
 
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(singleElementCapacity)
+            TestSettings.persistedQueueSettings(singleElementCapacity, dataPath)
         ).maxUnread(2) // 2 so we know the first write should not block and the second should
         .build();
-        try (TestQueue q = new TestQueue(settings)) {
+        try (Queue q = new Queue(settings)) {
             q.open();
-            
+
             long seqNum = q.write(element);
             assertThat(seqNum, is(1L));
             assertThat(q.isFull(), is(false));
@@ -404,7 +424,7 @@ public class QueueTest {
             }
 
             // since we did not ack and pages hold a single item
-            assertThat(q.getTailPages().size(), is(ELEMENT_COUNT));
+            assertThat(q.tailPages.size(), is(ELEMENT_COUNT));
         }
     }
 
@@ -414,10 +434,10 @@ public class QueueTest {
 
         // TODO: add randomized testing on the page size (but must be > single element size)
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(256) // 256 is arbitrary, large enough to hold a few elements
+            TestSettings.persistedQueueSettings(256, dataPath) // 256 is arbitrary, large enough to hold a few elements
         ).maxUnread(2)
         .build(); // 2 so we know the first write should not block and the second should
-        try (TestQueue q = new TestQueue(settings)) {
+        try (Queue q = new Queue(settings)) {
             q.open();
 
             // perform first non-blocking write
@@ -448,28 +468,28 @@ public class QueueTest {
             }
 
             // all batches are acked, no tail pages should exist
-            assertThat(q.getTailPages().size(), is(0));
+            assertThat(q.tailPages.size(), is(0));
 
             // the last read unblocked the last write so some elements (1 unread and maybe some acked) should be in the head page
-            assertThat(q.getHeadPage().getElementCount() > 0L, is(true));
-            assertThat(q.getHeadPage().unreadCount(), is(1L));
+            assertThat(q.headPage.getElementCount() > 0L, is(true));
+            assertThat(q.headPage.unreadCount(), is(1L));
             assertThat(q.unreadCount, is(1L));
         }
     }
 
-    @Test(timeout = 5000)
-    public void reachMaxSizeTest() throws IOException, InterruptedException, ExecutionException {
+    @Test(timeout = 50_000)
+    public void reachMaxSizeTest() throws IOException, InterruptedException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
-        try (TestQueue q = new TestQueue(settings)) {
+        Settings settings = TestSettings.persistedQueueSettings(
+                computeCapacityForMmapPageIO(element, 10), computeCapacityForMmapPageIO(element, 100), dataPath
+        );
+        try (Queue q = new Queue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
-            for (int i = 0; i < ELEMENT_COUNT; i++) {
+            int elementCount = 99; // should be able to write 99 events before getting full
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
 
@@ -484,56 +504,56 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void ackingMakesQueueNotFullAgainTest() throws IOException, InterruptedException, ExecutionException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
-        try (TestQueue q = new TestQueue(settings)) {
+        Settings settings = TestSettings.persistedQueueSettings(
+                computeCapacityForMmapPageIO(element, 10), computeCapacityForMmapPageIO(element, 100), dataPath
+        );
+        try (Queue q = new Queue(settings)) {
             q.open();
-            // should be able to write 90 events (9 pages) before getting full
-            final long ELEMENT_COUNT = 90;
-            for (int i = 0; i < ELEMENT_COUNT; i++) {
+            // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
+            final long elementCount = 99;
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
             assertThat(q.isFull(), is(false));
-            
+
             // we expect this next write call to block so let's wrap it in a Future
             Future<Long> future = executor.submit(() -> q.write(element));
             assertThat(future.isDone(), is(false));
-            
+
             while (!q.isFull()) {
                 Thread.sleep(10);
             }
             assertThat(q.isFull(), is(true));
-            
-            Batch b = q.readBatch(10); // read 1 page (10 events)
+
+            Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1)); // read 1 page (10 events)
             b.close();  // purge 1 page
-            
+
             while (q.isFull()) { Thread.sleep(10); }
             assertThat(q.isFull(), is(false));
-            
-            assertThat(future.get(), is(ELEMENT_COUNT + 1));
+
+            assertThat(future.get(), is(elementCount + 1));
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
-        try (TestQueue q = new TestQueue(settings)) {
+        Settings settings = TestSettings.persistedQueueSettings(
+                computeCapacityForMmapPageIO(element, 10),  computeCapacityForMmapPageIO(element, 100), dataPath
+        );
+        try (Queue q = new Queue(settings)) {
             q.open();
-            int ELEMENT_COUNT =
-                90; // should be able to write 90 events (9 pages) before getting full
-            for (int i = 0; i < ELEMENT_COUNT; i++) { 
+            // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
+            int elementCount = 99;
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
 
@@ -541,7 +561,7 @@ public class QueueTest {
 
             // read 1 page (10 events) here while not full yet so that the read will not singal the not full state
             // we want the batch closing below to signal the not full state
-            Batch b = q.readBatch(10);
+            Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1));
 
             // we expect this next write call to block so let's wrap it in a Future
             Future<Long> future = executor.submit(() -> q.write(element));
@@ -554,23 +574,23 @@ public class QueueTest {
 
             b.close();  // purge 1 page
 
-            assertThat(future.get(), is(ELEMENT_COUNT + 1L));
+            assertThat(future.get(), is(elementCount + 1L));
         }
     }
 
-    @Test(timeout = 5000)
-    public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException, ExecutionException {
+    @Test(timeout = 50_000)
+    public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
-        try (TestQueue q = new TestQueue(settings)) {
+        Settings settings = TestSettings.persistedQueueSettings(
+                computeCapacityForMmapPageIO(element, 10), computeCapacityForMmapPageIO(element, 100), dataPath
+        );
+        try (Queue q = new Queue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
+            int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
             for (int i = 0; i < ELEMENT_COUNT; i++) {
                 q.write(element);
             }
@@ -584,7 +604,7 @@ public class QueueTest {
             }
             assertThat(q.isFull(), is(true));
 
-            Batch b = q.readBatch(9); // read 90% of page (9 events)
+            Batch b = q.readBatch(9, TimeUnit.SECONDS.toMillis(1)); // read 90% of page (9 events)
             b.close();  // this should not purge a page
 
             assertThat(q.isFull(), is(true)); // queue should still be full
@@ -595,7 +615,7 @@ public class QueueTest {
     public void queueStableUnderStressHugeCapacity() throws Exception {
         stableUnderStress(100_000);
     }
-    
+
     @Test
     public void queueStableUnderStressLowCapacity() throws Exception {
         stableUnderStress(50);
@@ -637,7 +657,9 @@ public class QueueTest {
             assertThat(b.getElements().get(0), is(element2));
             assertThat(b.getElements().get(1), is(element3));
 
-            q.ack(Collections.singletonList(firstSeqNum));
+            final LongVector seqs = new LongVector(1);
+            seqs.add(firstSeqNum);
+            q.ack(seqs);
         }
 
         try(Queue q = new Queue(settings)) {
@@ -646,25 +668,28 @@ public class QueueTest {
             b = q.nonBlockReadBatch(2);
             assertThat(b.getElements().size(), is(2));
 
-            q.ack(Arrays.asList(secondSeqNum, thirdSeqNum));
+            final LongVector seqs = new LongVector(2);
+            seqs.add(secondSeqNum);
+            seqs.add(thirdSeqNum);
+            q.ack(seqs);
 
             assertThat(q.getAckedCount(), equalTo(0L));
             assertThat(q.getUnackedCount(), equalTo(0L));
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
 
         final int WRITER_COUNT = 5;
 
         final ExecutorService executorService = Executors.newFixedThreadPool(WRITER_COUNT);
         // very small pages to maximize page creation
-        Settings settings = TestSettings.volatileQueueSettings(100);
-        try (TestQueue q = new TestQueue(settings)) {
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
+        try (Queue q = new Queue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 10000;
+            int ELEMENT_COUNT = 1000;
             AtomicInteger element_num = new AtomicInteger(0);
 
             // we expect this next write call to block so let's wrap it in a Future
@@ -685,7 +710,7 @@ public class QueueTest {
             int read_count = 0;
 
             while (read_count < ELEMENT_COUNT * WRITER_COUNT) {
-                Batch b = q.readBatch(BATCH_SIZE);
+                Batch b = q.readBatch(BATCH_SIZE, TimeUnit.SECONDS.toMillis(1));
                 read_count += b.size();
                 b.close();
             }
@@ -695,7 +720,7 @@ public class QueueTest {
                 assertThat(result, is(ELEMENT_COUNT));
             }
 
-            assertThat(q.getTailPages().isEmpty(), is(true));
+            assertThat(q.tailPages.isEmpty(), is(true));
             assertThat(q.isFullyAcked(), is(true));
         } finally {
             executorService.shutdownNow();
@@ -706,9 +731,8 @@ public class QueueTest {
     @Test
     public void fullyAckedHeadPageBeheadingTest() throws IOException {
         Queueable element = new StringElement("foobarbaz1");
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-        try (TestQueue q = new TestQueue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element, 2), dataPath))) {
             q.open();
 
             Batch b;
@@ -723,8 +747,8 @@ public class QueueTest {
             b.close();
 
             // head page should be full and fully acked
-            assertThat(q.getHeadPage().isFullyAcked(), is(true));
-            assertThat(q.getHeadPage().hasSpace(element.serialize().length), is(false));
+            assertThat(q.headPage.isFullyAcked(), is(true));
+            assertThat(q.headPage.hasSpace(element.serialize().length), is(false));
             assertThat(q.isFullyAcked(), is(true));
 
             // write extra element to trigger beheading
@@ -732,10 +756,24 @@ public class QueueTest {
 
             // since head page was fully acked it should not have created a new tail page
 
-            assertThat(q.getTailPages().isEmpty(), is(true));
-            assertThat(q.getHeadPage().getPageNum(), is(1));
+            assertThat(q.tailPages.isEmpty(), is(true));
+            assertThat(q.headPage.getPageNum(), is(1));
             assertThat(q.firstUnackedPageNum(), is(1));
             assertThat(q.isFullyAcked(), is(false));
+        }
+    }
+
+    @Test
+    public void getsPersistedByteSizeCorrectly() throws Exception {
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
+        try (Queue queue = new Queue(settings)) {
+            queue.open();
+            long seqNum = 0;
+            for (int i = 0; i < 50; ++i) {
+                seqNum = queue.write(new StringElement("foooo"));
+            }
+            queue.ensurePersistedUpto(seqNum);
+            assertThat(queue.getPersistedByteSize(), is(1063L));
         }
     }
 
@@ -746,7 +784,42 @@ public class QueueTest {
             assertThat(q.getPersistedByteSize(), is(0L));
         }
     }
-    
+
+    @Test
+    public void getsPersistedByteSizeCorrectlyForFullyAckedDeletedTailPages() throws Exception {
+        final Queueable element = new StringElement("0123456789"); // 10 bytes
+        final Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+
+        try (Queue q = new Queue(settings)) {
+            q.open();
+
+            q.write(element);
+            Batch b1 = q.readBatch(2, TimeUnit.SECONDS.toMillis(1));
+            q.write(element);
+            Batch b2 = q.readBatch(2, TimeUnit.SECONDS.toMillis(1));
+            q.write(element);
+            Batch b3 = q.readBatch(2, TimeUnit.SECONDS.toMillis(1));
+            q.write(element);
+            Batch b4 = q.readBatch(2, TimeUnit.SECONDS.toMillis(1));
+
+            assertThat(q.tailPages.size(), is(3));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+
+            // fully ack middle page and head page
+            b2.close();
+            b4.close();
+
+            assertThat(q.tailPages.size(), is(2));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+
+            q.close();
+            q.open();
+
+            assertThat(q.tailPages.size(), is(2));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+        }
+    }
+
     private void stableUnderStress(final int capacity) throws IOException {
         Settings settings = TestSettings.persistedQueueSettings(capacity, dataPath);
         final ExecutorService exec = Executors.newScheduledThreadPool(2);
@@ -754,16 +827,18 @@ public class QueueTest {
             final int count = 20_000;
             final int concurrent = 2;
             queue.open();
-            final Future<Integer>[] futures = new Future[concurrent];
+            final List<Future<Integer>> futures = new ArrayList<>(concurrent);
             for (int c = 0; c < concurrent; ++c) {
-                futures[c] = exec.submit(() -> {
+                futures.add(exec.submit(() -> {
                     int i = 0;
                     try {
                         while (i < count / concurrent) {
-                            final Batch batch = queue.readBatch(1);
-                            for (final Queueable elem : batch.getElements()) {
-                                if (elem != null) {
-                                    ++i;
+                            final Batch batch = queue.readBatch(1, TimeUnit.SECONDS.toMillis(1));
+                            if (batch != null) {
+                                for (final Queueable elem : batch.getElements()) {
+                                    if (elem != null) {
+                                        ++i;
+                                    }
                                 }
                             }
                         }
@@ -771,7 +846,7 @@ public class QueueTest {
                     } catch (final IOException ex) {
                         throw new IllegalStateException(ex);
                     }
-                });
+                }));
             }
             for (int i = 0; i < count; ++i) {
                 try {
@@ -782,7 +857,7 @@ public class QueueTest {
                 }
             }
             assertThat(
-                Arrays.stream(futures).map(i -> {
+                futures.stream().map(i -> {
                     try {
                         return i.get(2L, TimeUnit.MINUTES);
                     } catch (final InterruptedException | ExecutionException | TimeoutException ex) {
@@ -796,14 +871,14 @@ public class QueueTest {
 
     @Test
     public void inEmpty() throws IOException {
-        try(Queue q = new Queue(TestSettings.volatileQueueSettings(1000))) {
+        try(Queue q = new Queue(TestSettings.persistedQueueSettings(1000, dataPath))) {
             q.open();
             assertThat(q.isEmpty(), is(true));
 
             q.write(new StringElement("foobarbaz"));
             assertThat(q.isEmpty(), is(false));
 
-            Batch b = q.readBatch(1);
+            Batch b = q.readBatch(1, TimeUnit.SECONDS.toMillis(1));
             assertThat(q.isEmpty(), is(false));
 
             b.close();
@@ -814,14 +889,13 @@ public class QueueTest {
     @Test
     public void testZeroByteFullyAckedPageOnOpen() throws IOException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
-        Settings settings = TestSettings.persistedQueueSettings(singleElementCapacity, dataPath);
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
 
         // the goal here is to recreate a condition where the queue has a tail page of size zero with
         // a checkpoint that indicates it is full acknowledged
         // see issue #7809
 
-        try(TestQueue q = new TestQueue(settings)) {
+        try(Queue q = new Queue(settings)) {
             q.open();
 
             Queueable element1 = new StringElement("0123456789");
@@ -830,12 +904,12 @@ public class QueueTest {
             // write 2 elements to force a new page.
             q.write(element1);
             q.write(element2);
-            assertThat(q.getTailPages().size(), is(1));
+            assertThat(q.tailPages.size(), is(1));
 
             // work directly on the tail page and not the queue to avoid habing the queue purge the page
             // but make sure the tail page checkpoint marks it as fully acked
-            TailPage tp = q.getTailPages().get(0);
-            Batch b = tp.readBatch(1);
+            Page tp = q.tailPages.get(0);
+            Batch b = new Batch(tp.read(1), q);
             assertThat(b.getElements().get(0), is(element1));
             tp.ack(b.getSeqNums(), 1);
             assertThat(tp.isFullyAcked(), is(true));
@@ -849,17 +923,91 @@ public class QueueTest {
         c.truncate(0);
         c.close();
 
-        try(TestQueue q = new TestQueue(settings)) {
+        try(Queue q = new Queue(settings)) {
             // here q.open used to crash with:
             // java.io.IOException: Page file size 0 different to configured page capacity 27 for ...
             // because page.0 ended up as a zero byte file but its checkpoint says it's fully acked
             q.open();
             assertThat(q.getUnackedCount(), is(1L));
-            assertThat(q.getTailPages().size(), is(1));
-            assertThat(q.getTailPages().get(0).isFullyAcked(), is(false));
-            assertThat(q.getTailPages().get(0).elementCount, is(1));
-            assertThat(q.getHeadPage().elementCount, is(0));
+            assertThat(q.tailPages.size(), is(1));
+            assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
+            assertThat(q.tailPages.get(0).elementCount, is(1));
+            assertThat(q.headPage.elementCount, is(0));
         }
     }
 
+    @Test
+    public void pageCapacityChangeOnExistingQueue() throws IOException {
+        final Queueable element = new StringElement("foobarbaz1");
+        final int ORIGINAL_CAPACITY = computeCapacityForMmapPageIO(element, 2);
+        final int NEW_CAPACITY = computeCapacityForMmapPageIO(element, 10);
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(ORIGINAL_CAPACITY, dataPath))) {
+            q.open();
+            q.write(element);
+        }
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(NEW_CAPACITY, dataPath))) {
+            q.open();
+            assertThat(q.tailPages.get(0).getPageIO().getCapacity(), is(ORIGINAL_CAPACITY));
+            assertThat(q.headPage.getPageIO().getCapacity(), is(NEW_CAPACITY));
+            q.write(element);
+        }
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(NEW_CAPACITY, dataPath))) {
+            q.open();
+            assertThat(q.tailPages.get(0).getPageIO().getCapacity(), is(ORIGINAL_CAPACITY));
+            assertThat(q.tailPages.get(1).getPageIO().getCapacity(), is(NEW_CAPACITY));
+            assertThat(q.headPage.getPageIO().getCapacity(), is(NEW_CAPACITY));
+
+            // will read only within a page boundary
+            Batch b1 = q.readBatch( 10, TimeUnit.SECONDS.toMillis(1));
+            assertThat(b1.size(), is(1));
+            b1.close();
+
+            // will read only within a page boundary
+            Batch b2 = q.readBatch( 10, TimeUnit.SECONDS.toMillis(1));
+            assertThat(b2.size(), is(1));
+            b2.close();
+
+            assertThat(q.tailPages.size(), is(0));
+        }
+    }
+
+
+    @Test(timeout = 5000)
+    public void maximizeBatch() throws IOException, InterruptedException, ExecutionException {
+
+        // very small pages to maximize page creation
+        Settings settings = TestSettings.persistedQueueSettings(1000, dataPath);
+        try (Queue q = new Queue(settings)) {
+            q.open();
+
+            Callable<Void> writer = () -> {
+                Thread.sleep(500); // sleep 500 ms
+                q.write(new StringElement("E2"));
+                return null;
+            };
+
+            // write one element now and schedule the 2nd write in 500ms
+            q.write(new StringElement("E1"));
+            executor.submit(writer);
+
+            // issue a batch read with a 1s timeout, the batch should contain both elements since
+            // the timeout is greater than the 2nd write delay
+            Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1));
+
+            assertThat(b.size(), is(2));
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void throwsWhenNotEnoughDiskFree() throws Exception {
+        Settings settings = SettingsImpl.builder(TestSettings.persistedQueueSettings(100, dataPath))
+            .queueMaxBytes(Long.MAX_VALUE)
+            .build();
+        try (Queue queue = new Queue(settings)) {
+            queue.open();
+        }
+    }
 }

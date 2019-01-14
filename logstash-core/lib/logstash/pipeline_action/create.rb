@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/pipeline_action/base"
 require "logstash/pipeline"
+require "logstash/java_pipeline"
 require "logstash/converge_result"
 require "logstash/util/loggable"
 
@@ -32,8 +33,13 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines)
-      pipeline = LogStash::Pipeline.new(@pipeline_config, @metric, agent)
-      
+      pipeline =
+        if @pipeline_config.settings.get_value("pipeline.java_execution")
+          LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
+        else
+          LogStash::Pipeline.new(@pipeline_config, @metric, agent)
+        end
+
       status = pipeline.start # block until the pipeline is correctly started or crashed
 
       if status

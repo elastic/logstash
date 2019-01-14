@@ -18,15 +18,6 @@
  */
 package org.logstash.common.io;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.DLQEntry;
-import org.logstash.Event;
-import org.logstash.FieldReference;
-import org.logstash.FileLockFactory;
-import org.logstash.PathCache;
-import org.logstash.Timestamp;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.FileLock;
@@ -35,7 +26,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.FieldReference;
+import org.logstash.FileLockFactory;
+import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
@@ -47,7 +46,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
     private static final FieldReference DEAD_LETTER_QUEUE_METADATA_KEY =
-        PathCache.cache(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
+        FieldReference.from(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private LongAdder currentQueueSize;
@@ -102,7 +101,10 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     static Stream<Path> getSegmentPaths(Path path) throws IOException {
-        return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
+        try(final Stream<Path> files = Files.list(path)) {
+            return files.filter(p -> p.toString().endsWith(".log"))
+                .collect(Collectors.toList()).stream();
+        }
     }
 
     public synchronized void writeEntry(DLQEntry entry) throws IOException {

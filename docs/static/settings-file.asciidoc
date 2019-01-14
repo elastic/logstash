@@ -16,7 +16,7 @@ hierarchical form to set the pipeline batch size and batch delay, you specify:
 pipeline:
   batch:
     size: 125
-    delay: 5
+    delay: 50
 -------------------------------------------------------------------------------------
 
 To express the same values as flat keys, you specify:
@@ -24,7 +24,7 @@ To express the same values as flat keys, you specify:
 [source,yaml]
 -------------------------------------------------------------------------------------
 pipeline.batch.size: 125
-pipeline.batch.delay: 5
+pipeline.batch.delay: 50
 -------------------------------------------------------------------------------------
 
 The `logstash.yml` file also supports bash-style interpolation of environment variables in
@@ -35,7 +35,7 @@ setting values.
 pipeline:
   batch:
     size: ${BATCH_SIZE}
-    delay: ${BATCH_DELAY:5}
+    delay: ${BATCH_DELAY:50}
 node:
   name: "node_${LS_NODE_NAME}"
 path:
@@ -43,7 +43,7 @@ path:
 -------------------------------------------------------------------------------------
 
 Note that the `${VAR_NAME:default_value}` notation is supported, setting a default batch delay
-of `5` and a default `path.queue` of `/tmp/queue` in the above example.
+of `50` and a default `path.queue` of `/tmp/queue` in the above example.
 
 Modules may also be specified in the `logstash.yml` file. The modules definition will have
 this format:
@@ -77,15 +77,15 @@ The `logstash.yml` file includes the following settings:
 | The directory that Logstash and its plugins use for any persistent needs.
 |`LOGSTASH_HOME/data`
 
+| `pipeline.id`
+| The ID of the pipeline.
+| `main`
+
 | `pipeline.workers`
 | The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
   If you find that events are backing up, or that the
   CPU is not saturated, consider increasing this number to better utilize machine processing power.
 | Number of the host's CPU cores
-
-| `pipeline.output.workers`
-| The number of workers to use per output plugin instance.
-| `1`
 
 | `pipeline.batch.size`
 | The maximum number of events an individual worker thread will collect from inputs
@@ -98,7 +98,7 @@ The `logstash.yml` file includes the following settings:
 | `pipeline.batch.delay`
 | When creating pipeline event batches, how long in milliseconds to wait for
   each event before dispatching an undersized batch to pipeline workers.
-| `5`
+| `50`
 
 | `pipeline.unsafe_shutdown`
 | When set to `true`, forces Logstash to exit during shutdown even if there are still inflight events
@@ -156,7 +156,7 @@ The `logstash.yml` file includes the following settings:
 
 | `queue.page_capacity`
 | The size of the page data files used when persistent queues are enabled (`queue.type: persisted`). The queue data consists of append-only data files separated into pages.
-| 250mb
+| 64mb
 
 | `queue.max_events`
 | The maximum number of unread events in the queue when persistent queues are enabled (`queue.type: persisted`).
@@ -173,10 +173,6 @@ The `logstash.yml` file includes the following settings:
 | `queue.checkpoint.writes`
 | The maximum number of written events before forcing a checkpoint when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.writes: 0` to set this value to unlimited.
 | 1024
-
-| `queue.checkpoint.interval`
-| The interval in milliseconds when a checkpoint is forced on the head page when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.interval: 0` for no periodic checkpoint.
-| 1000
 
 | `queue.drain`
 | When enabled, Logstash waits until the persistent queue is drained before shutting down.

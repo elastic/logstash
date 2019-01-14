@@ -4,12 +4,14 @@
 :logstash_version:      7.0.0-alpha1
 :elasticsearch_version: 7.0.0-alpha1
 :kibana_version:        7.0.0-alpha1
-:docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
+:docker-repo:           docker.elastic.co/logstash/logstash
+:docker-image:          {docker-repo}:{logstash_version}
 
 //////////
 release-state can be: released | prerelease | unreleased
 //////////
 :release-state:  unreleased
+:versioned_docs: false
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
@@ -17,6 +19,7 @@ release-state can be: released | prerelease | unreleased
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{branch}/
 :metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/{branch}/
 :lsissue:               https://github.com/elastic/logstash/issues/
+:lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
 
 include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
 
@@ -36,45 +39,48 @@ volume and variety of data.
 
 // Introduction
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/introduction.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/introduction.asciidoc
 include::static/introduction.asciidoc[]
 
 // Glossary and core concepts go here
 
 // Getting Started with Logstash
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/getting-started-with-logstash.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/getting-started-with-logstash.asciidoc
 include::static/getting-started-with-logstash.asciidoc[]
 
 // Advanced LS Pipelines
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/advanced-pipeline.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/advanced-pipeline.asciidoc
 include::static/advanced-pipeline.asciidoc[]
 
 // Processing Pipeline
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/life-of-an-event.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
 // Lostash setup
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/setting-up-logstash.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-logstash.asciidoc
 include::static/setting-up-logstash.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/settings-file.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/settings-file.asciidoc
 include::static/settings-file.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/running-logstash-command-line.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/keystore.asciidoc
+include::static/keystore.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash-command-line.asciidoc
 include::static/running-logstash-command-line.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/running-logstash.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash.asciidoc
 include::static/running-logstash.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/docker.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/docker.asciidoc
 include::static/docker.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/logging.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/logging.asciidoc
 include::static/logging.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/shutdown.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]

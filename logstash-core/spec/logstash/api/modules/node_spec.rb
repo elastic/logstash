@@ -46,6 +46,17 @@ describe LogStash::Api::Modules::Node do
       end
     end
 
+    context "broken params in URL" do
+
+      before(:all) do
+        get "/hot_threads?human=?threads=5"
+      end
+
+      it "should return http status 400" do
+        expect(last_response.status).to eq(400)
+      end
+    end
+
     context "when asking for human output" do
       [
         "/hot_threads?human",

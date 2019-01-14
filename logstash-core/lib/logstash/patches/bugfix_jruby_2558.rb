@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/environment"
 
-if LogStash::Environment.windows? && LogStash::Environment.jruby?
+if LogStash::Environment.windows?
   require "socket"
   module JRubyBug2558SocketPeerAddrBugFix
     def peeraddr(*args)

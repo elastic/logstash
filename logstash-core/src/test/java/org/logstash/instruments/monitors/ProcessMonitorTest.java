@@ -22,11 +22,12 @@ public class ProcessMonitorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testReportCpuStats(){
         Map<String, Object> processStats = ProcessMonitor.detect().toMap();
         assumeTrue((Boolean) processStats.get("is_unix"));
         assertThat("cpu", processStats.get("cpu"), instanceOf(Map.class));
-        Map cpuStats = ((Map)processStats.get("cpu"));
+        Map<String, Object> cpuStats = (Map<String, Object>) processStats.get("cpu");
         assertThat("cpu.process_percent", (Short)cpuStats.get("process_percent") >= 0, is(true));
         assertThat("cpu.system_percent", (Short)cpuStats.get("system_percent") >= -1, is(true));
         assertThat("cpu.total_in_millis", (Long)cpuStats.get("total_in_millis") > 0L, is(true));

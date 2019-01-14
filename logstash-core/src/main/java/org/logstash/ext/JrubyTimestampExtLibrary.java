@@ -3,9 +3,9 @@ package org.logstash.ext;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyComparable;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubyTime;
@@ -14,37 +14,15 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 
-public final class JrubyTimestampExtLibrary implements Library {
+public final class JrubyTimestampExtLibrary {
 
-    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public RubyTimestamp allocate(Ruby runtime, RubyClass rubyClass) {
-            return new RubyTimestamp(runtime, rubyClass);
-        }
-    };
-
-    private static final RubyClass TIMESTAMP_CLASS = createTimestamp(RubyUtil.RUBY);
-
-    @Override
-    public void load(Ruby runtime, boolean wrap) {
-        createTimestamp(runtime);
-    }
-
-    public static RubyClass createTimestamp(Ruby runtime) {
-        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-        RubyClass clazz = runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, module);
-        clazz.defineAnnotatedMethods(RubyTimestamp.class);
-        return clazz;
-    }
-
-    @JRubyClass(name = "Timestamp")
+    @JRubyClass(name = "Timestamp", include = "Comparable")
     @JsonSerialize(using = ObjectMappers.RubyTimestampSerializer.class)
     public static final class RubyTimestamp extends RubyObject {
 
@@ -56,25 +34,10 @@ public final class JrubyTimestampExtLibrary implements Library {
             super(runtime, klass);
         }
 
-        public RubyTimestamp(Ruby runtime, RubyClass klass, Timestamp timestamp) {
-            this(runtime, klass);
-            this.timestamp = timestamp;
-        }
-
-        public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            this(runtime, TIMESTAMP_CLASS, timestamp);
-        }
-
-        public RubyTimestamp(Ruby runtime) {
-            this(runtime, new Timestamp());
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime) {
-            return new RubyTimestamp(runtime);
-        }
-
         public static RubyTimestamp newRubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            return new RubyTimestamp(runtime, timestamp);
+            final RubyTimestamp stamp = new RubyTimestamp(runtime, RubyUtil.RUBY_TIMESTAMP_CLASS);
+            stamp.timestamp = timestamp;
+            return stamp;
         }
 
         public Timestamp getTimestamp() {
@@ -101,8 +64,7 @@ public final class JrubyTimestampExtLibrary implements Library {
                     this.timestamp = new Timestamp(time.toString());
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
-                            getRuntime(),
-                            getRuntime().getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                            getRuntime(), RubyUtil.TIMESTAMP_PARSER_ERROR,
                             "invalid timestamp string format " + time,
                             true
                     );
@@ -156,6 +118,16 @@ public final class JrubyTimestampExtLibrary implements Library {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.timestamp);
         }
 
+        @JRubyMethod(name = "clone")
+        public IRubyObject ruby_clone(ThreadContext context) {
+            return RubyTimestamp.newRubyTimestamp(context.runtime, this.timestamp);
+        }
+
+        @JRubyMethod(name = "dup")
+        public IRubyObject ruby_dup(ThreadContext context) {
+            return ruby_clone(context);
+        }
+
         @JRubyMethod(name = "to_json", rest = true)
         public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
         {
@@ -180,8 +152,7 @@ public final class JrubyTimestampExtLibrary implements Library {
                 }
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
-                        context.runtime,
-                        context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                        context.runtime, RubyUtil.TIMESTAMP_PARSER_ERROR,
                         "invalid timestamp format " + e.getMessage(),
                         true
                 );
@@ -197,8 +168,7 @@ public final class JrubyTimestampExtLibrary implements Library {
                     return fromRString(context.runtime, (RubyString) time);
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
-                            context.runtime,
-                            context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                            context.runtime, RubyUtil.TIMESTAMP_PARSER_ERROR,
                             "invalid timestamp format " + e.getMessage(),
                             true
                     );
@@ -225,7 +195,7 @@ public final class JrubyTimestampExtLibrary implements Library {
         @JRubyMethod(name = "now", meta = true)
         public static IRubyObject ruby_now(ThreadContext context, IRubyObject recv)
         {
-            return RubyTimestamp.newRubyTimestamp(context.runtime);
+            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp());
         }
 
         @JRubyMethod(name = "utc")
@@ -250,6 +220,72 @@ public final class JrubyTimestampExtLibrary implements Library {
         public IRubyObject ruby_year(ThreadContext context)
         {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
+        }
+
+        @JRubyMethod(name = "<=>", required = 1)
+        public IRubyObject op_cmp(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return ((RubyTime) ruby_time(context)).op_cmp(
+                    context, ((JrubyTimestampExtLibrary.RubyTimestamp) other).ruby_time(context)
+                );
+            }
+            return context.nil;
+        }
+
+        @JRubyMethod(name = ">=")
+        public IRubyObject op_ge(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return context.runtime.newBoolean(compare(context, other) >= 0);
+            }
+            return RubyComparable.op_ge(context, this, other);
+        }
+
+        @JRubyMethod(name = ">")
+        public IRubyObject op_gt(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return context.runtime.newBoolean(compare(context, other) > 0);
+            }
+            return RubyComparable.op_gt(context, this, other);
+        }
+
+        @JRubyMethod(name = "<=")
+        public IRubyObject op_le(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return context.runtime.newBoolean(compare(context, other) <= 0);
+            }
+            return RubyComparable.op_le(context, this, other);
+        }
+
+        @JRubyMethod(name = "<")
+        public IRubyObject op_lt(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return context.runtime.newBoolean(compare(context, other) < 0);
+            }
+            return RubyComparable.op_lt(context, this, other);
+        }
+
+        @JRubyMethod(name = {"eql?", "=="}, required = 1)
+        public IRubyObject eql(final ThreadContext context, final IRubyObject other) {
+            return this == other || other.getClass() == JrubyTimestampExtLibrary.RubyTimestamp.class
+                && timestamp.equals(((JrubyTimestampExtLibrary.RubyTimestamp) other).timestamp)
+                ? context.tru : context.fals;
+        }
+
+        @JRubyMethod(name = "+", required = 1)
+        public IRubyObject plus(final ThreadContext context, final IRubyObject val) {
+            return this.ruby_time(context).callMethod(context, "+", val);
+        }
+
+        @JRubyMethod(name = "-", required = 1)
+        public IRubyObject minus(final ThreadContext context, final IRubyObject val) {
+            return this.ruby_time(context).callMethod(
+                context, "-",
+                val instanceof RubyTimestamp ? ((RubyTimestamp)val).ruby_time(context) : val
+            );
+        }
+
+        private int compare(final ThreadContext context, final IRubyObject other) {
+            return op_cmp(context, other).convertToInteger().getIntValue();
         }
 
         private static RubyTimestamp fromRString(final Ruby runtime, final RubyString string) {

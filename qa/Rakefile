@@ -1,6 +1,7 @@
 require "rspec"
 require "rspec/core/runner"
 require "rspec/core/rake_task"
+require "stud/try"
 require_relative "vagrant/helpers"
 require_relative "platform_config"
 
@@ -22,7 +23,10 @@ namespace :qa do
     desc "Generate a valid ssh-config"
     task :ssh_config do
       require "json"
-      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
+      # Loop until the Vagrant box finishes SSH bootstrap
+      raw_ssh_config = Stud.try(50.times, LogStash::CommandExecutor::CommandError) do
+          LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
+      end
       parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
       File.write(".vm_ssh_config", parsed_ssh_config.to_json)
     end

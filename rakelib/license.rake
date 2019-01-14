@@ -44,6 +44,9 @@ namespace "license" do
     seen_dependencies = Hash.new
     LogStash::RakeLib::DEFAULT_PLUGINS.each do |plugin|
       gemspec = Gem::Specification.find_all_by_name(plugin)[0]
+      if gemspec.nil?
+        raise "Fail to generate `NOTICE.TXT` file because #{plugin} was not found in the installed plugins specifications"
+      end
       gemspec.runtime_dependencies.each do |dep|
         name = dep.name
         next if SKIPPED_DEPENDENCIES.include?(name) || seen_dependencies.key?(name)

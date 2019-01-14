@@ -3,6 +3,34 @@ require "spec_helper"
 require "logstash/config/mixin"
 
 describe LogStash::Config::Mixin do
+  context "when encountering a deprecated option" do
+    let(:password) { "sekret" }
+    let(:double_logger) { double("logger").as_null_object }
+
+    subject do 
+      Class.new(LogStash::Filters::Base) do
+        include LogStash::Config::Mixin
+        config_name "test_deprecated"
+        milestone 1
+        config :old_opt, :validate => :string, :deprecated => "this is old school"
+        config :password, :validate => :password
+      end.new({
+        "old_opt" => "whut",
+        "password" => password
+      })
+    end
+
+    it "should not log the password" do
+      expect(LogStash::Logging::Logger).to receive(:new).with(anything).and_return(double_logger)
+      expect(double_logger).to receive(:warn) do |arg1,arg2|
+          message = 'You are using a deprecated config setting "old_opt" set in test_deprecated. Deprecated settings will continue to work, but are scheduled for removal from logstash in the future. this is old school If you have any questions about this, please visit the #logstash channel on freenode irc.'
+          expect(arg1).to eq(message)
+          expect(arg2[:plugin].to_s).to include('"password"=><password>')
+        end.once
+      subject
+    end
+  end
+
   context "when validating :bytes successfully" do
     subject do
       local_num_bytes = num_bytes # needs to be locally scoped :(

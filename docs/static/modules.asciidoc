@@ -139,6 +139,12 @@ Logstash comes with two settings that simplify using modules with https://cloud.
 The Elasticsearch and Kibana hostnames in Elastic Cloud may be hard to set
 in the Logstash config or on the commandline, so a Cloud ID can be used instead.
 
+NOTE: Cloud ID applies only when a Logstash module is enabled, otherwise
+specifying Cloud ID has no effect. Cloud ID applies to data that gets sent via
+the module, to runtime metrics sent via {xpack} monitoring, and to the endpoint
+used by {xpack} central management features of Logstash, unless explicit
+overrides to {xpack} settings are specified in `logstash.yml`.
+
 ==== Cloud ID
 
 The Cloud ID, which can be found in the Elastic Cloud web console, is used by
@@ -173,16 +179,19 @@ Example:
 
 These settings can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
 They should be added separately from any module configuration settings you may have added before.
-[source,yaml]
+
+["source","yaml",subs="attributes"]
 ----
 # example with a label
 cloud.id: "staging:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy"
-cloud.auth: "elastic:changeme"
+cloud.auth: "elastic:{pwd}"
 ----
+
+["source","yaml",subs="attributes"]
 ----
 # example without a label
 cloud.id: "dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy"
-cloud.auth: "elastic:changeme"
+cloud.auth: "elastic:{pwd}"
 ----
 
 These settings can be also specified at the command line, like this:

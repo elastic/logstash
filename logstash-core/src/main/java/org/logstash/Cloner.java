@@ -13,6 +13,7 @@ public final class Cloner {
 
     private Cloner(){}
 
+    @SuppressWarnings("unchecked")
     public static <T> T deep(final T input) {
         if (input instanceof Map<?, ?>) {
             return (T) deepMap((Map<?, ?>) input);

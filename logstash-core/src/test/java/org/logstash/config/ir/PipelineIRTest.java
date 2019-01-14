@@ -7,27 +7,28 @@ import org.logstash.config.ir.graph.Graph;
 import static org.junit.Assert.assertEquals;
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
+import static org.logstash.config.ir.IRHelpers.randMeta;
 
 /**
  * Created by andrewvc on 9/20/16.
  */
 public class PipelineIRTest {
     public Graph makeInputSection() throws InvalidIRException {
-        return iComposeParallel(iPlugin(INPUT, "generator"), iPlugin(INPUT, "stdin")).toGraph();
+        return iComposeParallel(iPlugin(randMeta(), INPUT, "generator"), iPlugin(randMeta(), INPUT, "stdin")).toGraph();
     }
 
     public Graph makeFilterSection() throws InvalidIRException {
-        return iIf(eEq(eEventValue("[foo]"), eEventValue("[bar]")),
-                                    iPlugin(FILTER, "grok"),
-                                    iPlugin(FILTER, "kv")).toGraph();
+        return iIf(randMeta(), eEq(eEventValue("[foo]"), eEventValue("[bar]")),
+                                    iPlugin(randMeta(), FILTER, "grok"),
+                                    iPlugin(randMeta(), FILTER, "kv")).toGraph();
     }
 
     public Graph makeOutputSection() throws InvalidIRException {
-        return iIf(eGt(eEventValue("[baz]"), eValue(1000)),
+        return iIf(randMeta(), eGt(eEventValue("[baz]"), eValue(1000)),
                                     iComposeParallel(
-                                            iPlugin(OUTPUT, "s3"),
-                                            iPlugin(OUTPUT, "elasticsearch")),
-                                    iPlugin(OUTPUT, "stdout")).toGraph();
+                                            iPlugin(randMeta(), OUTPUT, "s3"),
+                                            iPlugin(randMeta(), OUTPUT, "elasticsearch")),
+                                    iPlugin(randMeta(), OUTPUT, "stdout")).toGraph();
     }
 
     @Test

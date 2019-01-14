@@ -53,7 +53,7 @@ describe LogStash::Setting::Modules do
     context "when given a badly formatted encoded id" do
       it "should not raise an error" do
         encoded = Base64.urlsafe_encode64("foo$$bal")
-        expect { subject.set(encoded) }.to raise_error(ArgumentError, /Cloud Id, after decoding, is invalid. Format: '<part1>\$<part2>\$<part3>'/)
+        expect { subject.set(encoded) }.to raise_error(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"foo$$bal\".")
       end
     end
 

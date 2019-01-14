@@ -54,6 +54,11 @@ def mock_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metr
   LogStash::Pipeline.new(pipeline_config, metric)
 end
 
+def mock_java_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
+  pipeline_config = mock_pipeline_config(settings.get("pipeline.id"), config_string, settings)
+  LogStash::JavaPipeline.new(pipeline_config, metric)
+end
+
 def mock_pipeline_config(pipeline_id, config_string = nil, settings = {})
   config_string = "input { stdin { id => '#{pipeline_id}' }}" if config_string.nil?
 

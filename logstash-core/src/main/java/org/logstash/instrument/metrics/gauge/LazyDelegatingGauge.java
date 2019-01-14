@@ -11,9 +11,7 @@ import org.logstash.instrument.metrics.MetricType;
  * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
  *
- * @deprecated - there are no plans to replace this.
  */
-@Deprecated
 public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object, Object> {
 
     private static final Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
@@ -26,9 +24,8 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      * Constructor - null initial value
      *
      * @param key The key <i>(with in the namespace)</i> for this metric
-     * @deprecated - there are no plans to replace this
      */
-    @Deprecated
+    
     public LazyDelegatingGauge(final String key) {
         this(key, null);
     }
@@ -38,10 +35,8 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      *
      * @param key          The key for this metric
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
-     * @deprecated - there are no plans to replace this
      */
-    @Deprecated
-    public LazyDelegatingGauge(String key, Object initialValue) {
+     public LazyDelegatingGauge(String key, Object initialValue) {
         super(key);
         this.key = key;
         if (initialValue != null) {

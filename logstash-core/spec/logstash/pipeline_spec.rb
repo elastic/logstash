@@ -254,6 +254,14 @@ describe LogStash::Pipeline do
           pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
           pipeline.close
         end
+
+        it "should log each filtered event if config.debug is set to true" do
+          pipeline_settings_obj.set("config.debug", true)
+          pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
+          expect(logger).to receive(:debug).with(/filter received/, anything)
+          pipeline.filter_func([LogStash::Event.new])
+          pipeline.close
+        end
       end
 
       context "when there is no command line -w N set" do
@@ -618,9 +626,9 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 
@@ -700,9 +708,9 @@ describe LogStash::Pipeline do
       # in the current instance and was returning an array containing nil values for
       # the match.
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 

@@ -12,7 +12,7 @@ if errorlevel 1 (
 
 rem if explicit jvm.options is not found use default location
 if "%LS_JVM_OPTIONS_CONFIG%" == "" (
-  set LS_JVM_OPTIONS_CONFIG=%LS_HOME%\config\jvm.options
+  set LS_JVM_OPTIONS_CONFIG="%LS_HOME%\config\jvm.options"
 )
 
 rem extract the options from the JVM options file %LS_JVM_OPTIONS_CONFIG%
@@ -26,5 +26,8 @@ if exist %LS_JVM_OPTIONS_CONFIG% (
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
 %JRUBY_BIN% "%LS_HOME%\lib\bootstrap\rspec.rb" %*
+if errorlevel 1 (
+  exit /B 1
+)
 
 endlocal

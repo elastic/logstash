@@ -45,16 +45,14 @@ public class BreadthFirst {
         });
     }
 
-    return new BfsResult(vertexDistances, vertexParents);
+    return new BfsResult(vertexDistances);
 }
 
     public static final class BfsResult {
         public final Map<Vertex, Integer> vertexDistances;
-        private final Map<Vertex, Vertex> vertexParents;
 
-        BfsResult(Map<Vertex, Integer> vertexDistances, Map<Vertex,Vertex> vertexParents) {
+        BfsResult(Map<Vertex, Integer> vertexDistances) {
             this.vertexDistances = vertexDistances;
-            this.vertexParents = vertexParents;
         }
 
         public Collection<Vertex> getVertices() {

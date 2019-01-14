@@ -4,8 +4,8 @@ require 'rubygems'
 namespace "plugin" do
 
   def install_plugins(*args)
-    system("bin/logstash-plugin", "install", *args)
-    raise(RuntimeError, $!.to_s) unless $?.success?
+    require_relative "../lib/pluginmanager/main"
+    LogStash::PluginManager::Main.run("bin/logstash-plugin", ["install"] + args)
   end
 
   task "install-development-dependencies" => "bootstrap" do

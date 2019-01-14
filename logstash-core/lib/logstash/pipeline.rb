@@ -17,11 +17,11 @@ require "logstash/instrument/namespaced_metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
-require "logstash/instrument/wrapped_write_client"
 require "logstash/util/dead_letter_queue_manager"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
+require "logstash/plugins/plugin_factory"
 require "logstash/compiler"
 require "logstash/execution_context"
 require "securerandom"
@@ -29,6 +29,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
+java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -46,16 +47,12 @@ module LogStash; class BasePipeline
     @settings = pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
-    @lir = compile_lir
-
-    # Every time #plugin is invoked this is incremented to give each plugin
-    # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0
+    @lir = ConfigCompiler.configToPipelineIR(
+      @config_str, @settings.get_value("config.support_escapes")
+    )
 
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
 
-    # A list of plugins indexed by id
-    @plugins_by_id = {}
     @inputs = nil
     @filters = nil
     @outputs = nil
@@ -63,6 +60,12 @@ module LogStash; class BasePipeline
 
     @dlq_writer = dlq_writer
 
+    @plugin_factory = LogStash::Plugins::PluginFactory.new(
+      # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+      @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric || Instrument::NullMetric.new),
+      LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
+      FilterDelegator
+    )
     grammar = LogStashConfigParser.new
     parsed_config = grammar.parse(config_str)
     raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
@@ -70,9 +73,7 @@ module LogStash; class BasePipeline
     parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
     config_code = parsed_config.compile
 
-    # config_code = BasePipeline.compileConfig(config_str)
-
-    if settings.get_value("config.debug") && @logger.debug?
+    if settings.get_value("config.debug")
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
     end
 
@@ -101,61 +102,13 @@ module LogStash; class BasePipeline
   end
 
   def compile_lir
-    sources_with_metadata = [
-      SourceWithMetadata.new("str", "pipeline", 0, 0, self.config_str)
-    ]
-    LogStash::Compiler.compile_sources(sources_with_metadata, @settings)
+    org.logstash.config.ir.ConfigCompiler.configToPipelineIR(
+      self.config_str, @settings.get_value("config.support_escapes")
+    )
   end
 
   def plugin(plugin_type, name, line, column, *args)
-    @plugin_counter += 1
-
-    # Collapse the array of arguments into a single merged hash
-    args = args.reduce({}, &:merge)
-
-    if plugin_type == "codec"
-      id = SecureRandom.uuid # codecs don't really use their IDs for metrics, so we can use anything here
-    else
-      # Pull the ID from LIR to keep IDs consistent between the two representations
-      id = lir.graph.vertices.filter do |v| 
-        v.source_with_metadata && 
-        v.source_with_metadata.line == line && 
-        v.source_with_metadata.column == column
-      end.findFirst.get.id
-    end
-
-    args["id"] = id # some code pulls the id out of the args
-
-    if !id
-      raise ConfigurationError, "Could not determine ID for #{plugin_type}/#{plugin_name}"
-    end
-
-    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    @plugins_by_id[id] = true
-
-    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-    metric = @metric || Instrument::NullMetric.new
-
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
-
-    klass = Plugin.lookup(plugin_type, name)
-
-    execution_context = ExecutionContext.new(self, @agent, id, klass.config_name, @dlq_writer)
-
-    if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
-    elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
-    else # input
-      input_plugin = klass.new(args)
-      scoped_metric = type_scoped_metric.namespace(id.to_sym)
-      scoped_metric.gauge(:name, input_plugin.config_name)
-      input_plugin.metric = scoped_metric
-      input_plugin.execution_context = execution_context
-      input_plugin
-    end
+    @plugin_factory.plugin(plugin_type, name, line, column, *args)
   end
 
   def reloadable?
@@ -230,11 +183,11 @@ module LogStash; class Pipeline < BasePipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
-    @drain_queue =  @settings.get_value("queue.drain")
+    @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
 
-    @events_filtered = Concurrent::AtomicFixnum.new(0)
-    @events_consumed = Concurrent::AtomicFixnum.new(0)
+    @events_filtered = java.util.concurrent.atomic.LongAdder.new
+    @events_consumed = java.util.concurrent.atomic.LongAdder.new
 
     @input_threads = []
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
@@ -282,7 +235,10 @@ module LogStash; class Pipeline < BasePipeline
     collect_stats
     collect_dlq_stats
 
-    @logger.debug("Starting pipeline", default_logging_keys)
+    @logger.info("Starting pipeline", default_logging_keys(
+      "pipeline.workers" => @settings.get("pipeline.workers"),
+      "pipeline.batch.size" => @settings.get("pipeline.batch.size"),
+      "pipeline.batch.delay" => @settings.get("pipeline.batch.delay")))
 
     @finished_execution = Concurrent::AtomicBoolean.new(false)
 
@@ -293,14 +249,14 @@ module LogStash; class Pipeline < BasePipeline
         @finished_execution.make_true
       rescue => e
         close
-        logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        @logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
       end
     end
 
     status = wait_until_started
 
     if status
-      logger.debug("Pipeline started successfully", default_logging_keys(:pipeline_id => pipeline_id))
+      @logger.info("Pipeline started succesfully", default_logging_keys)
     end
 
     status
@@ -331,8 +287,6 @@ module LogStash; class Pipeline < BasePipeline
 
     start_workers
 
-    @logger.info("Pipeline started", "pipeline.id" => @pipeline_id)
-
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
 
@@ -341,14 +295,13 @@ module LogStash; class Pipeline < BasePipeline
     wait_inputs
     transition_to_stopped
 
-    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
-
     shutdown_flusher
+    @logger.debug("Shutting down filter/output workers", default_logging_keys)
     shutdown_workers
 
     close
 
-    @logger.debug("Pipeline has been shutdown", default_logging_keys)
+    @logger.info("Pipeline has terminated", default_logging_keys)
 
     # exit code
     return 0
@@ -422,12 +375,6 @@ module LogStash; class Pipeline < BasePipeline
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
-
-      @logger.info("Starting pipeline", default_logging_keys(
-        "pipeline.workers" => pipeline_workers,
-        "pipeline.batch.size" => batch_size,
-        "pipeline.batch.delay" => batch_delay,
-        "pipeline.max_inflight" => max_inflight))
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
@@ -466,19 +413,20 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_requested = false
 
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
-
+    output_events_map = Hash.new { |h, k| h[k] = [] }
     while true
       signal = @signal_queue.poll || NO_SIGNAL
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      if batch.size > 0
-        @events_consumed.increment(batch.size)
+      batch_size = batch.size
+      if batch_size > 0
+        @events_consumed.add(batch_size)
         filter_batch(batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       if batch.size > 0
-        output_batch(batch)
+        output_batch(batch, output_events_map)
         @filter_queue_client.close_batch(batch)
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -490,19 +438,17 @@ module LogStash; class Pipeline < BasePipeline
     batch = @filter_queue_client.new_batch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
     flush_filters_to_batch(batch, :final => true)
-    output_batch(batch)
+    output_batch(batch, output_events_map)
     @filter_queue_client.close_batch(batch)
   end
 
   def filter_batch(batch)
-    batch.each do |event|
-      filter_func(event).each do |e|
-        #these are both original and generated events
-        batch.merge(e) unless e.cancelled?
-      end
+    filter_func(batch.to_a).each do |e|
+      #these are both original and generated events
+      batch.merge(e) unless e.cancelled?
     end
-    @filter_queue_client.add_filtered_metrics(batch)
-    @events_filtered.increment(batch.size)
+    @filter_queue_client.add_filtered_metrics(batch.filtered_size)
+    @events_filtered.add(batch.size)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered
@@ -517,16 +463,12 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   # Take an array of events and send them to the correct output
-  def output_batch(batch)
+  def output_batch(batch, output_events_map)
     # Build a mapping of { output_plugin => [events...]}
-    output_events_map = Hash.new { |h, k| h[k] = [] }
     batch.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-
-      # output_func should never return anything other than an Array but we have lots of legacy specs
-      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      (output_func(event) || []).each do |output|
+      output_func(event).each do |output|
         output_events_map[output].push(event)
       end
     end
@@ -534,9 +476,10 @@ module LogStash; class Pipeline < BasePipeline
     # once with its list of events
     output_events_map.each do |output, events|
       output.multi_receive(events)
+      events.clear
     end
 
-    @filter_queue_client.add_output_metrics(batch)
+    @filter_queue_client.add_output_metrics(batch.filtered_size)
   end
 
   def wait_inputs
@@ -568,7 +511,7 @@ module LogStash; class Pipeline < BasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      input_queue_client = wrapped_write_client(plugin)
+      input_queue_client = wrapped_write_client(plugin.id.to_sym)
       plugin.run(input_queue_client)
     rescue => e
       if plugin.stop?
@@ -613,19 +556,19 @@ module LogStash; class Pipeline < BasePipeline
     # stopped
     wait_for_workers
     clear_pipeline_metrics
-    @logger.info("Pipeline terminated", "pipeline.id" => @pipeline_id)
   end # def shutdown
 
   def wait_for_workers
-    @logger.debug("Closing inputs", default_logging_keys)
-    @worker_threads.map(&:join)
-    @logger.debug("Worker closed", default_logging_keys)
+    @worker_threads.each do |t|
+      t.join
+      @logger.debug("Worker terminated", default_logging_keys(:thread => t.inspect))
+    end
   end
 
   def stop_inputs
-    @logger.debug("Closing inputs", default_logging_keys)
+    @logger.debug("Stopping inputs", default_logging_keys)
     @inputs.each(&:do_stop)
-    @logger.debug("Closed inputs", default_logging_keys)
+    @logger.debug("Stopped inputs", default_logging_keys)
   end
 
   # After `shutdown` is called from an external thread this is called from the main thread to
@@ -652,7 +595,7 @@ module LogStash; class Pipeline < BasePipeline
   def filter(event, &block)
     maybe_setup_out_plugins
     # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each {|e| block.call(e)}
+    filter_func([event]).each {|e| block.call(e)}
   end
 
   # perform filters flush and yield flushed event to the passed block
@@ -736,7 +679,7 @@ module LogStash; class Pipeline < BasePipeline
   def collect_stats
     pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
-    if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
+    if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
       file_store = Files.get_file_store(Paths.get(dir_path))
@@ -803,10 +746,10 @@ module LogStash; class Pipeline < BasePipeline
     @drain_queue ? !@filter_queue_client.empty? : false
   end
 
-  def wrapped_write_client(plugin)
+  def wrapped_write_client(plugin_id)
     #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
     @mutex.synchronize do
-      LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+      LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin_id)
     end
   end
 end; end

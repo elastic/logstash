@@ -8,8 +8,10 @@ For more info, see <https://www.elastic.co/products/logstash>
 
 ## Documentation and Getting Started
 
-You can find the documentation and getting started guides for Logstash 
+You can find the documentation and getting started guides for Logstash
 on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html)
+
+For information about building the documentation, see the README in https://github.com/elastic/docs
 
 ## Downloads
 
@@ -18,7 +20,7 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ### Snapshot Builds
 
-For the daring, snapshot builds from `master` branch are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+For the daring, snapshot builds are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
 
 | artifact |
 | --- |
@@ -84,7 +86,7 @@ jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.1
 ```sh
 rake bootstrap
 ```
-    
+
 * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
 
 ```sh
@@ -120,28 +122,52 @@ Example:
 
 Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
+## Building Logstash Documentation
+
+To build the Logstash Reference (open source content only) on your local
+machine, clone the following repos:
+
+[logstash](https://github.com/elastic/logstash) - contains main docs about core features
+
+[logstash-docs](https://github.com/elastic/logstash-docs) - contains generated plugin docs
+
+[docs](https://github.com/elastic/docs) - contains doc build files
+
+Make sure you have the same branch checked out in `logstash` and `logstash-docs`.
+Check out `master` in the `docs` repo.
+
+Run the doc build script from within the `docs` repo. For example:
+
+```
+./build_docs.pl --doc ../logstash/docs/index.asciidoc --chunk=1 -open
+```
+
 ## Testing
 
 Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
 
 ### Core tests
 
-1- In order to run the core tests, a small set of plugins must first be installed:
+1- To run the core tests you can use the Gradle task:
 
-    rake test:install-core
-
-2- To run the core tests you can use the rake task:
-
-    rake test:core
+    ./gradlew test
 
   or use the `rspec` tool to run all tests or run a specific test:
 
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
-    
-3- To run the subset of tests covering the Java codebase only run:
-    
-    ./gradlew test
+
+  Note that before running the `rspec` command for the first time you need to set up the RSpec test dependencies by running:
+
+    ./gradlew bootstrap
+
+2- To run the subset of tests covering the Java codebase only run:
+
+    ./gradlew javaTests
+
+3- To execute the complete test-suite including the integration tests run:
+
+    ./gradlew check
 
 ### Plugins tests
 
@@ -157,14 +183,14 @@ You can install the default set of plugins included in the logstash package:
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
     bin/logstash-plugin install --development
-    
+
 ## Building Artifacts
 
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
-rake artifact:tar
-rake artifact:zip
+./gradlew assembleTarDistribution
+./gradlew assembleZipDistribution
 ```
 
 This will create the artifact `LS_HOME/build` directory

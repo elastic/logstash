@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/timestamp"
 require "bigdecimal"
 
 describe LogStash::Timestamp do

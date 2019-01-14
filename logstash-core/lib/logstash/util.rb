@@ -147,28 +147,20 @@ module LogStash::Util
   # to support these pure Ruby object monkey patches.
   # see logstash/json.rb and logstash/java_integration.rb
 
-  if LogStash::Environment.jruby?
-    require "java"
-
-    # recursively convert any Java LinkedHashMap and ArrayList to pure Ruby.
-    # will not recurse into pure Ruby objects. Pure Ruby object should never
-    # contain LinkedHashMap and ArrayList since these are only created at
-    # initial deserialization, anything after (deeper) will be pure Ruby.
-    def self.normalize(o)
-      case o
-      when Java::JavaUtil::LinkedHashMap
-        o.inject({}){|r, (k, v)| r[k] = normalize(v); r}
-      when Java::JavaUtil::ArrayList
-        o.map{|i| normalize(i)}
-      else
-        o
-      end
+  require "java"
+  # recursively convert any Java LinkedHashMap and ArrayList to pure Ruby.
+  # will not recurse into pure Ruby objects. Pure Ruby object should never
+  # contain LinkedHashMap and ArrayList since these are only created at
+  # initial deserialization, anything after (deeper) will be pure Ruby.
+  def self.normalize(o)
+    case o
+    when Java::JavaUtil::LinkedHashMap
+      o.inject({}){|r, (k, v)| r[k] = normalize(v); r}
+    when Java::JavaUtil::ArrayList
+      o.map{|i| normalize(i)}
+    else
+      o
     end
-
-  else
-
-    # identity function, pure Ruby object don't need normalization.
-    def self.normalize(o); o; end
   end
 
   def self.stringify_symbols(o)

@@ -84,7 +84,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   public
   def do_stop
-    @logger.debug("stopping", :plugin => self.class.name)
+    @logger.debug("Stopping", :plugin => self.class.name)
     @stop_called.make_true
     stop
   end

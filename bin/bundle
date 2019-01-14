@@ -2,27 +2,17 @@
 
 # This is basically a copy of the original bundler "bundle" shim
 # with the addition of the loading of our Bundler patches that
-# modifies the .lock file naming. Without this, using the original Bundler bundle
-# shim would result in creating or failing on a Gemfile.lock file.
+# modify Bundler's caching behaviour.
 
 # Exit cleanly from an early interrupt
 Signal.trap("INT") { exit 1 }
 
 require_relative "../lib/bootstrap/environment"
-::Gem.clear_paths
 
-ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
-::Gem.paths = ENV
+LogStash::Bundler.setup!
 
-ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
-
-require "bundler"
 require "bundler/cli"
 require "bundler/friendly_errors"
-LogStash::Bundler.patch!
-
-::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
-::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
 
 ::Bundler.with_friendly_errors do
   ::Bundler::CLI.start(ARGV, :debug => true)

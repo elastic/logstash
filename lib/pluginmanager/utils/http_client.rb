@@ -6,11 +6,12 @@ module LogStash module PluginManager module Utils
     HTTPS_SCHEME = "https"
     REDIRECTION_LIMIT = 5
 
-    # Proxies should be handled by the library
-    # https://ruby-doc.org/stdlib-2.3.1/libdoc/net/http/rdoc/Net/HTTP.html#class-Net::HTTP-label-Proxies
     def self.start(uri)
       uri = URI(uri)
-      Net::HTTP.start(uri.host, uri.port, http_options(uri)) { |http| yield http }
+      proxy_url = ENV["https_proxy"] || ENV["HTTPS_PROXY"] || ""
+      proxy_uri = URI(proxy_url)
+
+      Net::HTTP.start(uri.host, uri.port, proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password, http_options(uri)) { |http| yield http }
     end
 
     def self.http_options(uri)

@@ -36,7 +36,7 @@ describe "Test Logstash Slowlog" do
       "slowlog.threshold.warn" => "500ms"
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-e", config)
+    @ls.spawn_logstash("-w", "1" , "-e", config)
     @ls.wait_for_logstash
     sleep 2 until @ls.exited?
     slowlog_file = "#{temp_dir}/logstash-slowlog-plain.log"

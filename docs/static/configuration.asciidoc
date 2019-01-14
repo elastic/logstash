@@ -831,7 +831,9 @@ Run Logstash with this configuration:
 bin/logstash -f logstash-filter.conf
 ----------------------------------
 
-Now, paste the following line into your terminal so it will be processed by the stdin input:
+Now, paste the following line into your terminal and press Enter so it will be
+processed by the stdin input:
+
 [source,ruby]
 ----------------------------------
 127.0.0.1 - - [11/Dec/2013:00:01:45 -0800] "GET /xampp/status.php HTTP/1.1" 200 3891 "http://cadenza/xampp/navi.php" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0"

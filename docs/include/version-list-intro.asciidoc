@@ -1,0 +1,13 @@
+[id="{type}-{plugin}-index"]
+
+== Versioned {plugin} {type} plugin docs
+++++
+<titleabbrev>{plugin}</titleabbrev>
+++++
+
+This page lists all available versions of the documentation for this plugin. 
+To see which version of the plugin you have installed, run `bin/logstash-plugin
+list --verbose`. 
+
+NOTE: Versioned plugin documentation is not available for plugins released prior
+to Logstash 6.0.

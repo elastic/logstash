@@ -8,6 +8,10 @@ describe LogStash::Compiler do
     Java::OrgLogstashConfigIr::DSL
   end
 
+  def rand_meta
+    org.logstash.common.SourceWithMetadata.new("test", SecureRandom.uuid, 1, 1, SecureRandom.uuid)
+  end
+
   let(:source_protocol) { "test_proto" }
 
   let(:settings) { mock_settings({}) }
@@ -47,7 +51,7 @@ describe LogStash::Compiler do
         end
       end
 
-      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, settings) }
+      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, false) }
 
       it "should generate a hash" do
         expect(pipeline.unique_hash).to be_a(String)
@@ -100,7 +104,7 @@ describe LogStash::Compiler do
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings) }
+    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings.get_value("config.support_escapes")) }
 
     context "when config.support_escapes" do
       let(:parser) { LogStashCompilerLSCLGrammarParser.new }
@@ -173,7 +177,7 @@ describe LogStash::Compiler do
         let(:plugin_source) { "generator {}" }
 
         it "should contain the plugin" do
-          expect(c_plugin).to ir_eql(j.iPlugin(INPUT, "generator"))
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator"))
         end
       end
 
@@ -190,7 +194,118 @@ describe LogStash::Compiler do
         end
 
         it "should contain the plugin" do
-          expect(c_plugin).to ir_eql(j.iPlugin(INPUT, "generator", expected_plugin_args))
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a plugin with multiple array parameter types" do
+        let(:plugin_source) { "generator { aarg => [1] aarg => [2] aarg => [3]}" }
+        let(:expected_plugin_args) do
+          {
+              "aarg" => [1, 2, 3]
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a plugin with multiple parameter types that converge to an array" do
+        let(:plugin_source) { "generator { aarg => [1] aarg => 2 aarg => '3' aarg => [4] }"}
+        let(:expected_plugin_args) do
+          {
+              "aarg" => [1, 2, "3", 4]
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a filter plugin that repeats a Hash directive" do
+        let(:source) { "input { } filter { #{plugin_source} } output { } " }
+        subject(:c_plugin) { compiled[:filter] }
+
+        let(:plugin_source) do
+          %q[
+              grok {
+                match => { "message" => "%{WORD:word}" }
+                match => { "examplefield" => "%{NUMBER:num}" }
+                break_on_match => false
+              }
+          ]
+        end
+
+        let(:expected_plugin_args) do
+          {
+            "match" => {
+              "message" => "%{WORD:word}",
+              "examplefield" => "%{NUMBER:num}"
+            },
+            "break_on_match" => "false"
+          }
+        end
+
+        it "should merge the contents of the individual directives" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
+        end
+
+        describe "a filter plugin that has nested Hash directives" do
+          let(:source) { "input { } filter { #{plugin_source} } output { } " }
+          let(:plugin_source) do
+            <<-FILTER
+              matryoshka {
+                key => "%{host}"
+                filter_options => {
+                  string  => "string"
+                  integer => 3
+                  nested  => { # <-- This is nested hash!
+                    string  => "nested-string"
+                    integer => 7
+                    "quoted-key-string" => "nested-quoted-key-string"
+                    "quoted-key-integer" => 31
+                    deep    => { # <-- This is deeper nested hash!
+                      string  => "deeply-nested-string"
+                      integer => 127
+                      "quoted-key-string" => "deeply-nested-quoted-key-string"
+                      "quoted-key-integer" => 8191
+                    }
+                  }
+                }
+                ttl => 5
+              }
+            FILTER
+          end
+          subject(:c_plugin) { compiled[:filter] }
+
+          let(:expected_plugin_args) do
+            {
+                "key" => "%{host}",
+                "filter_options" => {
+                    "string"  => "string",
+                    "integer" => 3,
+                    "nested"  => { # <-- This is nested hash!
+                        "string"  => "nested-string",
+                        "integer" => 7,
+                        "quoted-key-string" => "nested-quoted-key-string",
+                        "quoted-key-integer" => 31,
+                        "deep"    => { # <-- This is deeper nested hash!
+                            "string"  => "deeply-nested-string",
+                            "integer" => 127,
+                            "quoted-key-string" => "deeply-nested-quoted-key-string",
+                            "quoted-key-integer" => 8191
+                        }
+                    }
+                },
+                "ttl" => 5
+            }
+          end
+
+          it "should produce a nested ::Hash object" do
+            expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "matryoshka", expected_plugin_args))
+          end
         end
       end
     end
@@ -202,7 +317,7 @@ describe LogStash::Compiler do
         let(:source) { "input { generator {} }" }
 
         it "should contain the single input" do
-          expect(input).to ir_eql(j.iPlugin(INPUT, "generator"))
+          expect(input).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator"))
         end
 
         it_should_behave_like("component source_with_metadata") do
@@ -215,8 +330,8 @@ describe LogStash::Compiler do
 
         it "should contain both inputs" do
           expect(input).to ir_eql(j.iComposeParallel(
-                                j.iPlugin(INPUT, "generator", {"count" => 1}),
-                                j.iPlugin(INPUT, "generator", {"count" => 2})
+                                j.iPlugin(rand_meta, INPUT, "generator", {"count" => 1}),
+                                j.iPlugin(rand_meta, INPUT, "generator", {"count" => 2})
                               ))
         end
       end
@@ -240,7 +355,7 @@ describe LogStash::Compiler do
       let (:compiled_section) { compiled[section] }
 
       def splugin(*args)
-        j.iPlugin(section_name_enum, *args)
+        j.iPlugin(rand_meta, section_name_enum, *args)
       end
 
       def compose(*statements)
@@ -524,6 +639,7 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                            rand_meta,
                                             j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                             splugin("grok")
                                           )
@@ -536,6 +652,7 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           j.noop,
                                           splugin("fplugin"),
@@ -549,6 +666,7 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           j.noop,
                                           j.noop
@@ -562,6 +680,7 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           splugin("tplugin"),
                                           splugin("fplugin")
@@ -575,9 +694,11 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           splugin("tplugin"),
                                           j.iIf(
+                                            rand_meta,
                                             j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
                                             splugin("eifplugin"),
                                             splugin("fplugin")
@@ -601,12 +722,15 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           splugin("tplugin"),
                                           j.iIf(
+                                            rand_meta,
                                             j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
                                             splugin("eifplugin"),
                                             j.iIf(
+                                              rand_meta,
                                               j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
                                               splugin("eeifplugin"),
                                               splugin("fplugin")
@@ -633,15 +757,18 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
+                                          rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-                                          j.iIf(j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                          j.iIf(rand_meta, j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
                                                    splugin("aplugin"),
                                                    j.noop
                                                   ),
                                           j.iIf(
+                                            rand_meta,
                                             j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
                                             splugin("bplugin"),
                                             j.iIf(
+                                              rand_meta,
                                               j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
                                               splugin("cplugin"),
                                               splugin("dplugin")
@@ -662,7 +789,7 @@ describe LogStash::Compiler do
         let(:source) { "input { } filter { grok {} } output { }" }
 
         it "should contain the single filter" do
-          expect(filter).to ir_eql(j.iPlugin(FILTER, "grok"))
+          expect(filter).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok"))
         end
 
         it_should_behave_like("component source_with_metadata") do
@@ -680,7 +807,7 @@ describe LogStash::Compiler do
         let(:source) { "input { } output { stdout {} }" }
 
         it "should contain the single input" do
-          expect(output).to ir_eql(j.iPlugin(OUTPUT, "stdout"))
+          expect(output).to ir_eql(j.iPlugin(rand_meta, OUTPUT, "stdout"))
         end
 
         it_should_behave_like("component source_with_metadata") do

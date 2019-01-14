@@ -31,8 +31,9 @@
 #   # How many events to retrieve from inputs before sending to filters+workers
 #   pipeline.batch.size: 125
 #
-#   # How long to wait before dispatching an undersized batch to filters+workers
-#   pipeline.batch.delay: 5
+#   # How long to wait in milliseconds while polling for the next event
+#   # before dispatching an undersized batch to filters+outputs
+#   pipeline.batch.delay: 50
 #
 #   # How many workers should be used per output plugin instance
 #   pipeline.output.workers: 1
@@ -42,8 +43,8 @@
 #   queue.type: memory
 #
 #   # If using queue.type: persisted, the page data files size. The queue data consists of
-#   # append-only data files separated into pages. Default is 250mb
-#   queue.page_capacity: 250mb
+#   # append-only data files separated into pages. Default is 64mb
+#   queue.page_capacity: 64mb
 #
 #   # If using queue.type: persisted, the maximum number of unread events in the queue.
 #   # Default is 0 (unlimited)

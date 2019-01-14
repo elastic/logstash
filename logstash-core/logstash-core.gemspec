@@ -64,19 +64,12 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n", "= 0.6.9" #(MIT license)
 
   # filetools and rakelib
-  gem.add_runtime_dependency "minitar", "~> 0.5.4"
+  gem.add_runtime_dependency "minitar", "~> 0.6.1"
   gem.add_runtime_dependency "rubyzip", "~> 1.2.1"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jrjackson", "~> #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "jar-dependencies"
-  # as of Feb 3rd 2016, the ruby-maven gem is resolved to version 3.3.3 and that version
-  # has an rdoc problem that causes a bundler exception. 3.3.9 is the current latest version
-  # which does not have this problem.
-  gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
   gem.add_runtime_dependency "elasticsearch", "~> 5.0", ">= 5.0.4" # Ruby client for ES (Apache 2.0 license)
   gem.add_runtime_dependency "manticore", '>= 0.5.4', '< 1.0.0'
-
-  eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
 end

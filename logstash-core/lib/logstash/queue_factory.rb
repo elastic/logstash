@@ -3,7 +3,6 @@ require "fileutils"
 require "logstash/event"
 require "logstash/namespace"
 require "logstash/util/wrapped_acked_queue"
-require "logstash/util/wrapped_synchronous_queue"
 
 module LogStash
   class QueueFactory
@@ -19,21 +18,17 @@ module LogStash
       queue_path = ::File.join(settings.get("path.queue"), settings.get("pipeline.id"))
 
       case queue_type
-      when "memory_acked"
-        # memory_acked is used in tests/specs
-        FileUtils.mkdir_p(queue_path)
-        LogStash::Util::WrappedAckedQueue.create_memory_based(queue_path, queue_page_capacity, queue_max_events, queue_max_bytes)
       when "persisted"
         # persisted is the disk based acked queue
         FileUtils.mkdir_p(queue_path)
-        LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
+        LogStash::WrappedAckedQueue.new(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
       when "memory"
         # memory is the legacy and default setting
-        LogStash::Util::WrappedSynchronousQueue.new(
+        LogStash::WrappedSynchronousQueue.new(
           settings.get("pipeline.batch.size") * settings.get("pipeline.workers") * 2
         )
       else
-        raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory_acked', 'memory', 'persisted'"
+        raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory' or 'persisted'"
       end
     end
   end
