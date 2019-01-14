@@ -29,9 +29,6 @@ This section summarizes the changes in the following releases:
 [[logstash-6-6-0]]
 === Logstash 6.6.0 Release Notes
 
-
-=== Logstash Pull Requests with label v6.6.0
-
 * BUGFIX: Remove excess period from logstash-plugin error reporting https://github.com/elastic/logstash/pull/9749[#9749]
 * Enhancement: Replace generated for-loops with static method calls https://github.com/elastic/logstash/pull/10133[#10133]
 * Enhancement: Add common base class for generated Dataset classes https://github.com/elastic/logstash/pull/10136[#10136]
@@ -47,7 +44,7 @@ This section summarizes the changes in the following releases:
 
 *Aggregate Filter*
 
-* new feature: add ability to dynamically define a custom `timeout` or `inactivity_timeout` in `code` block (fix issues [#91](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/91) and [#92](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/92))
+* new feature: add ability to dynamically define a custom `timeout` or `inactivity_timeout` in `code` block, fixes https://github.com/logstash-plugins/logstash-filter-aggregate/issues/91[#91] and https://github.com/logstash-plugins/logstash-filter-aggregate/issues/92[#92]
 * new feature: add meta informations available in `code` block through `map_meta` variable
 * new feature: add Logstash metrics, specific to aggregate plugin: aggregate_maps, pushed_events, task_timeouts, code_errors, timeout_code_errors
 * new feature: validate at startup that `map_action` option equals to 'create', 'update' or 'create_or_update'
@@ -66,7 +63,7 @@ This section summarizes the changes in the following releases:
 
 *Split Filter*
 
-* Fixed numeric values, optimized @target verification, cleanups and specs [36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
+* Fixed numeric values, optimized @target verification, cleanups and specs in https://github.com/logstash-plugins/logstash-filter-split/pull/36[#36]
 
 *Beats Input*
 
@@ -76,11 +73,11 @@ This section summarizes the changes in the following releases:
 
 *File Input*
 
-* Fixed issue where logs were being spammed with needless error messages [#224](https://github.com/logstash-plugins/logstash-input-file/pull/224)
+* Fixed issue where logs were being spammed with needless error messages in https://github.com/logstash-plugins/logstash-input-file/pull/224[#224]
 
 *Gelf Input*
 
-* Fixed shutdown handling, robustness in socket closing and restarting, json parsing, code DRYing and cleanups [62](https://github.com/logstash-plugins/logstash-input-gelf/pull/62)
+* Fixed shutdown handling, robustness in socket closing and restarting, json parsing, code DRYing and cleanups in https://github.com/logstash-plugins/logstash-input-gelf/pull/62[#62]
 
 *Http Input*
 
@@ -90,17 +87,17 @@ This section summarizes the changes in the following releases:
 
 *Kafka Input*
 
-* Added support for kafka property ssl.endpoint.identification.algorithm #302(https://github.com/logstash-plugins/logstash-input-kafka/pull/302)
+* Added support for kafka property ssl.endpoint.identification.algorithm in https://github.com/logstash-plugins/logstash-input-kafka/pull/302[#302]
 
 * Changed Kafka client version to 2.1.0
 
 *Elasticsearch Output*
 
-* Adds support for Index Lifecycle Management for Elasticsearch 6.6.0 and above, running with at least a Basic License(Beta) [#805](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/805)
+* Adds support for Index Lifecycle Management for Elasticsearch 6.6.0 and above, running with at least a Basic License(Beta) in https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/805[#805]
 
 *Kafka Output*
 
-* Added support for kafka property `ssl.endpoint.identification.algorithm` [#213](https://github.com/logstash-plugins/logstash-output-kafka/pull/213)
+* Added support for kafka property `ssl.endpoint.identification.algorithm` in https://github.com/logstash-plugins/logstash-output-kafka/pull/213[#213]
 
 * Changed Kafka client to version 2.1.0
 
