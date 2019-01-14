@@ -74,7 +74,15 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @Override
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
-        // add flush() to Java filter API?
+        if (filter.requiresFlush()) {
+            Collection<Event> outputEvents = filter.flush(filterMatchListener);
+            RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
+            for (Event outputEvent : outputEvents) {
+                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, outputEvent));
+            }
+            return newBatch;
+        }
+
         return context.nil;
     }
 
@@ -110,12 +118,12 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @Override
     protected boolean getHasFlush() {
-        return false;
+        return filter.requiresFlush();
     }
 
     @Override
     protected boolean getPeriodicFlush() {
-        return false;
+        return filter.requiresPeriodicFlush();
     }
 
     @SuppressWarnings("unchecked")
