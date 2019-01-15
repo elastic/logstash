@@ -1,12 +1,23 @@
 package co.elastic.logstash.api;
 
+import co.elastic.logstash.api.v0.Codec;
+import org.jruby.RubyInteger;
+import org.jruby.RubyString;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.plugins.ConfigurationImpl;
+import org.logstash.plugins.ContextImpl;
+import org.logstash.plugins.codecs.Line;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConfigurationTest {
+public class ConfigurationImplTest {
 
     private String stringKey = "string", numberKey = "number", booleanKey = "boolean";
     private String stringValue = "stringValue";
@@ -18,7 +29,7 @@ public class ConfigurationTest {
         configValues.put(stringKey, stringValue);
         configValues.put(numberKey, longValue);
         configValues.put(booleanKey, booleanValue);
-        return new Configuration(configValues);
+        return new ConfigurationImpl(configValues);
     }
 
     @Test
@@ -36,7 +47,7 @@ public class ConfigurationTest {
 
     @Test
     public void testDefaultValues() {
-        Configuration unsetConfig = new Configuration(new HashMap<>());
+        Configuration unsetConfig = new ConfigurationImpl(new HashMap<>());
 
         String defaultStringValue = "defaultStringValue";
         long defaultLongValue = 43L;
@@ -91,4 +102,41 @@ public class ConfigurationTest {
             Assert.fail("Did not throw correct exception for invalid config value type");
         }
     }
+
+    @Test
+    public void testDefaultCodec() {
+        PluginConfigSpec<Codec> codecConfig = PluginConfigSpec.codecSetting("codec", "java-line");
+        Configuration config = new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory());
+        Codec codec = config.get(codecConfig);
+        Assert.assertTrue(codec instanceof Line);
+    }
+
+    private static final class TestPluginFactory implements RubyIntegration.PluginFactory {
+
+        @Override
+        public IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
+            return null;
+        }
+
+        @Override
+        public AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
+            return null;
+        }
+
+        @Override
+        public AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
+            return null;
+        }
+
+        @Override
+        public IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs) {
+            return null;
+        }
+
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
+            return new Line(new ConfigurationImpl(Collections.emptyMap()), new ContextImpl(null));
+        }
+    }
 }
+

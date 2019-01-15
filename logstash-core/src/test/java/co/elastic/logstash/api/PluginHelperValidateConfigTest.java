@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.logstash.plugins.ConfigurationImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public class PluginHelperValidateConfigTest {
         List<PluginConfigSpec<?>> configSpec01 = Arrays.asList(
                 PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p01 = new TestingPlugin(configSpec01);
-        Configuration config01 = new Configuration(Collections.emptyMap());
+        Configuration config01 = new ConfigurationImpl(Collections.emptyMap());
         testParameters.add(
                 new ValidateConfigTestCase("optional config items, none provided",
                         p01, config01, Collections.emptyList(), Collections.emptyList()));
@@ -40,7 +41,7 @@ public class PluginHelperValidateConfigTest {
         List<PluginConfigSpec<?>> configSpec02 = Arrays.asList(
                 PluginConfigSpec.stringSetting("foo1"), PluginConfigSpec.stringSetting("foo2"));
         TestingPlugin p02 = new TestingPlugin(configSpec02);
-        Configuration config02 = new Configuration(Collections.singletonMap("foo1", "bar"));
+        Configuration config02 = new ConfigurationImpl(Collections.singletonMap("foo1", "bar"));
         testParameters.add(
                 new ValidateConfigTestCase("optional config items, some provided",
                         p02, config02, Collections.emptyList(), Collections.emptyList()));
@@ -52,7 +53,7 @@ public class PluginHelperValidateConfigTest {
         Map<String, Object> configMap03 = new HashMap<>();
         configMap03.put("foo1", "bar");
         configMap03.put("foo2", "bar");
-        Configuration config03 = new Configuration(configMap03);
+        Configuration config03 = new ConfigurationImpl(configMap03);
         testParameters.add(
                 new ValidateConfigTestCase("optional config items, all provided",
                         p03, config03, Collections.emptyList(), Collections.emptyList()));
@@ -65,7 +66,7 @@ public class PluginHelperValidateConfigTest {
         configMap04.put("foo1", "bar");
         configMap04.put("foo2", "bar");
         configMap04.put("foo3", "bar");
-        Configuration config04 = new Configuration(configMap04);
+        Configuration config04 = new ConfigurationImpl(configMap04);
         testParameters.add(
                 new ValidateConfigTestCase("optional config items, too many provided",
                         p04, config04, Collections.singletonList("foo3"), Collections.emptyList()));
@@ -73,7 +74,7 @@ public class PluginHelperValidateConfigTest {
         // required config items, all provided
         List<PluginConfigSpec<?>> configSpec05 = Arrays.asList(PluginConfigSpec.requiredStringSetting("foo"));
         TestingPlugin p05 = new TestingPlugin(configSpec05);
-        Configuration config05 = new Configuration(Collections.singletonMap("foo", "bar"));
+        Configuration config05 = new ConfigurationImpl(Collections.singletonMap("foo", "bar"));
         testParameters.add(
                 new ValidateConfigTestCase("required config items, all provided",
                         p05, config05, Collections.emptyList(), Collections.emptyList()));
@@ -82,7 +83,7 @@ public class PluginHelperValidateConfigTest {
         List<PluginConfigSpec<?>> configSpec06 = Arrays.asList(
                 PluginConfigSpec.requiredStringSetting("foo1"), PluginConfigSpec.requiredStringSetting("foo2"));
         TestingPlugin p06 = new TestingPlugin(configSpec06);
-        Configuration config06 = new Configuration(Collections.singletonMap("foo1", "bar"));
+        Configuration config06 = new ConfigurationImpl(Collections.singletonMap("foo1", "bar"));
         testParameters.add(
                 new ValidateConfigTestCase("required config items, some provided",
                         p06, config06, Collections.emptyList(), Collections.singletonList("foo2")));
@@ -94,7 +95,7 @@ public class PluginHelperValidateConfigTest {
         Map<String, Object> configMap07 = new HashMap<>();
         configMap07.put("foo1", "bar");
         configMap07.put("foo3", "bar");
-        Configuration config07 = new Configuration(configMap07);
+        Configuration config07 = new ConfigurationImpl(configMap07);
         testParameters.add(
                 new ValidateConfigTestCase("required config items, too many provided",
                         p07, config07, Collections.singletonList("foo3"), Collections.singletonList("foo2")));
@@ -109,7 +110,7 @@ public class PluginHelperValidateConfigTest {
         configMap08.put("foo1", "bar");
         configMap08.put("foo2", "bar");
         configMap08.put("foo3", "bar");
-        Configuration config08 = new Configuration(configMap08);
+        Configuration config08 = new ConfigurationImpl(configMap08);
         testParameters.add(
                 new ValidateConfigTestCase("optional+required config items, some provided",
                         p08, config08, Collections.emptyList(), Collections.emptyList()));
@@ -123,7 +124,7 @@ public class PluginHelperValidateConfigTest {
         Map<String, Object> configMap09 = new HashMap<>();
         configMap09.put("foo1", "bar");
         configMap09.put("foo3", "bar");
-        Configuration config09 = new Configuration(configMap09);
+        Configuration config09 = new ConfigurationImpl(configMap09);
         testParameters.add(
                 new ValidateConfigTestCase("optional+required config items, some missing",
                         p09, config09, Collections.emptyList(), Collections.singletonList("foo2")));
@@ -138,7 +139,7 @@ public class PluginHelperValidateConfigTest {
         configMap10.put("foo1", "bar");
         configMap10.put("foo3", "bar");
         configMap10.put("foo5", "bar");
-        Configuration config10 = new Configuration(configMap10);
+        Configuration config10 = new ConfigurationImpl(configMap10);
         testParameters.add(
                 new ValidateConfigTestCase("optional+required config items, some missing, some invalid",
                         p10, config10, Collections.singletonList("foo5"), Collections.singletonList("foo2")));
@@ -152,18 +153,18 @@ public class PluginHelperValidateConfigTest {
 
         for (String expectedUnknown : testCase.expectedUnknownOptions) {
             Assert.assertTrue(
-                    String.format("Expected [Unknown config option '%s' specified for plugin '%s']",
+                    String.format("Expected [Unknown setting '%s' specified for plugin '%s']",
                             expectedUnknown, testCase.plugin.getName()),
                     configErrors.contains(String.format(
-                            "Unknown config option '%s' specified for plugin '%s'", expectedUnknown,
+                            "Unknown setting '%s' specified for plugin '%s'", expectedUnknown,
                             testCase.plugin.getName())));
         }
         for (String expectedRequired : testCase.expectedRequiredOptions) {
             Assert.assertTrue(
-                    String.format("Expected [Required config option '%s' not specified for plugin '%s']",
+                    String.format("Expected [Required setting '%s' not specified for plugin '%s']",
                             expectedRequired, testCase.plugin.getName()),
                     configErrors.contains(String.format(
-                            "Required config option '%s' not specified for plugin '%s'", expectedRequired,
+                            "Required setting '%s' not specified for plugin '%s'", expectedRequired,
                             testCase.plugin.getName())));
         }
         for (String configError : configErrors) {

@@ -4,10 +4,7 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
-import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Codec;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.logstash.Event;
 import org.logstash.StringInterpolation;
 
@@ -30,8 +27,6 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java-line")
 public class Line implements Codec {
 
-    private static final Logger logger = LogManager.getLogger(Line.class);
-
     public static final String DEFAULT_DELIMITER = System.lineSeparator();
 
     private static final PluginConfigSpec<String> CHARSET_CONFIG =
@@ -42,6 +37,8 @@ public class Line implements Codec {
 
     private static final PluginConfigSpec<String> FORMAT_CONFIG =
             PluginConfigSpec.stringSetting("format");
+
+    private Context context;
 
     static final String MESSAGE_FIELD = "message";
 
@@ -61,10 +58,15 @@ public class Line implements Codec {
      * @param context       Logstash Context
      */
     public Line(final Configuration configuration, final Context context) {
+        this(context, configuration.get(DELIMITER_CONFIG), configuration.get(CHARSET_CONFIG), configuration.get(FORMAT_CONFIG));
+    }
+
+    private Line(Context context, String delimiter, String charsetName, String format) {
+        this.context = context;
         this.id = UUID.randomUUID().toString();
-        delimiter = configuration.get(DELIMITER_CONFIG);
-        charset = Charset.forName(configuration.get(CHARSET_CONFIG));
-        format = configuration.get(FORMAT_CONFIG);
+        this.delimiter = delimiter;
+        this.charset = Charset.forName(charsetName);
+        this.format = format;
         decoder = charset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
     }
@@ -135,12 +137,16 @@ public class Line implements Codec {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return PluginHelper.commonInputOptions(
-                Arrays.asList(CHARSET_CONFIG, DELIMITER_CONFIG, FORMAT_CONFIG));
+        return Arrays.asList(CHARSET_CONFIG, DELIMITER_CONFIG, FORMAT_CONFIG);
     }
 
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public Codec cloneCodec() {
+        return new Line(context, delimiter, charset.name(), format);
     }
 }

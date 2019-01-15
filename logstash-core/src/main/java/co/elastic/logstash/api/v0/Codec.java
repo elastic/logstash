@@ -47,4 +47,12 @@ public interface Codec extends Plugin {
      * @param output The stream to which the encoded event should be written.
      */
     void encode(Event event, OutputStream output);
+
+    /**
+     * Clones this {@link Codec}. All codecs should be capable of cloning themselves
+     * so that distinct instances of each codec can be supplied to multi-threaded
+     * inputs or outputs in cases where the codec is stateful.
+     * @return The cloned {@link Codec}.
+     */
+    Codec cloneCodec();
 }

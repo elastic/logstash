@@ -3,6 +3,7 @@ package org.logstash.plugins;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.v0.Filter;
 import co.elastic.logstash.api.v0.Input;
 import co.elastic.logstash.api.v0.Output;
@@ -16,6 +17,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -43,6 +45,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -159,14 +162,6 @@ public final class PluginFactoryExt {
             );
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject buildFilter(final ThreadContext context, final IRubyObject[] args) {
-            return buildFilter(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
-            );
-        }
-
         @SuppressWarnings("unchecked")
         @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
@@ -176,9 +171,12 @@ public final class PluginFactoryExt {
             );
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject buildCodec(final ThreadContext context, final IRubyObject[] args) {
-            return buildCodec((RubyString) args[0], args[1], null);
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
+            return (Codec) JavaUtil.unwrapJavaValue(plugin(
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
+                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+            ));
         }
 
         @SuppressWarnings("unchecked")
@@ -269,7 +267,7 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Output> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
-                            Configuration config = new Configuration(pluginArgs);
+                            Configuration config = new ConfigurationImpl(pluginArgs, this);
                             output = ctor.newInstance(id, config, executionContext.toContext());
                             PluginHelper.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
@@ -288,8 +286,8 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Filter> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
-                            Configuration config = new Configuration(pluginArgs);
-                            filter = ctor.newInstance(id, new Configuration(pluginArgs), executionContext.toContext());
+                            Configuration config = new ConfigurationImpl(pluginArgs);
+                            filter = ctor.newInstance(id, config, executionContext.toContext());
                             PluginHelper.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
@@ -307,10 +305,13 @@ public final class PluginFactoryExt {
                     if (cls != null) {
                         try {
                             final Constructor<Input> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
-                            Configuration config = new Configuration(pluginArgs);
-                            input = ctor.newInstance(id, new Configuration(pluginArgs), executionContext.toContext());
+                            Configuration config = new ConfigurationImpl(pluginArgs, this);
+                            input = ctor.newInstance(id, config, executionContext.toContext());
                             PluginHelper.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                            if (ex instanceof InvocationTargetException) {
+                                throw new IllegalStateException((ex).getCause());
+                            }
                             throw new IllegalStateException(ex);
                         }
                     }
@@ -320,7 +321,30 @@ public final class PluginFactoryExt {
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }
-                } else {
+                } else if (type == PluginLookup.PluginType.CODEC) {
+                    final Class<Codec> cls = (Class<Codec>) pluginClass.klass();
+                    Codec codec = null;
+                    if (cls != null) {
+                        try {
+                            final Constructor<Codec> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            Configuration config = new ConfigurationImpl(pluginArgs);
+                            codec = ctor.newInstance(config, executionContext.toContext());
+                            PluginHelper.validateConfig(codec, config);
+                        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                            if (ex instanceof InvocationTargetException) {
+                                throw new IllegalStateException((ex).getCause());
+                            }
+                            throw new IllegalStateException(ex);
+                        }
+                    }
+
+                    if (codec != null) {
+                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, codec);
+                    } else {
+                        throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
+                    }
+                }
+                else {
                     throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());
                 }
             }
@@ -375,7 +399,7 @@ public final class PluginFactoryExt {
                 }
             }
 
-            return new Context(dlq);
+            return new ContextImpl(dlq);
         }
     }
 

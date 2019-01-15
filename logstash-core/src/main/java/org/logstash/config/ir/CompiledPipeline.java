@@ -1,8 +1,10 @@
 package org.logstash.config.ir;
 
+import co.elastic.logstash.api.v0.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -112,7 +114,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         });
         return res;
@@ -130,7 +132,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         }
         return res;
@@ -147,7 +149,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments());
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def));
             nodes.add(o);
         });
         return nodes;
@@ -171,7 +173,7 @@ public final class CompiledPipeline {
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
                     Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    def.getArguments()
+                    codec.getArguments()
                 );
             } else {
                 toput = value;
@@ -179,6 +181,32 @@ public final class CompiledPipeline {
             converted.put(key, toput);
         }
         return converted;
+    }
+
+    /**
+     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
+     * Java types for consumption by Java plugins.
+     * @param def PluginDefinition as provided by {@link PipelineIR}
+     * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
+     * methods that create Java plugins
+     */
+    private Map<String, Object> convertJavaArgs(final PluginDefinition def) {
+        for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+            final Object value = entry.getValue();
+            final String key = entry.getKey();
+            final IRubyObject toput;
+            if (value instanceof PluginStatement) {
+                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                toput = pluginFactory.buildCodec(
+                        RubyUtil.RUBY.newString(codec.getName()),
+                        Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                        codec.getArguments()
+                );
+                Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
+                def.getArguments().put(key, javaCodec);
+            }
+        }
+        return def.getArguments();
     }
 
     /**

@@ -1,12 +1,13 @@
 package org.logstash.plugins.filters;
 
 import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.FilterMatchListener;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;
+import org.logstash.plugins.ConfigurationImpl;
+import org.logstash.plugins.ContextImpl;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,8 +22,8 @@ public class UuidTest {
     @Test
     public void testUuidWithoutRequiredConfigThrows() {
         try {
-            Configuration config = new Configuration(Collections.emptyMap());
-            Uuid uuid = new Uuid(ID, config, new Context(null));
+            Configuration config = new ConfigurationImpl(Collections.emptyMap());
+            Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
             PluginHelper.validateConfig(uuid, config);
             Assert.fail("java-uuid filter without required config should have thrown exception");
         } catch (IllegalStateException ex) {
@@ -38,8 +39,8 @@ public class UuidTest {
         String originalValue = "originalValue";
         Map<String, Object> rawConfig = new HashMap<>();
         rawConfig.put(Uuid.TARGET_CONFIG.name(), targetField);
-        Configuration config = new Configuration(rawConfig);
-        Uuid uuid = new Uuid(ID, config, new Context(null));
+        Configuration config = new ConfigurationImpl(rawConfig);
+        Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
         PluginHelper.validateConfig(uuid, config);
 
         Event e = new Event();
@@ -59,8 +60,8 @@ public class UuidTest {
         Map<String, Object> rawConfig = new HashMap<>();
         rawConfig.put(Uuid.TARGET_CONFIG.name(), targetField);
         rawConfig.put(Uuid.OVERWRITE_CONFIG.name(), true);
-        Configuration config = new Configuration(rawConfig);
-        Uuid uuid = new Uuid(ID, config, new Context(null));
+        Configuration config = new ConfigurationImpl(rawConfig);
+        Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
         PluginHelper.validateConfig(uuid, config);
 
         Event e = new Event();

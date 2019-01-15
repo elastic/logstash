@@ -8,7 +8,6 @@ import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.v0.Output;
 import org.logstash.Event;
-import org.logstash.plugins.discovery.PluginRegistry;
 
 import java.io.OutputStream;
 import java.util.Collection;
@@ -18,8 +17,8 @@ import java.util.concurrent.CountDownLatch;
 @LogstashPlugin(name = "java-stdout")
 public class Stdout implements Output {
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            PluginConfigSpec.stringSetting("codec", "java-line");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec", "java-line");
 
     private Codec codec;
     private OutputStream outputStream;
@@ -40,10 +39,9 @@ public class Stdout implements Output {
     Stdout(final String id, final Configuration configuration, final Context context, OutputStream targetStream) {
         this.id = id;
         this.outputStream = targetStream;
-        String codecName = configuration.get(CODEC_CONFIG);
-        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        codec = configuration.get(CODEC_CONFIG);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+            throw new IllegalStateException("Unable to obtain codec");
         }
     }
 

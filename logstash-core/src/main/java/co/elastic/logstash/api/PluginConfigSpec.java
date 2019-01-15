@@ -1,5 +1,7 @@
 package co.elastic.logstash.api;
 
+import co.elastic.logstash.api.v0.Codec;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +18,8 @@ public final class PluginConfigSpec<T> {
     private final boolean required;
 
     private final T defaultValue;
+
+    private String rawDefaultValue;
 
     private final Collection<PluginConfigSpec<?>> children;
 
@@ -56,6 +60,24 @@ public final class PluginConfigSpec<T> {
 
     public static PluginConfigSpec<String> stringSetting(final String name, final String defaultValue, boolean deprecated, boolean required) {
         return new PluginConfigSpec<>(name, String.class, defaultValue, deprecated, required);
+    }
+
+    public static PluginConfigSpec<Codec> codecSetting(final String name) {
+        return new PluginConfigSpec<>(
+                name, Codec.class, null, false, false
+        );
+    }
+
+    public static PluginConfigSpec<Codec> codecSetting(final String name, final String defaultCodecName) {
+        PluginConfigSpec<Codec> pcs = new PluginConfigSpec<>(
+                name, Codec.class, null, false, false
+        );
+        pcs.rawDefaultValue = defaultCodecName;
+        return pcs;
+    }
+
+    public static PluginConfigSpec<Codec> codecSetting(final String name, final Codec defaultValue, boolean deprecated, boolean required) {
+        return new PluginConfigSpec<>(name, Codec.class, defaultValue, deprecated, required);
     }
 
     public static PluginConfigSpec<Long> numSetting(final String name) {
@@ -134,4 +156,7 @@ public final class PluginConfigSpec<T> {
         return type;
     }
 
+    public String getRawDefaultValue() {
+        return rawDefaultValue;
+    }
 }

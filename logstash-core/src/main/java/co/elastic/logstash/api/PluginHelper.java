@@ -1,5 +1,6 @@
 package co.elastic.logstash.api;
 
+import co.elastic.logstash.api.v0.Codec;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,8 +22,8 @@ public final class PluginHelper {
     public static final PluginConfigSpec<List<Object>> ADD_TAG_CONFIG =
             PluginConfigSpec.arraySetting("add_tag");
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            PluginConfigSpec.stringSetting("codec");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec");
 
     public static final PluginConfigSpec<Boolean> ENABLE_METRIC_CONFIG =
             PluginConfigSpec.booleanSetting("enable_metric");
@@ -51,7 +51,8 @@ public final class PluginHelper {
      * @return Options that are common to all input plugins.
      */
     public static Collection<PluginConfigSpec<?>> commonInputOptions() {
-        return commonInputOptions(Collections.emptyList());
+        return Arrays.asList(ADD_FIELD_CONFIG, ENABLE_METRIC_CONFIG, CODEC_CONFIG,  ID_CONFIG,
+                TAGS_CONFIG, TYPE_CONFIG);
     }
 
     /**
@@ -62,15 +63,14 @@ public final class PluginHelper {
      * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonInputOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, ENABLE_METRIC_CONFIG,
-                CODEC_CONFIG,  ID_CONFIG, TAGS_CONFIG, TYPE_CONFIG));
+        return combineOptions(options, commonInputOptions());
     }
 
     /**
      * @return Options that are common to all output plugins.
      */
     public static Collection<PluginConfigSpec<?>> commonOutputOptions() {
-        return commonOutputOptions(Collections.emptyList());
+        return Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG, ID_CONFIG);
     }
 
     /**
@@ -81,14 +81,15 @@ public final class PluginHelper {
      * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonOutputOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG, ID_CONFIG));
+        return combineOptions(options, commonOutputOptions());
     }
 
     /**
      * @return Options that are common to all filter plugins.
      */
     public static Collection<PluginConfigSpec<?>> commonFilterOptions() {
-        return commonFilterOptions(Collections.emptyList());
+        return Arrays.asList(ADD_FIELD_CONFIG, ADD_TAG_CONFIG, ENABLE_METRIC_CONFIG, ID_CONFIG,
+                PERIODIC_FLUSH_CONFIG , REMOVE_FIELD_CONFIG, REMOVE_TAG_CONFIG);
     }
 
     /**
@@ -99,17 +100,14 @@ public final class PluginHelper {
      * @return combined list of options.
      */
     public static Collection<PluginConfigSpec<?>> commonFilterOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, Arrays.asList(ADD_FIELD_CONFIG, ADD_TAG_CONFIG,
-                ENABLE_METRIC_CONFIG, ID_CONFIG, PERIODIC_FLUSH_CONFIG , REMOVE_FIELD_CONFIG,
-                REMOVE_TAG_CONFIG));
+        return combineOptions(options, commonFilterOptions());
     }
 
     @SuppressWarnings("rawtypes")
     private static Collection<PluginConfigSpec<?>> combineOptions(
             Collection<PluginConfigSpec<?>> providedOptions,
             Collection<PluginConfigSpec<?>> commonOptions) {
-        List<PluginConfigSpec<?>> options = new ArrayList<>();
-        options.addAll(providedOptions);
+        List<PluginConfigSpec<?>> options = new ArrayList<>(providedOptions);
         for (PluginConfigSpec pcs : commonOptions) {
             if (!options.contains(pcs)) {
                 options.add(pcs);
@@ -139,7 +137,7 @@ public final class PluginHelper {
         Collection<String> providedConfig = config.allKeys();
         for (String configKey : providedConfig) {
             if (!configSchemaNames.contains(configKey)) {
-                configErrors.add(String.format("Unknown config option '%s' specified for plugin '%s'",
+                configErrors.add(String.format("Unknown setting '%s' specified for plugin '%s'",
                         configKey, plugin.getName()));
             }
         }
@@ -147,7 +145,7 @@ public final class PluginHelper {
         // find required config options that are missing
         for (PluginConfigSpec<?> configSpec : plugin.configSchema()) {
             if (configSpec.required() && !providedConfig.contains(configSpec.name())) {
-                configErrors.add(String.format("Required config option '%s' not specified for plugin '%s'",
+                configErrors.add(String.format("Required setting '%s' not specified for plugin '%s'",
                         configSpec.name(), plugin.getName()));
             }
         }

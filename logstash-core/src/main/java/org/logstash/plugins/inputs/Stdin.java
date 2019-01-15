@@ -7,10 +7,8 @@ import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.v0.Input;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.execution.queue.QueueWriter;
-import org.logstash.plugins.discovery.PluginRegistry;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -29,10 +27,10 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java-stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
-    private static final Logger LOGGER = LogManager.getLogger(Stdin.class);
+    private final Logger LOGGER;
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            PluginConfigSpec.stringSetting("codec", "java-line");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec", "java-line");
 
     private static final int BUFFER_SIZE = 64 * 1024;
 
@@ -56,16 +54,16 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     }
 
     Stdin(final String id, final Configuration configuration, final Context context, FileChannel inputChannel) {
+        LOGGER = context.getLogger(this);
         this.id = id;
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             hostname = "[unknownHost]";
         }
-        String codecName = configuration.get(CODEC_CONFIG);
-        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        codec = configuration.get(CODEC_CONFIG);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%s'", codecName));
+            throw new IllegalStateException("Unable to obtain codec");
         }
         input = inputChannel;
     }

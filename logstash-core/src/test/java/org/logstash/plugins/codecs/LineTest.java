@@ -1,8 +1,12 @@
 package org.logstash.plugins.codecs;
 
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Plugin;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.logstash.Event;
-import co.elastic.logstash.api.Configuration;
+import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.plugins.ConfigurationImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -198,7 +202,7 @@ public class LineTest {
         if (charset != null) {
             config.put("charset", charset);
         }
-        return new Line(new Configuration(config), null);
+        return new Line(new ConfigurationImpl(config), new TestContext());
     }
 
     @Test
@@ -206,7 +210,7 @@ public class LineTest {
         TestEventConsumer flushConsumer = new TestEventConsumer();
 
         // decode with cp-1252
-        Line cp1252decoder = new Line(new Configuration(Collections.singletonMap("charset", "cp1252")), null);
+        Line cp1252decoder = new Line(new ConfigurationImpl(Collections.singletonMap("charset", "cp1252")), new TestContext());
         byte[] rightSingleQuoteInCp1252 = {(byte) 0x92};
         ByteBuffer b1 = ByteBuffer.wrap(rightSingleQuoteInCp1252);
         cp1252decoder.decode(b1, flushConsumer);
@@ -217,7 +221,7 @@ public class LineTest {
 
         // decode with UTF-8
         flushConsumer.events.clear();
-        Line utf8decoder = new Line(new Configuration(Collections.emptyMap()), null);
+        Line utf8decoder = new Line(new ConfigurationImpl(Collections.emptyMap()), new TestContext());
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
         ByteBuffer b2 = ByteBuffer.wrap(rightSingleQuoteInUtf8);
         utf8decoder.decode(b2, flushConsumer);
@@ -231,7 +235,7 @@ public class LineTest {
     @Test
     public void testEncode() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new Configuration(Collections.emptyMap()), null);
+        Line line = new Line(new ConfigurationImpl(Collections.emptyMap()), new TestContext());
         Event e = new Event();
         e.setField("myfield1", "myvalue1");
         e.setField("myfield2", 42L);
@@ -252,7 +256,7 @@ public class LineTest {
     public void testEncodeWithCustomDelimiter() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         String delimiter = "xyz";
-        Line line = new Line(new Configuration(Collections.singletonMap("delimiter", delimiter)), null);
+        Line line = new Line(new ConfigurationImpl(Collections.singletonMap("delimiter", delimiter)), new TestContext());
         Event e = new Event();
         e.setField("myfield1", "myvalue1");
         e.setField("myfield2", 42L);
@@ -271,7 +275,7 @@ public class LineTest {
     @Test
     public void testEncodeWithFormat() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new Configuration(Collections.singletonMap("format", "%{host}-%{message}")), null);
+        Line line = new Line(new ConfigurationImpl(Collections.singletonMap("format", "%{host}-%{message}")), new TestContext());
         String message = "Hello world";
         String host = "test";
         String expectedOutput = host + "-" + message + Line.DEFAULT_DELIMITER;
@@ -295,4 +299,18 @@ class TestEventConsumer implements Consumer<Map<String, Object>> {
     public void accept(Map<String, Object> stringObjectMap) {
         events.add(stringObjectMap);
     }
+}
+
+class TestContext implements Context {
+
+    @Override
+    public DeadLetterQueueWriter getDlqWriter() {
+        return null;
+    }
+
+    @Override
+    public Logger getLogger(Plugin plugin) {
+        return null;
+    }
+
 }
