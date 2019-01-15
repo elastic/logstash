@@ -81,7 +81,7 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The ID of the pipeline.
 | `main`
 
-| `pipeline.java-execution`
+| `pipeline.java_execution`
 | Use the Java execution engine.
 | false
 

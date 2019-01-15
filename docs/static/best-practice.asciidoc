@@ -1,0 +1,112 @@
+[[tips]] 
+== Tips and Best Practices
+
+We are adding more tips and best practices, so please check back soon. 
+If you have something to add, please:
+
+* create an issue at
+https://github.com/elastic/logstash/issues, or
+* create a pull request with your proposed changes at https://github.com/elastic/logstash.
+
+// After merge, update PR link to link directly to this topic in GH
+
+Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+forum].
+
+[float] 
+[[tip-cli]] 
+=== Command line
+
+[float] 
+[[tip-windows-cli]] 
+==== Shell commands on Windows OS
+
+Command line examples often show single quotes. 
+On Windows systems, replace a single quote `'` with a double quote `"`. 
+
+*Example*
+
+Instead of:
+
+-----
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
+-----
+
+Use this format on Windows systems:
+
+-----
+bin\logstash -e "input { stdin { } } output { stdout {} }"
+-----
+
+[float]
+[[tip-pipelines]]
+=== Pipelines
+
+[float]
+[[tip-pipeline-mgmt]]
+==== Pipeline management
+
+You can manage pipelines in a {ls} instance using either local pipeline configurations or
+{logstash-ref}/configuring-centralized-pipelines.html[centralized pipeline management]
+in {kib}.
+
+After you configure Logstash to use centralized pipeline management, you can
+no longer specify local pipeline configurations. The `pipelines.yml` file and
+settings such as `path.config` and `config.string` are inactive when centralized
+pipeline management is enabled.
+
+[float]
+[[tip-kafka]]
+=== Kafka
+
+[float]
+[[tip-kafka-settings]]
+==== Kafka settings
+
+[float]
+[[tip-kafka-partitions]]
+===== Partitions per topic
+
+"How many partitions should I use per topic?"
+
+At least the number of {ls} nodes multiplied by consumer threads per node.
+
+Better yet, use a multiple of the above number. Increasing the number of
+partitions for an existing topic is extremely complicated. Partitions have a
+very low overhead. Using 5 to 10 times the number of partitions suggested by the
+first point is generally fine, so long as the overall partition count does not
+exceed 2000.
+
+Err on the side of over-partitioning up to a total 1000
+partitions overall. Try not to exceed 1000 partitions.
+
+[float]
+[[tip-kafka-threads]]
+===== Consumer threads
+
+"How many consumer threads should I configure?"
+
+Lower values tend to be more efficient and have less memory overhead. Try a
+value of `1` then iterate your way up. The value should in general be lower than
+the number of pipeline workers. Values larger than 4 rarely result in
+performance improvement.
+
+[float]
+[[tip-kafka-pq-persist]]
+==== Kafka input and persistent queue (PQ)
+
+[float]
+[[tip-kafka-offset-commit]]
+===== Kafka offset commits
+
+"Does Kafka Input commit offsets only after the event has been safely persisted to the PQ?"
+
+"Does Kafa Input commit offsets only for events that have passed the pipeline fully?"
+
+No, we can’t make that guarantee. Offsets are committed to Kafka periodically. If
+writes to the PQ are slow or blocked, offsets for events that haven’t safely
+reached the PQ can be committed.
+
+
+
+
