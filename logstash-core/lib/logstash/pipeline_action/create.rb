@@ -31,29 +31,30 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines)
-      pipeline =
+      new_pipeline =
         if @pipeline_config.settings.get_value("pipeline.java_execution")
           LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
         else
           agent.exclusive do
             # The Ruby pipeline initialization is not thread safe because of the module level
             # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
-            # executed simultaneously in different threads and we need to synchonize this initialization.
+            # executed simultaneously in different threads and we need to synchronize this initialization.
             LogStash::Pipeline.new(@pipeline_config, @metric, agent)
           end
         end
 
-      status = nil
-      pipelines.compute(pipeline_id) do |id,value|
-        if value
-          LogStash::ConvergeResult::ActionResult.create(self, true)
+      result = nil
+      pipelines.compute(pipeline_id) do |_, current_pipeline|
+        if current_pipeline
+          result = LogStash::ConvergeResult::FailedAction.new("Attempted to create a pipeline that already exists")
+          current_pipeline
+        else
+          result = new_pipeline.start # block until the pipeline is correctly started or crashed
+          result ? new_pipeline : nil
         end
-        status = pipeline.start # block until the pipeline is correctly started or crashed
-        pipeline # The pipeline is successfully started we can add it to the map
       end
 
-
-      LogStash::ConvergeResult::ActionResult.create(self, status)
+      LogStash::ConvergeResult::ActionResult.create(self, result)
     end
 
 

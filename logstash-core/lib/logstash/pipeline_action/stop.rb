@@ -10,14 +10,13 @@ module LogStash module PipelineAction
     end
 
     def execute(agent, pipelines)
-      pipelines.compute(pipeline_id) do |_,pipeline|
+      pipelines.compute(pipeline_id) do |_, pipeline|
         pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
         pipeline.thread.join
-        nil # delete the pipeline
+        nil # remove pipeline from pipelines
       end
-      # If we reach this part of the code we have succeeded because
-      # the shutdown call will block.
-      return LogStash::ConvergeResult::SuccessfulAction.new
+
+      LogStash::ConvergeResult::SuccessfulAction.new
     end
 
     def to_s
