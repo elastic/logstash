@@ -52,7 +52,7 @@ public class Uuid implements Filter {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return PluginHelper.commonFilterOptions(Arrays.asList(TARGET_CONFIG, OVERWRITE_CONFIG));
+        return PluginHelper.commonFilterSettings(Arrays.asList(TARGET_CONFIG, OVERWRITE_CONFIG));
     }
 
     @Override

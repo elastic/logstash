@@ -64,7 +64,7 @@ public class Stdout implements Output {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return PluginHelper.commonOutputOptions(Collections.singletonList(CODEC_CONFIG));
+        return PluginHelper.commonOutputSettings(Collections.singletonList(CODEC_CONFIG));
     }
 
     @Override

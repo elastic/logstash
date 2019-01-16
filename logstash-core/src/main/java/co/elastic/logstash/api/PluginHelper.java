@@ -43,72 +43,72 @@ public final class PluginHelper {
 
 
     /**
-     * @return Options that are common to all input plugins.
+     * @return Settings that are common to all input plugins.
      */
-    public static Collection<PluginConfigSpec<?>> commonInputOptions() {
+    public static Collection<PluginConfigSpec<?>> commonInputSettings() {
         return Arrays.asList(ADD_FIELD_CONFIG, ENABLE_METRIC_CONFIG, CODEC_CONFIG,  ID_CONFIG,
                 TAGS_CONFIG, TYPE_CONFIG);
     }
 
     /**
-     * Combines the provided list of options with the options that are common to all input plugins
+     * Combines the provided list of settings with the settings that are common to all input plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
-     * defaults and other values on the common config options.
-     * @param options provided list of options.
-     * @return combined list of options.
+     * defaults and other values on the common config settings.
+     * @param settings provided list of settings.
+     * @return combined list of settings.
      */
-    public static Collection<PluginConfigSpec<?>> commonInputOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, commonInputOptions());
+    public static Collection<PluginConfigSpec<?>> commonInputSettings(Collection<PluginConfigSpec<?>> settings) {
+        return combineSettings(settings, commonInputSettings());
     }
 
     /**
-     * @return Options that are common to all output plugins.
+     * @return Settings that are common to all output plugins.
      */
-    public static Collection<PluginConfigSpec<?>> commonOutputOptions() {
+    public static Collection<PluginConfigSpec<?>> commonOutputSettings() {
         return Arrays.asList(ENABLE_METRIC_CONFIG, CODEC_CONFIG, ID_CONFIG);
     }
 
     /**
-     * Combines the provided list of options with the options that are common to all output plugins
+     * Combines the provided list of settings with the settings that are common to all output plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
-     * defaults and other values on the common config options.
-     * @param options provided list of options.
-     * @return combined list of options.
+     * defaults and other values on the common config settings.
+     * @param settings provided list of settings.
+     * @return combined list of settings.
      */
-    public static Collection<PluginConfigSpec<?>> commonOutputOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, commonOutputOptions());
+    public static Collection<PluginConfigSpec<?>> commonOutputSettings(Collection<PluginConfigSpec<?>> settings) {
+        return combineSettings(settings, commonOutputSettings());
     }
 
     /**
-     * @return Options that are common to all filter plugins.
+     * @return Settings that are common to all filter plugins.
      */
-    public static Collection<PluginConfigSpec<?>> commonFilterOptions() {
+    public static Collection<PluginConfigSpec<?>> commonFilterSettings() {
         return Arrays.asList(ADD_FIELD_CONFIG, ADD_TAG_CONFIG, ENABLE_METRIC_CONFIG, ID_CONFIG,
                 PERIODIC_FLUSH_CONFIG , REMOVE_FIELD_CONFIG, REMOVE_TAG_CONFIG);
     }
 
     /**
-     * Combines the provided list of options with the options that are common to all filter plugins
+     * Combines the provided list of settings with the settings that are common to all filter plugins
      * ignoring any that are already present in the provided list. This allows plugins to override
-     * defaults and other values on the common config options.
-     * @param options provided list of options.
-     * @return combined list of options.
+     * defaults and other values on the common config settings.
+     * @param settings provided list of settings.
+     * @return combined list of settings.
      */
-    public static Collection<PluginConfigSpec<?>> commonFilterOptions(Collection<PluginConfigSpec<?>> options) {
-        return combineOptions(options, commonFilterOptions());
+    public static Collection<PluginConfigSpec<?>> commonFilterSettings(Collection<PluginConfigSpec<?>> settings) {
+        return combineSettings(settings, commonFilterSettings());
     }
 
     @SuppressWarnings("rawtypes")
-    private static Collection<PluginConfigSpec<?>> combineOptions(
-            Collection<PluginConfigSpec<?>> providedOptions,
-            Collection<PluginConfigSpec<?>> commonOptions) {
-        List<PluginConfigSpec<?>> options = new ArrayList<>(providedOptions);
-        for (PluginConfigSpec pcs : commonOptions) {
-            if (!options.contains(pcs)) {
-                options.add(pcs);
+    private static Collection<PluginConfigSpec<?>> combineSettings(
+            Collection<PluginConfigSpec<?>> providedSettings,
+            Collection<PluginConfigSpec<?>> commonSettings) {
+        List<PluginConfigSpec<?>> settings = new ArrayList<>(providedSettings);
+        for (PluginConfigSpec pcs : commonSettings) {
+            if (!settings.contains(pcs)) {
+                settings.add(pcs);
             }
         }
-        return options;
+        return settings;
     }
 
 }

@@ -120,7 +120,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
+        return PluginHelper.commonInputSettings(Collections.singletonList(CODEC_CONFIG));
     }
 
     @Override
