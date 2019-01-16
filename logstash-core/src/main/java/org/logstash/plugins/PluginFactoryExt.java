@@ -2,10 +2,10 @@ package org.logstash.plugins;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Codec;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
-import co.elastic.logstash.api.v0.Output;
+import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Output;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;

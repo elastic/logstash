@@ -5,8 +5,8 @@ import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
-import co.elastic.logstash.api.v0.Codec;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Input;
 import org.apache.logging.log4j.Logger;
 import org.logstash.execution.queue.QueueWriter;
 

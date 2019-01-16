@@ -1,6 +1,6 @@
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;

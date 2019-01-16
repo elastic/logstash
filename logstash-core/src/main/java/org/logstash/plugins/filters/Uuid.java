@@ -5,8 +5,8 @@ import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.FilterMatchListener;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.FilterMatchListener;
 import org.logstash.Event;
 
 import java.util.Arrays;

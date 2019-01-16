@@ -1,6 +1,6 @@
 package org.logstash.config.ir.compiler;
 
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;

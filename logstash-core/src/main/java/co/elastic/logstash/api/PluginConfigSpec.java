@@ -1,7 +1,5 @@
 package co.elastic.logstash.api;
 
-import co.elastic.logstash.api.v0.Codec;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.logstash.config.ir.compiler;
 
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.FilterMatchListener;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.FilterMatchListener;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;

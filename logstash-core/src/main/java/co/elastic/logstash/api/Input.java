@@ -1,4 +1,4 @@
-package co.elastic.logstash.api.v0;
+package co.elastic.logstash.api;
 
 import co.elastic.logstash.api.Plugin;
 import org.logstash.execution.queue.QueueWriter;

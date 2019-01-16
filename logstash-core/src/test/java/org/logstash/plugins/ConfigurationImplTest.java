@@ -2,17 +2,9 @@ package org.logstash.plugins;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.PluginConfigSpec;
-import co.elastic.logstash.api.v0.Codec;
-import org.jruby.RubyInteger;
-import org.jruby.RubyString;
-import org.jruby.runtime.builtin.IRubyObject;
+import co.elastic.logstash.api.Codec;
 import org.junit.Assert;
 import org.junit.Test;
-import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
-import org.logstash.config.ir.compiler.RubyIntegration;
-import org.logstash.plugins.ConfigurationImpl;
-import org.logstash.plugins.ContextImpl;
 import org.logstash.plugins.codecs.Line;
 
 import java.util.Collections;

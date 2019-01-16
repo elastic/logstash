@@ -1,7 +1,7 @@
 package org.logstash.plugins.filters;
 
 import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.v0.FilterMatchListener;
+import co.elastic.logstash.api.FilterMatchListener;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;

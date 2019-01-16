@@ -1,6 +1,6 @@
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +31,8 @@ import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
 import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
 
 /**
