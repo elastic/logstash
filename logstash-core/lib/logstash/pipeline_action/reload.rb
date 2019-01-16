@@ -34,8 +34,8 @@ module LogStash module PipelineAction
           else
             agent.exclusive do
               # The Ruby pipeline initialization is not thread safe because of the module level
-              # shared state in LogsStash::Config::AST. When using multiple pipelines this can gets
-              # executed simultaneously in different threads and we need to synchonize this initialization.
+              # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
+              # executed simultaneously in different threads and we need to synchronize this initialization.
               LogStash::BasePipeline.new(@pipeline_config)
             end
           end
@@ -49,15 +49,12 @@ module LogStash module PipelineAction
 
       logger.info("Reloading pipeline", "pipeline.id" => pipeline_id)
 
-      pipelines.compute(pipeline_id) do |_,pipeline|
-        status = Stop.new(pipeline_id).execute(agent, pipelines)
+      stop_result = Stop.new(pipeline_id).execute(agent, pipelines)
 
-        if status
-          return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
-        else
-          return status
-        end
-        pipeline
+      if stop_result.successful?
+        Create.new(@pipeline_config, @metric).execute(agent, pipelines)
+      else
+        stop_result
       end
     end
   end
