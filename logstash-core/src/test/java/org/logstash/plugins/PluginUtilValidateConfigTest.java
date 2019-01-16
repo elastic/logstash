@@ -1,10 +1,12 @@
-package co.elastic.logstash.api;
+package org.logstash.plugins;
 
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Plugin;
+import co.elastic.logstash.api.PluginConfigSpec;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.logstash.plugins.ConfigurationImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,11 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(Parameterized.class)
-public class PluginHelperValidateConfigTest {
+public class PluginUtilValidateConfigTest {
 
     private ValidateConfigTestCase testCase;
 
-    public PluginHelperValidateConfigTest(ValidateConfigTestCase v) {
+    public PluginUtilValidateConfigTest(ValidateConfigTestCase v) {
         this.testCase = v;
     }
 
@@ -149,7 +151,7 @@ public class PluginHelperValidateConfigTest {
 
     @Test
     public void testValidateConfig() {
-        List<String> configErrors = PluginHelper.doValidateConfig(testCase.plugin, testCase.config);
+        List<String> configErrors = PluginUtil.doValidateConfig(testCase.plugin, testCase.config);
 
         for (String expectedUnknown : testCase.expectedUnknownOptions) {
             Assert.assertTrue(

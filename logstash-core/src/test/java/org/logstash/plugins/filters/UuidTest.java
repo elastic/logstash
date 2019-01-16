@@ -1,13 +1,13 @@
 package org.logstash.plugins.filters;
 
 import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.FilterMatchListener;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.plugins.ConfigurationImpl;
 import org.logstash.plugins.ContextImpl;
+import org.logstash.plugins.PluginUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +24,7 @@ public class UuidTest {
         try {
             Configuration config = new ConfigurationImpl(Collections.emptyMap());
             Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
-            PluginHelper.validateConfig(uuid, config);
+            PluginUtil.validateConfig(uuid, config);
             Assert.fail("java-uuid filter without required config should have thrown exception");
         } catch (IllegalStateException ex) {
             Assert.assertTrue(ex.getMessage().contains("Config errors found for plugin 'java-uuid'"));
@@ -41,7 +41,7 @@ public class UuidTest {
         rawConfig.put(Uuid.TARGET_CONFIG.name(), targetField);
         Configuration config = new ConfigurationImpl(rawConfig);
         Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
-        PluginHelper.validateConfig(uuid, config);
+        PluginUtil.validateConfig(uuid, config);
 
         Event e = new Event();
         e.setField(targetField, originalValue);
@@ -62,7 +62,7 @@ public class UuidTest {
         rawConfig.put(Uuid.OVERWRITE_CONFIG.name(), true);
         Configuration config = new ConfigurationImpl(rawConfig);
         Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
-        PluginHelper.validateConfig(uuid, config);
+        PluginUtil.validateConfig(uuid, config);
 
         Event e = new Event();
         e.setField(targetField, originalValue);

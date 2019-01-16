@@ -1,8 +1,12 @@
-package co.elastic.logstash.api;
+package org.logstash.plugins;
+
+import co.elastic.logstash.api.LogstashPlugin;
+import co.elastic.logstash.api.Plugin;
+import co.elastic.logstash.api.PluginConfigSpec;
 
 import java.util.Collection;
 
-import static co.elastic.logstash.api.TestingPlugin.TEST_PLUGIN_NAME;
+import static org.logstash.plugins.TestingPlugin.TEST_PLUGIN_NAME;
 
 @LogstashPlugin(name = TEST_PLUGIN_NAME)
 public class TestingPlugin implements Plugin {

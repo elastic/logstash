@@ -2,7 +2,6 @@ package org.logstash.plugins;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.v0.Codec;
 import co.elastic.logstash.api.v0.Filter;
 import co.elastic.logstash.api.v0.Input;
@@ -269,7 +268,7 @@ public final class PluginFactoryExt {
                             final Constructor<Output> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs, this);
                             output = ctor.newInstance(id, config, executionContext.toContext());
-                            PluginHelper.validateConfig(output, config);
+                            PluginUtil.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -288,7 +287,7 @@ public final class PluginFactoryExt {
                             final Constructor<Filter> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs);
                             filter = ctor.newInstance(id, config, executionContext.toContext());
-                            PluginHelper.validateConfig(filter, config);
+                            PluginUtil.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -307,7 +306,7 @@ public final class PluginFactoryExt {
                             final Constructor<Input> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs, this);
                             input = ctor.newInstance(id, config, executionContext.toContext());
-                            PluginHelper.validateConfig(input, config);
+                            PluginUtil.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException) {
                                 throw new IllegalStateException((ex).getCause());
@@ -329,7 +328,7 @@ public final class PluginFactoryExt {
                             final Constructor<Codec> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs);
                             codec = ctor.newInstance(config, executionContext.toContext());
-                            PluginHelper.validateConfig(codec, config);
+                            PluginUtil.validateConfig(codec, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException) {
                                 throw new IllegalStateException((ex).getCause());
