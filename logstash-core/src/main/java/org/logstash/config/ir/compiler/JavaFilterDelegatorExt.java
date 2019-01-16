@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.FilterMatchListener;
 import org.jruby.Ruby;
@@ -11,7 +12,6 @@ import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -63,7 +63,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
         Collection<Event> outputEvents = filter.filter(inputEvents, filterMatchListener);
         RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
         for (Event outputEvent : outputEvents) {
-            newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, outputEvent));
+            newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
         }
         return newBatch;
     }
@@ -78,7 +78,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
             Collection<Event> outputEvents = filter.flush(filterMatchListener);
             RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
             for (Event outputEvent : outputEvents) {
-                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, outputEvent));
+                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
             }
             return newBatch;
         }

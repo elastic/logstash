@@ -1,7 +1,7 @@
 package org.logstash.config.ir.compiler;
 
+import co.elastic.logstash.api.Event;
 import org.jruby.RubyArray;
-import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.StringInterpolation;
 
@@ -67,7 +67,7 @@ class CommonActions {
      * @return Updated event.
      */
     static Map<String, Object> addField(Map<String, Object> event, Map<String, Object> fieldsToAdd) {
-        Event tempEvent = new Event(event);
+        Event tempEvent = new org.logstash.Event(event);
         addField(tempEvent, fieldsToAdd);
         return tempEvent.getData();
     }
@@ -116,7 +116,7 @@ class CommonActions {
      * @return Updated event.
      */
     static Map<String, Object> addTag(Map<String, Object> e, List<Object> tags) {
-        Event tempEvent = new Event(e);
+        Event tempEvent = new org.logstash.Event(e);
         addTag(tempEvent, tags);
         return tempEvent.getData();
     }

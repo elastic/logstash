@@ -22,4 +22,10 @@ public interface Context {
      */
     Logger getLogger(Plugin plugin);
 
+    /**
+     * Provides an {@link EventFactory} to constructs instance of {@link Event}.
+     * @return The event factory.
+     */
+    EventFactory getEventFactory();
+
 }

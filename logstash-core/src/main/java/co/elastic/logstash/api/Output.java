@@ -1,7 +1,5 @@
 package co.elastic.logstash.api;
 
-import org.logstash.Event;
-
 import java.util.Collection;
 
 /**

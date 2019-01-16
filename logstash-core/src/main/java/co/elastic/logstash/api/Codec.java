@@ -1,7 +1,5 @@
 package co.elastic.logstash.api;
 
-import org.logstash.Event;
-
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;

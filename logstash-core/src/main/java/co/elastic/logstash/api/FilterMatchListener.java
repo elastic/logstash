@@ -1,7 +1,5 @@
 package co.elastic.logstash.api;
 
-import org.logstash.Event;
-
 /**
  * Mechanism by which filters indicate which events "match". The common actions for filters such as {@code add_field}
  * and {@code add_tag} are applied only to events that are designated as "matching". Some filters such as the

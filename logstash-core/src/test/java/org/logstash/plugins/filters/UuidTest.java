@@ -1,10 +1,10 @@
 package org.logstash.plugins.filters;
 
 import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.FilterMatchListener;
 import org.junit.Assert;
 import org.junit.Test;
-import org.logstash.Event;
 import org.logstash.plugins.ConfigurationImpl;
 import org.logstash.plugins.ContextImpl;
 import org.logstash.plugins.PluginUtil;
@@ -43,7 +43,7 @@ public class UuidTest {
         Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
         PluginUtil.validateConfig(uuid, config);
 
-        Event e = new Event();
+        org.logstash.Event e = new org.logstash.Event();
         e.setField(targetField, originalValue);
         Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e), NO_OP_MATCH_LISTENER);
 
@@ -64,7 +64,7 @@ public class UuidTest {
         Uuid uuid = new Uuid(ID, config, new ContextImpl(null));
         PluginUtil.validateConfig(uuid, config);
 
-        Event e = new Event();
+        org.logstash.Event e = new org.logstash.Event();
         e.setField(targetField, originalValue);
         Collection<Event> filteredEvents = uuid.filter(Collections.singletonList(e), NO_OP_MATCH_LISTENER);
 

@@ -21,7 +21,7 @@ import org.logstash.ext.JrubyTimestampExtLibrary;
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
-public final class Event implements Cloneable, Queueable {
+public final class Event implements Cloneable, Queueable, co.elastic.logstash.api.Event {
 
     private boolean cancelled;
     private ConvertedMap data;
@@ -91,26 +91,32 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public ConvertedMap getData() {
         return this.data;
     }
 
+    @Override
     public ConvertedMap getMetadata() {
         return this.metadata;
     }
 
+    @Override
     public void cancel() {
         this.cancelled = true;
     }
 
+    @Override
     public void uncancel() {
         this.cancelled = false;
     }
 
+    @Override
     public boolean isCancelled() {
         return this.cancelled;
     }
 
+    @Override
     public Timestamp getTimestamp() throws IOException {
         final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
             (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
@@ -121,17 +127,20 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public void setTimestamp(Timestamp t) {
         this.data.putInterned(
             TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(RubyUtil.RUBY, t)
         );
     }
 
+    @Override
     public Object getField(final String reference) {
         final Object unconverted = getUnconvertedField(FieldReference.from(reference));
         return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
+    @Override
     public Object getUnconvertedField(final String reference) {
         return getUnconvertedField(FieldReference.from(reference));
     }
@@ -147,6 +156,7 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public void setField(final String reference, final Object value) {
         setField(FieldReference.from(reference), value);
     }
@@ -166,6 +176,7 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public boolean includes(final String field) {
         return includes(FieldReference.from(field));
     }
@@ -231,8 +242,25 @@ public final class Event implements Cloneable, Queueable {
         return result;
     }
 
+    @Override
     public Map<String, Object> toMap() {
         return Cloner.deep(this.data);
+    }
+
+    @Override
+    public co.elastic.logstash.api.Event overwrite(co.elastic.logstash.api.Event e) {
+        if (e instanceof Event) {
+            return overwrite((Event)e);
+        }
+        return e;
+    }
+
+    @Override
+    public co.elastic.logstash.api.Event append(co.elastic.logstash.api.Event e) {
+        if (e instanceof Event) {
+            return append((Event)e);
+        }
+        return e;
     }
 
     public Event overwrite(Event e) {
@@ -253,6 +281,7 @@ public final class Event implements Cloneable, Queueable {
         return this;
     }
 
+    @Override
     public Object remove(final String path) {
         return remove(FieldReference.from(path));
     }
@@ -261,6 +290,7 @@ public final class Event implements Cloneable, Queueable {
         return Accessors.del(data, field);
     }
 
+    @Override
     public String sprintf(String s) throws IOException {
         return StringInterpolation.evaluate(this, s);
     }
@@ -273,6 +303,7 @@ public final class Event implements Cloneable, Queueable {
         return new Event(map);
     }
 
+    @Override
     public String toString() {
         Object hostField = this.getField("host");
         Object messageField = this.getField("message");
@@ -326,6 +357,7 @@ public final class Event implements Cloneable, Queueable {
         return null;
     }
 
+    @Override
     public void tag(final String tag) {
         final Object tags = Accessors.get(data, TAGS_FIELD);
         // short circuit the null case where we know we won't need deduplication step below at the end

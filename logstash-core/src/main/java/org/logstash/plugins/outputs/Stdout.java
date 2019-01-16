@@ -2,12 +2,12 @@ package org.logstash.plugins.outputs;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Output;
-import org.logstash.Event;
 
 import java.io.OutputStream;
 import java.util.Collection;

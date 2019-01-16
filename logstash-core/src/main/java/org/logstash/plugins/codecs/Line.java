@@ -2,10 +2,10 @@ package org.logstash.plugins.codecs;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.Codec;
-import org.logstash.Event;
 import org.logstash.StringInterpolation;
 
 import java.io.IOException;
@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import static org.logstash.ObjectMappers.JSON_MAPPER;
 
 @LogstashPlugin(name = "java-line")
 public class Line implements Codec {
@@ -126,7 +128,7 @@ public class Line implements Codec {
     public void encode(Event event, OutputStream output) {
         try {
             String outputString = (format == null
-                    ? event.toJson()
+                    ? JSON_MAPPER.writeValueAsString(event.getData())
                     : StringInterpolation.evaluate(event, format))
                     + delimiter;
             output.write(outputString.getBytes(charset));

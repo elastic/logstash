@@ -28,6 +28,15 @@ public final class StringInterpolation {
         // Utility Class
     }
 
+    public static String evaluate(final co.elastic.logstash.api.Event event, final String template)
+        throws IOException {
+        if (event instanceof Event) {
+            return evaluate((Event) event, template);
+        } else {
+            throw new IllegalStateException("Unknown event concrete class: " + event.getClass().getName());
+        }
+    }
+
     public static String evaluate(final Event event, final String template) throws IOException {
         int open = template.indexOf("%{");
         int close = template.indexOf('}', open);
