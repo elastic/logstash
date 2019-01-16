@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Plugin configuration specification. Allows the name, type, deprecation status, required status, and default
+ * value for each configuration setting to be defined.
+ * @param <T> The expected type of the setting value.
+ */
 public final class PluginConfigSpec<T> {
 
     private final String name;

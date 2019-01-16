@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility methods for specifying common plugin config settings.
+ */
 public final class PluginHelper {
 
     public static final PluginConfigSpec<Map<String, Object>> ADD_FIELD_CONFIG =

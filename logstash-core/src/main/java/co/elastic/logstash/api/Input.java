@@ -1,28 +1,42 @@
 package co.elastic.logstash.api;
 
-import co.elastic.logstash.api.Plugin;
 import org.logstash.execution.queue.QueueWriter;
 
+import java.util.Map;
+
 /**
- * A Logstash Pipeline Input pushes to a {@link QueueWriter}.
+ * Logstash Java input interface. Inputs produce events that flow through the Logstash event pipeline. Inputs are
+ * flexible and may produce events through many different mechanisms including:
+ *
+ * <ul>
+ *     <li>a pull mechanism such as periodic queries of external database</li>
+ *     <li>a push mechanism such as events sent from clients to a local network port</li>
+ *     <li>a timed computation such as a heartbeat</li>
+ * </ul>
+ *
+ * or any other mechanism that produces a useful stream of events. Event streams may be either finite or infinite.
+ * Logstash will run as long as any one of its inputs is still producing events.
  */
 public interface Input extends Plugin {
 
     /**
-     * Start pushing {@link org.logstash.Event} to given {@link QueueWriter}.
-     * @param writer Queue Writer to Push to
+     * Start the input and begin pushing events to the supplied {@link QueueWriter} instance via the
+     * {@link QueueWriter#push(Map)} method. If the input produces an infinite stream of events, this method
+     * should loop until a {@link #stop()} request is made. If the input produces a finite stream of events,
+     * this method should terminate when the last event in the stream is produced.
+     * @param writer Queue writer to which events should be pushed
      */
     void start(QueueWriter writer);
 
     /**
-     * Stop the input.
-     * Stopping happens asynchronously, use {@link #awaitStop()} to make sure that the input has
-     * finished.
+     * Notifies the input to stop producing events. Inputs stop both asynchronously and cooperatively. Use the
+     * {@link #awaitStop()} method to block until the input has completed the stop process.
      */
     void stop();
 
     /**
-     * Blocks until the input execution has finished.
+     * Blocks until the input has stopped producing events. Note that this method should <b>not</b> signal the
+     * input to stop as the {@link #stop()} method does.
      * @throws InterruptedException On Interrupt
      */
     void awaitStop() throws InterruptedException;

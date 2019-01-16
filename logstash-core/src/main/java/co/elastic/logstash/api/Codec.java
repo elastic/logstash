@@ -7,6 +7,10 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Logstash Java codec interface. Logstash codecs may be used by inputs to decode a sequence or stream of bytes
+ * into events or by outputs to encode events into a sequence of bytes.
+ */
 public interface Codec extends Plugin {
 
     /**
@@ -27,7 +31,7 @@ public interface Codec extends Plugin {
      * resuming writes.</li>
      * </ul>
      *
-     * @param buffer Input buffer from which events will be decoded.
+     * @param buffer        Input buffer from which events will be decoded.
      * @param eventConsumer Consumer to which decoded events will be passed.
      */
     void decode(ByteBuffer buffer, Consumer<Map<String, Object>> eventConsumer);
@@ -35,15 +39,15 @@ public interface Codec extends Plugin {
     /**
      * Decodes all remaining events from the specified {@link ByteBuffer} along with any internal
      * state that may remain after previous calls to {@link #decode(ByteBuffer, Consumer)}.
-     * @param buffer Input buffer from which events will be decoded.
+     * @param buffer        Input buffer from which events will be decoded.
      * @param eventConsumer Consumer to which decoded events will be passed.
      */
     void flush(ByteBuffer buffer, Consumer<Map<String, Object>> eventConsumer);
 
     /**
      * Encodes an {@link Event} and writes it to the specified {@link OutputStream}.
-     * @param event The event to encode.
-     * @param output The stream to which the encoded event should be written.
+     * @param event  The event to encode.
+     * @param output The stream to which the encoding of the event should be written.
      */
     void encode(Event event, OutputStream output);
 
