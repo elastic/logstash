@@ -1,5 +1,7 @@
-package co.elastic.logstash.api;
+package org.logstash.plugins;
 
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.v0.Codec;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
@@ -111,32 +113,5 @@ public class ConfigurationImplTest {
         Assert.assertTrue(codec instanceof Line);
     }
 
-    private static final class TestPluginFactory implements RubyIntegration.PluginFactory {
-
-        @Override
-        public IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
-            return null;
-        }
-
-        @Override
-        public AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
-            return null;
-        }
-
-        @Override
-        public AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
-            return null;
-        }
-
-        @Override
-        public IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs) {
-            return null;
-        }
-
-        @Override
-        public Codec buildDefaultCodec(String codecName) {
-            return new Line(new ConfigurationImpl(Collections.emptyMap()), new ContextImpl(null));
-        }
-    }
 }
 

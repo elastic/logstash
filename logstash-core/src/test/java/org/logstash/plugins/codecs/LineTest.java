@@ -1,12 +1,9 @@
 package org.logstash.plugins.codecs;
 
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Plugin;
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.plugins.ConfigurationImpl;
+import org.logstash.plugins.TestContext;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -301,16 +298,3 @@ class TestEventConsumer implements Consumer<Map<String, Object>> {
     }
 }
 
-class TestContext implements Context {
-
-    @Override
-    public DeadLetterQueueWriter getDlqWriter() {
-        return null;
-    }
-
-    @Override
-    public Logger getLogger(Plugin plugin) {
-        return null;
-    }
-
-}

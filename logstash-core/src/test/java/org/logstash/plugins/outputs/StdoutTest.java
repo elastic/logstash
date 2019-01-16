@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.plugins.ConfigurationImpl;
+import org.logstash.plugins.TestContext;
+import org.logstash.plugins.TestPluginFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,7 +34,8 @@ public class StdoutTest {
                 super.close();
             }
         };
-        Stdout stdout = new Stdout(ID, new ConfigurationImpl(Collections.emptyMap()), null, dummyOutputStream);
+        Stdout stdout = new Stdout(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()),
+                new TestContext(), dummyOutputStream);
         stdout.output(getTestEvents());
         stdout.stop();
 
@@ -48,7 +51,8 @@ public class StdoutTest {
         }
 
         OutputStream dummyOutputStream = new ByteArrayOutputStream(0);
-        Stdout stdout = new Stdout(ID, new ConfigurationImpl(Collections.emptyMap()), null, dummyOutputStream);
+        Stdout stdout = new Stdout(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()),
+                new TestContext(), dummyOutputStream);
         stdout.output(testEvents);
         stdout.stop();
 
