@@ -137,7 +137,7 @@ data sent collected by Filebeat modules:
 
 The Logstash pipeline configuration in this example shows how to ship and parse
 access and error logs collected by the
-{filebeat-ref}/filebeat-module-apache2.html[`apache2` Filebeat module].
+{filebeat-ref}/filebeat-module-apache.html[`apache` Filebeat module].
 
 [source,json]
 ----------------------------------------------------------------------------
