@@ -1,8 +1,7 @@
 package co.elastic.logstash.api;
 
-import org.logstash.execution.queue.QueueWriter;
-
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Logstash Java input interface. Inputs produce events that flow through the Logstash event pipeline. Inputs are
@@ -20,13 +19,13 @@ import java.util.Map;
 public interface Input extends Plugin {
 
     /**
-     * Start the input and begin pushing events to the supplied {@link QueueWriter} instance via the
-     * {@link QueueWriter#push(Map)} method. If the input produces an infinite stream of events, this method
-     * should loop until a {@link #stop()} request is made. If the input produces a finite stream of events,
-     * this method should terminate when the last event in the stream is produced.
-     * @param writer Queue writer to which events should be pushed
+     * Start the input and begin pushing events to the supplied {@link Consumer} instance. If the input produces
+     * an infinite stream of events, this method should loop until a {@link #stop()} request is made. If the
+     * input produces a finite stream of events, this method should terminate when the last event in the stream
+     * is produced.
+     * @param writer Consumer to which events should be pushed
      */
-    void start(QueueWriter writer);
+    void start(Consumer<Map<String, Object>> writer);
 
     /**
      * Notifies the input to stop producing events. Inputs stop both asynchronously and cooperatively. Use the

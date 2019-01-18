@@ -1,14 +1,13 @@
 package org.logstash.plugins.inputs;
 
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
-import co.elastic.logstash.api.Codec;
-import co.elastic.logstash.api.Input;
 import org.apache.logging.log4j.Logger;
-import org.logstash.execution.queue.QueueWriter;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -39,7 +38,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     private volatile boolean stopRequested = false;
     private final CountDownLatch isStopped = new CountDownLatch(1);
     private FileChannel input;
-    private QueueWriter writer;
+    private Consumer<Map<String, Object>> writer;
     private String id;
 
     /**
@@ -69,7 +68,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     }
 
     @Override
-    public void start(QueueWriter writer) {
+    public void start(Consumer<Map<String, Object>> writer) {
         this.writer = writer;
         final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
         try {
@@ -100,7 +99,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     @Override
     public void accept(Map<String, Object> event) {
         event.putIfAbsent("hostname", hostname);
-        writer.push(event);
+        writer.accept(event);
     }
 
     @Override

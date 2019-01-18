@@ -60,7 +60,7 @@ public class JavaInputDelegatorExt extends RubyObject {
         } else {
             queueWriter = qw;
         }
-        Thread t = new Thread(() -> input.start(queueWriter));
+        Thread t = new Thread(() -> input.start(queueWriter::push));
         t.setName(pipeline.pipelineId().asJavaString() + "_" + input.getName() + "_" + input.getId());
         t.start();
         return JavaObject.wrap(context.getRuntime(), t);

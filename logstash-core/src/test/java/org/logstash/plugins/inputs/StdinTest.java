@@ -1,7 +1,6 @@
 package org.logstash.plugins.inputs;
 
 import org.junit.Test;
-import org.logstash.execution.queue.QueueWriter;
 import org.logstash.plugins.ConfigurationImpl;
 import org.logstash.plugins.TestContext;
 import org.logstash.plugins.TestPluginFactory;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -28,14 +28,14 @@ public class StdinTest {
     @Test
     public void testSimpleEvent() throws IOException {
         String testInput = "foo" + Line.DEFAULT_DELIMITER;
-        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
+        TestConsumer queueWriter = testStdin(testInput.getBytes());
         assertEquals(1, queueWriter.getEvents().size());
     }
 
     @Test
     public void testEvents() throws IOException {
         String testInput = "foo" + Line.DEFAULT_DELIMITER + "bar" + Line.DEFAULT_DELIMITER + "baz" + Line.DEFAULT_DELIMITER;
-        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
+        TestConsumer queueWriter = testStdin(testInput.getBytes());
         assertEquals(3, queueWriter.getEvents().size());
     }
 
@@ -43,7 +43,7 @@ public class StdinTest {
     public void testUtf8Events() throws IOException {
         String[] inputs = {"München1", "安装中文输入法", "München3"};
         String testInput = String.join(Line.DEFAULT_DELIMITER, inputs) + Line.DEFAULT_DELIMITER;
-        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
+        TestConsumer queueWriter = testStdin(testInput.getBytes());
 
         List<Map<String, Object>> events = queueWriter.getEvents();
         assertEquals(3, events.size());
@@ -52,11 +52,11 @@ public class StdinTest {
         }
     }
 
-    private static TestQueueWriter testStdin(byte[] input) throws IOException {
-        TestQueueWriter queueWriter = new TestQueueWriter();
+    private static TestConsumer testStdin(byte[] input) throws IOException {
+        TestConsumer consumer = new TestConsumer();
         try (FileChannel inChannel = getTestFileChannel(input)) {
             Stdin stdin = new Stdin(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()), new TestContext(), inChannel);
-            Thread t = new Thread(() -> stdin.start(queueWriter));
+            Thread t = new Thread(() -> stdin.start(consumer));
             t.start();
             try {
                 Thread.sleep(50);
@@ -65,7 +65,7 @@ public class StdinTest {
                 fail("Stdin.awaitStop failed with exception: " + e);
             }
         }
-        return queueWriter;
+        return consumer;
     }
 
     private static FileChannel getTestFileChannel(byte[] testBytes) throws IOException {
@@ -79,12 +79,12 @@ public class StdinTest {
 
 }
 
-class TestQueueWriter implements QueueWriter {
+class TestConsumer implements Consumer<Map<String, Object>> {
 
     private List<Map<String, Object>> events = new ArrayList<>();
 
     @Override
-    public void push(Map<String, Object> event) {
+    public void accept(Map<String, Object> event) {
         synchronized (this) {
             events.add(event);
         }
