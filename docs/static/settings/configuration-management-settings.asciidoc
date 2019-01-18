@@ -53,7 +53,7 @@ section in your Logstash configuration, or a different one. Defaults to
 If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
 authenticate for accessing the configuration data. The username you specify here
-should have the `logstash_admin` role, which provides access to `.logstash-*`
+should have the built-in `logstash_admin` role and the customized `logstash_writer` role, which provides access to `.logstash-*`
 indices for managing configurations. 
 
 `xpack.management.elasticsearch.ssl.ca`::
