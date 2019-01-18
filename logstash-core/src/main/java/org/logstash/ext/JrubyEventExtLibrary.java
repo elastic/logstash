@@ -94,7 +94,7 @@ public final class JrubyEventExtLibrary {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
-                this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
+                this.event.setEventTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             } else {
                 this.event.setField(r, Valuefier.convert(value));
             }
@@ -270,7 +270,7 @@ public final class JrubyEventExtLibrary {
             if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                 throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
             }
-            this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
+            this.event.setEventTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             return value;
         }
 

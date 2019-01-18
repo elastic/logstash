@@ -1,14 +1,6 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -17,6 +9,16 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -47,7 +49,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        setTimestamp(Timestamp.now());
+        setEventTimestamp(Timestamp.now());
     }
 
     /**
@@ -83,7 +85,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
-        setTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
+        setEventTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -117,18 +119,29 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     @Override
-    public Timestamp getTimestamp() throws IOException {
-        final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
-            (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
-        if (timestamp != null) {
-            return timestamp.getTimestamp();
-        } else {
-            throw new IOException("fails");
-        }
+    public Instant getTimestamp() {
+        Timestamp t = getEventTimestamp();
+        return (t != null)
+                ? Instant.ofEpochMilli(t.usec() / 1000L)
+                : null;
     }
 
     @Override
-    public void setTimestamp(Timestamp t) {
+    public void setTimestamp(Instant timestamp) {
+        setEventTimestamp(timestamp != null
+                ? new Timestamp(timestamp.toEpochMilli())
+                : new Timestamp(Instant.now().toEpochMilli()));
+    }
+
+    public Timestamp getEventTimestamp() {
+        final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
+            (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
+        return (timestamp != null)
+                ? timestamp.getTimestamp()
+                : null;
+    }
+
+    public void setEventTimestamp(Timestamp t) {
         this.data.putInterned(
             TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(RubyUtil.RUBY, t)
         );
@@ -266,12 +279,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public Event overwrite(Event e) {
         this.data = e.data;
         this.cancelled = e.cancelled;
-        try {
-            e.getTimestamp();
-        } catch (IOException exception) {
-            setTimestamp(new Timestamp());
-        }
-
+        Timestamp t = e.getEventTimestamp();
+        setEventTimestamp(t == null ? new Timestamp() : t);
         return this;
     }
 
@@ -309,12 +318,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Object messageField = this.getField("message");
         String hostMessageString = (hostField != null ? hostField.toString() : "%{host}") + " " + (messageField != null ? messageField.toString() : "%{message}");
 
-        try {
-            // getTimestamp throws an IOException if there is no @timestamp field, see #7613
-            return getTimestamp().toString() + " " + hostMessageString;
-        } catch (IOException e) {
-            return hostMessageString;
-        }
+        Timestamp t = getEventTimestamp();
+        return t != null
+                ? t.toString() + " " + hostMessageString
+                : hostMessageString;
     }
 
     private static Timestamp initTimestamp(Object o) {

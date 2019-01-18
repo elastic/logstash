@@ -45,7 +45,7 @@ public class EventSerializationBenchmark {
         nested.put("foooo", "baaaaaar");
         nested.put("fooooish", "baaaaaar234");
         EVENT.setField("sdfsfsdf", nested);
-        EVENT.setTimestamp(Timestamp.now());
+        EVENT.setEventTimestamp(Timestamp.now());
     }
 
     @Benchmark

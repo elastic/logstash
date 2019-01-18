@@ -2,7 +2,10 @@ package org.logstash;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.time.Instant;
 
 import static org.junit.Assert.*;
 
@@ -39,6 +42,14 @@ public class TimestampTest {
         long ms = DateTime.now(DateTimeZone.forID("EST")).getMillis();
         t = new Timestamp(ms);
         assertEquals(DateTimeZone.UTC, t.getTime().getZone());
+    }
+
+    @Test
+    public void testMicroseconds() {
+        Instant i = Instant.now();
+        Timestamp t1 = new Timestamp(i.toEpochMilli());
+        long usec = t1.usec();
+        Assert.assertEquals(i.toEpochMilli() * 1000, usec);
     }
 
 }

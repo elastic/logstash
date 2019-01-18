@@ -63,7 +63,7 @@ public class QueueWriteBenchmark {
     public final void pushToPersistedQueue() throws Exception {
         for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
             final Event evnt = EVENT.clone();
-            evnt.setTimestamp(Timestamp.now());
+            evnt.setEventTimestamp(Timestamp.now());
             queue.write(evnt);
         }
     }

@@ -1,10 +1,11 @@
 package org.logstash;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
+
+import java.util.List;
+import java.util.Map;
 
 public final class StringInterpolation {
 
@@ -29,7 +30,7 @@ public final class StringInterpolation {
     }
 
     public static String evaluate(final co.elastic.logstash.api.Event event, final String template)
-        throws IOException {
+        throws JsonProcessingException {
         if (event instanceof Event) {
             return evaluate((Event) event, template);
         } else {
@@ -37,7 +38,7 @@ public final class StringInterpolation {
         }
     }
 
-    public static String evaluate(final Event event, final String template) throws IOException {
+    public static String evaluate(final Event event, final String template) throws JsonProcessingException {
         int open = template.indexOf("%{");
         int close = template.indexOf('}', open);
         if (open == -1 || close == -1) {
@@ -50,13 +51,16 @@ public final class StringInterpolation {
                 builder.append(template, pos, open);
             }
             if (template.regionMatches(open + 2, "+%s", 0, close - open - 2)) {
-                builder.append(event.getTimestamp().getTime().getMillis() / 1000L);
+                Timestamp t = event.getEventTimestamp();
+                builder.append(t == null ? "" : t.getTime().getMillis() / 1000L);
             } else if (template.charAt(open + 2) == '+') {
-                builder.append(
-                    event.getTimestamp().getTime().toString(
-                        DateTimeFormat.forPattern(template.substring(open + 3, close))
-                            .withZone(DateTimeZone.UTC)
-                    ));
+                Timestamp t = event.getEventTimestamp();
+                builder.append(t != null
+                        ? event.getEventTimestamp().getTime().toString(
+                                DateTimeFormat.forPattern(template.substring(open + 3, close))
+                                        .withZone(DateTimeZone.UTC))
+                        : ""
+                    );
             } else {
                 final String found = template.substring(open + 2, close);
                 final Object value = event.getField(found);

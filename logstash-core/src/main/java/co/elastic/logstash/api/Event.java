@@ -1,8 +1,7 @@
 package co.elastic.logstash.api;
 
-import org.logstash.Timestamp;
-
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -20,9 +19,9 @@ public interface Event {
 
     boolean isCancelled();
 
-    Timestamp getTimestamp() throws IOException;
+    Instant getTimestamp();
 
-    void setTimestamp(Timestamp t);
+    void setTimestamp(Instant t);
 
     Object getField(String reference);
 
