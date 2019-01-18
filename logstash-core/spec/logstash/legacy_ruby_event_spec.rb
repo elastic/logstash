@@ -102,7 +102,8 @@ describe LogStash::Event do
         str = "hello-%{+%s}"
         subj = subject.clone
         subj.remove("[@timestamp]")
-        expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
+        expect{ subj.sprintf(str) }.not_to raise_error(LogStash::Error)
+        expect(subject.sprintf(str)).to eq("hello-")
       end
 
       it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do
@@ -119,7 +120,8 @@ describe LogStash::Event do
         str = "logstash-%{+YYYY}"
         subj = subject.clone
         subj.remove("[@timestamp]")
-        expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
+        expect{ subj.sprintf(str) }.not_to raise_error(LogStash::Error)
+        expect(subject.sprintf(str)).to eq("logstash-")
       end
 
       it "should report fields with %{field} syntax" do
