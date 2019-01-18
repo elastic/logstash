@@ -22,4 +22,4 @@ jruby:
 #       bundler evaluates the gemspec via bin/logstash
 # Ensure Jackson version here is kept in sync with version used by jrjackson gem
 jrjackson: 0.4.6
-jackson: 2.9.5
+jackson: 2.9.8

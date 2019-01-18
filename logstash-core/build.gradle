@@ -118,15 +118,15 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:2.9.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.9.1'
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.1'
+    compile 'org.apache.logging.log4j:log4j-api:2.11.1'
+    compile 'org.apache.logging.log4j:log4j-core:2.11.1'
+    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.1'
     compile 'commons-codec:commons-codec:1.11'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile 'org.codehaus.janino:janino:3.0.8'
+    compile 'org.codehaus.janino:janino:3.0.11'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     if (customJRubyDir == "") {
         compile "org.jruby:jruby-complete:${jrubyVersion}"
@@ -139,11 +139,11 @@ dependencies {
     compile('com.google.googlejavaformat:google-java-format:1.1') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile 'org.javassist:javassist:3.22.0-GA'
+    compile 'org.javassist:javassist:3.24.0-GA'
     compile 'com.google.guava:guava:20.0'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.9.1:tests'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.11.1:tests'
     testCompile 'junit:junit:4.12'
-    testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
+    testCompile 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testCompile 'org.elasticsearch:securemock:1.2'
-    testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile 'org.assertj:assertj-core:3.11.1'
 }
