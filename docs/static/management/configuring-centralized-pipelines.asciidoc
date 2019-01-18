@@ -31,8 +31,8 @@ centrally manage.
 . Restart Logstash.
 
 . If your Elasticsearch cluster is protected with basic authentication, assign
-the `logstash_admin` role to any users who will use centralized pipeline
-management. See <<ls-security>>.
+the built-in `logstash_admin` role as well as the `logstash_writer` role to any users who will use centralized pipeline
+management. See <<ls-security>> for more information.
 
 NOTE: Centralized management is disabled until you configure and enable
 {security}.
