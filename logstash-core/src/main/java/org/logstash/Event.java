@@ -122,7 +122,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public Instant getTimestamp() {
         Timestamp t = getEventTimestamp();
         return (t != null)
-                ? Instant.ofEpochMilli(t.usec() / 1000L)
+                ? Instant.ofEpochMilli(t.toEpochMilli())
                 : null;
     }
 

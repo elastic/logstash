@@ -49,7 +49,15 @@ public class TimestampTest {
         Instant i = Instant.now();
         Timestamp t1 = new Timestamp(i.toEpochMilli());
         long usec = t1.usec();
-        Assert.assertEquals(i.toEpochMilli() * 1000, usec);
+        Assert.assertEquals(i.getNano() / 1000, usec);
+    }
+
+    @Test
+    public void testEpochMillis() {
+        Instant i = Instant.now();
+        Timestamp t1 = new Timestamp(i.toEpochMilli());
+        long millis = t1.toEpochMilli();
+        Assert.assertEquals(i.toEpochMilli(), millis);
     }
 
 }
