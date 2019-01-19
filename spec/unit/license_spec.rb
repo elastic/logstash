@@ -53,9 +53,10 @@ describe "Project licenses" do
     end
 
     it "has runtime dependencies with expected licenses" do
-      spec.runtime_dependencies.map { |dep| dep.to_spec }.each do |runtime_spec|
-        next unless runtime_spec
-        next if skipped_dependencies.include?(runtime_spec.name)
+      spec.runtime_dependencies.map do |dep|
+        next if skipped_dependencies.include?(dep.name)
+        dep.to_spec
+      end.compact.each do |runtime_spec|
         runtime_spec.licenses.each do |license|
           expect(license.downcase).to match(expected_licenses),
             lambda { "Runtime license check failed for gem #{runtime_spec.name} with version #{runtime_spec.version}" }
