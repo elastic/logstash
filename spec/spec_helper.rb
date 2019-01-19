@@ -47,7 +47,9 @@ RSpec.configure do |c|
       LogStash::SETTINGS.set("queue.type", "memory")
       LogStash::SETTINGS.set("path.data", temp_directory)
 
-      example.run
+      LogStash::Util.set_thread_name("RSPEC Example #{example.full_description} (from: `#{example.location}`)") do
+        example.run
+      end
     end
   end
 end
