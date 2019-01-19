@@ -49,7 +49,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        setEventTimestamp(Timestamp.now());
+        setTimestamp(Timestamp.now());
     }
 
     /**
@@ -85,7 +85,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
-        setEventTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
+        setTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -119,21 +119,21 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     @Override
-    public Instant getTimestamp() {
-        Timestamp t = getEventTimestamp();
+    public Instant getEventTimestamp() {
+        Timestamp t = getTimestamp();
         return (t != null)
                 ? Instant.ofEpochMilli(t.toEpochMilli())
                 : null;
     }
 
     @Override
-    public void setTimestamp(Instant timestamp) {
-        setEventTimestamp(timestamp != null
+    public void setEventTimestamp(Instant timestamp) {
+        setTimestamp(timestamp != null
                 ? new Timestamp(timestamp.toEpochMilli())
                 : new Timestamp(Instant.now().toEpochMilli()));
     }
 
-    public Timestamp getEventTimestamp() {
+    public Timestamp getTimestamp() {
         final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
             (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
         return (timestamp != null)
@@ -141,7 +141,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 : null;
     }
 
-    public void setEventTimestamp(Timestamp t) {
+    public void setTimestamp(Timestamp t) {
         this.data.putInterned(
             TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(RubyUtil.RUBY, t)
         );
@@ -279,8 +279,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public Event overwrite(Event e) {
         this.data = e.data;
         this.cancelled = e.cancelled;
-        Timestamp t = e.getEventTimestamp();
-        setEventTimestamp(t == null ? new Timestamp() : t);
+        Timestamp t = e.getTimestamp();
+        setTimestamp(t == null ? new Timestamp() : t);
         return this;
     }
 
@@ -318,7 +318,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Object messageField = this.getField("message");
         String hostMessageString = (hostField != null ? hostField.toString() : "%{host}") + " " + (messageField != null ? messageField.toString() : "%{message}");
 
-        Timestamp t = getEventTimestamp();
+        Timestamp t = getTimestamp();
         return t != null
                 ? t.toString() + " " + hostMessageString
                 : hostMessageString;

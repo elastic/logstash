@@ -35,7 +35,7 @@ public class EventSprintfBenchmark {
         EVENT.setField("Foo2", "Bar2");
         EVENT.setField("Foo3", "Bar3");
         EVENT.setField("Foo4", "Bar4");
-        EVENT.setEventTimestamp(Timestamp.now());
+        EVENT.setTimestamp(Timestamp.now());
     }
 
     @Benchmark

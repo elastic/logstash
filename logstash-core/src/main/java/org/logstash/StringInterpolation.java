@@ -51,12 +51,12 @@ public final class StringInterpolation {
                 builder.append(template, pos, open);
             }
             if (template.regionMatches(open + 2, "+%s", 0, close - open - 2)) {
-                Timestamp t = event.getEventTimestamp();
+                Timestamp t = event.getTimestamp();
                 builder.append(t == null ? "" : t.getTime().getMillis() / 1000L);
             } else if (template.charAt(open + 2) == '+') {
-                Timestamp t = event.getEventTimestamp();
+                Timestamp t = event.getTimestamp();
                 builder.append(t != null
-                        ? event.getEventTimestamp().getTime().toString(
+                        ? event.getTimestamp().getTime().toString(
                                 DateTimeFormat.forPattern(template.substring(open + 3, close))
                                         .withZone(DateTimeZone.UTC))
                         : ""

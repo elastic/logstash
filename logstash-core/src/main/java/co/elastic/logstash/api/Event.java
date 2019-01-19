@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * Event interface for Java plugins. Java plugins should be not rely on the implementation details of any
- * concrete implementaions of the Event interface.
+ * concrete implementations of the Event interface.
  */
 public interface Event {
     Map<String, Object> getData();
@@ -19,9 +19,9 @@ public interface Event {
 
     boolean isCancelled();
 
-    Instant getTimestamp();
+    Instant getEventTimestamp();
 
-    void setTimestamp(Instant t);
+    void setEventTimestamp(Instant t);
 
     Object getField(String reference);
 
