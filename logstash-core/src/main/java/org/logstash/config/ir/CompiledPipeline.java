@@ -284,14 +284,18 @@ public final class CompiledPipeline {
          * @return Filter {@link Dataset}
          */
         private Dataset filterDataset(final Vertex vertex, final Collection<Dataset> datasets) {
-            return plugins.computeIfAbsent(
-                vertex.getId(), v -> {
-                    final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.filterDataset(flatten(datasets, vertex), filters.get(v));
-                    LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
-                    return prepared.instantiate();
-                }
-            );
+            final String vertexId = vertex.getId();
+
+            if (!plugins.containsKey(vertexId)) {
+                final ComputeStepSyntaxElement<Dataset> prepared =
+                        DatasetCompiler.filterDataset(flatten(datasets, vertex),
+                                                      filters.get(vertexId));
+                LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
+
+                plugins.put(vertexId, prepared.instantiate());
+            }
+
+            return plugins.get(vertexId);
         }
 
         /**
@@ -302,16 +306,18 @@ public final class CompiledPipeline {
          * @return Output {@link Dataset}
          */
         private Dataset outputDataset(final Vertex vertex, final Collection<Dataset> datasets) {
-            return plugins.computeIfAbsent(
-                vertex.getId(), v -> {
-                    final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.outputDataset(
-                            flatten(datasets, vertex), outputs.get(v), outputs.size() == 1
-                        );
-                    LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
-                    return prepared.instantiate();
-                }
-            );
+            final String vertexId = vertex.getId();
+
+            if (!plugins.containsKey(vertexId)) {
+                final ComputeStepSyntaxElement<Dataset> prepared =
+                        DatasetCompiler.outputDataset(flatten(datasets, vertex),
+                                                      outputs.get(vertexId),
+                                                     outputs.size() == 1);
+                LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
+                plugins.put(vertexId, prepared.instantiate());
+            }
+
+            return plugins.get(vertexId);
         }
 
         /**
