@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
-@LogstashPlugin(name = "java-uuid")
+@LogstashPlugin(name = "java_uuid")
 public class Uuid implements Filter {
 
     public static final PluginConfigSpec<String> TARGET_CONFIG =

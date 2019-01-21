@@ -1,32 +1,32 @@
 package org.logstash.plugins.codecs;
 
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
-import co.elastic.logstash.api.Codec;
 import org.logstash.StringInterpolation;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
-@LogstashPlugin(name = "java-line")
+@LogstashPlugin(name = "java_line")
 public class Line implements Codec {
 
     public static final String DEFAULT_DELIMITER = System.lineSeparator();
@@ -51,7 +51,11 @@ public class Line implements Codec {
 
     private final CharBuffer charBuffer = ByteBuffer.allocateDirect(64 * 1024).asCharBuffer();
     private final CharsetDecoder decoder;
+    private final CharsetEncoder encoder;
     private String remainder = "";
+
+    private Event currentEncodedEvent;
+    private CharBuffer currentEncoding;
 
     /**
      * Required constructor.
@@ -71,6 +75,7 @@ public class Line implements Codec {
         this.format = format;
         decoder = charset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
+        encoder = charset.newEncoder();
     }
 
     @Override
@@ -98,7 +103,7 @@ public class Line implements Codec {
         if (s.length() > 0) {
             String[] lines = s.split(delimiter, 0);
             for (int k = 0; k < lines.length; k++) {
-                eventConsumer.accept(simpleMap(lines[k]));
+                eventConsumer.accept(Collections.singletonMap(MESSAGE_FIELD, lines[k]));
             }
         }
     }
@@ -110,7 +115,7 @@ public class Line implements Codec {
                 String remainder = this.remainder + charset.newDecoder().decode(buffer).toString();
                 String[] lines = remainder.split(delimiter, 0);
                 for (int k = 0; k < lines.length; k++) {
-                    eventConsumer.accept(simpleMap(lines[k]));
+                    eventConsumer.accept(Collections.singletonMap(MESSAGE_FIELD, lines[k]));
                 }
             } catch (CharacterCodingException e) {
                 throw new IllegalStateException(e);
@@ -118,20 +123,32 @@ public class Line implements Codec {
         }
     }
 
-    private static Map<String, Object> simpleMap(String message) {
-        HashMap<String, Object> simpleMap = new HashMap<>();
-        simpleMap.put(MESSAGE_FIELD, message);
-        return simpleMap;
-    }
-
     @Override
-    public void encode(Event event, OutputStream output) {
+    public boolean encode(Event event, ByteBuffer buffer) throws EncodeException {
         try {
-            String outputString = (format == null
-                    ? JSON_MAPPER.writeValueAsString(event.getData())
-                    : StringInterpolation.evaluate(event, format))
-                    + delimiter;
-            output.write(outputString.getBytes(charset));
+            if (currentEncodedEvent != null && event != currentEncodedEvent) {
+                throw new EncodeException("New event supplied before encoding of previous event was completed");
+            } else if (currentEncodedEvent == null) {
+                String eventEncoding = (format == null
+                        ? JSON_MAPPER.writeValueAsString(event.getData())
+                        : StringInterpolation.evaluate(event, format))
+                        + delimiter;
+                currentEncoding = CharBuffer.wrap(eventEncoding);
+            }
+
+            CoderResult result = encoder.encode(currentEncoding, buffer, true);
+            buffer.flip();
+            if (result.isError()) {
+                result.throwException();
+            }
+
+            if (result.isOverflow()) {
+                currentEncodedEvent = event;
+                return false;
+            } else {
+                currentEncodedEvent = null;
+                return true;
+            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

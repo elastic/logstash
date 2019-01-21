@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-@LogstashPlugin(name = "java-stdin")
+@LogstashPlugin(name = "java_stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     private final Logger LOGGER;

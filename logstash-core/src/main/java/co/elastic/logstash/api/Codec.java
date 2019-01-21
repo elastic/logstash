@@ -1,6 +1,6 @@
 package co.elastic.logstash.api;
 
-import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -43,11 +43,28 @@ public interface Codec extends Plugin {
     void flush(ByteBuffer buffer, Consumer<Map<String, Object>> eventConsumer);
 
     /**
-     * Encodes an {@link Event} and writes it to the specified {@link OutputStream}.
+     * Encodes an {@link Event} and writes it into the specified {@link ByteBuffer}. Under ideal
+     * circumstances, the entirety of the event's encoding will fit into the supplied buffer. In cases
+     * where the buffer has insufficient space to hold the event's encoding, the buffer will be filled
+     * with as much of the event's encoding as possible, {@code false} will be returned, and the caller
+     * must call this method with the same event and a buffer that has more {@link Buffer#remaining()}
+     * bytes. That is typically done by draining the partial encoding from the supplied buffer. This
+     * process must be repeated until the event's entire encoding is written to the buffer at which
+     * point the method will return {@code true}. Attempting to call this method with a new event
+     * before the entirety of the previous event's encoding has been written to a buffer will result
+     * in an {@link EncodeException}.
+     *
      * @param event  The event to encode.
-     * @param output The stream to which the encoding of the event should be written.
+     * @param buffer The buffer into which the encoding of the event should be written. Codec
+     *               implementations are responsible for returning the buffer in a state from which it
+     *               can be read, typically by calling {@link Buffer#flip()} before returning.
+     * @return {@code true} if the entirety or final segment of the event's encoding was written to
+     * the buffer. {@code false} if the buffer was incapable of holding the entirety or remainder of the
+     * event's encoding.
+     * @throws EncodeException if called with a new event before the entirety of the previous event's
+     * encoding was written to a buffer.
      */
-    void encode(Event event, OutputStream output);
+    boolean encode(Event event, ByteBuffer buffer) throws EncodeException;
 
     /**
      * Clones this {@link Codec}. All codecs should be capable of cloning themselves
@@ -56,4 +73,12 @@ public interface Codec extends Plugin {
      * @return The cloned {@link Codec}.
      */
     Codec cloneCodec();
+
+    class EncodeException extends Exception {
+
+        public EncodeException(String message) {
+            super(message);
+        }
+
+    }
 }
