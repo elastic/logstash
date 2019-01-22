@@ -27,7 +27,7 @@ public class UuidTest {
             PluginUtil.validateConfig(uuid, config);
             Assert.fail("java-uuid filter without required config should have thrown exception");
         } catch (IllegalStateException ex) {
-            Assert.assertTrue(ex.getMessage().contains("Config errors found for plugin 'java-uuid'"));
+            Assert.assertTrue(ex.getMessage().contains("Config errors found for plugin 'java_uuid'"));
         } catch (Exception ex2) {
             Assert.fail("Unexpected exception for java-uuid filter without required config");
         }

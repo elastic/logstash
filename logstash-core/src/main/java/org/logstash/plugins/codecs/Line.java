@@ -19,7 +19,7 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -103,7 +103,7 @@ public class Line implements Codec {
         if (s.length() > 0) {
             String[] lines = s.split(delimiter, 0);
             for (int k = 0; k < lines.length; k++) {
-                eventConsumer.accept(Collections.singletonMap(MESSAGE_FIELD, lines[k]));
+                eventConsumer.accept(simpleMap(lines[k]));
             }
         }
     }
@@ -115,7 +115,7 @@ public class Line implements Codec {
                 String remainder = this.remainder + charset.newDecoder().decode(buffer).toString();
                 String[] lines = remainder.split(delimiter, 0);
                 for (int k = 0; k < lines.length; k++) {
-                    eventConsumer.accept(Collections.singletonMap(MESSAGE_FIELD, lines[k]));
+                    eventConsumer.accept(simpleMap(lines[k]));
                 }
             } catch (CharacterCodingException e) {
                 throw new IllegalStateException(e);
@@ -152,6 +152,12 @@ public class Line implements Codec {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static Map<String, Object> simpleMap(String message) {
+        HashMap<String, Object> simpleMap = new HashMap<>();
+        simpleMap.put(MESSAGE_FIELD, message);
+        return simpleMap;
     }
 
     @Override
