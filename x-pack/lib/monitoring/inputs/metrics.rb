@@ -65,18 +65,28 @@ module LogStash module Inputs
       @timer_task.add_observer(TimerTaskLogger.new)
     end
 
-      def run(arg_queue)
-        @logger.debug("Metric: input started")
-        @queue = arg_queue
+    def run(arg_queue)
+      @logger.debug("Metric: input started")
+      @queue = arg_queue
 
-        configure_snapshot_poller
+      configure_snapshot_poller
 
-        # This must be invoked here because we need a queue to store the data
-        LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
+      # This hook registration was originally set here to act on pipeline_started dispatcher event
+      # from the Agent using the pipeline_started method here which sends events to the pipeline queue
+      # which is only available here in the run method.
+      #
+      # There are 2 things to know with this strategy:
+      # - The initial pipeline creation preceding this plugin invocation will not be catched by our
+      #   hook here because it is added after the initial pipeline creations.
+      #
+      # - The below remove_hooks was added because not removing it was causing problems in tests where
+      #   multiple instances of this plugin would be created and added in the global static PLUGIN_REGISTRY
+      #   leading to calling the pipeline_started method multiple times leading to weird problems.
+      LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
 
-        exec_timer_task
-        sleep_till_stop
-      end
+      exec_timer_task
+      sleep_till_stop
+    end
 
     def exec_timer_task
       @timer_task.execute
@@ -90,6 +100,7 @@ module LogStash module Inputs
 
     def stop
       @logger.debug("Metrics input: stopped")
+      LogStash::PLUGIN_REGISTRY.hooks.remove_hooks(LogStash::Agent, self)
       @timer_task.shutdown if @timer_task
     end
 
@@ -128,7 +139,7 @@ module LogStash module Inputs
       time_for_update = @last_states_update.nil? || @last_states_update < (Time.now - 60*10)
 
       pipeline_hashes = []
-      agent.pipelines.each do |pipeline_id, pipeline|
+      agent.running_pipelines.each do |pipeline_id, pipeline|
         if time_for_update || !@last_updated_pipeline_hashes.include?(pipeline.hash)
           update_pipeline_state(pipeline)
         end
