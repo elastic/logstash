@@ -11,12 +11,12 @@ module LogStash module Instrument
   class PeriodicPollers
     attr_reader :metric
 
-    def initialize(metric, queue_type, pipelines)
+    def initialize(metric, queue_type, agent)
       @metric = metric
       @periodic_pollers = [PeriodicPoller::Os.new(metric),
                            PeriodicPoller::JVM.new(metric),
-                           PeriodicPoller::PersistentQueue.new(metric, queue_type, pipelines),
-                           PeriodicPoller::DeadLetterQueue.new(metric, pipelines)]
+                           PeriodicPoller::PersistentQueue.new(metric, queue_type, agent),
+                           PeriodicPoller::DeadLetterQueue.new(metric, agent)]
     end
 
     def start
