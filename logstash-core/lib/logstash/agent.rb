@@ -8,6 +8,7 @@ require "logstash/webserver"
 require "logstash/config/source_loader"
 require "logstash/pipeline_action"
 require "logstash/state_resolver"
+require "logstash/pipelines_registry"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -19,7 +20,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id, :pipelines, :pipeline_bus
+  attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id, :pipeline_bus
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -40,7 +41,7 @@ class LogStash::Agent
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
 
-    @pipelines = java.util.concurrent.ConcurrentHashMap.new();
+    @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
     @http_host = setting("http.host")
@@ -118,14 +119,17 @@ class LogStash::Agent
         converge_state_and_update unless stopped?
       end
     else
-      return 1 if clean_state?
+      # exit with error status if the initial converge_state_and_update did not create any pipeline
+      return 1 if @pipelines_registry.empty?
 
       while !Stud.stop?
-        if clean_state? || running_user_defined_pipelines?
-          sleep(0.5)
-        else
-          break
-        end
+        # exit if all pipelines are terminated and none are reloading
+        break if no_pipeline?
+
+        # exit if there are no user defined pipelines (not system pipeline) and none are reloading
+        break if !running_user_defined_pipelines?
+
+        sleep(0.5)
       end
     end
 
@@ -139,11 +143,11 @@ class LogStash::Agent
   end
 
   def running?
-    @running.value
+    @running.true?
   end
 
   def stopped?
-    !@running.value
+    @running.false?
   end
 
   def converge_state_and_update
@@ -237,43 +241,48 @@ class LogStash::Agent
     @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
+  #
+  # Backward compatibility proxies to the PipelineRegistry
+  #
+
   def get_pipeline(pipeline_id)
-    pipelines.get(pipeline_id)
+    @pipelines_registry.get_pipeline(pipeline_id)
   end
 
   def pipelines_count
-    pipelines.size
+    @pipelines_registry.size
   end
 
   def running_pipelines
-    pipelines.select {|id,pipeline| running_pipeline?(id) }
-  end
+    @pipelines_registry.running_pipelines
+   end
 
   def non_running_pipelines
-    pipelines.select {|id,pipeline| !running_pipeline?(id) }
+    @pipelines_registry.non_running_pipelines
   end
 
   def running_pipelines?
-    running_pipelines_count > 0
+    @pipelines_registry.running_pipelines.any?
   end
 
   def running_pipelines_count
-    running_pipelines.size
+    @pipelines_registry.running_pipelines.size
   end
 
   def running_user_defined_pipelines?
-    !running_user_defined_pipelines.empty?
+    @pipelines_registry.running_user_defined_pipelines.any?
   end
 
   def running_user_defined_pipelines
-    pipelines.select {|id, pipeline| running_pipeline?(id) && !pipeline.system? }
+    @pipelines_registry.running_user_defined_pipelines
   end
 
-  def with_running_user_defined_pipelines
-    yield running_user_defined_pipelines
+  def no_pipeline?
+    @pipelines_registry.running_pipelines.empty?
   end
 
   private
+
   def transition_to_stopped
     @running.make_false
   end
@@ -298,7 +307,7 @@ class LogStash::Agent
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
 
     pipeline_actions.map do |action|
-      Thread.new do
+      Thread.new(action, converge_result) do |action, converge_result|
         java.lang.Thread.currentThread().setName("Converge #{action}");
         # We execute every task we need to converge the current state of pipelines
         # for every task we will record the action result, that will help us
@@ -314,34 +323,35 @@ class LogStash::Agent
         # that we currently have.
         begin
           logger.debug("Executing action", :action => action)
-          action_result = action.execute(self, pipelines)
+          action_result = action.execute(self, @pipelines_registry)
           converge_result.add(action, action_result)
 
           unless action_result.successful?
-            logger.error("Failed to execute action", :id => action.pipeline_id,
-                         :action_type => action_result.class, :message => action_result.message,
-                         :backtrace => action_result.backtrace)
+            logger.error("Failed to execute action",
+              :id => action.pipeline_id,
+              :action_type => action_result.class,
+              :message => action_result.message,
+              :backtrace => action_result.backtrace
+            )
           end
-        rescue SystemExit => e
-          converge_result.add(action, e)
-        rescue Exception => e
+        rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
           converge_result.add(action, e)
         end
       end
     end.each(&:join)
 
-    if logger.trace?
-      logger.trace("Converge results", :success => converge_result.success?,
-                   :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
-                   :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" })
-    end
+    logger.trace? && logger.trace("Converge results",
+      :success => converge_result.success?,
+      :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
+      :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" }
+    )
 
     converge_result
   end
 
   def resolve_actions(pipeline_configs)
-    @state_resolver.resolve(@pipelines, pipeline_configs)
+    @state_resolver.resolve(@pipelines_registry, pipeline_configs)
   end
 
   def dispatch_events(converge_results)
@@ -399,7 +409,7 @@ class LogStash::Agent
   end
 
   def shutdown_pipelines
-    logger.debug("Shutting down all pipelines", :pipelines_count => pipelines_count)
+    logger.debug("Shutting down all pipelines", :pipelines_count => running_pipelines_count)
 
     # In this context I could just call shutdown, but I've decided to
     # use the stop action implementation for that so we have the same code.
@@ -408,16 +418,6 @@ class LogStash::Agent
     converge_state(pipeline_actions)
   end
 
-  def running_pipeline?(pipeline_id)
-    pipeline = get_pipeline(pipeline_id)
-    return false unless pipeline
-    thread = pipeline.thread
-    thread.is_a?(Thread) && thread.alive?
-  end
-
-  def clean_state?
-    pipelines.empty?
-  end
 
   def setting(key)
     @settings.get(key)

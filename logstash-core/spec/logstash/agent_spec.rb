@@ -118,7 +118,7 @@ describe LogStash::Agent do
         context "if state is clean" do
           before :each do
             allow(subject).to receive(:running_user_defined_pipelines?).and_return(true)
-            allow(subject).to receive(:clean_state?).and_return(false)
+            allow(subject).to receive(:no_pipeline?).and_return(false)
           end
 
           it "should not converge state more than once" do
@@ -141,7 +141,7 @@ describe LogStash::Agent do
             it "does not upgrade the new config" do
               t = Thread.new { subject.execute }
               wait(timeout)
-                  .for { subject.running_pipelines? && subject.pipelines.values.first.ready? }
+                  .for { subject.running_pipelines? && subject.running_pipelines.values.first.ready? }
                   .to eq(true)
               expect(subject.converge_state_and_update).not_to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -161,7 +161,7 @@ describe LogStash::Agent do
             it "does upgrade the new config" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.pipelines_count > 0 && subject.pipelines.values.first.ready?
+                sleep(0.1) until subject.running_pipelines_count > 0 && subject.running_pipelines.values.first.ready?
               end
 
               expect(subject.converge_state_and_update).to be_a_successful_converge
@@ -185,7 +185,7 @@ describe LogStash::Agent do
             it "does not try to reload the pipeline" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.running?
+                sleep(0.1) until subject.running_pipelines? && subject.running_pipelines.values.first.running?
               end
               expect(subject.converge_state_and_update).not_to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -205,7 +205,7 @@ describe LogStash::Agent do
             it "tries to reload the pipeline" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.running?
+                sleep(0.1) until subject.running_pipelines? && subject.running_pipelines.values.first.running?
               end
 
               expect(subject.converge_state_and_update).to be_a_successful_converge

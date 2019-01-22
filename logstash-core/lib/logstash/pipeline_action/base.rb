@@ -12,7 +12,7 @@ module LogStash module PipelineAction
     end
     alias_method :to_s, :inspect
 
-    def execute(agent, pipelines)
+    def execute(agent, pipelines_registry)
       raise "`#execute` Not implemented!"
     end
 
