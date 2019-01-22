@@ -24,6 +24,8 @@ import static org.junit.Assert.fail;
 public class StdinTest {
 
     private static final String ID = "stdin_test_id";
+    private static volatile Throwable stdinError;
+    private static volatile Thread executingThread;
 
     @Test
     public void testSimpleEvent() throws IOException {
@@ -55,14 +57,29 @@ public class StdinTest {
     private static TestConsumer testStdin(byte[] input) throws IOException {
         TestConsumer consumer = new TestConsumer();
         try (FileChannel inChannel = getTestFileChannel(input)) {
-            Stdin stdin = new Stdin(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()), new TestContext(), inChannel);
-            Thread t = new Thread(() -> stdin.start(consumer));
-            t.start();
             try {
-                Thread.sleep(50);
-                stdin.awaitStop();
-            } catch (InterruptedException e) {
-                fail("Stdin.awaitStop failed with exception: " + e);
+                Stdin stdin = new Stdin(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()), new TestContext(), inChannel);
+                executingThread = Thread.currentThread();
+                Thread t = new Thread(() -> stdin.start(consumer));
+                t.setName("StdinThread");
+                t.setUncaughtExceptionHandler((thread, throwable) -> {
+                    stdinError = throwable;
+                    thread.interrupt();
+                    executingThread.interrupt();
+                });
+                t.start();
+                try {
+                    Thread.sleep(50);
+                    stdin.awaitStop();
+                } catch (InterruptedException e) {
+                    if (stdinError != null) {
+                        fail("Error in Stdin.start: " + stdinError);
+                    } else {
+                        fail("Stdin.awaitStop failed with exception: " + e);
+                    }
+                }
+            } catch (Exception e) {
+                fail("Unexpected exception occurred: " + e);
             }
         }
         return consumer;
