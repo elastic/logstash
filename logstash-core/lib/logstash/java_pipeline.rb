@@ -40,8 +40,22 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
+
+    # @finished_execution signals that the pipeline thread has finished its execution
+    # regardless of any exceptions; it will always be true when the thread completes
     @finished_execution = Concurrent::AtomicBoolean.new(false)
+
+    # @finished_run signals that the run methods called in the pipeline thread was completed
+    # without errors and it will NOT be set if the run method exits from an exception; this
+    # is by design and necessary for the wait_until_started semantic
+    @finished_run = Concurrent::AtomicBoolean.new(false)
+
+    @thread = nil
   end # def initialize
+
+  def finished_execution?
+    @finished_execution.true?
+  end
 
   def ready?
     @ready.value
@@ -84,15 +98,18 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @logger.debug("Starting pipeline", default_logging_keys)
 
     @finished_execution.make_false
+    @finished_run.make_false
 
     @thread = Thread.new do
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
         run
-        @finished_execution.make_true
+        @finished_run.make_true
       rescue => e
         close
         logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+      ensure
+        @finished_execution.make_true
       end
     end
 
@@ -107,15 +124,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_until_started
     while true do
-      # This should be changed with an appropriate FSM
-      # It's an edge case, if we have a pipeline with
-      # a generator { count => 1 } its possible that `Thread#alive?` doesn't return true
-      # because the execution of the thread was successful and complete
-      if @finished_execution.true?
+      if @finished_run.true?
+        # it completed run without exception
         return true
       elsif thread.nil? || !thread.alive?
+        # some exception occurred and the thread is dead
         return false
       elsif running?
+        # fully initialized and running
         return true
       else
         sleep 0.01

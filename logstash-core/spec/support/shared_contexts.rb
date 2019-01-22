@@ -26,12 +26,12 @@ shared_context "api setup" do
     @agent.execute
     pipeline_config = mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }")
     pipeline_creator =  LogStash::PipelineAction::Create.new(pipeline_config, @agent.metric)
-    @pipelines = java.util.concurrent.ConcurrentHashMap.new
-    expect(pipeline_creator.execute(@agent, @pipelines)).to be_truthy
+    @pipelines_registry = LogStash::PipelinesRegistry.new
+    expect(pipeline_creator.execute(@agent, @pipelines_registry)).to be_truthy
   end
 
   after :all do
-    @pipelines.each do |_, pipeline|
+    @pipelines_registry.running_pipelines.each do |_, pipeline|
       pipeline.shutdown
       pipeline.thread.join
     end
