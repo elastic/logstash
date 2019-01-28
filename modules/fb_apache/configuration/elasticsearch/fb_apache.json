@@ -1,6 +1,6 @@
 {
   "mappings": {
-    "_default_": {
+    "_doc": {
       "_all": {
         "norms": false
       },
