@@ -64,13 +64,13 @@ Logstash instances.
 ===== File Rotation
 
 Dead letter queues have a built-in file rotation policy that manages the file
-size of the queue. When the file size reaches a preconfigured threshold, a new
-file is created automatically.
+size of the queue. When the file size reaches a preconfigured, fixed threshold 
+of 10mb, a new file is created automatically.
 
 By default, the maximum size of each dead letter queue is set to 1024mb. To
-change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
-will be dropped if they would increase the size of the dead letter queue beyond
-this setting. 
+change this setting, use the `dead_letter_queue.max_bytes` option. An error 
+is thrown and entries will be dropped if they would increase the size of the 
+dead letter queue beyond this maximum size setting. 
 
 [[processing-dlq-events]]
 ==== Processing Events in the Dead Letter Queue
