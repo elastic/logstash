@@ -81,6 +81,10 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The ID of the pipeline.
 | `main`
 
+| `pipeline.java_execution`
+| Use the Java execution engine.
+| false
+
 | `pipeline.workers`
 | The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
   If you find that events are backing up, or that the
@@ -174,9 +178,13 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The maximum number of written events before forcing a checkpoint when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.writes: 0` to set this value to unlimited.
 | 1024
 
+| `queue.checkpoint.retry`
+| When enabled, Logstash will retry once per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances.
+| `false`
+
 | `queue.drain`
 | When enabled, Logstash waits until the persistent queue is drained before shutting down.
-| false
+| `false`
 
 | `dead_letter_queue.enable`
 | Flag to instruct Logstash to enable the DLQ feature supported by plugins.

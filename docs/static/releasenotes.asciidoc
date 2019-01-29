@@ -3,6 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-0,Logstash 6.6.0>>
+* <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
 * <<logstash-6-5-2,Logstash 6.5.2>>
 * <<logstash-6-5-1,Logstash 6.5.1>>
@@ -23,6 +25,94 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-0]]
+=== Logstash 6.6.0 Release Notes
+
+* BUGFIX: Remove excess period from logstash-plugin error reporting https://github.com/elastic/logstash/pull/9749[#9749]
+* Enhancement: Replace generated for-loops with static method calls https://github.com/elastic/logstash/pull/10133[#10133]
+* Enhancement: Add common base class for generated Dataset classes https://github.com/elastic/logstash/pull/10136[#10136]
+* Upgrade rack to version 1.6.11  https://github.com/elastic/logstash/pull/10151[#10151]
+* Enhancement: Java plugin API (experimental) https://github.com/elastic/logstash/pull/10216[#10216]
+* BUGFIX: Increase default number of threads reported by hot_threads https://github.com/elastic/logstash/pull/10218[#10218]
+* BUGFIX: Add option for PQ checkpoint retry https://github.com/elastic/logstash/pull/10246[#10246]
+* Add documentation for java-execution flag https://github.com/elastic/logstash/pull/10248[#10248]
+* BUGFIX: Properly set thread name in thread context https://github.com/elastic/logstash/pull/10272[#10272]
+* Announcement: HTTP lookup filter and Memcached get/set filter now GA.
+
+==== Plugins
+
+*Aggregate Filter*
+
+* new feature: add ability to dynamically define a custom `timeout` or `inactivity_timeout` in `code` block, fixes https://github.com/logstash-plugins/logstash-filter-aggregate/issues/91[#91] and https://github.com/logstash-plugins/logstash-filter-aggregate/issues/92[#92]
+* new feature: add meta informations available in `code` block through `map_meta` variable
+* new feature: add Logstash metrics, specific to aggregate plugin: aggregate_maps, pushed_events, task_timeouts, code_errors, timeout_code_errors
+* new feature: validate at startup that `map_action` option equals to 'create', 'update' or 'create_or_update'
+
+*Elasticsearch Filter*
+
+* Add support for extracting hits total from Elasticsearch 7.x responses
+
+* Added connection check during register to avoid failures during processing
+* Changed Elasticsearch Client transport to use Manticore
+* Changed amount of logging details during connection failure
+
+*Http Filter*
+
+*Memcached Filter*
+
+*Split Filter*
+
+* Fixed numeric values, optimized @target verification, cleanups and specs in https://github.com/logstash-plugins/logstash-filter-split/pull/36[#36]
+
+*Beats Input*
+
+* Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version.
+
+* Updated jar dependencies to reflect newer releases
+
+*File Input*
+
+* Fixed issue where logs were being spammed with needless error messages in https://github.com/logstash-plugins/logstash-input-file/pull/224[#224]
+
+*Gelf Input*
+
+* Fixed shutdown handling, robustness in socket closing and restarting, json parsing, code DRYing and cleanups in https://github.com/logstash-plugins/logstash-input-gelf/pull/62[#62]
+
+*Http Input*
+
+* Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version.
+
+* Changed jar dependencies to reflect newer versions
+
+*Kafka Input*
+
+* Added support for kafka property ssl.endpoint.identification.algorithm in https://github.com/logstash-plugins/logstash-input-kafka/pull/302[#302]
+
+* Changed Kafka client version to 2.1.0
+
+*Elasticsearch Output*
+
+* Adds support for Index Lifecycle Management for Elasticsearch 6.6.0 and above, running with at least a Basic License(Beta) in https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/805[#805]
+
+*Kafka Output*
+
+* Added support for kafka property `ssl.endpoint.identification.algorithm` in https://github.com/logstash-plugins/logstash-output-kafka/pull/213[#213]
+
+* Changed Kafka client to version 2.1.0
+
+*Pagerduty Output*
+
+* Update _development_ dependency webmock to latest version to prevent conflicts in logstash core's dependency matrix.
+
+*Tcp Output*
+
+* Removed requirement to have a certificate/key pair when enabling ssl
+
+[[logstash-6-5-4]]
+=== Logstash 6.5.4 Release Notes
+
+* No changes to Logstash 6.5.4
 
 [[logstash-6-5-3]]
 === Logstash 6.5.3 Release Notes
@@ -188,7 +278,7 @@ This section summarizes the changes in the following releases:
 
 *Mutate Filter*
 
-* Changed documentation to clarify execution order and to provide workaround 
+* Changed documentation to clarify execution order and to provide workaround
  https://github.com/logstash-plugins/logstash-filter-mutate/pull/128[#128]
 
 *Tcp Input*

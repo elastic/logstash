@@ -298,7 +298,7 @@ en:
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
         java-execution: |+
-          (Beta) Use new Java execution engine.
+          Use Java execution engine.
         pipeline-batch-size: |+
           Size of batches the pipeline is to work in.
         pipeline-batch-delay: |+
