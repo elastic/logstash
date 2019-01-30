@@ -34,11 +34,11 @@ See the following topics for information about upgrading Logstash:
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
 1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
-2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 5.x repositories
+2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 6.x repositories
 instead of the previous version.
 3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 5.x release.
+some Logstash plugins have changed in the 6.x release.
 5. Restart your Logstash pipeline after updating your configuration file.
 
 [[upgrading-using-direct-download]]
@@ -50,7 +50,7 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 3. Unpack the installation file into your Logstash directory.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 5.x release.
+some Logstash plugins have changed in the 6.x release.
 5. Restart your Logstash pipeline after updating your configuration file.
 
 [[upgrading-logstash-6.0]]
