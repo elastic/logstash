@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -103,7 +104,7 @@ class TestConsumer implements Consumer<Map<String, Object>> {
     @Override
     public void accept(Map<String, Object> event) {
         synchronized (this) {
-            events.add(event);
+            events.add(new HashMap<>(event));
         }
     }
 

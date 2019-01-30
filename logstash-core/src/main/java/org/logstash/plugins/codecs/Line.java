@@ -43,6 +43,7 @@ public class Line implements Codec {
     private Context context;
 
     static final String MESSAGE_FIELD = "message";
+    private final Map<String, Object> map = new HashMap<>();
 
     private final String delimiter;
     private final Charset charset;
@@ -154,10 +155,9 @@ public class Line implements Codec {
         }
     }
 
-    private static Map<String, Object> simpleMap(String message) {
-        HashMap<String, Object> simpleMap = new HashMap<>();
-        simpleMap.put(MESSAGE_FIELD, message);
-        return simpleMap;
+    private Map<String, Object> simpleMap(String message) {
+        map.put(MESSAGE_FIELD, message);
+        return map;
     }
 
     @Override

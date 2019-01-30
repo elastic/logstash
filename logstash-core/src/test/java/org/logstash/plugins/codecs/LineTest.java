@@ -405,7 +405,7 @@ class TestEventConsumer implements Consumer<Map<String, Object>> {
 
     @Override
     public void accept(Map<String, Object> stringObjectMap) {
-        events.add(stringObjectMap);
+        events.add(new HashMap<>(stringObjectMap));
     }
 }
 
