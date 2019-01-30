@@ -21,7 +21,6 @@ module LogStash
       "pipeline.batch.delay",
       "pipeline.batch.size",
       "pipeline.id",
-      "pipeline.output.workers",
       "pipeline.reloadable",
       "pipeline.system",
       "pipeline.workers",
