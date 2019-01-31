@@ -407,11 +407,6 @@ describe LogStash::Event do
         expect(event.timestamp.to_i).to be_within(2).of Time.now.to_i
         expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
         expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq("foo")
-
-        event = LogStash::Event.new("@timestamp" => 666)
-        expect(event.timestamp.to_i).to be_within(2).of Time.now.to_i
-        expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq(666)
       end
 
       it "should warn for invalid value" do
