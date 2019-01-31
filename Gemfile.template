@@ -7,11 +7,13 @@ gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
 gem "paquet", "~> 0.2.0"
 gem "ruby-progressbar", "~> 1"
 gem "builder", "~> 3"
+gem "ci_reporter_rspec", "~> 1", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "logstash-devutils", "= 1.3.5", :group => :development
 gem "benchmark-ips", :group => :development
 gem "octokit", "~> 4", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
+gem "rack-test", :require => "rack/test", :group => :development
 gem "fpm", "~> 1", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "gems", "~> 1", :group => :build
