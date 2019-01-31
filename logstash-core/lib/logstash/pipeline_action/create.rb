@@ -3,6 +3,7 @@ require "logstash/pipeline_action/base"
 require "logstash/pipeline"
 require "logstash/java_pipeline"
 
+
 module LogStash module PipelineAction
   class Create < Base
     include LogStash::Util::Loggable
@@ -30,7 +31,7 @@ module LogStash module PipelineAction
 
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
-    def execute(agent, pipelines)
+    def execute(agent, pipelines_registry)
       new_pipeline =
         if @pipeline_config.settings.get_value("pipeline.java_execution")
           LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
@@ -43,20 +44,12 @@ module LogStash module PipelineAction
           end
         end
 
-      result = nil
-      pipelines.compute(pipeline_id) do |_, current_pipeline|
-        if current_pipeline
-          result = LogStash::ConvergeResult::FailedAction.new("Attempted to create a pipeline that already exists")
-          current_pipeline
-        else
-          result = new_pipeline.start # block until the pipeline is correctly started or crashed
-          result ? new_pipeline : nil
-        end
+      success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
+        new_pipeline.start # block until the pipeline is correctly started or crashed
       end
 
-      LogStash::ConvergeResult::ActionResult.create(self, result)
+      LogStash::ConvergeResult::ActionResult.create(self, success)
     end
-
 
     def to_s
       "PipelineAction::Create<#{pipeline_id}>"
