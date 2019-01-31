@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
@@ -317,6 +318,8 @@ public final class Event implements Cloneable, Queueable {
                 return new Timestamp((Date) o);
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
+            } else if (o instanceof RubyFixnum) {
+                return new Timestamp(RubyFixnum.num2long((RubyFixnum)o) * 1000); // Timestamp(long) expects epoch as milliseconds
             } else {
                 logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
