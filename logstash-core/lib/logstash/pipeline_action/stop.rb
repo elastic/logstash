@@ -9,11 +9,10 @@ module LogStash module PipelineAction
       @pipeline_id = pipeline_id
     end
 
-    def execute(agent, pipelines)
-      pipelines.compute(pipeline_id) do |_, pipeline|
+    def execute(agent, pipelines_registry)
+      pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
         pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
         pipeline.thread.join
-        nil # remove pipeline from pipelines
       end
 
       LogStash::ConvergeResult::SuccessfulAction.new
