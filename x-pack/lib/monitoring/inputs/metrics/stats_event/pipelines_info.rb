@@ -9,7 +9,7 @@ module LogStash; module Inputs; class Metrics; module StatsEvent;
       # metrics pipelines. This prevents race conditions as pipeline stats may be
       # populated before the agent has it in its own pipelines state
       stats = metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines]
-      agent.pipelines.map do |pipeline_id, pipeline|
+      agent.running_pipelines.map do |pipeline_id, pipeline|
         p_stats = stats[pipeline_id]
         # Don't record stats for system pipelines
         next nil if pipeline.system?
