@@ -1,9 +1,5 @@
 {
   "mappings": {
-    "_default_": {
-      "_all": {
-        "norms": false
-      },
       "_meta": {
         "version": "5.4.0"
       },
@@ -668,12 +664,11 @@
           "type": "keyword"
         }
       }
-    }
   },
   "order": 0,
   "settings": {
     "index.mapping.total_fields.limit": 10000,
     "index.refresh_interval": "5s"
   },
-  "template": "fb_apache-*"
+  "index_patterns": "fb_apache-*"
 }
