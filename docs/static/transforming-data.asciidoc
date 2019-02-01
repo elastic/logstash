@@ -359,8 +359,22 @@ TIP: If you need help building grok patterns, try out the
 [[lookup-enrichment]]
 === Enriching Data with Lookups
 
-The plugins described in this section are useful for enriching data with
-additional info, such as GeoIP and user agent info.
+These plugins can help you enriching data with
+additional info, such as GeoIP and user agent info:
+
+* dns filter
+* elasticsearch filter
+* geoip filter
+* http filter
+* jdbc_static filter
+* jdbc_streaming filter
+* memcached filter
+* translate filter
+* useragent filter
+
+[float]
+[[lookup-plugins]]
+=== Lookup plugins
 
 <<plugins-filters-dns,dns filter>>::
 
@@ -450,6 +464,9 @@ For example:
     }
 --------------------------------------------------------------------------------
 
+<<plugins-filters-http,http filter>>::
+
+Provides integration with external web services/REST APIs.
 
 <<plugins-filters-jdbc_static,jdbc_static filter>>::
 
@@ -554,6 +571,9 @@ filter {
 }
 --------------------------------------------------------------------------------
 
+<<plugins-filters-memcached,memcached filter>>::
+
+Provides integration with external data in Memcached.
 
 <<plugins-filters-translate,translate filter>>::
 
