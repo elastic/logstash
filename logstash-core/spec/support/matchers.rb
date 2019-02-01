@@ -51,44 +51,50 @@ end
 
 RSpec::Matchers.define :have_pipeline? do |pipeline_config|
   match do |agent|
-    pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
-    expect(pipeline).to_not be_nil
+    pipeline = nil
+    try(30) do
+      pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
+      expect(pipeline).to_not be_nil
+    end
     expect(pipeline.config_str).to eq(pipeline_config.config_string)
+    expect(agent.running_pipelines.keys.map(&:to_s)).to include(pipeline_config.pipeline_id.to_s)
   end
 
   match_when_negated do |agent|
-    pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
-    pipeline.nil? || pipeline.config_str != pipeline_config.config_string
+    pipeline = nil
+    try(30) do
+      pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
+      expect(pipeline).to_not be_nil
+    end
+    # either the pipeline_id is not in the running pipelines OR it is but have different configurations
+    expect(!agent.running_pipelines.keys.map(&:to_s).include?(pipeline_config.pipeline_id.to_s) ||  pipeline.config_str != pipeline_config.config_string).to be_truthy
   end
 end
 
 RSpec::Matchers.define :have_running_pipeline? do |pipeline_config|
   match do |agent|
-    Stud.try(10.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    pipeline = nil
+    try(30) do
       pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
       expect(pipeline).to_not be_nil
-      expect(pipeline.config_str).to eq(pipeline_config.config_string)
-      expect(pipeline.running?).to be_truthy
     end
+    expect(pipeline.config_str).to eq(pipeline_config.config_string)
+    expect(pipeline.running?).to be_truthy
+    expect(agent.running_pipelines.keys.map(&:to_s)).to include(pipeline_config.pipeline_id.to_s)
   end
 
   failure_message do |agent|
     pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
 
     if pipeline.nil?
-      "Expected pipeline to exist and running, be we cannot find `#{pipeline_config.pipeline_id}` in the running pipelines `#{agent.pipelines.keys.join(",")}`"
-      else
-        if pipeline.running? == false
-          "Found `#{pipeline_config.pipeline_id}` in the list of pipelines but its not running"
-        elsif pipeline.config_str != pipeline_config.config_string
-          "Found `#{pipeline_config.pipeline_id}` in the list of pipelines and running, but the config_string doesn't match,
-Expected:
-#{pipeline_config.config_string}
-
-got:
-#{pipeline.config_str}"
-        end
+      "Expected pipeline to exist and running, be we cannot find '#{pipeline_config.pipeline_id.to_s}' in the running pipelines '#{agent.running_pipelines.keys.join(",")}'"
+    else
+      if !pipeline.running?
+        "Found '#{pipeline_config.pipeline_id.to_s}' in the list of pipelines but its not running"
+      elsif pipeline.config_str != pipeline_config.config_string
+        "Found '#{pipeline_config.pipeline_id.to_s}' in the list of pipelines and running, but the config_string doesn't match,\nExpected:\n#{pipeline_config.config_string}\n\ngot:\n#{pipeline.config_str}"
       end
+    end
   end
 
   match_when_negated do

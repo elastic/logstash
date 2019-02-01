@@ -1,14 +1,15 @@
 # encoding: utf-8
 require "spec_helper"
 require_relative "../../support/helpers"
+require "logstash/pipelines_registry"
 require "logstash/pipeline_action/stop"
 require "logstash/pipeline"
 
 describe LogStash::PipelineAction::Stop do
-  let(:pipeline_config) { "input { generator {} } output { null {} }" }
+  let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
   let(:pipeline_id) { :main }
   let(:pipeline) { mock_pipeline_from_string(pipeline_config) }
-  let(:pipelines) { chm = java.util.concurrent.ConcurrentHashMap.new; chm[:main] = pipeline; chm }
+  let(:pipelines) { chm = LogStash::PipelinesRegistry.new; chm.create_pipeline(pipeline_id, pipeline) { true }; chm }
   let(:agent) { double("agent") }
 
   subject { described_class.new(pipeline_id) }
@@ -31,6 +32,6 @@ describe LogStash::PipelineAction::Stop do
   end
 
   it "removes the pipeline from the running pipelines" do
-    expect { subject.execute(agent, pipelines) }.to change { pipelines.include?(pipeline_id) }.from(true).to(false)
+    expect { subject.execute(agent, pipelines) }.to change { pipelines.running_pipelines.keys }.from([:main]).to([])
   end
 end

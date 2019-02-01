@@ -2,13 +2,14 @@
 require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
+require "logstash/pipelines_registry"
 require "logstash/pipeline_action/create"
 require "logstash/inputs/generator"
 
 describe LogStash::PipelineAction::Create do
   let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
-  let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }") }
-  let(:pipelines) { java.util.concurrent.ConcurrentHashMap.new }
+  let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } output { null {} }") }
+  let(:pipelines) { LogStash::PipelinesRegistry.new }
   let(:agent) { double("agent") }
 
   before do
@@ -18,7 +19,7 @@ describe LogStash::PipelineAction::Create do
   subject { described_class.new(pipeline_config, metric) }
 
   after do
-    pipelines.each do |_, pipeline|
+    pipelines.running_pipelines do |_, pipeline|
       pipeline.shutdown
       pipeline.thread.join
     end
@@ -47,7 +48,7 @@ describe LogStash::PipelineAction::Create do
     it "starts the pipeline" do
       allow(agent).to receive(:exclusive) { |&arg| arg.call }
       subject.execute(agent, pipelines)
-      expect(pipelines[:main].running?).to be_truthy
+      expect(pipelines.get_pipeline(:main).running?).to be_truthy
     end
 
     it "returns a successful execution status" do
@@ -58,7 +59,7 @@ describe LogStash::PipelineAction::Create do
 
   context  "when the pipeline doesn't start" do
     context "with a syntax error" do
-      let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } output { stdout ") } # bad syntax
+      let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } output { stdout ") } # bad syntax
 
       it "raises the exception upstream" do
         expect { subject.execute(agent, pipelines) }.to raise_error
@@ -66,7 +67,7 @@ describe LogStash::PipelineAction::Create do
     end
 
     context "with an error raised during `#register`" do
-      let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } filter { ruby { init => '1/0' code => '1+2' } } output { null {} }") }
+      let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } filter { ruby { init => '1/0' code => '1+2' } } output { null {} }") }
 
       it "returns false" do
         allow(agent).to receive(:exclusive) { |&arg| arg.call }
@@ -76,8 +77,8 @@ describe LogStash::PipelineAction::Create do
   end
 
   context "when sorting create action" do
-    let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }") }
-    let(:system_pipeline_config) { mock_pipeline_config(:main_2, "input { generator { id => '123' } } output { null {} }", { "pipeline.system" => true }) }
+    let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } output { null {} }") }
+    let(:system_pipeline_config) { mock_pipeline_config(:main_2, "input { dummyblockinginput { id => '123' } } output { null {} }", { "pipeline.system" => true }) }
 
     it "should give higher priority to system pipeline" do
       action_user_pipeline = described_class.new(pipeline_config, metric)

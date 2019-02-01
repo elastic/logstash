@@ -9,6 +9,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,6 +48,15 @@ public final class HooksRegistryExt extends RubyObject {
         callbacks.add(callback);
         return syncHooks(context);
     }
+
+    @JRubyMethod(name = "remove_hooks")
+    public IRubyObject remove_hooks(final ThreadContext context, final IRubyObject emitterScope, final IRubyObject callback) {
+        final List<IRubyObject> callbacks = registeredHooks.get(emitterScope);
+        if (callbacks == null) {
+            return context.fals;
+        }
+        return callbacks.removeAll(Collections.singleton(callback)) ? context.tru : context.fals;
+     }
 
     @JRubyMethod(name = "emitters_count")
     public IRubyObject emittersCount(final ThreadContext context) {
