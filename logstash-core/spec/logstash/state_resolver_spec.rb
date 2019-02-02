@@ -18,17 +18,17 @@ describe LogStash::StateResolver do
 
   after do
     # ensure that the the created pipeline are closed
-    running_pipelines.each { |_, pipeline| pipeline.close }
+    pipelines.running_pipelines.each { |_, pipeline| pipeline.close }
   end
 
   context "when no pipeline is running" do
-    let(:running_pipelines) { {} }
+    let(:pipelines) {  LogStash::PipelinesRegistry.new }
 
     context "no pipeline configs is received" do
       let(:pipeline_configs) { [] }
 
       it "returns no action" do
-        expect(subject.resolve(running_pipelines, pipeline_configs).size).to eq(0)
+        expect(subject.resolve(pipelines, pipeline_configs).size).to eq(0)
       end
     end
 
@@ -36,7 +36,7 @@ describe LogStash::StateResolver do
       let(:pipeline_configs) { [mock_pipeline_config(:hello_world)] }
 
       it "returns some actions" do
-        expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+        expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
           [:create, :hello_world],
         )
       end
@@ -47,13 +47,17 @@ describe LogStash::StateResolver do
     context "when a pipeline is running" do
       let(:main_pipeline) { mock_pipeline(:main) }
       let(:main_pipeline_config) { main_pipeline.pipeline_config }
-      let(:running_pipelines) { { :main => main_pipeline } }
+      let(:pipelines) do
+        r =  LogStash::PipelinesRegistry.new
+        r.create_pipeline(:main, main_pipeline) { true }
+        r
+      end
 
       context "when the pipeline config contains a new one and the existing" do
         let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
 
         it "creates the new one and keep the other one" do
-          expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
             [:create, :hello_world],
           )
         end
@@ -62,7 +66,7 @@ describe LogStash::StateResolver do
           let(:pipeline_configs) { [mock_pipeline_config(:hello_world)] }
 
           it "creates the new one and stop the old one one" do
-            expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+            expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
               [:create, :hello_world],
               [:stop, :main]
             )
@@ -73,7 +77,7 @@ describe LogStash::StateResolver do
           let(:pipeline_configs) { [] }
 
           it "stops the old one one" do
-            expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+            expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
               [:stop, :main]
             )
           end
@@ -83,7 +87,7 @@ describe LogStash::StateResolver do
           let(:pipeline_configs) { [mock_pipeline_config(:main, "input { generator {}}")] }
 
           it "reloads the old one one" do
-            expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+            expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
               [:reload, :main]
             )
           end
@@ -92,21 +96,21 @@ describe LogStash::StateResolver do
     end
 
     context "when we have a lot of pipeline running" do
-      let(:running_pipelines) do
-        {
-          :main1 => mock_pipeline(:main1),
-          :main2 => mock_pipeline(:main2),
-          :main3 => mock_pipeline(:main3),
-          :main4 => mock_pipeline(:main4),
-          :main5 => mock_pipeline(:main5),
-          :main6 => mock_pipeline(:main6),
-        }
+      let(:pipelines) do
+        r =  LogStash::PipelinesRegistry.new
+        r.create_pipeline(:main1, mock_pipeline(:main1)) { true }
+        r.create_pipeline(:main2, mock_pipeline(:main2)) { true }
+        r.create_pipeline(:main3, mock_pipeline(:main3)) { true }
+        r.create_pipeline(:main4, mock_pipeline(:main4)) { true }
+        r.create_pipeline(:main5, mock_pipeline(:main5)) { true }
+        r.create_pipeline(:main6, mock_pipeline(:main6)) { true }
+        r
       end
 
       context "without system pipeline" do
         let(:pipeline_configs) do
           [
-            running_pipelines[:main1].pipeline_config,
+            pipelines.get_pipeline(:main1).pipeline_config,
             mock_pipeline_config(:main9),
             mock_pipeline_config(:main5, "input { generator {}}"),
             mock_pipeline_config(:main3, "input { generator {}}"),
@@ -115,7 +119,7 @@ describe LogStash::StateResolver do
         end
 
         it "generates actions required to converge" do
-          expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
             [:create, :main7],
             [:create, :main9],
             [:reload, :main3],
@@ -130,7 +134,7 @@ describe LogStash::StateResolver do
       context "with system pipeline" do
         let(:pipeline_configs) do
           [
-            running_pipelines[:main1].pipeline_config,
+            pipelines.get_pipeline(:main1).pipeline_config,
             mock_pipeline_config(:main9),
             mock_pipeline_config(:main5, "input { generator {}}"),
             mock_pipeline_config(:main3, "input { generator {}}"),
@@ -140,7 +144,7 @@ describe LogStash::StateResolver do
         end
 
         it "creates the system pipeline before user defined pipelines" do
-          expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
             [:create, :monitoring],
             [:create, :main7],
             [:create, :main9],
