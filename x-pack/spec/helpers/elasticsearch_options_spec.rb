@@ -22,7 +22,7 @@ end
 shared_examples 'elasticsearch options hash is populated with secure options' do
   context "with ca" do
     let(:elasticsearch_ca) { Stud::Temporary.file.path }
-    let(:settings) { super.merge({ "xpack.monitoring.elasticsearch.ssl.ca" => elasticsearch_ca })}
+    let(:settings) { super.merge({ "xpack.monitoring.elasticsearch.ssl.certificate_authority" => elasticsearch_ca })}
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
@@ -101,7 +101,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
     let(:settings) do
       {
           "xpack.monitoring.enabled" => true,
-          "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+          "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
           "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
           "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
       }
@@ -116,7 +116,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
       let(:settings) do
         {
             "xpack.monitoring.enabled" => true,
-            "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+            "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
             "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
             "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
         }
@@ -223,7 +223,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
             "cloud.id" => cloud_id,
             "cloud.auth" => "#{cloud_username}:#{cloud_password}",
             "xpack.monitoring.enabled" => true,
-            "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+            "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
             "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
             "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
           }

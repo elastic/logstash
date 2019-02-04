@@ -24,7 +24,7 @@ describe LogStash::Inputs::Metrics do
   let(:settings) do
     {
         "xpack.monitoring.enabled" => true,
-        "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+        "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
         "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
         "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
     }
@@ -32,7 +32,7 @@ describe LogStash::Inputs::Metrics do
 
   let(:es_options) do
     {
-        'url' => elasticsearch_url,
+        'hosts' => elasticsearch_url,
         'user' => elasticsearch_username,
         'password' => elasticsearch_password
     }
