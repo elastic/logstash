@@ -26,8 +26,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     @worker_threads = []
 
-    @java_inputs_controller = org.logstash.execution.InputsController.new(lir_execution.javaInputs)
-
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
@@ -259,8 +257,13 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def wait_inputs
-    @input_threads.each(&:join)
-    @java_inputs_controller.awaitStop
+    @input_threads.each do |thread|
+      if thread.class == Java::JavaObject
+        thread.to_java.join
+      else
+        thread.join
+      end
+    end
   end
 
   def start_inputs
@@ -279,11 +282,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     # then after all input plugins are successfully registered, start them
     inputs.each { |input| start_input(input) }
-    @java_inputs_controller.startInputs(self)
   end
 
   def start_input(plugin)
-    @input_threads << Thread.new { inputworker(plugin) }
+    if plugin.class == LogStash::JavaInputDelegator
+      @input_threads << plugin.start
+    else
+      @input_threads << Thread.new { inputworker(plugin) }
+    end
   end
 
   def inputworker(plugin)
@@ -345,7 +351,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def stop_inputs
     @logger.debug("Closing inputs", default_logging_keys)
     inputs.each(&:do_stop)
-    @java_inputs_controller.stopInputs
     @logger.debug("Closed inputs", default_logging_keys)
   end
 
@@ -394,7 +399,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def plugin_threads_info
-    input_threads = @input_threads.select {|t| t.alive? }
+    input_threads = @input_threads.select {|t| t.class == Thread && t.alive? }
     worker_threads = @worker_threads.select {|t| t.alive? }
     (input_threads + worker_threads).map {|t| Util.thread_info(t) }
   end

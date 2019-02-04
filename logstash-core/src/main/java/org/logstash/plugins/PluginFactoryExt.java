@@ -1,35 +1,40 @@
 package org.logstash.plugins;
 
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Output;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyInteger;
-import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.common.AbstractDeadLetterQueueWriterExt;
+import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Output;
+import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -39,6 +44,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -155,14 +161,6 @@ public final class PluginFactoryExt {
             );
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject buildFilter(final ThreadContext context, final IRubyObject[] args) {
-            return buildFilter(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
-            );
-        }
-
         @SuppressWarnings("unchecked")
         @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
@@ -172,9 +170,12 @@ public final class PluginFactoryExt {
             );
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject buildCodec(final ThreadContext context, final IRubyObject[] args) {
-            return buildCodec((RubyString) args[0], args[1], null);
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
+            return (Codec) JavaUtil.unwrapJavaValue(plugin(
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
+                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+            ));
         }
 
         @SuppressWarnings("unchecked")
@@ -196,6 +197,8 @@ public final class PluginFactoryExt {
                                    final int line, final int column, final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
+            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
+
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
             } else {
@@ -221,7 +224,6 @@ public final class PluginFactoryExt {
             }
             pluginsById.add(id);
             final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
-            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
 
             if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
@@ -263,8 +265,10 @@ public final class PluginFactoryExt {
                     Output output = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Output> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            output = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            final Constructor<Output> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
+                            Configuration config = new ConfigurationImpl(pluginArgs, this);
+                            output = ctor.newInstance(id, config, executionContext.toContext(type));
+                            PluginUtil.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
@@ -280,15 +284,17 @@ public final class PluginFactoryExt {
                     Filter filter = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Filter> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            filter = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            final Constructor<Filter> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
+                            Configuration config = new ConfigurationImpl(pluginArgs);
+                            filter = ctor.newInstance(id, config, executionContext.toContext(type));
+                            PluginUtil.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             throw new IllegalStateException(ex);
                         }
                     }
 
                     if (filter != null) {
-                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter);
+                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs);
                     } else {
                         throw new IllegalStateException("Unable to instantiate filter: " + pluginClass);
                     }
@@ -297,44 +303,50 @@ public final class PluginFactoryExt {
                     Input input = null;
                     if (cls != null) {
                         try {
-                            final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
-                            input = ctor.newInstance(new Configuration(pluginArgs), new Context());
+                            final Constructor<Input> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
+                            Configuration config = new ConfigurationImpl(pluginArgs, this);
+                            input = ctor.newInstance(id, config, executionContext.toContext(type));
+                            PluginUtil.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                            if (ex instanceof InvocationTargetException) {
+                                throw new IllegalStateException((ex).getCause());
+                            }
                             throw new IllegalStateException(ex);
                         }
                     }
 
                     if (input != null) {
-                        return JavaInputWrapperExt.create(context, input);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }
-                } else {
+                } else if (type == PluginLookup.PluginType.CODEC) {
+                    final Class<Codec> cls = (Class<Codec>) pluginClass.klass();
+                    Codec codec = null;
+                    if (cls != null) {
+                        try {
+                            final Constructor<Codec> ctor = cls.getConstructor(Configuration.class, Context.class);
+                            Configuration config = new ConfigurationImpl(pluginArgs);
+                            codec = ctor.newInstance(config, executionContext.toContext(type));
+                            PluginUtil.validateConfig(codec, config);
+                        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                            if (ex instanceof InvocationTargetException) {
+                                throw new IllegalStateException((ex).getCause());
+                            }
+                            throw new IllegalStateException(ex);
+                        }
+                    }
+
+                    if (codec != null) {
+                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, codec);
+                    } else {
+                        throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
+                    }
+                }
+                else {
                     throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());
                 }
             }
-        }
-    }
-
-    @JRubyClass(name = "JavaInputWrapper")
-    public static final class JavaInputWrapperExt extends RubyObject {
-
-        private static final long serialVersionUID = 1L;
-
-        private Input input;
-
-        public JavaInputWrapperExt(Ruby runtime, RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        public static JavaInputWrapperExt create(ThreadContext context, Input input) {
-            JavaInputWrapperExt inputWrapper = new JavaInputWrapperExt(context.runtime, RubyUtil.JAVA_INPUT_WRAPPER_CLASS);
-            inputWrapper.input = input;
-            return inputWrapper;
-        }
-
-        public Input getInput() {
-            return input;
         }
     }
 
@@ -370,6 +382,25 @@ public final class PluginFactoryExt {
             ).initialize(
                 context, new IRubyObject[]{pipeline, agent, id, classConfigName, dlqWriter}
             );
+        }
+
+        public Context toContext(PluginLookup.PluginType pluginType) {
+            DeadLetterQueueWriter dlq = null;
+            if (pluginType == PluginLookup.PluginType.OUTPUT) {
+                if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
+                    IRubyObject innerWriter =
+                            ((AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) dlqWriter)
+                                    .innerWriter(RubyUtil.RUBY.getCurrentContext());
+
+                    if (innerWriter != null) {
+                        if (innerWriter.getJavaClass().equals(DeadLetterQueueWriter.class)) {
+                            dlq = (DeadLetterQueueWriter) innerWriter.toJava(DeadLetterQueueWriter.class);
+                        }
+                    }
+                }
+            }
+
+            return new ContextImpl(dlq);
         }
     }
 

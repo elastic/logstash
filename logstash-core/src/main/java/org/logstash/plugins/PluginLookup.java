@@ -89,7 +89,7 @@ public final class PluginLookup {
             this.label = RubyUtil.RUBY.newString(label);
         }
 
-        RubyString rubyLabel() {
+        public RubyString rubyLabel() {
             return label;
         }
     }

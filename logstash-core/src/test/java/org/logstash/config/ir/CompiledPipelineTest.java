@@ -1,5 +1,6 @@
 package org.logstash.config.ir;
 
+import co.elastic.logstash.api.Codec;
 import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,8 +31,8 @@ import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
 import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
 
 /**
@@ -460,6 +461,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             throw new IllegalStateException("No codec setup expected in this test.");
+        }
+
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
+            return null;
         }
 
         private static <T> T setupPlugin(final RubyString name,

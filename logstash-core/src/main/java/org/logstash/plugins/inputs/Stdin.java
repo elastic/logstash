@@ -1,16 +1,13 @@
 package org.logstash.plugins.inputs;
 
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.execution.queue.QueueWriter;
-import org.logstash.plugins.discovery.PluginRegistry;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -24,53 +21,54 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 
-@LogstashPlugin(name = "java-stdin")
+@LogstashPlugin(name = "java_stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
-    private static final Logger logger = LogManager.getLogger(Stdin.class);
+    private final Logger logger;
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec", "java-line");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec", "java_line");
 
     private static final int BUFFER_SIZE = 64 * 1024;
 
-    private final LongAdder eventCounter = new LongAdder();
     private String hostname;
     private Codec codec;
     private volatile boolean stopRequested = false;
     private final CountDownLatch isStopped = new CountDownLatch(1);
     private FileChannel input;
-    private QueueWriter writer;
+    private Consumer<Map<String, Object>> writer;
+    private String id;
 
     /**
-     * Required Constructor Signature only taking a {@link Configuration}.
+     * Required constructor.
      *
+     * @param id            Plugin id
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdin(final Configuration configuration, final Context context) {
-        this(configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
+    public Stdin(final String id, final Configuration configuration, final Context context) {
+        this(id, configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
     }
 
-    Stdin(final Configuration configuration, final Context context, FileChannel inputChannel) {
+    Stdin(final String id, final Configuration configuration, final Context context, FileChannel inputChannel) {
+        logger = context.getLogger(this);
+        this.id = id;
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             hostname = "[unknownHost]";
         }
-        String codecName = configuration.get(CODEC_CONFIG);
-        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        codec = configuration.get(CODEC_CONFIG);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+            throw new IllegalStateException("Unable to obtain codec");
         }
         input = inputChannel;
     }
 
     @Override
-    public void start(QueueWriter writer) {
+    public void start(Consumer<Map<String, Object>> writer) {
         this.writer = writer;
         final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
         try {
@@ -80,8 +78,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
                 buffer.compact();
             }
         } catch (AsynchronousCloseException e2) {
-            // do nothing -- this happens when stop is called during a pending read
-            logger.warn("Stop request interrupted pending read");
+            // do nothing -- this happens when stop is called while the read loop is blocked on input.read()
         } catch (IOException e) {
             stopRequested = true;
             logger.error("Stopping stdin after read error", e);
@@ -102,8 +99,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     @Override
     public void accept(Map<String, Object> event) {
         event.putIfAbsent("hostname", hostname);
-        writer.push(event);
-        eventCounter.increment();
+        writer.accept(event);
     }
 
     @Override
@@ -123,6 +119,11 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
+        return PluginHelper.commonInputSettings(Collections.singletonList(CODEC_CONFIG));
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 }
