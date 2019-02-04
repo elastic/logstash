@@ -1,8 +1,10 @@
 package org.logstash.config.ir;
 
+import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -19,16 +21,8 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
-import co.elastic.logstash.api.v0.Input;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import org.logstash.plugins.PluginFactoryExt;
-import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,11 +54,6 @@ public final class CompiledPipeline {
     private final Collection<IRubyObject> inputs;
 
     /**
-     * Configured Java Inputs.
-     */
-    private final Collection<Input> javaInputs = new ArrayList<>();
-
-    /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
     private final Map<String, AbstractFilterDelegatorExt> filters;
@@ -93,7 +82,7 @@ public final class CompiledPipeline {
         outputs = setupOutputs();
     }
 
-    public Collection<IRubyObject> outputs() {
+    public Collection<AbstractOutputDelegatorExt> outputs() {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
@@ -102,11 +91,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<IRubyObject> inputs() {
-        return inputs;
-    }
-
-    public Collection<Input> javaInputs() {
-        return javaInputs;
+        return Collections.unmodifiableCollection(inputs);
     }
 
     /**
@@ -129,7 +114,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         });
         return res;
@@ -147,7 +132,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments()
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         }
         return res;
@@ -161,26 +146,11 @@ public final class CompiledPipeline {
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            final Class<Input> cls = PluginRegistry.getInputClass(def.getName());
-            if (cls != null) {
-                try {
-                    final Constructor<Input> ctor = cls.getConstructor(Configuration.class, Context.class);
-                    javaInputs.add(ctor.newInstance(new Configuration(def.getArguments()), new Context()));
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            } else {
-                final SourceWithMetadata source = v.getSourceWithMetadata();
-                IRubyObject o = pluginFactory.buildInput(
+            final SourceWithMetadata source = v.getSourceWithMetadata();
+            IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), def.getArguments());
-
-                if (o instanceof PluginFactoryExt.JavaInputWrapperExt) {
-                    javaInputs.add(((PluginFactoryExt.JavaInputWrapperExt)o).getInput());
-                } else {
-                    nodes.add(o);
-                }
-            }
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def));
+            nodes.add(o);
         });
         return nodes;
     }
@@ -203,7 +173,7 @@ public final class CompiledPipeline {
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
                     Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    def.getArguments()
+                    codec.getArguments()
                 );
             } else {
                 toput = value;
@@ -211,6 +181,32 @@ public final class CompiledPipeline {
             converted.put(key, toput);
         }
         return converted;
+    }
+
+    /**
+     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
+     * Java types for consumption by Java plugins.
+     * @param def PluginDefinition as provided by {@link PipelineIR}
+     * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
+     * methods that create Java plugins
+     */
+    private Map<String, Object> convertJavaArgs(final PluginDefinition def) {
+        for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+            final Object value = entry.getValue();
+            final String key = entry.getKey();
+            final IRubyObject toput;
+            if (value instanceof PluginStatement) {
+                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                toput = pluginFactory.buildCodec(
+                        RubyUtil.RUBY.newString(codec.getName()),
+                        Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                        codec.getArguments()
+                );
+                Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
+                def.getArguments().put(key, javaCodec);
+            }
+        }
+        return def.getArguments();
     }
 
     /**

@@ -1,13 +1,13 @@
 package org.logstash.plugins.discovery;
 
 import org.logstash.plugins.PluginLookup;
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.v0.Output;
+import co.elastic.logstash.api.Output;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;

@@ -1,8 +1,5 @@
 package org.logstash.execution;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -20,6 +17,10 @@ import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.plugins.PluginFactoryExt;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 @JRubyClass(name = "JavaBasePipeline")
 public final class JavaBasePipelineExt extends AbstractPipelineExt {
@@ -90,7 +91,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
     }
 
     @JRubyMethod(name = "reloadable?")
-    public RubyBoolean isReadloadable(final ThreadContext context) {
+    public RubyBoolean isReloadable(final ThreadContext context) {
         return isConfiguredReloadable(context).isTrue() && reloadablePlugins(context).isTrue()
             ? context.tru : context.fals;
     }
