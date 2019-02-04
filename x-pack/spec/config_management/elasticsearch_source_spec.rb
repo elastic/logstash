@@ -87,7 +87,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     {
       "xpack.management.enabled" => true,
       "xpack.management.pipeline.id" => "main",
-      "xpack.management.elasticsearch.url" => elasticsearch_url,
+      "xpack.management.elasticsearch.hosts" => elasticsearch_url,
       "xpack.management.elasticsearch.username" => elasticsearch_username,
       "xpack.management.elasticsearch.password" => elasticsearch_password,
     }
@@ -109,7 +109,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         {
           "xpack.management.enabled" => true,
           "xpack.management.pipeline.id" => "main",
-          "xpack.management.elasticsearch.url" => elasticsearch_url,
+          "xpack.management.elasticsearch.hosts" => elasticsearch_url,
           "xpack.management.elasticsearch.username" => elasticsearch_username,
           #"xpack.management.elasticsearch.password" => elasticsearch_password,
         }

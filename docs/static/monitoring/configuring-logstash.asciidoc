@@ -23,15 +23,14 @@ production cluster. If that setting is `false`, the collection of monitoring dat
 is disabled in {es} and data is ignored from all other sources.
 
 . Configure your Logstash nodes to send metrics by setting the
-`xpack.monitoring.elasticsearch.url` in `logstash.yml`. If {security} is enabled,
+`xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security} is enabled,
 you also need to specify the credentials for the 
 {stack-ov}/built-in-users.html[built-in `logstash_system` user]. For more information about these settings, see <<monitoring-settings>>.
 +
 --
 [source,yaml]
 --------------------------------------------------
-xpack.monitoring.elasticsearch.url:
-["http://es-prod-node-1:9200", "http://es-prod-node-2:9200"] <1>
+xpack.monitoring.elasticsearch.hosts: ["http://es-prod-node-1:9200", "http://es-prod-node-2:9200"] <1>
 xpack.monitoring.elasticsearch.username: "logstash_system" <2>
 xpack.monitoring.elasticsearch.password: "changeme"
 --------------------------------------------------
@@ -50,11 +49,11 @@ in the cluster.
 --
 To add a CA certificate to a Logstash node's trusted certificates, you
 can specify the location of the PEM encoded certificate with the
-`ca` setting:
+`certificate_authority` setting:
 
 [source,yaml]
 --------------------------------------------------
-xpack.monitoring.elasticsearch.ssl.ca: /path/to/ca.crt
+xpack.monitoring.elasticsearch.ssl.certificate_authority: /path/to/ca.crt
 --------------------------------------------------
 
 Alternatively, you can configure trusted certificates using a truststore
