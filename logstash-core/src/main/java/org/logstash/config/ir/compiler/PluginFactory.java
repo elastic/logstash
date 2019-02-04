@@ -1,12 +1,13 @@
 package org.logstash.config.ir.compiler;
 
+import co.elastic.logstash.api.Codec;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 
 import java.util.Map;
 
@@ -62,6 +63,11 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             return rubyFactory.buildCodec(name, args, pluginArgs);
+        }
+
+        @Override
+        public Codec buildDefaultCodec(final String codecName) {
+            return null;
         }
     }
 }

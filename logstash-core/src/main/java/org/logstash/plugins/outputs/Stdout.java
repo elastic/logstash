@@ -1,52 +1,68 @@
 package org.logstash.plugins.outputs;
 
-import co.elastic.logstash.api.v0.Codec;
-import org.logstash.Event;
-import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Output;
+import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.PluginConfigSpec;
-import org.logstash.plugins.discovery.PluginRegistry;
+import co.elastic.logstash.api.PluginHelper;
+import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Output;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
-@LogstashPlugin(name = "java-stdout")
+@LogstashPlugin(name = "java_stdout")
 public class Stdout implements Output {
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec", "java-line");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec", "java-line");
 
     private Codec codec;
     private OutputStream outputStream;
     private final CountDownLatch done = new CountDownLatch(1);
+    private String id;
+    private ByteBuffer encodeBuffer = ByteBuffer.wrap(new byte[16 * 1024]);
 
     /**
-     * Required Constructor Signature only taking a {@link Configuration}.
+     * Required constructor.
      *
+     * @param id            Plugin id
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdout(final Configuration configuration, final Context context) {
-        this(configuration, context, System.out);
+    public Stdout(final String id, final Configuration configuration, final Context context) {
+        this(id, configuration, context, System.out);
     }
 
-    Stdout(final Configuration configuration, final Context context, OutputStream targetStream) {
+    Stdout(final String id, final Configuration configuration, final Context context, OutputStream targetStream) {
+        this.id = id;
         this.outputStream = targetStream;
-        String codecName = configuration.get(CODEC_CONFIG);
-        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        codec = configuration.get(CODEC_CONFIG);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+            throw new IllegalStateException("Unable to obtain codec");
         }
     }
 
     @Override
     public void output(final Collection<Event> events) {
-        for (Event e : events) {
-            codec.encode(e, outputStream);
+        try {
+            boolean encodeCompleted;
+            for (Event e : events) {
+                encodeBuffer.clear();
+                do {
+                    encodeCompleted = codec.encode(e, encodeBuffer);
+                    outputStream.write(encodeBuffer.array(), encodeBuffer.position(), encodeBuffer.limit());
+                    encodeBuffer.flip();
+                }
+                while (!encodeCompleted);
+            }
+        } catch (Codec.EncodeException | IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
 
@@ -62,6 +78,11 @@ public class Stdout implements Output {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return Collections.singletonList(CODEC_CONFIG);
+        return PluginHelper.commonOutputSettings(Collections.singletonList(CODEC_CONFIG));
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 }

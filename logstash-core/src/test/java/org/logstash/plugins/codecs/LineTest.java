@@ -1,10 +1,12 @@
 package org.logstash.plugins.codecs;
 
+import co.elastic.logstash.api.Codec;
+import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;
-import co.elastic.logstash.api.Configuration;
+import org.logstash.plugins.ConfigurationImpl;
+import org.logstash.plugins.TestContext;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,41 +127,27 @@ public class LineTest {
         byte[] bytes = input.getBytes();
         assertTrue(bytes.length > input.length());
         ByteBuffer b1 = ByteBuffer.allocate(BUFFER_SIZE);
-        System.out.println(b1);
         b1.put(bytes, lastPos, 12);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
 
         Line line = getLineCodec(null, null);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
 
         int remaining = b1.remaining();
         lastPos += BUFFER_SIZE;
         b1.put(bytes, lastPos, remaining);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
 
         remaining = b1.remaining();
         lastPos += remaining;
         b1.put(bytes, lastPos, bytes.length - lastPos);
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.decode(b1, eventConsumer);
-        System.out.println(b1);
         b1.compact();
-        System.out.println(b1);
         b1.flip();
-        System.out.println(b1);
         line.flush(b1, eventConsumer);
     }
 
@@ -212,7 +200,7 @@ public class LineTest {
         if (charset != null) {
             config.put("charset", charset);
         }
-        return new Line(new Configuration(config), null);
+        return new Line(new ConfigurationImpl(config), new TestContext());
     }
 
     @Test
@@ -220,7 +208,7 @@ public class LineTest {
         TestEventConsumer flushConsumer = new TestEventConsumer();
 
         // decode with cp-1252
-        Line cp1252decoder = new Line(new Configuration(Collections.singletonMap("charset", "cp1252")), null);
+        Line cp1252decoder = new Line(new ConfigurationImpl(Collections.singletonMap("charset", "cp1252")), new TestContext());
         byte[] rightSingleQuoteInCp1252 = {(byte) 0x92};
         ByteBuffer b1 = ByteBuffer.wrap(rightSingleQuoteInCp1252);
         cp1252decoder.decode(b1, flushConsumer);
@@ -231,7 +219,7 @@ public class LineTest {
 
         // decode with UTF-8
         flushConsumer.events.clear();
-        Line utf8decoder = new Line(new Configuration(Collections.emptyMap()), null);
+        Line utf8decoder = new Line(new ConfigurationImpl(Collections.emptyMap()), new TestContext());
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
         ByteBuffer b2 = ByteBuffer.wrap(rightSingleQuoteInUtf8);
         utf8decoder.decode(b2, flushConsumer);
@@ -243,60 +231,170 @@ public class LineTest {
     }
 
     @Test
-    public void testEncode() {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new Configuration(Collections.emptyMap()), null);
-        Event e = new Event();
-        e.setField("myfield1", "myvalue1");
-        e.setField("myfield2", 42L);
-        line.encode(e, outputStream);
-        e.setField("myfield1", "myvalue2");
-        e.setField("myfield2", 43L);
-        line.encode(e, outputStream);
-
-        String delimiter = Line.DEFAULT_DELIMITER;
-        String resultingString = outputStream.toString();
-        // first delimiter should occur at the halfway point of the string
-        assertEquals(resultingString.indexOf(delimiter), (resultingString.length() / 2) - delimiter.length());
-        // second delimiter should occur at end of string
-        assertEquals(resultingString.lastIndexOf(delimiter), resultingString.length() - delimiter.length());
-    }
-
-    @Test
-    public void testEncodeWithCustomDelimiter() {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String delimiter = "xyz";
-        Line line = new Line(new Configuration(Collections.singletonMap("delimiter", delimiter)), null);
-        Event e = new Event();
-        e.setField("myfield1", "myvalue1");
-        e.setField("myfield2", 42L);
-        line.encode(e, outputStream);
-        e.setField("myfield1", "myvalue2");
-        e.setField("myfield2", 43L);
-        line.encode(e, outputStream);
-
-        String resultingString = outputStream.toString();
-        // first delimiter should occur at the halfway point of the string
-        assertEquals(resultingString.indexOf(delimiter), (resultingString.length() / 2) - delimiter.length());
-        // second delimiter should occur at end of string
-        assertEquals(resultingString.lastIndexOf(delimiter), resultingString.length() - delimiter.length());
-    }
-
-    @Test
-    public void testEncodeWithFormat() {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Line line = new Line(new Configuration(Collections.singletonMap("format", "%{host}-%{message}")), null);
+    public void testEncode() throws Codec.EncodeException {
+        String delimiter = "z";
         String message = "Hello world";
-        String host = "test";
-        String expectedOutput = host + "-" + message + Line.DEFAULT_DELIMITER;
-        Event e = new Event();
-        e.setField("message", message);
-        e.setField("host", host);
+        String expectedResult = message + delimiter;
+        Map<String, Object> config = new HashMap<>();
+        config.put("delimiter", delimiter);
+        config.put("format", "%{message}");
+        Line line = new Line(new ConfigurationImpl(config), new TestContext());
+        Event e = new Event(Collections.singletonMap("message", message));
+        byte[] b = new byte[100];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+        boolean result = line.encode(e, buffer);
+        Assert.assertTrue(result);
+        String resultString = new String(buffer.array(), buffer.position(), buffer.limit());
+        Assert.assertEquals(expectedResult, resultString);
+    }
 
-        line.encode(e, outputStream);
+    @Test
+    public void testMultipleEncodesForEvent() throws Codec.EncodeException {
+        String delimiter = "z";
+        String message = "Hello world";
+        String expectedResult = message + delimiter;
+        Map<String, Object> config = new HashMap<>();
+        config.put("delimiter", delimiter);
+        config.put("format", "%{message}");
+        Line line = new Line(new ConfigurationImpl(config), new TestContext());
+        Event e = new Event(Collections.singletonMap("message", message));
+        byte[] b = new byte[10];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
 
-        String resultingString = outputStream.toString();
-        assertEquals(expectedOutput, resultingString);
+        boolean result = line.encode(e, buffer);
+        Assert.assertFalse(result);
+        String resultString = new String(buffer.array(), buffer.position(), buffer.limit());
+
+        buffer.clear();
+        result = line.encode(e, buffer);
+        Assert.assertTrue(result);
+        resultString += new String(buffer.array(), buffer.position(), buffer.limit());
+
+        Assert.assertEquals(expectedResult, resultString);
+    }
+
+    @Test
+    public void testEncodeNewEventBeforeFinishingPreviousThrows() {
+        String delimiter = "z";
+        String message = "Hello world";
+        Map<String, Object> config = new HashMap<>();
+        config.put("delimiter", delimiter);
+        config.put("format", "%{message}");
+        Line line = new Line(new ConfigurationImpl(config), new TestContext());
+        Event e1 = new Event(Collections.singletonMap("message", message));
+        Event e2 = new Event(Collections.singletonMap("message", message));
+        byte[] b = new byte[10];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+        try {
+            line.encode(e1, buffer);
+            line.encode(e2, buffer);
+            Assert.fail("EncodeException should be thrown because previous event was not fully encoded");
+        } catch (Codec.EncodeException ex) {
+            // this exception should be thrown
+        }
+    }
+
+    @Test
+    public void testEncodeWithUtf8() throws Codec.EncodeException {
+        String delimiter = "z";
+        String message = "München 安装中文输入法";
+        Map<String, Object> config = new HashMap<>();
+        config.put("delimiter", delimiter);
+        config.put("format", "%{message}");
+        Line line = new Line(new ConfigurationImpl(config), new TestContext());
+        Event e1 = new Event(Collections.singletonMap("message", message));
+        byte[] b = new byte[100];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+        boolean result = line.encode(e1, buffer);
+        Assert.assertTrue(result);
+        String expectedResult = message + delimiter;
+        Assert.assertEquals(expectedResult, new String(buffer.array(), buffer.position(), buffer.limit()));
+    }
+
+    @Test
+    public void testEncodeAcrossMultibyteCharBoundary() throws Codec.EncodeException {
+        String message = "安安安安安安安安安";
+        String delimiter = "";
+        Map<String, Object> config = new HashMap<>();
+        config.put("delimiter", delimiter);
+        config.put("format", "%{message}");
+        Line line = new Line(new ConfigurationImpl(config), new TestContext());
+        Event e1 = new Event(Collections.singletonMap("message", message));
+        byte[] b = new byte[10];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+
+        boolean result = line.encode(e1, buffer);
+        String intermediateResult = new String(buffer.array(), buffer.position(), buffer.limit());
+        Assert.assertFalse(result);
+        Assert.assertEquals("安安安", intermediateResult);
+
+        buffer.clear();
+        result = line.encode(e1, buffer);
+        intermediateResult = new String(buffer.array(), buffer.position(), buffer.limit());
+        Assert.assertFalse(result);
+        Assert.assertEquals("安安安", intermediateResult);
+
+        buffer.clear();
+        result = line.encode(e1, buffer);
+        intermediateResult = new String(buffer.array(), buffer.position(), buffer.limit());
+        Assert.assertTrue(result);
+        Assert.assertEquals("安安安", intermediateResult);
+    }
+
+
+    @Test
+    public void testEncodeWithCharset() throws Exception {
+        byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
+        String rightSingleQuote = new String(rightSingleQuoteInUtf8);
+
+        // encode with cp-1252
+        Map<String, Object> config = new HashMap<>();
+        config.put("charset", "cp1252");
+        config.put("format", "%{message}");
+        config.put("delimiter", "");
+        Event e1 = new Event(Collections.singletonMap("message", rightSingleQuote));
+        Line cp1252decoder = new Line(new ConfigurationImpl(config), new TestContext());
+        byte[] rightSingleQuoteInCp1252 = {(byte) 0x92};
+        byte[] b = new byte[100];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+
+        boolean result = cp1252decoder.encode(e1, buffer);
+        Assert.assertTrue(result);
+        byte[] resultBytes = new byte[buffer.limit() - buffer.position()];
+        System.arraycopy(buffer.array(), buffer.position(), resultBytes, 0, buffer.limit() - buffer.position());
+        Assert.assertArrayEquals(rightSingleQuoteInCp1252, resultBytes);
+    }
+
+    @Test
+    public void testClone() throws Codec.EncodeException {
+        String delimiter = "x";
+        String charset = "cp1252";
+        byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
+        String rightSingleQuote = new String(rightSingleQuoteInUtf8);
+
+        // encode with cp-1252
+        Map<String, Object> config = new HashMap<>();
+        config.put("charset", charset);
+        config.put("format", "%{message}");
+        config.put("delimiter", delimiter);
+        Event e1 = new Event(Collections.singletonMap("message", rightSingleQuote));
+        Line codec = new Line(new ConfigurationImpl(config), new TestContext());
+
+        // clone codec
+        Codec clone = codec.cloneCodec();
+        Assert.assertEquals(codec.getClass(), clone.getClass());
+        Line line2 = (Line)clone;
+
+        // verify charset and delimiter
+        byte[] rightSingleQuoteAndXInCp1252 = {(byte) 0x92, (byte) 0x78};
+        byte[] b = new byte[100];
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+
+        boolean result = line2.encode(e1, buffer);
+        Assert.assertTrue(result);
+        byte[] resultBytes = new byte[buffer.limit() - buffer.position()];
+        System.arraycopy(buffer.array(), buffer.position(), resultBytes, 0, buffer.limit() - buffer.position());
+        Assert.assertArrayEquals(rightSingleQuoteAndXInCp1252, resultBytes);
     }
 
 }
@@ -307,6 +405,7 @@ class TestEventConsumer implements Consumer<Map<String, Object>> {
 
     @Override
     public void accept(Map<String, Object> stringObjectMap) {
-        events.add(stringObjectMap);
+        events.add(new HashMap<>(stringObjectMap));
     }
 }
+
