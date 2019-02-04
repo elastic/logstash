@@ -98,11 +98,12 @@ describe LogStash::Event do
         expect(subject.sprintf("bonjour")).to eq("bonjour")
       end
 
-      it "should not raise error when formatting %{+%s} when @timestamp field is missing" do
+      it "should not raise error and should format as empty string when @timestamp field is missing" do
         str = "hello-%{+%s}"
         subj = subject.clone
         subj.remove("[@timestamp]")
         expect{ subj.sprintf(str) }.not_to raise_error(LogStash::Error)
+        expect(subj.sprintf(str)).to eq("hello-")
       end
 
       it "should report a time with %{+format} syntax", :if => RUBY_ENGINE == "jruby" do

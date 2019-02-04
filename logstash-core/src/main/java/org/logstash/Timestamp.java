@@ -69,7 +69,7 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     }
 
     public long toEpochMilli() {
-        return (new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis());
+        return time.getMillis();
     }
 
     // returns the fraction of a second as microseconds, not the number of microseconds since epoch

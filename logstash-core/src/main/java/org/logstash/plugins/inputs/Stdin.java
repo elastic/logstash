@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java_stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
-    private final Logger LOGGER;
+    private final Logger logger;
 
     public static final PluginConfigSpec<Codec> CODEC_CONFIG =
             PluginConfigSpec.codecSetting("codec", "java_line");
@@ -53,7 +53,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
     }
 
     Stdin(final String id, final Configuration configuration, final Context context, FileChannel inputChannel) {
-        LOGGER = context.getLogger(this);
+        logger = context.getLogger(this);
         this.id = id;
         try {
             hostname = InetAddress.getLocalHost().getHostName();
@@ -81,7 +81,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
             // do nothing -- this happens when stop is called while the read loop is blocked on input.read()
         } catch (IOException e) {
             stopRequested = true;
-            LOGGER.error("Stopping stdin after read error", e);
+            logger.error("Stopping stdin after read error", e);
             throw new IllegalStateException(e);
         } finally {
             try {
