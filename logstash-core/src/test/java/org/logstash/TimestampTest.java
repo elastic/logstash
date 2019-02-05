@@ -49,7 +49,9 @@ public class TimestampTest {
         Instant i = Instant.now();
         Timestamp t1 = new Timestamp(i.toEpochMilli());
         long usec = t1.usec();
-        Assert.assertEquals(i.getNano() / 1000, usec);
+
+        // since our Timestamp was created with epoch millis, it cannot be more precise.
+        Assert.assertEquals(i.getNano() / 1_000_000, usec / 1_000);
     }
 
     @Test
