@@ -22,7 +22,7 @@ gem "atomic", "~> 1"
 gem "belzebuth", :group => :development
 gem "json-schema", "~> 2", :group => :development
 gem "pleaserun", "~>0.0.28"
-gem "rake", "~> 12", :group => :build
+gem "rake", "~> 12"
 gem "webmock", "~> 3", :group => :development
 gem "logstash-codec-cef"
 gem "logstash-codec-collectd"
