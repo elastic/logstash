@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-1,Logstash 6.6.1>>
 * <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
@@ -25,6 +26,30 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-1]]
+=== Logstash 6.6.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.6.1
+
+* [6.6 clean backport of #10331] correctly handle pipeline actions https://github.com/elastic/logstash/pull/10337[#10337]
+* [6.6 clean backport of #10346] fix agent silent exit upon pipelines reloading https://github.com/elastic/logstash/pull/10370[#10370]
+
+=== Logstash Commits between 6.6 and 6.6.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.6.0..6.6"
+
+ef0d135d9 - (HEAD -> 6.6, origin/6.6) qa: allow connections to localhost in webmock (#10384) (28 seconds ago) <Ry Biesemeyer>
+8bef18ada - fix agent silent exit upon pipelines reloading (#10370) (5 days ago) <Colin Surprenant>
+f2a473db8 - correctly handle pipeline actions (#10331) (#10337) (6 days ago) <Colin Surprenant>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.6.0..6.6 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-6-0]]
 === Logstash 6.6.0 Release Notes
