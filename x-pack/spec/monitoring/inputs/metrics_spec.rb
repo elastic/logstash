@@ -20,7 +20,7 @@ describe LogStash::Inputs::Metrics do
   let(:elasticsearch_password) { nil }
 
 
-  subject { described_class.new(options) }
+  subject(:metrics_input) { described_class.new(options) }
   let(:settings) do
     {
         "xpack.monitoring.enabled" => true,
@@ -39,28 +39,6 @@ describe LogStash::Inputs::Metrics do
   end
 
   context "integration" do
-
-    shared_examples_for 'events are added to the queue' do
-      it 'should add a stats events to the queue' do
-        wait(60).for { stats_events.size }.to eq(1)
-      end
-
-      it 'should add two state events to the queue' do
-        # Triggered event plus the one from `update`
-        wait(60).for { state_events.size }.to eq(2)
-      end
-    end
-
-    shared_examples_for 'events are not added to the queue' do
-      it 'should not add a stats events to the queue' do
-        wait(60).for { stats_events.size }.to eq(0)
-      end
-
-      it 'should not add a state events to the queue' do
-        # Triggered event plus the one from `update`
-        wait(60).for { state_events.size }.to eq(0)
-      end
-    end
 
     let(:schemas_path) { File.join(File.dirname(__FILE__), "..", "..", "..", "spec", "monitoring", "schemas") }
     let(:queue) { Concurrent::Array.new }
@@ -94,31 +72,31 @@ describe LogStash::Inputs::Metrics do
     context "with pipeline execution" do
 
       before :each do
-        allow(subject).to receive(:fetch_global_stats).and_return({"uuid" => "00001" })
-        allow(subject).to receive(:exec_timer_task)
-        allow(subject).to receive(:sleep_till_stop)
+        allow(metrics_input).to receive(:fetch_global_stats).and_return({"uuid" => "00001" })
+        allow(metrics_input).to receive(:exec_timer_task)
+        allow(metrics_input).to receive(:sleep_till_stop)
 
         agent
         agent_task
 
         wait(60).for { agent.get_pipeline(:main) }.to_not be_nil
 
-        subject.metric = metric
+        metrics_input.metric = agent.metric
 
-        subject.register
-        subject.run(queue)
-        subject.pipeline_started(agent, agent.get_pipeline(:main))
+        metrics_input.register
+        metrics_input.run(queue)
+        metrics_input.pipeline_started(agent, agent.get_pipeline(:main))
       end
 
       after :each do
-        subject.stop
+        metrics_input.stop
         agent.shutdown
         agent_task.wait
       end
 
       context 'after the pipeline is setup' do
         it "should store the agent" do
-           expect(subject.agent).to eq(agent)
+           expect(metrics_input.agent).to eq(agent)
         end
       end
 
@@ -129,18 +107,25 @@ describe LogStash::Inputs::Metrics do
           # I guess this 72 is dependant on the metrics we collect and there is probably a better
           # way to make sure no metrics are missing without forcing a hard sleep but this is what is
           # easily observable, feel free to refactor with a better "timing" test here.
-          wait(60).for { collector.snapshot_metric.metric_store.size >= 72 }.to be_truthy
+          wait(60).for { collector.snapshot_metric.metric_store.size }.to be >= 72
 
-          subject.update(collector.snapshot_metric)
+          metrics_input.update(collector.snapshot_metric)
         end
 
-        it_behaves_like 'events are added to the queue'
+        it 'should add a stats events to the queue' do
+          wait(60).for { stats_events.size }.to eq(1)
+        end
+
+        it 'should add two state events to the queue' do
+          # Triggered event plus the one from `update`
+          wait(60).for { state_events.size }.to eq(2)
+        end
 
         describe "state event" do
           let(:schema_file) { File.join(schemas_path, "states_document_schema.json") }
 
           it "should validate against the schema" do
-            wait(60).for { state_events.empty? }.to be_falsey
+            wait(60).for { state_events }.to_not be_empty
             expect(JSON::Validator.fully_validate(schema_file, state_events.first.to_json)).to be_empty
           end
         end
@@ -150,7 +135,7 @@ describe LogStash::Inputs::Metrics do
 
           describe "data event" do
             it "has the correct schema" do
-              wait(60).for { stats_events.empty? }.to be_falsey
+              wait(60).for { stats_events }.to_not be_empty
               expect(JSON::Validator.fully_validate(schema_file, stats_events.first.to_json)).to be_empty
             end
           end
@@ -163,11 +148,11 @@ describe LogStash::Inputs::Metrics do
     let(:queue) { double("queue").as_null_object }
 
     before do
-      allow(subject).to receive(:queue).and_return(queue)
+      allow(metrics_input).to receive(:queue).and_return(queue)
     end
 
     after :each do
-      subject.stop
+      metrics_input.stop
     end
 
     describe "#update_pipeline_state" do
@@ -177,25 +162,26 @@ describe LogStash::Inputs::Metrics do
       describe "system pipelines" do
         before(:each) do
           allow(pipeline).to receive(:system?).and_return(true)
-          allow(subject).to receive(:emit_event)
-          subject.update_pipeline_state(pipeline)
+          allow(metrics_input).to receive(:emit_event)
+          metrics_input.update_pipeline_state(pipeline)
         end
 
         it "should not emit any events" do
-          expect(subject).not_to have_received(:emit_event)
+          expect(metrics_input).not_to have_received(:emit_event)
         end
       end
 
       describe "normal pipelines" do
         before(:each) do
           allow(pipeline).to receive(:system?).and_return(false)
-          allow(subject).to receive(:state_event_for).with(pipeline).and_return(state_event)
-          allow(subject).to receive(:emit_event)
-          subject.update_pipeline_state(pipeline)
+          allow(metrics_input).to receive(:state_event_for).with(pipeline).and_return(state_event)
+          allow(metrics_input).to receive(:emit_event)
+
+          metrics_input.update_pipeline_state(pipeline)
         end
 
         it "should emit an event" do
-          expect(subject).to have_received(:emit_event).with(state_event)
+          expect(metrics_input).to have_received(:emit_event).with(state_event)
         end
       end
     end
