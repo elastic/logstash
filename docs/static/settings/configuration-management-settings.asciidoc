@@ -17,7 +17,7 @@ SSL, you need to specify additional SSL settings.
 [source,shell]
 -----
 xpack.management.enabled: true
-xpack.management.elasticsearch.url: "http://localhost:9200/"
+xpack.management.elasticsearch.hosts: "http://localhost:9200/"
 xpack.management.elasticsearch.username: logstash_admin_user
 xpack.management.elasticsearch.password: t0p.s3cr3t
 xpack.management.logstash.poll_interval: 5s
@@ -41,7 +41,7 @@ Specify a comma-separated list of pipeline IDs to register for centralized
 pipeline management. After changing this setting, you need to restart Logstash
 to pick up changes.
 
-`xpack.management.elasticsearch.url`::
+`xpack.management.elasticsearch.hosts`::
 
 The {es} instance that will store the Logstash pipeline configurations and
 metadata. This might be the same {es} instance specified in the `outputs`
@@ -56,7 +56,7 @@ authenticate for accessing the configuration data. The username you specify here
 should have the `logstash_admin` role, which provides access to `.logstash-*`
 indices for managing configurations. 
 
-`xpack.management.elasticsearch.ssl.ca`::
+`xpack.management.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
 certificate authority for your {es} instance.

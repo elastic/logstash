@@ -41,7 +41,7 @@ describe LogStash::LicenseChecker::XPackInfo do
   let(:settings) do
     {
         "xpack.monitoring.enabled" => true,
-        "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+        "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
         "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
         "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
     }

@@ -104,12 +104,12 @@ module LogStash
 
       # For versions prior to 6.3 the default value of "xpack.monitoring.enabled" was true
       # For versions 6.3+ the default of "xpack.monitoring.enabled" is false.
-      # To help keep passivity, assume that if "xpack.monitoring.elasticsearch.url" has been set that monitoring should be enabled.
-      # return true if xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.url is configured
+      # To help keep passivity, assume that if "xpack.monitoring.elasticsearch.hosts" has been set that monitoring should be enabled.
+      # return true if xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
       def monitoring_enabled?(settings)
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
 
-        if settings.set?("xpack.monitoring.elasticsearch.url")
+        if settings.set?("xpack.monitoring.elasticsearch.hosts")
           logger.warn("xpack.monitoring.enabled has not been defined, but found elasticsearch configuration. Please explicitly set `xpack.monitoring.enabled: true` in logstash.yml")
           true
         else
@@ -169,12 +169,12 @@ module LogStash
       logger.trace("registering additionals_settings")
 
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.enabled", false))
-      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.url", String, [ "http://localhost:9200" ] ))
+      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, [ "http://localhost:9200" ] ))
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.interval", "10s"))
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.password"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.ca"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.certificate_authority"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.path"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.path"))
