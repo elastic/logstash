@@ -276,6 +276,17 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
 
     @settings.validate_all
+
+    if @settings.registered?("xpack.monitoring.enabled")
+      verify_deprecated_setting("xpack.monitoring.elasticsearch.url", "xpack.monitoring.elasticsearch.hosts")
+      verify_deprecated_setting("xpack.monitoring.elasticsearch.ssl.ca", "xpack.monitoring.elasticsearch.ssl.certificate_authority")
+    end
+
+    if @settings.registered?("xpack.management.enabled")
+      verify_deprecated_setting("xpack.management.elasticsearch.url", "xpack.management.elasticsearch.hosts")
+      verify_deprecated_setting("xpack.management.elasticsearch.ssl.ca", "xpack.management.elasticsearch.ssl.certificate_authority")
+    end
+
     @dispatcher.fire(:before_bootstrap_checks)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
@@ -499,6 +510,17 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def setting(key)
     @settings.get_value(key)
+  end
+
+  def verify_deprecated_setting(old_setting, new_setting)
+    if @settings.set?(old_setting)
+      logger.warn("Deprecated setting `#{old_setting}` please use `#{new_setting}`")
+      if @settings.set?(new_setting)
+        signal_usage_error("Both `#{new_setting}` and the deprecated `#{old_setting}` settings are set, please remove `#{old_setting}`")
+      else
+        @settings.set_value(new_setting, @settings.get_value(old_setting))
+      end
+    end
   end
 
 end

@@ -169,12 +169,20 @@ module LogStash
       logger.trace("registering additionals_settings")
 
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.enabled", false))
+
+      # .url changed to .hosts in 7.0. In 6.7+ .url is still accepted but with a deprecation warning in Runner
       settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, [ "http://localhost:9200" ] ))
+      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.url", String, [ "http://localhost:9200" ] ))
+
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.interval", "10s"))
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.password"))
+
+      # .ca changed to .certificate_authority in 7.0. In 6.7+ .ca is still accepted but with a deprecation warning in Runner
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.certificate_authority"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.ca"))
+
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.path"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.path"))
