@@ -18,7 +18,7 @@ Logstash, see <<logstash-settings-file>>.
 
 Monitoring is disabled by default. Set to `true` to enable {xpack} monitoring.
 
-`xpack.monitoring.elasticsearch.url`::
+`xpack.monitoring.elasticsearch.hosts`::
 
 The {es} instances that you want to ship your Logstash metrics to. This might be
 the same {es} instance specified in the `outputs` section in your Logstash
@@ -53,7 +53,7 @@ You can configure the following Transport Layer Security (TLS) or
 Secure Sockets Layer (SSL) settings. For more information, see 
 <<ls-monitoring-user>>.
 
-`xpack.monitoring.elasticsearch.ssl.ca`::
+`xpack.monitoring.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
 certificate authority for your {es} instance.

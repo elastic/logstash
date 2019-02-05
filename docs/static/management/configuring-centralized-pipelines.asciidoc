@@ -23,7 +23,7 @@ minimum, set:
 +
 * `xpack.management.enabled: true` to enable centralized configuration
 management.
-* `xpack.management.elasticsearch.url` to specify the Elasticsearch
+* `xpack.management.elasticsearch.hosts` to specify the Elasticsearch
 instance that will store the Logstash pipeline configurations and metadata.
 * `xpack.management.pipeline.id` to register the pipelines that you want to
 centrally manage.
