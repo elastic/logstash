@@ -113,12 +113,13 @@ describe LogStash::Inputs::Metrics do
         end
 
         it 'should add a stats events to the queue' do
-          wait(60).for { stats_events.size }.to eq(1)
+          wait(60).for { stats_events.size }.to be >= 1
         end
 
         it 'should add two state events to the queue' do
           # Triggered event plus the one from `update`
-          wait(60).for { state_events.size }.to eq(2)
+          # and possibly more from our metric_input's timer task
+          wait(60).for { state_events.size }.to be >= 2
         end
 
         describe "state event" do
