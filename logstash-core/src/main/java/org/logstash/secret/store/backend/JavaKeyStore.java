@@ -138,6 +138,9 @@ public final class JavaKeyStore implements SecretStore {
         return new File(new String(path)).exists();
     }
 
+    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
+    // since this project still supports Java 8, suppress the warning.
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable {
         SecretStoreUtil.clearChars(keyStorePass);

@@ -27,7 +27,7 @@ describe LogStash::Setting::ArrayCoercible do
 
   describe "initialization" do
     subject { described_class }
-    let(:element_class) { Fixnum }
+    let(:element_class) { Integer }
     context "when given values of incorrect element class" do
       let(:value) { "test" }
 

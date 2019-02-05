@@ -21,11 +21,12 @@ gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development
 gem "json-schema", "~> 2.6", :group => :development
+gem "webmock", "~> 3.5.1", :group => :development
 gem "belzebuth", :group => :development
 gem "pleaserun", "~>0.0.28"
 gem 'webrick', '~> 1.3.1'
 gem "atomic", "<= 1.1.99"
-gem "rake", "~> 12.2.1", :group => :build
+gem "rake", "~> 12.2.1"
 gem "logstash-codec-cef"
 gem "logstash-codec-collectd"
 gem "logstash-codec-dots"
@@ -115,7 +116,6 @@ gem "logstash-output-kafka"
 gem "logstash-output-lumberjack"
 gem "logstash-output-nagios"
 gem "logstash-output-null"
-gem "logstash-output-pagerduty"
 gem "logstash-output-pipe"
 gem "logstash-output-rabbitmq"
 gem "logstash-output-redis"

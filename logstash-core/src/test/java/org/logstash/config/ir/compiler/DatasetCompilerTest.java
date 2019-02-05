@@ -41,6 +41,7 @@ public final class DatasetCompilerTest {
         final JrubyEventExtLibrary.RubyEvent falseEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         final Dataset right = left.right();
+        @SuppressWarnings("rawtypes")
         final RubyArray batch = RubyUtil.RUBY.newArray(
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent), falseEvent
         );

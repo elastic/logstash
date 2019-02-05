@@ -24,7 +24,8 @@ public interface Dataset {
     Dataset IDENTITY = new Dataset() {
         @SuppressWarnings("unchecked")
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch, final boolean flush, final boolean shutdown) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final @SuppressWarnings("rawtypes") RubyArray batch,
+                                                                  final boolean flush, final boolean shutdown) {
             return batch;
         }
 
@@ -43,7 +44,7 @@ public interface Dataset {
      * the pipeline it belongs to is shut down
      * @return Computed {@link RubyArray} of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}
      */
-    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyArray batch,
+    Collection<JrubyEventExtLibrary.RubyEvent> compute(@SuppressWarnings({"rawtypes"}) RubyArray batch,
         boolean flush, boolean shutdown);
 
     /**

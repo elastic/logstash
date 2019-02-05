@@ -51,6 +51,7 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     }
 
     @JRubyMethod(name = "namespace_name")
+    @SuppressWarnings("rawtypes")
     public RubyArray namespaceName(final ThreadContext context) {
         return getNamespaceName(context);
     }
@@ -58,6 +59,7 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject getGauge(ThreadContext context, IRubyObject key,
         IRubyObject value);
 
+    @SuppressWarnings("rawtypes")
     protected abstract RubyArray getNamespaceName(ThreadContext context);
 
     protected abstract IRubyObject getCounter(ThreadContext context, IRubyObject key);

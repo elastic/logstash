@@ -94,6 +94,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes"})
     protected RubyArray doMultiFilter(final RubyArray batch) {
         return (RubyArray) filterMethod.call(
                 WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);

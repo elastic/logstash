@@ -104,6 +104,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         final RubyHash batchMap = (RubyHash) pipeline
             .callMethod(context, "filter_queue_client")
             .callMethod(context, "inflight_batches");
+        @SuppressWarnings("rawtypes")
         final RubyArray workerStates = workerStates(context, batchMap);
         result.op_aset(context, WORKER_STATES_KEY, workerStates);
         result.op_aset(
@@ -131,7 +132,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     private RubyArray workerStates(final ThreadContext context, final RubyHash batchMap) {
         final RubyArray result = context.runtime.newArray();
         ((Iterable<IRubyObject>) pipeline.callMethod(context, "worker_threads"))
@@ -155,7 +156,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     private RubyArray outputInfo(final ThreadContext context) {
         final RubyArray result = context.runtime.newArray();
         final IRubyObject outputs = pipeline.callMethod(context, "outputs");

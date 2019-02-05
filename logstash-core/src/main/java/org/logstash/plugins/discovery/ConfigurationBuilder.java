@@ -29,7 +29,7 @@ public final class ConfigurationBuilder implements Configuration {
         urls = Sets.newHashSet();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static ConfigurationBuilder build(final Object... params) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
@@ -72,7 +72,7 @@ public final class ConfigurationBuilder implements Configuration {
             } else if (param instanceof Class) {
                 if (Scanner.class.isAssignableFrom((Class) param)) {
                     try {
-                        builder.addScanners((Scanner) ((Class) param).newInstance());
+                        builder.addScanners((Scanner) ((Class) param).getConstructor().newInstance());
                     } catch (Exception e) { /*fallback*/ }
                 }
                 builder.addUrls(ClasspathHelper.forClass((Class) param, classLoaders));
