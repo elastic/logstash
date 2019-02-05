@@ -88,7 +88,7 @@ final class RubyGradleUtils {
   Object executeJruby(Closure<?> block) {
     def jruby = new ScriptingContainer()
     def env = jruby.environment
-    def gemDir = "${projectDir}/vendor/bundle/jruby/2.3.0".toString()
+    def gemDir = "${projectDir}/vendor/bundle/jruby/2.5.0".toString()
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()

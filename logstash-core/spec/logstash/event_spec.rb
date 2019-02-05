@@ -141,10 +141,10 @@ describe LogStash::Event do
       expect(e.get("foo")).to eq(BigDecimal.new(1))
     end
 
-    it "should set RubyBignum" do
+    it "should set RubyInteger" do
       e = LogStash::Event.new()
       e.set("[foo]", -9223372036854776000)
-      expect(e.get("foo")).to be_kind_of(Bignum)
+      expect(e.get("foo")).to be_kind_of(Integer)
       expect(e.get("foo")).to eq(-9223372036854776000)
     end
 

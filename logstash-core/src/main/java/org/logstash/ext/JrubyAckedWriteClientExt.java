@@ -28,10 +28,10 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
         final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
             context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
-            (JRubyAckedQueueExt) queue.toJava(
+            queue.toJava(
                 JRubyAckedQueueExt.class
             ),
-            (AtomicBoolean) closed.toJava(AtomicBoolean.class)
+            closed.toJava(AtomicBoolean.class)
         );
     }
 

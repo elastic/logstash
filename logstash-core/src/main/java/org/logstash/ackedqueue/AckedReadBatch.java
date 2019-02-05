@@ -52,7 +52,7 @@ public final class AckedReadBatch implements QueueBatch {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public RubyArray to_a() {
         ThreadContext context = RUBY.getCurrentContext();

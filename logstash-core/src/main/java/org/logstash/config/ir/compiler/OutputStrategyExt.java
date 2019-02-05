@@ -148,7 +148,7 @@ public final class OutputStrategyExt {
 
         private IRubyObject workerCount;
 
-        private RubyArray workers;
+        private @SuppressWarnings({"rawtypes"}) RubyArray workers;
 
         public LegacyOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);

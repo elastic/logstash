@@ -96,7 +96,7 @@ class CommonActions {
                         ((List) val).add(valueToSet);
                         evt.setField(keyToSet, val);
                     } else {
-                        RubyArray list = RubyArray.newArray(RubyUtil.RUBY, 2);
+                        @SuppressWarnings("rawtypes") RubyArray list = RubyArray.newArray(RubyUtil.RUBY, 2);
                         list.add(val);
                         list.add(valueToSet);
                         evt.setField(keyToSet, list);

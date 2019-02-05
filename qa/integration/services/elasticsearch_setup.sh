@@ -8,7 +8,7 @@ if [ -n "${ES_VERSION+1}" ]; then
   echo "Elasticsearch version is $ES_VERSION"
   version=$ES_VERSION
 else
-   version=5.0.1
+   version=6.5.4
 fi
 
 ES_HOME=$INSTALL_DIR/elasticsearch

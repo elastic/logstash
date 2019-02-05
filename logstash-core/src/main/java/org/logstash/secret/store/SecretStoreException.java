@@ -81,6 +81,13 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class ImplementationInvalidException extends SecretStoreException {
+        private static final long serialVersionUID = 1L;
+        public ImplementationInvalidException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
+
     static public class AccessException extends SecretStoreException {
         private static final long serialVersionUID = 1L;
         public AccessException(String message, Throwable throwable) {
