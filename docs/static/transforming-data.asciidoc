@@ -443,30 +443,39 @@ For example:
 +
 [source,json]
 --------------------------------------------------------------------------------
-          "geoip" => {
-              "timezone" => "Europe/Moscow",
-                    "ip" => "83.149.9.216",
-              "latitude" => 55.7522,
-        "continent_code" => "EU",
-             "city_name" => "Moscow",
-         "country_code2" => "RU",
-          "country_name" => "Russia",
-              "dma_code" => nil,
-         "country_code3" => "RU",
-           "region_name" => "Moscow",
-              "location" => [
-            [0] 37.6156,
-            [1] 55.7522
-        ],
-           "postal_code" => "101194",
-             "longitude" => 37.6156,
-           "region_code" => "MOW"
-    }
+filter {
+  geoip {
+    source => "clientip"
+  }
+}
 --------------------------------------------------------------------------------
 
 <<plugins-filters-http,http filter>>::
 
-Provides integration with external web services/REST APIs.
+Integrates with external web services/REST APIs, and
+enables lookup enrichment against any HTTP service or endpoint.
+The <<plugins-filters-http,http filter>> is well suited to many enrichment use
+cases, such as social APIs, sentiment APIs, security feed APIs, and business
+service APIs.
++
+[source,txt]
+-----
+filter {
+  http {
+    url => "http://example.com"
+    verb => GET
+    body => {
+      "user-id" => "%{user}"
+      "api-key" => "%{api_key}"
+    }
+    body_format => "json"
+    headers =>
+      "Content-type" => "application/json"
+    }
+    target_body => "new_field"
+  }
+}
+-----
 
 <<plugins-filters-jdbc_static,jdbc_static filter>>::
 
@@ -573,7 +582,21 @@ filter {
 
 <<plugins-filters-memcached,memcached filter>>::
 
-Provides integration with external data in Memcached.
+Enables key/value lookup enrichment against a Memcached object caching system.
+It supports both read (GET) and write (SET) operations. It is a notable addition
+for security analytics use cases. For example, you can use this plugin to query
+for a value, and set it if not found.
++
+[source,txt]
+-----
+filter {
+  memcached {
+    url => "http://example.com"
+    verb => GET
+    body => {TODO-complete example
+  }
+}
+-----
 
 <<plugins-filters-translate,translate filter>>::
 
