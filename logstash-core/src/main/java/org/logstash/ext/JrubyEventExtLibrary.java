@@ -174,7 +174,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", true);
+                throw RaiseException.from(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing");
             }
         }
 
@@ -212,7 +212,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage());
             }
         }
 
@@ -226,9 +226,10 @@ public final class JrubyEventExtLibrary {
             try {
                 events = Event.fromJson(value.asJavaString());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
             }
 
+            @SuppressWarnings("rawtypes")
             RubyArray result = RubyArray.newArray(context.runtime, events.length);
 
             if (events.length == 1) {

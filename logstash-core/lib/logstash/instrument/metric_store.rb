@@ -302,7 +302,7 @@ module LogStash module Instrument
     #
     # @param [Concurrent::Map] Map to search for the key
     # @param [Array] List of path to create
-    # @param [Fixnum] Which part from the list to create
+    # @param [Integer] Which part from the list to create
     #
     def fetch_or_store_namespace_recursively(map, namespaces_path, idx = 0)
       current = namespaces_path[idx]

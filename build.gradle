@@ -57,6 +57,7 @@ allprojects {
       exceptionFormat "full"
       showCauses true
       showStackTraces true
+      enableAssertions false
 
       // set options for log level DEBUG and INFO
       debug {
@@ -171,7 +172,7 @@ verifyFile.onlyIf { customJRubyDir == "" }
 
 task buildCustomJRuby(type: Exec) {
   description "Build tar.gz and .jar artifacts from JRuby source directory"
-  workingDir customJRubyDir
+  workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
   commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
   standardOutput = new ByteArrayOutputStream()
   errorOutput = new ByteArrayOutputStream()
@@ -208,6 +209,9 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     exclude "**/stdlib/rdoc/**"
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
+    doLast {
+      rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+    }
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
@@ -219,8 +223,9 @@ task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
   outputs.file("${projectDir}/Gemfile")
   outputs.file("${projectDir}/Gemfile.lock")
   outputs.dir("${projectDir}/logstash-core/lib/jars")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
+  outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
+    rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('plugin:install-default')
   }
 }
@@ -236,8 +241,9 @@ task installTestGems(dependsOn: assemblyDeps) {
   outputs.file("${projectDir}/Gemfile")
   outputs.file("${projectDir}/Gemfile.lock")
   outputs.dir("${projectDir}/logstash-core/lib/jars")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
+  outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
+    rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('test:install-core')
   }
 }
@@ -254,6 +260,7 @@ task assembleTarDistribution(dependsOn: assemblyDeps) {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
+    rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('artifact:tar')
   }
 }
@@ -314,13 +321,13 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
 }
 
 def qaVendorPath = "${buildDir}/qa/integration/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0"
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution) {
-  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.17.1")
   doLast {
-    rubyGradleUtils.gem("bundler", "1.16.0", qaBundledGemPath)
+    rubyGradleUtils.gem("bundler", "1.17.1", qaBundledGemPath)
   }
 }
 

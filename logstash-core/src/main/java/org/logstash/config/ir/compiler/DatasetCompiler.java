@@ -95,6 +95,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
+            @SuppressWarnings("rawtypes")
             final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
@@ -167,6 +168,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
+            @SuppressWarnings("rawtypes")
             final RubyArray buffer = RubyUtil.RUBY.newArray();
             final Closure inlineClear;
             if (terminal) {
@@ -371,8 +373,8 @@ public final class DatasetCompiler {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
-            final boolean flush, final boolean shutdown) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(@SuppressWarnings("rawtypes") final RubyArray batch,
+                                                                  final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }

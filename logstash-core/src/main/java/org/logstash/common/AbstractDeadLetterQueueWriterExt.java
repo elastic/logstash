@@ -141,7 +141,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
             final IRubyObject pluginType) {
             writerWrapper = innerWriter;
             if (writerWrapper.getJavaClass().equals(DeadLetterQueueWriter.class)) {
-                this.innerWriter = (DeadLetterQueueWriter) writerWrapper.toJava(
+                this.innerWriter = writerWrapper.toJava(
                     DeadLetterQueueWriter.class
                 );
             }

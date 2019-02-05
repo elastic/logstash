@@ -45,10 +45,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
-    private static final RubyArray CAPACITY_NAMESPACE =
+    private static final @SuppressWarnings("rawtypes") RubyArray CAPACITY_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("capacity"));
 
-    private static final RubyArray DATA_NAMESPACE =
+    private static final @SuppressWarnings("rawtypes") RubyArray DATA_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("data"));
 
     private static final RubySymbol PAGE_CAPACITY_IN_BYTES =
@@ -76,7 +76,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
-    private static final RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
+    private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
     );
 
@@ -182,7 +182,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     context.runtime,
                     new IRubyObject[]{
                         MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
-                        pipelineId.convertToString().intern19(), MetricKeys.EVENTS_KEY
+                        pipelineId.convertToString().intern(), MetricKeys.EVENTS_KEY
                     }
                 )
             )

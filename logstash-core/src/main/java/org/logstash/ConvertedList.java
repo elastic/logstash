@@ -37,7 +37,7 @@ public final class ConvertedList extends ArrayList<Object> {
         return result;
     }
 
-    public static ConvertedList newFromRubyArray(RubyArray a) {
+    public static ConvertedList newFromRubyArray(@SuppressWarnings("rawtypes") RubyArray a) {
         final ConvertedList result = new ConvertedList(a.size());
 
         for (IRubyObject o : a.toJavaArray()) {

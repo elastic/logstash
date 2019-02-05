@@ -31,11 +31,11 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
     private CompiledPipeline lirExecution;
 
-    private RubyArray inputs;
+    private @SuppressWarnings("rawtypes") RubyArray inputs;
 
-    private RubyArray filters;
+    private @SuppressWarnings("rawtypes") RubyArray filters;
 
-    private RubyArray outputs;
+    private @SuppressWarnings("rawtypes") RubyArray outputs;
 
     public JavaBasePipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -76,16 +76,19 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
     }
 
     @JRubyMethod
+    @SuppressWarnings("rawtypes")
     public RubyArray inputs() {
         return inputs;
     }
 
     @JRubyMethod
+    @SuppressWarnings("rawtypes")
     public RubyArray filters() {
         return filters;
     }
 
     @JRubyMethod
+    @SuppressWarnings("rawtypes")
     public RubyArray outputs() {
         return outputs;
     }
@@ -101,7 +104,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         return nonReloadablePlugins(context).isEmpty() ? context.tru : context.fals;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @JRubyMethod(name = "non_reloadable_plugins")
     public RubyArray nonReloadablePlugins(final ThreadContext context) {
         final RubyArray result = RubyArray.newArray(context.runtime);

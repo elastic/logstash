@@ -71,13 +71,11 @@ Failed to remove \"#{gem_name}\" because the following plugins or libraries depe
     end
 
     def unfreeze_gemfile
-      if Bundler.settings[:frozen]
-        Bundler.definition.ensure_equivalent_gemfile_and_lockfile(true)
-        frozen = Bundler.settings.delete(:frozen)
+      Bundler.definition.ensure_equivalent_gemfile_and_lockfile(true) if Bundler.settings[:frozen]
+
+      Bundler.settings.temporary(:frozen => false) do
+        yield
       end
-      yield
-    ensure
-      Bundler.settings[:frozen] = "1" if frozen
     end
 
     def self.uninstall!(gem_name, options = { :gemfile => LogStash::Environment::GEMFILE, :lockfile => LogStash::Environment::LOCKFILE })

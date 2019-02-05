@@ -12,8 +12,13 @@ namespace "test" do
   end
 
   desc "run the ruby unit tests"
-  task "core-ruby" do
+  task "core-ruby" => "compliance" do
     exit 1 unless system(*default_spec_command)
+  end
+
+  desc 'run the ruby compliance tests'
+  task 'compliance' do
+    exit 1 unless system('bin/rspec', '-fd', '--patern', 'spec/compliance/**/*_spec.rb')
   end
 
   desc "run all core specs"
