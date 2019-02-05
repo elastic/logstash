@@ -20,7 +20,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id, :pipeline_bus
+  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -37,6 +37,7 @@ class LogStash::Agent
     # Mutex to synchonize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
     @exclusive_lock = Mutex.new
+    @webserver_control_lock = Mutex.new
 
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
@@ -368,20 +369,24 @@ class LogStash::Agent
   end
 
   def start_webserver
-    options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
-    @webserver = LogStash::WebServer.new(@logger, self, options)
-    @webserver_thread = Thread.new(@webserver) do |webserver|
-      LogStash::Util.set_thread_name("Api Webserver")
-      webserver.run
+    @webserver_control_lock.synchronize do
+      options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
+      @webserver = LogStash::WebServer.new(@logger, self, options)
+      @webserver_thread = Thread.new(@webserver) do |webserver|
+        LogStash::Util.set_thread_name("Api Webserver")
+        webserver.run
+      end
     end
   end
 
   def stop_webserver
-    if @webserver
-      @webserver.stop
-      if @webserver_thread.join(5).nil?
-        @webserver_thread.kill
-        @webserver_thread.join
+    @webserver_control_lock.synchronize do
+      if @webserver
+        @webserver.stop
+        if @webserver_thread.join(5).nil?
+          @webserver_thread.kill
+          @webserver_thread.join
+        end
       end
     end
   end
