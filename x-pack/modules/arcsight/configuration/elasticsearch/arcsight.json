@@ -3,7 +3,7 @@
   "index_patterns": "arcsight-*",
   "mappings": {
     "_meta": {
-      "version": "7.0.0"
+      "version": "8.0.0"
     },
     "dynamic": true,
     "dynamic_templates": [
