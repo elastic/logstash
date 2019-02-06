@@ -8,16 +8,16 @@
 :plugins-repo-dir:      {docdir}/../../logstash-docs/docs
 :branch:                master
 :major-version:         7.x
-:logstash_version:      7.0.0-alpha2
-:elasticsearch_version: 7.0.0-alpha2
-:kibana_version:        7.0.0-alpha2
+:logstash_version:      7.1.0
+:elasticsearch_version: 7.1.0
+:kibana_version:        7.1.0
 :docker-repo:           docker.elastic.co/logstash/logstash
 :docker-image:          {docker-repo}:{logstash_version}
 
 //////////
 release-state can be: released | prerelease | unreleased
 //////////
-:release-state:         prerelease
+:release-state:         unreleased
 :versioned_docs:        false
 
 :jdk:                   1.8.0
