@@ -211,6 +211,7 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     into "${projectDir}/vendor/jruby"
     doLast {
       rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+      rubyGradleUtils.gem("json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
     }
 }
 
@@ -226,6 +227,7 @@ task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
   outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
     rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+    rubyGradleUtils.gem("json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('plugin:install-default')
   }
 }
@@ -244,6 +246,7 @@ task installTestGems(dependsOn: assemblyDeps) {
   outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
   doLast {
     rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
+    rubyGradleUtils.gem("json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.rake('test:install-core')
   }
 }

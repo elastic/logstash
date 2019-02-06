@@ -5,7 +5,7 @@ namespace "dependency" do
   end
 
   task "clamp" do
-    Rake::Task["gem:require"].invoke("clamp", "~> 0.6.5")
+    Rake::Task["gem:require"].invoke("clamp", "~> 0.6")
   end
 
   task "rbx-stdlib" do
@@ -21,7 +21,7 @@ namespace "dependency" do
   end # task stud
 
   task "fpm" do
-    Rake::Task["gem:require"].invoke("fpm", ">= 0")
+    Rake::Task["gem:require"].invoke("fpm", "~> 1.3.3")
   end # task stud
 
   task "rubyzip" do

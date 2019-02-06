@@ -1,4 +1,5 @@
 namespace "artifact" do
+  gem 'json', '~> 1'
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
   PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
