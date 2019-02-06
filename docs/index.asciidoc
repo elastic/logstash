@@ -6,7 +6,7 @@
 :xls-repo-dir:          {docdir}/../x-pack/docs/{lang}
 :log-repo-dir:          {docdir}
 :plugins-repo-dir:      {docdir}/../../logstash-docs/docs
-:branch:                master
+:branch:                7.0
 :major-version:         7.x
 :logstash_version:      7.0.0-alpha2
 :elasticsearch_version: 7.0.0-alpha2
