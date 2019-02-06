@@ -41,7 +41,7 @@ public final class JavaKeyStore implements SecretStore {
     private static final String KEYSTORE_TYPE = "pkcs12";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String PATH_KEY = "keystore.file";
-    private static final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
+    private final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
     private KeyStore keyStore;
     private char[] keyStorePass;
     private Path keyStorePath;
