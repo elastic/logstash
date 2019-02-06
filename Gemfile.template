@@ -14,7 +14,7 @@ gem "benchmark-ips", :group => :development
 gem "octokit", "~> 4", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
 gem "rack-test", :require => "rack/test", :group => :development
-gem "fpm", "~> 1.11", :group => :build
+gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "gems", "~> 1", :group => :build
 gem "flores", "~> 0.0.6", :group => :development
