@@ -1,4 +1,5 @@
 namespace "artifact" do
+  gem 'json', '~> 1'
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
