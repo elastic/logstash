@@ -398,6 +398,16 @@ describe LogStash::Event do
         expect(LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i).to eq(t.to_i)
       end
 
+      it "should coerce seconds epoch" do
+        expect(LogStash::Event.new("@timestamp" => 19999999999).timestamp.to_iso8601).to eq("2603-10-11T11:33:19.000Z")
+        expect(LogStash::Event.new("@timestamp" => 1549479478).timestamp.to_iso8601).to eq("2019-02-06T18:57:58.000Z")
+      end
+
+      it "should coerce milliseconds epoch" do
+        expect(LogStash::Event.new("@timestamp" => 20000000000).timestamp.to_iso8601).to eq("1970-08-20T11:33:20.000Z")
+        expect(LogStash::Event.new("@timestamp" => 1549479400053).timestamp.to_iso8601).to eq("2019-02-06T18:56:40.053Z")
+      end
+
       it "should assign current time when no timestamp" do
         expect(LogStash::Event.new({}).timestamp.to_i).to be_within(2).of (Time.now.to_i)
       end

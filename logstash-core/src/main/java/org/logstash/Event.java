@@ -42,6 +42,8 @@ public final class Event implements Cloneable, Queueable {
     
     private static final Logger logger = LogManager.getLogger(Event.class);
 
+    private static final long MILLISEC_EPOCH_THRESHOLD = 20000000000L;
+
     public Event()
     {
         this.metadata = new ConvertedMap(10);
@@ -319,7 +321,11 @@ public final class Event implements Cloneable, Queueable {
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
             } else if (o instanceof RubyFixnum) {
-                return new Timestamp(RubyFixnum.num2long((RubyFixnum)o) * 1000); // Timestamp(long) expects epoch as milliseconds
+                // per https://github.com/elastic/logstash/pull/10369 is was decided to use 20000000000
+                // as the threshold to differentiate between a seconds vs milliseconds epoch representations
+                final long epoch = RubyFixnum.num2long((RubyFixnum)o);
+                final long units_multiplier = (epoch < MILLISEC_EPOCH_THRESHOLD) ? 1000 : 1;
+                return new Timestamp(epoch * units_multiplier);
             } else {
                 logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
