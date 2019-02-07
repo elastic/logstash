@@ -7,28 +7,60 @@ require "logstash/compiler/treetop_monkeypatches"
 module LogStash; module Config; module AST
   PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
 
-  def self.deferred_conditionals=(val)
-    @deferred_conditionals = val
-  end
+  class << self
+    # @api private
+    MUTEX = Mutex.new
 
-  def self.deferred_conditionals
-    @deferred_conditionals
-  end
+    # Executes the given block with exclusive access to the AST global variables
+    #
+    # @yieldreturn [Object]: the object that is returned from the block is returned by this method
+    #
+    # @return [Object]
+    def exclusive
+      MUTEX.synchronize { yield }
+    end
 
-  def self.deferred_conditionals_index
-    @deferred_conditionals_index
-  end
+    def deferred_conditionals=(val)
+      ensure_exclusive!
+      @deferred_conditionals = val
+    end
 
-  def self.deferred_conditionals_index=(val)
-    @deferred_conditionals_index = val
-  end
+    def deferred_conditionals
+      ensure_exclusive!
+      @deferred_conditionals
+    end
 
-  def self.plugin_instance_index
-    @plugin_instance_index
-  end
+    def deferred_conditionals_index
+      ensure_exclusive!
+      @deferred_conditionals_index
+    end
 
-  def self.plugin_instance_index=(val)
-    @plugin_instance_index = val
+    def deferred_conditionals_index=(val)
+      ensure_exclusive!
+      @deferred_conditionals_index = val
+    end
+
+    def plugin_instance_index
+      ensure_exclusive!
+      @plugin_instance_index
+    end
+
+    def plugin_instance_index=(val)
+      ensure_exclusive!
+      @plugin_instance_index = val
+    end
+
+    private
+
+    # Raises a descriptive error if the thread in which it is invoked does
+    # not have exclusive access.
+    #
+    # @raise [RuntimeError]
+    def ensure_exclusive!
+      return if MUTEX.owned?
+
+      raise "Illegal access without exclusive lock at `#{caller[1]}`"
+    end
   end
 
   class Node < Treetop::Runtime::SyntaxNode
@@ -46,6 +78,15 @@ module LogStash; module Config; module AST
 
 
     def compile
+      LogStash::Config::AST.exclusive { do_compile }
+    end
+
+    private
+
+    # NON-threadsafe method compiles an AST into executable Ruby code.
+    # @see Config#compile, which is a threadsafe wrapper around this method.
+    # @api private
+    def do_compile
       LogStash::Config::AST.deferred_conditionals = []
       LogStash::Config::AST.deferred_conditionals_index = 0
       LogStash::Config::AST.plugin_instance_index = 0
@@ -489,6 +530,7 @@ module LogStash; module Config; module AST
   end
   class SelectorElement < Node; end
 end; end; end
+
 
 
 # Monkeypatch Treetop::Runtime::SyntaxNode's inspect method to skip
