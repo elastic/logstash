@@ -15,7 +15,7 @@ class LogStash::Util::SafeURI
   attr_reader :uri
 
   public
-  def initialize(arg)    
+  def initialize(arg, requires_host=true)
     @uri = case arg
            when String
              arg = "//#{arg}" if HOSTNAME_PORT_REGEX.match(arg)
@@ -27,6 +27,7 @@ class LogStash::Util::SafeURI
            else
              raise ArgumentError, "Expected a string, java.net.URI, or URI, got a #{arg.class} creating a URL"
            end
+    raise ArgumentError, "URI is not valid - host is not specified" if requires_host && @uri.host.nil?
   end
 
   def to_s
