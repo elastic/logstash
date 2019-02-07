@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-1,Logstash 6.6.1>>
 * <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
@@ -25,6 +26,43 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-1]]
+=== Logstash 6.6.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.6.1
+
+* [6.6 clean backport of #10331] correctly handle pipeline actions https://github.com/elastic/logstash/pull/10337[#10337]
+* [6.6 clean backport of #10346] fix agent silent exit upon pipelines reloading https://github.com/elastic/logstash/pull/10370[#10370]
+
+=== Logstash Commits between 6.6 and 6.6.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.6.0..6.6"
+
+68144e0 - (HEAD -> 6.6, origin/6.6) mute metrics_spec line 138 test (83 seconds ago) <Joao Duarte>
+6548501 - keystore: instances of `CharsetEncoder` are stateful and cannot be shared (18 hours ago) <Ry Biesemeyer>
+3bdc57a - spec: make timing-sensitive specs a little more flexible (33 hours ago) <Ry Biesemeyer>
+bd6a266 - spec: noop refactor for clarity - use explicit `metric_input` subject instead of implicit subject - use rspec/wait full expectation syntax instead of be_falsey/be_truthy - eliminate unused shared examples - incorporate single-use shared examples (33 hours ago) <Ry Biesemeyer>
+5b7f60e - agent webserver: synchronise control (33 hours ago) <Ry Biesemeyer>
+1ab316e - change 「5.x」→「6.x」 (2 days ago) <taku333>
+7cb8d47 - Update patch plugin versions in gemfile lock (#10363) (2 days ago) <Guy Boertje>
+ef0d135 - qa: allow connections to localhost in webmock (#10384) (2 days ago) <Ry Biesemeyer>
+8bef18a - fix agent silent exit upon pipelines reloading (#10370) (7 days ago) <Colin Surprenant>
+f2a473d - correctly handle pipeline actions (#10331) (#10337) (8 days ago) <Colin Surprenant>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.6.0..6.6 *.release"
+Changed plugin versions:
+logstash-output-elasticsearch: 9.3.0 -> 9.3.1
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Elasticsearch Output*
+
+* Fixed issue with escaping index names which was causing writing aliases for ILM to fail [#831](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831)
+
 
 [[logstash-6-6-0]]
 === Logstash 6.6.0 Release Notes
