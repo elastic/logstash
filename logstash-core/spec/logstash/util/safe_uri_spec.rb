@@ -32,5 +32,83 @@ module LogStash module Util
         end
       end
     end
+
+    describe "#initialize" do
+      context 'when host is required' do
+        MALFORMED_URIS = ['http:/user:pass@localhost:9600', 'http:/localhost', 'http:/localhost:9600', 'h;localhost', 'http:://localhost']
+
+        context 'malformed uris via string' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should raise an error" do
+              expect{LogStash::Util::SafeURI.new(arg)}.to raise_error(ArgumentError)
+            end
+          end
+        end
+
+        context 'malformed uris via java.net.URI' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should raise an error" do
+              java_uri = java.net.URI.new(arg)
+              expect{LogStash::Util::SafeURI.new(java_uri)}.to raise_error(ArgumentError)
+            end
+          end
+        end
+
+        context 'malformed uris via Ruby URI' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should raise an error" do
+              ruby_uri = URI.parse(arg)
+              expect{LogStash::Util::SafeURI.new(ruby_uri)}.to raise_error(ArgumentError)
+            end
+          end
+        end
+
+        context 'uris with a valid host' do
+          ['http://user:pass@notlocalhost:9600', 'http://notlocalhost', 'https://notlocalhost:9600', '//notlocalhost', 'notlocalhost', 'notlocalhost:9200'].each do |arg|
+            it "#{arg}: should resolve host correctly" do
+              expect(LogStash::Util::SafeURI.new(arg).host).to eq('notlocalhost')
+            end
+          end
+        end
+      end
+
+      context 'when host is not required' do
+        MALFORMED_URIS = ['http:/user:pass@localhost:9600', 'http:/localhost', 'http:/localhost:9600', 'h;localhost', 'http:://localhost']
+
+        context 'malformed uris via string' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should not raise an error" do
+              expect{LogStash::Util::SafeURI.new(arg, false)}.not_to raise_error
+            end
+          end
+        end
+
+        context 'malformed uris via java.net.URI' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should not raise an error" do
+              java_uri = java.net.URI.new(arg)
+              expect{LogStash::Util::SafeURI.new(java_uri, false)}.not_to raise_error
+            end
+          end
+        end
+
+        context 'malformed uris via Ruby URI' do
+          MALFORMED_URIS.each do |arg|
+            it "#{arg}: should not raise an error" do
+              ruby_uri = URI.parse(arg)
+              expect{LogStash::Util::SafeURI.new(ruby_uri, false)}.not_to raise_error
+            end
+          end
+        end
+
+        context 'uris with a valid host' do
+          ['http://user:pass@notlocalhost:9600', 'http://notlocalhost', 'https://notlocalhost:9600', '//notlocalhost', 'notlocalhost', 'notlocalhost:9200'].each do |arg|
+            it "#{arg}: should resolve host correctly" do
+              expect(LogStash::Util::SafeURI.new(arg, false).host).to eq('notlocalhost')
+            end
+          end
+        end
+      end
+    end
   end
 end end
