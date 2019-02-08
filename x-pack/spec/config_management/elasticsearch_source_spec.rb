@@ -132,7 +132,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           } }
 
     it "generates the path to get the configuration" do
-      expect(subject.config_path).to eq("#{described_class::PIPELINE_INDEX}/#{described_class::PIPELINE_TYPE}/_mget")
+      expect(subject.config_path).to eq("#{described_class::PIPELINE_INDEX}/_mget")
     end
   end
 
@@ -168,7 +168,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     let(:pipeline_id) { "apache" }
     let(:mock_client)  { double("http_client") }
     let(:settings) { super.merge({ "xpack.management.pipeline.id" => pipeline_id }) }
-    let(:es_path) { "#{described_class::PIPELINE_INDEX}/#{described_class::PIPELINE_TYPE}/_mget" }
+    let(:es_path) { "#{described_class::PIPELINE_INDEX}/_mget" }
     let(:request_body_string) { LogStash::Json.dump({ "docs" => [{ "_id" => pipeline_id }] }) }
 
     before do
