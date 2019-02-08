@@ -20,7 +20,6 @@ module LogStash
       class RemoteConfigError < LogStash::Error; end
 
       PIPELINE_INDEX = ".logstash"
-      PIPELINE_TYPE = "doc"
       VALID_LICENSES = %w(trial standard gold platinum)
       FEATURE_INTERNAL = 'management'
       FEATURE_EXTERNAL = 'logstash'
@@ -138,7 +137,7 @@ module LogStash
       end
 
       def config_path
-        "#{PIPELINE_INDEX}/#{PIPELINE_TYPE}/_mget"
+        "#{PIPELINE_INDEX}/_mget"
       end
 
       def populate_license_state(xpack_info)
