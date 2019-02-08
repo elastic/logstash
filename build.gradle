@@ -431,8 +431,33 @@ def dlVersions = new JsonSlurper().parseText(apiResponse)
 // in the build invoked by the release manager it is '7.0.0-alpha1' etc.
 // the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
 String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
-String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}"
-String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/${downloadedElasticsearchName}.tar.gz"
+
+String arch = "x86_64"
+String osName = System.properties['os.name']
+
+if (osName ==~ /Mac OS X/) {
+    osName = "darwin"
+} else {
+    osName = "linux"
+}
+
+String architecture = "${osName}-${arch}"
+
+String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}-${architecture}"
+String unpackedElasticsearchName = "elasticsearch-${qualifiedVersion}"
+
+// find latest reference to last build
+String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
+apiResponse = buildsListApi.toURL().text
+def dlBuilds = new JsonSlurper().parseText(apiResponse)
+String build = dlBuilds["builds"][0]
+
+// find url of build artifact
+String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+apiResponse = artifactApiUrl.toURL().text
+def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"]
 String elasticsearchDownloadLocation = "${projectDir}/build/${downloadedElasticsearchName}.tar.gz"
 
 task downloadEs(type: Download) {
@@ -460,7 +485,7 @@ task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
     from tarTree(resources.gzip(elasticsearchDownloadLocation))
     into "./build/"
     doLast {
-        file("./build/${downloadedElasticsearchName}").renameTo('./build/elasticsearch')
+        file("./build/${unpackedElasticsearchName}").renameTo('./build/elasticsearch')
     }
 }
 
