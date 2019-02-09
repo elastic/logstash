@@ -12,7 +12,7 @@ module ::LogStash::Util::SubstitutionVariables
   def deep_replace(value)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[replace_placeholders(valueHashKey.to_s)] = deep_replace(valueHashValue)
       end
     else
       if value.is_a?(Array)
