@@ -352,33 +352,34 @@ After the filter is applied, the event in the example will have these fields:
 * `bytes: 15824`
 * `duration: 0.043`
 
-TIP: If you need help building grok patterns, try out the
+TIP: If you need help building grok patterns, try the
 {kibana-ref}/xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
 {xpack} feature under the Basic License and is therefore *free to use*.
+
 
 [[lookup-enrichment]]
 === Enriching Data with Lookups
 
-These plugins can help you enriching data with
+These plugins can help you enrich data with
 additional info, such as GeoIP and user agent info:
 
-* dns filter
-* elasticsearch filter
-* geoip filter
-* http filter
-* jdbc_static filter
-* jdbc_streaming filter
-* memcached filter
-* translate filter
-* useragent filter
+* <<dns-def,dns filter>>
+* <<es-def,elasticsearch filter>>
+* <<geoip-def,geoip filter>>
+* <<http-def,http filter>>
+* <<jdbc-static-def,jdbc_static filter>>
+* <<jdbc-stream-def,jdbc_streaming filter>>
+* <<memcached-def,memcached filter>>
+* <<translate-def,translate filter>>
+* <<useragent-def,useragent filter>>
 
 [float]
 [[lookup-plugins]]
 === Lookup plugins
 
-<<plugins-filters-dns,dns filter>>::
+[[dns-def]]dns filter::
 
-Performs a standard or reverse DNS lookup.
+The <<plugins-filters-dns,dns filter plugin>> performs a standard or reverse DNS lookup.
 +
 The following config performs a reverse lookup on the address in the
 `source_host` field and replaces it with the domain name:
@@ -393,10 +394,9 @@ filter {
 }
 --------------------------------------------------------------------------------
 
+[[es-def]]elasticsearch filter::
 
-<<plugins-filters-elasticsearch,elasticsearch filter>>::
-
-Copies fields from previous log events in Elasticsearch to current events.
+The <<plugins-filters-elasticsearch,elasticsearch filter>> copies fields from previous log events in Elasticsearch to current events.
 +
 The following config shows a complete example of how this filter might
 be used.  Whenever Logstash receives an "end" event, it uses this Elasticsearch
@@ -420,14 +420,13 @@ between the two events.
          }
          ruby {
             code => 'event.set("duration_hrs", (event.get("@timestamp") - event.get("started")) / 3600) rescue nil'
-         }
+        }
       }
 --------------------------------------------------
 
+[[geoip-def]]geoip filter::
 
-<<plugins-filters-geoip,geoip filter>>::
-
-Adds geographical information about the location of IP addresses. For example:
+The <<plugins-filters-geoip,geoip filter>> adds geographical information about the location of IP addresses. For example:
 +
 [source,json]
 --------------------------------------------------------------------------------
@@ -450,36 +449,35 @@ filter {
 }
 --------------------------------------------------------------------------------
 
-<<plugins-filters-http,http filter>>::
+[[http-def]]http filter::
 
-Integrates with external web services/REST APIs, and
-enables lookup enrichment against any HTTP service or endpoint.
-The <<plugins-filters-http,http filter>> is well suited to many enrichment use
-cases, such as social APIs, sentiment APIs, security feed APIs, and business
-service APIs.
-+
-[source,txt]
------
-filter {
-  http {
-    url => "http://example.com"
-    verb => GET
-    body => {
-      "user-id" => "%{user}"
-      "api-key" => "%{api_key}"
-    }
-    body_format => "json"
-    headers =>
-      "Content-type" => "application/json"
-    }
-    target_body => "new_field"
-  }
-}
------
+The <<plugins-filters-http,http filter>> integrates with external web
+services/REST APIs, and enables lookup enrichment against any HTTP service or
+endpoint. This plugin is well suited for many enrichment use cases, such as
+social APIs, sentiment APIs, security feed APIs, and business service APIs.
+//+
+//[source,txt]
+//-----
+//filter {
+//  http {
+//    url => "http://example.com"
+//    verb => GET
+//    body => {
+//      "user-id" => "%{user}"
+//      "api-key" => "%{api_key}"
+//    }
+//    body_format => "json"
+//    headers =>
+//      "Content-type" => "application/json"
+//    }
+//    target_body => "new_field"
+//  }
+//}
+//-----
 
-<<plugins-filters-jdbc_static,jdbc_static filter>>::
+[[jdbc-static-def]]jdbc_static filter::
 
-Enriches events with data pre-loaded from a remote database.
+The <<plugins-filters-jdbc_static,jdbc_static filter>> enriches events with data pre-loaded from a remote database.
 +
 The following example fetches data from a remote database, caches it in a local
 database, and uses lookups to enrich events with data cached in the local
@@ -557,9 +555,9 @@ returns multiple columns, the data is stored as a JSON object within the field.
 <5> Takes data from the JSON object and stores it in top-level event fields for
 easier analysis in Kibana.
 
-<<plugins-filters-jdbc_streaming,jdbc_streaming filter>>::
+[[jdbc-stream-def]]jdbc_streaming filter::
 
-Enriches events with database data.
+The <<plugins-filters-jdbc_streaming,jdbc_streaming filter>> enriches events with database data.
 +
 The following example executes a SQL query and stores the result set in a field
 called `country_details`:
@@ -580,27 +578,16 @@ filter {
 }
 --------------------------------------------------------------------------------
 
-<<plugins-filters-memcached,memcached filter>>::
+[[memcached-def]]memcached filter::
 
-Enables key/value lookup enrichment against a Memcached object caching system.
+The <<plugins-filters-memcached,memcached filter>> enables key/value lookup
+enrichment against a Memcached object caching system.
 It supports both read (GET) and write (SET) operations. It is a notable addition
-for security analytics use cases. For example, you can use this plugin to query
-for a value, and set it if not found.
-+
-[source,txt]
------
-filter {
-  memcached {
-    url => "http://example.com"
-    verb => GET
-    body => {TODO-complete example
-  }
-}
------
+for security analytics use cases. 
 
-<<plugins-filters-translate,translate filter>>::
+[[translate-def]]translate filter::
 
-Replaces field contents based on replacement values specified in a hash or file.
+The <<plugins-filters-translate,translate filter>> replaces field contents based on replacement values specified in a hash or file.
 Currently supports these file types: YAML, JSON, and CSV.
 +
 The following example takes the value of the `response_code` field, translates
@@ -624,10 +611,9 @@ filter {
 }
 --------------------------------------------------------------------------------
 
+[[useragent-def]]useragent filter::
 
-<<plugins-filters-useragent,useragent filter>>::
-
-Parses user agent strings into fields.
+The <<plugins-filters-useragent,useragent filter>> parses user agent strings into fields.
 +
 The following example takes the user agent string in the `agent` field, parses
 it into user agent fields, and adds the user agent fields to a new field called
