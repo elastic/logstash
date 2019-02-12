@@ -31,18 +31,10 @@ module LogStash module PipelineAction
         return LogStash::ConvergeResult::FailedAction.new("Cannot reload pipeline, because the existing pipeline is not reloadable")
       end
 
+      java_exec = @pipeline_config.settings.get_value("pipeline.java_execution")
+
       begin
-        pipeline_validator =
-          if @pipeline_config.settings.get_value("pipeline.java_execution")
-            LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil)
-          else
-            agent.exclusive do
-              # The Ruby pipeline initialization is not thread safe because of the module level
-              # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
-              # executed simultaneously in different threads and we need to synchronize this initialization.
-              LogStash::BasePipeline.new(@pipeline_config)
-            end
-          end
+        pipeline_validator = java_exec ? LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil) : LogStash::BasePipeline.new(@pipeline_config)
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)
       end
@@ -62,18 +54,7 @@ module LogStash module PipelineAction
         old_pipeline.thread.join
 
         # Then create a new pipeline
-        new_pipeline =
-          if @pipeline_config.settings.get_value("pipeline.java_execution")
-            LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
-          else
-            agent.exclusive do
-              # The Ruby pipeline initialization is not thread safe because of the module level
-              # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
-              # executed simultaneously in different threads and we need to synchronize this initialization.
-              LogStash::Pipeline.new(@pipeline_config, @metric, agent)
-            end
-          end
-
+        new_pipeline = java_exec ? LogStash::JavaPipeline.new(@pipeline_config, @metric, agent) : LogStash::Pipeline.new(@pipeline_config, @metric, agent)
         success = new_pipeline.start # block until the pipeline is correctly started or crashed
 
         # return success and new_pipeline to registry reload_pipeline
