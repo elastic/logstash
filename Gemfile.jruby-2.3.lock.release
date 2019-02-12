@@ -38,13 +38,13 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.212)
-      aws-sdk-resources (= 2.11.212)
-    aws-sdk-core (2.11.212)
+    aws-sdk (2.11.218)
+      aws-sdk-resources (= 2.11.218)
+    aws-sdk-core (2.11.218)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.212)
-      aws-sdk-core (= 2.11.212)
+    aws-sdk-resources (2.11.218)
+      aws-sdk-core (= 2.11.218)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -139,7 +139,7 @@ GEM
       edn
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-codec-es_bulk (3.0.6)
+    logstash-codec-es_bulk (3.0.7)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-fluent (3.2.0-java)
@@ -194,12 +194,12 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-date (3.1.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-de_dot (1.0.3)
+    logstash-filter-de_dot (1.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-dissect (1.2.0)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
-    logstash-filter-dns (3.0.11)
+    logstash-filter-dns (3.0.12)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
@@ -219,7 +219,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
       stud (~> 0.0.22)
-    logstash-filter-http (1.0.0)
+    logstash-filter-http (1.0.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 5.0.0, < 9.0.0)
     logstash-filter-jdbc_static (1.0.6)
@@ -228,18 +228,18 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-filter-jdbc_streaming (1.0.4)
+    logstash-filter-jdbc_streaming (1.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux
       sequel
-    logstash-filter-json (3.0.5)
+    logstash-filter-json (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-kv (4.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-memcached (0.1.1)
       dalli (~> 2.7)
       logstash-core-plugin-api (~> 2.0)
-    logstash-filter-metrics (4.0.5)
+    logstash-filter-metrics (4.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
@@ -359,7 +359,7 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-rabbitmq_connection (>= 5.0.0, < 6.0.0)
-    logstash-input-redis (3.4.0)
+    logstash-input-redis (3.4.1)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 3)
@@ -436,7 +436,7 @@ GEM
     logstash-output-elastic_app_search (1.0.0.beta1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (9.3.1-java)
+    logstash-output-elasticsearch (9.3.2-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -446,15 +446,15 @@ GEM
       mail (~> 2.6.3)
       mime-types (< 3)
       mustache (>= 0.99.8)
-    logstash-output-file (4.2.5)
+    logstash-output-file (4.2.6)
       logstash-codec-json_lines
       logstash-codec-line
       logstash-core-plugin-api (>= 2.0.0, < 2.99)
     logstash-output-graphite (3.1.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-http (5.2.3)
+    logstash-output-http (5.2.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-http_client (>= 6.0.0, < 7.0.0)
+      logstash-mixin-http_client (>= 6.0.0, < 8.0.0)
     logstash-output-kafka (7.3.1)
       logstash-codec-json
       logstash-codec-plain
@@ -580,7 +580,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.16.0)
+    sequel (5.17.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
