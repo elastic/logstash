@@ -122,16 +122,6 @@ include::static/ingest-convert.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ls-ls-config.asciidoc
 include::static/ls-ls-config.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/field-reference.asciidoc
-include::static/field-reference.asciidoc[]
-
-//The `field-reference.asciidoc` file (included above) contains a
-//`role="exclude"` attribute to pull in the topic and make it linkable in the LS
-//Ref, but not appear in the main TOC. The `exclude`attribute was carrying
-//forward for all subsequent topics under the `configuration.asciidoc` heading.
-//This include should remain after includes for all other topics under the
-//`Configuring Logstash` heading.
-
 ifdef::include-xpack[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/management/configuring-centralized-pipelines.asciidoc
 include::static/management/configuring-centralized-pipelines.asciidoc[]
@@ -145,6 +135,16 @@ include::static/security/logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setup/configuring-xls.asciidoc
 include::static/setup/configuring-xls.asciidoc[]
 endif::include-xpack[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/field-reference.asciidoc
+include::static/field-reference.asciidoc[]
+
+//The `field-reference.asciidoc` file (included above) contains a
+//`role="exclude"` attribute to pull in the topic and make it linkable in the LS
+//Ref, but not appear in the main TOC. The `exclude`attribute was carrying
+//forward for all subsequent topics under the `configuration.asciidoc` heading.
+//This include should remain after includes for all other topics under the
+//`Configuring Logstash` heading.
 
 // Centralized configuration managements
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/config-management.asciidoc
