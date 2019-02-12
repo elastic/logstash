@@ -32,22 +32,11 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines_registry)
-      new_pipeline =
-        if @pipeline_config.settings.get_value("pipeline.java_execution")
-          LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
-        else
-          agent.exclusive do
-            # The Ruby pipeline initialization is not thread safe because of the module level
-            # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
-            # executed simultaneously in different threads and we need to synchronize this initialization.
-            LogStash::Pipeline.new(@pipeline_config, @metric, agent)
-          end
-        end
-
+      pipeline_class = @pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::Pipeline
+      new_pipeline = pipeline_class.new(@pipeline_config, @metric, agent)
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
-
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 

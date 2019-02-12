@@ -36,7 +36,6 @@ class LogStash::Agent
 
     # Mutex to synchonize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
-    @exclusive_lock = Mutex.new
     @webserver_control_lock = Mutex.new
 
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
@@ -84,10 +83,6 @@ class LogStash::Agent
     dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
-  end
-
-  def exclusive(&block)
-    @exclusive_lock.synchronize { block.call }
   end
 
   def execute
