@@ -35,27 +35,37 @@ and write and delete documents in the indices it creates.
 
 To set up authentication credentials for Logstash:
 
-. Create a `logstash_writer` role that has the `manage_index_templates` and
-`monitor` cluster privileges, and the `write`, `delete`, and `create_index`
-privileges  for the Logstash indices. You can create roles from the **Management >
-Roles** UI in {kib} or through the `role` API:
+. Use the the **Management > Roles** UI in {kib} or the `role` API to create a
+`logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
+For *indices* privileges, add `write`, `delete`, and `create_index`.
++
+If you plan to use {ref}/getting-started-index-lifecycle-management.html[index lifecycle
+management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for indices.
 +
 [source, sh]
 ---------------------------------------------------------------
 POST _xpack/security/role/logstash_writer
 {
-  "cluster": ["manage_index_templates", "monitor"],
+  "cluster": ["manage_index_templates", "monitor", `manage_ilm`], <1>
   "indices": [
     {
-      "names": [ "logstash-*" ], <1>
-      "privileges": ["write","delete","create_index"]
+      "names": [ "logstash-*" ], <2>
+      "privileges": ["write","delete","create_index","manage","manage_ilm"]  <3>
     }
   ]
 }
 ---------------------------------------------------------------
 
-<1> If you use a custom Logstash index pattern, specify that pattern
+<1> The cluster needs the `manage_ilm` privilege if want to use
+{ref}/getting-started-index-lifecycle-management.html[index lifecycle management].
+
+<2> If you use a custom Logstash index pattern, specify your custom pattern
 instead of the default `logstash-*` pattern.
+
+<3> If {ref}/getting-started-index-lifecycle-management.html[index lifecycle
+management] is enabled, the role requires the `manage` and `manage_ilm`
+privileges to load index lifecycle policies, create rollover aliases, and create
+and manage rollover indices.
 
 . Create a `logstash_internal` user and assign it the `logstash_writer` role.
 You can create users from the **Management > Users** UI in {kib} or through
