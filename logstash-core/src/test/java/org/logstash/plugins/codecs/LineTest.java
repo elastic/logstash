@@ -2,6 +2,7 @@ package org.logstash.plugins.codecs;
 
 import co.elastic.logstash.api.Codec;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.plugins.ConfigurationImpl;
@@ -118,6 +119,7 @@ public class LineTest {
         testDecode(null, null, input + Line.DEFAULT_DELIMITER, 1, 0, new String[]{input});
     }
 
+    @Ignore("Fails on Windows: https://github.com/elastic/logstash/issues/10441")
     @Test
     public void testDecodeAcrossMultibyteCharBoundary() {
         final int BUFFER_SIZE = 12;
@@ -294,6 +296,7 @@ public class LineTest {
         }
     }
 
+    @Ignore("Fails on Windows: https://github.com/elastic/logstash/issues/10441")
     @Test
     public void testEncodeWithUtf8() throws Codec.EncodeException {
         String delimiter = "z";
@@ -342,6 +345,7 @@ public class LineTest {
     }
 
 
+    @Ignore("Fails on Windows: https://github.com/elastic/logstash/issues/10441")
     @Test
     public void testEncodeWithCharset() throws Exception {
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
@@ -365,6 +369,7 @@ public class LineTest {
         Assert.assertArrayEquals(rightSingleQuoteInCp1252, resultBytes);
     }
 
+    @Ignore("Fails on Windows: https://github.com/elastic/logstash/issues/10441")
     @Test
     public void testClone() throws Codec.EncodeException {
         String delimiter = "x";
