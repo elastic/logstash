@@ -26,6 +26,8 @@ gem "gems", "~> 0.8.3", :group => :build
 gem "rack", "1.6.6"
 gem "redis", "~> 3.3.3"
 # ------- end pinning
+gem "nokogiri", "~> 1.9.1"
+gem "hitimes", "1.3.0"
 gem "rack-test", "0.7.0", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development

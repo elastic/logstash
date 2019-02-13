@@ -145,7 +145,7 @@ GEM
       edn
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-codec-es_bulk (3.0.6)
+    logstash-codec-es_bulk (3.0.7)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-fluent (3.2.0-java)
@@ -198,7 +198,7 @@ GEM
     logstash-filter-dissect (1.1.4)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
-    logstash-filter-dns (3.0.11)
+    logstash-filter-dns (3.0.12)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
@@ -214,11 +214,11 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
       stud (~> 0.0.22)
-    logstash-filter-json (3.0.5)
+    logstash-filter-json (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-kv (4.1.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-metrics (4.0.5)
+    logstash-filter-metrics (4.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
@@ -228,7 +228,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-sleep (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-split (3.1.6)
+    logstash-filter-split (3.1.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-syslog_pri (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -240,11 +240,11 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-urldecode (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-useragent (3.2.2-java)
+    logstash-filter-useragent (3.2.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-uuid (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.0.5)
+    logstash-filter-xml (4.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
@@ -366,7 +366,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snmp
-    logstash-input-sqs (3.1.1)
+    logstash-input-sqs (3.1.2)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -432,7 +432,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
-    logstash-output-file (4.2.5)
+    logstash-output-file (4.2.6)
       logstash-codec-json_lines
       logstash-codec-line
       logstash-core-plugin-api (>= 2.0.0, < 2.99)
@@ -455,7 +455,7 @@ GEM
     logstash-output-null (3.0.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-pagerduty (3.0.7)
+    logstash-output-pagerduty (3.0.8)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-output-pipe (3.0.6)
@@ -468,7 +468,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
-    logstash-output-s3 (4.1.6)
+    logstash-output-s3 (4.1.7)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -524,7 +524,7 @@ GEM
     mustache (0.99.8)
     naught (1.1.0)
     netrc (0.11.0)
-    nokogiri (1.8.5-java)
+    nokogiri (1.9.1-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
