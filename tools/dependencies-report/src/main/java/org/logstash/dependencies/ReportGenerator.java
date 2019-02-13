@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class ReportGenerator {
         addJavaDependencies(javaDependenciesStreams, dependencies);
 
         Map<String, LicenseUrlPair> licenseMapping = new HashMap<>();
+        writeNoticeHeader(noticeOutput);
         checkDependencyLicenses(licenseMappingStream, acceptableLicensesStream, licenseMapping, dependencies);
         checkDependencyNotices(noticeOutput, dependencies);
 
@@ -63,6 +65,13 @@ public class ReportGenerator {
         noticeOutput.close();
 
         return UNKNOWN_LICENSES.isEmpty() && MISSING_NOTICE.isEmpty();
+    }
+
+    private void writeNoticeHeader(final Writer noticeOutput) throws IOException {
+        noticeOutput.write("Logstash\n");
+        noticeOutput.write(String.format("Copyright 2012-%s Elastic N.V.\n\n", Year.now().toString()));
+        noticeOutput.write("==========================================================================\n");
+        noticeOutput.write("Third party libraries bundled by the Logstash project:\n");
     }
 
     private void checkDependencyNotices(Writer noticeOutput, SortedSet<Dependency> dependencies) throws IOException {
@@ -148,7 +157,12 @@ public class ReportGenerator {
 
             boolean noticeIsBlank = notice.matches("\\A\\s*\\Z");
             if (!noticeIsBlank) {
-                noticeOutput.write(String.format("\n==========\nNotice for: %s-%s\n----------\n\n", dependency.name, dependency.version));
+                noticeOutput.write("\n--------------------------------------------------\n");
+                noticeOutput.write(String.format("Library: %s v%s\n", dependency.name, dependency.version));
+                noticeOutput.write(String.format("Url: %s\n", dependency.url));
+                noticeOutput.write(String.format("License: %s\n", dependency.spdxLicense));
+                noticeOutput.write("\n");
+
                 noticeOutput.write(notice);
             } else {
                 MISSING_NOTICE.add(dependency);

@@ -1,4 +1,4 @@
-source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
+source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.6/ext/msgpack/
 
   Copyright (C) 2008-2013 Sadayuki Furuhashi
 

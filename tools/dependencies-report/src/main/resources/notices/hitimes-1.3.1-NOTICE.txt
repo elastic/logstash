@@ -1,4 +1,4 @@
-source: https://github.com/copiousfreetime/hitimes/blob/v1.2.6/LICENSE
+source: https://github.com/copiousfreetime/hitimes/blob/v1.3.1/LICENSE
 
 ISC LICENSE - http://opensource.org/licenses/isc-license.txt
 
