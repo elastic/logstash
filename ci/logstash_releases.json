@@ -6,6 +6,7 @@
   },
   "snapshots": {
     "6.x": "6.7.0-SNAPSHOT",
-    "7.x": "7.0.0-SNAPSHOT"
+    "7.x": "7.0.0-SNAPSHOT",
+    "8.x": "8.0.0-SNAPSHOT"
   }
 }
