@@ -7,7 +7,9 @@ import org.logstash.Event;
 import org.logstash.plugins.ConfigurationImpl;
 import org.logstash.plugins.TestContext;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ public class LineTest {
 
     @Test
     public void testSimpleDecode() {
-        String input = "abc";
+        String input = new String("abc".getBytes(), Charset.forName("UTF-8"));
         testDecode(null, null, input, 0, 1, new String[]{input});
     }
 
@@ -45,7 +47,7 @@ public class LineTest {
 
     @Test
     public void testDecodeWithTrailingDelimiter() {
-        String delimiter = "\n";
+        String delimiter = System.lineSeparator();
         String[] inputs = {"foo", "bar", "baz"};
         String input = String.join(delimiter, inputs) + delimiter;
 
@@ -55,7 +57,7 @@ public class LineTest {
     @Test
     public void testSuccessiveDecodesWithTrailingDelimiter() {
         // setup inputs
-        String delimiter = "\n";
+        String delimiter = System.lineSeparator();
         String[] inputs = {"foo", "bar", "baz"};
         String input = String.join(delimiter, inputs) + delimiter;
         byte[] inputBytes = input.getBytes();
@@ -114,17 +116,18 @@ public class LineTest {
 
     @Test
     public void testDecodeWithUtf8() {
-        String input = "München 安装中文输入法";
+        String input = new String("München 安装中文输入法".getBytes(), Charset.forName("UTF-8"));
         testDecode(null, null, input + Line.DEFAULT_DELIMITER, 1, 0, new String[]{input});
     }
 
     @Test
-    public void testDecodeAcrossMultibyteCharBoundary() {
+    public void testDecodeAcrossMultibyteCharBoundary() throws Exception {
         final int BUFFER_SIZE = 12;
         int lastPos = 0;
         TestEventConsumer eventConsumer = new TestEventConsumer();
-        String input = "安安安\n安安安\n安安安";
-        byte[] bytes = input.getBytes();
+        String delimiter = System.lineSeparator();
+        String input = new String(("安安安" + delimiter + "安安安" + delimiter + "安安安").getBytes(), Charset.forName("UTF-8"));
+        byte[] bytes = input.getBytes("UTF-8");
         assertTrue(bytes.length > input.length());
         ByteBuffer b1 = ByteBuffer.allocate(BUFFER_SIZE);
         b1.put(bytes, lastPos, 12);
@@ -161,7 +164,12 @@ public class LineTest {
     private void testDecode(String delimiter, String charset, String inputString, Integer expectedPreflushEvents, Integer expectedFlushEvents, String[] expectedMessages) {
         Line line = getLineCodec(delimiter, charset);
 
-        byte[] inputBytes = inputString.getBytes();
+        byte[] inputBytes = null;
+        try {
+            inputBytes = inputString.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Assert.fail();
+        }
         TestEventConsumer eventConsumer = new TestEventConsumer();
         ByteBuffer inputBuffer = ByteBuffer.wrap(inputBytes, 0, inputBytes.length);
         line.decode(inputBuffer, eventConsumer);
@@ -297,7 +305,7 @@ public class LineTest {
     @Test
     public void testEncodeWithUtf8() throws Codec.EncodeException {
         String delimiter = "z";
-        String message = "München 安装中文输入法";
+        String message = new String("München 安装中文输入法".getBytes(), Charset.forName("UTF-8"));
         Map<String, Object> config = new HashMap<>();
         config.put("delimiter", delimiter);
         config.put("format", "%{message}");
@@ -308,12 +316,12 @@ public class LineTest {
         boolean result = line.encode(e1, buffer);
         Assert.assertTrue(result);
         String expectedResult = message + delimiter;
-        Assert.assertEquals(expectedResult, new String(buffer.array(), buffer.position(), buffer.limit()));
+        Assert.assertEquals(expectedResult, new String(buffer.array(), buffer.position(), buffer.limit(), Charset.forName("UTF-8")));
     }
 
     @Test
     public void testEncodeAcrossMultibyteCharBoundary() throws Codec.EncodeException {
-        String message = "安安安安安安安安安";
+        String message = new String("安安安安安安安安安".getBytes(), Charset.forName("UTF-8"));
         String delimiter = "";
         Map<String, Object> config = new HashMap<>();
         config.put("delimiter", delimiter);
@@ -345,7 +353,7 @@ public class LineTest {
     @Test
     public void testEncodeWithCharset() throws Exception {
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
-        String rightSingleQuote = new String(rightSingleQuoteInUtf8);
+        String rightSingleQuote = new String(rightSingleQuoteInUtf8, Charset.forName("UTF-8"));
 
         // encode with cp-1252
         Map<String, Object> config = new HashMap<>();
@@ -370,7 +378,7 @@ public class LineTest {
         String delimiter = "x";
         String charset = "cp1252";
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
-        String rightSingleQuote = new String(rightSingleQuoteInUtf8);
+        String rightSingleQuote = new String(rightSingleQuoteInUtf8, Charset.forName("UTF-8"));
 
         // encode with cp-1252
         Map<String, Object> config = new HashMap<>();
@@ -408,4 +416,3 @@ class TestEventConsumer implements Consumer<Map<String, Object>> {
         events.add(new HashMap<>(stringObjectMap));
     }
 }
-
