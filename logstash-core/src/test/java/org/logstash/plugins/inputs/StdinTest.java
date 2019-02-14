@@ -51,7 +51,7 @@ public class StdinTest {
                 new String("München3".getBytes(), Charset.forName("UTF-8"))
         };
         String testInput = String.join(Line.DEFAULT_DELIMITER, inputs) + Line.DEFAULT_DELIMITER;
-        TestConsumer queueWriter = testStdin(testInput.getBytes());
+        TestConsumer queueWriter = testStdin(testInput.getBytes("UTF-8"));
 
         List<Map<String, Object>> events = queueWriter.getEvents();
         assertEquals(3, events.size());
