@@ -5,8 +5,7 @@
 <titleabbrev>{security}</titleabbrev>
 ++++
 
-The Logstash {es} plugins (
-{logstash-ref}/plugins-outputs-elasticsearch.html[output],
+The Logstash {es} plugins ({logstash-ref}/plugins-outputs-elasticsearch.html[output],
 {logstash-ref}/plugins-inputs-elasticsearch.html[input],
 {logstash-ref}/plugins-filters-elasticsearch.html[filter]
 and {logstash-ref}/monitoring-logstash.html[monitoring])
@@ -46,7 +45,7 @@ management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for
 ---------------------------------------------------------------
 POST _xpack/security/role/logstash_writer
 {
-  "cluster": ["manage_index_templates", "monitor", `manage_ilm`], <1>
+  "cluster": ["manage_index_templates", "monitor", "manage_ilm"], <1>
   "indices": [
     {
       "names": [ "logstash-*" ], <2>
@@ -56,8 +55,9 @@ POST _xpack/security/role/logstash_writer
 }
 ---------------------------------------------------------------
 
-<1> The cluster needs the `manage_ilm` privilege if want to use
-{ref}/getting-started-index-lifecycle-management.html[index lifecycle management].
+<1> The cluster needs the `manage_ilm` privilege if 
+{ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
+is enabled.
 
 <2> If you use a custom Logstash index pattern, specify your custom pattern
 instead of the default `logstash-*` pattern.
