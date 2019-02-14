@@ -1,4 +1,4 @@
-source: https://github.com/ffi/ffi/blob/1.9.23/LICENSE
+source: https://github.com/ffi/ffi/blob/1.10.0/LICENSE
 
 Copyright (c) 2008-2016, Ruby FFI project contributors
 All rights reserved.
