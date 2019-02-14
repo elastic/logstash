@@ -1,113 +1,137 @@
+Logstash
+Copyright 2012-2019 Elastic N.V.
 
-==========
-Notice for: bundler-1.16.0
-----------
+==========================================================================
+Third party libraries bundled by the Logstash project:
+
+--------------------------------------------------
+Library: bundler v1.16.0
+Url: https://rubygems.org/gems/bundler/versions/1.16.0
+License: UnacceptableLicense|MIT
 
 TEST
-==========
-Notice for: bundler-1.16.1
-----------
+--------------------------------------------------
+Library: bundler v1.16.1
+Url: https://rubygems.org/gems/bundler/versions/1.16.1
+License: MIT
 
 TEST-bundler-1.16.1
 
-==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.7.3
-----------
+--------------------------------------------------
+Library: com.fasterxml.jackson.core:jackson-core v2.7.3
+Url: https://github.com/FasterXML/jackson-core/tree/jackson-core-2.7.3
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.9.1
-----------
+--------------------------------------------------
+Library: com.fasterxml.jackson.core:jackson-core v2.9.1
+Url: https://github.com/FasterXML/jackson-core/tree/jackson-core-2.9.1
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.9.4
-----------
+--------------------------------------------------
+Library: com.fasterxml.jackson.core:jackson-core v2.9.4
+Url: https://github.com/FasterXML/jackson-core/tree/jackson-core-2.9.4
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: com.google.errorprone:javac-shaded-9-dev-r4023-3
-----------
+--------------------------------------------------
+Library: com.google.errorprone:javac-shaded v9-dev-r4023-3
+Url: http://repo1.maven.org/maven2/com/google/errorprone/javac-shaded/9-dev-r4023-3/
+License: EPL-1.0
 
 TEST
 
-==========
-Notice for: commons-io:commons-io-2.5
-----------
+--------------------------------------------------
+Library: commons-io:commons-io v2.5
+Url: https://commons.apache.org/proper/commons-io/index.html
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: control.js-
-----------
+--------------------------------------------------
+Library: control.js v
+Url: https://github.com/zombieleet/control
+License: MIT
 
 TEST
 
-==========
-Notice for: filesize-0.0.4
-----------
+--------------------------------------------------
+Library: filesize v0.0.4
+Url: https://rubygems.org/gems/filesize/versions/0.0.4
+License: MIT
 
 TEST
 
-==========
-Notice for: gradle.plugin.com.github.jk1:gradle-license-report-0.7.1
-----------
+--------------------------------------------------
+Library: gradle.plugin.com.github.jk1:gradle-license-report v0.7.1
+Url: https://github.com/jk1/Gradle-License-Report
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: jar-dependencies-0.3.10
-----------
+--------------------------------------------------
+Library: jar-dependencies v0.3.10
+Url: https://rubygems.org/gems/jar-dependencies/versions/0.3.10
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: jar-dependencies-0.3.11
-----------
+--------------------------------------------------
+Library: jar-dependencies v0.3.11
+Url: https://rubygems.org/gems/jar-dependencies/versions/0.3.11
+License: MIT
 
 TEST
 
-==========
-Notice for: jar-dependencies-0.3.12
-----------
+--------------------------------------------------
+Library: jar-dependencies v0.3.12
+Url: https://rubygems.org/gems/jar-dependencies/versions/0.3.12
+License: MIT
 
 TEST
 
-==========
-Notice for: jruby-openssl-0.9.20
-----------
+--------------------------------------------------
+Library: jruby-openssl v0.9.20
+Url: https://rubygems.org/gems/jruby-openssl/versions/0.9.20-java
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: jruby-openssl-0.9.21
-----------
+--------------------------------------------------
+Library: jruby-openssl v0.9.21
+Url: https://rubygems.org/gems/jruby-openssl/versions/0.9.21-java
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: jruby-readline-1.1.1
-----------
+--------------------------------------------------
+Library: jruby-readline v1.1.1
+Url: https://rubygems.org/gems/jruby-readline/versions/1.1.1-java
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: json-parser-
-----------
+--------------------------------------------------
+Library: json-parser v
+Url: https://rubygems.org/gems/json-parser/versions/0.0.1
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: junit:junit-4.12
-----------
+--------------------------------------------------
+Library: junit:junit v4.12
+Url: https://github.com/junit-team/junit4
+License: Apache-2.0
 
 TEST
 
-==========
-Notice for: org.codehaus.janino:commons-compiler-3.0.8
-----------
+--------------------------------------------------
+Library: org.codehaus.janino:commons-compiler v3.0.8
+Url: https://github.com/janino-compiler/janino
+License: BSD-3-Clause-Attribution
 
 TEST
