@@ -3,15 +3,28 @@
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+* <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
+* <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
-[[logstash-7-0-0-alpha1]]
-=== Logstash 7.0.0-alpha1 Release Notes
+[[logstash-7-0-0-beta1]]
+=== Logstash 7.0.0-beta1 Release Notes
 
-Placeholder for alpha1 release notes
+Placeholder for release notes
 
 [[logstash-7-0-0-alpha2]]
 === Logstash 7.0.0-alpha2 Release Notes
 
-Placeholder for alpha2 release notes
+Placeholder for release notes
+
+[[logstash-7-0-0-alpha1]]
+=== Logstash 7.0.0-alpha1 Release Notes
+
+Placeholder for release notes
+
+
+
+
+
+
+
