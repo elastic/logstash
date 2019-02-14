@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -44,7 +45,11 @@ public class StdinTest {
 
     @Test
     public void testUtf8Events() throws IOException {
-        String[] inputs = {"München1", "安装中文输入法", "München3"};
+        String[] inputs = {
+                new String("München1".getBytes(), Charset.forName("UTF-8")),
+                new String("安装中文输入法".getBytes(), Charset.forName("UTF-8")),
+                new String("München3".getBytes(), Charset.forName("UTF-8"))
+        };
         String testInput = String.join(Line.DEFAULT_DELIMITER, inputs) + Line.DEFAULT_DELIMITER;
         TestConsumer queueWriter = testStdin(testInput.getBytes());
 
