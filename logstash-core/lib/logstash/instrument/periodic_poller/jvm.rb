@@ -15,6 +15,7 @@ java_import 'javax.management.AttributeList'
 java_import 'javax.naming.directory.Attribute'
 java_import 'org.logstash.instrument.reports.MemoryReport'
 java_import 'org.logstash.instrument.reports.ProcessReport'
+java_import 'org.logstash.instrument.reports.SystemReport'
 
 
 module LogStash module Instrument module PeriodicPoller
@@ -58,6 +59,7 @@ module LogStash module Instrument module PeriodicPoller
       collect_process_metrics
       collect_gc_stats
       collect_load_average
+      collect_num_cpus
     end
 
     def collect_gc_stats
@@ -103,6 +105,11 @@ module LogStash module Instrument module PeriodicPoller
 
       metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
 
+    end
+
+    def collect_num_cpus
+      sys_report = SystemReport.generate
+      metric.gauge([:jvm, :process, :cpu], :num_cpus, sys_report["system.available_processors"] )
     end
 
     def collect_load_average

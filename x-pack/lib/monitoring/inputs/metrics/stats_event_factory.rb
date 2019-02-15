@@ -73,6 +73,8 @@ module LogStash; module Inputs; class Metrics;
       else
         {:cpu => load_average}
       end
+      num_cpus = stats.extract_metrics([:jvm, :process, :cpu], :num_cpus)
+      {:num_cpus => num_cpus}
     end
 
     # OS stats are not available on all platforms
