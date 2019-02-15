@@ -54,7 +54,7 @@ previously.
 Here's an example configuration that reads data from the Beats input and uses
 {filebeat} ingest pipelines to parse data collected by modules:
 
-[source,shell]
+[source,yaml]
 -----
 input {
   beats {
@@ -63,13 +63,23 @@ input {
 }
 
 output {
-  elasticsearch {
-    hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
-    manage_template => false
-    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
-    pipeline => "%{[@metadata][pipeline]}" <1>
-    user => "elastic"
-    password => "secret"
+  if [@metadata][pipeline] {
+    elasticsearch {
+      hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      pipeline => "%{[@metadata][pipeline]}" <1>
+      user => "elastic"
+      password => "secret"
+    }
+  } else {
+    elasticsearch {
+      hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      user => "elastic"
+      password => "secret"
+    }
   }
 }
 -----

@@ -27,7 +27,9 @@ The `-e` flag is optional and sends output to standard error instead of syslog.
 +
 A connection to {es} and {kib} is required for this one-time setup
 step because {filebeat} needs to create the index template in {es} and
-load the sample dashboards into {kib}. 
+load the sample dashboards into {kib}. For more information about configuring
+the connection to {es}, see the Filebeat modules
+{filebeat-ref}/filebeat-modules-quickstart.html[quick start].
 +
 After the template and dashboards are loaded, you'll see the message `INFO
 {kib} dashboards successfully loaded. Loaded dashboards`.
@@ -84,8 +86,7 @@ related to file ownership or permissions when you try to run {filebeat} modules.
 See {beats-ref}/config-file-permissions.html[Config File Ownership and Permissions]
 in the _Beats Platform Reference_ if you encounter errors related to file
 ownership or permissions.
-+
-See {filebeat-ref}/filebeat-starting.html[Starting {filebeat}] for more info.
+
 
 ==== Create and start the {ls} pipeline
 
@@ -93,7 +94,7 @@ See {filebeat-ref}/filebeat-starting.html[Starting {filebeat}] for more info.
 that reads from a Kafka input and sends events to an {es} output:
 +
 --
-[source,shell]
+[source,yaml]
 -----
 input {
   kafka {
@@ -104,13 +105,23 @@ input {
 }
 
 output {
-  elasticsearch {
-    hosts: ["https://myEShost:9200"]
-    manage_template => false
-    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
-    pipeline => "%{[@metadata][pipeline]}" <1>
-    user => "elastic"
-    password => "secret"
+  if [@metadata][pipeline] {
+    elasticsearch {
+      hosts => "https://myEShost:9200"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      pipeline => "%{[@metadata][pipeline]}" <1>
+      user => "elastic"
+      password => "secret"
+    }
+  } else {
+    elasticsearch {
+      hosts => "https://myEShost:9200"
+      manage_template => false
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      user => "elastic"
+      password => "secret"
+    }
   }
 }
 -----
