@@ -26,7 +26,8 @@ shared_examples "integration plugins compatible" do |logstash|
       end
     end
     context "when the integration is not installed" do
-      context "if an inner plugin is installed" do
+      # Muting test. Tracked in https://github.com/elastic/logstash/issues/10459
+      xcontext "if an inner plugin is installed" do
         before(:each) do
           logstash.run_command_in_path("bin/logstash-plugin install logstash-input-rabbitmq")
         end
