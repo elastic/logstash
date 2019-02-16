@@ -79,7 +79,7 @@ module LogStash::Config::Mixin
 
     # Resolve environment variables references
     params.each do |name, value|
-      params[name.to_s] = deep_replace(value)
+      params[name.to_s] = deep_replace(value, name.to_s)
     end
 
     if !self.class.validate(params)
@@ -388,7 +388,7 @@ module LogStash::Config::Mixin
       # (see LogStash::Inputs::File for example)
       result = nil
 
-      value = deep_replace(value)
+      value = deep_replace(value, validator)
 
       if validator.nil?
         return true, value

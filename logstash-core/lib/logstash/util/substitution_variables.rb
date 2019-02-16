@@ -9,18 +9,18 @@ module ::LogStash::Util::SubstitutionVariables
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
 
   # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value)
+  def deep_replace(value, *name_or_validator)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, name_or_validator)
       end
     else
       if value.is_a?(Array)
         value.each_index do | valueArrayIndex|
-          value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
+          value[valueArrayIndex] = deep_replace(value[valueArrayIndex], name_or_validator)
         end
       else
-        return replace_placeholders(value)
+        return replace_placeholders(value, name_or_validator)
       end
     end
   end
@@ -29,7 +29,7 @@ module ::LogStash::Util::SubstitutionVariables
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
-  def replace_placeholders(value)
+  def replace_placeholders(value, *name_or_validator)
     return value unless value.is_a?(String)
 
     value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
@@ -50,6 +50,20 @@ module ::LogStash::Util::SubstitutionVariables
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
             "or as an Environment entry and there is no default value given."
       end
+
+      if [ "hosts", :uri ].include?(name_or_validator.join)
+        if replacement.to_s.include?(",")
+          logger.debug("Splitting `#{placeholder}` into an array")
+          replacement_array = replacement.split(",")
+
+          replacement_array.map! do |item|
+            CGI.unescape(item)
+          end
+
+          return deep_replace(replacement_array)
+        end
+      end
+
       replacement.to_s
     end
   end # def replace_placeholders
