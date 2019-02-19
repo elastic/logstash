@@ -42,16 +42,16 @@ This section summarizes the changes in the following releases:
 
 *Dns Filter*
 
-* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x [#48](https://github.com/logstash-plugins/logstash-filter-dns/pull/48)
-* Fixed crash that could occur when encountering certain classes of invalid inputs [#49](https://github.com/logstash-plugins/logstash-filter-dns/pull/49)
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x https://github.com/logstash-plugins/logstash-filter-dns/pull/48[#48]
+* Fixed crash that could occur when encountering certain classes of invalid inputs https://github.com/logstash-plugins/logstash-filter-dns/pull/49[#49]
 
 *Http Filter*
 
-* Fixed minor documentation issues [#9](https://github.com/logstash-plugins/logstash-filter-http/pull/9)
+* Fixed minor documentation issues https://github.com/logstash-plugins/logstash-filter-http/pull/9[#9]
 
 *Jdbc_streaming Filter*
 
-* [#11](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11) Swap out mysql for postgresql for testing
+* Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11]
 
 *Json Filter*
 
@@ -63,35 +63,20 @@ This section summarizes the changes in the following releases:
 
 *Redis Input*
 
-* Changed `redis_type` to `data_type` in .rb file [#70](https://github.com/logstash-plugins/logstash-input-redis/issues/70) and asciidoc file [#71](https://github.com/logstash-plugins/logstash-input-redis/issues/71)
+* Changed `redis_type` to `data_type` in .rb file https://github.com/logstash-plugins/logstash-input-redis/issues/70[#70] and asciidoc file https://github.com/logstash-plugins/logstash-input-redis/issues/71[#71]
 
 *Elasticsearch Output*
 
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
- "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-  <head>
-    <title>503 first byte timeout</title>
-  </head>
-  <body>
-    <h1>Error 503 first byte timeout</h1>
-    <p>first byte timeout</p>
-    <h3>Guru Mediation:</h3>
-    <p>Details: cache-sea1044-SEA 1550586578 3096241209</p>
-    <hr>
-    <p>Varnish cache server</p>
-  </body>
-</html>
+* Fixed sniffing support for 7.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/827[#827]
+* Fixed issue with escaping index names which was causing writing aliases for ILM to fail https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831[#831]
 
 *File Output*
 
-* Removed JRuby check when using FIFOs [#75](https://github.com/logstash-plugins/logstash-output-file/pull/75)
+* Removed JRuby check when using FIFOs https://github.com/logstash-plugins/logstash-output-file/pull/75[#75]
 
 *Http Output*
 
 * Relax dependency on http_client mixin since current major works on both
-
 
 [[logstash-6-6-0]]
 === Logstash 6.6.0 Release Notes
