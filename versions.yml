@@ -1,6 +1,6 @@
 ---
-logstash: 5.6.15
-logstash-core: 5.6.15
+logstash: 5.6.16
+logstash-core: 5.6.16
 logstash-core-plugin-api: 2.1.29
 
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when
