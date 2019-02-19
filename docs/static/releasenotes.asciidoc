@@ -30,7 +30,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-6-1]]
 === Logstash 6.6.1 Release Notes
 
-* Fixes a problem with how Logstash logs malformed URLs. (CVE-2019-7612) See
+* Fixes a problem with how Logstash logs malformed URLs. (CVE-2019-7612). See
 https://www.elastic.co/community/security[Security issues].
 
 ==== Plugins
