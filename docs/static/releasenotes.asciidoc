@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-15,Logstash 5.6.15>>
 * <<logstash-5-6-14,Logstash 5.6.14>>
 * <<logstash-5-6-13,Logstash 5.6.13>>
 * <<logstash-5-6-12,Logstash 5.6.12>>
@@ -18,6 +19,57 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-15]]
+=== Logstash 5.6.15 Release Notes
+
+==== Plugins
+
+*Es_bulk Codec*
+
+* Add documentation about use with http input
+
+*Dns Filter*
+
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x [#48](https://github.com/logstash-plugins/logstash-filter-dns/pull/48)
+* Fixed crash that could occur when encountering certain classes of invalid inputs [#49](https://github.com/logstash-plugins/logstash-filter-dns/pull/49)
+
+*Json Filter*
+
+* Updated documentation with some clarifications and fixes
+
+*Metrics Filter*
+
+* Fixed two minor typos in documentation
+
+*Split Filter*
+
+* Fixed numeric values, optimized @target verification, cleanups and specs [36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
+
+*Useragent Filter*
+
+* Update source mapping to latest from uap-core ([#53](https://github.com/logstash-plugins/logstash-filter-useragent/issues/53))
+
+*Xml Filter*
+
+* Fixed force_array behavior with nested elements [#57](https://github.com/logstash-plugins/logstash-filter-xml/pull/57)
+
+*Sqs Input*
+
+* Added support for multiple events inside same message from SQS [#48](https://github.com/logstash-plugins/logstash-input-sqs/pull/48/files) 
+
+*File Output*
+
+* Removed JRuby check when using FIFOs [#75](https://github.com/logstash-plugins/logstash-output-file/pull/75)
+
+*Pagerduty Output*
+
+* Update _development_ dependency webmock to latest version to prevent conflicts in logstash core's dependency matrix.
+
+*S3 Output*
+
+* Fixed issue where on restart, 0 byte files could erroneously be uploaded to s3 [#195](https://github.com/logstash-plugins/logstash-output-s3/issues/195)
+
 
 [[logstash-5-6-14]]
 === Logstash 5.6.14 Release Notes
