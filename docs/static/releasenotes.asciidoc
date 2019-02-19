@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-1,Logstash 6.6.1>>
 * <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
@@ -25,6 +26,57 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-1]]
+=== Logstash 6.6.1 Release Notes
+
+==== Plugins
+
+*Es_bulk Codec*
+
+* Add documentation about use with http input
+
+*De_dot Filter*
+
+* fix failure of fieldnames with boolean value "false" https://github.com/logstash-plugins/logstash-filter-de_dot/issues/9[#9]
+
+*Dns Filter*
+
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x https://github.com/logstash-plugins/logstash-filter-dns/pull/48[#48]
+* Fixed crash that could occur when encountering certain classes of invalid inputs https://github.com/logstash-plugins/logstash-filter-dns/pull/49[#49]
+
+*Http Filter*
+
+* Fixed minor documentation issues https://github.com/logstash-plugins/logstash-filter-http/pull/9[#9]
+
+*Jdbc_streaming Filter*
+
+* Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11]
+
+*Json Filter*
+
+* Updated documentation with some clarifications and fixes
+
+*Metrics Filter*
+
+* Fixed two minor typos in documentation
+
+*Redis Input*
+
+* Changed `redis_type` to `data_type` in .rb file https://github.com/logstash-plugins/logstash-input-redis/issues/70[#70] and asciidoc file https://github.com/logstash-plugins/logstash-input-redis/issues/71[#71]
+
+*Elasticsearch Output*
+
+* Fixed sniffing support for 7.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/827[#827]
+* Fixed issue with escaping index names which was causing writing aliases for ILM to fail https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831[#831]
+
+*File Output*
+
+* Removed JRuby check when using FIFOs https://github.com/logstash-plugins/logstash-output-file/pull/75[#75]
+
+*Http Output*
+
+* Relax dependency on http_client mixin since current major works on both
 
 [[logstash-6-6-0]]
 === Logstash 6.6.0 Release Notes
