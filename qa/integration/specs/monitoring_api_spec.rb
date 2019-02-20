@@ -48,6 +48,18 @@ describe "Test Monitoring API" do
     end
   end
 
+  it "can retrive system stats" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      expect(result["process"]["cpu"]["num_cpus"]).to be > 0
+    end
+  end
+
+
   it 'can retrieve dlq stats' do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
