@@ -216,7 +216,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
-
+      config_metric.gauge(:ephemeral_id, ephemeral_id)
+      config_metric.gauge(:hash, hash)
 
       @logger.info("Starting pipeline", default_logging_keys(
         "pipeline.workers" => pipeline_workers,
