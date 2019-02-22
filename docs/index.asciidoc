@@ -38,6 +38,45 @@ type of event can be enriched and transformed with a broad array of input, filte
 native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
 volume and variety of data.
 
+[float]
+[[right-option]]
+=== Is Logstash the right ingest option?
+
+Is {ls} the right ingest option for _your_ particular use case?
+
+{ls} is powerful. It's more powerful (and potentially more complex) than
+required for many use cases. Or, Logstash might be just what you need.
+Here's more information to help you decide.
+
+* *{Filebeat}.* 
+Filebeat is a great tool for tailing files. It comes with a set of
+{filebeat-ref}/filebeat-modules.html[modules]. These modules make it possible to
+ingest data in a wide range of common log formats with minimal configuration. 
+The {filebeat-ref}/filebeat-modules.html[list of modules] keeps growing, so check it out
+to see if a module is the right solution for you.
++
+If the data you want to ingest is not covered by these modules, Logstash and Elasticsearch
+ingest nodes provide a flexible and powerful way to parse and process most types
+of text-based data. 
+
+* *Elasticsearch ingest nodes.* 
+You can use {ref}/ingest.html[Elasticsearch ingest nodes] to process documents in Elasticsearch prior to
+indexing. They allow simple architectures with minimum components, where
+applications send data directly to Elasticsearch for processing and indexing.
+This often simplifies getting started with the Elastic Stack, and also
+scales out as data volumes grow. 
++
+Ingest nodes duplicates some but not all functionality that Logstash offers.
+
+* *Logstash.* If your use case involves...  
+
+TODO: Add short description of use cases/scenarios in which 
+LS will be the best option.
+
+If you are still trying to decide if {es} ingest node or {ls} is your best option,
+check out this article: 
+https://www.elastic.co/blog/should-i-use-logstash-or-elasticsearch-ingest-nodes[Should I use Logstash or Elasticsearch ingest nodes?]
+
 // The pass blocks here point to the correct repository for the edit links in the guide.
 
 // Introduction

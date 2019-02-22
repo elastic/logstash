@@ -1,4 +1,3 @@
-[float]
 [[power-of-logstash]]
 == The Power of Logstash
 
