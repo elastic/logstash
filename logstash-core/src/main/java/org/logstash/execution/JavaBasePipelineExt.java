@@ -54,7 +54,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
                 ).initialize(context, pipelineId(), metric()),
                 new PluginFactoryExt.ExecutionContext(
                     context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
-                ).initialize(context, args[3], this, dlqWriter(context)),
+                ).initialize(context, this, dlqWriter(context)),
                 RubyUtil.FILTER_DELEGATOR_CLASS
             )
         );

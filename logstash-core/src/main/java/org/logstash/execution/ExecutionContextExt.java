@@ -17,22 +17,22 @@ public final class ExecutionContextExt extends RubyObject {
 
     private AbstractDeadLetterQueueWriterExt dlqWriter;
 
-    private IRubyObject agent;
-
     private IRubyObject pipeline;
 
     public ExecutionContextExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(required = 5)
-    public ExecutionContextExt initialize(final ThreadContext context,
-        final IRubyObject[] args) {
+    @JRubyMethod(required = 4)
+    public ExecutionContextExt initialize(final ThreadContext context, final IRubyObject[] args) {
         pipeline = args[0];
-        agent = args[1];
+        final IRubyObject pluginId = args[1];
+        final IRubyObject pluginType = args[2];
+        final IRubyObject _dlqWriter = args[3];
+
         dlqWriter = new AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt(
             context.runtime, RubyUtil.PLUGIN_DLQ_WRITER_CLASS
-        ).initialize(context, args[4], args[2], args[3]);
+        ).initialize(context, _dlqWriter, pluginId, pluginType);
         return this;
     }
 
@@ -40,12 +40,7 @@ public final class ExecutionContextExt extends RubyObject {
     public AbstractDeadLetterQueueWriterExt dlqWriter(final ThreadContext context) {
         return dlqWriter;
     }
-
-    @JRubyMethod
-    public IRubyObject agent(final ThreadContext context) {
-        return agent;
-    }
-
+    
     @JRubyMethod
     public IRubyObject pipeline(final ThreadContext context) {
         return pipeline;

@@ -14,7 +14,7 @@ describe LogStash::ExecutionContext do
     allow(pipeline).to receive(:pipeline_id).and_return(pipeline_id)
   end
 
-  subject { described_class.new(pipeline, agent, plugin_id, plugin_type, dlq_writer) }
+  subject { described_class.new(pipeline, plugin_id, plugin_type, dlq_writer) }
 
   it "returns the `pipeline_id`" do
     expect(subject.pipeline_id).to eq(pipeline_id)
@@ -22,10 +22,6 @@ describe LogStash::ExecutionContext do
 
   it "returns the pipeline" do
     expect(subject.pipeline).to eq(pipeline)
-  end
-
-  it "returns the agent" do
-    expect(subject.agent).to eq(agent)
   end
 
   it "returns the plugin-specific dlq writer" do

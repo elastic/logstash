@@ -27,9 +27,9 @@ module LogStash; class BasePipeline < AbstractPipeline
     @agent = agent
 
     @plugin_factory = LogStash::Plugins::PluginFactory.new(
-      # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-      lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
-      LogStash::Plugins::ExecutionContextFactory.new(@agent, self, dlq_writer),
+      lir,
+      LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
+      LogStash::Plugins::ExecutionContextFactory.new(self, dlq_writer),
       FilterDelegator
     )
     grammar = LogStashConfigParser.new
