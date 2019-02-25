@@ -60,7 +60,8 @@ Here's more information to help you decide.
 [[fb-ingest]]
 ==== {Filebeat} for ingest
 
-Filebeat is a great tool for tailing files, and it comes with a set of
+Beats are lightweight data shippers that you install as agents on your servers.
+Filebeat is a great tool for tailing files, and it comes with a set of more than 20
 {filebeat-ref}/filebeat-modules.html[modules] to get you up and running quickly. 
 Filebeat modules can ingest data in a wide range of common log formats with minimal
 configuration. They also come with sample dashboards, index templates, and, in some cases, machine learning jobs.
@@ -88,15 +89,17 @@ Ingest nodes duplicates some but not all functionality that Logstash offers.
 [[ls-ingest]]
 ==== Logstash for ingest  
 
-{ls} is...
+{ls} uses plugins to offer a wide variety of inputs, filters, and outputs for
+collecting, enriching, and transforming data.
 
 {ls} is the best choice when you need to:
 
 * send to multiple outputs
 * "read in" data
 * enrich your data
+* modify your data using grok or dissect
 * strip information from your data before forwarding (removing `location` for GDPR compliance, for example)
-* need to modify your data using grok or dissect
+* use queueing
 
 If you are still trying to decide if {es} ingest node or {ls} is your best option,
 check out this article: 
@@ -109,6 +112,7 @@ https://www.elastic.co/blog/should-i-use-logstash-or-elasticsearch-ingest-nodes[
 A combination of ingest options may be the right approach for your use case.
 
 Beats->ls
+filebeat -> ingest node. (See {filebeat-ref}/configuring-ingest-node.html.)
 Beats modules use ingest node for processing
  
 
