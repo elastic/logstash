@@ -27,9 +27,9 @@ release-state can be: released | prerelease | unreleased
 include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
 
 [[introduction]]
-== Logstash Introduction
+== {ls} Introduction
 
-Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
+{ls} is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
 unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all
 your data for diverse advanced downstream analytics and visualization use cases.
 
@@ -40,42 +40,77 @@ volume and variety of data.
 
 [float]
 [[right-option]]
-=== Is Logstash the right ingest option?
+=== Is {ls} the right ingest option?
 
+The Elastic Stack offers options for ingesting data into {es}.
 Is {ls} the right ingest option for _your_ particular use case?
+
+Here are your ingest options:
+
+* <<fb-ingest,{Filebeat}>>
+* <<ingest-node,{es} ingest nodes>>
+* <<ls-ingest,{ls}>>
+* <<combi-ingest, A combination>>
 
 {ls} is powerful. It's more powerful (and potentially more complex) than
 required for many use cases. Or, Logstash might be just what you need.
 Here's more information to help you decide.
 
-* *{Filebeat}.* 
-Filebeat is a great tool for tailing files. It comes with a set of
-{filebeat-ref}/filebeat-modules.html[modules]. These modules make it possible to
-ingest data in a wide range of common log formats with minimal configuration. 
+[float]
+[[fb-ingest]]
+==== {Filebeat} for ingest
+
+Filebeat is a great tool for tailing files, and it comes with a set of
+{filebeat-ref}/filebeat-modules.html[modules] to get you up and running quickly. 
+Filebeat modules can ingest data in a wide range of common log formats with minimal
+configuration. They also come with sample dashboards, index templates, and, in some cases, machine learning jobs.
+
 The {filebeat-ref}/filebeat-modules.html[list of modules] keeps growing, so check it out
 to see if a module is the right solution for you.
-+
+
 If the data you want to ingest is not covered by these modules, Logstash and Elasticsearch
 ingest nodes provide a flexible and powerful way to parse and process most types
 of text-based data. 
 
-* *Elasticsearch ingest nodes.* 
+[float]
+[[ingest-node]]
+==== Elasticsearch ingest nodes for ingest
+
 You can use {ref}/ingest.html[Elasticsearch ingest nodes] to process documents in Elasticsearch prior to
 indexing. They allow simple architectures with minimum components, where
 applications send data directly to Elasticsearch for processing and indexing.
 This often simplifies getting started with the Elastic Stack, and also
 scales out as data volumes grow. 
-+
+
 Ingest nodes duplicates some but not all functionality that Logstash offers.
 
-* *Logstash.* If your use case involves...  
+[float]
+[[ls-ingest]]
+==== Logstash for ingest  
 
-TODO: Add short description of use cases/scenarios in which 
-LS will be the best option.
+{ls} is...
+
+{ls} is the best choice when you need to:
+
+* send to multiple outputs
+* "read in" data
+* enrich your data
+* strip information from your data before forwarding (removing `location` for GDPR compliance, for example)
+* need to modify your data using grok or dissect
 
 If you are still trying to decide if {es} ingest node or {ls} is your best option,
 check out this article: 
 https://www.elastic.co/blog/should-i-use-logstash-or-elasticsearch-ingest-nodes[Should I use Logstash or Elasticsearch ingest nodes?]
+
+[float]
+[[combi-ingest]]
+==== Combination of ingest options
+
+A combination of ingest options may be the right approach for your use case.
+
+Beats->ls
+Beats modules use ingest node for processing
+ 
 
 // The pass blocks here point to the correct repository for the edit links in the guide.
 
