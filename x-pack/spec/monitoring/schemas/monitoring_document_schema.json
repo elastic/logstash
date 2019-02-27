@@ -94,9 +94,8 @@
       "required": ["cpu"],
       "properties": {
         "cpu": {
-          "type": "array",
-          "minItems": 1,
-          "required": ["load_average"],
+          "type": "object",
+          "required": ["load_average", "num_cpus"],
           "properties": {
             "load_average": {
               "type": "object",
@@ -105,14 +104,14 @@
                 "1m": {"type": "number"},
                 "5m": {"type": "number"},
                 "15m": {"type": "number"}
-              },
-              "num_cpus": {
-                "type": "number"
               }
+            },
+             "num_cpus": {
+               "type": "number"
             }
           }
+         }
         }
-      }
     },
     "events": {"$ref": "#/definitions/events"},
     "queue": {
