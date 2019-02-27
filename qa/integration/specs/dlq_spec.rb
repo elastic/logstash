@@ -117,6 +117,7 @@ describe "Test Dead Letter Queue" do
   end
 
   context 'using logstash.yml and separate config file' do
+    skip("This test fails Jenkins CI, tracked in https://github.com/elastic/logstash/issues/10275")
     let(:generator_config_file) { config_to_temp_file(@fixture.config("root",{ :dlq_dir => dlq_dir })) }
 
     before :each do
