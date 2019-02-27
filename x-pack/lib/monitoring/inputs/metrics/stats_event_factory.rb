@@ -65,16 +65,15 @@ module LogStash; module Inputs; class Metrics;
 
     def format_os_stats(stats)
       load_average = stats.extract_metrics([:jvm, :process, :cpu], :load_average)
+      num_cpus = stats.extract_metrics([:jvm, :process, :cpu], :num_cpus)
       if os_stats?(stats)
         cpuacct = stats.extract_metrics([:os, :cgroup, :cpuacct], :control_group, :usage_nanos)
         cgroups_stats = stats.extract_metrics([:os, :cgroup, :cpu, :stat], :number_of_elapsed_periods, :number_of_times_throttled, :time_throttled_nanos)
         control_group = stats.get_shallow(:os, :cgroup, :cpu, :control_group).value
-        {:cpu => load_average, :cgroup => {:cpuacct =>  cpuacct, :cpu => {:control_group => control_group, :stat => cgroups_stats}}}
+        {:cpu => [load_average, num_cpus], :cgroup => {:cpuacct =>  cpuacct, :cpu => {:control_group => control_group, :stat => cgroups_stats}}}
       else
-        {:cpu => load_average}
+        {:cpu => [load_average, num_cpus]}
       end
-      num_cpus = stats.extract_metrics([:jvm, :process, :cpu], :num_cpus)
-      {:num_cpus => num_cpus}
     end
 
     # OS stats are not available on all platforms
