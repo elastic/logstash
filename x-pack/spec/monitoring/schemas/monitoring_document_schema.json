@@ -94,7 +94,8 @@
       "required": ["cpu"],
       "properties": {
         "cpu": {
-          "type": "object",
+          "type": "array",
+          "minItems": 1,
           "required": ["load_average"],
           "properties": {
             "load_average": {
@@ -104,6 +105,9 @@
                 "1m": {"type": "number"},
                 "5m": {"type": "number"},
                 "15m": {"type": "number"}
+              },
+              "num_cpus": {
+                "type": "number"
               }
             }
           }
