@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-2,Logstash 6.6.2>>
 * <<logstash-6-6-1,Logstash 6.6.1>>
 * <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
@@ -26,6 +27,111 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-2]]
+=== Logstash 6.6.2 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.6.2
+
+=== Logstash Commits between 6.6 and 6.6.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.6.0..6.6"
+
+58590ce79 - (HEAD -> 6.6, origin/6.6) Mute CI integration DLQ acceptance test (37 seconds ago) <Guy Boertje>
+b152e4840 - Improve docs about using Filebeat modules with Logstash (#10438) (7 days ago) <DeDe Morton>
+b6cc39953 - bump version to 6.6.2 (#10471) (8 days ago) <João Duarte>
+eefef1619 - Update to 6.6.1 release notes (#10475) (8 days ago) <Karen Metts>
+b9581ffaf - Bump doc version to 6.6.1 (#10473) (8 days ago) <Karen Metts>
+1ac0815b9 - Release notes draft for 6.6.1 (#10468) (8 days ago) <Logstash Machine>
+f93b4382d - update test fixture to reflect NOTICES format (#10453) (12 days ago) <Ry Biesemeyer>
+603fe5cf5 - update dependency notices for 6.6.1 release (#10444) (13 days ago) <Ry Biesemeyer>
+69e57b63d - Incorporate review comments (13 days ago) <Karen Metts>
+f601e392f - Add prilileges required for ilm (13 days ago) <Karen Metts>
+3b5855c85 - Move field-ref include below xpack content (2 weeks ago) <Karen Metts>
+a9af53240 - (tag: v6.6.1) Edits from review comments (2 weeks ago) <Karen Metts>
+71537d6dc - Expande descriptions (2 weeks ago) <Karen Metts>
+c28385833 - Add http and memcached filters to lookup plugins (2 weeks ago) <Karen Metts>
+aa1a3932f - Reorder files in index to unhide lost topics Add comment about placement of include (2 weeks ago) <Karen Metts>
+bc6080100 - Update patch plugin versions in gemfile lock (#10426) (2 weeks ago) <João Duarte>
+794e391d9 - Remove unnecessary option to not require host in SafeURI (3 weeks ago) <Rob Bavey>
+d11aa5a87 - Better handle malformed URIs (3 weeks ago) <Rob Bavey>
+68144e09b - mute metrics_spec line 138 test (3 weeks ago) <Joao Duarte>
+6548501c2 - keystore: instances of `CharsetEncoder` are stateful and cannot be shared (3 weeks ago) <Ry Biesemeyer>
+3bdc57ac3 - spec: make timing-sensitive specs a little more flexible (3 weeks ago) <Ry Biesemeyer>
+bd6a26615 - spec: noop refactor for clarity - use explicit `metric_input` subject instead of implicit subject - use rspec/wait full expectation syntax instead of be_falsey/be_truthy - eliminate unused shared examples - incorporate single-use shared examples (3 weeks ago) <Ry Biesemeyer>
+5b7f60e9b - agent webserver: synchronise control (3 weeks ago) <Ry Biesemeyer>
+1ab316ebe - change 「5.x」→「6.x」 (3 weeks ago) <taku333>
+7cb8d471a - Update patch plugin versions in gemfile lock (#10363) (3 weeks ago) <Guy Boertje>
+ef0d135d9 - qa: allow connections to localhost in webmock (#10384) (3 weeks ago) <Ry Biesemeyer>
+8bef18ada - fix agent silent exit upon pipelines reloading (#10370) (4 weeks ago) <Colin Surprenant>
+f2a473db8 - correctly handle pipeline actions (#10331) (#10337) (4 weeks ago) <Colin Surprenant>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.6.0..6.6 *.release"
+Changed plugin versions:
+logstash-codec-es_bulk: 3.0.6 -> 3.0.7
+logstash-filter-de_dot: 1.0.3 -> 1.0.4
+logstash-filter-dns: 3.0.11 -> 3.0.12
+logstash-filter-http: 1.0.0 -> 1.0.1
+logstash-filter-jdbc_streaming: 1.0.4 -> 1.0.5
+logstash-filter-json: 3.0.5 -> 3.0.6
+logstash-filter-metrics: 4.0.5 -> 4.0.6
+logstash-input-redis: 3.4.0 -> 3.4.1
+logstash-output-elasticsearch: 9.3.0 -> 9.3.2
+logstash-output-file: 4.2.5 -> 4.2.6
+logstash-output-http: 5.2.3 -> 5.2.4
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Es_bulk Codec*
+
+* Add documentation about use with http input
+
+*De_dot Filter*
+
+* fix failure of fieldnames with boolean value "false" https://github.com/logstash-plugins/logstash-filter-de_dot/issues/9[#9]
+
+*Dns Filter*
+
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x [#48](https://github.com/logstash-plugins/logstash-filter-dns/pull/48)
+* Fixed crash that could occur when encountering certain classes of invalid inputs [#49](https://github.com/logstash-plugins/logstash-filter-dns/pull/49)
+
+*Http Filter*
+
+* Fixed minor documentation issues [#9](https://github.com/logstash-plugins/logstash-filter-http/pull/9)
+
+*Jdbc_streaming Filter*
+
+* [#11](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11) Swap out mysql for postgresql for testing
+
+*Json Filter*
+
+* Updated documentation with some clarifications and fixes
+
+*Metrics Filter*
+
+* Fixed two minor typos in documentation
+
+*Redis Input*
+
+* Changed `redis_type` to `data_type` in .rb file [#70](https://github.com/logstash-plugins/logstash-input-redis/issues/70) and asciidoc file [#71](https://github.com/logstash-plugins/logstash-input-redis/issues/71)
+
+*Elasticsearch Output*
+
+* Fixed sniffing support for 7.x [#827](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/827)
+
+* Fixed issue with escaping index names which was causing writing aliases for ILM to fail [#831](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831)
+
+*File Output*
+
+* Removed JRuby check when using FIFOs [#75](https://github.com/logstash-plugins/logstash-output-file/pull/75)
+
+*Http Output*
+
+* Relax dependency on http_client mixin since current major works on both
+
 
 [[logstash-6-6-1]]
 === Logstash 6.6.1 Release Notes
