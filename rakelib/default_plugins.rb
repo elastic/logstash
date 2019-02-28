@@ -31,11 +31,6 @@ module LogStash
     # plugins required to run the logstash core specs
     CORE_SPECS_PLUGINS = self.fetch_plugins_for("core-specs").freeze
 
-    TEST_JAR_DEPENDENCIES_PLUGINS = self.fetch_plugins_for("test-jar-dependencies").freeze
-
-    TEST_VENDOR_PLUGINS = self.fetch_plugins_for("test-vendor-plugin").freeze
-
     ALL_PLUGINS_SKIP_LIST = Regexp.union(self.fetch_plugins_for("skip-list")).freeze
-
   end
 end

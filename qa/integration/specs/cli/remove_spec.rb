@@ -26,16 +26,16 @@ describe "CLI > logstash-plugin remove" do
 
         context "when no other plugins depends on this plugin" do
           it "successfully remove the plugin" do
-            execute = @logstash_plugin.run_raw("#{offline_wrapper_cmd} bin/logstash-plugin remove logstash-input-twitter")
+            execute = @logstash_plugin.run_raw("#{offline_wrapper_cmd} bin/logstash-plugin remove logstash-filter-mutate")
 
             expect(execute.exit_code).to eq(0)
-            expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-input-twitter/)
+            expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-filter-mutate/)
 
-            presence_check = @logstash_plugin.list("logstash-input-twitter")
+            presence_check = @logstash_plugin.list("logstash-filter-mutate")
             expect(presence_check.exit_code).to eq(1)
             expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
 
-            @logstash_plugin.install("logstash-input-twitter")
+            @logstash_plugin.install("logstash-filter-mutate")
           end
         end
 
@@ -59,16 +59,16 @@ describe "CLI > logstash-plugin remove" do
     else
       context "when no other plugins depends on this plugin" do
         it "successfully remove the plugin" do
-          execute = @logstash_plugin.remove("logstash-input-twitter")
+          execute = @logstash_plugin.remove("logstash-filter-mutate")
 
           expect(execute.exit_code).to eq(0)
-          expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-input-twitter/)
+          expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-filter-mutate/)
 
-          presence_check = @logstash_plugin.list("logstash-input-twitter")
+          presence_check = @logstash_plugin.list("logstash-filter-mutate")
           expect(presence_check.exit_code).to eq(1)
           expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
 
-          @logstash_plugin.install("logstash-input-twitter")
+          @logstash_plugin.install("logstash-filter-mutate")
         end
       end
 
