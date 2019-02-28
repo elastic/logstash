@@ -86,12 +86,12 @@
 	},
 	"logstash-filter-clone": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-filter-cidr": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-filter-csv": {
@@ -161,7 +161,7 @@
 	},
 	"logstash-filter-mutate": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-filter-ruby": {
@@ -241,7 +241,7 @@
 	},
 	"logstash-input-generator": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-input-graphite": {
@@ -306,7 +306,7 @@
 	},
 	"logstash-input-stdin": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-input-syslog": {
@@ -316,7 +316,7 @@
 	},
 	"logstash-input-tcp": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-input-twitter": {
@@ -431,7 +431,7 @@
 	},
 	"logstash-output-stdout": {
 		"default-plugins": true,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-output-tcp": {
@@ -451,7 +451,7 @@
 	},
 	"logstash-filter-multiline": {
 		"default-plugins": false,
-		"core-specs": true,
+		"core-specs": false,
 		"skip-list": false
 	},
 	"logstash-filter-yaml": {
