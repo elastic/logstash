@@ -63,12 +63,6 @@ namespace "test" do
 
   desc "install default plugins and dev dependencies"
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
-
-  desc "install vendor plugins and dev dependencies"
-  task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
-
-  desc "install jar dependencies and dev dependencies"
-  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
 end
 
 task "test" => [ "test:core" ]
