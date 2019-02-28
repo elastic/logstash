@@ -80,7 +80,8 @@ public final class UserInput {
             "Working directory to store cached files in.";
 
     public static final String TEST_CASE_CONFIG_PARAM = "config";
-    public static final String TEST_CASE_CONFIG_HELP =  " Path to custom logstash config. Required if testcase is set to 'custom'";
+    public static final String TEST_CASE_CONFIG_HELP =
+            "Path to custom logstash config. Required if testcase is set to 'custom'";
 
     /**
      * Constructor.
