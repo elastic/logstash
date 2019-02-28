@@ -251,12 +251,15 @@ include::static/maintainer-guide.asciidoc[]
 
 // A space is necessary here ^^^
 
-
 // Submitting a Plugin
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
 include::static/submitting-a-plugin.asciidoc[]
 
+// Contributing to Logstash - JAVA EDITION
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-java-plugin.asciidoc
+include::static/contributing-java-plugin.asciidoc[]
 
 // Glossary of Terms
 
