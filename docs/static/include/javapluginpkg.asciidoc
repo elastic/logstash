@@ -1,0 +1,133 @@
+[float]
+=== Package and deploy
+
+Java plugins are packaged as Ruby gems for dependency management and
+interoperability with Ruby plugins. 
+
+NOTE: One of the goals for Java plugin support is to eliminate the need for any
+knowledge of Ruby or its toolchain for Java plugin development. Future phases of
+the Java plugin project will automate the packaging of Java plugins as Ruby gems
+so no direct knowledge of or interaction with Ruby will be required. In the
+current phase, Java plugins must still be manually packaged as Ruby gems
+and installed with the `logstash-plugin` utility.
+
+[float]
+==== Compile to JAR file
+
+The Java plugin should be compiled and assembled into a fat jar with the
+`vendor` task in the Gradle build file. This will package all Java dependencies
+into a single jar and write it to the correct folder for later packaging into a
+Ruby gem.
+
+[float]
+==== Manually package as Ruby gem 
+
+Several Ruby source files are required to package the jar file as a
+Ruby gem. These Ruby files are used only at Logstash startup time to identify
+the Java plugin and are not used during runtime event processing. 
+
+NOTE: These Ruby source files will be automatically generated in a future release. 
+
+**+logstash-{plugintype}-<{plugintype}-name>.gemspec+**
+
+[source,txt]
+[subs="attributes"]
+-----
+Gem::Specification.new do |s|
+  s.name            = 'logstash-{plugintype}-java_{plugintype}_example'
+  s.version         = PLUGIN_VERSION
+  s.licenses        = ['Apache-2.0']
+  s.summary         = "Example {plugintype} using Java plugin API"
+  s.description     = ""
+  s.authors         = ['Elasticsearch']
+  s.email           = 'info@elastic.co'
+  s.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
+  s.require_paths = ['lib', 'vendor/jar-dependencies']
+
+  # Files
+  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION", "docs/**/*"]
+
+  # Special flag to let us know this is actually a logstash plugin
+  s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => '{plugintype}'}
+
+  # Gem dependencies
+  s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "<= 2.99"
+  s.add_runtime_dependency 'jar-dependencies'
+
+  s.add_development_dependency 'logstash-devutils'
+end
+-----
+
+You can use this file with the following modifications: 
+
+* `s.name` must follow the +logstash-pass:attributes[{plugintype}]-<{plugintype}-name>+ pattern
+* `s.version` must match the `project.version` specified in the `build.gradle` file.
+
+**+lib/logstash/{plugintype}s/<{plugintype}-name>.rb+**
+
+[source,ruby]
+[subs="attributes"]
+-----
+# encoding: utf-8
+require "logstash/{plugintype}s/base"
+require "logstash/namespace"
+require "logstash-{plugintype}-java_{plugintype}_example_jars"
+require "java"
+
+class LogStash::{plugintype}s::Java{plugintypecap}Example < LogStash::{pluginclass}::Base
+  config_name "java_{plugintype}_example"
+  
+  def self.javaClass() org.logstash.javaapi.Java{plugintypecap}Example.java_class; end
+end
+-----
+
+Modify these items in the file above:
+
+* Change the name to correspond with the {plugintype} name.
+* Change +require "logstash-{plugintype}-java_{plugintype}_example_jars"+ to reference the appropriate "jars" file
+as described below.
+* Change +class LogStash::{pluginclass}::Java{plugintypecap}Example < LogStash::{pluginclass}::Base+ to provide a unique and
+descriptive Ruby class name.
+* Change +config_name "java_{plugintype}_example"+ to match the name of the plugin as specified in the `name` property of
+the `@LogstashPlugin` annotation.
+* Change +def self.javaClass() org.logstash.javaapi.Java{plugintypecap}Example.java_class; end+ to return the
+class of the Java {plugintype}.
+
+**+lib/logstash-{plugintype}-<{plugintype}-name>_jars.rb+**
+
+[source,txt]
+[subs="attributes"]
+-----
+require 'jar_dependencies'
+require_jar('org.logstash.javaapi', 'logstash-{plugintype}-java_{plugintype}_example', {sversion})
+-----
+
+In the file above:
+
+* Rename the file to correspond to the {plugintype} name.
+* Change the `require_jar` directive to correspond to the `group` specified in the
+Gradle build file, the name of the {plugintype} JAR file, and the version as
+specified in both the gemspec and Gradle build file.
+
+After you have created the previous files and the plugin JAR file, build the gem using the
+following command:
+
+[source,shell]
+[subs="attributes"]
+-----
+gem build logstash-{plugintype}-<{plugintype}-name>.gemspec
+-----
+
+[float]
+==== Installing the Java plugin in Logstash
+
+After you have packaged your Java plugin as a Ruby gem, you can install it in
+Logstash with this command:
+
+[source,shell]
+-----
+bin/logstash-plugin install --no-verify --local /path/to/javaPlugin.gem
+-----
+
+For Windows platforms: Substitute backslashes for forward slashes as appropriate in the command. 
+
