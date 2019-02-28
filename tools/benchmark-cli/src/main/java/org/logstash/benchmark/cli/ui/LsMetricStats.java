@@ -15,5 +15,7 @@ public enum LsMetricStats {
     /**
      * Statistics on CPU usage.
      */
-    CPU_USAGE
+    CPU_USAGE,
+
+    HEAP_USAGE
 }

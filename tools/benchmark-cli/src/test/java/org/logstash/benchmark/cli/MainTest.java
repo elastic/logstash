@@ -97,4 +97,16 @@ public final class MainTest {
             String.format("--%s=%d", UserInput.REPEAT_PARAM, 2)
         );
     }
+
+    /**
+     * @throws Exception On Failure
+     */
+    @Test
+    public void runsCustomAgainstLocal() throws Exception {
+        Main.main(
+                String.format("--%s=custom", UserInput.TEST_CASE_PARAM),
+                String.format("--%s=%s", UserInput.TEST_CASE_CONFIG_PARAM, System.getProperty("logstash.benchmark.test.config.path") ),
+                String.format("--%s=%s", UserInput.LOCAL_VERSION_PARAM, System.getProperty("logstash.benchmark.test.local.path"))
+        );
+    }
 }
