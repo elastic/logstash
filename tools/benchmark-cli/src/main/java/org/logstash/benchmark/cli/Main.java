@@ -114,8 +114,8 @@ public final class Main {
         );
 
         Path testCaseConfigPath = null;
-        if(options.valueOf(testcase).equals("custom")) {
-            if( options.has(testcaseconfig)) {
+        if (options.valueOf(testcase).equals("custom")) {
+            if (options.has(testcaseconfig)) {
                 testCaseConfigPath = options.valueOf(testcaseconfig).toPath();
             }
             else {
@@ -163,7 +163,7 @@ public final class Main {
                 Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT))
             )
         );
-        if(runConfig.getTestcase().equals("custom")) {
+        if (runConfig.getTestcase().equals("custom")) {
             output.green(
                     String.format("Test Case Config: %s", runConfig.getConfigPath())
             );
@@ -206,7 +206,7 @@ public final class Main {
             testcase = new GeneratorToStdout(store, logstash, settings, runConfig);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
             testcase = new ApacheLogsComplex(store, logstash, cwd, settings, output, runConfig);
-        } else if(CustomTestCase.IDENTIFIER.equalsIgnoreCase(test)) {
+        } else if (CustomTestCase.IDENTIFIER.equalsIgnoreCase(test)) {
             testcase = new CustomTestCase(store, logstash, cwd, settings, output, runConfig);
         }
         else {

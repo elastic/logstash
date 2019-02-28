@@ -172,7 +172,7 @@ public interface LogstashInstallation {
                 throw new IllegalStateException("Logstash failed to start!");
             }
             LsBenchFileUtil.ensureDeleted(cfg.toFile());
-           Files.move(previousYml, logstashYml, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(previousYml, logstashYml, StandardCopyOption.REPLACE_EXISTING);
             LsBenchFileUtil.ensureDeleted(output);
         }
 
