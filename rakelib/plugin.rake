@@ -9,8 +9,9 @@ namespace "plugin" do
   end
 
   task "install-development-dependencies" => "bootstrap" do
-    puts("[plugin:install-development-dependencies] Installing development dependencies of all installed plugins")
+    puts("[plugin:install-development-dependencies] Installing development dependencies")
     install_plugins("--development",  "--preserve")
+    install_plugins("--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
@@ -26,20 +27,6 @@ namespace "plugin" do
   task "install-default" => "bootstrap" do
     puts("[plugin:install-default] Installing default plugins")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
-
-    task.reenable # Allow this task to be run again
-  end
-
-  task "install-core" => "bootstrap" do
-    puts("[plugin:install-core] Installing core plugins")
-    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
-
-    task.reenable # Allow this task to be run again
-  end
-
-  task "install-jar-dependencies" => "bootstrap" do
-    puts("[plugin:install-jar-dependencies] Installing jar_dependencies plugins for testing")
-    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
