@@ -58,8 +58,8 @@ namespace "test" do
     exit 1 unless system(*(["bin/rspec", "-fd", "--order", "rand"].concat(test_files)))
   end
 
-  desc "install core plugins and dev dependencies"
-  task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
+  desc "install dev dependencies"
+  task "install-core" => ["bootstrap", "plugin:install-development-dependencies"]
 
   desc "install default plugins and dev dependencies"
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]

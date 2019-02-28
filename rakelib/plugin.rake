@@ -30,13 +30,6 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-core" => "bootstrap" do
-    puts("[plugin:install-core] Installing core plugins")
-    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
-
-    task.reenable # Allow this task to be run again
-  end
-
   task "clean-local-core-gem", [:name, :path] do |task, args|
     name = args[:name]
     path = args[:path]
