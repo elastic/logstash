@@ -253,7 +253,7 @@ task installTestGems(dependsOn: assemblyDeps) {
   doLast {
     rubyGradleUtils.gem("rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
     rubyGradleUtils.gem("json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
-    rubyGradleUtils.rake('test:install-core')
+    rubyGradleUtils.rake('plugin:install-development-dependencies')
   }
 }
 

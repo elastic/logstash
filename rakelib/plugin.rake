@@ -9,7 +9,7 @@ namespace "plugin" do
   end
 
   task "install-development-dependencies" => "bootstrap" do
-    puts("[plugin:install-development-dependencies] Installing development dependencies of all installed plugins")
+    puts("[plugin:install-development-dependencies] Installing development dependencies")
     install_plugins("--development",  "--preserve")
 
     task.reenable # Allow this task to be run again
