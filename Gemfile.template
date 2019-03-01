@@ -29,6 +29,7 @@ gem "logstash-codec-plain", :group => :development
 gem "logstash-input-generator", :group => :development
 gem "logstash-input-tcp", :group => :development
 gem "logstash-input-stdin", :group => :development
+gem "logstash-filter-date", :group => :development
 gem "logstash-filter-drop", :group => :development
 gem "logstash-filter-clone", :group => :development
 gem "logstash-filter-ruby", :group => :development
