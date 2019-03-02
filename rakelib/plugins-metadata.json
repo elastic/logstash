@@ -364,7 +364,7 @@
     "skip-list": false
   },
   "logstash-input-twitter": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   },
   "logstash-input-udp": {
