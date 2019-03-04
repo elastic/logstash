@@ -26,11 +26,13 @@ gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
 gem "json", "~> 1.8.3"
 gem "webmock", "~> 3", :group => :development
+gem "logstash-input-beats", :group => :development
 gem "logstash-codec-plain", :group => :development
 gem "logstash-input-generator", :group => :development
 gem "logstash-input-tcp", :group => :development
 gem "logstash-input-stdin", :group => :development
 gem "logstash-filter-date", :group => :development
+gem "logstash-filter-xml", :group => :development
 gem "logstash-filter-drop", :group => :development
 gem "logstash-filter-clone", :group => :development
 gem "logstash-filter-ruby", :group => :development
@@ -38,3 +40,4 @@ gem "logstash-filter-mutate", :group => :development
 gem "logstash-output-null", :group => :development
 gem "logstash-output-stdout", :group => :development
 gem "logstash-output-file", :group => :development
+gem "logstash-output-elasticsearch", :group => :development
