@@ -4,40 +4,25 @@
 source "https://rubygems.org"
 gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
-gem "paquet", "~> 0.2"
-gem "ruby-progressbar", "~> 1"
-gem "builder", "~> 3"
-gem "ci_reporter_rspec", "~> 1", :group => :development
-gem "rspec", "~> 3.5", :group => :development
-gem "logstash-devutils", "~> 1", :group => :development
-gem "benchmark-ips", :group => :development
-gem "octokit", "~> 4", :group => :build
-gem "stud", "~> 0.0.22", :group => :build
-gem "rack-test", :require => "rack/test", :group => :development
-gem "fpm", "~> 1.3.3", :group => :build
-gem "childprocess", "~> 0.9", :group => :build
-gem "rubyzip", "~> 1", :group => :build
-gem "gems", "~> 1", :group => :build
-gem "flores", "~> 0.0.6", :group => :development
 gem "atomic", "~> 1"
-gem "belzebuth", :group => :development
-gem "json-schema", "~> 2", :group => :development
+gem "builder", "~> 3"
+gem "json", "~> 1.8.3"
+gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
-gem "json", "~> 1.8.3"
+gem "ruby-progressbar", "~> 1"
+gem "childprocess", "~> 0.9", :group => :build
+gem "fpm", "~> 1.3.3", :group => :build
+gem "gems", "~> 1", :group => :build
+gem "octokit", "~> 4", :group => :build
+gem "rubyzip", "~> 1", :group => :build
+gem "stud", "~> 0.0.22", :group => :build
+gem "belzebuth", :group => :development
+gem "benchmark-ips", :group => :development
+gem "ci_reporter_rspec", "~> 1", :group => :development
+gem "flores", "~> 0.0.6", :group => :development
+gem "json-schema", "~> 2", :group => :development
+gem "logstash-devutils", "~> 1", :group => :development
+gem "rack-test", :require => "rack/test", :group => :development
+gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
-gem "logstash-input-beats", :group => :development
-gem "logstash-codec-plain", :group => :development
-gem "logstash-input-generator", :group => :development
-gem "logstash-input-tcp", :group => :development
-gem "logstash-input-stdin", :group => :development
-gem "logstash-filter-date", :group => :development
-gem "logstash-filter-xml", :group => :development
-gem "logstash-filter-drop", :group => :development
-gem "logstash-filter-clone", :group => :development
-gem "logstash-filter-ruby", :group => :development
-gem "logstash-filter-mutate", :group => :development
-gem "logstash-output-null", :group => :development
-gem "logstash-output-stdout", :group => :development
-gem "logstash-output-file", :group => :development
-gem "logstash-output-elasticsearch", :group => :development
