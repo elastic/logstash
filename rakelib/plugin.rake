@@ -11,6 +11,7 @@ namespace "plugin" do
   task "install-development-dependencies" => "bootstrap" do
     puts("[plugin:install-development-dependencies] Installing development dependencies")
     install_plugins("--development",  "--preserve")
+    install_plugins("--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end

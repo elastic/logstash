@@ -65,6 +65,7 @@
   },
   "logstash-codec-plain": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-codec-rubydebug": {
@@ -85,6 +86,7 @@
   },
   "logstash-filter-clone": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-csv": {
@@ -93,6 +95,7 @@
   },
   "logstash-filter-date": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-de_dot": {
@@ -109,6 +112,7 @@
   },
   "logstash-filter-drop": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-elasticsearch": {
@@ -165,6 +169,7 @@
   },
   "logstash-filter-mutate": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-prune": {
@@ -173,6 +178,7 @@
   },
   "logstash-filter-ruby": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-sleep": {
@@ -213,6 +219,7 @@
   },
   "logstash-filter-xml": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-yaml": {
@@ -225,6 +232,7 @@
   },
   "logstash-input-beats": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-input-couchdb_changes": {
@@ -269,6 +277,7 @@
   },
   "logstash-input-generator": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-input-graphite": {
@@ -353,6 +362,7 @@
   },
   "logstash-input-stdin": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-input-syslog": {
@@ -361,6 +371,7 @@
   },
   "logstash-input-tcp": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-input-twitter": {
@@ -389,6 +400,7 @@
   },
   "logstash-output-elasticsearch": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-output-email": {
@@ -401,6 +413,7 @@
   },
   "logstash-output-file": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-output-google_cloud_storage": {
@@ -441,6 +454,7 @@
   },
   "logstash-output-null": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-output-pipe": {
@@ -477,6 +491,7 @@
   },
   "logstash-output-stdout": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-output-tcp": {
