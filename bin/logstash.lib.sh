@@ -95,6 +95,16 @@ setup_java() {
     unset JAVA_TOOL_OPTIONS
   fi
 
+  # Set a default GC log file for use by jvm.options _before_ it's called.
+  if [ -z "$LS_GC_LOG_FILE" ] ; then
+    LS_GC_LOG_FILE="./logstash-gc.log"
+  fi
+
+  # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
+  export JAVACMD
+}
+
+setup_java_opts() {
   # JAVA_OPTS is not a built-in JVM mechanism but some people think it is so we
   # warn them that we are not observing the value of $JAVA_OPTS
   if [ ! -z "$JAVA_OPTS" ]; then
@@ -102,10 +112,6 @@ setup_java() {
     echo "pass JVM parameters via LS_JAVA_OPTS"
   fi
 
-  # Set a default GC log file for use by jvm.options _before_ it's called.
-  if [ -z "$LS_GC_LOG_FILE" ] ; then
-    LS_GC_LOG_FILE="./logstash-gc.log"
-  fi
 
   # Set the initial JVM options from the jvm.options file.  Look in
   # /etc/logstash first, and break if that file is found readable there.
@@ -114,17 +120,19 @@ setup_java() {
                         "$LOGSTASH_HOME"/config/jvm.options;
                          do
           if [ -r "$jvm_options" ]; then
-              LS_JVM_OPTS=$jvm_options
-              break
+            for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
+                LS_OPTIONS_CP=${LS_OPTIONS_CP}${LS_OPTIONS_CP:+:}${LOGSTASH_JARS}/${J}
+            done
+            LS_JVM_OPTS=`"$JAVACMD" -cp "$LS_OPTIONS_CP" org.logstash.util.JvmOptionsConfigParser "$jvm_options"`
+            unset LS_OPTIONS_CP
+            break
           fi
       done
   fi
-  # then override with anything provided
-  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
-  JAVA_OPTS=$LS_JAVA_OPTS
 
-  # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
-  export JAVACMD
+  # then override with anything provided
+  LS_JAVA_OPTS="$LS_JVM_OPTS $LS_JAVA_OPTS"
+  JAVA_OPTS=$LS_JAVA_OPTS
   export JAVA_OPTS
 }
 
@@ -159,6 +167,7 @@ setup_vendored_jruby() {
 
 setup() {
   setup_java
+  setup_java_opts
   setup_vendored_jruby
 }
 

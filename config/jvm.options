@@ -17,7 +17,7 @@
 ################################################################
 
 ## GC configuration
--XX:+UseConcMarkSweepGC
+8:-XX:+UseConcMarkSweepGC
 -XX:CMSInitiatingOccupancyFraction=75
 -XX:+UseCMSInitiatingOccupancyOnly
 
@@ -74,3 +74,17 @@
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom
+
+# Java 9 and above:
+9-:--add-opens=java.base/java.lang=ALL-UNNAMED
+9-:--add-opens=java.base/java.security=ALL-UNNAMED
+9-:--add-opens=java.base/java.util=ALL-UNNAMED
+9-:--add-opens=java.base/java.security.cert=ALL-UNNAMED
+9-:--add-opens=java.base/java.util.zip=ALL-UNNAMED
+9-:--add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+9-:--add-opens=java.base/java.util.regex=ALL-UNNAMED
+9-:--add-opens=java.base/java.net=ALL-UNNAMED
+9-:--add-opens=java.base/java.io=ALL-UNNAMED
+9-:--add-opens=java.base/java.lang=ALL-UNNAMED
+9-:--add-opens=java.base/javax.crypto=ALL-UNNAMED
+9-:--add-opens=java.management/sun.management=ALL-UNNAMED

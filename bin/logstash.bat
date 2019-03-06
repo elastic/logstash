@@ -40,12 +40,26 @@ if "%LS_JVM_OPTIONS_CONFIG%" == "" (
 
 rem extract the options from the JVM options file %LS_JVM_OPTIONS_CONFIG%
 rem such options are the lines beginning with '-', thus "findstr /b"
+rem if exist %LS_JVM_OPTIONS_CONFIG% (
+rem for /F "usebackq delims=" %%a in (`findstr /b \- %LS_JVM_OPTIONS_CONFIG%`) do set options=!options! %%a
+rem  set "LS_JAVA_OPTS=!options! %LS_JAVA_OPTS%"
+rem ) else (
+rem   echo "warning: no jvm.options file found"
+rem )
+rem set "ES_JVM_OPTIONS=%ES_PATH_CONF%\jvm.options"
+
 if exist %LS_JVM_OPTIONS_CONFIG% (
-  for /F "usebackq delims=" %%a in (`findstr /b \- %LS_JVM_OPTIONS_CONFIG%`) do set options=!options! %%a
-  set "LS_JAVA_OPTS=!options! %LS_JAVA_OPTS%"
-) else (
-  echo "warning: no jvm.options file found"
+@setlocal
+for /F "usebackq delims=" %%a in (`"%JAVA% -cp "%CLASSPATH%" "org.logstash.util.JvmOptionsConfigParser" "!LS_JVM_OPTIONS!" || echo jvm_options_parser_failed"`) do set JVM_OPTIONS=%%a
+@endlocal & set "MAYBE_JVM_OPTIONS_PARSER_FAILED=%JVM_OPTIONS%" & set JAVA_OPTS=%JVM_OPTIONS%
+
+if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
+  exit /b 1
 )
+
+
+
+
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
 for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (

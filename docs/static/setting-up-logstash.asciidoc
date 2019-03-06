@@ -188,7 +188,7 @@ The settings files are already defined in the Logstash installation. Logstash in
   Contains JVM configuration flags. Use this file to set initial and maximum values for
   total heap space. You can also use this file to set the locale for Logstash.
   Specify each flag on a separate line. All other settings in this file are
-  considered expert settings.
+  considered expert settings. See <<jvm-options-file>> for details.
 *`log4j2.properties`*:: Contains default settings for `log4j 2` library. See <<log4j2>> for more info.
 *`startup.options` (Linux)*::
   Contains options used by the `system-install` script in `/usr/share/logstash/bin` to build the appropriate startup
