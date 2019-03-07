@@ -39,6 +39,9 @@ public final class ConfigurationImpl implements Configuration {
             Object o = rawSettings.get(configSpec.name());
             if (configSpec.type().isAssignableFrom(o.getClass())) {
                 return (T) o;
+            } else if (configSpec.type() == Codec.class && o instanceof String && pluginFactory != null) {
+                Codec codec = pluginFactory.buildDefaultCodec((String)o);
+                return configSpec.type().cast(codec);
             } else {
                 throw new IllegalStateException(
                         String.format("Setting value for '%s' of type '%s' incompatible with defined type of '%s'",
