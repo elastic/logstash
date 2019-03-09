@@ -38,18 +38,18 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.214)
-      aws-sdk-resources (= 2.11.214)
-    aws-sdk-core (2.11.214)
+    aws-sdk (2.11.236)
+      aws-sdk-resources (= 2.11.236)
+    aws-sdk-core (2.11.236)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.214)
-      aws-sdk-core (= 2.11.214)
+    aws-sdk-resources (2.11.236)
+      aws-sdk-core (= 2.11.236)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
     aws-sigv4 (1.0.3)
-    backports (3.11.4)
+    backports (3.12.0)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.7.2)
@@ -75,7 +75,7 @@ GEM
     diff-lcs (1.3)
     domain_name (0.5.20180417)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.6.0)
+    dotenv (2.7.1)
     edn (1.1.1)
     elasticsearch (5.0.5)
       elasticsearch-api (= 5.0.5)
@@ -123,7 +123,7 @@ GEM
       concurrent-ruby
     jmespath (1.4.0)
     jrjackson (0.4.7-java)
-    jruby-openssl (0.10.1-java)
+    jruby-openssl (0.10.2-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
     json-schema (2.6.2)
@@ -202,7 +202,7 @@ GEM
     logstash-filter-dissect (1.2.0)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
-    logstash-filter-dns (3.0.11)
+    logstash-filter-dns (3.0.12)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
@@ -222,7 +222,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
       stud (~> 0.0.22)
-    logstash-filter-http (1.0.0)
+    logstash-filter-http (1.0.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 5.0.0, < 9.0.0)
     logstash-filter-jdbc_static (1.0.6)
@@ -237,7 +237,7 @@ GEM
       sequel
     logstash-filter-json (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-kv (4.2.1)
+    logstash-filter-kv (4.3.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-memcached (0.1.1)
       dalli (~> 2.7)
@@ -269,7 +269,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-useragent (3.2.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.0.6)
+    logstash-filter-xml (4.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
@@ -395,7 +395,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (5.2.0-java)
+    logstash-input-tcp (5.2.2-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -458,7 +458,7 @@ GEM
     logstash-output-http (5.2.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 6.0.0, < 8.0.0)
-    logstash-output-kafka (7.3.1)
+    logstash-output-kafka (7.3.2)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -527,7 +527,7 @@ GEM
       hitimes (~> 1.1)
     mime-types (2.6.2)
     minitar (0.6.1)
-    msgpack (1.2.6-java)
+    msgpack (1.2.7-java)
     multi_json (1.13.1)
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
@@ -580,11 +580,11 @@ GEM
     rubyzip (1.2.2)
     rufus-scheduler (3.0.9)
       tzinfo
-    safe_yaml (1.0.4)
+    safe_yaml (1.0.5)
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.17.0)
+    sequel (5.18.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
