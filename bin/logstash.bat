@@ -2,7 +2,6 @@
 setlocal enabledelayedexpansion
 set params='%*'
 
-
 call "%~dp0setup.bat" || exit /b 1
 if errorlevel 1 (
 	if not defined nopauseonerror (
@@ -39,6 +38,7 @@ if "%LS_JVM_OPTIONS_CONFIG%" == "" (
   set LS_JVM_OPTIONS_CONFIG="%LS_HOME%\config\jvm.options"
 )
 
+rem Use wildcard for jars, instead of concatenating each jar to classpath to avoid reaching max size
 set CLASSPATH=%LS_HOME%\logstash-core\lib\jars\*
 
 if not exist %LS_JVM_OPTIONS_CONFIG% (
@@ -81,9 +81,7 @@ if exist !LOGSTASH_VERSION_FILE1! (
 		)
 	)
 )
-
 echo logstash !LOGSTASH_VERSION!
-
 goto :end
 
 :concat

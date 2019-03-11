@@ -123,6 +123,8 @@ setup_java_opts() {
             for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
                 LS_OPTIONS_CP=${LS_OPTIONS_CP}${LS_OPTIONS_CP:+:}${LOGSTASH_JARS}/${J}
             done
+            # Call out to the JvmOptionsConfigParser to parse out the jvm options. This allows versioning of settings
+            # the same way that Elasticsearch does
             LS_JVM_OPTS=`"$JAVACMD" -cp "$LS_OPTIONS_CP" org.logstash.util.JvmOptionsConfigParser "$jvm_options"`
             unset LS_OPTIONS_CP
             break
