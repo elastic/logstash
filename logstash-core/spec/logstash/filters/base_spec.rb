@@ -309,4 +309,18 @@ describe LogStash::Filters::NOOP do
       reject { subject }.include?("go")
     end
   end
+
+  describe "when metrics are disabled" do
+    describe "An error should not be raised, and the event should be processed" do
+      config <<-CONFIG
+        filter {
+          noop { enable_metric => false }
+        }
+      CONFIG
+
+      sample_one("type" => "noop", "tags" => {"blackhole" => "go"}) do
+        expect(subject.get("[tags][blackhole]")).to eq("go")
+      end
+    end
+  end
 end
