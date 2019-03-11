@@ -31,33 +31,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-6-2]]
 === Logstash 6.6.2 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.6.2
-
-=== Logstash Commits between 6.6 and 6.6.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.6.1..6.6"
-
-bfe52a514 - (HEAD -> 6.6, origin/6.6) Convert instructions for Java plugins to asciidoc (3 hours ago) <Karen Metts>
-8caaa5bfe - Update patch plugin versions in gemfile lock in preparation for 6.6.2 (#10505) (11 days ago) <João Duarte>
-58590ce79 - Mute CI integration DLQ acceptance test (12 days ago) <Guy Boertje>
-b152e4840 - Improve docs about using Filebeat modules with Logstash (#10438) (3 weeks ago) <DeDe Morton>
-b6cc39953 - bump version to 6.6.2 (#10471) (3 weeks ago) <João Duarte>
-eefef1619 - Update to 6.6.1 release notes (#10475) (3 weeks ago) <Karen Metts>
-b9581ffaf - Bump doc version to 6.6.1 (#10473) (3 weeks ago) <Karen Metts>
-1ac0815b9 - Release notes draft for 6.6.1 (#10468) (3 weeks ago) <Logstash Machine>
-f93b4382d - update test fixture to reflect NOTICES format (#10453) (3 weeks ago) <Ry Biesemeyer>
-603fe5cf5 - update dependency notices for 6.6.1 release (#10444) (4 weeks ago) <Ry Biesemeyer>
-69e57b63d - Incorporate review comments (4 weeks ago) <Karen Metts>
-f601e392f - Add prilileges required for ilm (4 weeks ago) <Karen Metts>
-3b5855c85 - Move field-ref include below xpack content (4 weeks ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.6.1..6.6 *.release"
-Changed plugin versions:
-logstash-filter-xml: 4.0.6 -> 4.0.7
-logstash-output-kafka: 7.3.1 -> 7.3.2
----------- DELETE UP TO HERE ------------
+* No changes to Logstash core for 6.6.2
 
 ==== Plugins
 
@@ -68,7 +42,6 @@ logstash-output-kafka: 7.3.1 -> 7.3.2
 *Kafka Output*
 
 * Fixed issue with unnecessary sleep after retries exhausted [#216](https://github.com/logstash-plugins/logstash-output-kafka/pull/216)
-
 
 [[logstash-6-6-1]]
 === Logstash 6.6.1 Release Notes
