@@ -80,6 +80,11 @@ public final class UserOutput {
                 "Mean CPU Usage: %.2f%%", stats.get(LsMetricStats.CPU_USAGE).getMean()
             )
         );
+        green(
+                String.format(
+                        "Mean Heap Usage: %.2f%%", stats.get(LsMetricStats.HEAP_USAGE).getMean()
+                )
+        );
     }
     
     private static String colorize(final String line, final String prefix) {
