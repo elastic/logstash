@@ -95,7 +95,7 @@ def elasticsearch_client(options = { :url => "http://elastic:#{elastic_password}
 end
 
 def push_elasticsearch_config(pipeline_id, config)
-  elasticsearch_client.index :index => '.logstash', :type => "doc", id: pipeline_id, :body => { :pipeline => config }
+  elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
 end
 
 def cleanup_elasticsearch(index = MONITORING_INDEXES)
