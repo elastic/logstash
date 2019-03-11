@@ -39,7 +39,7 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     @JRubyMethod(optional = 2)
     public NullNamespacedMetricExt initialize(final ThreadContext context,
         final IRubyObject[] args) {
-        this.metric = args.length > 0 && !args[0].isNil() ? (NullMetricExt) args[0] : new NullMetricExt(context.runtime, metaClass);
+        this.metric = args.length > 0 && !args[0].isNil() && (args[0] instanceof NullMetricExt) ? (NullMetricExt) args[0] : new NullMetricExt(context.runtime, metaClass);
         final IRubyObject namespaceName = args.length == 2 ? args[1] : NULL;
         if (namespaceName instanceof RubyArray) {
             this.namespaceName = (RubyArray) namespaceName;
