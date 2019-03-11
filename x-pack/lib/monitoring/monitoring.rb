@@ -83,7 +83,7 @@ module LogStash
       include LogStash::Util::Loggable, LogStash::Helpers::ElasticsearchOptions
 
       PIPELINE_ID = ".monitoring-logstash"
-      API_VERSION = 6
+      API_VERSION = 7
 
       def initialize
         # nothing to do here
