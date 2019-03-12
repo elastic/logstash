@@ -423,57 +423,56 @@ bootstrap.dependsOn installTestGems
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
-String apiResponse = artifactsVersionApi.toURL().text
-def dlVersions = new JsonSlurper().parseText(apiResponse)
-// the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
-// in the normal PR type builds it is plain '7.0.0'
-// in the build invoked by the release manager it is '7.0.0-alpha1' etc.
-// the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
-String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
-
-String arch = "x86_64"
-String osName = System.properties['os.name']
-
-if (osName ==~ /Mac OS X/) {
-    osName = "darwin"
-} else {
-    osName = "linux"
-}
-
-String architecture = "${osName}-${arch}"
-
-String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}-${architecture}"
-String unpackedElasticsearchName = "elasticsearch-${qualifiedVersion}"
-
-// find latest reference to last build
-String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
-apiResponse = buildsListApi.toURL().text
-def dlBuilds = new JsonSlurper().parseText(apiResponse)
-String build = dlBuilds["builds"][0]
-
-// find url of build artifact
-String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-apiResponse = artifactApiUrl.toURL().text
-def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"]
-String elasticsearchDownloadLocation = "${projectDir}/build/${downloadedElasticsearchName}.tar.gz"
-
 task downloadEs(type: Download) {
     description "Download ES Snapshot for current branch version: ${version}"
-    doFirst {
-        if (qualifiedVersion == "null") {
-            throw new GradleException("could not find the current artifact from the artifact-api for version: ${version}, api response was: ${apiResponse}")
-        }
+
+    String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
+    String apiResponse = artifactsVersionApi.toURL().text
+    def dlVersions = new JsonSlurper().parseText(apiResponse)
+    // the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
+    // in the normal PR type builds it is plain '7.0.0'
+    // in the build invoked by the release manager it is '7.0.0-alpha1' etc.
+    // the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
+    String qualifiedVersion = dlVersions['versions'].grep(~/^${version}.*/)[0]
+    if (qualifiedVersion == "null") {
+        throw new GradleException("could not find the current artifact from the artifact-api for version: ${version}, api response was: ${apiResponse}")
     }
+
+    String arch = "x86_64"
+    String osName = System.properties['os.name']
+
+    if (osName ==~ /Mac OS X/) {
+        osName = "darwin"
+    } else {
+        osName = "linux"
+    }
+
+    String architecture = "${osName}-${arch}"
+
+    String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}-${architecture}"
+    project.ext.set("unpackedElasticsearchName", "elasticsearch-${qualifiedVersion}")
+
+    // find latest reference to last build
+    String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
+    apiResponse = buildsListApi.toURL().text
+    def dlBuilds = new JsonSlurper().parseText(apiResponse)
+    String build = dlBuilds["builds"][0]
+
+    // find url of build artifact
+    String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+    apiResponse = artifactApiUrl.toURL().text
+    def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+    String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"]
+    project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+
     src elasticsearchSnapshotURL
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
-    outputs.file(elasticsearchDownloadLocation)
-    dest new File(elasticsearchDownloadLocation)
+    outputs.file(project.ext.elasticsearchDownloadLocation)
+    dest new File(project.ext.elasticsearchDownloadLocation)
     doLast {
-        System.out.println "Downloaded to ${elasticsearchDownloadLocation}"
+        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
@@ -482,10 +481,10 @@ task deleteLocalEs(type: Delete) {
 }
 
 task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
-    from tarTree(resources.gzip(elasticsearchDownloadLocation))
+    from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
     doLast {
-        file("./build/${unpackedElasticsearchName}").renameTo('./build/elasticsearch')
+        file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
     }
 }
 
