@@ -38,18 +38,18 @@ GEM
     avl_tree (1.2.1)
       atomic (~> 1.1)
     awesome_print (1.7.0)
-    aws-sdk (2.11.229)
-      aws-sdk-resources (= 2.11.229)
-    aws-sdk-core (2.11.229)
+    aws-sdk (2.11.236)
+      aws-sdk-resources (= 2.11.236)
+    aws-sdk-core (2.11.236)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.229)
-      aws-sdk-core (= 2.11.229)
+    aws-sdk-resources (2.11.236)
+      aws-sdk-core (= 2.11.236)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
     aws-sigv4 (1.0.3)
-    backports (3.11.4)
+    backports (3.12.0)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.7.2)
@@ -120,7 +120,7 @@ GEM
       concurrent-ruby
     jmespath (1.4.0)
     jrjackson (0.4.6-java)
-    jruby-openssl (0.10.1-java)
+    jruby-openssl (0.10.2-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
     json-schema (2.6.2)
@@ -392,7 +392,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (5.2.0-java)
+    logstash-input-tcp (5.2.1-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -524,7 +524,7 @@ GEM
       hitimes (~> 1.1)
     mime-types (2.6.2)
     minitar (0.6.1)
-    msgpack (1.2.6-java)
+    msgpack (1.2.7-java)
     multi_json (1.13.1)
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
@@ -580,7 +580,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.17.0)
+    sequel (5.18.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
