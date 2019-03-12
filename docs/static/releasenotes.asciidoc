@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-6-2,Logstash 6.6.2>>
 * <<logstash-6-6-1,Logstash 6.6.1>>
 * <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
@@ -26,6 +27,21 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-6-2]]
+=== Logstash 6.6.2 Release Notes
+
+* No changes to Logstash core for 6.6.2
+
+==== Plugins
+
+*Xml Filter*
+
+* Fixed creation of empty arrays when xpath failed https://github.com/logstash-plugins/logstash-filter-xml/pull/59[#59]
+
+*Kafka Output*
+
+* Fixed issue with unnecessary sleep after retries exhausted https://github.com/logstash-plugins/logstash-output-kafka/pull/216[#216]
 
 [[logstash-6-6-1]]
 === Logstash 6.6.1 Release Notes
