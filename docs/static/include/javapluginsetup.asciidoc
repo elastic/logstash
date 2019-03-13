@@ -20,7 +20,7 @@ git clone --branch <branch_name> --single-branch https://github.com/elastic/logs
 The `branch_name` should correspond to the version of Logstash containing the
 preferred revision of the Java plugin API. 
 
-NOTE: The beta version of the Java plugin API is available in the `6.7`
+NOTE: The experimental version of the Java plugin API is available in the `6.6`
 branch of the Logstash codebase.
 
 Specify the `target_folder` for your local copy of the Logstash codebase. If you

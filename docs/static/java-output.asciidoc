@@ -15,7 +15,7 @@
 [[java-output-plugin]]
 === How to write a Java output plugin
 
-beta[]
+experimental[]
 
 // Pulls in shared section: Setting Up Environment
 include::include/javapluginsetup.asciidoc[]
@@ -23,39 +23,41 @@ include::include/javapluginsetup.asciidoc[]
 [float]
 === Code the plugin
 
-The example output plugin prints events to the console using the event's
-`toString` method. Let's look at the main class in the example output:
+The example output plugin prints events in JSON format to the console. Let's
+look at the main class in that example output:
  
 [source,java]
 -----
-@LogstashPlugin(name = "java_output_example")
+@LogstashPlugin(name="java_output_example")
 public class JavaOutputExample implements Output {
 
     public static final PluginConfigSpec<String> PREFIX_CONFIG =
-            PluginConfigSpec.stringSetting("prefix", "");
+            Configuration.stringSetting("prefix", "");
 
-    private final String id;
     private String prefix;
     private PrintStream printer;
     private final CountDownLatch done = new CountDownLatch(1);
     private volatile boolean stopped = false;
 
-    public JavaOutputExample(final String id, final Configuration configuration, final Context context) {
-        this(id, configuration, context, System.out);
+    public JavaOutputExample(final Configuration configuration, final Context context) {
+        this(configuration, context, System.out);
     }
 
-    JavaOutputExample(final String id, final Configuration config, final Context context, OutputStream targetStream) {
-        this.id = id;
+    JavaOutputExample(final Configuration config, final Context context, OutputStream targetStream) {
         prefix = config.get(PREFIX_CONFIG);
         printer = new PrintStream(targetStream);
     }
 
     @Override
     public void output(final Collection<Event> events) {
-      Iterator<Event> z = events.iterator();
-      while (z.hasNext() && !stopped) {
-          String s = prefix + z.next();
-          printer.println(s);
+        try {
+            Iterator<Event> z = events.iterator();
+            while (z.hasNext() && !stopped) {
+                String s = prefix + z.next().toJson();
+                printer.println(s);
+            }
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -73,11 +75,6 @@ public class JavaOutputExample implements Output {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         return Collections.singletonList(PREFIX_CONFIG);
-    }
-  
-    @Override
-    public String getId() {
-        return id;
     }
 }
 -----
@@ -100,7 +97,7 @@ Notes about the class declaration:
    in the Logstash pipeline definition. For example, this output would be referenced in the output section of the
    Logstash pipeline definition as `output { java_output_example => { .... } }`
 ** The value of the `name` property must match the name of the class excluding casing and underscores.
-* The class must implement the `co.elastic.logstash.api.Output` interface.
+* The class must implement the `co.elastic.logstash.api.v0.Output` interface.
 
 [float]
 ==== Plugin settings
@@ -110,7 +107,7 @@ The snippet below contains both the setting definition and the method referencin
 [source,java]
 -----
 public static final PluginConfigSpec<String> PREFIX_CONFIG =
-        PluginConfigSpec.stringSetting("prefix", "");
+        Configuration.stringSetting("prefix", "");
 
 @Override
 public Collection<PluginConfigSpec<?>> configSchema() {
@@ -134,28 +131,26 @@ unsupported settings are present.
 
 [source,java]
 -----
-private final String id;
 private String prefix;
 private PrintStream printer;
 
-public JavaOutputExample(final String id, final Configuration configuration, final Context context) {
+public JavaOutputExample(final Configuration configuration, final Context context) {
     this(configuration, context, System.out);
 }
 
-JavaOutputExample(final String id, final Configuration config, final Context context, OutputStream targetStream) {
-    this.id = id;
+JavaOutputExample(final Configuration config, final Context context, OutputStream targetStream) {
     prefix = config.get(PREFIX_CONFIG);
     printer = new PrintStream(targetStream);
 }
 -----
 
-All Java output plugins must have a constructor taking a `String` id and a
-`Configuration` and `Context` argument. This is the constructor that will be
-used to instantiate them at runtime. The retrieval and validation of all plugin
-settings should occur in this constructor. In this example, the values of the
-`prefix` setting is retrieved and stored in a local variable for later use in
-the `output` method. In this example, a second, pacakge private constructor is
-defined that is useful for unit testing with a `Stream` other than `System.out`.
+All Java output plugins must have a constructor taking both a `Configuration`
+and `Context` argument. This is the constructor that will be used to instantiate
+them at runtime. The retrieval and validation of all plugin settings should
+occur in this constructor. In this example, the values of the `prefix` setting
+is retrieved and stored in a local variable for later use in the `output`
+method. In this example, a second, pacakge private constructor is defined that
+is useful for unit testing with a `Stream` other than `System.out`.
 
 Any additional initialization may occur in the constructor as well. If there are
 any unrecoverable errors encountered in the configuration or initialization of
@@ -169,10 +164,14 @@ be logged and will prevent Logstash from starting.
 -----
 @Override
 public void output(final Collection<Event> events) {
-    Iterator<Event> z = events.iterator();
-    while (z.hasNext() && !stopped) {
-        String s = prefix + z.next();
-        printer.println(s);
+    try {
+        Iterator<Event> z = events.iterator();
+        while (z.hasNext() && !stopped) {
+            String s = prefix + z.next().toJson();
+            printer.println(s);
+        }
+    } catch (JsonProcessingException e) {
+        throw new IllegalStateException(e);
     }
 }
 -----
@@ -210,20 +209,6 @@ to block until the output has  completed the stop process. Note that this method
 should **not** signal the output to stop as the `stop` method  does. The
 awaitStop mechanism may be implemented in any way that honors the API contract
 though a `CountDownLatch` works well for many use cases.
-
-[float]
-==== getId method
-
-[source,java]
------
-@Override
-public String getId() {
-    return id;
-}
------
-
-For output plugins, the `getId` method should always return the id that was provided to the plugin through its
-constructor at instantiation time.
 
 [float]
 ==== Unit tests

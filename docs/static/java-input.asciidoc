@@ -13,7 +13,7 @@
 [[java-input-plugin]]
 === How to write a Java input plugin
 
-beta[]
+experimental[]
 
 // Pulls in shared section: Setting Up Environment
 include::include/javapluginsetup.asciidoc[]
@@ -30,31 +30,28 @@ terminating. Let's look at the main class in the  example input.
 public class JavaInputExample implements Input {
 
     public static final PluginConfigSpec<Long> EVENT_COUNT_CONFIG =
-            PluginConfigSpec.numSetting("count", 3);
+            Configuration.numSetting("count", 3);
 
     public static final PluginConfigSpec<String> PREFIX_CONFIG =
-            PluginConfigSpec.stringSetting("prefix", "message");
+            Configuration.stringSetting("prefix", "message");
 
-    private String id;
     private long count;
     private String prefix;
     private final CountDownLatch done = new CountDownLatch(1);
     private volatile boolean stopped;
 
-
-    public JavaInputExample(String id, Configuration config, Context context) {
-            this.id = id;
+    public JavaInputExample(Configuration config, Context context) {
         count = config.get(EVENT_COUNT_CONFIG);
         prefix = config.get(PREFIX_CONFIG);
     }
 
     @Override
-    public void start(Consumer<Map<String, Object>> consumer) {
+    public void start(QueueWriter queueWriter) {
         int eventCount = 0;
         try {
             while (!stopped && eventCount < count) {
                 eventCount++;
-                consumer.accept.push(Collections.singletonMap("message",
+                queueWriter.push(Collections.singletonMap("message",
                         prefix + " " + StringUtils.center(eventCount + " of " + count, 20)));
             }
         } finally {
@@ -77,11 +74,6 @@ public class JavaInputExample implements Input {
     public Collection<PluginConfigSpec<?>> configSchema() {
         return Arrays.asList(EVENT_COUNT_CONFIG, PREFIX_CONFIG);
     }
-
-    @Override
-    public String getId() {
-        return this.id;
-    }
 }
 -----
 
@@ -103,7 +95,7 @@ Notes about the class declaration:
    in the Logstash pipeline definition. For example, this input would be referenced in the input section of the
    Logstash pipeline defintion as `input { java_input_example => { .... } }`
 ** The value of the `name` property must match the name of the class excluding casing and underscores.
-* The class must implement the `co.elastic.logstash.api.Input` interface.
+* The class must implement the `co.elastic.logstash.api.v0.Input` interface.
 
 [float]
 ==== Plugin settings
@@ -113,10 +105,10 @@ The snippet below contains both the setting definition and the method referencin
 [source,java]
 -----
 public static final PluginConfigSpec<Long> EVENT_COUNT_CONFIG =
-        PluginConfigSpec.numSetting("count", 3);
+        Configuration.numSetting("count", 3);
 
 public static final PluginConfigSpec<String> PREFIX_CONFIG =
-        PluginConfigSpec.stringSetting("prefix", "message");
+        Configuration.stringSetting("prefix", "message");
 
 @Override
 public Collection<PluginConfigSpec<?>> configSchema() {
@@ -142,23 +134,21 @@ unsupported settings are present.
 
 [source,java]
 -----
-private String id;
 private long count;
 private String prefix;
 
-public JavaInputExample(String id, Configuration config, Context context) {
-    this.id = id;
+public JavaInputExample(Configuration config, Context context) {
     count = config.get(EVENT_COUNT_CONFIG);
     prefix = config.get(PREFIX_CONFIG);
 }
 -----
 
-All Java input plugins must have a constructor taking a `String` id and
-`Configuration` and `Context` argument. This is the constructor that will be
-used to instantiate them at runtime. The retrieval and validation of all plugin
-settings should occur in this constructor. In this example, the values of the
-two plugin settings are retrieved and stored in local variables for later use in
-the `start` method. 
+All Java input plugins must have a constructor taking both a `Configuration` and
+`Context` argument. This is the constructor that will be used to instantiate
+them at runtime. The retrieval and validation of all plugin settings should
+occur in this constructor. In this example, the values of the two plugin
+settings are retrieved and stored in local variables for later use in the
+`start` method. 
 
 Any additional initialization may occur in the constructor as well. If there are
 any unrecoverable errors encountered in the configuration or initialization of
@@ -171,12 +161,12 @@ be logged and will prevent Logstash from starting.
 [source,java]
 -----
 @Override
-public void start(Consumer<Map<String, Object>> consumer) {
+public void start(QueueWriter queueWriter) {
     int eventCount = 0;
     try {
         while (!stopped && eventCount < count) {
             eventCount++;
-            consumer.accept.push(Collections.singletonMap("message",
+            queueWriter.push(Collections.singletonMap("message",
                     prefix + " " + StringUtils.center(eventCount + " of " + count, 20)));
         }
     } finally {
@@ -198,7 +188,7 @@ the `stop` method. If the input produces a finite stream of events, this method 
 event in the stream is produced or a stop request is made, whichever comes first.
 
 Events should be constructed as instances of `Map<String, Object>` and pushed into the event pipeline via the
-`Consumer<Map<String, Object>>.accept()` method. 
+`QueueWriter.push()` method. 
 
 [float]
 ==== Stop and awaitStop methods
@@ -225,23 +215,9 @@ mechanism may be implemented in any way that honors the API contract though a
 
 Inputs stop both asynchronously and cooperatively. Use the `awaitStop` method to
 block until the input has  completed the stop process. Note that this method
-should **not** signal the input to stop as the `stop` method does. The
+should **not** signal the input to stop as the `stop` method  does. The
 awaitStop mechanism may be implemented in any way that honors the API contract
 though a `CountDownLatch` works well for many use cases.
-
-[float]
-==== getId method
-
-[source,java]
------
-@Override
-public String getId() {
-    return id;
-}
------
-
-For input plugins, the `getId` method should always return the id that was provided to the plugin through its
-constructor at instantiation time.
 
 [float]
 ==== Unit tests

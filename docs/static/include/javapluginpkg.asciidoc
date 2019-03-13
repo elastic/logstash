@@ -61,8 +61,7 @@ end
 You can use this file with the following modifications: 
 
 * `s.name` must follow the +logstash-pass:attributes[{plugintype}]-<{plugintype}-name>+ pattern
-* `s.version` must match the `project.version` specified in the `build.gradle` file. 
-Both versions should be set to be read from the `VERSION` file in this example.
+* `s.version` must match the `project.version` specified in the `build.gradle` file.
 
 **+lib/logstash/{plugintype}s/<{plugintype}-name>.rb+**
 
