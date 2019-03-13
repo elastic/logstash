@@ -318,8 +318,8 @@ describe LogStash::Filters::NOOP do
         }
       CONFIG
 
-      sample_one("type" => "noop", "tags" => {"blackhole" => "go"}) do
-        expect(subject.get("[tags][blackhole]")).to eq("go")
+      sample_one("type" => "noop", "tags" => ["go"]) do
+        expect(subject.get("tags")).to eq(["go"])
       end
     end
   end
