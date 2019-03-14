@@ -1,0 +1,58 @@
+:plugin: example
+:type: filter
+
+///////////////////////////////////////////
+START - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+:version: %VERSION%
+:release_date: %RELEASE_DATE%
+:changelog_url: %CHANGELOG_URL%
+:include_path: ../../../../logstash/docs/include
+///////////////////////////////////////////
+END - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+
+[id="plugins-{type}s-{plugin}"]
+
+=== Example filter plugin
+
+include::{include_path}/plugin_header.asciidoc[]
+
+==== Description
+
+ADD DESCRIPTION HERE
+
+[id="plugins-{type}s-{plugin}-options"]
+==== Example Filter Configuration Options
+
+This plugin supports the following configuration options plus the <<plugins-{type}s-{plugin}-common-options>> described later.
+
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<plugins-{type}s-{plugin}-setting_name>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<plugins-{type}s-{plugin}-another_setting_name>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
+|=======================================================================
+
+Also see <<plugins-{type}s-{plugin}-common-options>> for a list of options supported by all
+filter plugins.
+
+[id="plugins-{type}s-{plugin}-setting_name"]
+===== `setting_name` 
+
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
+  * Default value is `true`
+
+ADD DESCRIPTION HERE.
+
+[id="plugins-{type}s-{plugin}-another_setting_name"]
+===== `another_setting_name` 
+
+  * Value type is <<hash,hash>>
+  * Default value is `{}`
+
+ADD DESCRIPTION HERE.
+
+
+[id="plugins-{type}s-{plugin}-common-options"]
+include::{include_path}/{type}.asciidoc[]
