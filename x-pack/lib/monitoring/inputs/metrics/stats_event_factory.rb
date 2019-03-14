@@ -65,7 +65,6 @@ module LogStash; module Inputs; class Metrics;
 
     def format_os_stats(stats)
       load_average = stats.extract_metrics([:jvm, :process, :cpu], :load_average)
-      print(load_average)
       num_cpus = stats.extract_metrics([:jvm, :process, :cpu], :num_cpus)
       if os_stats?(stats)
         cpuacct = stats.extract_metrics([:os, :cgroup, :cpuacct], :control_group, :usage_nanos)
