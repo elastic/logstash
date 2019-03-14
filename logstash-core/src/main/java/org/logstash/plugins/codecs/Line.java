@@ -9,12 +9,12 @@ import co.elastic.logstash.api.PluginConfigSpec;
 import org.logstash.StringInterpolation;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
@@ -52,11 +52,7 @@ public class Line implements Codec {
 
     private final CharBuffer charBuffer = ByteBuffer.allocateDirect(64 * 1024).asCharBuffer();
     private final CharsetDecoder decoder;
-    private final CharsetEncoder encoder;
     private String remainder = "";
-
-    private Event currentEncodedEvent;
-    private CharBuffer currentEncoding;
 
     /**
      * Required constructor.
@@ -76,7 +72,6 @@ public class Line implements Codec {
         this.format = format;
         decoder = charset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
-        encoder = charset.newEncoder();
     }
 
     @Override
@@ -125,34 +120,12 @@ public class Line implements Codec {
     }
 
     @Override
-    public boolean encode(Event event, ByteBuffer buffer) throws EncodeException {
-        try {
-            if (currentEncodedEvent != null && event != currentEncodedEvent) {
-                throw new EncodeException("New event supplied before encoding of previous event was completed");
-            } else if (currentEncodedEvent == null) {
-                String eventEncoding = (format == null
-                        ? JSON_MAPPER.writeValueAsString(event.getData())
-                        : StringInterpolation.evaluate(event, format))
-                        + delimiter;
-                currentEncoding = CharBuffer.wrap(eventEncoding);
-            }
-
-            CoderResult result = encoder.encode(currentEncoding, buffer, true);
-            buffer.flip();
-            if (result.isError()) {
-                result.throwException();
-            }
-
-            if (result.isOverflow()) {
-                currentEncodedEvent = event;
-                return false;
-            } else {
-                currentEncodedEvent = null;
-                return true;
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+    public void encode(Event event, OutputStream output) throws IOException {
+        String outputString = (format == null
+                ? JSON_MAPPER.writeValueAsString(event.getData())
+                : StringInterpolation.evaluate(event, format))
+                + delimiter;
+        output.write(outputString.getBytes(charset));
     }
 
     private Map<String, Object> simpleMap(String message) {

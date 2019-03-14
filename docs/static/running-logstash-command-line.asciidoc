@@ -72,6 +72,9 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Specify `false` for this option to revert to the legacy Ruby execution engine instead
   of the default Java execution engine.
 
+*`--plugin-classloaders`*::
+  (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
+
 *`--modules`*::
   Launch the named module.  Works in conjunction with the `-M` option to assign values to
   default variables for the specified module.  If `--modules` is used on the command line,

@@ -15,6 +15,7 @@ module LogStash
       "dead_letter_queue.max_bytes",
       "metric.collect",
       "pipeline.java_execution",
+      "pipeline.plugin_classloaders",
       "path.config",
       "path.dead_letter_queue",
       "path.queue",

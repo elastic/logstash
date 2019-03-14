@@ -1,17 +1,16 @@
 package org.logstash.plugins.outputs;
 
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.LogstashPlugin;
+import co.elastic.logstash.api.Output;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.PluginHelper;
-import co.elastic.logstash.api.Codec;
-import co.elastic.logstash.api.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -26,7 +25,6 @@ public class Stdout implements Output {
     private OutputStream outputStream;
     private final CountDownLatch done = new CountDownLatch(1);
     private String id;
-    private ByteBuffer encodeBuffer = ByteBuffer.wrap(new byte[16 * 1024]);
 
     /**
      * Required constructor.
@@ -51,17 +49,10 @@ public class Stdout implements Output {
     @Override
     public void output(final Collection<Event> events) {
         try {
-            boolean encodeCompleted;
             for (Event e : events) {
-                encodeBuffer.clear();
-                do {
-                    encodeCompleted = codec.encode(e, encodeBuffer);
-                    outputStream.write(encodeBuffer.array(), encodeBuffer.position(), encodeBuffer.limit());
-                    encodeBuffer.clear();
-                }
-                while (!encodeCompleted);
+                codec.encode(e, outputStream);
             }
-        } catch (Codec.EncodeException | IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
     }

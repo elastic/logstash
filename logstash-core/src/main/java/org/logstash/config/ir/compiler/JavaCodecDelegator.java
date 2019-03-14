@@ -10,6 +10,8 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
@@ -89,16 +91,14 @@ public class JavaCodecDelegator implements Codec {
     }
 
     @Override
-    public boolean encode(final Event event, final ByteBuffer buffer) throws EncodeException {
+    public void encode(final Event event, final OutputStream out) throws IOException {
         encodeMetricIn.increment();
 
         final long start = System.nanoTime();
 
-        final boolean ret = codec.encode(event, buffer);
+        codec.encode(event, out);
 
         decodeMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
-
-        return ret;
     }
 
     @Override
