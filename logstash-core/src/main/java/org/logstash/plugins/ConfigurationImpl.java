@@ -39,6 +39,8 @@ public final class ConfigurationImpl implements Configuration {
             Object o = rawSettings.get(configSpec.name());
             if (configSpec.type().isAssignableFrom(o.getClass())) {
                 return (T) o;
+            } else if (configSpec.type() == Double.class && o.getClass() == Long.class) {
+                return configSpec.type().cast(((Long)o).doubleValue());
             } else if (configSpec.type() == Codec.class && o instanceof String && pluginFactory != null) {
                 Codec codec = pluginFactory.buildDefaultCodec((String)o);
                 return configSpec.type().cast(codec);
@@ -69,5 +71,4 @@ public final class ConfigurationImpl implements Configuration {
     public Collection<String> allKeys() {
         return rawSettings.keySet();
     }
-
 }

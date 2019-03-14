@@ -105,5 +105,14 @@ public class ConfigurationImplTest {
         Assert.assertTrue(codec instanceof Line);
     }
 
+    @Test
+    public void testDowncastFromLongToDouble() {
+        long defaultValue = 1L;
+        PluginConfigSpec<Double> doubleConfig = PluginConfigSpec.floatSetting(numberKey, defaultValue, false, false);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap(numberKey, defaultValue));
+        double x = config.get(doubleConfig);
+        Assert.assertEquals(defaultValue, x, 0.001);
+    }
+
 }
 
