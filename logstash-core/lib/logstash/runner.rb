@@ -113,6 +113,11 @@ class LogStash::Runner < Clamp::StrictCommand
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
 
+  option ["--plugin-classloaders"], :flag,
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
+
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",

@@ -110,6 +110,10 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 | `false`
 
+| `pipeline.plugin_classloaders`
+| (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
+| `false`
+
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
   config files are read from the directory in alphabetical order.
