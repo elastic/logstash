@@ -6,7 +6,7 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/compiler"
-require "monitoring/inputs/metrics/state_event/lir_serializer"
+require "logstash/lir_serializer"
 
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
@@ -219,7 +219,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
       config_metric.gauge(:ephemeral_id, ephemeral_id)
       config_metric.gauge(:hash, lir.unique_hash)
-      config_metric.gauge(:graph, ::LogStash::Inputs::Metrics::StateEvent::LIRSerializer.serialize(lir))
+      config_metric.gauge(:graph, ::LogStash::LIRSerializer.serialize(lir))
 
       @logger.info("Starting pipeline", default_logging_keys(
         "pipeline.workers" => pipeline_workers,
