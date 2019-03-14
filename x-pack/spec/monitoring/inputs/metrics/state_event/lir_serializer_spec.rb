@@ -5,7 +5,7 @@
 require "spec_helper"
 require "logstash/environment"
 
-describe ::LogStash::Inputs::Metrics::StateEvent::LIRSerializer do
+describe ::LogStash::Inputs::Metrics::StateEvent::XPackLIRSerializer do
   let(:config) do
     <<-EOC
       input { fake_input {} }
