@@ -290,6 +290,8 @@ en:
           Sets the number of pipeline workers to run.
         java-execution: |+
           Use Java execution engine.
+        plugin-classloaders: |+
+          (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
         pipeline-batch-size: |+
           Size of batches the pipeline is to work in.
         pipeline-batch-delay: |+

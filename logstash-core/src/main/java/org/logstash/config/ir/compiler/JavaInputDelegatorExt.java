@@ -118,6 +118,11 @@ public class JavaInputDelegatorExt extends RubyObject {
         return this;
     }
 
+    @JRubyMethod(name = "reloadable?")
+    public IRubyObject isReloadable(final ThreadContext context) {
+        return context.tru;
+    }
+
     @SuppressWarnings("unchecked")
     private void initializeQueueWriter(Map<String, Object> pluginArgs) {
         List<Function<Map<String, Object>, Map<String, Object>>> inputActions = new ArrayList<>();

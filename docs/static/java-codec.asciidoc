@@ -20,8 +20,6 @@
 
 === How to write a Java codec plugin
 
-beta[]
-
 NOTE: Java codecs are currently supported only for Java input and output plugins. They will not work with Ruby
 input or output plugins.
 
@@ -51,9 +49,6 @@ public class JavaCodecExample implements Codec {
 
     private final String id;
     private final String delimiter;
-    private final CharsetEncoder encoder;
-    private Event currentEncodedEvent;
-    private CharBuffer currentEncoding;
 
     public JavaCodecExample(final Configuration config, final Context context) {
         this(config.get(DELIMITER_CONFIG));
@@ -62,7 +57,6 @@ public class JavaCodecExample implements Codec {
     private JavaCodecExample(String delimiter) {
         this.id = UUID.randomUUID().toString();
         this.delimiter = delimiter;
-        this.encoder = Charset.defaultCharset().newEncoder();
     }
 
     @Override
@@ -91,30 +85,8 @@ public class JavaCodecExample implements Codec {
     }
 
     @Override
-    public boolean encode(Event event, ByteBuffer buffer) throws EncodeException {
-        try {
-            if (currentEncodedEvent != null && event != currentEncodedEvent) {
-                throw new EncodeException("New event supplied before encoding of previous event was completed");
-            } else if (currentEncodedEvent == null) {
-                currentEncoding = CharBuffer.wrap(event.toString() + delimiter);
-            }
-
-            CoderResult result = encoder.encode(currentEncoding, buffer, true);
-            buffer.flip();
-            if (result.isError()) {
-                result.throwException();
-            }
-
-            if (result.isOverflow()) {
-                currentEncodedEvent = event;
-                return false;
-            } else {
-                currentEncodedEvent = null;
-                return true;
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+    public void encode(Event event, OutputStream outputStream) throws IOException {
+        outputStream.write((event.toString() + delimiter).getBytes(Charset.defaultCharset()));
     }
 
     @Override
@@ -132,6 +104,7 @@ public class JavaCodecExample implements Codec {
     public String getId() {
         return this.id;
     }
+
 }
 -----
 
@@ -154,6 +127,8 @@ Notes about the class declaration:
    an appropriate input or output in the Logstash pipeline defintion as `codec => java_codec_example { }`
 ** The value of the `name` property must match the name of the class excluding casing and underscores.
 * The class must implement the `co.elastic.logstash.api.Codec` interface.
+* Java plugins may not be created in the `org.logstash` or `co.elastic.logstash` packages to prevent potential
+clashes with classes in Logstash itself.
 
 [float]
 ===== Plugin settings
@@ -188,7 +163,6 @@ settings are present and that no unsupported settings are present.
 -----
 private final String id;
 private final String delimiter;
-private final CharsetEncoder encoder;
 
 public JavaCodecExample(final Configuration config, final Context context) {
     this(config.get(DELIMITER_CONFIG));
@@ -197,7 +171,6 @@ public JavaCodecExample(final Configuration config, final Context context) {
 private JavaCodecExample(String delimiter) {
     this.id = UUID.randomUUID().toString();
     this.delimiter = delimiter;
-    this.encoder = Charset.defaultCharset().newEncoder();
 }
 -----
 
@@ -239,36 +212,17 @@ public void decode(ByteBuffer byteBuffer, Consumer<Map<String, Object>> consumer
 
 @Override
 public void flush(ByteBuffer byteBuffer, Consumer<Map<String, Object>> consumer) {
+    // if the codec maintains any internal state such as partially-decoded input, this
+    // method should flush that state along with any additional input supplied in
+    // the ByteBuffer
+
     decode(byteBuffer, consumer); // this is a simplistic implementation
 }
 
 @Override
-public boolean encode(Event event, ByteBuffer buffer) throws EncodeException {
-    try {
-        if (currentEncodedEvent != null && event != currentEncodedEvent) {
-            throw new EncodeException("New event supplied before encoding of previous event was completed");
-        } else if (currentEncodedEvent == null) {
-            currentEncoding = CharBuffer.wrap(event.toString() + delimiter);
-        }
-
-        CoderResult result = encoder.encode(currentEncoding, buffer, true);
-        buffer.flip();
-        if (result.isError()) {
-            result.throwException();
-        }
-
-        if (result.isOverflow()) {
-            currentEncodedEvent = event;
-            return false;
-        } else {
-            currentEncodedEvent = null;
-            return true;
-        }
-    } catch (IOException e) {
-        throw new IllegalStateException(e);
-    }
+public void encode(Event event, OutputStream outputStream) throws IOException {
+    outputStream.write((event.toString() + delimiter).getBytes(Charset.defaultCharset()));
 }
-
 -----
 
 The `decode`, `flush`, and `encode` methods provide the core functionality of
@@ -285,7 +239,7 @@ responsible for returning the buffer to write mode via either
 `byteBuffer.clear()` or `byteBuffer.compact()` before resuming writes. In the
 example above, the `decode` method simply splits the incoming byte stream on the
 specified delimiter. A production-grade codec such as
-https://github.com/elastic/logstash/blob/6.7/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
+https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
 would not make the simplifying assumption that the end of the supplied byte
 stream corresponded with the end of an  event.
 
@@ -307,25 +261,9 @@ above is a simplistic implementation that does not maintain any state about
 partially-supplied byte streams across calls to `decode`.
 
 The `encode` method encodes an event into a sequence of bytes and writes it into
-the specified `ByteBuffer`. Under  ideal circumstances, the entirety of the
-event's encoding will fit into the supplied buffer. In cases where the buffer
-has insufficient space to hold the event's encoding, the codec must fill the
-buffer with as much of the event's encoding as possible, the `encode` must
-return `false`, and the output must call the `encode` method with the same event
-and a buffer that has more `buffer.remaining()` bytes. The output typically does
-that by draining the partial encoding from the supplied buffer. This process
-must be repeated until the event's entire encoding is written to the buffer at
-which point the `encode` method will return `true`. Attempting to call this
-method with a new event before the entirety of the previous event's encoding has
-been written to a buffer must result in an `EncodeException`. As the coneptual
-inverse of the `decode` method, the `encode` method must return the buffer in a
-state from which it can be read, typically by calling `buffer.flip()` before
-returning. In the example above, the `encode` method attempts to write the
-event's encoding to the supplied buffer. If the buffer contains sufficient free
-space, the entirety of the event is written and `true` is returned. Otherwise,
-the method writes as much of the event's encoding to the buffer as possible,
-returns `false`, and stores the remainder to be written to the buffer in the
-next call to the `encode` method.
+the specified `OutputStream`. Because a single codec instance is shared across
+all pipeline workers in the output stage of the Logstash pipeline, codecs should
+_not_ retain state across calls to their `encode` methods.
 
 [float]
 ==== cloneCodec method
@@ -376,11 +314,11 @@ To test the plugin, start Logstash with:
 
 [source,java]
 -----
-echo "foo,bar" | bin/logstash --java-execution -e 'input { java_stdin { codec => java_codec_example } } }'
+echo "foo,bar" | bin/logstash -e 'input { java_stdin { codec => java_codec_example } } }'
 -----
 
-NOTE: The `--java-execution` flag to enable the Java execution engine is required as Java plugins are not supported
-in the Ruby execution engine.
+NOTE: The Java execution engine, the default execution engine since Logstash 7.0, is required
+as Java plugins are not supported in the Ruby execution engine.
 
 The expected Logstash output (excluding initialization) with the configuration above is:
 

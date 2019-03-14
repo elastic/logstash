@@ -15,8 +15,6 @@
 [[java-output-plugin]]
 === How to write a Java output plugin
 
-beta[]
-
 // Pulls in shared section: Setting Up Environment
 include::include/javapluginsetup.asciidoc[]
 
@@ -101,6 +99,8 @@ Notes about the class declaration:
    Logstash pipeline definition as `output { java_output_example => { .... } }`
 ** The value of the `name` property must match the name of the class excluding casing and underscores.
 * The class must implement the `co.elastic.logstash.api.Output` interface.
+* Java plugins may not be created in the `org.logstash` or `co.elastic.logstash` packages to prevent potential
+clashes with classes in Logstash itself.
 
 [float]
 ==== Plugin settings
@@ -258,11 +258,11 @@ Logstash should then be started with:
 
 [source,txt]
 -----
-bin/logstash --java-execution -f /path/to/java_output.conf
+bin/logstash -f /path/to/java_output.conf
 -----
 
-NOTE: The `--java-execution` flag to enable the Java execution engine is
-required as Java plugins are not supported in the Ruby execution engine.
+NOTE: The Java execution engine, the default execution engine since Logstash 7.0, is required
+as Java plugins are not supported in the Ruby execution engine.
 
 The expected Logstash output (excluding initialization) with the configuration
 above is:

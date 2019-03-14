@@ -2,6 +2,7 @@ package org.logstash.plugins;
 
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
+import org.jruby.java.proxies.JavaProxy;
 import org.jruby.javasupport.JavaClass;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -24,8 +25,13 @@ public final class PluginLookup {
 
     @SuppressWarnings("rawtypes")
     public static PluginLookup.PluginClass lookup(final PluginLookup.PluginType type, final String name) {
-        Class javaClass = PluginRegistry.getPluginClass(type, name);
+        Class<?> javaClass = PluginRegistry.getPluginClass(type, name);
         if (javaClass != null) {
+
+            if (!PluginValidator.validatePlugin(type, javaClass)) {
+                throw new IllegalStateException("Java plugin '" + name + "' is incompatible with the current Logstash plugin API");
+            }
+
             return new PluginLookup.PluginClass() {
 
                 @Override
@@ -48,9 +54,15 @@ public final class PluginLookup {
                     ? PluginLanguage.RUBY
                     : PluginLanguage.JAVA;
 
+            klass = (klass instanceof JavaProxy) ? ((JavaProxy) klass).getObject() : klass;
+
             Object resolvedClass = klass instanceof JavaClass
                     ? ((JavaClass) klass).javaClass()
                     : klass;
+
+            if (language == PluginLanguage.JAVA && !PluginValidator.validatePlugin(type, (Class) resolvedClass)) {
+                throw new IllegalStateException("Java plugin '" + name + "' is incompatible with the current Logstash plugin API");
+            }
 
             return new PluginLookup.PluginClass() {
                 @Override
