@@ -3,13 +3,9 @@
 # you may not use this file except in compliance with the Elastic License.
 #
 
-#FIXME
-#require 'monitoring/inputs/metrics'
 require 'logstash-core'
 require 'logstash/compiler'
 
-#FIXME
-#module LogStash; module Inputs; class Metrics; class StateEvent;
 module LogStash;
   class LIRSerializer
     attr_reader :lir_pipeline
