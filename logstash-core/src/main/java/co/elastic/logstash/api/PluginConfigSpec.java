@@ -95,6 +95,14 @@ public final class PluginConfigSpec<T> {
         );
     }
 
+    public static PluginConfigSpec<Double> floatSetting(final String name, final double defaultValue) {
+        return new PluginConfigSpec<>(name, Double.class, defaultValue, false, false);
+    }
+
+    public static PluginConfigSpec<Double> floatSetting(final String name, final double defaultValue, boolean deprecated, boolean required) {
+        return new PluginConfigSpec<>(name, Double.class, defaultValue, deprecated, required);
+    }
+
     public static PluginConfigSpec<Long> numSetting(final String name, final long defaultValue, boolean deprecated, boolean required) {
         return new PluginConfigSpec<>(name, Long.class, defaultValue, deprecated, required);
     }

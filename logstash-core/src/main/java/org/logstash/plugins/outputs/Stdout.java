@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 public class Stdout implements Output {
 
     public static final PluginConfigSpec<Codec> CODEC_CONFIG =
-            PluginConfigSpec.codecSetting("codec", "java-line");
+            PluginConfigSpec.codecSetting("codec", "java_line");
 
     private Codec codec;
     private OutputStream outputStream;
