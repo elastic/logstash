@@ -128,11 +128,5 @@ module LogStash;
       }
     end
     
-#    def plugins
-#      ::Gem::Specification.
-#        find_all.
-#        select {|spec| spec.metadata && spec.metadata["logstash_plugin"] == "true"}.
-#        map {|spec|  { :name => spec.name, :version => spec.version.to_s } }
-#    end
   end
 end
