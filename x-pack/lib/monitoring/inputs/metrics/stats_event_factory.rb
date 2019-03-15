@@ -93,8 +93,6 @@ module LogStash; module Inputs; class Metrics;
     end
 
     def format_queue_stats(agent, stats)
-      events = 0
-
       pipelines_stats = stats.get_shallow(:stats, :pipelines)
 
       total_queued_events = 0
@@ -103,7 +101,7 @@ module LogStash; module Inputs; class Metrics;
         pipeline = agent.get_pipeline(pipeline_id)
         # Check if pipeline is nil to avoid race condition where metrics system refers pipeline that has been stopped already
         next if pipeline.nil? || pipeline.system? || type != 'persisted'
-        total_queued_events = p_stats[:queue][:events].value
+        total_queued_events += p_stats[:queue][:events].value
       end
 
       {:events_count => total_queued_events}
