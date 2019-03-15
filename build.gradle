@@ -44,6 +44,9 @@ allprojects {
 
   tasks.withType(Javadoc) {
       options.addStringOption("Xwerror", "-quiet")
+      if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
+          options.addBooleanOption("html5", true)
+      }
   }
 
   clean {
