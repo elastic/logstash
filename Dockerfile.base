@@ -1,9 +1,9 @@
 #logstash-base image, use ci/docker_update_base_image.sh to push updates
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 RUN apt-get update && \
     apt-get install -y zlib1g-dev build-essential vim rake git curl libssl-dev libreadline-dev libyaml-dev  \
-      libxml2-dev libxslt-dev openjdk-8-jdk-headless curl iputils-ping netcat && \
+      libxml2-dev libxslt-dev openjdk-11-jdk-headless curl iputils-ping netcat && \
     apt-get clean
 
 WORKDIR /root
