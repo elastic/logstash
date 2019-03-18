@@ -4,7 +4,6 @@
 #
 module LogStash; module Inputs; class Metrics;
   class StateEventFactory
-#    require "monitoring/inputs/metrics/state_event/lir_serializer"
     require "logstash/config/lir_serializer"
     def initialize(pipeline)
       raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaPipeline)
