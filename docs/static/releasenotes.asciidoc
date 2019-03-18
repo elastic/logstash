@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-16,Logstash 5.6.16>>
 * <<logstash-5-6-15,Logstash 5.6.15>>
 * <<logstash-5-6-14,Logstash 5.6.14>>
 * <<logstash-5-6-13,Logstash 5.6.13>>
@@ -19,6 +20,13 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-16]]
+=== Logstash 5.6.16 Release Notes
+
+*Xml Filter*
+
+* Fixed creation of empty arrays when xpath failed ([#59](https://github.com/logstash-plugins/logstash-filter-xml/pull/59))
 
 [[logstash-5-6-15]]
 === Logstash 5.6.15 Release Notes
