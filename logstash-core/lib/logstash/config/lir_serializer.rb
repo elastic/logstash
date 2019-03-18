@@ -3,6 +3,7 @@ require 'logstash-core'
 require 'logstash/compiler'
 
 module LogStash;
+  module Config;
   class LIRSerializer
     attr_reader :lir_pipeline
     
@@ -120,5 +121,6 @@ module LogStash;
       }
     end
     
+  end
   end
 end

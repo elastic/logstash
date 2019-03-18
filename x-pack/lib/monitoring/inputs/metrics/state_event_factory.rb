@@ -4,7 +4,8 @@
 #
 module LogStash; module Inputs; class Metrics;
   class StateEventFactory
-    require "monitoring/inputs/metrics/state_event/lir_serializer"
+#    require "monitoring/inputs/metrics/state_event/lir_serializer"
+    require "logstash/config/lir_serializer"
     def initialize(pipeline)
       raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaPipeline)
       @event = LogStash::Event.new
@@ -29,7 +30,7 @@ module LogStash; module Inputs; class Metrics;
         "ephemeral_id" => pipeline.ephemeral_id,
         "workers" =>  pipeline.settings.get("pipeline.workers"),
         "batch_size" =>  pipeline.settings.get("pipeline.batch.size"),
-        "representation" => ::LogStash::Inputs::Metrics::StateEvent::XPackLIRSerializer.serialize(pipeline.lir)
+        "representation" => ::LogStash::Config::LIRSerializer.serialize(pipeline.lir)
       }
     end
 
