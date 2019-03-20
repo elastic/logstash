@@ -74,9 +74,9 @@ Here is an example distributor pattern configuration.
   config.string: |
     input { beats { port => 5044 } }
     output {
-        if [type] == apache {
+        if [type] == "apache" {
           pipeline { send_to => weblogs }
-        } else if [type] == system {
+        } else if [type] == "system" {
           pipeline { send_to => syslog }
         } else {
           pipeline { send_to => fallback }
@@ -101,7 +101,7 @@ Here is an example distributor pattern configuration.
       elasticsearch { hosts => [es_cluster_b_host] }
     }
 - pipeline.id: fallback-processing
-    config.string: |
+  config.string: |
     input { pipeline { address => fallback } }
     output { elasticsearch { hosts => [es_cluster_b_host] } }
 ----
