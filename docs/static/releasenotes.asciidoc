@@ -3,6 +3,10 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-7-0,Logstash 6.7.0>>
+* <<logstash-6-6-2,Logstash 6.6.2>>
+* <<logstash-6-6-1,Logstash 6.6.1>>
+* <<logstash-6-6-0,Logstash 6.6.0>>
 * <<logstash-6-5-4,Logstash 6.5.4>>
 * <<logstash-6-5-3,Logstash 6.5.3>>
 * <<logstash-6-5-2,Logstash 6.5.2>>
@@ -24,6 +28,212 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-7-0]]
+=== Logstash 6.7.0 Release Notes
+
+* ANNOUNCEMENT: Java 11 Support
+* ANNOUNCEMENT: Native support for Java plugins (beta)
+* BUGFIX: Fix issue setting 'enable_metric => false' on a plugin
+* BUGFIX: Allow explicitly-specified Java codecs
+* Enhancement: Update to send api version 6
+* Enhancement: bump jruby to 9.2.6.0
+* Cleanup: Resolve compiler and javadoc warnings
+* Cleanup: Remove unused witness classes
+* BUGFIX: Fix agent silent exit upon pipelines reloading
+* BUGFIX: Character encoding fix
+* BUGFIX: Fix crash that occurs on pipeline load and/or reload when using both the java keystore and the multi-pipeline feature, when more than one pipeline references `${}`-style variables.
+* BUGFIX: Synchronise control on agent webserver
+* Enhancement: Rename config option .url and .ca to .hosts and .certificate_authority, support old config options and add deprecation warnings
+* BUGFIX: synchronize ruby pipeline initialization to fix concurrency bug
+
+
+==== Plugins
+
+*KV Filter*
+
+* Added a timeout enforcer which prevents inputs that are pathological against the generated parser from blocking
+   the pipeline. By default, timeout is a generous 30s, but can be configured or disabled entirely with the new
+   `timeout_millis` and `tag_on_timeout` directives ([#79](https://github.com/logstash-plugins/logstash-filter-kv/pull/79))
+* Made error-handling configurable with `tag_on_failure` directive.
+
+*Mutate Filter*
+
+* Added ability to directly convert from integer and float to boolean [#127](https://github.com/logstash-plugins/logstash-filter-mutate/pull/127)
+
+*Azure Event Hubs Input*
+
+* Updated Azure event hub library dependencies[#27](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27)
+
+*Elasticsearch Input*
+
+* Added managed slice scrolling with `slices` option
+
+*HTTP Input*
+
+* Added configurable response code option [#103](https://github.com/logstash-plugins/logstash-input-http/pull/103)
+* Added explanation about operation order of codec and additional_codecs [#104](https://github.com/logstash-plugins/logstash-input-http/pull/104)
+
+*TCP input*
+
+* Fixed race condition where data would be accepted before queue was configured [#142](https://github.com/logstash-plugins/logstash-input-tcp/pull/142)
+
+*Elasticsearch Output*
+
+* Added 'auto' setting for ILM [#841](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/841)
+
+
+[[logstash-6-6-2]]
+=== Logstash 6.6.2 Release Notes
+
+* No changes to Logstash core for 6.6.2
+
+==== Plugins
+
+*Xml Filter*
+
+* Fixed creation of empty arrays when xpath failed https://github.com/logstash-plugins/logstash-filter-xml/pull/59[#59]
+
+*Kafka Output*
+
+* Fixed issue with unnecessary sleep after retries exhausted https://github.com/logstash-plugins/logstash-output-kafka/pull/216[#216]
+
+[[logstash-6-6-1]]
+=== Logstash 6.6.1 Release Notes
+
+* Fixes a problem with how Logstash logs malformed URLs. (CVE-2019-7612). See
+https://www.elastic.co/community/security[Security issues].
+
+==== Plugins
+
+*Es_bulk Codec*
+
+* Add documentation about use with http input
+
+*De_dot Filter*
+
+* fix failure of fieldnames with boolean value "false" https://github.com/logstash-plugins/logstash-filter-de_dot/issues/9[#9]
+
+*Dns Filter*
+
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x https://github.com/logstash-plugins/logstash-filter-dns/pull/48[#48]
+* Fixed crash that could occur when encountering certain classes of invalid inputs https://github.com/logstash-plugins/logstash-filter-dns/pull/49[#49]
+
+*Http Filter*
+
+* Fixed minor documentation issues https://github.com/logstash-plugins/logstash-filter-http/pull/9[#9]
+
+*Jdbc_streaming Filter*
+
+* Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11]
+
+*Json Filter*
+
+* Updated documentation with some clarifications and fixes
+
+*Metrics Filter*
+
+* Fixed two minor typos in documentation
+
+*Redis Input*
+
+* Changed `redis_type` to `data_type` in .rb file https://github.com/logstash-plugins/logstash-input-redis/issues/70[#70] and asciidoc file https://github.com/logstash-plugins/logstash-input-redis/issues/71[#71]
+
+*Elasticsearch Output*
+
+* Fixed sniffing support for 7.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/827[#827]
+* Fixed issue with escaping index names which was causing writing aliases for ILM to fail https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831[#831]
+
+*File Output*
+
+* Removed JRuby check when using FIFOs https://github.com/logstash-plugins/logstash-output-file/pull/75[#75]
+
+*Http Output*
+
+* Relax dependency on http_client mixin since current major works on both
+
+[[logstash-6-6-0]]
+=== Logstash 6.6.0 Release Notes
+
+* BUGFIX: Remove excess period from logstash-plugin error reporting https://github.com/elastic/logstash/pull/9749[#9749]
+* Enhancement: Replace generated for-loops with static method calls https://github.com/elastic/logstash/pull/10133[#10133]
+* Enhancement: Add common base class for generated Dataset classes https://github.com/elastic/logstash/pull/10136[#10136]
+* Upgrade rack to version 1.6.11  https://github.com/elastic/logstash/pull/10151[#10151]
+* Enhancement: Java plugin API (experimental) https://github.com/elastic/logstash/pull/10216[#10216]
+* BUGFIX: Increase default number of threads reported by hot_threads https://github.com/elastic/logstash/pull/10218[#10218]
+* BUGFIX: Add option for PQ checkpoint retry https://github.com/elastic/logstash/pull/10246[#10246]
+* Add documentation for java-execution flag https://github.com/elastic/logstash/pull/10248[#10248]
+* BUGFIX: Properly set thread name in thread context https://github.com/elastic/logstash/pull/10272[#10272]
+* Announcement: HTTP lookup filter and Memcached get/set filter now GA.
+
+==== Plugins
+
+*Aggregate Filter*
+
+* new feature: add ability to dynamically define a custom `timeout` or `inactivity_timeout` in `code` block, fixes https://github.com/logstash-plugins/logstash-filter-aggregate/issues/91[#91] and https://github.com/logstash-plugins/logstash-filter-aggregate/issues/92[#92]
+* new feature: add meta informations available in `code` block through `map_meta` variable
+* new feature: add Logstash metrics, specific to aggregate plugin: aggregate_maps, pushed_events, task_timeouts, code_errors, timeout_code_errors
+* new feature: validate at startup that `map_action` option equals to 'create', 'update' or 'create_or_update'
+
+*Elasticsearch Filter*
+
+* Add support for extracting hits total from Elasticsearch 7.x responses
+
+* Added connection check during register to avoid failures during processing
+* Changed Elasticsearch Client transport to use Manticore
+* Changed amount of logging details during connection failure
+
+*Http Filter*
+
+*Memcached Filter*
+
+*Split Filter*
+
+* Fixed numeric values, optimized @target verification, cleanups and specs in https://github.com/logstash-plugins/logstash-filter-split/pull/36[#36]
+
+*Beats Input*
+
+* Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version.
+
+* Updated jar dependencies to reflect newer releases
+
+*File Input*
+
+* Fixed issue where logs were being spammed with needless error messages in https://github.com/logstash-plugins/logstash-input-file/pull/224[#224]
+
+*Gelf Input*
+
+* Fixed shutdown handling, robustness in socket closing and restarting, json parsing, code DRYing and cleanups in https://github.com/logstash-plugins/logstash-input-gelf/pull/62[#62]
+
+*Http Input*
+
+* Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version.
+
+* Changed jar dependencies to reflect newer versions
+
+*Kafka Input*
+
+* Added support for kafka property ssl.endpoint.identification.algorithm in https://github.com/logstash-plugins/logstash-input-kafka/pull/302[#302]
+
+* Changed Kafka client version to 2.1.0
+
+*Elasticsearch Output*
+
+* Adds support for Index Lifecycle Management for Elasticsearch 6.6.0 and above, running with at least a Basic License(Beta) in https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/805[#805]
+
+*Kafka Output*
+
+* Added support for kafka property `ssl.endpoint.identification.algorithm` in https://github.com/logstash-plugins/logstash-output-kafka/pull/213[#213]
+
+* Changed Kafka client to version 2.1.0
+
+*Pagerduty Output*
+
+* Update _development_ dependency webmock to latest version to prevent conflicts in logstash core's dependency matrix.
+
+*Tcp Output*
+
+* Removed requirement to have a certificate/key pair when enabling ssl
 
 [[logstash-6-5-4]]
 === Logstash 6.5.4 Release Notes
