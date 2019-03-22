@@ -12,7 +12,8 @@ module LogStash
            :http_address => http_address,
            :id => service.agent.id,
            :name => service.agent.name,
-           :ephemeral_id => service.agent.ephemeral_id}
+           :ephemeral_id => service.agent.ephemeral_id,
+           :status_green => "green"}  # This is hard-coded to mirror x-pack behavior
         end
 
         def host
