@@ -32,20 +32,23 @@ This section summarizes the changes in the following releases:
 [[logstash-6-7-0]]
 === Logstash 6.7.0 Release Notes
 
-* ANNOUNCEMENT: Java 11 Support
-* ANNOUNCEMENT: Native support for Java plugins (beta)
-* BUGFIX: Fix issue setting 'enable_metric => false' on a plugin
-* BUGFIX: Allow explicitly-specified Java codecs
-* Enhancement: Update to send api version 6
-* Enhancement: bump jruby to 9.2.6.0
-* Cleanup: Resolve compiler and javadoc warnings
-* Cleanup: Remove unused witness classes
-* BUGFIX: Fix agent silent exit upon pipelines reloading
-* BUGFIX: Character encoding fix
-* BUGFIX: Fix crash that occurs on pipeline load and/or reload when using both the java keystore and the multi-pipeline feature, when more than one pipeline references `${}`-style variables.
-* BUGFIX: Synchronise control on agent webserver
-* Enhancement: Rename config option .url and .ca to .hosts and .certificate_authority, support old config options and add deprecation warnings
-* BUGFIX: synchronize ruby pipeline initialization to fix concurrency bug
+* ANNOUNCEMENT: Java 11 Support https://github.com/elastic/logstash/pull/10382[#10382]
+* ANNOUNCEMENT: Native support for Java plugins (beta) https://github.com/elastic/logstash/pull/10378[#10378]
+* BUGFIX: Fix issue setting 'enable_metric => false' on a plugin https://github.com/elastic/logstash/pull/10553[#10553]
+* BUGFIX: Allow explicitly-specified Java codecs https://github.com/elastic/logstash/pull/10520[#10520]
+* Enhancement: Update to send api version 6 https://github.com/elastic/logstash/pull/10518[#10518]
+* Enhancement: bump jruby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425]
+* Cleanup: Resolve compiler and javadoc warnings https://github.com/elastic/logstash/pull/10243[#10243]
+* Cleanup: Remove unused witness classes https://github.com/elastic/logstash/pull/10242[#10242]
+* BUGFIX: Fix agent silent exit upon pipelines reloading https://github.com/elastic/logstash/pull/10346[#10346]
+* BUGFIX: Character encoding fix https://github.com/elastic/logstash/pull/10449[#10449]
+* BUGFIX: Fix crash that occurs on pipeline load and/or reload when using both the java keystore and the multi-pipeline feature, when more than one pipeline references `${}`-style variables. https://github.com/elastic/logstash/pull/10408[#10408]
+* BUGFIX: Synchronise control on agent webserver https://github.com/elastic/logstash/pull/10393[#10393]
+* Enhancement: Rename config option .url and .ca to .hosts and .certificate_authority, support old config options and add deprecation warnings https://github.com/elastic/logstash/pull/10391[#10391]
+* BUGFIX: synchronize ruby pipeline initialization to fix concurrency bug https://github.com/elastic/logstash/pull/10335[#10335]
+
+==== Known Issues
+
 
 
 ==== Plugins
