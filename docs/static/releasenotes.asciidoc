@@ -49,9 +49,6 @@ This section summarizes the changes in the following releases:
 * Enhancement: Rename config option .url and .ca to .hosts and .certificate_authority, support old config options and add deprecation warnings https://github.com/elastic/logstash/pull/10391[#10391]
 * BUGFIX: synchronize ruby pipeline initialization to fix concurrency bug https://github.com/elastic/logstash/pull/10335[#10335]
 
-==== Known Issues
-
-
 
 ==== Plugins
 
