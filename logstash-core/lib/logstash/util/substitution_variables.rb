@@ -30,9 +30,15 @@ module ::LogStash::Util::SubstitutionVariables
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
   def replace_placeholders(value)
-    return value unless value.is_a?(String)
+    if value.is_a?(String)
+      interpolate = value
+    elsif value.is_a?(::LogStash::Util::Password)
+      interpolate = value.value.to_s
+    else
+      return value
+    end
 
-    value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
+    interpolate.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
