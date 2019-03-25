@@ -32,6 +32,8 @@ This section summarizes the changes in the following releases:
 [[logstash-6-7-0]]
 === Logstash 6.7.0 Release Notes
 
+==== Logstash core
+
 * ANNOUNCEMENT: Java 11 Support https://github.com/elastic/logstash/pull/10382[#10382]
 * ANNOUNCEMENT: Native support for Java plugins (beta) https://github.com/elastic/logstash/pull/10378[#10378]
 * BUGFIX: Fix issue setting 'enable_metric => false' on a plugin https://github.com/elastic/logstash/pull/10553[#10553]
@@ -57,16 +59,16 @@ This section summarizes the changes in the following releases:
 
 * Added a timeout enforcer which prevents inputs that are pathological against the generated parser from blocking
    the pipeline. By default, timeout is a generous 30s, but can be configured or disabled entirely with the new
-   `timeout_millis` and `tag_on_timeout` directives ([#79](https://github.com/logstash-plugins/logstash-filter-kv/pull/79))
+   `timeout_millis` and `tag_on_timeout` directives https://github.com/logstash-plugins/logstash-filter-kv/pull/79[#79]
 * Made error-handling configurable with `tag_on_failure` directive.
 
 *Mutate Filter*
 
-* Added ability to directly convert from integer and float to boolean [#127](https://github.com/logstash-plugins/logstash-filter-mutate/pull/127)
+* Added ability to directly convert from integer and float to boolean https://github.com/logstash-plugins/logstash-filter-mutate/pull/127[#127]
 
 *Azure Event Hubs Input*
 
-* Updated Azure event hub library dependencies[#27](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27)
+* Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27[#27]
 
 *Elasticsearch Input*
 
@@ -74,16 +76,16 @@ This section summarizes the changes in the following releases:
 
 *HTTP Input*
 
-* Added configurable response code option [#103](https://github.com/logstash-plugins/logstash-input-http/pull/103)
-* Added explanation about operation order of codec and additional_codecs [#104](https://github.com/logstash-plugins/logstash-input-http/pull/104)
+* Added configurable response code option https://github.com/logstash-plugins/logstash-input-http/pull/103[#103]
+* Added explanation about operation order of codec and additional_codecs https://github.com/logstash-plugins/logstash-input-http/pull/104[#104]
 
 *TCP input*
 
-* Fixed race condition where data would be accepted before queue was configured [#142](https://github.com/logstash-plugins/logstash-input-tcp/pull/142)
+* Fixed race condition where data would be accepted before queue was configured https://github.com/logstash-plugins/logstash-input-tcp/pull/142[#142]
 
 *Elasticsearch Output*
 
-* Added 'auto' setting for ILM [#841](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/841)
+* Added 'auto' setting for ILM https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/841[#841]
 
 
 [[logstash-6-6-2]]
