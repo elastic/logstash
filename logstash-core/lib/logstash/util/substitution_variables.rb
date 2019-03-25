@@ -32,13 +32,15 @@ module ::LogStash::Util::SubstitutionVariables
   def replace_placeholders(value)
     if value.is_a?(String)
       interpolate = value
+      was_a_password = false
     elsif value.is_a?(::LogStash::Util::Password)
+      was_a_password = true
       interpolate = value.value.to_s
     else
       return value
     end
 
-    interpolate.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
+    interpolated = interpolate.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
@@ -58,6 +60,7 @@ module ::LogStash::Util::SubstitutionVariables
       end
       replacement.to_s
     end
+    return was_a_password ? ::LogStash::Util::Password.new(interpolated) : interpolated
   end # def replace_placeholders
 
 end
