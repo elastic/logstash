@@ -13,7 +13,9 @@ module LogStash
            :id => service.agent.id,
            :name => service.agent.name,
            :ephemeral_id => service.agent.ephemeral_id,
-           :status_green => "green"}  # This is hard-coded to mirror x-pack behavior
+           :status => "green",  # This is hard-coded to mirror x-pack behavior
+           :snapshot => ::BUILD_INFO["build_snapshot"],
+           }
         end
 
         def host
