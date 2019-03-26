@@ -58,6 +58,9 @@ You can use the `pipeline` input and output to better organize code, streamline 
 * <<forked-path-pattern>>
 * <<collector-pattern>>
 
+NOTE: These examples use `config.string` to illustrate the flows.
+You can also use configuration files for pipeline-to-pipeline communication.
+
 [[distributor-pattern]]
 ===== The distributor pattern
 
