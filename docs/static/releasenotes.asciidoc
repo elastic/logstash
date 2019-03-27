@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-7-1,Logstash 6.7.1>>
 * <<logstash-6-7-0,Logstash 6.7.0>>
 * <<logstash-6-6-2,Logstash 6.6.2>>
 * <<logstash-6-6-1,Logstash 6.6.1>>
@@ -28,6 +29,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-7-1]]
+=== Logstash 6.7.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.7.1
+
+* Bump version to 6.7.1 https://github.com/elastic/logstash/pull/10585[#10585]
+
+=== Logstash Commits between 6.7 and 6.7.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.7.0..6.7"
+
+6fe4fb8d6 - (HEAD -> 6.7, origin/6.7) Add note that pline-pline also supports files (86 seconds ago) <Karen Metts>
+eb14bdcd6 - Update supported java version and example (22 hours ago) <Karen Metts>
+af43a6b5d - Bump version to 6.7.1 (#10585) (27 hours ago) <Rob Bavey>
+62477b09a - Set released state of docs to 'released' (#10579) (27 hours ago) <Rob Bavey>
+cbb3e0d63 - Release notes for 6.7.0 (#10578) (33 hours ago) <Rob Bavey>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.7.0..6.7 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-7-0]]
 === Logstash 6.7.0 Release Notes
