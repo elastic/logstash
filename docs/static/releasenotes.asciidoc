@@ -3,9 +3,23 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-0-0-rc1,Logstash 7.0.0-rc1>>
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-0-0-rc1]]
+=== Logstash 7.0.0-rc1 Release Notes
+
+* BUGFIX: Correctly count total queued items across multiple pipelines https://github.com/elastic/logstash/pull/10564[#10564]
+* BUGFIX: Fix issue setting 'enable_metric => false' https://github.com/elastic/logstash/pull/10538[#10538]
+* BUGFIX: Prevent concurrent convergence of pipeline actions https://github.com/elastic/logstash/pull/10537[#10537]
+* Monitoring: Change internal document type to push "_doc" instead of "doc" https://github.com/elastic/logstash/pull/10533[#10533]
+* BUGFIX: Allow explicitly-specified Java codecs https://github.com/elastic/logstash/pull/10520[#10520]
+* Central management typeless API https://github.com/elastic/logstash/pull/10421[#10421]
+* Improve docs about using Filebeat modules with Logstash https://github.com/elastic/logstash/pull/10438[#10438]
+* Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425] 
+* BUGFIX: Remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10462[#10462]
 
 [[logstash-7-0-0-beta1]]
 === Logstash 7.0.0-beta1 Release Notes
