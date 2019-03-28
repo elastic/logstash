@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+#
+# Print the Elastic Stack version for the current branch, as defined in
+# the 'version.json' file.
+#
+# The version can also be forced by setting the ELASTIC_VERSION environment variable.
+require 'yaml'
+
+def get_hard_coded_version
+  version_info = YAML::safe_load(IO.read('../versions.yml'))
+  version_info['logstash']
+end
+
+def qualify(version)
+  qualifier = ENV['VERSION_QUALIFIER']
+  qualifier ? [version, qualifier].join("-") : version
+end
+
+def get_version
+  version = ENV['ELASTIC_VERSION']
+  version ? version : qualify(get_hard_coded_version)
+end
+
+puts get_version
