@@ -87,14 +87,14 @@ echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main"
 
 [WARNING]
 ==================================================
-앞서 설명한 `echo` 메서드를 사용하여 Logstash 리포지토리를 추가합니다. `add-apt-repository`는 사용하지 마십시오. 이는 `deb-src` 항목도 추가하는데 소스 패키지가 제공되지 않습니다. `deb-src` 항목을 추가하면 다음과 같은 오류가 표시됩니다.
+앞서 설명한 `echo` 메서드를 사용하여 Logstash 리포지토리를 추가합니다. `add-apt-repository` 는 사용하지 마십시오. 이는 `deb-src` 항목도 추가하는데 소스 패키지가 제공되지 않습니다. `deb-src` 항목을 추가하면 다음과 같은 오류가 표시됩니다.
 
     릴리스 파일에서 예상된 항목 'main/source/Sources'를 찾을 수 없음(잘못된 sources.list 항목 또는 잘못된 형식의 파일)
 
 `/etc/apt/sources.list` 파일에서 `deb-src` 항목을 삭제하면 설치가 정상적으로 진행됩니다.
 ==================================================
 
-`sudo apt-get update`를 실행하면 리포지토리는 사용 가능한 상태가 됩니다. 다음 명령으로 설치할 수 있습니다.
+`sudo apt-get update` 를 실행하면 리포지토리는 사용 가능한 상태가 됩니다. 다음 명령으로 설치할 수 있습니다.
 
 [source,sh]
 --------------------------------------------------
@@ -159,7 +159,7 @@ Logstash를 Docker 컨테이너로 실행할 수 있도록 이미지가 제공�
 
 먼저 가장 기본적인 _Logstash 파이프라인_을 실행하여 Logstash 설치를 테스트해보겠습니다.
 
-Logstash 파이프라인에는 2개의 필수 요소 `input`과 `output`, 1개의 선택 요소 `filter`가 있습니다. 입력 플러그인은 소스의 데이터를 사용하고, 필터 플러그인은 사용자가 지정한 대로 데이터를 수정하며, 출력 플러그인은 목적지에 데이터를 기록합니다.
+Logstash 파이프라인에는 2개의 필수 요소 `input` 와 `output`, 1개의 선택 요소 `filter` 가 있습니다. 입력 플러그인은 소스의 데이터를 사용하고, 필터 플러그인은 사용자가 지정한 대로 데이터를 수정하며, 출력 플러그인은 목적지에 데이터를 기록합니다.
 
 //TODO: 새 이미지로 대체
 
@@ -173,13 +173,13 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
-NOTE: `bin` 디렉토리의 위치는 플랫폼에 따라 다릅니다. 시스템에서 `bin\logstash`의 위치를 찾으려면
+NOTE: `bin` 디렉토리의 위치는 플랫폼에 따라 다릅니다. 시스템에서 `bin\logstash` 의 위치를 찾으려면
 {logstash}dir-layout.html[Logstash Directory Layout]을 참조하십시오.
 
 `-e` 플래그를 사용하면 명령행에서 직접 구성을 지정할 수 있습니다. 명령행에서 구성을 지정함으로써 반복 사이에 파일을 편집할 필요 없이 신속하게 구성을 테스트할 수 있습니다.
-예시된 파이프라인은 표준 입력, `stdin`으로부터 입력을 받아 정형화된 형태로 표준 출력, `stdout`로 이동합니다.
+예시된 파이프라인은 표준 입력, `stdin` 으로부터 입력을 받아 정형화된 형태로 표준 출력, `stdout` 로 이동합니다.
 
-Logstash를 시작하고 "파이프라인 메인 시작했음"이 표시될 때까지 기다린 다음 명령 프롬프트에 `hello world`를 입력합니다.
+Logstash를 시작하고 "파이프라인 메인 시작했음"이 표시될 때까지 기다린 다음 명령 프롬프트에 `hello world` 를 입력합니다.
 
 [source,shell]
 hello world

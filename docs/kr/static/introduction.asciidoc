@@ -29,8 +29,8 @@ image:static/images/logstash.png[]
 * 모든 유형의 로깅 데이터 처리
 ** 다양한 웹 로그(예: {logstash}advanced-pipeline.html[Apache]) 및 애플리케이션 로그(예: {logstash}plugins-inputs-log4j.html[log4j] for Java)를 손쉽게 수집
 ** {logstash}plugins-inputs-syslog.html[syslog], {logstash}plugins-inputs-eventlog.html[Windows 이벤트 로그], 네트워킹 및 방화벽 로그 등 다른 여러 로그 형식도 수집
-* https://www.elastic.co/products/beats/filebeat[Filebeat]
-와 연계하여 보충적인 보안 로그 전달 기능 활용 * {logstash}plugins-inputs-ganglia.html[Ganglia], {logstash}plugins-codecs-collectd.html[collectd], {logstash}plugins-codecs-netflow.html[NetFlow], {logstash}plugins-inputs-jmx.html[JMX], 기타 여러 인프라 및 애플리케이션 플랫폼의 메트릭을 {logstash}plugins-inputs-tcp.html[TCP] 및 {logstash}plugins-inputs-udp.html[UDP]를 통해 수집
+* https://www.elastic.co/products/beats/filebeat[Filebeat]와 연계하여 보충적인 보안 로그 전달 기능 활용 
+* {logstash}plugins-inputs-ganglia.html[Ganglia], {logstash}plugins-codecs-collectd.html[collectd], {logstash}plugins-codecs-netflow.html[NetFlow], {logstash}plugins-inputs-jmx.html[JMX], 기타 여러 인프라 및 애플리케이션 플랫폼의 메트릭을 {logstash}plugins-inputs-tcp.html[TCP] 및 {logstash}plugins-inputs-udp.html[UDP]를 통해 수집
 
 [float]
 === 웹
@@ -75,24 +75,17 @@ image:static/images/logstash.png[]
 
 데이터가 가장 중요해질 때 데이터를 라우팅합니다. 데이터를 저장, 분석하고 그에 대한 작업을 수행하여 각종 다운스트림 분석 및 운영 활용 사례에서 최고의 효과를 거둡니다.
 
-[cols="a,a"]
-|=======================================================================
-|
 
 *분석*
 
 * {logstash}plugins-outputs-elasticsearch.html[Elasticsearch]
 * {logstash}plugins-outputs-mongodb.html[MongoDB] 및 {logstash}plugins-outputs-riak.html[Riak]와 같은 데이터 저장소
 
-|
-
 *아카이빙*
 
 * {logstash}plugins-outputs-webhdfs.html[HDFS]
 * {logstash}plugins-outputs-s3.html[S3]
 * {logstash}plugins-outputs-google_cloud_storage.html[Google Cloud Storage]
-
-|
 
 *모니터링*
 
@@ -103,8 +96,6 @@ image:static/images/logstash.png[]
 * {logstash}plugins-outputs-datadog.html[Datadog]
 * {logstash}plugins-outputs-cloudwatch.html[CloudWatch]
 
-|
-
 *알림*
 
 * https://www.elastic.co/products/watcher[Watcher](Elasticsearch와 함께)
@@ -113,5 +104,3 @@ image:static/images/logstash.png[]
 * {logstash}plugins-outputs-hipchat.html[HipChat]
 * {logstash}plugins-outputs-irc.html[IRC]
 * {logstash}plugins-outputs-sns.html[SNS]
-
-|=======================================================================
