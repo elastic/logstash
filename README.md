@@ -65,8 +65,8 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
-* Install JDK version 8. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
-* Install JRuby 9.1.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+* Install JDK version 8 or 11. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* Install JRuby 9.2.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 ### RVM install (optional)
