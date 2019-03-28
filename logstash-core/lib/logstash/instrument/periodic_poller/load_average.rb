@@ -27,11 +27,13 @@ module LogStash module Instrument module PeriodicPoller
     class Other
       def self.get()
         load_average_1m = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage()
+        system_cpus = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors()
 
         return nil if load_average_1m.nil?
 
         {
-          :"1m" => load_average_1m
+          :"1m" => load_average_1m,
+          :"norm" => {:"1m" => load_average_1m / system_cpus}
         }
       end
     end
