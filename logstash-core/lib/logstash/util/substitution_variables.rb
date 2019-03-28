@@ -30,17 +30,13 @@ module ::LogStash::Util::SubstitutionVariables
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
   def replace_placeholders(value)
-    case value
-    when String
-      unwrapped = value
-    when ::LogStash::Util::Password
-      unwrapped = value.value.to_s
-    else
-      return value
+    if value.kind_of?(::LogStash::Util::Password)
+      interpolated = replace_placeholders(value.value)
+      return ::LogStash::Util::Password.new(interpolated)
     end
-    klass = value.class
+    return value unless value.is_a?(String)
 
-    interpolated = unwrapped.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
+    value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
@@ -56,11 +52,10 @@ module ::LogStash::Util::SubstitutionVariables
       replacement = ENV.fetch(name, default) if replacement.nil?
       if replacement.nil?
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
-            "or as an Environment entry and there is no default value given."
+          "or as an Environment entry and there is no default value given."
       end
       replacement.to_s
     end
-    klass.new(interpolated)
   end # def replace_placeholders
 
 end
