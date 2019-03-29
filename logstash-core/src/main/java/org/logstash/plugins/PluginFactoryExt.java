@@ -26,6 +26,7 @@ import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaCodecDelegator;
 import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
@@ -338,7 +339,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (codec != null) {
-                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, codec);
+                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(name, id, typeScopedMetric, codec));
                     } else {
                         throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
                     }
