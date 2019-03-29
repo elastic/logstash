@@ -115,6 +115,7 @@ module LogStash
               :events => stats[:events],
               :plugins => {
                 :inputs => plugin_stats(stats, :inputs),
+                :codecs => plugin_stats(stats, :codecs),
                 :filters => plugin_stats(stats, :filters),
                 :outputs => plugin_stats(stats, :outputs)
               },
