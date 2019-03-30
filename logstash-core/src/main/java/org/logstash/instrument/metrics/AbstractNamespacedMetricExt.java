@@ -56,6 +56,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
         return getNamespaceName(context);
     }
 
+    @JRubyMethod(name = "root")
+    public AbstractMetricExt root(final ThreadContext context) {
+        return getMetric();
+    }
+
     protected abstract IRubyObject getGauge(ThreadContext context, IRubyObject key,
         IRubyObject value);
 
