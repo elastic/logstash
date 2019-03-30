@@ -4,6 +4,7 @@ require "logstash/util/safe_uri"
 require "logstash/version"
 require "logstash/environment"
 require "logstash/util/plugin_version"
+require "logstash/codecs/delegator"
 require "filesize"
 
 LogStash::Environment.load_locale!
@@ -410,7 +411,7 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
-              value = LogStash::Plugin.lookup("codec", value.first).new
+              value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
               return true, value
             else
               value = value.first
