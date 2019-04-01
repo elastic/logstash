@@ -339,7 +339,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (codec != null) {
-                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(name, id, typeScopedMetric, codec));
+                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(typeScopedMetric, codec));
                     } else {
                         throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
                     }

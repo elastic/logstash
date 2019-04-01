@@ -22,10 +22,6 @@ public class JavaCodecDelegator implements Codec {
     public static final RubySymbol DECODE_KEY = RubyUtil.RUBY.newSymbol("decode");
     public static final RubySymbol IN_KEY = RubyUtil.RUBY.newSymbol("writes_in");
 
-    private final String configName;
-
-    private final String id;
-
     private final Codec codec;
 
     protected final AbstractNamespacedMetricExt metricEncode;
@@ -43,11 +39,8 @@ public class JavaCodecDelegator implements Codec {
     protected final LongCounter decodeMetricTime;
 
 
-    public JavaCodecDelegator(final String configName, final String id,
-                               final AbstractNamespacedMetricExt metric,
+    public JavaCodecDelegator(final AbstractNamespacedMetricExt metric,
                                final Codec codec) {
-        this.configName = configName;
-        this.id = id;
         this.codec = codec;
 
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
@@ -63,7 +56,7 @@ public class JavaCodecDelegator implements Codec {
             decodeMetricOut = LongCounter.fromRubyBase(metricDecode, MetricKeys.OUT_KEY);
             decodeMetricTime = LongCounter.fromRubyBase(metricDecode, MetricKeys.DURATION_IN_MILLIS_KEY);
 
-            namespacedMetric.gauge(context, MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(configName));
+            namespacedMetric.gauge(context, MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(codec.getName()));
         }
     }
 
