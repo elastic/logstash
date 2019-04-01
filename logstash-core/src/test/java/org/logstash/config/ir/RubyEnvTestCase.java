@@ -3,9 +3,12 @@ package org.logstash.config.ir;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
 import org.junit.BeforeClass;
 import org.logstash.RubyUtil;
+
+import static org.logstash.RubyUtil.RUBY;
 
 public abstract class RubyEnvTestCase {
 

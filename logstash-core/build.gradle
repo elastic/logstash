@@ -69,6 +69,7 @@ task javaTests(type: Test) {
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
     exclude '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -79,6 +80,7 @@ task rubyTests(type: Test) {
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
     include '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
 }
 
 test {
