@@ -6,7 +6,7 @@ def test_labels(logstash):
     assert labels['org.label-schema.name'] == 'logstash'
     assert labels['org.label-schema.schema-version'] == '1.0'
     assert labels['org.label-schema.url'] == 'https://www.elastic.co/products/logstash'
-    assert labels['org.label-schema.vcs-url'] == 'https://github.com/elastic/logstash-docker'
+    assert labels['org.label-schema.vcs-url'] == 'https://github.com/elastic/logstash'
     assert labels['org.label-schema.vendor'] == 'Elastic'
     assert labels['org.label-schema.version'] == logstash.tag
     if logstash.image_flavor == 'oss':

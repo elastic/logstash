@@ -20,7 +20,7 @@ HTTPD ?= logstash-docker-artifact-server
 
 FIGLET := pyfiglet -w 160 -f puffy
 
-all: build
+all: build-from-local-artifacts build-from-local-oss-artifacts
 
 test: lint docker-compose
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
@@ -42,7 +42,7 @@ build-from-local-artifacts: venv dockerfile docker-compose env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	gtimeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: full"; \
-	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f build/logstash/Dockerfile-full build/logstash || \
+	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
 	  (docker kill $(HTTPD); false); \
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
@@ -53,13 +53,9 @@ build-from-local-oss-artifacts: venv dockerfile docker-compose env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	gtimeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
-	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f build/logstash/Dockerfile-oss build/logstash || \
+	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
-
-# Build images from the latest snapshots on snapshots.elastic.co
-from-snapshot:
-	ARTIFACTS_DIR=$$PWD/../build make release-manager-snapshot
 
 demo: docker-compose clean-demo
 	docker-compose up
@@ -95,13 +91,13 @@ venv: requirements.txt
 
 # Make a Golang container that can compile our env2yaml tool.
 golang:
-	docker build -t golang:env2yaml build/golang
+	docker build -t golang:env2yaml data/golang
 
 # Compile "env2yaml", the helper for configuring logstash.yml via environment
 # variables.
 env2yaml: golang
 	docker run --rm -i \
-	  -v ${PWD}/build/logstash/env2yaml:/usr/local/src/env2yaml:Z \
+	  -v $(PWD)/data/logstash/env2yaml:/usr/local/src/env2yaml:Z \
 	  golang:env2yaml
 
 # Generate the Dockerfiles from Jinja2 templates.
@@ -109,11 +105,10 @@ dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	  jinja2 \
 	    -D elastic_version='$(ELASTIC_VERSION)' \
-	    -D staging_build_num='$(STAGING_BUILD_NUM)' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
 	    -D artifacts_dir='$(ARTIFACTS_DIR)' \
-	    templates/Dockerfile.j2 > build/logstash/Dockerfile-$(FLAVOR); \
+	    templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR); \
 	)
 
 
@@ -128,11 +123,11 @@ docker-compose: venv
 	ln -sf docker-compose-$(DEFAULT_IMAGE_FLAVOR).yml docker-compose.yml
 
 clean: clean-demo
-	rm -f build/logstash/env2yaml/env2yaml build/logstash/Dockerfile
+	rm -f ${ARTIFACTS_DIR}/env2yaml/env2yaml ${ARTIFACTS_DIR}/Dockerfile
 	rm -rf venv
 
 clean-demo: docker-compose
 	docker-compose down
 	docker-compose rm --force
 
-.PHONY: build clean clean-demo demo push test
+.PHONY: clean clean-demo demo push test

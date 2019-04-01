@@ -516,8 +516,9 @@ namespace "artifact" do
 
   def build_docker(oss = false)
     env = {
-      "ELASTIC_VERSION" => SNAPSHOT_BUILD ? "#{LOGSTASH_VERSION}-SNAPSHOT" : LOGSTASH_VERSION,
-      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build")
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
       if oss

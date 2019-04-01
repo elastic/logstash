@@ -1,12 +1,4 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
-{% if artifacts_dir -%}
-{%   set url_root = 'http://localhost:8000' -%}
-{% elif staging_build_num -%}
-{%   set url_root = 'https://staging.elastic.co/%s/downloads/logstash' % version_tag -%}
-{% else -%}
-{%   set url_root = 'https://artifacts.elastic.co/downloads/logstash' -%}
-{% endif -%}
-
 {% if image_flavor == 'oss' -%}
   {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
 {% else -%}
@@ -28,7 +20,7 @@ RUN groupadd --gid 1000 logstash && \
       logstash
 
 # Add Logstash itself.
-RUN curl -Lo - {{ url_root }}/{{ tarball }} | \
+RUN curl -Lo - 'http://localhost:8000/'{{ tarball }} | \
     tar zxf - -C /usr/share && \
     mv /usr/share/logstash-{{ elastic_version }} /usr/share/logstash && \
     chown --recursive logstash:logstash /usr/share/logstash/ && \
@@ -69,7 +61,7 @@ LABEL org.label-schema.schema-version="1.0" \
   org.label-schema.name="logstash" \
   org.label-schema.version="{{ elastic_version }}" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
-  org.label-schema.vcs-url="https://github.com/elastic/logstash-docker" \
+  org.label-schema.vcs-url="https://github.com/elastic/logstash" \
 {% if image_flavor == 'oss' -%}
   license="Apache-2.0"
 {% else -%}

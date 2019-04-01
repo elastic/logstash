@@ -3,7 +3,6 @@
 # Print the Elastic Stack version for the current branch, as defined in
 # the 'version.json' file.
 #
-# The version can also be forced by setting the ELASTIC_VERSION environment variable.
 require 'yaml'
 
 def get_hard_coded_version
@@ -17,8 +16,9 @@ def qualify(version)
 end
 
 def get_version
-  version = ENV['ELASTIC_VERSION']
-  version ? version : qualify(get_hard_coded_version)
+  version = get_hard_coded_version()
+  version = qualify(version)
+  ENV["RELEASE"] == "1" ? version : [version, "SNAPSHOT"].join("-")
 end
 
 puts get_version
