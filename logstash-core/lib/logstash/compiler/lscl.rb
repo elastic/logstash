@@ -115,7 +115,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         elsif existing.kind_of?(::Array)
           hash[k] = existing.push(*v)
         else
-          hash[k] = existing + v
+          hash[k] = [existing, v] unless v == existing
         end
         hash
       end
