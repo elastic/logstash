@@ -161,6 +161,3 @@ practical and because some Logstash 7.0 plugins may attempt to use features of E
 in earlier versions. For example, if you attempt to send the 7.x template to a cluster before Elasticsearch 7.0, then 
 all indexing will fail likely fail. If you use your own custom template with Logstash,
 then this issue can be ignored.
-
-Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
-this change and how it impacts operations.
