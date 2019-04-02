@@ -36,7 +36,8 @@ module LogStash
             :config_reload_automatic,
             :config_reload_interval,
             :dead_letter_queue_enabled,
-            :dead_letter_queue_path
+            :dead_letter_queue_path,
+            :cluster_uuids
           ).reject{|_, v|v.nil?}
         rescue
           {}
