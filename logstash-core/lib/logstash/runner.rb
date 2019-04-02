@@ -369,6 +369,8 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @agent.shutdown
 
+    logger.info("Logstash shut down.")
+
     # flush any outstanding log messages during shutdown
     org.apache.logging.log4j.LogManager.shutdown
 
