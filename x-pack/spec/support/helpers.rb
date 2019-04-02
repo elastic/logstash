@@ -23,6 +23,20 @@ def define_settings(settings_options)
   end
 end
 
+def define_deprecated_and_renamed_settings(settings_map)
+  settings_map.each do |deprecated_name, new_name|
+    it "define deprecated-and-renamed stub setting: `#{deprecated_name}` with guidance pointing to use `#{new_name}` instead" do
+      deprecated_setting = settings.get_setting(deprecated_name)
+
+      expect(deprecated_setting).to be_kind_of(LogStash::Setting::DeprecatedAndRenamed)
+      expect(deprecated_setting.name).to eq(deprecated_name)
+      expect(deprecated_setting.new_name).to eq(new_name)
+
+      expect { deprecated_setting.set(true) }.to raise_exception(ArgumentError, /deprecated and removed/)
+    end
+  end
+end
+
 def apply_settings(settings_values, settings = nil)
   settings = settings.nil? ? LogStash::SETTINGS.clone : settings
 

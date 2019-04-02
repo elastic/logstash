@@ -40,6 +40,13 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil]
       )
+
+      describe 'deprecated and renamed settings' do
+        define_deprecated_and_renamed_settings(
+            "xpack.management.elasticsearch.url"    => "xpack.management.elasticsearch.hosts",
+            "xpack.management.elasticsearch.ssl.ca" => "xpack.management.elasticsearch.ssl.certificate_authority"
+        )
+      end
     end
   end
 end
