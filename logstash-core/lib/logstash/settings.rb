@@ -586,6 +586,34 @@ module LogStash
         coerce(value)
       end
     end
+
+    ##
+    # Instances of `DeprecatedSetting` can be registered, but will fail with helpful guidance when encountering any
+    # configuration that attempts to explicitly set the value. They should be used in the Major version immediately
+    # following a deprecation to assist users who are porting forward configurations.
+    class DeprecatedSetting < Setting
+      def initialize(name, guidance='please remove the setting from your configuration and try again.')
+        super(name, Object)
+        @guidance = guidance
+      end
+
+      def set(value)
+        fail(RuntimeError, "The setting `#{name}` has been deprecated and removed from Logstash; #{@guidance}")
+      end
+
+      def value
+        fail(ArgumentError, "The setting `#{name}` has been deprecated and removed from Logstash")
+      end
+    end
+
+    # Useful when a setting has been renamed but otherwise is semantically identical
+    class DeprecatedAndRenamed < DeprecatedSetting
+      attr_reader :new_name
+      def initialize(name, new_name)
+        super(name, "please update your configuration to use `#{new_name}` instead.")
+        @new_name = new_name
+      end
+    end
   end
 
 

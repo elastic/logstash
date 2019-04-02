@@ -34,6 +34,12 @@ module LogStash
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.keystore.password"))
         settings.register(LogStash::Setting::String.new("xpack.management.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
         settings.register(LogStash::Setting::Boolean.new("xpack.management.elasticsearch.sniffing", false))
+
+        # These Settings were renamed and deprecated in 6.x timeframe and removed for 7.0; provide guidance to ease transition.
+        settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.management.elasticsearch.url", "xpack.management.elasticsearch.hosts"))
+        settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.management.elasticsearch.ssl.ca", "xpack.management.elasticsearch.ssl.certificate_authority"))
+
+
       rescue => e
         logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
         raise e
