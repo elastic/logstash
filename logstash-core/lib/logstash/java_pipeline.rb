@@ -220,6 +220,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:ephemeral_id, ephemeral_id)
       config_metric.gauge(:hash, lir.unique_hash)
       config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
+      config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
       @logger.info("Starting pipeline", default_logging_keys(
         "pipeline.workers" => pipeline_workers,
@@ -256,6 +257,19 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
+  end
+
+  def resolve_cluster_uuids
+    cluster_uuids = []
+    outputs.each do |output|
+      if LogStash::SETTINGS.registered?(output.id + ".cluster_uuid")
+        cluster_uuid = LogStash::SETTINGS.get(output.id + ".cluster_uuid")
+        unless cluster_uuids.include? cluster_uuid
+          cluster_uuids.push(cluster_uuid)
+        end
+      end
+    end
+  cluster_uuids
   end
 
   def wait_inputs
