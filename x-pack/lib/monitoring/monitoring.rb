@@ -184,6 +184,10 @@ module LogStash
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.collection.pipeline.details.enabled", true))
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.collection.config.enabled", true))
 
+      # These Settings were renamed and deprecated in 6.x timeframe and removed for 7.0; provide guidance to ease transition.
+      settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.monitoring.elasticsearch.url",    "xpack.monitoring.elasticsearch.hosts"))
+      settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.monitoring.elasticsearch.ssl.ca", "xpack.monitoring.elasticsearch.ssl.certificate_authority"))
+
       settings.register(LogStash::Setting::String.new("node.uuid", ""))
     rescue => e
       logger.error e.message
