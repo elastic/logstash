@@ -39,7 +39,6 @@ module LogStash
         settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.management.elasticsearch.url", "xpack.management.elasticsearch.hosts"))
         settings.register(LogStash::Setting::DeprecatedAndRenamed.new("xpack.management.elasticsearch.ssl.ca", "xpack.management.elasticsearch.ssl.certificate_authority"))
 
-
       rescue => e
         logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
         raise e
