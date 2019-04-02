@@ -10,26 +10,23 @@ Documentation can be found on the [Elastic website](https://www.elastic.co/guide
 
 ## Supported Docker versions
 
-The images have been tested on Docker 17.03.1-ce
+The images have been tested on Docker version 18.09.2, build 6247962
 
 ## Requirements
 A full build and test requires:
 * Docker
 * GNU Make
 * Python 3.5 with Virtualenv
+* JRuby 9.1+
 
 ## Running a build
-To build an image with a released version of Logstash, check out the corresponding
-branch for the version and run Make while specifying the exact version desired.
+To build an image check out the corresponding branch for the version and run the rake task
 Like this:
 ```
-git checkout 6.3
-ELASTIC_VERSION=6.3.1 make
-```
-
-To build an image with the latest nightly snapshot of Logstash, run:
-```
-make from-snapshot
+git checkout 7.0
+rake artifact:docker
+# and for the OSS package
+rake artifact:docker_oss
 ```
 
 ## Contributing, issues and testing
