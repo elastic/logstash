@@ -207,7 +207,7 @@ reversed.
 public String getId() {
     return id;
 }
-----
+-----
 
 For filter plugins, the `getId` method should always return the id that was provided to the plugin through its
 constructor at instantiation time.
@@ -251,7 +251,7 @@ Start Logstash with:
 bin/logstash --java-execution -f /path/to/java_filter.conf
 -----
 
-Note that the `--java-execution` flag to enable the Java execution engine is
+NOTE: The `--java-execution` flag to enable the Java execution engine is
 required as Java plugins are not supported in the Ruby execution engine.
 
 The expected Logstash output (excluding initialization) with the configuration
