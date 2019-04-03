@@ -12,7 +12,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-0-0-rc2]]
 === Logstash 7.0.0-rc2 Release Notes
 
-* No customer-facing changes
+* No user-facing changes
 
 [[logstash-7-0-0-rc1]]
 === Logstash 7.0.0-rc1 Release Notes
