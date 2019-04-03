@@ -374,8 +374,9 @@ To test the plugin, start Logstash with:
 echo "foo,bar" | bin/logstash --java-execution -e 'input { java_stdin { codec => java_codec_example } } }'
 -----
 
-Note that the `--java-execution` flag to enable the Java execution engine is required as Java plugins are not supported
+NOTE: The `--java-execution` flag to enable the Java execution engine is required as Java plugins are not supported
 in the Ruby execution engine.
+
 The expected Logstash output (excluding initialization) with the configuration above is:
 
 [source,txt]
