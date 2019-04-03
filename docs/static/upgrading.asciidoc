@@ -159,5 +159,5 @@ Although we make great efforts to ensure compatibility, Logstash 7.0 is not comp
 in the Elastic Stack upgrade guide, Logstash 7.0 should not be upgraded before Elasticsearch 7.0. This is both
 practical and because some Logstash 7.0 plugins may attempt to use features of Elasticsearch 7.0 that did not exist
 in earlier versions. For example, if you attempt to send the 7.x template to a cluster before Elasticsearch 7.0, then 
-all indexing will fail likely fail. If you use your own custom template with Logstash,
+all indexing likely fail. If you use your own custom template with Logstash,
 then this issue can be ignored.
