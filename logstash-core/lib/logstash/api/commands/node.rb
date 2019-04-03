@@ -24,10 +24,9 @@ module LogStash
           end
         end
 
-        def pipeline(pipeline_id)
-          extract_metrics(
+        def pipeline(pipeline_id, options={})
+          metrics = extract_metrics(
             [:stats, :pipelines, pipeline_id.to_sym, :config],
-            :graph,
             :ephemeral_id,
             :hash,
             :workers,
@@ -39,6 +38,10 @@ module LogStash
             :dead_letter_queue_path,
             :cluster_uuids
           ).reject{|_, v|v.nil?}
+          if options.fetch(:graph, false)
+            metrics.merge!(extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph))
+          end
+          metrics
         rescue
           {}
         end
