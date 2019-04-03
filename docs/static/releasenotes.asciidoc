@@ -33,7 +33,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-7-1]]
 === Logstash 6.7.1 Release Notes
 
-* No changes to Logstash 6.7.1
+* There are no user-facing changes in Logstash 6.7.1
 
 [[logstash-6-7-0]]
 === Logstash 6.7.0 Release Notes
