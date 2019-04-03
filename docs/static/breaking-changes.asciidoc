@@ -1,21 +1,22 @@
 [[breaking-changes]]
 == Breaking Changes
 
-We strive to maintain backward compatibility between minor versions (6.x to 6.y,
+We strive to maintain backward compatibility between minor versions (7.x to 7.y,
 for example) so that you can upgrade without changing any configuration files.
-Breaking changes are usually introduced only between major versions (such as 5.x
-to 6.y). On occasion, we are forced to break compatibility within a given major release
+Breaking changes are usually introduced only between major versions (such as 6.x
+to 7.y). On occasion, we are forced to break compatibility within a given major release
 to ensure correctness of operation.
 
 This section covers the changes that you need to be aware of when migrating to
-Logstash 6.0.0 and later.
+Logstash 7.0.0 and later.
 
-NOTE: Migrating directly between non-consecutive major versions (1.x to
-6.x) is not recommended.
+NOTE: Migrating directly between non-consecutive major versions (5.x to
+7.x) is not recommended.
 
 See these topics for a description of breaking changes:
 
 * <<breaking-pq>>
+* <<breaking-7.0>>
 * <<breaking-6.0>>
 
 See also <<releasenotes>>. 
@@ -29,7 +30,60 @@ and have the persistent queue enabled, we strongly recommend that you drain or
 delete the persistent queue before you upgrade. See <<upgrading-logstash-pqs>>
 for information and instructions.
 
+
+[[breaking-7.0]]
+=== Breaking changes in 7.0
+
+coming[7.0.0]
+
+Here are the breaking changes for 7.0. 
+
 [float]
+==== Changes in Logstash Core
+
+These changes can impact any instance of Logstash that uses impacted features.
+Changes to Logstash Core are plugin agnostic.
+
+
+[float]
+==== Changes in Logstash Plugins
+
+Here are the changes to plugins.
+
+[float]
+===== Beats input
+
+Beats fields have been renamed to map to Elastic Common Schema (ECS).
+
+Starting with 7.0, the fields exported by {beats} conform to the
+{ecs-ref}/index.html[Elastic Common Schema (ECS)]. Many of the exported fields
+have been renamed. See {beats-ref}/breaking-changes-7.0.html[Beats breaking
+changes in 7.0] for the full list of changed names.
+
+See the *{beats} Platform Reference* for more information on
+{beats-ref}/upgrading-6-to-7.html#enable-ecs-compatibility[Beats and ECS].
+
+TODO:  What action does user need to take?  
+
+[float]
+===== Elasticsearch output
+
+ILM on by default
+
+TODO:  What action does user need to take?  
+
+
+
+[float]
+===== List of plugins bundled with Logstash
+
+These plugins were removed from the 7.0 default bundle based on usage data. 
+You can still install these plugins manually.
+
+* removed-plugin-1
+* removed-plugin-2
+
+
 [[breaking-6.0]]
 === Breaking changes in 6.0
 
@@ -62,7 +116,7 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ===== List of plugins bundled with Logstash
 
-The following plugins were removed from the 5.0 default bundle based on usage data. You can still install these plugins manually:
+The following plugins were removed from the 6.0 default bundle based on usage data. You can still install these plugins manually:
 
 * logstash-codec-oldlogstashjson
 * logstash-input-couchdb_changes
