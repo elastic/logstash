@@ -4,6 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-6-7-1,Logstash 6.7.1>>
+* <<logstash-6-7-1,Logstash 6.7.1>>
 * <<logstash-6-7-0,Logstash 6.7.0>>
 * <<logstash-6-6-2,Logstash 6.6.2>>
 * <<logstash-6-6-1,Logstash 6.6.1>>
@@ -29,6 +30,39 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-7-1]]
+=== Logstash 6.7.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.7.1
+
+* Bump version to 6.7.1 https://github.com/elastic/logstash/pull/10585[#10585]
+* Update JRuby and Java prerequisites https://github.com/elastic/logstash/pull/10604[#10604]
+
+=== Logstash Commits between 6.7 and 6.7.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.7.0..6.7"
+
+e03c8c20e - (HEAD -> 6.7, origin/6.7) Log successful shutdowns (64 seconds ago) <Dan Hermann>
+6d2447aaa - Add note about issues with Java 11 and Debian or RPM (#10635) (4 minutes ago) <Karen Metts>
+c267cfa75 - Release notes draft for 6.7.1 (#10618) (7 minutes ago) <Logstash Machine>
+a880a6b4f - Call out requirement for Java execution in note (17 hours ago) <Dan Hermann>
+5a9696b33 - Make the sample command easier to follow (3 days ago) <Yi Ou>
+6b2da9c67 - Update Kafka version to fix build (7 days ago) <Rob Bavey>
+af76e7660 - Update JRuby and Java prerequisites (7 days ago) <Dan Hermann>
+6fe4fb8d6 - Add note that pline-pline also supports files (8 days ago) <Karen Metts>
+eb14bdcd6 - Update supported java version and example (9 days ago) <Karen Metts>
+af43a6b5d - Bump version to 6.7.1 (#10585) (9 days ago) <Rob Bavey>
+62477b09a - Set released state of docs to 'released' (#10579) (9 days ago) <Rob Bavey>
+cbb3e0d63 - Release notes for 6.7.0 (#10578) (9 days ago) <Rob Bavey>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.7.0..6.7 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-7-1]]
 === Logstash 6.7.1 Release Notes
