@@ -3,6 +3,8 @@ require "logstash/config/mixin"
 require "concurrent"
 require "securerandom"
 
+require_relative 'plugin_metadata'
+
 class LogStash::Plugin
   include LogStash::Util::Loggable
 
@@ -135,5 +137,23 @@ class LogStash::Plugin
   def self.lookup(type, name)
     require "logstash/plugins/registry"
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
+  end
+
+  ##
+  # Returns this plugin's metadata key/value store.
+  #
+  # @see LogStash::PluginMetadata for restrictions and caveats.
+  # @since 7.1
+  #
+  # @usage:
+  # ~~~
+  # if defined?(plugin_metadata)
+  #   plugin_metadata.set(:foo, 'value')
+  # end
+  # ~~~
+  #
+  # @return [LogStash::PluginMetadata]
+  def plugin_metadata
+    LogStash::PluginMetadata.for_plugin(self.id)
   end
 end # class LogStash::Plugin
