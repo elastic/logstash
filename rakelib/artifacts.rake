@@ -167,6 +167,18 @@ namespace "artifact" do
     build_tar('ELASTIC-LICENSE', "-all-plugins")
   end
 
+  desc "Build docker image"
+  task "docker" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker] Building docker image")
+    build_docker(false)
+  end
+
+  desc "Build OSS docker image"
+  task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+    puts("[docker_oss] Building OSS docker image")
+    build_docker(true)
+  end
+
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
@@ -178,6 +190,8 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
+    Rake::Task["artifact:docker"].invoke
+    Rake::Task["artifact:docker_oss"].invoke
   end
 
   task "generate_build_metadata" do
@@ -499,4 +513,19 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
+
+  def build_docker(oss = false)
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+    }
+    Dir.chdir("docker") do |dir|
+      if oss
+        system(env, "make build-from-local-oss-artifacts")
+      else
+        system(env, "make build-from-local-artifacts")
+      end
+    end
+  end
 end
