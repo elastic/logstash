@@ -72,6 +72,7 @@ ILM on by default
 
 TODO:  What action does user need to take?  
 
+ - The Field Reference parser, which is used to interpret references to fields in your pipelines and plugins, was made to be more strict and will now reject inputs that are either ambiguous or illegal; since 6.4, Logstash has emitted warnings when encountering input that is ambiguous, and allowed an early opt-in of strict-mode parsing either by providing the command-line flag `--field-reference-parser STRICT` or by adding `config.field_reference.parser: STRICT` to `logstash.yml`.
 
 
 [float]
