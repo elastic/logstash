@@ -1,0 +1,5 @@
+---
+version: '3'
+services:
+  logstash:
+    container_name: logstash-test
