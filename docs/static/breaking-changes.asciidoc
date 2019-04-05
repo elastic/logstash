@@ -35,6 +35,7 @@ These changes can affect any instance of Logstash that uses impacted features.
 Changes to Logstash Core are plugin agnostic.
 
 [float]
+[[field-ref-strict]]
 ===== Field Reference parser is more strict
 
 The Field Reference parser, which is used to interpret references to fields in
@@ -46,6 +47,7 @@ of strict-mode parsing either by providing the command-line flag
 STRICT` to `logstash.yml`.
 
 [float]
+[[java-exec-default]]
 ===== Java execution engine enabled by default
 
 The new Java execution engine is enabled by default. It features faster
