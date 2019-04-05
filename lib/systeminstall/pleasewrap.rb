@@ -15,6 +15,9 @@ require 'open3'
 # Issue on JRUBY https://github.com/jruby/jruby/issues/5642
 # Workaround retrieved from https://github.com/jruby/jruby/issues/5642#issuecomment-479671017
 if java.lang.System.getProperty("java.version").start_with?("11")
+  if RUBY_ENGINE_VERSION != "9.2.6.0"
+    raise "A workaround is in place for JRUBY-5642 that should be applied only to JRuby 9.2.6.0, but found #{RUBY_ENGINE_VERSION}"
+  end
   class IO
     def self.pipe
       readwrite = Java::int[2].new
