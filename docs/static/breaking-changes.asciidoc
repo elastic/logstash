@@ -237,7 +237,7 @@ Changes to Logstash Core are plugin agnostic.
 [float]
 ===== List of plugins bundled with Logstash
 
-The following plugins were removed from the 6.0 default bundle based on usage data. You can still install these plugins manually:
+The following plugins were removed from the default bundle based on usage data. You can still install these plugins manually:
 
 * logstash-codec-oldlogstashjson
 * logstash-input-couchdb_changes
