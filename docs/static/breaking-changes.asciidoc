@@ -62,6 +62,7 @@ change. If you notice different behaviors that might be related, please let us
 know.
 
 [float]
+[[beats-ecs]]
 ===== Beats conform to the Elastic Common Schema (ECS)
 
 As of 7.0, Beats fields conform to the {ecs-ref}/index.html[Elastic Common
