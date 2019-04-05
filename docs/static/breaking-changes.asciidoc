@@ -35,18 +35,6 @@ These changes can affect any instance of Logstash that uses impacted features.
 Changes to Logstash Core are plugin agnostic.
 
 [float]
-[[field-ref-strict]]
-===== Field Reference parser is more strict
-
-The Field Reference parser, which is used to interpret references to fields in
-your pipelines and plugins, was made to be more strict and will now reject
-inputs that are either ambiguous or illegal. Since 6.4, Logstash has emitted
-warnings when encountering input that is ambiguous, and allowed an early opt-in
-of strict-mode parsing either by providing the command-line flag
-`--field-reference-parser STRICT` or by adding `config.field_reference.parser:
-STRICT` to `logstash.yml`.
-
-[float]
 [[java-exec-default]]
 ===== Java execution engine enabled by default
 
@@ -58,7 +46,8 @@ https://www.elastic.co/blog/meet-the-new-logstash-java-execution-engine[initial
 release of the Java execution engine].  
 
 We went to considerable lengths to make this change seamless. Still, it's a big
-change. If you notice different behaviors that might be related, please let us
+change. If you notice different behaviors that might be related, please 
+https://github.com/elastic/logstash/issues[open a GitHub issue] to let us
 know.
 
 [float]
@@ -77,6 +66,45 @@ Beats/ECS change is influencing the data reaching existing indices.
 
 See the *{beats} Platform Reference* for more information on
 {beats-ref}/upgrading-6-to-7.html#enable-ecs-compatibility[Beats and ECS].
+
+[float]
+[[field-ref-strict]]
+===== Field Reference parser is more strict
+
+The Field Reference parser, which is used to interpret references to fields in
+your pipelines and plugins, was made to be more strict and will now reject
+inputs that are either ambiguous or illegal. Since 6.4, Logstash has emitted
+warnings when encountering input that is ambiguous, and allowed an early opt-in
+of strict-mode parsing either by providing the command-line flag
+`--field-reference-parser STRICT` or by adding `config.field_reference.parser:
+STRICT` to `logstash.yml`.
+
+Here's an example. 
+
+*Before*
+
+[source,txt]
+-----
+logstash-6.7.0 % echo "hello"| bin/logstash -e 'filter { mutate { replace => { "message" => "%{[[]]message]} you" } } }'
+[2019-04-05T16:52:18,691][WARN ][org.logstash.FieldReference] Detected ambiguous Field Reference `[[]]message]`, which we expanded to the path `[message]`; in a future release of Logstash, ambiguous Field References will not be expanded.
+{
+       "message" => "hello you",
+      "@version" => "1",
+    "@timestamp" => 2019-04-05T15:52:18.546Z,
+          "type" => "stdin",
+          "host" => "overcraft.lan"
+}
+-----
+
+*After* 
+
+[source,txt]
+-----
+logstash-7.0.0 % echo "hello"| bin/logstash -e 'filter { mutate { replace => { "message" => "%{[[]]message]} you" } } }'
+[2019-04-05T16:48:09,135][FATAL][logstash.runner          ] An unexpected error occurred! {:error=>java.lang.IllegalStateException: org.logstash.FieldReference$IllegalSyntaxException: Invalid FieldReference: `[[]]message]`
+[2019-04-05T16:48:09,167][ERROR][org.logstash.Logstash    ] java.lang.IllegalStateException: Logstash stopped processing because of an error: (SystemExit) exit
+-----
+
   
 [float]
 ==== Changes in Logstash Plugins
