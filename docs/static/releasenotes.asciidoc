@@ -30,21 +30,167 @@ This section summarizes the changes in the following releases:
 [[logstash-7-0-0-beta1]]
 === Logstash 7.0.0-beta1 Release Notes
 
-Placeholder for release notes
+* Update Java dependencies https://github.com/elastic/logstash/pull/10340[#10340]
+* Remove pipeline output workers setting https://github.com/elastic/logstash/pull/10358[#10358]
+* Cleanup Ruby gems dependencies https://github.com/elastic/logstash/pull/10171[#10171]
+* Ensure compatibility of module data with ES and Kibana 7.0 https://github.com/elastic/logstash/pull/10356[#10356]
+* Rename x-pack monitoring and management config option .url and .ca to .hosts and .certificate_authority https://github.com/elastic/logstash/pull/10380[#10380]
+* BUGFIX: building of deb and rpm artifacts https://github.com/elastic/logstash/pull/10396[#10396]
+* logstash-codec-cef
+  - Removed obsolete `sev` and `deprecated_v1_fields` fields
+  - Fixed minor doc inconsistencies (added reverse_mapping to options table, moved it to alpha order in option descriptions, fixed typo)
+    [#60](https://github.com/logstash-plugins/logstash-codec-cef/pull/60)
+* logstash-codec-es_bulk
+  - Add documentation about use with http input
+* logstash-codec-netflow
+  - Fix sub-second timestamp math
+* logstash-filter-clone
+  - Make 'clones' a required option
+  - Added a warning when 'clones' is empty since that results in a no-op https://github.com/logstash-plugins/logstash-filter-clone/issues/14
+* logstash-filter-de_dot
+  - fix failure of fieldnames with boolean value "false"
+* logstash-filter-geoip
+  - Removed obsolete lru_cache_size field
+* logstash-filter-http
+  - Fixed minor documentation issues [#9](https://github.com/logstash-plugins/logstash-filter-http/pull/9)
+  - Minor documentation fixes
+* logstash-filter-jdbc_streaming
+  - [#11](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11) Swap out mysql for postgresql for testing
+* logstash-filter-json
+  - Updated documentation with some clarifications and fixes
+* logstash-filter-memcached
+  - Updated to 1.0.0
+  - The plugin common options (e.g., `add_field`, `add_tag`, etc.) are now correctly only invoked when the plugin successfully gets one or more values from, or sets one or more values to memcached (#4)
+  - Fix links to argument types in documentation (#3)
+* logstash-filter-metrics
+  - Fixed two minor typos in documentation
+* logstash-filter-mutate
+  - Added ability to directly convert from integer and float to boolean [#127](https://github.com/logstash-plugins/logstash-filter-mutate/pull/127)
+* logstash-filter-split
+  - Fixed numeric values, optimized @target verification, cleanups and specs [36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
+*  logstash-input-azure_event_hubs
+  - Updated Azure event hub library dependencies[#27](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27)
+*  logstash-input-beats
+  - Removed obsolete setting congestion_threshold and target_field_for_codec
+  - Changed default value of `add_hostname` to false
+* logstash-input-elasticsearch
+  - Added managed slice scrolling with `slices` option
+* logstash-input-http
+  - Added configurable response code option [#103](https://github.com/logstash-plugins/logstash-input-http/pull/103)
+  - Added explanation about operation order of codec and additional_codecs [#104](https://github.com/logstash-plugins/logstash-input-http/pull/104)
+* logstash-input-http_poller
+  - Fixed minor doc and doc formatting issues [#107](https://github.com/logstash-plugins/logstash-input-http_poller/pull/107)
+  - Removed obsolete field `interval`
+  - Changed `schedule` entry to show that it is required
+    [#102](https://github.com/logstash-plugins/logstash-input-http_poller/pull/102)
+* logstash-input-kafka
+  - Removed obsolete `ssl` option
+* logstash-input-tcp
+  - Removed obsolete `data_timeout` and `ssl_cacert` options
+* logstash-mixin-http_client
+  - Removed obsolete ssl_certificate_verify option
+* logstash-output-elasticsearch
+  - Remove support for parent child (still support join data type) since we don't support multiple document types any more
+  - Removed obsolete `flush_size` and `idle_flush_time`
+  - Added 'auto' setting for ILM with default of 'auto' [#838](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/838)
+  - Fixed sniffing support for 7.x [#827](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/827)
+  - Fixed issue with escaping index names which was causing writing aliases for ILM to fail [#831](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/831)
+* logstash-output-file
+  - Removed JRuby check when using FIFOs [#75](https://github.com/logstash-plugins/logstash-output-file/pull/75)
+* logstash-output-http
+  - Relax dependency on http_client mixin since current major works on both
+* logstash-output-kafka
+  - Removed obsolete `block_on_buffer_full`, `ssl` and `timeout_ms` options
+* logstash-output-pagerduty
+  - Update _development_ dependency webmock to latest version to prevent conflicts in logstash core's dependency matrix.
+* logstash-output-redis
+  - Removed obsolete fields `queue` and `name`
+  - Changed major version of redis library dependency to 4.x
+* logstash-output-sqs
+  - Removed obsolete fields `batch` and `batch_timeout`
+  - Removed workaround to JRuby bug (see more [here](https://github.com/jruby/jruby/issues/3645))
+* logstash-output-tcp
+  - Removed obsolete field `message_format`
+  - Removed requirement to have a certificate/key pair when enabling ssl
 
 [[logstash-7-0-0-alpha2]]
 === Logstash 7.0.0-alpha2 Release Notes
 
-Placeholder for release notes
+* logstash-filter-elasticsearch
+  - Add support for extracting hits total from Elasticsearch 7.x responses
+  - Added connection check during register to avoid failures during processing
+  - Changed Elasticsearch Client transport to use Manticore
+  - Changed amount of logging details during connection failure
+* logstash-filter-fingerprint
+  - Fixed concurrent SHA fingerprinting by making the instances thread local
+* NEW: logstash-filter-http
+  - Beta version of HTTP filter plugin based on @lucashenning's [REST filter](https://github.com/lucashenning/logstash-filter-rest).
+* NEW: logstash-filter-memcached
+* logstash-input-beats
+  - Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version
+  - Updated jar dependencies to reflect newer releases
+* logstash-input-file
+  - Fixed issue where logs were being spammed with needless error messages [#224](https://github.com/logstash-plugins/logstash-input-file/pull/224)
+  - Fixed problem in tail and read modes where the read loop could get stuck if an IO error occurs in the loop.
+    The file appears to be being read but it is not, suspected with file truncation schemes.
+    [Issue #205](https://github.com/logstash-plugins/logstash-input-file/issues/205)
+* logstash-input-gelf
+  - Fixed shutdown handling, robustness in socket closing and restarting, json parsing, code DRYing and cleanups [62](https://github.com/logstash-plugins/logstash-input-gelf/pull/62)
+* logstash-input-http
+  - Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version.
+  - Changed jar dependencies to reflect newer versions
+* logstash-input-kafka
+  - Added support for kafka property ssl.endpoint.identification.algorithm #302(https://github.com/logstash-plugins/logstash-input-kafka/pull/302)
+  - Changed Kafka client version to 2.1.0
+  - Changed Kafka client version to 2.0.1 [#295](https://github.com/logstash-plugins/logstash-input-kafka/pull/295)
+* logstash-output-elasticsearch
+  - Adds support for Index Lifecycle Management for Elasticsearch 6.6.0 and above, running with at least a Basic License(Beta) [#805](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/805)
+  - Fixed support for Elasticsearch 7.x [#812](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/812)
+* logstash-output-http
+  - Fixed handling of empty `retryable_codes` [#99](https://github.com/logstash-plugins/logstash-output-http/pull/99)
+* logstash-output-kafka
+  - Added support for kafka property `ssl.endpoint.identification.algorithm` [#213](https://github.com/logstash-plugins/logstash-output-kafka/pull/213)
+  - Changed Kafka client to version 2.1.0
+  - Changed Kafka client to version 2.0.1 [#209](https://github.com/logstash-plugins/logstash-output-kafka/pull/209)
 
 [[logstash-7-0-0-alpha1]]
 === Logstash 7.0.0-alpha1 Release Notes
 
-Placeholder for release notes
-
-
-
-
-
-
-
+* Make Java execution the default https://github.com/elastic/logstash/pull/8649[#8649]
+* Field-reference parsing is now strict by default https://github.com/elastic/logstash/pull/9543[#9543]
+* Improvements to core Javaification
+* BUGFIX: Support for Byte, Short and Date type conversions as seen in the rabbitmq input plugin https://github.com/elastic/logstash/pull/9984[#9984]
+* logstash-codec-netflow
+  - BREAKING: Added support for RFC6759 decoding of application_id. This is a breaking change to the way application_id is decoded. The format changes from e.g. 0:40567 to 0..12356..40567
+  - Fixed IPFIX options template parsing for Juniper MX240 JunOS 15.1
+  - Fixed incorrect parsing of zero-filled Netflow 9 packets from Palo Alto
+  - Added support for Netflow v9 devices with VarString fields (H3C Netstream)
+  - Reduced complexity of creating, persisting, loading an retrieving template caches
+  - Fixed issue where TTL in template registry was not being respected
+  - Added Cisco ACI to list of known working Netflow v9 exporters
+  - Added support for IXIA Packet Broker IPFIX
+  - Fixed issue with Procera float fields
+* logstash-filter-aggregate
+  - new feature: add ability to dynamically define a custom `timeout` or `inactivity_timeout` in `code` block (fix issues [#91](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/91) and [#92](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/92))
+  - new feature: add meta informations available in `code` block through `map_meta` variable
+  - new feature: add Logstash metrics, specific to aggregate plugin: aggregate_maps, pushed_events, task_timeouts, code_errors, timeout_code_errors
+  - new feature: validate at startup that `map_action` option equals to 'create', 'update' or 'create_or_update'
+* logstash-filter-jdbc_static
+ - Added info to documentation to emphasize significance of table order [36](https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/36)
+* logstash-filter-xml
+  - Fixed creation of empty arrays when xpath failed [#59](https://github.com/logstash-plugins/logstash-filter-xml/pull/59)
+  - Fixed force_array behavior with nested elements [#57](https://github.com/logstash-plugins/logstash-filter-xml/pull/57)
+* logstash-input-file
+  - Fixed problem in rotation handling where the target file being rotated was
+  subjected to the start_position setting when it must always start from the beginning.
+  [Issue #214](https://github.com/logstash-plugins/logstash-input-file/issues/214)
+* logstash-input-snmp
+  - Added no_codec condition to the documentation and bumped version [#39](https://github.com/logstash-plugins/logstash-input-snmp/pull/39)
+  - Changed docs to improve options layout [#38](https://github.com/logstash-plugins/logstash-input-snmp/pull/38)
+* logstash-input-sqs
+  - Added support for multiple events inside same message from SQS [#48](https://github.com/logstash-plugins/logstash-input-sqs/pull/48/files)
+* logstash-output-elasticsearch
+  - Tweaked logging statements to reduce verbosity
+  - Fixed numerous issues relating to builds on Travis [#799](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/799)
+* logstash-output-s3
+  - Fixed issue where on restart, 0 byte files could erroneously be uploaded to s3 [#195](https://github.com/logstash-plugins/logstash-output-s3/issues/195)
