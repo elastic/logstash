@@ -598,7 +598,7 @@ module LogStash
       end
 
       def set(value)
-        fail(RuntimeError, "The setting `#{name}` has been deprecated and removed from Logstash; #{@guidance}")
+        fail(ArgumentError, "The setting `#{name}` has been deprecated and removed from Logstash; #{@guidance}")
       end
     end
 
