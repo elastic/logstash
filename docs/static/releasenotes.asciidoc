@@ -17,12 +17,12 @@ coming[7.0.0]
 
 The list combines release notes from the 7.0.0-alpha1, -alpha2, -beta1, -rc1 and -rc2 releases.
 
-
-
 [[logstash-7-0-0-rc2]]
 === Logstash 7.0.0-rc2 Release Notes
 
-* No user-facing changes
+* logstash-input-snmp
+  - Added support for querying SNMP tables
+  - Changed three error messages in the base_client to include the target address for clarity in the logs.
 
 [[logstash-7-0-0-rc1]]
 === Logstash 7.0.0-rc1 Release Notes
@@ -36,6 +36,25 @@ The list combines release notes from the 7.0.0-alpha1, -alpha2, -beta1, -rc1 and
 * Improve docs about using Filebeat modules with Logstash https://github.com/elastic/logstash/pull/10438[#10438]
 * Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425] 
 * BUGFIX: Remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10462[#10462]
+* logstash-filter-dns
+  - Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x https://github.com/logstash-plugins/logstash-filter-dns/pull/48[#48]
+  - Fixed crash that could occur when encountering certain classes of invalid inputs https://github.com/logstash-plugins/logstash-filter-dns/pull/49[#49]
+* logstash-filter-kv
+  - Added a timeout enforcer which prevents inputs that are pathological against the generated parser from blocking
+    the pipeline. By default, timeout is a generous 30s, but can be configured or disabled entirely with the new
+    `timeout_millis` and `tag_on_timeout` directives https://github.com/logstash-plugins/logstash-filter-kv/pull/79[#79]
+  - Made error-handling configurable with `tag_on_failure` directive.
+* logstash-filter-xml
+  - Fixed creation of empty arrays when xpath failed https://github.com/logstash-plugins/logstash-filter-xml/pull/59[#59]
+* logstash-input-file
+  - Fixed problem in Windows where some paths would fail to return an identifier ("inode"). Make path into a C style String before encoding to UTF-16LE. https://github.com/logstash-plugins/logstash-input-file/issues/232[#232]
+* logstash-input-tcp
+  - Fixed race condition where data would be accepted before queue was configured
+  - Support multiple certificates per file https://github.com/logstash-plugins/logstash-input-tcp/pull/140[#140]
+* logstash-output-kafka
+  - Fixed issue with unnecessary sleep after retries exhausted https://github.com/logstash-plugins/logstash-output-kafka/pull/216[#216]
+* logstash-output-s3
+  - Add support for setting mutipart upload threshold https://github.com/logstash-plugins/logstash-output-s3/pull/202[#202]
 
 [[logstash-7-0-0-beta1]]
 === Logstash 7.0.0-beta1 Release Notes
