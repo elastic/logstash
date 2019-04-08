@@ -124,10 +124,6 @@ NOTE: The majority of the changes to plugins are the removal of previously-depre
 and now-obsolete options. Please ensure that your pipeline
 configurations do not use these removed options before upgrading.
 
-Please review the 
-https://www.elastic.co/support/matrix#matrix_logstash_plugins[Support Matrix for Logstash plugins]
-for the latest on supported plugins.
-
 [float]
 ===== Codec Plugins
 
