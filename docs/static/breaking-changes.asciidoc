@@ -21,6 +21,9 @@ See these topics for a description of breaking changes:
 
 See also <<releasenotes>>. 
 
+//NOTE: The notable-breaking-changes tagged regions are re-used in the
+//Installation and Upgrade Guide
+
 [[breaking-7.0]]
 === Breaking changes in 7.0
 
@@ -28,6 +31,7 @@ coming[7.0.0]
 
 Here are the breaking changes for {ls} 7.0. 
 
+// tag::notable-breaking-changes[]
 [float]
 ==== Changes in Logstash Core
 
@@ -225,6 +229,7 @@ support multiple document types any more
 
 * Removed obsolete `message_format` option
 
+// end::notable-breaking-changes[]
 
 [[breaking-pq]]
 === Breaking change across PQ versions prior to Logstash 6.3.0
@@ -233,7 +238,6 @@ If you are upgrading from Logstash 6.2.x or any earlier version (including 5.x)
 and have the persistent queue enabled, we strongly recommend that you drain or
 delete the persistent queue before you upgrade. See <<upgrading-logstash-pqs>>
 for information and instructions.
-
 
 [[breaking-6.0]]
 === Breaking changes in 6.0
