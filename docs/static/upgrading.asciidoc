@@ -108,11 +108,9 @@ Before upgrading Logstash:
 +
 There you can find info on these topics and more:
 
-** Java execution engine enabled by default
-** Field parser is more strict and how that affects processing
-** Beats conforms to the Elastic Common Schema (ECS) and how that impacts {ls}
- 
-//TO DO:  ^^  Add links  <<java-exec-default>> and <<field-ref-strict>> and <<beats-ecs>> after breaking changes are merged 
+** <<java-exec-default,Java execution engine enabled by default>>
+** <<field-ref-strict,Field parser is more strict and how that affects processing>>
+** <<beats-ecs,Beats conforms to the Elastic Common Schema (ECS) and how that impacts {ls}>>
  
 If you are installing Logstash with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
