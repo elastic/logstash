@@ -34,6 +34,13 @@ module LogStash
           respond_with(:pipelines => { pipeline_id => payload } )
         end
 
+        get "/pipelines" do
+          opts = {:graph => as_boolean(params.fetch("graph", false))}
+          payload = node.pipelines(opts)
+          halt(404) if payload.empty?
+          respond_with(:pipelines => payload )
+        end
+
          get "/?:filter?" do
            selected_fields = extract_fields(params["filter"].to_s.strip)
            values = node.all(selected_fields)

@@ -17,10 +17,10 @@ module LogStash
           payload
         end
 
-        def pipelines
+        def pipelines(options={})
           pipeline_ids = service.get_shallow(:stats, :pipelines).keys
           pipeline_ids.each_with_object({}) do |pipeline_id, result|
-            result[pipeline_id] = pipeline(pipeline_id)
+            result[pipeline_id] = pipeline(pipeline_id, options)
           end
         end
 
