@@ -20,6 +20,12 @@ See these topics for a description of breaking changes:
 
 See also <<releasenotes>>. 
 
+//NOTE: The notable-breaking-changes tagged regions are re-used in the
+//Installation and Upgrade Guide
+// tag::notable-breaking-changes[]
+
+// end::notable-breaking-changes[]
+
 [float]
 [[breaking-pq]]
 === Breaking change across PQ versions prior to Logstash 6.3.0
