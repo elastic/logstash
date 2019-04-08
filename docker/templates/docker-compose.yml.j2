@@ -1,0 +1,23 @@
+---
+version: '3.0'
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:{{ version_tag }}
+    volumes:
+      - ./examples/logstash.conf/:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - elastic-stack
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-platinum:{{ version_tag }}
+    networks:
+      - elastic-stack
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:{{ version_tag }}
+    ports: [ '5601:5601' ]
+    networks:
+      - elastic-stack
+
+networks:
+  elastic-stack:

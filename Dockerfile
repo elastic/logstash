@@ -22,7 +22,6 @@ LABEL retention="keep"
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
-ADD buildSrc /opt/logstash/buildSrc
 RUN /opt/logstash/gradlew wrapper
 
 ADD versions.yml /opt/logstash/versions.yml
@@ -33,6 +32,7 @@ ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
 ADD Gemfile.template /opt/logstash/Gemfile.template
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
+ADD rubyUtils.gradle /opt/logstash/rubyUtils.gradle
 ADD rakelib /opt/logstash/rakelib
 ADD config /opt/logstash/config
 ADD spec /opt/logstash/spec
