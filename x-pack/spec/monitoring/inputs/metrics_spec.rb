@@ -81,7 +81,7 @@ describe LogStash::Inputs::Metrics do
 
         wait(60).for { agent.get_pipeline(:main) }.to_not be_nil
 
-        metrics_input.metric = agent.metric
+        metrics_input.metric = agent.metric.namespace(:test)
 
         metrics_input.register
         metrics_input.run(queue)
