@@ -27,8 +27,6 @@ See also <<releasenotes>>.
 [[breaking-7.0]]
 === Breaking changes in 7.0
 
-coming[7.0.0]
-
 Here are the breaking changes for {ls} 7.0. 
 
 // tag::notable-breaking-changes[]
