@@ -13,8 +13,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-0-0]]
 === Logstash 7.0.0 Release Notes
 
-coming[7.0.0]
-
 The list combines release notes from the 7.0.0-alpha1, -alpha2, -beta1, -rc1 and -rc2 releases.
 
 ==== Logstash core
