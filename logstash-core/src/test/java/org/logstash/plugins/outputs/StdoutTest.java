@@ -2,6 +2,7 @@ package org.logstash.plugins.outputs;
 
 import co.elastic.logstash.api.Event;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.ConfigurationImpl;
 import org.logstash.plugins.TestContext;
@@ -68,5 +69,25 @@ public class StdoutTest {
         org.logstash.Event e3 = new org.logstash.Event();
         e3.setField("myField", "event3");
         return Arrays.asList(e1, e2, e3);
+    }
+
+    @Test
+    public void testEventLargerThanBuffer() {
+        StringBuilder message = new StringBuilder();
+        String repeatedMessage = "foo";
+        for (int k = 0; k < (16 * 1024 / repeatedMessage.length()); k++) {
+            message.append("foo");
+        }
+
+        org.logstash.Event e = new org.logstash.Event();
+        e.setField("message", message.toString());
+
+        OutputStream dummyOutputStream = new ByteArrayOutputStream(17 * 1024);
+        Stdout stdout = new Stdout(ID, new ConfigurationImpl(Collections.emptyMap(), new TestPluginFactory()),
+                new TestContext(), dummyOutputStream);
+        stdout.output(Collections.singletonList(e));
+        stdout.stop();
+
+        Assert.assertTrue(dummyOutputStream.toString().contains(message.toString()));
     }
 }
