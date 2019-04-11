@@ -335,9 +335,10 @@ public Codec cloneCodec() {
 -----
 
 The `cloneCodec` method should return an identical instance of the codec with the exception of its ID. Because codecs
-may be stateful, a separate instance of each codec must be supplied to each worker thread in a pipeline. For all
-pipelines with more than one worker, the `cloneCodec` method is called by the Logstash execution engine to create all 
-codec instances beyond the first. In the example above, the codec is cloned with the same delimiter but a different ID. 
+may be stateful across calls to their `decode` methods, input plugins that are multi-threaded should use a separate
+instance of each codec via the `cloneCodec` method for each of their threads. Because a single codec instance is shared
+across all pipeline workers in the output stage of the Logstash pipeline, codecs should _not_ retain state across calls
+to their `encode` methods. In the example above, the codec is cloned with the same delimiter but a different ID.
 
 [float]
 ==== getId method
