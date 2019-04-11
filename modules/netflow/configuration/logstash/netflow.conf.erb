@@ -483,6 +483,19 @@ filter {
                 rename => { "[netflow][ipClassOfService]" => "[netflow][tos]" }
             }
         }
+
+        #normalise last_switched data
+        mutate {
+            id => "netflow-v10-normalise-last_switched-from-flowEndSysUpTime"
+            rename => { "[netflow][flowEndSysUpTime]" => "[netflow][last_switched]" }
+        }
+
+        #normalise first_switched data
+        mutate {
+            id => "netflow-v10-normalise-first_switched-from-flowStartSysUpTime"
+            rename => { "[netflow][flowStartSysUpTime]" => "[netflow][first_switched]" }
+        }
+
     }
 
     #--------------------
