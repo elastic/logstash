@@ -3,7 +3,7 @@ input {
         type => "netflow"
         port => <%= setting("var.input.udp.port", 2055) %>
         codec => netflow {
-            versions => [5,9]
+            versions => [5,9,10]
         }
         workers => <%= setting("var.input.udp.workers", 2) %>
         receive_buffer_bytes => <%= setting("var.input.udp.receive_buffer_bytes", 212992) %>
@@ -55,7 +55,7 @@ filter {
                 add_field => { "[netflow][ip_version]" => "IPv%{[netflow][ip_protocol_version]}" }
             }
         }
-        
+
         # Populate fields with IPv4 or IPv6 specific fields.
         if [netflow][ipv4_src_addr] or [netflow][ipv4_dst_addr] or [netflow][ip_protocol_version] == 4 {
             if [netflow][ipv4_src_addr] {
@@ -126,7 +126,7 @@ filter {
                 add_tag => [ "__netflow_ip_version_not_recognized" ]
             }
         }
-        
+
         # Populate flow direction (ingress/egress).
         if [netflow][direction] == 0 {
             mutate {
@@ -204,7 +204,7 @@ filter {
                 convert => { "[netflow][bytes]" => "integer" }
             }
         }
-        
+
         # Populate packets transferred in the flow.
         if [netflow][in_pkts] {
             mutate {
@@ -275,6 +275,216 @@ filter {
         }
     }
 
+    # Process Netflow v10 (ipfix) events.
+    else if [netflow][version] == 10 {
+        mutate {
+            id => "netflow-v10-normalize-netflow-version"
+            replace => { "[netflow][version]" => "Netflow v10" }
+        }
+
+        if [netflow][ipVersion] {
+            mutate {
+                id => "netflow-v10-normalize-ip_version"
+                add_field => { "[netflow][ip_version]" => "IPv%{[netflow][ipVersion]}" }
+            }
+        } else if [netflow][sourceIPv4Address] or [netflow][destinationIPv4Addres] {
+            mutate {
+                id => "netflow-v10-add-ip_version-v4"
+                add_field => { "[netflow][ip_version]" => "IPv4" }
+            }
+        } else if [netflow][sourceIPv6Address] or [netflow][destinationIPv6Addres] {
+            mutate {
+                id => "netflow-v10-add-ip_version-v6"
+                add_field => { "[netflow][ip_version]" => "IPv6" }
+            }
+        }
+
+        mutate {
+	    id => "netflow-v10-set-protocol"
+            rename => { "[netflow][protocolIdentifier]" => "[netflow][protocol]" }
+        }
+
+	mutate {
+            id => "netflow-v10-set-ingress-interface-index"
+            rename => { "[netflow][ingressInterface]" => "[netflow][input_snmp]" }
+        }
+
+        mutate {
+            id => "netflow-v10-set-egress-interface-index"
+            rename => { "[netflow][egressInterface]" => "[netflow][output_snmp]" }
+        }
+
+        if [netflow][tcpControlBits] != 0 {
+	    mutate {
+                id => "netflow-v10-set-tcp-control-flag"
+                rename => { "[netflow][tcpControlBits]" => "[netflow][tcp_flags]" }
+            }
+        }
+
+        # Populate fields with IPv4 or IPv6 specific fields.
+        if [netflow][sourceIPv4Address] or [netflow][destinationIPv4Addres] or [netflow][ipVersion] == 4 {
+            if [netflow][sourceIPv4Address] {
+                mutate {
+                    id => "netflow-v10-normalize-src_addr-from-sourceIPv4Address"
+                    rename => { "[netflow][sourceIPv4Address]" => "[netflow][src_addr]" }
+                }
+            }
+            if [netflow][sourceIPv4PrefixLength] {
+                mutate {
+                    id => "netflow-v10-normalize-src_mask_len-from-sourceIPv4PrefixLength"
+                    rename => { "[netflow][sourceIPv4PrefixLength]" => "[netflow][src_mask_len]" }
+                }
+            }
+            if [netflow][destinationIPv4Address] {
+                mutate {
+                    id => "netflow-v10-normalize-dst_addr-from-destinationIPv4Address"
+                    rename => { "[netflow][destinationIPv4Address]" => "[netflow][dst_addr]" }
+                }
+            }
+            if [netflow][destinationIPv4PrefixLength] {
+                mutate {
+                    id => "netflow-v10-normalize-dst_mask_len-from-destinationIPv4PrefixLength"
+                    rename => { "[netflow][destinationIPv4PrefixLength]" => "[netflow][dst_mask_len]" }
+                }
+            }
+            if [netflow][ipNextHopIPv4Address] {
+                mutate {
+                    id => "netflow-v10-normalize-next_hop-from-ipNextHopIPv4Address"
+                    rename => { "[netflow][ipNextHopIPv4Address]" => "[netflow][next_hop]" }
+                }
+            }
+        } else if [netflow][sourceIPv6Address] or [netflow][destinationIPv6Address] or [netflow][ipVersion] == 6 {
+            if [netflow][sourceIPv6Address] {
+                mutate {
+                    id => "netflow-v10-normalize-src_addr-from-sourceIPv6Address"
+                    rename => { "[netflow][sourceIPv6Address]" => "[netflow][src_addr]" }
+                }
+            }
+            if [netflow][sourceIPv6PrefixLength] {
+                mutate {
+                    id => "netflow-v10-normalize-src_mask_len-from-sourceIPv6PrefixLength"
+                    rename => { "[netflow][sourceIPv6PrefixLength]" => "[netflow][src_mask_len]" }
+                }
+            }
+            if [netflow][destinationIPv6Address] {
+                mutate {
+                    id => "netflow-v10-normalize-dst_addr-from-destinationIPv6Address"
+                    rename => { "[netflow][destinationIPv6Address]" => "[netflow][dst_addr]" }
+                }
+            }
+            if [netflow][destinationIPv6PrefixLength] {
+                mutate {
+                    id => "netflow-v10-normalize-dst_mask_len-from-destinationIPv6PrefixLength"
+                    rename => { "[netflow][destinationIPv6PrefixLength]" => "[netflow][dst_mask_len]" }
+                }
+            }
+            if [netflow][ipNextHopIPv6Address] {
+                mutate {
+                    id => "netflow-v10-normalize-next_hop-from-ipNextHopIPv6Address"
+                    rename => { "[netflow][ipNextHopIPv6Address]" => "[netflow][next_hop]" }
+                }
+            }
+        } else {
+            # Did not recognize IP version.
+            mutate {
+                id => "netflowv10-ip-version-not-recognized"
+                add_tag => [ "__netflow_ip_version_not_recognized" ]
+            }
+        }
+
+        # Populate flow direction (ingress/egress).
+        if [netflow][flowDirection] == 0 {
+            mutate {
+                id => "netflow-v10-normalize-direction-ingress"
+                replace => { "[netflow][flowDirection]" => "ingress" }
+            }
+        } else if [netflow][flowDirection] == 1 {
+            mutate {
+                id => "netflow-v10-normalize-direction-egress"
+                replace => { "[netflow][flowDirection]" => "egress" }
+            }
+        } else {
+            mutate {
+                id => "netflow-v10-normalize-direction-not-recognized"
+                add_tag => [ "__netflow_direction_not_recognized" ]
+            }
+        }
+
+        # Populate source port.
+        if [netflow][sourceTransportPort] {
+            mutate {
+                id => "netflow-v10-normalize-src_port_from_sourceTransportPort"
+                rename => { "[netflow][sourceTransportPort]" => "[netflow][src_port]" }
+            }
+        }
+
+        # Populate destination port.
+        if [netflow][destinationTransportPort] {
+            mutate {
+                id => "netflow-v10-normalize-dst_port_from_destinationTransportPort"
+                rename => { "[netflow][destinationTransportPort]" => "[netflow][dst_port]" }
+            }
+        }
+
+        # Populate bytes transferred in the flow.
+        if [netflow][octetDeltaCount] {
+            mutate {
+                id => "netflow-v10-normalize-bytes-from-octetDeltaCount"
+                rename => { "[netflow][octetDeltaCount]" => "[netflow][bytes]" }
+            }
+        }
+        if [netflow][bytes] {
+            mutate {
+                id => "netflow-v10-normalize-convert-bytes"
+                convert => { "[netflow][bytes]" => "integer" }
+            }
+        }
+
+        # Populate packets transferred in the flow.
+        if [netflow][packetDeltaCount] {
+            mutate {
+                id => "netflow-v10-normalize-packets-from-packetDeltaCount"
+                rename => { "[netflow][packetDeltaCount]" => "[netflow][packets]" }
+            }
+        }
+        if [netflow][packets] {
+            mutate {
+                id => "netflow-v10-normalize-convert-packets"
+                convert => { "[netflow][packets]" => "integer" }
+            }
+        }
+
+        # Populate source and destination MAC addresses if available.
+        if [netflow][sourceMacAddress] {
+            mutate {
+                id => "netflow-v10-normalize-src_mac-from-sourceMacAddress"
+                rename => { "[netflow][sourceMacAddress]" => "[netflow][src_mac]" }
+            }
+        }
+        if [netflow][destinationMacAddress] {
+            mutate {
+                id => "netflow-v10-normalize-dst_mac-from-destinationMacAddress"
+                rename => { "[netflow][destinationMacAddress]" => "[netflow][dst_mac]" }
+            }
+        }
+
+        # Populate VLAN if available.
+        if [netflow][vlanId] {
+            mutate {
+                id => "netflow-v10-normalize-vlan-from-vlanId"
+                rename => { "[netflow][vlanId]" => "[netflow][vlan]" }
+            }
+        }
+
+        # Populate TOS if available.
+        if [netflow][ipClassOfService] {
+            mutate {
+                id => "netflow-v10-normalize-tos-from-ipClassOfService"
+                rename => { "[netflow][ipClassOfService]" => "[netflow][tos]" }
+            }
+        }
+    }
+
     #--------------------
     # We now have a normalized flow record. The rest of the logic works
     # regardless of the Netflow version.
@@ -289,7 +499,7 @@ filter {
             destination => "[netflow][protocol_name]"
             fallback => "UNKNOWN"
         }
-        
+
         # lookup IANA service name for source and destination ports.
         if [netflow][protocol] == 6 { # TCP
             if [netflow][src_port] {
@@ -396,7 +606,7 @@ filter {
             }
         }
     }
-    
+
     # Source and Destination IP address processing.
     if [netflow][dst_addr] or [netflow][src_addr] {
         # Initialize flow_locality to private. This maybe changed to public based on analysis of the source and destination IP addresses below.
