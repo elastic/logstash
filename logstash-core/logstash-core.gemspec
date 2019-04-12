@@ -57,6 +57,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "sinatra", '~> 1', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.10" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency "faraday", "~> 0.9.0" # because of conflicting dependencies between twitter input and octokit
   gem.add_runtime_dependency "chronic_duration", "~> 0.10"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
