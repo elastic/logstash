@@ -15,10 +15,10 @@ module LogStash
         end
       end
 
-      # In recent versions (currently 1.17.1) Bundler calls reset_paths! early during
-      # Bundler::CLI.start (https://github.com/bundler/bundler/blob/v1.17.1/lib/bundler/cli.rb#L39)
+      # In recent versions (currently 1.17.3) Bundler calls reset_paths! early during
+      # Bundler::CLI.start (https://github.com/bundler/bundler/blob/v1.17.3/lib/bundler/cli.rb#L39)
       # This breaks our setting up of gemfile and bundle paths, the without group setting etc
-      # We need to tone down this very aggressive resetter (https://github.com/bundler/bundler/blob/v1.17.1/lib/bundler.rb#L487-L500)
+      # We need to tone down this very aggressive resetter (https://github.com/bundler/bundler/blob/v1.17.3/lib/bundler.rb#L487-L500)
       # So we reimplement it here to only nullify the definition object, so that it can be computed
       # again if necessary with all the configuration in place.
       ::Bundler.module_exec do
