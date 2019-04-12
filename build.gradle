@@ -209,7 +209,7 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
     exclude "**/stdlib/rdoc/**"
     exclude "**/stdlib/bundler/**"
     exclude "**/stdlib/bundler.rb"
-    exclude "**/bundler-1.16.6/*"
+    exclude "**/bundler-1.16.6/**"
     exclude "**/bundler-1.16.6.*"
 
     includeEmptyDirs = false
