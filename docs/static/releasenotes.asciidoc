@@ -12,7 +12,7 @@ This section summarizes the changes in the following releases:
 Logstash 8.0.0 Release Notes
 
 coming[8.0.0]
-
+////
 [[logstash-8-0-0-alpha2]]
 === Logstash 8.0.0-alpha2 Release Notes
 
