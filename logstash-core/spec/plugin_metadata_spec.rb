@@ -33,6 +33,20 @@ describe LogStash::PluginMetadata do
         end
       end
     end
+    describe '#delete_for_plugin' do
+      before(:each) { registry.for_plugin(plugin_id).set(:foo, 'bar') }
+      it 'deletes the registry' do
+        expect(registry.exists?(plugin_id)).to be true
+        registry.delete_for_plugin(plugin_id)
+        expect(registry.exists?(plugin_id)).to be false
+      end
+      it 'deletes the data inside the registry' do
+        plugin_registry = registry.for_plugin(plugin_id)
+        registry.delete_for_plugin(plugin_id)
+        expect(plugin_registry.set?(:foo)).to be false
+      end
+    end
+
   end
 
   describe 'instance' do
@@ -49,14 +63,15 @@ describe LogStash::PluginMetadata do
         end
       end
       context 'when the key is set' do
-        before(:each) { instance.set(:foo, 'bananas') }
+        let (:val) { 'bananas'}
+        before(:each) { instance.set(:foo, val) }
 
         it 'sets the new value' do
           instance.set(:foo, 'bar')
           expect(instance.get(:foo)).to eq('bar')
         end
         it 'returns the previous associated value' do
-          expect(instance.set(:foo, 'bar')).to eq('bananas')
+          expect(instance.set(:foo, 'bar')).to eq(val)
         end
         context 'when the new value is nil' do
           it 'unsets the value' do
@@ -91,6 +106,44 @@ describe LogStash::PluginMetadata do
       context 'when the key is not set' do
         it 'returns false' do
           expect(instance.set?(:foo)).to be false
+        end
+      end
+    end
+
+    describe '#delete' do
+      context 'when the key is set' do
+        let (:val) { 'bananas' }
+        before(:each) { instance.set(:foo, val)}
+        it 'returns the value' do
+          expect(instance.delete(:foo)).to be val
+        end
+        it 'removes the key' do
+          instance.delete(:foo)
+          expect(instance.set?(:foo)).to be false
+        end
+      end
+      context 'when the key is not set' do
+        it 'returns nil' do
+          expect(instance.delete(:foo)).to be nil
+        end
+
+        it 'should not be set' do
+          instance.delete(:foo)
+          expect(instance.set?(:foo)).to be false
+        end
+      end
+    end
+
+    describe '#clear' do
+      context 'when the key is set' do
+        before(:each) do
+          instance.set(:foo, 'bananas')
+          instance.set(:bar, 'more bananas')
+        end
+        it 'removes all keys' do
+          instance.clear
+          expect(instance.set?(:foo)).to be false
+          expect(instance.set?(:bar)).to be false
         end
       end
     end
