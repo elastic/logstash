@@ -312,6 +312,10 @@ describe LogStash::Plugin do
               expect(plugin_instance.plugin_metadata).to be_a_kind_of(LogStash::PluginMetadata)
             end
 
+            it "PluginMetadata is defined" do
+              expect(defined?(plugin_instance.plugin_metadata)).to be_truthy
+            end
+
             if config_override.include?('id')
               it "will be shared between instance of plugins" do
                 expect(plugin_instance.plugin_metadata).to equal(plugin.new(config).plugin_metadata)
