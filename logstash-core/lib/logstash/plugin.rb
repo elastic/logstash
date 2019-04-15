@@ -72,7 +72,11 @@ class LogStash::Plugin
   # main task terminates
   def do_close
     @logger.debug("Closing", :plugin => self.class.name)
-    close
+    begin
+      close
+    ensure
+      LogStash::PluginMetadata.delete_for_plugin(self.id)
+    end
   end
 
   # Subclasses should implement this close method if you need to perform any
