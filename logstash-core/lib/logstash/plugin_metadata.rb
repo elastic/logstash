@@ -21,13 +21,14 @@ module LogStash
   # that doesn't break when installed onto a Logstash that doesn't have those features, e.g.:
   #
   # ~~~
-  # if defined?(LogStash::PluginMetadata)
-  #   LogStash::PluginMetadata.set(id, :foo, bar)
-  # end
+  #
+  # plugin_metadata.set(:foo, bar) if defined?(plugin_metadata?)
+  #
   # ~~~
   #
   # @since 7.1
   class PluginMetadata
+
     Thread.exclusive do
       @registry = ThreadSafe::Cache.new unless defined?(@registry)
     end
@@ -53,6 +54,17 @@ module LogStash
       # @return [Boolean]
       def exists?(plugin_id)
         @registry.key?(plugin_id)
+      end
+
+      ##
+      # Deletes, and then clears the contents of an existing PluginMetadata object for the given plugin id if one exists
+      #
+      # @param plugin_id [String]
+      #
+      # @return [Boolean]
+      def delete_for_plugin(plugin_id)
+        old_registry = @registry.delete(plugin_id)
+        old_registry.clear unless old_registry.nil?
       end
 
       ##
@@ -103,6 +115,24 @@ module LogStash
     # @return [Boolean]: true if the plugin includes metadata for the key
     def set?(key)
       @datastore.key?(key)
+    end
+
+    ##
+    # Delete the metadata key for this plugin, returning the previous value (if any)
+    #
+    # @param key [Symbol]
+    #
+    # @return [Object]
+    def delete(key)
+      @datastore.delete(key)
+    end
+
+    ##
+    # Clear all metadata keys for this plugin
+    #
+    # @return [Object]
+    def clear
+      @datastore.clear
     end
   end
 end
