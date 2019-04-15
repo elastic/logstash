@@ -7,8 +7,7 @@ module LogStash
   # `PluginMetadata` provides a space to store key/value metadata about a plugin, typically metadata about
   # external resources that can be gleaned during plugin registration.
   #
-  # Data is persisted across pipeline reloads, and no effort is made to clean up metadata from pipelines
-  # that no longer exist after a pipeline reload.
+  # Data should not be persisted across pipeline reloads, and should be cleaned up after a pipeline reload
   #
   #  - It MUST NOT be used to store processing state
   #  - It SHOULD NOT be updated frequently.
@@ -28,6 +27,7 @@ module LogStash
   #
   # @since 7.1
   class PluginMetadata
+    include LogStash::Util::Loggable
 
     Thread.exclusive do
       @registry = ThreadSafe::Cache.new unless defined?(@registry)
@@ -63,6 +63,7 @@ module LogStash
       #
       # @return [Boolean]
       def delete_for_plugin(plugin_id)
+        logger.debug("Removing metadata for plugin #{plugin_id}")
         old_registry = @registry.delete(plugin_id)
         old_registry.clear unless old_registry.nil?
       end

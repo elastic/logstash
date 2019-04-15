@@ -328,6 +328,14 @@ describe LogStash::Plugin do
               expect(old_value).to be_nil
               expect(plugin_instance.plugin_metadata.get(:foo)).to eq(new_value)
             end
+
+            it 'removes metadata when the plugin is closed' do
+              new_value = 'foo'
+              plugin_instance.plugin_metadata.set(:foo, new_value)
+              expect(plugin_instance.plugin_metadata.get(:foo)).to eq(new_value)
+              plugin_instance.do_close
+              expect(plugin_instance.plugin_metadata.set?(:foo)).to be_falsey
+            end
           end
         end
       end
