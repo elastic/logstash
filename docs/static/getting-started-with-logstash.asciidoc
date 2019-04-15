@@ -41,9 +41,6 @@ automatically detect your environment and install the correct startup method
 JAVA_HOME environment variable during package installation time, you may get an
 error message, and Logstash will be unable to start properly.
 
-IMPORTANT: Users have reported issues with Debian or RPM install packages and Java 11. 
-We are investigating and tracking in https://github.com/elastic/logstash/issues/10593[Issue #10593].
-
 [float]
 [[installing-binary]]
 === Installing from a Downloaded Binary
