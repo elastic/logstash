@@ -1,18 +1,16 @@
 { 
   "latest": "5.0.0-alpha3",
   "platforms" : {
-    "ubuntu-1204": { "box": "elastic/ubuntu-12.04-x86_64", "type": "debian" },
-    "ubuntu-1404": { "box": "elastic/ubuntu-14.04-x86_64", "type": "debian", "specific": true },
-    "ubuntu-1604": { "box": "elastic/ubuntu-16.04-x86_64", "type": "debian", "experimental": true },
+    "ubuntu-1604": { "box": "elastic/ubuntu-16.04-x86_64", "type": "debian"},
+    "ubuntu-1804": { "box": "elastic/ubuntu-16.04-x86_64", "type": "debian"},
     "centos-6": { "box": "elastic/centos-6-x86_64", "type": "redhat" },
     "centos-7": { "box": "elastic/centos-7-x86_64", "type": "redhat" },
     "oel-6": { "box": "elastic/oraclelinux-6-x86_64", "type": "redhat" },
     "oel-7": { "box": "elastic/oraclelinux-7-x86_64", "type": "redhat" },
-    "fedora-22": { "box": "elastic/fedora-22-x86_64", "type": "redhat", "experimental": true },
-    "fedora-23": { "box": "elastic/fedora-23-x86_64", "type": "redhat", "experimental": true },
     "debian-8": { "box": "elastic/debian-8-x86_64", "type": "debian", "specific":  true },
+    "debian-9": { "box": "elastic/debian-9-x86_64", "type": "debian", "specific":  true },
     "opensuse-13": { "box": "elastic/opensuse-13-x86_64", "type": "suse" },
-    "sles-11": { "box": "elastic/sles-11-x86_64", "type": "suse", "specific": true },
+    "opensuse-13": { "box": "elastic/opensuse-42-x86_64", "type": "suse" },
     "sles-12": { "box": "elastic/sles-12-x86_64", "type": "suse", "specific": true }
   }
 }
