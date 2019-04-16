@@ -442,9 +442,14 @@ module LogStash; class Pipeline < BasePipeline
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
       sleep(1)
+      begin
+        plugin.do_close
+      rescue => close_exception
+        @logger.debug("Input plugin raised exception while closing, ignoring",
+                      default_logging_keys(:plugin => plugin.class.config_name, :exception => close_exception.message,
+                                           :backtrace => close_exception.backtrace))
+      end
       retry
-    ensure
-      plugin.do_close
     end
   end # def inputworker
 
