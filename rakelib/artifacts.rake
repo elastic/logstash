@@ -87,6 +87,18 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  def source_modified_since?(time, excluder=nil)
+    skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
+    result = false
+    files(excluder).each do |file|
+      next if File.mtime(file) < time || skip_list.include?(file)
+      puts "file modified #{file}"
+      result = true
+      break
+    end
+    result
+  end
+
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
 
@@ -174,6 +186,12 @@ namespace "artifact" do
     build_docker(true)
   end
 
+  desc "Generate Dockerfile for default and oss images"
+  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building Dockerfiles")
+    build_dockerfiles
+  end
+
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
@@ -185,6 +203,11 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
+    unless ENV['SKIP_DOCKER'] == "1"
+      Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:dockerfiles"].invoke
+    end
   end
 
   task "generate_build_metadata" do
@@ -266,6 +289,10 @@ namespace "artifact" do
     require "archive/tar/minitar"
     ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
+    if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
+      puts("[artifact:tar] Source code not modified. Skipping build of #{tarpath}")
+      return
+    end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
@@ -511,7 +538,6 @@ namespace "artifact" do
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
       if oss
@@ -519,6 +545,17 @@ namespace "artifact" do
       else
         system(env, "make build-from-local-artifacts")
       end
+    end
+  end
+
+  def build_dockerfiles
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+    }
+    Dir.chdir("docker") do |dir|
+      system(env, "make public-dockerfiles")
+      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
     end
   end
 end

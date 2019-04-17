@@ -1,4 +1,10 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
+{% if local_artifacts == 'false' -%}
+{%   set url_root = 'https://artifacts.elastic.co/downloads/logstash' -%}
+{% else -%}
+{%   set url_root = 'http://localhost:8000' -%}
+{% endif -%}
+
 {% if image_flavor == 'oss' -%}
   {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
 {% else -%}
@@ -20,7 +26,7 @@ RUN groupadd --gid 1000 logstash && \
       logstash
 
 # Add Logstash itself.
-RUN curl -Lo - 'http://localhost:8000/'{{ tarball }} | \
+RUN curl -Lo - {{ url_root }}/{{ tarball }} | \
     tar zxf - -C /usr/share && \
     mv /usr/share/logstash-{{ elastic_version }} /usr/share/logstash && \
     chown --recursive logstash:logstash /usr/share/logstash/ && \
