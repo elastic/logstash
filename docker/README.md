@@ -13,7 +13,7 @@ Documentation can be found on the [Elastic website](https://www.elastic.co/guide
 The images have been tested on Docker version 18.09.2, build 6247962
 
 ## Requirements
-A full build and test requires:
+A full build requires:
 * Docker
 * GNU Make
 * Python 3.5 with Virtualenv
@@ -28,11 +28,6 @@ rake artifact:docker
 # and for the OSS package
 rake artifact:docker_oss
 ```
-
-## Contributing, issues and testing
-
-Acceptance tests for the image are located in the `test` directory, and can
-be invoked with `make test`.
 
 This image is built on [Centos 7][centos-7].
 

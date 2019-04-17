@@ -3,8 +3,8 @@ ELASTIC_REGISTRY ?= docker.elastic.co
 
 export PATH := ./bin:./venv/bin:$(PATH)
 
-# Determine the version to build. Override by setting ELASTIC_VERSION env var.
-ELASTIC_VERSION := $(shell ./bin/elastic-version)
+# Determine the version to build.
+ELASTIC_VERSION := $(shell ../vendor/jruby/bin/jruby bin/elastic-version)
 
 ifdef STAGING_BUILD_NUM
   VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
@@ -20,48 +20,64 @@ HTTPD ?= logstash-docker-artifact-server
 
 FIGLET := pyfiglet -w 160 -f puffy
 
-all: build-from-local-artifacts build-from-local-oss-artifacts
-
-test: lint docker-compose
-	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	  $(FIGLET) "test: $(FLAVOR)"; \
-	  ./bin/pytest tests --image-flavor=$(FLAVOR); \
-	)
-
-test-snapshot:
-	ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make test
+all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfile
 
 lint: venv
 	flake8 tests
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts: venv dockerfile docker-compose env2yaml
+build-from-local-artifacts: venv dockerfile env2yaml
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	gtimeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: full"; \
 	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
 	  (docker kill $(HTTPD); false); \
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
 
-build-from-local-oss-artifacts: venv dockerfile docker-compose env2yaml
+build-from-local-oss-artifacts: venv dockerfile env2yaml
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	gtimeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
 	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-demo: docker-compose clean-demo
-	docker-compose up
+COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
+
+$(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/docker/config/logstash-full.yml: data/logstash/config/logstash-full.yml
+$(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
+$(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
+$(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
+
+$(ARTIFACTS_DIR)/docker/%:
+	cp -f $< $@
+
+docker_paths:
+	mkdir -p $(ARTIFACTS_DIR)/docker/
+	mkdir -p $(ARTIFACTS_DIR)/docker/bin
+	mkdir -p $(ARTIFACTS_DIR)/docker/config
+	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
+	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
+
+public-dockerfile: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+	jinja2 \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='full' \
+	  -D artifacts_dir='$(ARTIFACTS_DIR)' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/docker/Dockerfile
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
-push: test
+push:
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	  docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	  docker push push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
@@ -111,23 +127,8 @@ dockerfile: venv templates/Dockerfile.j2
 	    templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR); \
 	)
 
-
-# Generate docker-compose files from Jinja2 templates.
-docker-compose: venv
-	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	  jinja2 \
-	    -D version_tag='$(VERSION_TAG)' \
-	    -D image_flavor='$(FLAVOR)' \
-	    templates/docker-compose.yml.j2 > docker-compose-$(FLAVOR).yml; \
-	)
-	ln -sf docker-compose-$(DEFAULT_IMAGE_FLAVOR).yml docker-compose.yml
-
-clean: clean-demo
+clean:
 	rm -f ${ARTIFACTS_DIR}/env2yaml/env2yaml ${ARTIFACTS_DIR}/Dockerfile
 	rm -rf venv
 
-clean-demo: docker-compose
-	docker-compose down
-	docker-compose rm --force
-
-.PHONY: clean clean-demo demo push test
+.PHONY: clean push
