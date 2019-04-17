@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-7-2,Logstash 6.7.2>>
 * <<logstash-6-7-1,Logstash 6.7.1>>
 * <<logstash-6-7-0,Logstash 6.7.0>>
 * <<logstash-6-6-2,Logstash 6.6.2>>
@@ -29,6 +30,56 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-7-2]]
+=== Logstash 6.7.2 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.7.2
+
+* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
+* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
+* Call out requirement for Java execution in note https://github.com/elastic/logstash/pull/10630[#10630]
+* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
+
+=== Logstash Commits between 6.7 and 6.7.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.7.1..6.7"
+
+f21674faf - (HEAD -> 6.7, origin/6.7) properly exclude bundler 1.16.6 (5 days ago) <Joao Duarte>
+1ba3b3854 - updated bundler to 1.17.3 (5 days ago) <Joao Duarte>
+666807ad0 - bump jruby to 9.2.7.0 (6 days ago) <Joao Duarte>
+58df97e26 - Update patch plugin versions in gemfile lock (#10679) (6 days ago) <João Duarte>
+819911555 - Correctly sets the default codec to java_line. Fixes buffer handling for events whose encodings do not fit into the buffer. (7 days ago) <Dan Hermann>
+c05dccd3c - work around jruby-5642 during package installation on jdk11 (#10658) (12 days ago) <João Duarte>
+15db4ea13 - Handle duplicate config entries (13 days ago) <Dan Hermann>
+1fea4b18c - bump to 6.7.2 (#10649) (13 days ago) <João Duarte>
+f980e84c6 - disable docker img generation on artifact:all (13 days ago) <Joao Duarte>
+59ae3053a - remove docker-compose symlink (13 days ago) <Joao Duarte>
+37394a17a - Bump doc version to 6.7.1 (#10622) (13 days ago) <Karen Metts>
+b5b92d70a - build docker images from logstash repo (#10603) (13 days ago) <João Duarte>
+e03c8c20e - Log successful shutdowns (13 days ago) <Dan Hermann>
+6d2447aaa - Add note about issues with Java 11 and Debian or RPM (#10635) (13 days ago) <Karen Metts>
+c267cfa75 - Release notes draft for 6.7.1 (#10618) (13 days ago) <Logstash Machine>
+a880a6b4f - Call out requirement for Java execution in note (2 weeks ago) <Dan Hermann>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.7.1..6.7 *.release"
+Changed plugin versions:
+logstash-input-file: 4.1.9 -> 4.1.10
+logstash-output-s3: 4.1.7 -> 4.1.8
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*File Input*
+
+* Fixed problem in Windows where some paths would fail to return an identifier ("inode"). Make path into a C style String before encoding to UTF-16LE. [#232](https://github.com/logstash-plugins/logstash-input-file/issues/232)
+
+*S3 Output*
+
+* Add support for setting mutipart upload threshold [#202](https://github.com/logstash-plugins/logstash-output-s3/pull/202)
+
 
 [[logstash-6-7-1]]
 === Logstash 6.7.1 Release Notes
