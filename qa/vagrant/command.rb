@@ -57,7 +57,7 @@ module LogStash
       Thread.new(io, wait_thr) do |_io, _wait_thr|
         while (_wait_thr.status == "run")
           begin
-            c = _io.read(1024)
+            c = _io.read(10024)
             block.call(c) if c
           rescue IO::WaitReadable
             IO.select([_io])
