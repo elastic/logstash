@@ -83,7 +83,7 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 
 | `pipeline.java_execution`
 | Use the Java execution engine.
-| false
+| true
 
 | `pipeline.workers`
 | The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
