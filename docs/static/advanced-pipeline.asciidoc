@@ -40,7 +40,7 @@ directory, and replace the contents with the following lines. Make sure `paths` 
 
 [source,yaml]
 --------------------------------------------------------------------------------
-filebeat.prospectors:
+filebeat.inputs:
 - type: log
   paths:
     - /path/to/file/logstash-tutorial.log <1>
@@ -173,6 +173,9 @@ If your pipeline is working correctly, you should see a series of events like th
     "prospector" => {
         "type" => "log"
     },
+    "input" => {
+        "type" => "log"
+    },
         "source" => "/path/to/file/logstash-tutorial.log",
        "message" => "83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] \"GET /presentations/logstash-monitorama-2013/images/kibana-search.png HTTP/1.1\" 200 203023 \"http://semicomplete.com/presentations/logstash-monitorama-2013/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
           "tags" => [
@@ -294,6 +297,9 @@ After Logstash applies the grok pattern, the events will have the following JSON
           "ident" => "-",
            "verb" => "GET",
      "prospector" => {
+        "type" => "log"
+    },
+     "input" => {
         "type" => "log"
     },
          "source" => "/path/to/file/logstash-tutorial.log",
@@ -534,6 +540,9 @@ You should get multiple hits back. For example:
           "prospector": {
             "type": "log"
           },
+          "input": {
+            "type": "log"
+          },
           "source": "/path/to/file/logstash-tutorial.log",
           "message": """83.149.9.216 - - [04/Jan/2015:05:13:45 +0000] "GET /presentations/logstash-monitorama-2013/images/frontend-response-codes.png HTTP/1.1" 200 52878 "http://semicomplete.com/presentations/logstash-monitorama-2013/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"""",
           "tags": [
@@ -616,6 +625,9 @@ A few log entries come from Buffalo, so the query produces the following respons
           "ident": "-",
           "verb": "GET",
           "prospector": {
+            "type": "log"
+          },
+          "input": {
             "type": "log"
           },
           "source": "/path/to/file/logstash-tutorial.log",
@@ -711,7 +723,7 @@ directory, and replace the contents with the following lines. Make sure `paths` 
 
 [source,shell]
 --------------------------------------------------------------------------------
-filebeat.prospectors:
+filebeat.inputs:
 - type: log
   paths:
     - /var/log/*.log <1>
