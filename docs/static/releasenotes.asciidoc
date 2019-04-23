@@ -14,107 +14,49 @@ This section summarizes the changes in the following releases:
 [[logstash-7-0-1]]
 === Logstash 7.0.1 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.0.1
-
-* download exact version artifact for release build otherwise download snapshot https://github.com/elastic/logstash/pull/10664[#10664]
-* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
-* Corrects the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
-* Correct settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
-* Update patch plugin versions in gemfile lock https://github.com/elastic/logstash/pull/10702[#10702]
-
-=== Logstash Commits between 7.0 and 7.0.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.0.0..7.0"
-
-a092915 - (HEAD -> 7.0, origin/7.0) Update patch plugin versions in gemfile lock for 7.0.1 (#10702) (2 minutes ago) <João Duarte>
-3393982 - rake task to generate dockerfile (11 hours ago) <Joao Duarte>
-4133be8 - Corrects the description of codec behavior in the output stage of Logstash pipelines (17 hours ago) <Dan Hermann>
-2832f53 - Correct the docs for the settings file to note that Java execution defaults to true (20 hours ago) <Dan Hermann>
-f19e5c8 - moved to openjdk 11 in docker testing (8 days ago) <Joao Duarte>
-91691e8 - updated bundler to 1.17.3 (11 days ago) <Joao Duarte>
-03fbc85 - Update patch plugin versions in gemfile lock (#10678) (#10678) (11 days ago) <João Duarte>
-9669671 - bump jruby to 9.2.7.0 (12 days ago) <Joao Duarte>
-90f2d87 - download exact version artifact for release build otherwise download snapshot (#10664) (12 days ago) <Colin Surprenant>
-101e60f - Correctly sets the default codec to java_line. Fixes buffer handling for events whose encodings do not fit into the buffer. (13 days ago) <Dan Hermann>
-0f0e051 - Updates version and release-state (13 days ago) <lcawl>
-566b350 - [DOCS] Removes coming tags (13 days ago) <lcawl>
-149e3ac - bump to 7.0.1 (#10675) (13 days ago) <João Duarte>
-918d547 - Add links to particular breaking changes (#10668) (2 weeks ago) <Karen Metts>
-1aea742 - Added core and plugin headings (#10667) (2 weeks ago) <Karen Metts>
-06a3a26 - Update breaking changes doc for 7.0 (#10632) (2 weeks ago) <Karen Metts>
-150de50 - make monitoring specs resilient to internal api number changes (#10663) (2 weeks ago) <Rob Bavey>
-f89dfb2 - Refine upgrade instructions for 7.0 (2 weeks ago) <Karen Metts>
-3befda9 - add 7.0.0 rc1 and rc2 release notes (#10655) (2 weeks ago) <Colin Surprenant>
-86aaca6 - Fix asciidoc formatting for links in release notes (#10655) (2 weeks ago) <Karen Metts>
-a30a4d9 - add 7.0.0 alpha1, alpha2 and beta1 release notes (#10655) (2 weeks ago) <Colin Surprenant>
-9b5ec74 - [DOCS] Adds tagged region for notable breaking changes (#10654) (#10662) (2 weeks ago) <Lisa Cawley>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.0.0..7.0 *.release"
-Changed plugin versions:
-logstash-codec-avro: 3.2.3 -> 3.2.3
-logstash-filter-csv: 3.0.8 -> 3.0.10
-logstash-filter-dns: 3.0.11 -> 3.0.12
-logstash-filter-kv: 4.2.1 -> 4.3.1
-logstash-filter-prune: 3.0.3 -> 3.0.3
-logstash-filter-xml: 4.0.6 -> 4.0.7
-logstash-filter-uuid: 3.0.5 -> 3.0.5
-logstash-input-dead_letter_queue: 1.1.4 -> 1.1.5
-logstash-input-couchdb_changes: 3.1.6 -> 3.1.6
-logstash-input-file: 4.1.9 -> 4.1.10
-logstash-input-snmp: 1.0.1 -> 1.1.0
-logstash-input-tcp: 6.0.0 -> 6.0.2
-logstash-input-twitter: 3.0.8 -> 4.0.0
-logstash-output-elasticsearch: 10.0.1 -> 10.0.2
-logstash-output-kafka: 8.0.0 -> 8.0.1
-logstash-output-pagerduty: 3.0.8 -> 3.0.8
-logstash-output-s3: 4.1.7 -> 4.1.9
----------- DELETE UP TO HERE ------------
+* Fixed default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
+* Corrected the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
+* Corrected settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
+* Updated JRuby to 9.2.7.0 https://github.com/elastic/logstash/pull/10674[#10674]
+* Updated Bundler to 1.17.3 https://github.com/elastic/logstash/pull/10685[#10685]
 
 ==== Plugins
 
-*Avro Codec*
-
 *Csv Filter*
 
-* Fix asciidoc formatting for example [#73](https://github.com/logstash-plugins/logstash-filter-csv/pull/73)
-
-* Document that the `autodetect_column_names` and `skip_header` options work only when the number of Logstash
+* Fixed asciidoc formatting for example https://github.com/logstash-plugins/logstash-filter-csv/pull/73[#73]
+* Documented that the `autodetect_column_names` and `skip_header` options work only when the number of Logstash
   pipeline workers is set to `1`.
-  
 
 *Dns Filter*
 
-* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x [#48](https://github.com/logstash-plugins/logstash-filter-dns/pull/48)
-* Fixed crash that could occur when encountering certain classes of invalid inputs [#49](https://github.com/logstash-plugins/logstash-filter-dns/pull/49)
+* Fixed issue where unqualified domains would fail to resolve when running this plugin with Logstash 5.x https://github.com/logstash-plugins/logstash-filter-dns/pull/48[#48]
+* Fixed crash that could occur when encountering certain classes of invalid inputs https://github.com/logstash-plugins/logstash-filter-dns/pull/49[#49]
 
 *Kv Filter*
 
-* Fixed asciidoc formatting in documentation [#81](https://github.com/logstash-plugins/logstash-filter-kv/pull/81)
+* Fixed asciidoc formatting in documentation https://github.com/logstash-plugins/logstash-filter-kv/pull/81[#81]
 
 * Added a timeout enforcer which prevents inputs that are pathological against the generated parser from blocking
    the pipeline. By default, timeout is a generous 30s, but can be configured or disabled entirely with the new
-   `timeout_millis` and `tag_on_timeout` directives ([#79](https://github.com/logstash-plugins/logstash-filter-kv/pull/79))
+   `timeout_millis` and `tag_on_timeout` directives (https://github.com/logstash-plugins/logstash-filter-kv/pull/79[#79])
 * Made error-handling configurable with `tag_on_failure` directive.
-
-*Prune Filter*
 
 *Xml Filter*
 
-* Fixed creation of empty arrays when xpath failed [#59](https://github.com/logstash-plugins/logstash-filter-xml/pull/59)
+* Fixed creation of empty arrays when xpath failed https://github.com/logstash-plugins/logstash-filter-xml/pull/59[#59]
 
 *Uuid Filter*
 
 *Dead_letter_queue Input*
 
-* Fix asciidoc formatting in documentation [#21](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/21)
+* Fixed asciidoc formatting in documentation https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/21[#21]
 
 *Couchdb_changes Input*
 
 *File Input*
 
-* Fixed problem in Windows where some paths would fail to return an identifier ("inode"). Make path into a C style String before encoding to UTF-16LE. [#232](https://github.com/logstash-plugins/logstash-input-file/issues/232)
+* Fixed problem in Windows where some paths would fail to return an identifier ("inode"). Make path into a C style String before encoding to UTF-16LE. https://github.com/logstash-plugins/logstash-input-file/issues/232[#232]
 
 *Snmp Input*
 
@@ -124,30 +66,25 @@ logstash-output-s3: 4.1.7 -> 4.1.9
 *Tcp Input*
 
 * Fixed race condition where data would be accepted before queue was configured
-
-* Support multiple certificates per file [#140](https://github.com/logstash-plugins/logstash-input-tcp/pull/140)
+* Added support for multiple certificates per file https://github.com/logstash-plugins/logstash-input-tcp/pull/140[#140]
 
 *Twitter Input*
 
-* Update http-form_data to ~> 2 and public_suffix to ~> 3
+* Updated http-form_data to ~> 2 and public_suffix to ~> 3
 
 *Elasticsearch Output*
 
-* Fixed bug where index patterns in custom templates could be erroneously overwritten [#861](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/861)
+* Fixed bug where index patterns in custom templates could be erroneously overwritten https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/861[#861]
 
 *Kafka Output*
 
-* Fixed issue with unnecessary sleep after retries exhausted [#216](https://github.com/logstash-plugins/logstash-output-kafka/pull/216)
-
-*Pagerduty Output*
+* Fixed issue with unnecessary sleep after retries exhausted https://github.com/logstash-plugins/logstash-output-kafka/pull/216[#216]
 
 *S3 Output*
 
-* Added configuration information for multiple s3 outputs to documentation [#196](https://github.com/logstash-plugins/logstash-output-s3/pull/196)
-* Fixed formatting problems and typographical errors [#194](https://github.com/logstash-plugins/logstash-output-s3/pull/194), [#201](https://github.com/logstash-plugins/logstash-output-s3/pull/201), and [#204](https://github.com/logstash-plugins/logstash-output-s3/pull/204)
-
-* Add support for setting mutipart upload threshold [#202](https://github.com/logstash-plugins/logstash-output-s3/pull/202)
-
+* Added configuration information for multiple s3 outputs to documentation https://github.com/logstash-plugins/logstash-output-s3/pull/196[#196]
+* Fixed formatting problems and typographical errors https://github.com/logstash-plugins/logstash-output-s3/pull/194[#194], https://github.com/logstash-plugins/logstash-output-s3/pull/201[#201], and https://github.com/logstash-plugins/logstash-output-s3/pull/204[#204]
+* Added support for setting mutipart upload threshold https://github.com/logstash-plugins/logstash-output-s3/pull/202[#202]
 
 [[logstash-7-0-0]]
 === Logstash 7.0.0 Release Notes
