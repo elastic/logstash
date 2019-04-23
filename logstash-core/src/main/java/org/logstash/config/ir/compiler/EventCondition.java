@@ -414,6 +414,8 @@ public interface EventCondition {
         private static int compare(final Object left, final Object right) {
             if (left instanceof Comparable<?>) {
                 return ((Comparable) left).compareTo(right);
+            } else if (left == null) {
+                return -1;
             }
             throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
         }
