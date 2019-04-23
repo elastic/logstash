@@ -70,7 +70,7 @@ This section summarizes the changes in the following releases:
 
 *Twitter Input*
 
-* Updated http-form_data to ~> 2 and public_suffix to ~> 3
+* Updated http-form_data to `~> 2` and public_suffix to `~> 3`
 
 *Elasticsearch Output*
 
