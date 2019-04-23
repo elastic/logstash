@@ -69,7 +69,8 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   The default is nil.
 
 *`--java-execution`*::
-  Use the Java execution engine instead of the default Ruby execution engine.
+  Specify `false` for this option to revert to the legacy Ruby execution engine instead
+  of the default Java execution engine.
 
 *`--modules`*::
   Launch the named module.  Works in conjunction with the `-M` option to assign values to
