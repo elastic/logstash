@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-7-2,Logstash 6.7.2>>
 * <<logstash-6-7-1,Logstash 6.7.1>>
 * <<logstash-6-7-0,Logstash 6.7.0>>
 * <<logstash-6-6-2,Logstash 6.6.2>>
@@ -29,6 +30,27 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-7-2]]
+=== Logstash 6.7.2 Release Notes
+
+* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
+* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
+* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
+* Work around jruby-5642 during package installation on jdk11 https://github.com/elastic/logstash/pull/10658[#10658]
+* Update Bundler to 1.17.3 https://github.com/elastic/logstash/pull/10685[#10685]
+* Update JRuby to 9.2.7.0 https://github.com/elastic/logstash/pull/10674[#10674]
+* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
+
+==== Plugins
+
+*File Input*
+
+* Fixed problem in Windows where some paths would fail to return an identifier ("inode"). Make path into a C style String before encoding to UTF-16LE. https://github.com/logstash-plugins/logstash-input-file/issues/232[#232]
+
+*S3 Output*
+
+* Add support for setting mutipart upload threshold https://github.com/logstash-plugins/logstash-output-s3/pull/202[#202]
 
 [[logstash-6-7-1]]
 === Logstash 6.7.1 Release Notes
