@@ -25,7 +25,7 @@ is restarted.
 [[log4j2]]
 ==== Log4j2 configuration
 
-Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You
+Logstash ships with a `log4j2.properties` file with out-of-the-box settings (this includes logging to console). You
 can modify this file to change the rotation policy, type, and other
 https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2
 configuration]. 
