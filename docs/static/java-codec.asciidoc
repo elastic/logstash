@@ -17,9 +17,13 @@
 //:methodheader: Logstash codecs must implement the `register` method, and the `decode` method or the `encode` method (or both).
 
 [[java-codec-plugin]]
+
 === How to write a Java codec plugin
 
 beta[]
+
+NOTE: Java codecs are currently supported only for Java input and output plugins. They will not work with Ruby
+input or output plugins.
 
 // Pulls in shared section: Setting Up Environment
 include::include/javapluginsetup.asciidoc[]
