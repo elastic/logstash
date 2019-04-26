@@ -260,16 +260,11 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def resolve_cluster_uuids
-    cluster_uuids = []
-    outputs.each do |output|
-      if LogStash::SETTINGS.registered?(output.id + ".cluster_uuid")
-        cluster_uuid = LogStash::SETTINGS.get(output.id + ".cluster_uuid")
-        unless cluster_uuids.include? cluster_uuid
-          cluster_uuids.push(cluster_uuid)
-        end
+    outputs.each_with_object(Set.new) do |output, cluster_uuids|
+      if LogStash::PluginMetadata.exists?(output.id)
+        cluster_uuids << LogStash::PluginMetadata.for_plugin(output.id).get(:cluster_uuid)
       end
-    end
-  cluster_uuids
+    end.to_a.compact
   end
 
   def wait_inputs
