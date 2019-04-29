@@ -894,11 +894,9 @@ file at http://mvnrepository.com and download the specified version.
 ==== Document your plugin
 Documentation is an important part of your plugin. All plugin documentation is
 rendered and placed in the 
-http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash
-Reference] and the {lsplugindocs}[Versioned plugin docs].
+{logstash-ref}[Logstash Reference] and the {lsplugindocs}[Versioned plugin docs].
 
 See <<plugin-doc>> for tips and guidelines.
-
 
 ==== Add Tests
 
@@ -1241,10 +1239,10 @@ we always welcome new plugins!
 Some of the many benefits of having your plugin in the logstash-plugins
 repository are:
 
-* **Discovery.** Your plugin will appear in the http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference],
+* **Discovery.** Your plugin will appear in the {logstash-ref}[Logstash Reference],
 where Logstash users look first for plugins and documentation.
 * **Documentation.** Your plugin documentation will automatically be added to the
- http://www.elasticsearch.org/guide/en/logstash/current/index.html[Logstash Reference].
+{logstash-ref}[Logstash Reference].
 * **Testing.** With our testing infrastructure, your plugin will be continuously
 tested against current and future releases of Logstash.  As a result, users will
 have the assurance that if incompatibilities arise, they will be quickly
