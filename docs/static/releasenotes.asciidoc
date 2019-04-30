@@ -46,13 +46,11 @@ This section summarizes the changes in the following releases:
 
 * Fixed creation of empty arrays when xpath failed https://github.com/logstash-plugins/logstash-filter-xml/pull/59[#59]
 
-*Uuid Filter*
 
 *Dead_letter_queue Input*
 
 * Fixed asciidoc formatting in documentation https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/21[#21]
 
-*Couchdb_changes Input*
 
 *File Input*
 
