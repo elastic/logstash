@@ -394,6 +394,14 @@ module LogStash; class Pipeline < BasePipeline
     filter_queue_client.add_output_metrics(batch.filtered_size)
   end
 
+  def resolve_cluster_uuids
+    outputs.each_with_object(Set.new) do |output, cluster_uuids|
+      if LogStash::PluginMetadata.exists?(output.id)
+        cluster_uuids << LogStash::PluginMetadata.for_plugin(output.id).get(:cluster_uuid)
+      end
+    end.to_a.compact
+  end
+
   def wait_inputs
     @input_threads.each(&:join)
   end
