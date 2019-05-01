@@ -1,19 +1,25 @@
 require "resolv"
 
-# ref: https://github.com/logstash-plugins/logstash-filter-dns/issues/40
+# ref:
+#   https://github.com/logstash-plugins/logstash-filter-dns/issues/51
+#   https://github.com/jruby/jruby/pull/5722
 #
-# JRuby 9k versions prior to 9.1.16.0 have a bug which crashes IP address
-# resolution after 64k unique IP addresses resolutions.
+# JRuby versions starting at 9.2.0.0 have a bug in resolv.rb with a leak between the
+# DNS.allocate_request_id/DNS.free_request_id methods.
 #
-# Note that the oldest JRuby version in LS 6 is 9.1.13.0 and
-# JRuby 1.7.25 and 1.7.27 (the 2 versions used across LS 5) are not affected by this bug.
+# We are opting to load a patched full resolv.rb instead of monkey patching the
+# offending methods because we do not yet know in which upcoming version of JRuby
+# this will be fixed and we want to avoid potential conflicting monkey patches.
+# A spec which will break on JRuby upgrade will redirect here
+# to make a manual verification and eventually remove that patch here once the fix is
+# made in the JRuby version of resolv.rb.
 
-# make sure we abort if a known correct JRuby version is installed 
-# to avoid having an unnecessary legacy patch being applied in the future.
+if Gem::Version.new(JRUBY_VERSION) >= Gem::Version.new("9.2.0.0")
+  # save verbose level and mute the "warning: already initialized constant"
+  warn_level = $VERBOSE
+  $VERBOSE = nil
 
-# The code below is copied from JRuby 9.1.16.0 resolv.rb:
-# https://github.com/jruby/jruby/blob/9.1.16.0/lib/ruby/stdlib/resolv.rb#L775-L784
-#
-# JRuby is Copyright (c) 2007-2017 The JRuby project, and is released
-# under a tri EPL/GPL/LGPL license.
-# Full license available at https://github.com/jruby/jruby/blob/9.1.16.0/COPYING
+  require_relative "resolv_9270"
+
+  $VERBOSE = warn_level
+end
