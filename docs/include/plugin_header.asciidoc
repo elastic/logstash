@@ -1,3 +1,4 @@
+[subs="attributes"]
 ++++
 <titleabbrev>{plugin}</titleabbrev>
 ++++
