@@ -152,7 +152,8 @@ a new input will not override the existing type. A type set at
 the shipper stays with that event for its life even
 when sent to another Logstash server.
 
-ifeval::["{type}"=="input" and "{plugin}"=="beats"]
+ifeval::["{type}"=="input"]
+ifeval::["{plugin}"=="beats"]
 
 ifeval::["{versioned_docs}"!="true"]
 NOTE: The Beats shipper automatically sets the `type` field on the event.
@@ -167,5 +168,6 @@ a setting for the <<{version}-plugins-inputs-beats-type,`type`>> config option i
 Logstash, it is ignored.
 endif::[]
 
+endif::[]
 endif::[]
 
