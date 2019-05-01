@@ -17,18 +17,31 @@ module LogStash
           payload
         end
 
-        def pipelines
+        def pipelines(options={})
           pipeline_ids = service.get_shallow(:stats, :pipelines).keys
           pipeline_ids.each_with_object({}) do |pipeline_id, result|
-            result[pipeline_id] = pipeline(pipeline_id)
+            result[pipeline_id] = pipeline(pipeline_id, options)
           end
         end
 
-        def pipeline(pipeline_id)
-          extract_metrics(
+        def pipeline(pipeline_id, options={})
+          metrics = extract_metrics(
             [:stats, :pipelines, pipeline_id.to_sym, :config],
-            :workers, :batch_size, :batch_delay, :config_reload_automatic, :config_reload_interval, :dead_letter_queue_enabled, :dead_letter_queue_path
+            :ephemeral_id,
+            :hash,
+            :workers,
+            :batch_size,
+            :batch_delay,
+            :config_reload_automatic,
+            :config_reload_interval,
+            :dead_letter_queue_enabled,
+            :dead_letter_queue_path,
+            :cluster_uuids
           ).reject{|_, v|v.nil?}
+          if options.fetch(:graph, false)
+            metrics.merge!(extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph))
+          end
+          metrics
         rescue
           {}
         end

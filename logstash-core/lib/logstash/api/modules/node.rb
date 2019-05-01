@@ -28,9 +28,17 @@ module LogStash
 
         get "/pipelines/:id" do
           pipeline_id = params["id"]
-          payload = node.pipeline(pipeline_id)
+          opts = {:graph => as_boolean(params.fetch("graph", false))}
+          payload = node.pipeline(pipeline_id, opts)
           halt(404) if payload.empty?
           respond_with(:pipelines => { pipeline_id => payload } )
+        end
+
+        get "/pipelines" do
+          opts = {:graph => as_boolean(params.fetch("graph", false))}
+          payload = node.pipelines(opts)
+          halt(404) if payload.empty?
+          respond_with(:pipelines => payload )
         end
 
          get "/?:filter?" do

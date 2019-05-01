@@ -1,12 +1,9 @@
-# Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
-# or more contributor license agreements. Licensed under the Elastic License;
-# you may not use this file except in compliance with the Elastic License.
-#
-require 'monitoring/inputs/metrics'
+# encoding: utf-8
 require 'logstash-core'
 require 'logstash/compiler'
 
-module LogStash; module Inputs; class Metrics; class StateEvent;
+module LogStash;
+  module Config;
   class LIRSerializer
     attr_reader :lir_pipeline
     
@@ -23,7 +20,6 @@ module LogStash; module Inputs; class Metrics; class StateEvent;
         "hash" => lir_pipeline.unique_hash,
         "type" => "lir",
         "version" => "0.0.0",
-        "plugins" => plugins,
         "graph" => {
           "vertices" => vertices,
           "edges" => edges
@@ -125,11 +121,6 @@ module LogStash; module Inputs; class Metrics; class StateEvent;
       }
     end
     
-    def plugins
-      ::Gem::Specification.
-        find_all.
-        select {|spec| spec.metadata && spec.metadata["logstash_plugin"] == "true"}.
-        map {|spec|  { :name => spec.name, :version => spec.version.to_s } }
-    end
   end
-end; end; end; end
+  end
+end

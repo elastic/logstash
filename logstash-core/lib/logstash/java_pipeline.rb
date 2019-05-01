@@ -6,6 +6,7 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/compiler"
+require "logstash/config/lir_serializer"
 
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
@@ -216,7 +217,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
-
+      config_metric.gauge(:ephemeral_id, ephemeral_id)
+      config_metric.gauge(:hash, lir.unique_hash)
+      config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
+      config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
       @logger.info("Starting pipeline", default_logging_keys(
         "pipeline.workers" => pipeline_workers,
@@ -253,6 +257,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
+  end
+
+  def resolve_cluster_uuids
+    outputs.each_with_object(Set.new) do |output, cluster_uuids|
+      if LogStash::PluginMetadata.exists?(output.id)
+        cluster_uuids << LogStash::PluginMetadata.for_plugin(output.id).get(:cluster_uuid)
+      end
+    end.to_a.compact
   end
 
   def wait_inputs
