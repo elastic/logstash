@@ -47,7 +47,6 @@ filebeat.prospectors:
 output.logstash:
   hosts: ["localhost:5044"]
 --------------------------------------------------------------------------------
-
 <1> Absolute path to the file or files that Filebeat processes.
 
 Save your changes.
@@ -711,7 +710,6 @@ filebeat.prospectors:
 output.logstash:
   hosts: ["localhost:5044"]
 --------------------------------------------------------------------------------
-
 <1> Absolute path to the file or files that Filebeat processes.
 <2> Adds a field called `type` with the value `syslog` to the event.
 
