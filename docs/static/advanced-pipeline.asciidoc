@@ -411,7 +411,6 @@ output:
     certificate_authorities: /path/to/ssl-certificate.crt
     timeout: 15
 --------------------------------------------------------------------------------
-
 <1> Path to the file or files that Filebeat processes.
 <2> Path to the SSL certificate for the Logstash instance.
 
