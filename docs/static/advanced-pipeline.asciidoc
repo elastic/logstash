@@ -394,7 +394,7 @@ appropriate package from the Filebeat https://www.elastic.co/downloads/beats/fil
 Create a configuration file for Filebeat similar to the following example:
 
 [source,shell]
---------------------------------------------------------------------------------
+-----
 filebeat:
   prospectors:
     -
@@ -410,10 +410,9 @@ output:
     certificate_key: /path/to/ssl-certificate.key
     certificate_authorities: /path/to/ssl-certificate.crt
     timeout: 15
-
+-----
 <1> Path to the file or files that Filebeat processes.
 <2> Path to the SSL certificate for the Logstash instance.
---------------------------------------------------------------------------------
 
 Save this configuration file as `filebeat.yml`.
 
