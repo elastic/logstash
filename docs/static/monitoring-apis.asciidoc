@@ -134,7 +134,7 @@ curl -XGET 'localhost:9600/_node/pipelines/test?pretty'
 Example response:
 
 [source,json]
---------------------------------------------------
+----------
 {
   "pipelines" : {
     "test" : {
@@ -145,7 +145,7 @@ Example response:
       "config_reload_interval" : 3
     }
   }
-------------------------------------------------
+----------
 
 If you specify an invalid pipeline ID, the request returns a 404 Not Found error.
 

@@ -54,7 +54,6 @@ POST _xpack/security/role/logstash_writer
   ]
 }
 ---------------------------------------------------------------
-
 <1> The cluster needs the `manage_ilm` privilege if 
 {ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
 is enabled.
@@ -133,7 +132,6 @@ POST _xpack/security/role/logstash_reader
   ]
 }
 ---------------------------------------------------------------
-
 <1> If you use a custom Logstash index pattern, specify that pattern
 instead of the default `logstash-*` pattern.
 
