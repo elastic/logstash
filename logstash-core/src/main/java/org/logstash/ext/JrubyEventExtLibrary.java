@@ -71,6 +71,8 @@ public final class JrubyEventExtLibrary {
                 this.event = new Event(
                     ConvertedMap.newFromRubyHash(context, (RubyHash) data)
                 );
+            } else if (data != null && data.getJavaClass().equals(Event.class)) {
+                this.event = data.toJava(Event.class);
             } else {
                 initializeFallback(context, data);
             }
