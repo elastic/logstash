@@ -52,13 +52,14 @@ To start your Logstash pipeline, configure the Logstash instance to read from a 
 Edit the `first-pipeline.conf` file to add the following text:
 
 [source,json]
+-----
 input {
     file {
         path => "/path/to/logstash-tutorial.log"
         start_position => beginning <1>
     }
 }
-
+-----
 <1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the 
 UNIX `tail -f` command. To change this default behavior and process the entire file, we need to specify the position 
 where Logstash starts processing the file.
@@ -362,7 +363,7 @@ appropriate package from the main Logstash https://www.elastic.co/downloads/logs
 Create a configuration file for the Logstash Forwarder similar to the following example:
 
 [source,json]
---------------------------------------------------------------------------------
+-----
 {
     "network": {
         "servers": [ "localhost:5043" ],
@@ -378,8 +379,7 @@ Create a configuration file for the Logstash Forwarder similar to the following 
         }
     ]
 }
---------------------------------------------------------------------------------
-
+-----
 <1> Path to the SSL certificate for the Logstash instance.
 <2> Path to the file or files that the Logstash Forwarder processes.
 
@@ -389,12 +389,13 @@ Configure your Logstash instance to use the Lumberjack input plugin by adding th
 of the `first-pipeline.conf` file:
 
 [source,json]
+-----
 lumberjack {
     port => "5043"
     ssl_certificate => "/path/to/ssl-cert" <1>
     ssl_key => "/path/to/ssl-key" <2>
 }
-
+-----
 <1> Path to the SSL certificate that the Logstash instance uses to authenticate itself to Logstash Forwarder.
 <2> Path to the key for the SSL certificate.
 
