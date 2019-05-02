@@ -150,7 +150,6 @@ POST _xpack/security/user/logstash_user
   "full_name" : "Kibana User for Logstash"
 }
 ---------------------------------------------------------------
-
 <1> `logstash_admin` is a built-in role that provides access to `.logstash-*`
 indices for managing configurations.
 
@@ -258,6 +257,5 @@ You configure the user and password in the `logstash.yml` configuration file:
 xpack.management.elasticsearch.username: logstash_admin_user <1>
 xpack.management.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
-
 <1> The user you specify here must have the built-in `logstash_admin` role as
 well as the `logstash_writer` role that you created earlier.
