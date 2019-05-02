@@ -168,7 +168,7 @@ modules:
     var.input.azure_event_hubs.event_hubs:
       - ["name",                                    "initial_position",  "storage_container",  "decorate_events",  "event_hub_connection"]                                   <3>
       - ["insights-operational-logs",                 "TAIL",              "activity-logs1",    "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"]
-      - ["insights-operational-logs",                 "TAIL",              "activity_logs2",<4>   "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"] 
+      - ["insights-operational-logs",                 "TAIL",              "activity_logs2",  "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"]   <4>  
       - ["insights-metrics-pt1m",                     "TAIL",              "dbmetrics",         "true",             "Endpoint=sb://...EntityPath=insights-metrics-pt1m"]
       - ["insights-logs-blocks",                      "TAIL",              "dbblocks",          "true",             "Endpoint=sb://...EntityPath=insights-logs-blocks"]
       - ["insights-logs-databasewaitstatistics",      "TAIL",              "dbwaitstats",       "false",            "Endpoint=sb://...EntityPath=insights-logs-databasewaitstatistics"]
