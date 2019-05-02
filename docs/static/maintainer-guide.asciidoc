@@ -110,27 +110,27 @@ Please see following annotated example and see a concrete example in https://raw
 
 [source,markdown]
 ----
-## 1.0.x                              // <1> <2>
- - change description                 // <3>
- - tag: change description            // <3> <4>
- - tag1,tag2: change description      // <3> <5>
- - tag: Multi-line description        // <3> <6>
+## 1.0.x                              // <1>
+ - change description                 // <2>
+ - tag: change description            // <3>
+ - tag1,tag2: change description      // <4>
+ - tag: Multi-line description        // <5>
    must be indented and can use
    additional markdown syntax
-                                      // <7>
-## 1.0.0                              // <8>
+                                      // <6>
+## 1.0.0                              // <7>
 [...]
 
 ----
-<1> Latest version is the first line of CHANGELOG.md
-<2> Each version identifier should be a level-2 header using `##`
-<3> One change description is described as a list item using a dash `-` aligned under the version identifier
-<4> One change can be tagged by a word and suffixed by `:`. +
+<1> Latest version is the first line of CHANGELOG.md.
+Each version identifier should be a level-2 header using `##`
+<2> One change description is described as a list item using a dash `-` aligned under the version identifier
+<3> One change can be tagged by a word and suffixed by `:`. +
     Common tags are `bugfix`, `feature`, `doc`, `test` or `internal`.
-<5> One change can have multiple tags separated by a comma and suffixed by `:`
-<6> A multi-line change description must be properly indented
-<7> Please take care to *separate versions with an empty line*
-<8> Previous version identifier
+<4> One change can have multiple tags separated by a comma and suffixed by `:`
+<5> A multi-line change description must be properly indented
+<6> Please take care to *separate versions with an empty line*
+<7> Previous version identifier
 
 [float]
 ==== Continuous Integration
