@@ -398,18 +398,17 @@ public final class PluginFactoryExt {
 
         public Context toContext(PluginLookup.PluginType pluginType, AbstractNamespacedMetricExt metric) {
             DeadLetterQueueWriter dlq = NullDeadLetterQueueWriter.getInstance();
-            if (pluginType == PluginLookup.PluginType.OUTPUT) {
-                if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
-                    IRubyObject innerWriter =
-                            ((AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) dlqWriter)
-                                    .innerWriter(RubyUtil.RUBY.getCurrentContext());
-
-                    if (innerWriter != null) {
-                         if (org.logstash.common.io.DeadLetterQueueWriter.class.isAssignableFrom(innerWriter.getJavaClass())) {
-                            dlq = new DLQWriterAdapter(innerWriter.toJava(org.logstash.common.io.DeadLetterQueueWriter.class));
-                        }
+            if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
+                IRubyObject innerWriter =
+                        ((AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) dlqWriter)
+                                .innerWriter(RubyUtil.RUBY.getCurrentContext());
+                if (innerWriter != null) {
+                    if (org.logstash.common.io.DeadLetterQueueWriter.class.isAssignableFrom(innerWriter.getJavaClass())) {
+                        dlq = new DLQWriterAdapter(innerWriter.toJava(org.logstash.common.io.DeadLetterQueueWriter.class));
                     }
                 }
+            } else if (dlqWriter.getJavaClass().equals(DeadLetterQueueWriter.class)) {
+                dlq = dlqWriter.toJava(DeadLetterQueueWriter.class);
             }
 
             return new ContextImpl(dlq, new NamespacedMetricImpl(RubyUtil.RUBY.getCurrentContext(), metric));
