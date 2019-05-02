@@ -2,7 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 #
-module LogStash; module Inputs; class Metrics; module StatsEvent;
+module LogStash; module Config;
   class PipelinesInfo
     def self.format_pipelines_info(agent, metric_store, extended_performance_collection)
       # It is important that we iterate via the agent's pipelines vs. the
@@ -144,4 +144,4 @@ module LogStash; module Inputs; class Metrics; module StatsEvent;
       }
     end
   end
-end; end; end; end
+end; end;

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/api/commands/base"
 require 'logstash/util/thread_dump'
+require 'logstash/config/pipelines_info'
 require_relative "hot_threads_reporter"
 
 java_import java.nio.file.Files
@@ -10,6 +11,21 @@ module LogStash
   module Api
     module Commands
       class Stats < Commands::Base
+        def queue
+          events = 0
+          pipeline_ids = service.get_shallow(:stats, :pipelines).keys
+          total_queued_events = 0
+          pipeline_ids.each do |pipeline_id|
+            p_stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
+            type = p_stats[:queue] && p_stats[:queue][:type].value
+            pipeline = service.agent.get_pipeline(pipeline_id)
+            next if pipeline.nil? || pipeline.system? || type != 'persisted'
+            total_queued_events = p_stats[:queue][:events].value
+          end
+
+          {:events_count => total_queued_events}
+        end
+
         def jvm
           {
             :threads => extract_metrics(
@@ -94,7 +110,11 @@ module LogStash
         private
         def plugins_stats_report(pipeline_id)
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
-          PluginsStats.report(stats)
+          extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
+            service.agent,
+            service.snapshot.metric_store,
+            true)
+          PluginsStats.report(stats, extended_stats.shift)
         end
 
         module PluginsStats
@@ -110,7 +130,13 @@ module LogStash
             end
           end
 
-          def report(stats)
+          def report(stats, extended_stats)
+            if !stats[:config].nil?
+              eid = stats[:config][:ephemeral_id]
+              hash = stats[:config][:hash]
+            else
+              eid = hash = nil
+            end
             {
               :events => stats[:events],
               :plugins => {
@@ -121,7 +147,7 @@ module LogStash
               },
               :reloads => stats[:reloads],
               :queue => stats[:queue]
-            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
+            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {}).merge(extended_stats)
             end
         end # module PluginsStats
       end

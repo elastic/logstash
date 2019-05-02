@@ -21,9 +21,15 @@ module LogStash
             :events => events_payload,
             :pipelines => pipeline_payload,
             :reloads => reloads_payload,
-            :os => os_payload
+            :os => os_payload,
+            :queue => queue
           }
           respond_with(payload, {:filter => params["filter"]})
+        end
+
+        private
+        def queue
+          @stats.queue
         end
 
         private
