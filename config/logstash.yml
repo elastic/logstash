@@ -76,7 +76,7 @@
 #
 # config.reload.automatic: false
 #
-# How often to check if the pipeline configuration has changed (in seconds)
+# How often to check if the pipeline configuration has changed (in milliseconds)
 #
 # config.reload.interval: 3s
 #
