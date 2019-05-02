@@ -535,7 +535,7 @@ filter {
     # using add_field here to add & rename values to the event root
     add_field => { server_name => "%{[server][0][description]}" }
     add_field => { user_firstname => "%{[user][0][firstname]}" } <5>
-    add_field => { user_lastname => "%{[user][0][lastname]}" } <5>
+    add_field => { user_lastname => "%{[user][0][lastname]}" }
     remove_field => ["server", "user"]
     jdbc_user => "logstash"
     jdbc_password => "example"
