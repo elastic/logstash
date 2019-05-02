@@ -43,7 +43,7 @@ management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/role/logstash_writer
+POST _security/role/logstash_writer
 {
   "cluster": ["manage_index_templates", "monitor", "manage_ilm"], <1>
   "indices": [
@@ -73,7 +73,7 @@ the `user` API:
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/user/logstash_internal
+POST _security/user/logstash_internal
 {
   "password" : "x-pack-test-password",
   "roles" : [ "logstash_writer"],
@@ -123,7 +123,7 @@ privileges  for the Logstash indices. You can create roles from the
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/role/logstash_reader
+POST _security/role/logstash_reader
 {
   "indices": [
     {
@@ -145,7 +145,7 @@ also assign the `logstash_admin` role. You can create and manage users from the
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/user/logstash_user
+POST _security/user/logstash_user
 {
   "password" : "x-pack-test-password",
   "roles" : [ "logstash_reader", "logstash_admin"], <1>
@@ -214,17 +214,7 @@ monitoring function, and _should not_ be used for any other purpose - it is
 specifically _not intended_ for use within a Logstash pipeline.
 
 By default, the `logstash_system` user does not have a password. The user will
-not be enabled until you set a password. Set the password through the change
-password API:
-
-[source,js]
----------------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_password
-{
-  "password": "t0p.s3cr3t"
-}
----------------------------------------------------------------------
-// CONSOLE
+not be enabled until you set a password. See {stack-ov}/built-in-users.html#set-built-in-user-passwords[Setting built-in user passwords].
 
 Then configure the user and password in the `logstash.yml` configuration file:
 
@@ -234,13 +224,13 @@ xpack.monitoring.elasticsearch.username: logstash_system
 xpack.monitoring.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
 
-If you initially installed an older version of {xpack}, and then upgraded, the
+If you initially installed an older version of {xpack} and then upgraded, the
 `logstash_system` user may have defaulted to `disabled` for security reasons.
 You can enable the user through the `user` API:
 
 [source,js]
 ---------------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_enable
+PUT _security/user/logstash_system/_enable
 ---------------------------------------------------------------------
 // CONSOLE
 
