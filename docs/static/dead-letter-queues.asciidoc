@@ -96,7 +96,6 @@ output {
   }
 }
 --------------------------------------------------------------------------------
-
 <1> The path to the top-level directory containing the dead letter queue. This
 directory contains a `main` folder for the main pipeline. To find the path to
 this directory, look at the `logstash.yml`
