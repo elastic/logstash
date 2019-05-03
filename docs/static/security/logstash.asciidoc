@@ -57,10 +57,8 @@ POST _xpack/security/role/logstash_writer
 <1> The cluster needs the `manage_ilm` privilege if 
 {ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
 is enabled.
-
 <2> If you use a custom Logstash index pattern, specify your custom pattern
 instead of the default `logstash-*` pattern.
-
 <3> If {ref}/getting-started-index-lifecycle-management.html[index lifecycle
 management] is enabled, the role requires the `manage` and `manage_ilm`
 privileges to load index lifecycle policies, create rollover aliases, and create
