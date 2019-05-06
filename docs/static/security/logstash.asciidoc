@@ -53,10 +53,8 @@ POST _xpack/security/role/logstash_writer
   ]
 }
 ---------------------------------------------------------------
-
 <1> If you use a custom Logstash index pattern, specify that pattern
 instead of the default `logstash-*` pattern.
-
 . Create a `logstash_internal` user and assign it the `logstash_writer` role.
 You can create users from the **Management > Users** UI in {kib} or through
 the `user` API:
@@ -123,7 +121,6 @@ POST _xpack/security/role/logstash_reader
   ]
 }
 ---------------------------------------------------------------
-
 <1> If you use a custom Logstash index pattern, specify that pattern
 instead of the default `logstash-*` pattern.
 
@@ -142,7 +139,6 @@ POST _xpack/security/user/logstash_user
   "full_name" : "Kibana User for Logstash"
 }
 ---------------------------------------------------------------
-
 <1> `logstash_admin` is a built-in role that provides access to `.logstash-*`
 indices for managing configurations.
 
@@ -250,6 +246,5 @@ You configure the user and password in the `logstash.yml` configuration file:
 xpack.management.elasticsearch.username: logstash_admin_user <1>
 xpack.management.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
-
 <1> The user you specify here must have the built-in `logstash_admin` role as
 well as the `logstash_writer` role that you created earlier.
