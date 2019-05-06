@@ -47,6 +47,7 @@ public interface Codec extends Plugin {
      * Encodes an {@link Event} and writes it to the specified {@link OutputStream}.
      * @param event The event to encode.
      * @param output The stream to which the encoded event should be written.
+     * @throws java.io.IOException Exceptions coming from the output stream
      */
     void encode(Event event, OutputStream output) throws IOException;
 
