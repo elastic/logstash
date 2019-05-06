@@ -1,5 +1,10 @@
 package org.logstash.plugins;
 
+import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Output;
+import co.elastic.logstash.api.Plugin;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
 import org.jruby.java.proxies.JavaProxy;
@@ -7,6 +12,9 @@ import org.jruby.javasupport.JavaClass;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.plugins.discovery.PluginRegistry;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Java Implementation of the plugin that is implemented by wrapping the Ruby
@@ -93,16 +101,45 @@ public final class PluginLookup {
     }
 
     public enum PluginType {
-        INPUT("input"), FILTER("filter"), OUTPUT("output"), CODEC("codec");
+        INPUT("input", Input.class), FILTER("filter", Filter.class), OUTPUT("output", Output.class), CODEC("codec", Codec.class);
 
-        private final RubyString label;
+        private final String label;
+        private final RubyString rubyLabel;
+        private final Class<? extends Plugin> pluginClass;
 
-        PluginType(final String label) {
-            this.label = RubyUtil.RUBY.newString(label);
+        PluginType(final String label, final Class<? extends Plugin> pluginClass) {
+            this.label = label;
+            this.rubyLabel = RubyUtil.RUBY.newString(label);
+            this.pluginClass = pluginClass;
         }
 
         public RubyString rubyLabel() {
+            return rubyLabel;
+        }
+
+        public String label() {
             return label;
+        }
+
+        public Class<? extends Plugin> pluginClass() {
+            return pluginClass;
+        }
+
+        public static PluginType getTypeByPlugin(Plugin plugin) {
+            for (final PluginType type : PluginType.values()) {
+                if (type.pluginClass().isInstance(plugin)) {
+                    return type;
+                }
+            }
+
+            final String allowedPluginTypes = Stream.of(PluginType.values())
+                .map((t) -> t.pluginClass().getName()).collect(Collectors.joining(", "));
+
+            throw new IllegalArgumentException(String.format(
+                "Plugin [%s] does not extend one of: %s",
+                plugin.getName(),
+                allowedPluginTypes
+            ));
         }
     }
 }

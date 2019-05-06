@@ -274,7 +274,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Output> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs, this);
-                            output = ctor.newInstance(id, config, executionContext.toContext(type));
+                            output = ctor.newInstance(id, config, executionContext.toContext(type, metrics.getRoot(context)));
                             PluginUtil.validateConfig(output, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
@@ -296,7 +296,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Filter> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs);
-                            filter = ctor.newInstance(id, config, executionContext.toContext(type));
+                            filter = ctor.newInstance(id, config, executionContext.toContext(type, metrics.getRoot(context)));
                             PluginUtil.validateConfig(filter, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
@@ -318,7 +318,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Input> ctor = cls.getConstructor(String.class, Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs, this);
-                            input = ctor.newInstance(id, config, executionContext.toContext(type));
+                            input = ctor.newInstance(id, config, executionContext.toContext(type, metrics.getRoot(context)));
                             PluginUtil.validateConfig(input, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
@@ -340,7 +340,7 @@ public final class PluginFactoryExt {
                         try {
                             final Constructor<Codec> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs);
-                            codec = ctor.newInstance(config, executionContext.toContext(type));
+                            codec = ctor.newInstance(config, executionContext.toContext(type, metrics.getRoot(context)));
                             PluginUtil.validateConfig(codec, config);
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
@@ -397,7 +397,7 @@ public final class PluginFactoryExt {
             );
         }
 
-        public Context toContext(PluginLookup.PluginType pluginType) {
+        public Context toContext(PluginLookup.PluginType pluginType, AbstractNamespacedMetricExt metric) {
             DeadLetterQueueWriter dlq = null;
             if (pluginType == PluginLookup.PluginType.OUTPUT) {
                 if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
@@ -413,7 +413,7 @@ public final class PluginFactoryExt {
                 }
             }
 
-            return new ContextImpl(dlq);
+            return new ContextImpl(dlq, new NamespacedMetricImpl(RubyUtil.RUBY.getCurrentContext(), metric));
         }
     }
 
@@ -444,8 +444,7 @@ public final class PluginFactoryExt {
             return this;
         }
 
-        @JRubyMethod
-        public AbstractNamespacedMetricExt create(final ThreadContext context, final IRubyObject pluginType) {
+        AbstractNamespacedMetricExt getRoot(final ThreadContext context) {
             return metric.namespace(
                 context,
                 RubyArray.newArray(
@@ -454,7 +453,12 @@ public final class PluginFactoryExt {
                         MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS
                     )
                 )
-            ).namespace(
+            );
+        }
+
+        @JRubyMethod
+        public AbstractNamespacedMetricExt create(final ThreadContext context, final IRubyObject pluginType) {
+            return getRoot(context).namespace(
                 context, RubyUtil.RUBY.newSymbol(String.format("%ss", pluginType.asJavaString()))
             );
         }
