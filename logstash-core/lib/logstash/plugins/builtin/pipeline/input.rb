@@ -44,10 +44,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
       @queue << event
     end
 
-    return true
-  rescue => e
-    require 'pry'; binding.pry
-    return true
+    true
   end
 
   def stop
