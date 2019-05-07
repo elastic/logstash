@@ -335,13 +335,14 @@ public final class PluginFactoryExt {
                     }
                 } else if (type == PluginLookup.PluginType.CODEC) {
                     final Class<Codec> cls = (Class<Codec>) pluginClass.klass();
-                    Codec codec = null;
                     if (cls != null) {
                         try {
                             final Constructor<Codec> ctor = cls.getConstructor(Configuration.class, Context.class);
                             Configuration config = new ConfigurationImpl(pluginArgs);
-                            codec = ctor.newInstance(config, executionContext.toContext(type, metrics.getRoot(context)));
+                            final Context pluginContext = executionContext.toContext(type, metrics.getRoot(context));
+                            final Codec codec = ctor.newInstance(config, pluginContext);
                             PluginUtil.validateConfig(codec, config);
+                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec));
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
                                 throw new IllegalStateException((ex).getCause());
@@ -350,11 +351,7 @@ public final class PluginFactoryExt {
                         }
                     }
 
-                    if (codec != null) {
-                        return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(typeScopedMetric, codec));
-                    } else {
-                        throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
-                    }
+                    throw new IllegalStateException("Unable to instantiate codec: " + pluginClass);
                 }
                 else {
                     throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());
