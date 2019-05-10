@@ -137,7 +137,7 @@ module LogStash
             else
               eid = hash = nil
             end
-            {
+            ret = {
               :events => stats[:events],
               :plugins => {
                 :inputs => plugin_stats(stats, :inputs),
@@ -147,8 +147,8 @@ module LogStash
               },
               :reloads => stats[:reloads],
               :queue => stats[:queue]
-            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {}).merge(extended_stats)
-            end
+            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {}).merge(extended_stats.nil? ? {} : extended_stats)
+          end
         end # module PluginsStats
       end
     end
