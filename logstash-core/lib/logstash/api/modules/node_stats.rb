@@ -58,7 +58,8 @@ module LogStash
         end
 
         def pipeline_payload(val = nil)
-          @stats.pipeline(val)
+          opts = {:vertices => as_boolean(params.fetch("vertices", false))}
+          @stats.pipeline(val, opts)
         end
       end
     end

@@ -61,14 +61,14 @@ module LogStash
           )
         end
 
-        def pipeline(pipeline_id = nil)
+        def pipeline(pipeline_id = nil, opts)
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
-              result[pipeline_id] = plugins_stats_report(pipeline_id)
+              result[pipeline_id] = plugins_stats_report(pipeline_id, opts)
             end
           else
-            { pipeline_id => plugins_stats_report(pipeline_id) }
+            { pipeline_id => plugins_stats_report(pipeline_id, opts) }
           end
         rescue # failed to find pipeline
           {}
@@ -108,13 +108,13 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id)
+        def plugins_stats_report(pipeline_id, opts)
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
             service.snapshot.metric_store,
             true)
-          PluginsStats.report(stats, extended_stats.shift)
+          PluginsStats.report(stats, extended_stats.shift, opts)
         end
 
         module PluginsStats
@@ -130,7 +130,7 @@ module LogStash
             end
           end
 
-          def report(stats, extended_stats)
+          def report(stats, extended_stats, opts)
             if !stats[:config].nil?
               eid = stats[:config][:ephemeral_id]
               hash = stats[:config][:hash]
@@ -148,6 +148,10 @@ module LogStash
               :reloads => stats[:reloads],
               :queue => stats[:queue]
             }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
+            if !opts[:vertices]
+              ret.delete('vertices')
+              extended_stats.delete('vertices')
+            end
             if extended_stats.nil?
               return ret
             else
