@@ -196,7 +196,6 @@ output {
   } 
 }
 --------------------------------------------------------------------------------
-
 <1> The `dead_letter_queue` input reads from the dead letter queue.
 <2> The `mutate` filter removes the problem field called `location`.
 <3> The clean event is sent to Elasticsearch, where it can be indexed because
