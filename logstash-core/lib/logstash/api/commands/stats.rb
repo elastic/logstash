@@ -150,7 +150,9 @@ module LogStash
             }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
             if !opts[:vertices]
               ret.delete('vertices')
-              extended_stats.delete('vertices')
+              unless extended_stats.nil?
+                extended_stats.delete('vertices')
+              end
             end
             if extended_stats.nil?
               return ret
