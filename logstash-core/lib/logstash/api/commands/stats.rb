@@ -147,7 +147,12 @@ module LogStash
               },
               :reloads => stats[:reloads],
               :queue => stats[:queue]
-            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {}).merge(extended_stats.nil? ? {} : extended_stats)
+            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
+            if extended_stats.nil?
+              return ret
+            else
+              extended_stats.merge(ret)
+            end
           end
         end # module PluginsStats
       end
