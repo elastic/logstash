@@ -1,7 +1,6 @@
 package co.elastic.logstash.api;
 
 import org.apache.logging.log4j.Logger;
-import org.logstash.common.io.DeadLetterQueueWriter;
 
 /**
  * Provides Logstash context to plugins.
