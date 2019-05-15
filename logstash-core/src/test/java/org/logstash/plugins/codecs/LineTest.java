@@ -12,12 +12,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -191,7 +189,7 @@ public class LineTest {
         compareMessages(expectedMessages, eventConsumer.events, flushConsumer.events);
     }
 
-    private static void compareMessages(String[] expectedMessages, List<Map<String, Object>> events, List<Map<String, Object>> flushedEvents) {
+    static void compareMessages(String[] expectedMessages, List<Map<String, Object>> events, List<Map<String, Object>> flushedEvents) {
         if (expectedMessages != null) {
             for (int k = 0; k < events.size(); k++) {
                 assertEquals(expectedMessages[k], events.get(k).get(Line.MESSAGE_FIELD));
@@ -214,7 +212,7 @@ public class LineTest {
     }
 
     @Test
-    public void testDecodeWithCharset() throws Exception {
+    public void testDecodeWithCharset() {
         TestEventConsumer flushConsumer = new TestEventConsumer();
 
         // decode with cp-1252
@@ -341,12 +339,3 @@ public class LineTest {
 
 }
 
-class TestEventConsumer implements Consumer<Map<String, Object>> {
-
-    List<Map<String, Object>> events = new ArrayList<>();
-
-    @Override
-    public void accept(Map<String, Object> stringObjectMap) {
-        events.add(new HashMap<>(stringObjectMap));
-    }
-}
