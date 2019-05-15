@@ -3,6 +3,7 @@ package org.logstash.plugins;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.DeadLetterQueueWriter;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Output;
@@ -21,7 +22,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
-import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.common.DLQWriterAdapter;
+import org.logstash.common.NullDeadLetterQueueWriter;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
@@ -395,7 +397,7 @@ public final class PluginFactoryExt {
         }
 
         public Context toContext(PluginLookup.PluginType pluginType, AbstractNamespacedMetricExt metric) {
-            DeadLetterQueueWriter dlq = null;
+            DeadLetterQueueWriter dlq = NullDeadLetterQueueWriter.getInstance();
             if (pluginType == PluginLookup.PluginType.OUTPUT) {
                 if (dlqWriter instanceof AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt) {
                     IRubyObject innerWriter =
@@ -403,8 +405,8 @@ public final class PluginFactoryExt {
                                     .innerWriter(RubyUtil.RUBY.getCurrentContext());
 
                     if (innerWriter != null) {
-                        if (innerWriter.getJavaClass().equals(DeadLetterQueueWriter.class)) {
-                            dlq = innerWriter.toJava(DeadLetterQueueWriter.class);
+                         if (org.logstash.common.io.DeadLetterQueueWriter.class.isAssignableFrom(innerWriter.getJavaClass())) {
+                            dlq = new DLQWriterAdapter(innerWriter.toJava(org.logstash.common.io.DeadLetterQueueWriter.class));
                         }
                     }
                 }
