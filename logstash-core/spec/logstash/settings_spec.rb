@@ -158,6 +158,11 @@ describe LogStash::Settings do
 
     before :each do
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
+      LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
+    end
+
+    after(:each) do
+      LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
     end
 
     context "placeholders in flat logstash.yml" do
@@ -211,6 +216,7 @@ describe LogStash::Settings do
 
     before :each do
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
+      LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
     end
 
     before do
@@ -223,6 +229,10 @@ describe LogStash::Settings do
       ENV.delete('lsspecdomain_env')
       ENV.delete('lsspecdomain2_env')
       ENV.delete('a')
+    end
+
+    after(:each) do
+      LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
     end
 
     subject do
