@@ -133,7 +133,7 @@ public final class HotThreadsMonitor {
                 throw new IllegalArgumentException("Invalid sort order");
         }
 
-        Integer threadInfoMaxDepth = 3;
+        Integer threadInfoMaxDepth = 50;
         if (options.containsKey(STACKTRACE_SIZE)) {
             threadInfoMaxDepth = Integer.valueOf(options.get(STACKTRACE_SIZE));
         }
