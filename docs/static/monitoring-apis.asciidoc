@@ -721,6 +721,7 @@ The parameters allowed are:
 
 [horizontal]
 `threads`:: 	        The number of hot threads to return. The default is 10.
+`stacktrace_size`::     The depth of the stack trace to report for each thread. The default is 50.
 `human`:: 	            If true, returns plain text instead of JSON format. The default is false.
 `ignore_idle_threads`:: If true, does not return idle threads. The default is true.
 
