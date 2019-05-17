@@ -1,0 +1,4 @@
+[[running-logstash-windows]]
+=== Running Logstash as a Service on Windows
+
+Work in progress
