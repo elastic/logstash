@@ -101,15 +101,18 @@ public final class PluginLookup {
     }
 
     public enum PluginType {
-        INPUT("input", Input.class), FILTER("filter", Filter.class), OUTPUT("output", Output.class), CODEC("codec", Codec.class);
+        INPUT("input", "inputs", Input.class),
+        FILTER("filter", "filters", Filter.class),
+        OUTPUT("output", "outputs", Output.class),
+        CODEC("codec", "codecs", Codec.class);
 
-        private final String label;
         private final RubyString rubyLabel;
+        private final String metricNamespace;
         private final Class<? extends Plugin> pluginClass;
 
-        PluginType(final String label, final Class<? extends Plugin> pluginClass) {
-            this.label = label;
+        PluginType(final String label, final String metricNamespace, final Class<? extends Plugin> pluginClass) {
             this.rubyLabel = RubyUtil.RUBY.newString(label);
+            this.metricNamespace = metricNamespace;
             this.pluginClass = pluginClass;
         }
 
@@ -117,8 +120,8 @@ public final class PluginLookup {
             return rubyLabel;
         }
 
-        public String label() {
-            return label;
+        public String metricNamespace() {
+            return metricNamespace;
         }
 
         public Class<? extends Plugin> pluginClass() {

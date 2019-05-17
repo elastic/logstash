@@ -18,11 +18,14 @@ public class ContextImpl implements Context {
 
     private DeadLetterQueueWriter dlqWriter;
 
-    private Metric metric;
+    /**
+     * This is a reference to the [stats, pipelines, *name*, plugins] metric namespace.
+     */
+    private Metric pluginsScopedMetric;
 
     public ContextImpl(DeadLetterQueueWriter dlqWriter, Metric metric) {
         this.dlqWriter = dlqWriter;
-        this.metric = metric;
+        this.pluginsScopedMetric = metric;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class ContextImpl implements Context {
 
     @Override
     public NamespacedMetric getMetric(Plugin plugin) {
-        return metric.namespace(PluginLookup.PluginType.getTypeByPlugin(plugin).label(), plugin.getId());
+        return pluginsScopedMetric.namespace(PluginLookup.PluginType.getTypeByPlugin(plugin).metricNamespace(), plugin.getId());
     }
 
     @Override

@@ -42,7 +42,7 @@ public class JavaCodecDelegatorTest extends MetricTestCase {
     @Test
     public void plainCodecPluginPushesPluginNameToMetric() {
         constructCodecDelegator();
-        final RubyHash metricStore = getMetricStore(new String[]{"codec", "foo"});
+        final RubyHash metricStore = getMetricStore(new String[]{"codecs", "foo"});
         final String pluginName = getMetricStringValue(metricStore, "name");
 
         assertEquals(codec.getName(), pluginName);
@@ -190,7 +190,7 @@ public class JavaCodecDelegatorTest extends MetricTestCase {
     }
 
     private RubyHash getMetricStore(final String type) {
-        return getMetricStore(new String[]{"codec", "foo", type});
+        return getMetricStore(new String[]{"codecs", "foo", type});
     }
 
     private long getMetricLongValue(final String type, final String symbolName) {
