@@ -42,7 +42,7 @@ module ::LogStash::Util::SubstitutionVariables
       logger.debug("Replacing `#{placeholder}` with actual value")
 
       #check the secret store if it exists
-      secret_store = SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+      secret_store = get_or_load_secret_store
       replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
@@ -54,4 +54,51 @@ module ::LogStash::Util::SubstitutionVariables
     end
   end # def replace_placeholders
 
+  # helper method to cache a single secret_store for the current thread
+  # across all calls within the provided block, cleaning up when finished
+  #
+  # @yield control
+  def with_exclusive_secret_store
+    subsitution_variable_mutex.synchronize do
+      begin
+        logger.info("Setting up exclusive keystore for #{self.inspect}...")
+        @_secret_store = load_secret_store
+        yield
+      ensure
+        @_secret_store = nil
+        logger.info("Revoking exclusive keystore for #{self.inspect}...")
+      end
+    end
+  end
+
+  private
+
+  # get a secret_store, using a cached value if available.
+  # @api private
+  # @return [SecretStoreExt,nil]
+  def get_or_load_secret_store
+    return @_secret_store if subsitution_variable_mutex.owned?
+
+    load_secret_store
+  end
+
+  # loads a secret_store from disk if available
+  # @api private
+  # # @return [SecretStoreExt,nil]
+  def load_secret_store
+    SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+  end
+
+  # returns an instance-specific mutex, for use
+  # @api private
+  def subsitution_variable_mutex
+    # to ensure that the instance that this module is mixed into
+    # gets EXACTLY ONE mutex, we briefly use a global mutex.
+    @_subsitution_variable_mutex || MUTEX.synchronize do
+      @_subsitution_variable_mutex ||= Mutex.new
+    end
+  end
+
+  MUTEX = Mutex.new
+  private_constant :MUTEX
 end

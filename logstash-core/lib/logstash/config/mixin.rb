@@ -46,7 +46,17 @@ module LogStash::Config::Mixin
     base.extend(LogStash::Config::Mixin::DSL)
   end
 
+  # Enable multiple invocations of the substitution variable replacement within
+  # the config initialisation to share a single secret store for performance reasons.
+  #
+  # See: [LogStash::Util::SubstitutionVariables#with_exclusive_secret_store]
   def config_init(params)
+    with_exclusive_secret_store do
+      _config_init(params)
+    end
+  end
+
+  def config_init_internal(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
 
@@ -138,7 +148,8 @@ module LogStash::Config::Mixin
     end
 
     @config = params
-  end # def config_init
+  end # def config_init_internal
+  private :config_init_internal
 
   module DSL
 
