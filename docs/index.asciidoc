@@ -1,4 +1,4 @@
-[[logstash-reference]]
+[[logstash-reference-includes]]
 = Logstash Reference
 
 :plugins-repo-dir:  {docdir}/../../logstash-docs/docs
