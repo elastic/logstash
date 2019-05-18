@@ -287,12 +287,13 @@ server mode" do`:
 
 . Add the body to the `it` block. Add the following five lines after the line `context "when in server mode" do`: 
 [source,ruby]
+-----
       allow(tracer).to receive(:debug)<1>
       output.logger = logger<2>
       expect(tracer).to receive(:info).with("0mq: bound", {:address=>"tcp://127.0.0.1:2120"})<3>
       output.register<4>
       output.do_close<5>
-
+-----
 <1> Allow the double to receive `debug` method calls.
 <2> Make the output use the test double.
 <3> Set an expectation on the test to receive an `info` method call.
