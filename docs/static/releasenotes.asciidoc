@@ -15,6 +15,8 @@ This section summarizes the changes in the following releases:
 [[logstash-7-1-0]]
 === Logstash 7.1.0 Release Notes
 
+* Updates to support changes to licensing of security features.
++
 Some Elastic Stack security features, such as encrypted communications, file and native authentication, and 
 role-based access control, are now available in more subscription levels. For details, see https://www.elastic.co/subscriptions.
 
