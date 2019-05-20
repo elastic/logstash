@@ -1,4 +1,40 @@
 [[running-logstash-windows]]
-=== Running Logstash as a Service on Windows
+== Work in progress: Running Logstash as a Service on Windows
 
-Work in progress
+Before reading this section, see <<installing-logstash>> for basic installation instructions to get you started.
+
+Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it as a service (with nssm), schedule it as a task, or run it manually.
+
+[[running-logstash-windows-validation]]
+=== Validating JVM Pre-Requisites on Windows
+After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JVM], open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session and run the following commands to verify `JAVA_HOME` is set and the Java version:
+
+==== `Write-Host $env:JAVA_HOME`
+** The output should be pointed to where the JVM software is located, for example:
+```
+`C:\Program Files\Java\jdk-11.0.3`
+```
+
+** If `JAVA_HOME` is not set, perform the following:
+*** Right click My Computer and select Properties.
+*** On the Advanced tab, select Environment Variables
+*** In the Environmental Variables window edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
+
+==== `Java -version`
+** This command produces output similar to the following:
+```
+java version "11.0.3" 2019-04-16 LTS
+Java(TM) SE Runtime Environment 18.9 (build 11.0.3+12-LTS)
+Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.3+12-LTS, mixed mode)
+```
+
+Once you have validated JVM pre-requisites, you may proceed.
+
+[[running-logstash-windows-nssm]]
+=== Work in progress: Running Logstash as a service with NSSM
+
+[[running-logstash-windows-scheduledtask]]
+=== Work in progress: Running Logstash with Task Scheduler
+
+[[running-logstash-windows-manual]]
+=== Work in progress: Running Logstash manually with PowerShell
