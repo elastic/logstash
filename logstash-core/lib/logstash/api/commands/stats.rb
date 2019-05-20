@@ -146,7 +146,7 @@ module LogStash
                 :outputs => plugin_stats(stats, :outputs)
               },
               :reloads => stats[:reloads],
-              :queue => stats[:queue]
+              :queue => extended_stats["queue"]
             }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
             if !opts[:vertices]
               ret.delete('vertices')
