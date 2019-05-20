@@ -34,9 +34,9 @@ This section summarizes the changes in the following releases:
 
 [[logstash-6-8-0]]
 === Logstash 6.8.0 Release Notes
-coming[6.8.0]
 
-No user-facing changes
+Some Elastic Stack security features, such as encrypted communications, file and native authentication, and 
+role-based access control, are now available in more subscription levels. For details, see https://www.elastic.co/subscriptions.
 
 [[logstash-6-7-2]]
 === Logstash 6.7.2 Release Notes
