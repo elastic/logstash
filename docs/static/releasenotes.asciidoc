@@ -36,7 +36,7 @@ This section summarizes the changes in the following releases:
 === Logstash 6.8.0 Release Notes
 coming[6.8.0]
 
-* No user-facing changes
+No user-facing changes
 
 [[logstash-6-7-2]]
 === Logstash 6.7.2 Release Notes
