@@ -2,11 +2,14 @@ package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.PluginConfigSpec;
 import com.google.common.collect.ImmutableMap;
 import org.jruby.RubyHash;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.plugins.ContextImpl;
+import org.logstash.plugins.MetricTestCase;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
@@ -19,7 +22,7 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
-public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
+public class JavaCodecDelegatorTest extends MetricTestCase {
     private Codec codec;
 
     @Before
@@ -31,11 +34,6 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
         super.setup();
     }
 
-    @Override
-    protected String getBaseMetricsPath() {
-        return "codec/foo";
-    }
-
     @Test
     public void plainCodecDelegatorInitializesCleanly() {
         constructCodecDelegator();
@@ -44,7 +42,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     @Test
     public void plainCodecPluginPushesPluginNameToMetric() {
         constructCodecDelegator();
-        final RubyHash metricStore = getMetricStore(new String[]{"codec", "foo"});
+        final RubyHash metricStore = getMetricStore(new String[]{"codecs", "foo"});
         final String pluginName = getMetricStringValue(metricStore, "name");
 
         assertEquals(codec.getName(), pluginName);
@@ -192,7 +190,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     }
 
     private RubyHash getMetricStore(final String type) {
-        return getMetricStore(new String[]{"codec", "foo", type});
+        return getMetricStore(new String[]{"codecs", "foo", type});
     }
 
     private long getMetricLongValue(final String type, final String symbolName) {
@@ -200,7 +198,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     }
 
     private JavaCodecDelegator constructCodecDelegator() {
-        return new JavaCodecDelegator(metric, codec);
+        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec);
     }
 
     private abstract class AbstractCodec implements Codec {

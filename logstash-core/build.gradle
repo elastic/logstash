@@ -70,6 +70,8 @@ task javaTests(type: Test) {
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
     exclude '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
     exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    exclude '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    exclude '/org/logstash/plugins/CounterMetricImplTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -81,6 +83,8 @@ task rubyTests(type: Test) {
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
     include '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
     include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    include '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    include '/org/logstash/plugins/CounterMetricImplTest.class'
 }
 
 test {
