@@ -16,6 +16,14 @@ public interface Context {
     DeadLetterQueueWriter getDlqWriter();
 
     /**
+     * Provides a metric namespace scoped to the given {@code plugin} that metrics can be written to and
+     * can be nested deeper with further namespaces.
+     * @param plugin The plugin the metric should be scoped to
+     * @return       A metric scoped to the current plugin
+     */
+    NamespacedMetric getMetric(Plugin plugin);
+
+    /**
      * Provides a {@link Logger} instance to plugins.
      * @param plugin The plugin for which the logger should be supplied.
      * @return       The supplied Logger instance.
