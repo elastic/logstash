@@ -2,7 +2,7 @@
 == Running Logstash on Windows (Work in progress)
 Before reading this section, see <<installing-logstash>> for basic installation instructions to get you started.
 
-Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it as a service (with nssm), schedule it as a task, or run it manually.
+Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it as a service (with https://nssm.cc/[NSSM]), schedule it as a task, or run it manually.
 
 [[running-logstash-windows-validation]]
 === Validating JVM Pre-Requisites on Windows
@@ -11,23 +11,33 @@ After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JV
 ==== `Write-Host $env:JAVA_HOME`
 ** The output should be pointed to where the JVM software is located, for example:
 ```
-`C:\Program Files\Java\jdk-11.0.3`
+PS C:\> Write-Host $env:JAVA_HOME
+C:\Program Files\Java\jdk-11.0.3
 ```
 
-** If `JAVA_HOME` is not set, perform the following:
+** If `JAVA_HOME` is not set, perform one of the following:
+1. Set using the GUI:
 *** Right click My Computer and select Properties.
 *** On the Advanced tab, select Environment Variables
 *** In the Environmental Variables window edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
+2. Set using PowerShell:
+*** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
+*** `SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"`
+*** `SETX /m PATH "$ENV:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"`
+*** Exit PowerShell, then open a new PowerShell session and run `Write-Host $env:JAVA_HOME` to verify
 
 ==== `Java -version`
 ** This command produces output similar to the following:
 ```
+PS C:\> Java -version
 java version "11.0.3" 2019-04-16 LTS
 Java(TM) SE Runtime Environment 18.9 (build 11.0.3+12-LTS)
 Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.3+12-LTS, mixed mode)
 ```
 
-Once you have validated JVM pre-requisites, you may proceed.
+Once you have validated JVM pre-requisites, you may proceed.  
+
+NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3, and have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP package] to `C:\logstash-7.1.0\`
 
 [[running-logstash-windows-nssm]]
 === Running Logstash as a service with NSSM (Work in progress)
