@@ -6,11 +6,11 @@
 :xls-repo-dir:          {docdir}/../x-pack/docs/{lang}
 :log-repo-dir:          {docdir}
 :plugins-repo-dir:      {docdir}/../../logstash-docs/docs
-:branch:                6.7
+:branch:                6.8
 :major-version:         6.x
-:logstash_version:      6.7.1
-:elasticsearch_version: 6.7.1
-:kibana_version:        6.7.1
+:logstash_version:      6.8.0
+:elasticsearch_version: 6.8.0
+:kibana_version:        6.8.0
 :docker-repo:           docker.elastic.co/logstash/logstash
 :docker-image:          {docker-repo}:{logstash_version}
 
