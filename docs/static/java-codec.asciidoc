@@ -241,7 +241,12 @@ example above, the `decode` method simply splits the incoming byte stream on the
 specified delimiter. A production-grade codec such as
 https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
 would not make the simplifying assumption that the end of the supplied byte
-stream corresponded with the end of an  event.
+stream corresponded with the end of an event.
+
+Events should be constructed as instances of `Map<String, Object>` and pushed into the event pipeline via the
+`Consumer<Map<String, Object>>.accept()` method. To reduce allocations and GC pressure, codecs may reuse the same
+map instance by modifying its fields between calls to `Consumer<Map<String, Object>>.accept()` because the event
+pipeline will create events based on a copy of the map's data.
 
 The `flush` method works in coordination with the `decode` method to decode all
 remaining events from the specified  `ByteBuffer` along with any internal state
