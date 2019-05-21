@@ -189,16 +189,18 @@ public void start(Consumer<Map<String, Object>> consumer) {
 The `start` method begins the event-producing loop in an input. Inputs are flexible and may produce events through
 many different mechanisms including:
 
- * a pull mechanism such as periodic queries of external database</li>
- * a push mechanism such as events sent from clients to a local network port</li>
- * a timed computation such as a heartbeat</li>
+ * a pull mechanism such as periodic queries of external database
+ * a push mechanism such as events sent from clients to a local network port
+ * a timed computation such as a heartbeat
  * any other mechanism that produces a useful stream of events. Event streams may be either finite or infinite. 
 If the input produces an infinite stream of events, this method should loop until a stop request is made through
 the `stop` method. If the input produces a finite stream of events, this method should terminate when the last 
 event in the stream is produced or a stop request is made, whichever comes first.
 
 Events should be constructed as instances of `Map<String, Object>` and pushed into the event pipeline via the
-`Consumer<Map<String, Object>>.accept()` method. 
+`Consumer<Map<String, Object>>.accept()` method. To reduce allocations and GC pressure, inputs may reuse the same
+map instance by modifying its fields between calls to `Consumer<Map<String, Object>>.accept()` because the event
+pipeline will create events based on a copy of the map's data.
 
 [float]
 ==== Stop and awaitStop methods
