@@ -1,8 +1,10 @@
 [[running-logstash-windows]]
 == Running Logstash on Windows
-Before reading this section, see <<installing-logstash>> for basic installation instructions to get you started.
+Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used for running Logstash on Windows.
 
-Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it as a service (with https://nssm.cc/[NSSM]), schedule it as a task, or run it manually.
+Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task.
+
+NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before running it as a service or a scheduled task.
 
 [[running-logstash-windows-validation]]
 === Validating JVM Pre-Requisites on Windows
@@ -23,7 +25,7 @@ C:\Program Files\Java\jdk-11.0.3
 2. Set using PowerShell:
 *** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
 *** `PS C:\Windows\system32> SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"`
-*** `PS C:\Windows\system32> SETX /m PATH "$ENV:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"`
+*** `PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"`
 *** Exit PowerShell, then open a new PowerShell session and run `Write-Host $env:JAVA_HOME` to verify
 
 ==== `Java -version`
@@ -41,8 +43,26 @@ Once you have <<setup-logstash>> and validated JVM pre-requisites, you may proce
 
 NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP package] to `C:\logstash-7.1.0\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-7.1.0\config\`).
 
+[[running-logstash-windows-manual]]
+=== Running Logstash manually with PowerShell
+Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
+```
+PS C:\Windows\system32> cd C:\logstash-7.1.0\
+PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
+```
+
+Wait for the following messages to appear, to confirm Logstash has started successfully:
+```
+[logstash.runner          ] Starting Logstash {"logstash.version"=>"7.1.0"}
+[logstash.inputs.udp      ] Starting UDP listener {:address=>"0.0.0.0:514"}
+[logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
+```
+NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell console.
+
 [[running-logstash-windows-nssm]]
 === Running Logstash as a service with NSSM
+NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before you proceed.
+
 Download https://nssm.cc/[NSSM], then extract `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
 ```
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
@@ -99,6 +119,8 @@ NOTE: Logstash can be stopped by running the following command in an Administrat
 
 [[running-logstash-windows-scheduledtask]]
 === Running Logstash with Task Scheduler
+NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before you proceed.
+
 Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-start-page[Task Scheduler], then click `Create Task` in the Actions window, then complete the following:
 
 ** In the `General` tab:
@@ -132,22 +154,6 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 ** Once the new task has been created, either wait for it to run on the schedule or select the service then click `Run` to start the task.
 
 NOTE: Logstash can be stopped by selecting the service, then clicking `End` in the Task Scheduler window.
-
-[[running-logstash-windows-manual]]
-=== Running Logstash manually with PowerShell
-Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
-```
-PS C:\Windows\system32> cd C:\logstash-7.1.0\
-PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
-```
-
-Wait for the following messages to appear, to confirm Logstash has started successfully:
-```
-[logstash.runner          ] Starting Logstash {"logstash.version"=>"7.1.0"}
-[logstash.inputs.udp      ] Starting UDP listener {:address=>"0.0.0.0:514"}
-[logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
-```
-NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell console.
 
 [[running-logstash-windows-example]]
 === Example Logstash Configuration
