@@ -83,6 +83,9 @@ include::static/running-logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/docker.asciidoc
 include::static/docker.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash-windows.asciidoc
+include::static/running-logstash-windows.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/logging.asciidoc
 include::static/logging.asciidoc[]
 
