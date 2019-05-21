@@ -63,7 +63,6 @@ input {
     }
 }
 --------------------------------------------------------------------------------
-
 <1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the
 UNIX `tail -f` command. To change this default behavior and process the entire file, we need to specify the position
 where Logstash starts processing the file.
@@ -394,7 +393,7 @@ appropriate package from the Filebeat https://www.elastic.co/downloads/beats/fil
 Create a configuration file for Filebeat similar to the following example:
 
 [source,shell]
---------------------------------------------------------------------------------
+-----
 filebeat:
   prospectors:
     -
@@ -410,10 +409,9 @@ output:
     certificate_key: /path/to/ssl-certificate.key
     certificate_authorities: /path/to/ssl-certificate.crt
     timeout: 15
-
+-----
 <1> Path to the file or files that Filebeat processes.
 <2> Path to the SSL certificate for the Logstash instance.
---------------------------------------------------------------------------------
 
 Save this configuration file as `filebeat.yml`.
 
@@ -429,7 +427,6 @@ beats {
     ssl_key => "/path/to/ssl-key" <2>
 }
 --------------------------------------------------------------------------------
-
 <1> Path to the SSL certificate that the Logstash instance uses to authenticate itself to Filebeat.
 <2> Path to the key for the SSL certificate.
 
