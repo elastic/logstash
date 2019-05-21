@@ -1,5 +1,5 @@
 [[logstash-reference]]
-= Reference
+= Logstash Reference
 
 :branch:                2.0
 :logstash_version:      2.0.0

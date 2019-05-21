@@ -18,13 +18,10 @@ bin/plugin list --verbose <2>
 bin/plugin list *namefragment* <3>
 bin/plugin list --group output <4>
 ----------------------------------
-<1> Will list all installed plugins
-
-<2> Will list installed plugins with version information
-
-<3> Will list all installed plugins containing a namefragment
-
-<4> Will list all installed plugins for a particular group (input, filter, codec, output)
+<1> Lists all installed plugins
+<2> Lists installed plugins with version information
+<3> Lists all installed plugins containing a namefragment
+<4> Lists all installed plugins for a particular group (input, filter, codec, output)
 
 [float]
 [[installing-plugins]]
@@ -72,9 +69,8 @@ Plugins have their own release cycle and are often released independent of Logst
 bin/plugin update <1>
 bin/plugin update logstash-output-kafka <2>
 ----------------------------------
-<1> will update all installed plugins
-
-<2> will update only this plugin
+<1> updates all installed plugins
+<2> updates only this plugin
 
 [[removing-plugins]]
 [float]
