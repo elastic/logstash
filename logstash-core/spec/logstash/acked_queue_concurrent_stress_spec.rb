@@ -112,6 +112,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
         end
 
         expect(output_strings).to eq([])
+        Thread.abort_on_exception = false
       end
     end
 
