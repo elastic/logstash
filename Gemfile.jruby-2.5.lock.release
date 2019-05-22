@@ -16,7 +16,7 @@ PATH
       filesize (~> 0.2)
       gems (~> 1)
       i18n (~> 1)
-      jrjackson (= 0.4.7)
+      jrjackson (= 0.4.8)
       jruby-openssl (~> 0.10)
       manticore (~> 0.6)
       minitar (~> 0.8)
@@ -32,30 +32,30 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.5.2)
+    addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
     arr-pm (0.0.10)
       cabin (> 0)
     atomic (1.1.101-java)
     avl_tree (1.2.1)
       atomic (~> 1.1)
-    avro (1.8.2)
+    avro (1.9.0)
       multi_json
     awesome_print (1.7.0)
-    aws-eventstream (1.0.2)
-    aws-sdk (2.11.260)
-      aws-sdk-resources (= 2.11.260)
-    aws-sdk-core (2.11.260)
+    aws-eventstream (1.0.3)
+    aws-sdk (2.11.279)
+      aws-sdk-resources (= 2.11.279)
+    aws-sdk-core (2.11.279)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.260)
-      aws-sdk-core (= 2.11.260)
+    aws-sdk-resources (2.11.279)
+      aws-sdk-core (= 2.11.279)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
     aws-sigv4 (1.1.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
-    backports (3.13.0)
+    backports (3.15.0)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.7.2)
@@ -92,7 +92,7 @@ GEM
     equalizer (0.0.10)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    ffi (1.10.0-java)
+    ffi (1.11.1-java)
     filesize (0.2.0)
     fivemat (1.3.7)
     flores (0.0.7)
@@ -123,7 +123,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.7-java)
+    jrjackson (0.4.8-java)
     jruby-openssl (0.10.2-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
@@ -146,7 +146,7 @@ GEM
       edn
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-codec-es_bulk (3.0.7)
+    logstash-codec-es_bulk (3.0.8)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-fluent (3.2.0-java)
@@ -206,7 +206,7 @@ GEM
     logstash-filter-dissect (1.2.0)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
-    logstash-filter-dns (3.0.12)
+    logstash-filter-dns (3.0.13)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
@@ -218,7 +218,7 @@ GEM
     logstash-filter-fingerprint (3.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       murmurhash3
-    logstash-filter-geoip (6.0.0-java)
+    logstash-filter-geoip (6.0.1-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-grok (4.0.4)
       jls-grok (~> 0.11.3)
@@ -235,7 +235,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-filter-jdbc_streaming (1.0.5)
+    logstash-filter-jdbc_streaming (1.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       lru_redux
       sequel
@@ -281,7 +281,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.1.0)
+    logstash-input-azure_event_hubs (1.1.1)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -301,7 +301,7 @@ GEM
     logstash-input-dead_letter_queue (1.1.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-elasticsearch (4.3.0)
+    logstash-input-elasticsearch (4.3.1)
       elasticsearch (>= 5.0.3, < 6.0.0)
       logstash-codec-json
       logstash-codec-plain
@@ -452,7 +452,7 @@ GEM
     logstash-output-elastic_app_search (1.0.0.beta1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.0.2-java)
+    logstash-output-elasticsearch (10.1.0-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -539,7 +539,7 @@ GEM
     minitar (0.8)
     msgpack (1.2.10-java)
     multi_json (1.13.1)
-    multipart-post (2.0.0)
+    multipart-post (2.1.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
@@ -569,7 +569,7 @@ GEM
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rake (12.3.2)
-    redis (4.1.0)
+    redis (4.1.1)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -590,10 +590,10 @@ GEM
     rufus-scheduler (3.0.9)
       tzinfo
     safe_yaml (1.0.5)
-    sawyer (0.8.1)
-      addressable (>= 2.3.5, < 2.6)
-      faraday (~> 0.8, < 1.0)
-    sequel (5.19.0)
+    sawyer (0.8.2)
+      addressable (>= 2.3.5)
+      faraday (> 0.8, < 2.0)
+    sequel (5.20.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
