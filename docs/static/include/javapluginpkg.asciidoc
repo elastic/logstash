@@ -19,6 +19,11 @@ The Java plugin should be compiled and assembled into a fat jar with the
 into a single jar and write it to the correct folder for later packaging into a
 Ruby gem.
 
+To build the jar file, run the following command from the plugin directory:
+-----
+./gradlew vendor
+-----
+
 [float]
 ==== Manually package as Ruby gem 
 
