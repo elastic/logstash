@@ -53,3 +53,4 @@ if not exist %JRUBY_BIN% (
 )
 
 set RUBYLIB=%LS_HOME%\lib
+exit /b 0
