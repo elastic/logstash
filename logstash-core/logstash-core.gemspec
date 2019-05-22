@@ -72,4 +72,5 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "elasticsearch", "~> 5"
   gem.add_runtime_dependency "manticore", '~> 0.6'
+  gem.add_runtime_dependency "faraday", '~> 0.9.0'
 end
