@@ -20,7 +20,7 @@ HTTPD ?= logstash-docker-artifact-server
 
 FIGLET := pyfiglet -w 160 -f puffy
 
-all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfile
+all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
 
 lint: venv
 	flake8 tests
@@ -48,9 +48,10 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
+COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-full.yml: data/logstash/config/logstash-full.yml
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
@@ -67,14 +68,26 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfile: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='full' \
-	  -D artifacts_dir='$(ARTIFACTS_DIR)' \
+	  -D local_artifacts='false' \
 	  -D release='$(RELEASE)' \
-	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/docker/Dockerfile
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-full && \
+	jinja2 \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='oss' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-oss && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
@@ -123,7 +136,7 @@ dockerfile: venv templates/Dockerfile.j2
 	    -D elastic_version='$(ELASTIC_VERSION)' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
-	    -D artifacts_dir='$(ARTIFACTS_DIR)' \
+	    -D local_artifacts='true' \
 	    templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR); \
 	)
 
