@@ -74,7 +74,7 @@ require "logstash/namespace"
 require "logstash-{plugintype}-java_{plugintype}_example_jars"
 require "java"
 
-class LogStash::{plugintype}s::Java{plugintypecap}Example < LogStash::{pluginclass}::Base
+class LogStash::{plugintypecap}s::Java{plugintypecap}Example < LogStash::{pluginclass}::Base
   config_name "java_{plugintype}_example"
   
   def self.javaClass() org.logstash.javaapi.Java{plugintypecap}Example.java_class; end
