@@ -191,10 +191,10 @@ namespace "artifact" do
     build_docker(true)
   end
 
-  desc "Generate Dockerfile for default image"
-  task "dockerfile" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfile] Building Dockerfile")
-    build_dockerfile
+  desc "Generate Dockerfile for default and oss images"
+  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building Dockerfiles")
+    build_dockerfiles
   end
 
   # Auxiliary tasks
@@ -208,8 +208,9 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
-    #Rake::Task["artifact:docker"].invoke
-    #Rake::Task["artifact:docker_oss"].invoke
+    Rake::Task["artifact:docker"].invoke
+    Rake::Task["artifact:docker_oss"].invoke
+    Rake::Task["artifact:dockerfile"].invoke
   end
 
   task "generate_build_metadata" do
@@ -551,15 +552,15 @@ namespace "artifact" do
     end
   end
 
-  def build_dockerfile
+  def build_dockerfiles
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      system(env, "make public-dockerfile")
-      puts "Dockerfile created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+      system(env, "make public-dockerfiles")
+      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
     end
   end
 end
