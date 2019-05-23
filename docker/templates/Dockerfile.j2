@@ -1,5 +1,5 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
-{% if release -%}
+{% if local_artifacts == 'false' -%}
 {%   set url_root = 'https://artifacts.elastic.co/downloads/logstash' -%}
 {% else -%}
 {%   set url_root = 'http://localhost:8000' -%}
