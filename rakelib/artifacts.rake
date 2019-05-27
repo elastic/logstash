@@ -208,9 +208,11 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
-    Rake::Task["artifact:docker"].invoke
-    Rake::Task["artifact:docker_oss"].invoke
-    Rake::Task["artifact:dockerfile"].invoke
+    unless ENV['SKIP_DOCKER'] == "1"
+      Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:dockerfiles"].invoke
+    end
   end
 
   task "generate_build_metadata" do
