@@ -1,6 +1,9 @@
 # encoding: utf-8
+require 'json'
+
 class PluginVersionWorking
   EXPORT_FILE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", "plugins_version_docs.json"))
+  PLUGIN_METADATA = JSON.parse(IO.read(::File.expand_path(::File.join(::File.dirname(__FILE__), "plugins-metadata.json"))))
 
   # Simple class to make sure we get the right version for the document
   # since we will record multiple versions for one plugin
@@ -87,7 +90,8 @@ class PluginVersionWorking
         builder.eval_gemfile("bundler file", gemfile.generate())
         definition = builder.to_definition(LogStash::Environment::LOCKFILE, {})
         definition.resolve_remotely!
-        extract_versions(definition, successful_dependencies, :missing)
+        from = PLUGIN_METADATA.fetch(plugin, {}).fetch("default-plugins", false) ? :default : :missing
+        extract_versions(definition, successful_dependencies, from)
         puts "Successfully installed: #{plugin}"
       rescue => e
         puts "Failed to install: #{plugin}"
