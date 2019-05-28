@@ -164,8 +164,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class Number < Value
     def expr
       jdsl.eValue(source_meta, text_value.include?(".") ?
-        text_value.to_f :
-        text_value.to_i)
+                                   Float(text_value) :
+                                   Integer(text_value))
     end
   end
 
