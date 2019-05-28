@@ -143,6 +143,21 @@ describe LogStashConfigParser do
 
         expect(config).to be_nil
       end
+
+      it "supports octal literals" do
+        parser = LogStashConfigParser.new
+        config = parser.parse(%q(
+          input {
+            example {
+              foo => 010
+            }
+          }
+        ))
+
+        compiled_number = eval(config.recursive_select(LogStash::Config::AST::Number).first.compile)
+
+        expect(compiled_number).to be == 8
+      end
     end
 
     context "when config.support_escapes" do
