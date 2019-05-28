@@ -111,7 +111,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
           # hash value; e.g., `{"match" => {"baz" => "bar"}, "match" => {"foo" => "bulb"}}` is
           # interpreted as `{"match" => {"baz" => "bar", "foo" => "blub"}}`.
           # (NOTE: this bypasses `AST::Hash`'s ability to detect duplicate keys)
-          hash[k] = existing.merge(v)
+          hash[k] = ::LogStash::Util.hash_merge_many(existing, v)
         elsif existing.kind_of?(::Array)
           hash[k] = existing.push(*v)
         else
