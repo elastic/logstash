@@ -495,7 +495,7 @@ namespace "artifact" do
 
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
-    out.name = "logstash"
+    out.name = oss ? "logstash-oss" : "logstash"
     out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     out.architecture = "all"
     # TODO(sissel): Include the git commit hash?
