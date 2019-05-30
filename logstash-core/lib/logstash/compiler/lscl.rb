@@ -3,6 +3,7 @@ require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 require "logstash/compiler/lscl/helpers"
 require "logstash/config/string_escape"
+require "logstash/util"
 
 java_import org.logstash.config.ir.DSL
 java_import org.logstash.common.SourceWithMetadata
