@@ -144,7 +144,7 @@ processing events based on the timestamp of when they entered the queue:
 input {
   dead_letter_queue {
     path => "/path/to/data/dead_letter_queue" 
-    start_timestamp => 2017-06-06T23:40:37
+    start_timestamp => "2017-06-06T23:40:37"
     pipeline_id => "main"
   }
 }
