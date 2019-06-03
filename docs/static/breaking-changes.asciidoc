@@ -180,6 +180,19 @@ for the full list of changed names.
 * Removed obsolete `interval` option
 * Removed obsolete `ssl_certificate_verify` option
 
+*S3 Input*
+
+* Keys must now be set without quotes, i.e. 
+[source, ruby]
+-----
+bucket => "amazon_bucket_01"
+-----
+instead of 
+[source, ruby]
+-----
+"bucket" => "amazon_bucket_01"
+-----
+
 *Tcp Input*
 
 * Removed obsolete `data_timeout` option
