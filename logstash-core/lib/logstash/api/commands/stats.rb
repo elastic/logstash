@@ -126,6 +126,14 @@ module LogStash
             # plugin instance.
             return [] unless stats[:plugins] && stats[:plugins].include?(plugin_type)
             stats[:plugins][plugin_type].collect do |id, data|
+              if plugin_type.to_s.eql? "outputs"
+                if data[:name].value.eql?"elasticsearch"
+                  if LogStash::PluginMetadata.exists?(id.to_s)
+                    cluster_uuids = LogStash::PluginMetadata.for_plugin(id.to_s).get(:cluster_uuid)
+                    data[:cluster_uuids] = cluster_uuids
+                  end
+                end
+              end
               { :id => id }.merge(data)
             end
           end
