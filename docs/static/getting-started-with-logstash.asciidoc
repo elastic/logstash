@@ -260,7 +260,7 @@ example:
 ["source","sh",subs="attributes"]
 --------------------------------------------------
 cd logstash-{logstash_version}
-bin/logstash -e 'input { stdin { } } output { stdout {} }'
+bin/logstash -e 'input { stdin { } } output { stdout {} }' --path.data=/tmp --path.logs=/tmp
 --------------------------------------------------
 
 NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
