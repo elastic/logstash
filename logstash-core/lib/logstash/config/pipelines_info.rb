@@ -13,39 +13,25 @@ module LogStash; module Config;
         p_stats = stats[pipeline_id]
         # Don't record stats for system pipelines
         next nil if pipeline.system?
-        begin
-          i = 0
-          for output in p_stats[:plugins][:outputs]
-            plugin_id = output[i].to_s
-            if LogStash::PluginMetadata.exists?(plugin_id)
-              cluster_uuids = LogStash::PluginMetadata.for_plugin(plugin_id).get(:cluster_uuid)
-         #     print(output[1].class)
-        #      output[1]["cluster_uuids"] = "foo"
-        #      print(output)
-            end
-            i += 1
+        i = 0
+        for output in p_stats[:plugins][:outputs]
+          plugin_id = output[i].to_s
+          if LogStash::PluginMetadata.exists?(plugin_id)
+            cluster_uuids = LogStash::PluginMetadata.for_plugin(plugin_id).get(:cluster_uuid)
           end
-        rescue Exception => msg
-          print(msg)
-          print(msg.backtrace)
+          i += 1
         end
-        begin
-          res = {
-            "id" => pipeline_id.to_s,
-            "hash" => pipeline.lir.unique_hash,
-            "ephemeral_id" => pipeline.ephemeral_id,
-            "events" => format_pipeline_events(p_stats[:events]),
-            "queue" => format_queue_stats(pipeline_id, metric_store),
-            "reloads" => {
-              "successes" => p_stats[:reloads][:successes].value,
-              "failures" => p_stats[:reloads][:failures].value
-            }
+        res = {
+          "id" => pipeline_id.to_s,
+          "hash" => pipeline.lir.unique_hash,
+          "ephemeral_id" => pipeline.ephemeral_id,
+          "events" => format_pipeline_events(p_stats[:events]),
+          "queue" => format_queue_stats(pipeline_id, metric_store),
+          "reloads" => {
+            "successes" => p_stats[:reloads][:successes].value,
+            "failures" => p_stats[:reloads][:failures].value
           }
-        rescue Exception => msg
-          print(msg)
-          print(msg.backtrace)
-        end
-
+        }
         if extended_performance_collection
           res["vertices"] = format_pipeline_vertex_stats(p_stats[:plugins], pipeline)
         end
@@ -117,12 +103,16 @@ module LogStash; module Config;
           cluster_uuids = LogStash::PluginMetadata.for_plugin(plugin_id.to_s).get(:cluster_uuid)
         end
 
-        
-        acc << {
+        segment = {
           :id => plugin_id,
           :pipeline_ephemeral_id => pipeline.ephemeral_id,
-          :cluster_uuids => cluster_uuids
-        }.merge(segmented)
+        }
+
+        if cluster_uuids
+          print('addint')
+          segment[:cluster_uuids] = cluster_uuids
+        end
+        acc << segment.merge(segmented)
         acc
       end
     end
