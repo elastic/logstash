@@ -188,4 +188,26 @@ public class ConfigurationImplTest {
         Assert.assertEquals("<password>", p.toString());
     }
 
+    @Test
+    public void testBooleanValues() {
+        PluginConfigSpec<Boolean> booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, false, false, false);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap(booleanKey, "tRuE"));
+        boolean value = config.get(booleanConfig);
+        Assert.assertTrue(value);
+
+        config = new ConfigurationImpl(Collections.singletonMap(booleanKey, "false"));
+        value = config.get(booleanConfig);
+        Assert.assertFalse(value);
+
+        booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, false, false, false);
+        config = new ConfigurationImpl(Collections.emptyMap());
+        value = config.get(booleanConfig);
+        Assert.assertFalse(value);
+
+        booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, true, false, false);
+        config = new ConfigurationImpl(Collections.emptyMap());
+        value = config.get(booleanConfig);
+        Assert.assertTrue(value);
+    }
+
 }

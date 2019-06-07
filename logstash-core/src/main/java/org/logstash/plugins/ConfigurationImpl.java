@@ -44,6 +44,8 @@ public final class ConfigurationImpl implements Configuration {
                 return (T) o;
             } else if (configSpec.type() == Double.class && o.getClass() == Long.class) {
                 return configSpec.type().cast(((Long)o).doubleValue());
+            } else if (configSpec.type() == Boolean.class && o instanceof String) {
+                return configSpec.type().cast(Boolean.parseBoolean((String) o));
             } else if (configSpec.type() == Codec.class && o instanceof String && pluginFactory != null) {
                 Codec codec = pluginFactory.buildDefaultCodec((String) o);
                 return configSpec.type().cast(codec);
