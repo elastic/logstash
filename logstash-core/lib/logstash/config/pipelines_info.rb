@@ -109,7 +109,7 @@ module LogStash; module Config;
         }
 
         if cluster_uuids
-          segment[:cluster_uuids] = cluster_uuids
+          segment[:cluster_uuid] = cluster_uuids
         end
         acc << segment.merge(segmented)
         acc
