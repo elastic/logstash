@@ -48,9 +48,10 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   end
 
   def stop
-    # We stop receiving events before we unlisten to prevent races
-    @running.set(false) if @running # If register wasn't yet called, no @running!
     pipeline_bus.unlisten(self, address)
+    # We stop receiving events _after_ we unlisten to pick up any events sent by upstream outputs that
+    # have not yet stopped
+    @running.set(false) if @running # If register wasn't yet called, no @running!
   end
 
   def isRunning
