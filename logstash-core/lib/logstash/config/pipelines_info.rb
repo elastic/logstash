@@ -13,14 +13,6 @@ module LogStash; module Config;
         p_stats = stats[pipeline_id]
         # Don't record stats for system pipelines
         next nil if pipeline.system?
-        i = 0
-        for output in p_stats[:plugins][:outputs]
-          plugin_id = output[i].to_s
-          if LogStash::PluginMetadata.exists?(plugin_id)
-            cluster_uuids = LogStash::PluginMetadata.for_plugin(plugin_id).get(:cluster_uuid)
-          end
-          i += 1
-        end
         res = {
           "id" => pipeline_id.to_s,
           "hash" => pipeline.lir.unique_hash,
