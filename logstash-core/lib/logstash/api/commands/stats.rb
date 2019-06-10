@@ -61,7 +61,7 @@ module LogStash
           )
         end
 
-        def pipeline(pipeline_id = nil, opts)
+        def pipeline(pipeline_id = nil, opts={})
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
@@ -108,7 +108,7 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id, opts)
+        def plugins_stats_report(pipeline_id, opts={})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
@@ -130,7 +130,7 @@ module LogStash
             end
           end
 
-          def report(stats, extended_stats, opts)
+          def report(stats, extended_stats=nil, opts={})
             if !stats[:config].nil?
               eid = stats[:config][:ephemeral_id]
               hash = stats[:config][:hash]
