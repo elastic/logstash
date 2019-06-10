@@ -10,10 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
- * This class is essentially the communication bus / central state for the `pipeline` inputs/outputs to talk to each
- * other. This class is threadsafe.
+ * This class is the communication bus for the `pipeline` inputs and outputs to talk to each other.
+ *
+ * This class is threadsafe.
  */
 public class PipelineBus {
+
     final ConcurrentHashMap<String, AddressState> addressStates = new ConcurrentHashMap<>();
     final ConcurrentHashMap<PipelineOutput, ConcurrentHashMap<String, AddressState>> outputsToAddressStates = new ConcurrentHashMap<>();
     volatile boolean blockOnUnlisten = false;
@@ -159,9 +161,10 @@ public class PipelineBus {
     }
 
     /**
-     * Stop listening on the given address with the given listener
+     * Stop listening on the given address with the given listener. Blocks until upstream outputs have
+     * stopped.
      *
-     * @param input   Input that should stop listening
+     * @param input Input that should stop listening
      * @param address Address on which to stop listening
      * @throws InterruptedException if interrupted while attempting to stop listening
      */
