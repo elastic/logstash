@@ -100,7 +100,7 @@ module LogStash; module Config;
           acc
         end
         if LogStash::PluginMetadata.exists?(plugin_id.to_s)
-          cluster_uuids = LogStash::PluginMetadata.for_plugin(plugin_id.to_s).get(:cluster_uuid)
+          cluster_uuid = LogStash::PluginMetadata.for_plugin(plugin_id.to_s).get(:cluster_uuid)
         end
 
         segment = {
