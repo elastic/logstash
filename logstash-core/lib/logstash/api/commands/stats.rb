@@ -114,7 +114,12 @@ module LogStash
             service.agent,
             service.snapshot.metric_store,
             true)
-          PluginsStats.report(stats, extended_stats.shift, opts)
+          for pipeline in extended_stats
+            if pipeline["id"].to_s == pipeline_id.to_s
+              extended_pipeline = pipeline
+            end
+          end
+          PluginsStats.report(stats, extended_pipeline, opts)
         end
 
         module PluginsStats
