@@ -61,7 +61,7 @@ module LogStash
           )
         end
 
-        def pipeline(pipeline_id = nil, opts)
+        def pipeline(pipeline_id = nil, opts={})
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
