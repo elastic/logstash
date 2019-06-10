@@ -154,11 +154,7 @@ module LogStash
                 extended_stats.delete('vertices')
               end
             end
-            if extended_stats.nil?
-              return ret
-            else
-              extended_stats.merge(ret)
-            end
+          extended_stats.merge(ret)
           end
         end # module PluginsStats
       end
