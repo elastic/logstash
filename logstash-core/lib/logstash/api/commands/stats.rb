@@ -130,7 +130,7 @@ module LogStash
             end
           end
 
-          def report(stats, extended_stats, opts)
+          def report(stats, extended_stats=nil, opts={})
             if !stats[:config].nil?
               eid = stats[:config][:ephemeral_id]
               hash = stats[:config][:hash]
