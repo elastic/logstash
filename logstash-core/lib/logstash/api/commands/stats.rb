@@ -108,7 +108,7 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id, opts)
+        def plugins_stats_report(pipeline_id, opts={})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
