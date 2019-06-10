@@ -108,8 +108,8 @@ module LogStash; module Config;
           :pipeline_ephemeral_id => pipeline.ephemeral_id,
         }
 
-        if cluster_uuids
-          segment[:cluster_uuid] = cluster_uuids
+        if cluster_uuid
+          segment[:cluster_uuid] = cluster_uuid
         end
         acc << segment.merge(segmented)
         acc
