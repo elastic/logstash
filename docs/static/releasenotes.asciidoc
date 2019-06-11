@@ -36,102 +36,38 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-1]]
 === Logstash 6.8.1 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.1
-
 * LIR support for octal literals in pipeline definitions https://github.com/elastic/logstash/pull/10828[#10828]
 * Merge config values in LIR https://github.com/elastic/logstash/pull/10832[#10832]
-* Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR https://github.com/elastic/logstash/pull/10837[#10837]
-
-=== Logstash Commits between 6.8 and 6.8.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.0..6.8"
-
-a5bdaa1fa - (HEAD -> 6.8, origin/6.8) Update patch plugin versions in gemfile lock (#10851) (74 minutes ago) <João Duarte>
-f0edd134b - Remove note about j11 (6 days ago) <Karen Metts>
-86ab51e97 - Value of start_timestamp must to be quoted (11 days ago) <Florian Kelbert>
-5ba741c44 - rake task to generate dockerfile (backport of #10819 to 6.8) #10835 (12 days ago) <João Duarte>
-5b30c009f - Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR (12 days ago) <Dan Hermann>
-055c034c5 - Merge config values in LIR (12 days ago) <Dan Hermann>
-2735ac789 - name rpm/deb oss packages as logstash-oss (13 days ago) <Joao Duarte>
-3242bd737 - LIR support for octal literals in pipeline definitions (2 weeks ago) <Dan Hermann>
-15c9a857a - plugin type in Ruby module name should be uppercase (2 weeks ago) <Dan Hermann>
-a9249fd77 - Add structure for new windows topic (3 weeks ago) <Karen Metts>
-9b8d042bb - bump to 6.8.1 (#10803) (3 weeks ago) <João Duarte>
-4c443f98a - Bump doc version to 6.8.0 (#10798) (3 weeks ago) <Karen Metts>
-a25625280 - Release notes for 6.8.0 (#10797) (3 weeks ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.0..6.8 *.release"
-Changed plugin versions:
-logstash-codec-es_bulk: 3.0.7 -> 3.0.8
-logstash-filter-csv: 3.0.8 -> 3.0.10
-logstash-filter-dns: 3.0.12 -> 3.0.13
-logstash-filter-jdbc_streaming: 1.0.5 -> 1.0.7
-logstash-filter-kv: 4.3.0 -> 4.3.1
-logstash-filter-useragent: 3.2.3 -> 3.2.4
-logstash-input-azure_event_hubs: 1.1.0 -> 1.1.2
-logstash-input-dead_letter_queue: 1.1.4 -> 1.1.5
-logstash-input-elasticsearch: 4.3.0 -> 4.3.1
-logstash-input-tcp: 5.2.2 -> 5.2.3
-logstash-output-s3: 4.1.8 -> 4.1.9
----------- DELETE UP TO HERE ------------
 
 ==== Plugins
 
-*Es_bulk Codec*
-
-* Fixed deeplink to Elasticsearch Reference [#18](https://github.com/logstash-plugins/logstash-codec-es_bulk/pull/18)
-
 *Csv Filter*
 
-* Fix asciidoc formatting for example [#73](https://github.com/logstash-plugins/logstash-filter-csv/pull/73)
-
+* Fix asciidoc formatting for example [#73](https://github.com/logstash-plugins/logstash-filter-csv/pull/73[#73]
 * Document that the `autodetect_column_names` and `skip_header` options work only when the number of Logstash
   pipeline workers is set to `1`.
-  
 
 *Dns Filter*
 
-* Fixed JRuby resolver bug for versions after to 9.2.0.0 [#51](https://github.com/logstash-plugins/logstash-filter-dns/pull/51)
+* Fixed JRuby resolver bug for versions after to 9.2.0.0 https://github.com/logstash-plugins/logstash-filter-dns/pull/51[#51]
 
 *Jdbc_streaming Filter*
 
-* Fixed formatting in documentation [#17](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/17) and [#28](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/28) 
-
+* Fixed formatting in documentation https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/17[#17] and https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/28[#28]
 * Fixes connection leak in pipeline reloads by properly disconnecting on plugin close
-
-*Kv Filter*
-
-* Fixed asciidoc formatting in documentation [#81](https://github.com/logstash-plugins/logstash-filter-kv/pull/81)
 
 *Useragent Filter*
 
-* Added support for OS regular expressions that use backreferences [#59](https://github.com/logstash-plugins/logstash-filter-useragent/pull/59)
+* Added support for OS regular expressions that use backreferences https://github.com/logstash-plugins/logstash-filter-useragent/pull/59[#59]
 
 *Azure_event_hubs Input*
 
-* Added workaround to fix errors when using this plugin with Java 11[#38](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38)
-
-* Updated Azure event hub library dependencies[#36](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36)
-
-*Dead_letter_queue Input*
-
-* Fix asciidoc formatting in documentation [#21](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/21)
-
-*Elasticsearch Input*
-
-* Fixed deeplink to Elasticsearch Reference  [#103](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/103)
+* Added workaround to fix errors when using this plugin with Java 11 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38[#38]
+* Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36[#36]
 
 *Tcp Input*
 
-* Skip empty lines while reading certificate files [#144](https://github.com/logstash-plugins/logstash-input-tcp/issues/144)
-
-*S3 Output*
-
-* Added configuration information for multiple s3 outputs to documentation [#196](https://github.com/logstash-plugins/logstash-output-s3/pull/196)
-* Fixed formatting problems and typographical errors [#194](https://github.com/logstash-plugins/logstash-output-s3/pull/194), [#201](https://github.com/logstash-plugins/logstash-output-s3/pull/201), and [#204](https://github.com/logstash-plugins/logstash-output-s3/pull/204)
-
+* Skip empty lines while reading certificate files https://github.com/logstash-plugins/logstash-input-tcp/issues/144[#144]
 
 [[logstash-6-8-0]]
 === Logstash 6.8.0 Release Notes
