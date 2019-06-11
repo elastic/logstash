@@ -2,7 +2,7 @@
 === Running Logstash on Windows
 Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used for running Logstash on Windows.
 
-Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task.
+Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task. This guide provides an example of some of the ways Logstash can run on Windows.
 
 NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before running it as a service or a scheduled task.
 
@@ -63,7 +63,7 @@ NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell
 ==== Running Logstash as a service with NSSM
 NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before you proceed.
 
-Download https://nssm.cc/[NSSM], then extract `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
+Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
 ```
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
 PS C:\logstash-7.1.0> .\bin\nssm.exe install logstash
