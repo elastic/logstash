@@ -15,6 +15,10 @@ module LogStash
            :ephemeral_id => service.agent.ephemeral_id,
            :status => "green",  # This is hard-coded to mirror x-pack behavior
            :snapshot => ::BUILD_INFO["build_snapshot"],
+           :pipeline => {
+             :workers => LogStash::SETTINGS.get("pipeline.workers"),
+             :batch_size => LogStash::SETTINGS.get("pipeline.batch.size"),
+           }
            }
         end
 
