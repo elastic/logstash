@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-2-0,Logstash 7.2.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
 * <<logstash-7-1-0,Logstash 7.1.0>>
 * <<logstash-7-0-1,Logstash 7.0.1>>
@@ -12,6 +13,224 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-2-0]]
+=== Logstash 7.2.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.2.0
+
+* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
+* Clarify behavior of ensure_delivery flag https://github.com/elastic/logstash/pull/10754[#10754]
+* Include G1 in JVM heap metrics https://github.com/elastic/logstash/pull/10784[#10784]
+* Provide DLQ writer interface to Java plugins https://github.com/elastic/logstash/pull/10790[#10790]
+* Default stack trace size for hot threads to 50 and make it configurable https://github.com/elastic/logstash/pull/10793[#10793]
+* Expose Metrics API to Java plugins (#10761) https://github.com/elastic/logstash/pull/10802[#10802]
+* Document copy semantics of QueueWriter::push method https://github.com/elastic/logstash/pull/10808[#10808]
+* LIR support for octal literals in pipeline definitions https://github.com/elastic/logstash/pull/10828[#10828]
+* Merge config values in LIR https://github.com/elastic/logstash/pull/10832[#10832]
+* Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR https://github.com/elastic/logstash/pull/10837[#10837]
+* Fix parsing of boolean options provided to Java plugins https://github.com/elastic/logstash/pull/10848[#10848]
+
+=== Logstash Commits between 7.2 and 7.1.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.1.1..7.2"
+
+7b9877a5f - (HEAD -> 7.2, origin/7.2) Add details about Elastic Search dependency (6 hours ago) <Jeff>
+87fdc1710 - fix parsing of boolean options provided to Java plugins (4 days ago) <Dan Hermann>
+f960644dd - field_refefence: handle illegal field references in converted maps (5 days ago) <Ry Biesemeyer>
+3ffbc0f90 - Remove note about j11 (6 days ago) <Karen Metts>
+6d113d110 - Value of start_timestamp must to be quoted (11 days ago) <Florian Kelbert>
+87f503034 - Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR (12 days ago) <Dan Hermann>
+2cfab287a - Merge config values in LIR (12 days ago) <Dan Hermann>
+b334505f0 - allow skipping docker artifacts during artifact:all (13 days ago) <Joao Duarte>
+501ea2953 - generate tarballs for docker images (13 days ago) <Joao Duarte>
+fe2bfa68d - name rpm/deb oss packages as logstash-oss (13 days ago) <Joao Duarte>
+1ba94fb81 - LIR support for octal literals in pipeline definitions (2 weeks ago) <Dan Hermann>
+aeb1cc035 - release notes for 7.1.1 (2 weeks ago) <Joao Duarte>
+5d7e34452 - Release notes for 7.1.0 (#10796) (2 weeks ago) <Karen Metts>
+ccd2d80ad - Release notes for 7.0.1 (#10705) (2 weeks ago) <Logstash Machine>
+e995fe595 - fix plugin doc version generation with default plugins (2 weeks ago) <Joao Duarte>
+efb607689 - Update doc versions and branch for 7.2 (#10816) (3 weeks ago) <Karen Metts>
+91d73a430 - update lock file for 7.2.0 (#10814) (3 weeks ago) <João Duarte>
+36b3f16bc - add lock file from 7.1 branch (3 weeks ago) <Joao Duarte>
+2d35566ab - Document copy semantics of QueueWriter::push method (3 weeks ago) <Dan Hermann>
+9a06b204b - Provide DLQ writer interface to Java plugins (3 weeks ago) <Dan Hermann>
+c22edf07f - Add structure for new windows topic (3 weeks ago) <Karen Metts>
+822fef044 - (origin/update_lock_1558455155) Default stack trace size to 50 and make it configurable (3 weeks ago) <Dan Hermann>
+7c32f0fcf - Expose Metrics API to Java plugins (#10761) (#10802) (3 weeks ago) <Dan Hermann>
+5eb569719 - Include G1 in JVM heap metrics (#10728) (#10784) (5 weeks ago) <Dan Hermann>
+a0d05b4da - fix JRuby resolv.rb leak (#10741) (5 weeks ago) <Colin Surprenant>
+1c64619ac - Bump JrJackson to 0.4.8 (5 weeks ago) <Guy Boertje>
+ba4207593 - Remove two other newlines (5 weeks ago) <Nik Everett>
+c9846fc9c - Tweaks to callouts (5 weeks ago) <Karen Metts>
+f6723e7ca - Remove return before callout defs (5 weeks ago) <Karen Metts>
+ec74c231d - Fix asciidoc formatting for conversion to asciidoctor (5 weeks ago) <Karen Metts>
+32934e677 - Clarify behavior of ensure_delivery flag (5 weeks ago) <Dan Hermann>
+5e1dc1f6a - fix javadoc warning for Codec.java (5 weeks ago) <Joao Duarte>
+3fba3af9f - * Adds a java_generator input with jdots codec to facilitate testing, adds float config type (6 weeks ago) <Dan Hermann>
+735359c4c - bump to 7.2.0 (6 weeks ago) <Joao Duarte>
+0793bf1f5 - [Docs] Asciidoctor support (#10730) (6 weeks ago) <Nik Everett>
+5d64a61c2 - Add snapshot field (6 weeks ago) <Mike Place>
+27d0ecab9 - hard-code status (6 weeks ago) <Mike Place>
+d1c51f7d6 - ephemeral id (6 weeks ago) <Mike Place>
+98f067022 - Replicate change from java_pipeline to ruby pipeline (6 weeks ago) <Mike Place>
+42bbdd78c - Use pluginmetadata (6 weeks ago) <Mike Place>
+dbea95111 - Add options to pipelines/ (6 weeks ago) <Mike Place>
+592591bae - Add graph?=true parameter (6 weeks ago) <Mike Place>
+8fd6e58e7 - Add cluster UUID (6 weeks ago) <Mike Place>
+a8806b1d4 - Fix spec path (6 weeks ago) <Mike Place>
+a875d9e52 - Remove commented code (6 weeks ago) <Mike Place>
+4e5321a79 - Implement review suggestions (6 weeks ago) <Mike Place>
+d4a915be2 - Style change to make code more vertical. (6 weeks ago) <Mike Place>
+6bc3ba480 - Remove license and add encoding (6 weeks ago) <Mike Place>
+06d50daf3 - Update spec (6 weeks ago) <Mike Place>
+9c0dc0fb6 - Remove more commented code (6 weeks ago) <Mike Place>
+0da3d0fb1 - Remove commented code (6 weeks ago) <Mike Place>
+30adb7a56 - LIR serializer refactor (6 weeks ago) <Mike Place>
+2dbe5c1bc - Include node update (6 weeks ago) <Mike Place>
+9d5bec9ef - Add graph metrics (6 weeks ago) <Mike Place>
+3428383b1 - Fix incorrect hash id (6 weeks ago) <Mike Place>
+fbd1908e3 - Add ephemeral id and hash to pipeline stats (6 weeks ago) <Mike Place>
+67aa14528 - Correct links to LS Ref Guide (6 weeks ago) <Karen Metts>
+e173ceb04 - Note doc file created with plugin generation (7 weeks ago) <Karen Metts>
+b83d8a0de - Incorporate review comments (7 weeks ago) <Karen Metts>
+92dd9a932 - Add guidelines for writing plugin doc (7 weeks ago) <Karen Metts>
+89be09907 - Move plugin cleanup before retry (7 weeks ago) <Rob Bavey>
+8d60ab5c4 - Adds cleanup after shutdown of plugin (7 weeks ago) <Rob Bavey>
+2e2a00270 - Add methods to clear PluginMetadata repositories (7 weeks ago) <Rob Bavey>
+122adbd22 - adds LogStash::PluginMetadata for simple key/value plugin metadata (7 weeks ago) <Ry Biesemeyer>
+f9a5876b3 - Clarify that Java codecs work only with Java inputs and outputs (7 weeks ago) <Dan Hermann>
+a44cb9ebf - Rename filebeat.prospectors to filebeat.inputs (7 weeks ago) <urso>
+14c712270 - Correction on Java execution in docs on command-line arguments (7 weeks ago) <Dan Hermann>
+71d7b7c1f - rake task to generate dockerfile (7 weeks ago) <Joao Duarte>
+96d2d59ab - Corrects the description of codec behavior in the output stage of Logstash pipelines (7 weeks ago) <Dan Hermann>
+db80baf62 - Correct the docs for the settings file to note that Java execution defaults to true (7 weeks ago) <Dan Hermann>
+de6ef0c04 - moved to openjdk 11 in docker testing (8 weeks ago) <Joao Duarte>
+97704dc35 - properly exclude bundler 1.16.6 (9 weeks ago) <Joao Duarte>
+86cae0854 - updated bundler to 1.17.3 (9 weeks ago) <Joao Duarte>
+62f8282a3 - bump jruby to 9.2.7.0 (9 weeks ago) <Joao Duarte>
+f39e4a944 - download exact version artifact for release build otherwise download snapshot (#10664) (9 weeks ago) <Colin Surprenant>
+78ea83ec0 - Inputs expect a NamespacedMetric, not the root metric instance (9 weeks ago) <Jordan Johnson-Doyle>
+d332bc33a - Add tests for LogStash::Codec::Delegator (9 weeks ago) <Jordan Johnson-Doyle>
+81f7e4219 - Add tests for JavaCodecDelegator (9 weeks ago) <Jordan Johnson-Doyle>
+b53e31320 - Collect and expose metrics from Ruby codecs (9 weeks ago) <Jordan Johnson-Doyle>
+425155082 - Collect and expose metrics from Java codecs (9 weeks ago) <Jordan Johnson-Doyle>
+25158bddd - Correctly sets the default codec to java_line. Fixes buffer handling for events whose encodings do not fit into the buffer. (9 weeks ago) <Dan Hermann>
+d1e41f390 - [DOCS] Removes coming tags (9 weeks ago) <lcawl>
+f9e2f2369 - Add links to particular breaking changes (9 weeks ago) <Karen Metts>
+476e50393 - Added core and plugin headings Combine plugins from alphas, betas, and rcs to make 7.0 release notes (9 weeks ago) <Karen Metts>
+685170904 - add 7.0.0 rc1 and rc2 release notes (#10665) (9 weeks ago) <Colin Surprenant>
+d4e6236dd - Fix asciidoc formatting for links in release notes (#10665) (9 weeks ago) <Karen Metts>
+12133e3a3 - add 7.0.0 alpha1, alpha2 and beta1 release notes (#10665) (9 weeks ago) <Colin Surprenant>
+ce7e3107b - Update breaking changes doc for 7.0 (#10632) (9 weeks ago) <Karen Metts>
+336ba7dfe - Refine upgrade instructions for 7.0 (9 weeks ago) <Karen Metts>
+6e0658fbf - [DOCS] Adds tagged region for notable breaking changes (#10654) (#10661) (9 weeks ago) <Lisa Cawley>
+563fa8117 - work around jruby-5642 during package installation on jdk11 (#10658) (10 weeks ago) <João Duarte>
+aaac05009 - prevent DeprecatedRemovedSetting from fatally stopping logstash (#10657) (10 weeks ago) <João Duarte>
+30dd8243d - Move Gradle wrappers around Ruby operations to a separate file to facilitate sharing of common operations with Java plugins (10 weeks ago) <Dan Hermann>
+3ce3b96e3 - Handle duplicate config entries (10 weeks ago) <Dan Hermann>
+6ed7b4bc5 - disable docker img generation on artifact:all (10 weeks ago) <Joao Duarte>
+a335f2e4b - remove docker-compose symlink (10 weeks ago) <Joao Duarte>
+0921798a7 - build docker images from logstash repo (#10603) (10 weeks ago) <João Duarte>
+0c4fe62a6 - Log successful shutdowns (10 weeks ago) <Dan Hermann>
+9827ba8bb - Add note about issues with Java 11 and Debian or RPM (#10635) (10 weeks ago) <Karen Metts>
+6913e62a3 - Call out requirement for Java execution in note (10 weeks ago) <Dan Hermann>
+f2b6fa35d - Remove duplicate text (10 weeks ago) <Karen Metts>
+3e0ac53e3 - Removed note from earlier upgrade (10 weeks ago) <Karen Metts>
+10301b40f - Update instructions for 7.0 upgrade (10 weeks ago) <Karen Metts>
+4bb036f68 - eliminate unnecessary add of whitespace (2 months ago) <Colin Surprenant>
+4a79246dd - add `DeprecatedSetting` to ease 7.0 transition of xpack config renames (2 months ago) <Ry Biesemeyer>
+863a0c44e - Make the sample command easier to follow (2 months ago) <Yi Ou>
+07eb8ea00 - Update Kafka version to fix build (3 months ago) <Rob Bavey>
+1cda518c1 - Update JRuby and Java prerequisites (3 months ago) <Dan Hermann>
+7bda524e2 - Add note that pline-pline also supports files (3 months ago) <Karen Metts>
+4d0255228 - Update supported java version and example (3 months ago) <Karen Metts>
+67e62a9c0 - Add sample doc files to plugin generator (3 months ago) <Karen Metts>
+1f29c7145 - monitoring: bump to system_api_version 7 (3 months ago) <Jake Landis>
+9eb2949ab - fix events_count to return total (3 months ago) <Ry Biesemeyer>
+254353991 - cleanup many rakelib tasks that aren't used anymore (3 months ago) <Joao Duarte>
+8ec1d2276 - correctly handle unexecuted downloadEs task (#10557) (3 months ago) <Colin Surprenant>
+f6933dbe9 - move download setup code inside the downloadEs task (#10549) (3 months ago) <Colin Surprenant>
+ebad88a35 - make monitoring specs resilient to internal api number changes (3 months ago) <Joao Duarte>
+685050962 - Cherrypick to 7.x: Convert instructions for Java plugins to asciidoc (#10550) (3 months ago) <Karen Metts>
+2ec00019a - Fix issue setting 'enable_metric => false' on a plugin (3 months ago) <Rob Bavey>
+80cf579e5 - prevent concurrent convergence (e.g., SIGHUP during in-flight convergence) (3 months ago) <Ry Biesemeyer>
+3c3e769bb - Update monitoring HTTP end point (3 months ago) <Jake Landis>
+ecba50c28 - Change internal document type to push "_doc" instead of "doc" (3 months ago) <Rob Bavey>
+182639a64 - fix bug with explicitly-specified Java codecs (3 months ago) <Dan Hermann>
+439ef7f1c - update to send api version 6 (3 months ago) <Jake Landis>
+7ca98d341 - Central management typeless API (3 months ago) <Jake Landis>
+59e51127a - Mute CI integration DLQ acceptance test (3 months ago) <Guy Boertje>
+ca6ad64c7 - Improve docs about using Filebeat modules with Logstash (#10438) (4 months ago) <DeDe Morton>
+1c88792d4 - bump jruby to 9.2.6.0 (4 months ago) <Joao Duarte>
+116228213 - remove exclusive lock for Ruby pipeline initialization (#10461) (4 months ago) <Colin Surprenant>
+2d5df520b - Mute CLI integration plugin acceptance test (4 months ago) <Rob Bavey>
+b941c17da - Mute Failing Test on Windows (4 months ago) <Rob Bavey>
+94cb37bed - One more character encoding fix (4 months ago) <Dan Hermann>
+41c635411 - Add placeholder for 7.0.0.-beta1 (4 months ago) <Karen Metts>
+94bade371 - Incorporate review comments (4 months ago) <Karen Metts>
+bf56ff763 - Add prilileges required for ilm (4 months ago) <Karen Metts>
+b0bccd865 - fix Stdin tests to work on platforms that do not have UTF-8 as the default character encoding (4 months ago) <Dan Hermann>
+ef56ca124 - Fix line codec tests so they work on platforms such as Windows that do not have UTF-8 as the default character encoding (4 months ago) <Dan Hermann>
+ff89aa140 - Move field-ref include below xpack content (4 months ago) <Karen Metts>
+907d2ba94 - Edits from review comments (4 months ago) <Karen Metts>
+257e3ce11 - Expande descriptions (4 months ago) <Karen Metts>
+f87da37e1 - Add http and memcached filters to lookup plugins (4 months ago) <Karen Metts>
+22648332a - Reorder files in index to unhide lost topics Add comment about placement of include (4 months ago) <Karen Metts>
+42c63b75d - factor in OS and architecture when downloading ES (4 months ago) <Joao Duarte>
+cfeaa5411 - ast/lir: simplify concurrent use of AST, which is globally stateful (4 months ago) <Ry Biesemeyer>
+927791787 - Remove unnecessary option to not require host in SafeURI (4 months ago) <Rob Bavey>
+0ebbb3949 - Better handle malformed URIs (4 months ago) <Rob Bavey>
+29280c152 - mute metrics_spec line 138 test (4 months ago) <Joao Duarte>
+1437cdc20 - pin childprocess to 0.9 (4 months ago) <Joao Duarte>
+009e764c1 - keystore: instances of `CharsetEncoder` are stateful and cannot be shared (4 months ago) <Ry Biesemeyer>
+0e4ab8a78 - Update :branch: property in 7.x index.asciidoc (#10403) (4 months ago) <João Duarte>
+7ef757230 - bump version to 7.1.0 (#10402) (4 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.1.1..7.2 *.release"
+Changed plugin versions:
+logstash-codec-es_bulk: 3.0.7 -> 3.0.8
+logstash-filter-dns: 3.0.12 -> 3.0.13
+logstash-filter-geoip: 6.0.0 -> 6.0.1
+logstash-filter-jdbc_streaming: 1.0.5 -> 1.0.6
+logstash-input-azure_event_hubs: 1.1.0 -> 1.1.1
+logstash-input-elasticsearch: 4.3.0 -> 4.3.1
+logstash-output-elasticsearch: 10.0.2 -> 10.1.0
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Es_bulk Codec*
+
+* Fixed deeplink to Elasticsearch Reference [#18](https://github.com/logstash-plugins/logstash-codec-es_bulk/pull/18)
+
+*Dns Filter*
+
+* Fixed JRuby resolver bug for versions after to 9.2.0.0 [#51](https://github.com/logstash-plugins/logstash-filter-dns/pull/51)
+
+*Geoip Filter*
+
+* Fixed deeplink to Elasticsearch Reference 
+  [#151](https://github.com/logstash-plugins/logstash-filter-geoip/pull/151)
+
+*Jdbc_streaming Filter*
+
+* Fixes connection leak in pipeline reloads by properly disconnecting on plugin close
+
+*Azure_event_hubs Input*
+
+* Updated Azure event hub library dependencies[#36](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36)
+
+*Elasticsearch Input*
+
+* Fixed deeplink to Elasticsearch Reference  [#103](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/103)
+
+*Elasticsearch Output*
+
+* Added cluster id tracking through the plugin metadata registry [#857](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/857)
+
 
 [[logstash-7-1-1]]
 === Logstash 7.1.1 Release Notes
