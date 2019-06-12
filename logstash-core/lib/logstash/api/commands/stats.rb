@@ -63,11 +63,19 @@ module LogStash
         def pipeline(pipeline_id = nil, opts={})
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
+            extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
+              service.agent,
+              service.snapshot.metric_store,
+              true)
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
-              result[pipeline_id] = plugins_stats_report(pipeline_id, opts)
+              result[pipeline_id] = plugins_stats_report(pipeline_id, extended_stats, opts)
             end
           else
-            { pipeline_id => plugins_stats_report(pipeline_id, opts) }
+            extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
+              service.agent,
+              service.snapshot.metric_store,
+              true)
+            { pipeline_id => plugins_stats_report(pipeline_id, extended_stats, opts) }
           end
         rescue # failed to find pipeline
           {}
@@ -107,12 +115,8 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id, opts={})
+        def plugins_stats_report(pipeline_id, extended_stats, opts={})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
-          extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
-            service.agent,
-            service.snapshot.metric_store,
-            true)
           for pipeline in extended_stats
             if pipeline["id"].to_s == pipeline_id.to_s
               extended_pipeline = pipeline
