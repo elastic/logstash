@@ -12,7 +12,6 @@ module LogStash
     module Commands
       class Stats < Commands::Base
         def queue
-          events = 0
           pipeline_ids = service.get_shallow(:stats, :pipelines).keys
           total_queued_events = 0
           pipeline_ids.each do |pipeline_id|
