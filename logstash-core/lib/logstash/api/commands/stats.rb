@@ -136,12 +136,6 @@ module LogStash
           end
 
           def report(stats, extended_stats=nil, opts={})
-            if !stats[:config].nil?
-              eid = stats[:config][:ephemeral_id]
-              hash = stats[:config][:hash]
-            else
-              eid = hash = nil
-            end
             ret = {
               :events => stats[:events],
               :plugins => {
