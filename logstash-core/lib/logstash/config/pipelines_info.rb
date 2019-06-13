@@ -91,18 +91,17 @@ module LogStash; module Config;
 
           acc
         end
-        if LogStash::PluginMetadata.exists?(plugin_id.to_s)
-          cluster_uuid = LogStash::PluginMetadata.for_plugin(plugin_id.to_s).get(:cluster_uuid)
-        end
-
         segment = {
           :id => plugin_id,
-          :pipeline_ephemeral_id => pipeline.ephemeral_id,
+          :pipeline_ephemeral_id => pipeline.ephemeral_id
         }
 
-        if cluster_uuid
-          segment[:cluster_uuid] = cluster_uuid
+        if LogStash::PluginMetadata.exists?(plugin_id.to_s)
+          plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id.to_s)
+          cluster_uuid = plugin_metadata&.get(:cluster_uuid)
+          segment[:cluster_uuid] = cluster_uuid unless cluster_uuid.nil?
         end
+
         acc << segment.merge(segmented)
         acc
       end
