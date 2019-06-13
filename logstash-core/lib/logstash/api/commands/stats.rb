@@ -138,7 +138,6 @@ module LogStash
 
           def report(stats, extended_stats=nil, opts={})
             ret = {
-             # [...] unchanged from base
               :events => stats[:events],
               :plugins => {
                 :inputs => plugin_stats(stats, :inputs),
@@ -155,7 +154,6 @@ module LogStash
             if extended_stats
               ret[:queue]    = extended_stats["queue"] if extended_stats.include?("queue")
               ret[:vertices] = extended_stats["vertices"] if opts[:vertices] && extended_stats.include?("vertices")
-              # [...] other cherry-picked bits from `extended_stats`
             end
 
             ret
