@@ -61,21 +61,24 @@ module LogStash
         end
 
         def pipeline(pipeline_id = nil, opts={})
+          extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
+            service.agent,
+            service.snapshot.metric_store,
+            true)
+
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
-            extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
-              service.agent,
-              service.snapshot.metric_store,
-              true)
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
-              result[pipeline_id] = plugins_stats_report(pipeline_id, extended_stats, opts)
+              extended_pipeline = extended_stats.find do |pipeline|
+                pipeline["id"].to_s == pipeline_id.to_s
+              end
+              result[pipeline_id] = plugins_stats_report(pipeline_id, extended_pipeline, opts)
             end
           else
-            extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
-              service.agent,
-              service.snapshot.metric_store,
-              true)
-            { pipeline_id => plugins_stats_report(pipeline_id, extended_stats, opts) }
+            extended_pipeline = extended_stats.find do |pipeline|
+              pipeline["id"].to_s == pipeline_id.to_s
+            end
+            { pipeline_id => plugins_stats_report(pipeline_id, extended_pipeline, opts) }
           end
         rescue # failed to find pipeline
           {}
@@ -115,13 +118,8 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id, extended_stats, opts={})
+        def plugins_stats_report(pipeline_id, extended_pipeline, opts={})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
-          for pipeline in extended_stats
-            if pipeline["id"].to_s == pipeline_id.to_s
-              extended_pipeline = pipeline
-            end
-          end
           PluginsStats.report(stats, extended_pipeline, opts)
         end
 
