@@ -1,0 +1,27 @@
+:plugin: jdots
+:type: codec
+
+///////////////////////////////////////////
+START - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+:version: %VERSION%
+:release_date: %RELEASE_DATE%
+:changelog_url: %CHANGELOG_URL%
+:include_path: ../../../../logstash/docs/include
+///////////////////////////////////////////
+END - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+
+[id="plugins-{type}s-{plugin}"]
+
+=== Java dots codec plugin
+
+include::{include_path}/plugin_header.asciidoc[]
+
+==== Description
+
+This codec renders each processed event as a dot (`.`). It is typically used with the `java_stdout` output to provide
+approximate event throughput. It is especially useful when combined with `pv` and `wc -c` as follows:
+
+[source,bash]
+  bin/logstash -f /path/to/config/with/jdots/codec | pv | wc -c
