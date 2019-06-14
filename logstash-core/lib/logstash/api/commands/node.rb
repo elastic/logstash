@@ -27,7 +27,6 @@ module LogStash
         def pipeline(pipeline_id, options={})
           metrics = extract_metrics(
             [:stats, :pipelines, pipeline_id.to_sym, :config],
-            :graph,
             :ephemeral_id,
             :hash,
             :workers,
