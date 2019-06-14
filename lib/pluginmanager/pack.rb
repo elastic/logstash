@@ -2,8 +2,8 @@
 require_relative "pack_command"
 
 class LogStash::PluginManager::Pack < LogStash::PluginManager::PackCommand
-  option "--tgz", :flag, "compress package as a tar.gz file", :default => !LogStash::Environment.windows?
-  option "--zip", :flag, "compress package as a zip file", :default => LogStash::Environment.windows?
+  option "--tgz", :flag, "compress package as a tar.gz file", :default => !LogStash::Environment.win_platform?
+  option "--zip", :flag, "compress package as a zip file", :default => LogStash::Environment.win_platform?
   option "--[no-]clean", :flag, "clean up the generated dump of plugins", :default => true
   option "--overwrite", :flag, "Overwrite a previously generated package file", :default => false
 

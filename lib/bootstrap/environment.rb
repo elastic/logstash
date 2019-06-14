@@ -42,7 +42,7 @@ module LogStash
       !File.exists?(File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack"))
     end
 
-    def windows?
+    def win_platform?
       ::Gem.win_platform?
     end
 
