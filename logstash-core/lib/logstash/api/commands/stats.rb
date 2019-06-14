@@ -145,7 +145,7 @@ module LogStash
                 :outputs => plugin_stats(stats, :outputs)
               },
               :reloads => stats[:reloads],
-              :queue => extended_stats ? extended_stats["queue"] : stats[:queue]
+              :queue => stats[:queue]
             }
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
