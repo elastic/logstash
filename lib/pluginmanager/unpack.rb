@@ -2,8 +2,8 @@
 require_relative "pack_command"
 
 class LogStash::PluginManager::Unpack < LogStash::PluginManager::PackCommand
-  option "--tgz", :flag, "unpack a packaged tar.gz file", :default => !LogStash::Environment.windows?
-  option "--zip", :flag, "unpack a packaged  zip file", :default => LogStash::Environment.windows?
+  option "--tgz", :flag, "unpack a packaged tar.gz file", :default => !LogStash::Environment.win_platform?
+  option "--zip", :flag, "unpack a packaged  zip file", :default => LogStash::Environment.win_platform?
 
   parameter "file", "the package file name", :attribute_name => :package_file, :required => true
 

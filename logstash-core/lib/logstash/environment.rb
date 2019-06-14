@@ -163,11 +163,15 @@ module LogStash
     end
 
     def windows?
-      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+      host_os =~ WINDOW_OS_RE
     end
 
     def linux?
-      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
+      host_os =~ LINUX_OS_RE
+    end
+
+    def host_os
+      RbConfig::CONFIG['host_os']
     end
 
     def locales_path(path)
