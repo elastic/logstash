@@ -64,20 +64,19 @@ module LogStash
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
             service.snapshot.metric_store,
-            true)
+            true).each_with_object({}) do |pipeline_stats, memo|
+              pipeline_id = pipeline_stats["id"].to_s
+              memo[pipeline_id] = pipeline_stats
+            end
 
           if pipeline_id.nil?
             pipeline_ids = service.get_shallow(:stats, :pipelines).keys
             pipeline_ids.each_with_object({}) do |pipeline_id, result|
-              extended_pipeline = extended_stats.find do |pipeline|
-                pipeline["id"].to_s == pipeline_id.to_s
-              end
+              extended_pipeline = extended_stats[pipeline_id.to_s]
               result[pipeline_id] = plugins_stats_report(pipeline_id, extended_pipeline, opts)
             end
           else
-            extended_pipeline = extended_stats.find do |pipeline|
-              pipeline["id"].to_s == pipeline_id.to_s
-            end
+            extended_pipeline = extended_stats[pipeline_id.to_s]
             { pipeline_id => plugins_stats_report(pipeline_id, extended_pipeline, opts) }
           end
         rescue # failed to find pipeline
