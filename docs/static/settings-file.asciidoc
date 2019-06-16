@@ -110,7 +110,7 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 | `false`
 
-| `path.config`
+| `path.settings`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
   config files are read from the directory in alphabetical order.
 | Platform-specific. See <<dir-layout>>.
