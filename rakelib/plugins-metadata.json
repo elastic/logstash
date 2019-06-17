@@ -308,6 +308,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-input-jms": {
+    "default-plugins": true,
+    "skip-list": false
+  },
   "logstash-input-journald": {
     "default-plugins": false,
     "skip-list": true
