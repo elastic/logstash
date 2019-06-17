@@ -17,21 +17,19 @@ This section summarizes the changes in the following releases:
 [[logstash-7-2-0]]
 === Logstash 7.2.0 Release Notes
 
-* Native support for Java Plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
-** Changes to Java plugins for GA include:
+* Native support for Java Plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]. Changes to Java plugins for GA include:
 
-   *** BREAKING: The signature for the codec.encode() method was changed to make the codec API easier to use correctly in pipelines with multiple concurrent workers.
-   *** BREAKING: The return type on the Context::getDlqWriter method was changed to an interface to decouple it from any specific DLQ implementation.
-   *** BETA: Isolated classloader for Java plugins. When enabled with the pipeline.plugin_classloaders flag, each Java plugin will be loaded with its own parent-last classloader. All dependencies for the Java plugin, with the exception of any classes in org.logstash.* or co.elastic.logstash.* packages, will be loaded first from the plugin's jar file delegating to the main Logstash classloader only if the dependency is not found within the plugin's jar. This allows Java plugins to use dependencies that might clash with the dependencies for other Java plugins or Logstash core itself.
-   *** Gradle tasks to automate the packaging of Java plugins as Ruby gems. The gem task will bootstrap all JRuby dependencies, automatically generate Gemfile and the gemspec file for the plugin as well as the two "glue" Ruby source files for triggering the loading of the Java class files during Logstash startup, and then invoke the necessary commands to create the gem file itself. The gem task also performs a number of validation checks to proactively identify common problems with the packaging of Java plugins. The clean task will remove all of those generated artifacts.
-   *** Java plugin validation. At pipeline startup, all Java plugins will be checked to ensure that they implement the same version of the Java plugin API present in the current Logstash version.
-   **** DLQ writer interface provided to Java plugins.
-   *** New built-in Java plugins:
-   **** A Java-based generator input for testing with the same capabilities as the Ruby generator input as well as an optional eps option to generate events at a given event-per-second rate for situations where as-fast-as-possible event generation is too much.
-   **** Also includes a jdots codec that mirrors the Ruby dots codec.
-   **** Java-based sink output that discards any events received. Analogous to the Ruby null plugin though much faster.
-   *** Float, URI, and password config types, each of which provide validation for the supplied config value.
-
+   ** BREAKING: The signature for the codec.encode() method was changed to make the codec API easier to use correctly in pipelines with multiple concurrent workers.
+   ** BREAKING: The return type on the Context::getDlqWriter method was changed to an interface to decouple it from any specific DLQ implementation.
+   ** BETA: Isolated classloader for Java plugins. When enabled with the pipeline.plugin_classloaders flag, each Java plugin will be loaded with its own parent-last classloader. All dependencies for the Java plugin, with the exception of any classes in org.logstash.* or co.elastic.logstash.* packages, will be loaded first from the plugin's jar file delegating to the main Logstash classloader only if the dependency is not found within the plugin's jar. This allows Java plugins to use dependencies that might clash with the dependencies for other Java plugins or Logstash core itself.
+   ** Gradle tasks to automate the packaging of Java plugins as Ruby gems. The gem task will bootstrap all JRuby dependencies, automatically generate Gemfile and the gemspec file for the plugin as well as the two "glue" Ruby source files for triggering the loading of the Java class files during Logstash startup, and then invoke the necessary commands to create the gem file itself. The gem task also performs a number of validation checks to proactively identify common problems with the packaging of Java plugins. The clean task will remove all of those generated artifacts.
+   ** Java plugin validation. At pipeline startup, all Java plugins will be checked to ensure that they implement the same version of the Java plugin API present in the current Logstash version.
+   ** DLQ writer interface provided to Java plugins.
+   ** Float, URI, and password config types, each of which provide validation for the supplied config value.
+   ** New built-in Java plugins:
+   *** A Java-based generator input for testing with the same capabilities as the Ruby generator input as well as an optional eps option to generate events at a given event-per-second rate for situations where as-fast-as-possible event generation is too much.
+   *** Also includes a jdots codec that mirrors the Ruby dots codec.
+   *** Java-based sink output that discards any events received. Analogous to the Ruby null plugin though much faster.
 
 * Documentation: Add details about Elastic Search dependency https://github.com/elastic/logstash/pull/10852[#10852]
 * Fixed parsing of boolean options provided to Java plugins https://github.com/elastic/logstash/pull/10848[#10848]
@@ -58,32 +56,31 @@ This section summarizes the changes in the following releases:
 
 *Es bulk Codec*
 
-* Fixed deeplink to Elasticsearch Reference [#18](https://github.com/logstash-plugins/logstash-codec-es_bulk/pull/18)
+* Fixed deeplink to Elasticsearch Reference https://github.com/logstash-plugins/logstash-codec-es_bulk/pull/18[#18]
 
 *Dns Filter*
 
-* Fixed JRuby resolver bug for versions after to 9.2.0.0 [#51](https://github.com/logstash-plugins/logstash-filter-dns/pull/51)
+* Fixed JRuby resolver bug for versions after to 9.2.0.0 https://github.com/logstash-plugins/logstash-filter-dns/pull/51[#51]
 
 *Geoip Filter*
 
-* Fixed deeplink to Elasticsearch Reference
-  [#151](https://github.com/logstash-plugins/logstash-filter-geoip/pull/151)
+* Fixed deeplink to Elasticsearch Reference https://github.com/logstash-plugins/logstash-filter-geoip/pull/151[#151]
 
 *Jdbc streaming Filter*
 
-* Fixes connection leak in pipeline reloads by properly disconnecting on plugin close
+* Fixes connection leak in pipeline reloads by properly disconnecting on plugin close https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/26[#26]
 
 *Azure event hubs Input*
 
-* Updated Azure event hub library dependencies[#36](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36)
+* Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36[#36]
 
 *Elasticsearch Input*
 
-* Fixed deeplink to Elasticsearch Reference  [#103](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/103)
+* Fixed deeplink to Elasticsearch Reference  https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/103[#103]
 
 *Elasticsearch Output*
 
-* Added cluster id tracking through the plugin metadata registry [#857](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/857)
+* Added cluster id tracking through the plugin metadata registry https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/857[#857]
 
 
 [[logstash-7-1-1]]
