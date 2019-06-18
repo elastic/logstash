@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-1,Logstash 6.8.1>>
 * <<logstash-6-8-0,Logstash 6.8.0>>
 * <<logstash-6-7-2,Logstash 6.7.2>>
 * <<logstash-6-7-1,Logstash 6.7.1>>
@@ -31,6 +32,42 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-1]]
+=== Logstash 6.8.1 Release Notes
+
+* LIR support for octal literals in pipeline definitions https://github.com/elastic/logstash/pull/10828[#10828]
+* Merge config values in LIR https://github.com/elastic/logstash/pull/10832[#10832]
+
+==== Plugins
+
+*Csv Filter*
+
+* Fix asciidoc formatting for example https://github.com/logstash-plugins/logstash-filter-csv/pull/73[#73]
+* Document that the `autodetect_column_names` and `skip_header` options work only when the number of Logstash
+  pipeline workers is set to `1`.
+
+*Dns Filter*
+
+* Fixed JRuby resolver bug for versions after to 9.2.0.0 https://github.com/logstash-plugins/logstash-filter-dns/pull/51[#51]
+
+*Jdbc_streaming Filter*
+
+* Fixed formatting in documentation https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/17[#17] and https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/28[#28]
+* Fixes connection leak in pipeline reloads by properly disconnecting on plugin close
+
+*Useragent Filter*
+
+* Added support for OS regular expressions that use backreferences https://github.com/logstash-plugins/logstash-filter-useragent/pull/59[#59]
+
+*Azure_event_hubs Input*
+
+* Added workaround to fix errors when using this plugin with Java 11 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38[#38]
+* Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/36[#36]
+
+*Tcp Input*
+
+* Skip empty lines while reading certificate files https://github.com/logstash-plugins/logstash-input-tcp/issues/144[#144]
 
 [[logstash-6-8-0]]
 === Logstash 6.8.0 Release Notes
