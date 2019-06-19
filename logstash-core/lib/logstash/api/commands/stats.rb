@@ -152,7 +152,9 @@ module LogStash
             # if extended_stats were provided, enrich the return value
             if extended_stats
               ret[:queue]    = extended_stats["queue"] if extended_stats.include?("queue")
-              ret[:vertices] = extended_stats["vertices"] if opts[:vertices] && extended_stats.include?("vertices")
+              if opts[:vertices] && extended_stats.include?("vertices")
+                ret[:vertices] = extended_stats["vertices"].map { |vertex| decorate_vertex(vertex) }
+              end
             end
 
             ret
