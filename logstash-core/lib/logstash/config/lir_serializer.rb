@@ -64,18 +64,7 @@ module LogStash;
       end
     end
     
-    def get_uuid(plugin_id)
-      if LogStash::PluginMetadata.exists?(plugin_id.to_s)
-        plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id.to_s)
-        cluster_uuid = plugin_metadata&.get(:cluster_uuid)
-      end
-    end
-    
     def decorate_vertex(v, v_json)
-      uuid = get_uuid(v.id)
-      if uuid
-        v_json["cluster_uuid"] = uuid
-      end
       v_json["meta"] = format_swm(v.source_with_metadata)
       v_json["id"] = v.id
       v_json["explicit_id"] = !!v.explicit_id
