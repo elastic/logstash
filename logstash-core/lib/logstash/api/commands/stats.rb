@@ -135,23 +135,6 @@ module LogStash
             end
           end
 
-          ##
-          # Returns a vertex, decorated with additional metadata if available.
-          # Does not mutate the passed `vertex` object.
-          #
-          # @param vertex [Hash{String=>Object}]
-          # @return [Hash{String=>Object}]
-          def decorate_vertex(vertex)
-            plugin_id = vertex["id"]&.to_s
-            return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
-
-            plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id)
-            cluster_uuid = plugin_metadata&.get(:cluster_uuid)
-            vertex = vertex.merge("cluster_uuid" => cluster_uuid) unless cluster_uuid.nil?
-
-            vertex
-          end
-
           def report(stats, extended_stats=nil, opts={})
             ret = {
               :events => stats[:events],
@@ -175,6 +158,23 @@ module LogStash
             end
 
             ret
+          end
+
+          ##
+          # Returns a vertex, decorated with additional metadata if available.
+          # Does not mutate the passed `vertex` object.
+          # @api private
+          # @param vertex [Hash{String=>Object}]
+          # @return [Hash{String=>Object}]
+          def decorate_vertex(vertex)
+            plugin_id = vertex["id"]&.to_s
+            return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
+
+            plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id)
+            cluster_uuid = plugin_metadata&.get(:cluster_uuid)
+            vertex = vertex.merge("cluster_uuid" => cluster_uuid) unless cluster_uuid.nil?
+
+            vertex
           end
         end # module PluginsStats
       end
