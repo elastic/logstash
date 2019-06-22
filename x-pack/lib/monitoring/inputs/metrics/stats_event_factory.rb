@@ -5,7 +5,7 @@
 module LogStash; module Inputs; class Metrics;
   class StatsEventFactory
     include ::LogStash::Util::Loggable
-    require 'monitoring/inputs/metrics/stats_event/pipelines_info'
+    require 'logstash/config/pipelines_info'
 
     def initialize(global_stats, snapshot)
       @global_stats = global_stats
@@ -19,7 +19,7 @@ module LogStash; module Inputs; class Metrics;
         "logstash" => fetch_node_stats(agent, @metric_store),
         "events" => format_global_event_count(@metric_store),
         "process" => format_process_stats(@metric_store),
-        "pipelines" => StatsEvent::PipelinesInfo.format_pipelines_info(agent, @metric_store, extended_performance_collection),
+        "pipelines" => LogStash::Config::PipelinesInfo.format_pipelines_info(agent, @metric_store, extended_performance_collection),
         "reloads" => format_reloads(@metric_store),
         "jvm" => format_jvm_stats(@metric_store),
         "os" => format_os_stats(@metric_store),
