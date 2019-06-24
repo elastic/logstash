@@ -39,8 +39,8 @@ module LogStash
           ).reject{|_, v|v.nil?}
           if options.fetch(:graph, false)
             extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
-            graph = extended_stats[:graph]["graph"]
-            extended_stats[:vertices] = graph["vertices"].map { |vertex| decorate_vertex(vertex)  }
+            decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_vertex(vertex)  }
+            extended_stats[:graph]["graph"]["vertices"] = decorated_vertices
             metrics.merge!(extended_stats)
           end
           metrics
