@@ -4,7 +4,7 @@ Before reading this section, see <<installing-logstash>> to get started.  You al
 
 Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task. This guide provides an example of some of the ways Logstash can run on Windows.
 
-NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before running it as a service or a scheduled task.
+NOTE: It is recommended to validate your configuration works by running Logstash manually before running Logstash as a service or a scheduled task.
 
 [[running-logstash-windows-validation]]
 ==== Validating JVM Pre-Requisites on Windows
@@ -26,8 +26,12 @@ C:\Program Files\Java\jdk-11.0.3
 **** In the Environmental Variables window edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
 *** Set using PowerShell:
 **** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
-**** `PS C:\Windows\system32> SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"`
-**** `PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"`
++
+[source,txt]
+-----
+PS C:\Windows\system32> SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"
+PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"
+-----
 **** Exit PowerShell, then open a new PowerShell session and run `Write-Host $env:JAVA_HOME` to verify
 
 ===== `Java -version`
