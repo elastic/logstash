@@ -39,7 +39,7 @@ module LogStash
           ).reject{|_, v|v.nil?}
           if options.fetch(:graph, false)
             extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
-            decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_vertex(vertex)  }
+            decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_with_cluster_uuids(vertex)  }
             extended_stats[:graph]["graph"]["vertices"] = decorated_vertices
             metrics.merge!(extended_stats)
           end
@@ -88,7 +88,7 @@ module LogStash
         # @api private
         # @param vertex [Hash{String=>Object}]
         # @return [Hash{String=>Object}]
-        def decorate_vertex(vertex)
+        def decorate_with_cluster_uuids(vertex)
           plugin_id = vertex["id"]&.to_s
           return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
 
