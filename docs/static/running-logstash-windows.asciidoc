@@ -130,24 +130,7 @@ NOTE: Logstash can be stopped by running the following command in an Administrat
 ==== Running Logstash with Task Scheduler
 NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before you proceed.
 
-Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-start-page[Task Scheduler], then click `Create Task` in the Actions window, then complete the following:
-
-** In the `General` tab:
-*** Specify the task `Name`, for our example we will use: `Logstash Syslog`
-*** Add an appropriate `Description`
-*** Specify the proper security options (log on user, etc)
-
-** In the `Triggers` tab:
-*** For this example, we will schedule Logstash to run daily from 6 AM to 6 PM, local time.
-*** Click `New`, then specify the following:
-*** Begin the task: select `On a schedule`
-*** In the `Settings` section:
-**** Start time: `06:00:00 AM`
-**** Specify `Daily`
-**** Set to recur every `1` day(s)
-*** Check the `Stop the task if it rungs longer than` box, then specify `12 hours`
-*** Ensure the `Enabled` box is checked
-*** Click `OK`
+Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-start-page[Task Scheduler], then click `Create Task` in the Actions window.  Specify the following parameters in the `Actions` tab:
 
 ** In the `Actions` tab:
 *** Click `New`, then specify the following:
@@ -156,7 +139,7 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 *** Add arguments: `-f C:\logstash-7.1.0\config\syslog.conf`
 *** Start in: C:\logstash-7.1.0\bin\
 
-** Review and make any changes in the `Conditions` and `Settings` tabs.
+** Review and make any changes necessary in the `General`, `Triggers`, `Conditions`, and `Settings` tabs.
 
 ** Click `OK` to finish creating the scheduled task.
 
