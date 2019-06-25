@@ -48,24 +48,6 @@ module LogStash
           {}
         end
 
-        private
-        ##
-        # Returns a vertex, decorated with additional metadata if available.
-        # Does not mutate the passed `vertex` object.
-        # @api private
-        # @param vertex [Hash{String=>Object}]
-        # @return [Hash{String=>Object}]
-        def decorate_vertex(vertex)
-          plugin_id = vertex["id"]&.to_s
-          return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
-
-          plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id)
-          cluster_uuid = plugin_metadata&.get(:cluster_uuid)
-          vertex = vertex.merge("cluster_uuid" => cluster_uuid) unless cluster_uuid.nil?
-
-          vertex
-        end
-
         def os
           {
             :name => java.lang.System.getProperty("os.name"),
@@ -97,6 +79,24 @@ module LogStash
 
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
+        end
+
+        private
+        ##
+        # Returns a vertex, decorated with additional metadata if available.
+        # Does not mutate the passed `vertex` object.
+        # @api private
+        # @param vertex [Hash{String=>Object}]
+        # @return [Hash{String=>Object}]
+        def decorate_vertex(vertex)
+          plugin_id = vertex["id"]&.to_s
+          return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
+
+          plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id)
+          cluster_uuid = plugin_metadata&.get(:cluster_uuid)
+          vertex = vertex.merge("cluster_uuid" => cluster_uuid) unless cluster_uuid.nil?
+
+          vertex
         end
       end
     end
