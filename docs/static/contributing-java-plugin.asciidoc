@@ -1,8 +1,6 @@
 [[contributing-java-plugin]]
 == Contributing a Java Plugin
 
-beta[]
-
 Now you can write your own Java plugin for use with {ls}.
 We have provided instructions and GitHub examples to give
 you a head start. 
