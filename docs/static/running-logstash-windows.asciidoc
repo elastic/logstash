@@ -12,10 +12,11 @@ After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JV
 
 ===== `Write-Host $env:JAVA_HOME`
 ** The output should be pointed to where the JVM software is located, for example:
-```
+[source,txt]
+-----
 PS C:\> Write-Host $env:JAVA_HOME
 C:\Program Files\Java\jdk-11.0.3
-```
+-----
 
 ** If `JAVA_HOME` is not set, perform one of the following:
 1. Set using the GUI:
@@ -30,12 +31,13 @@ C:\Program Files\Java\jdk-11.0.3
 
 ===== `Java -version`
 ** This command produces output similar to the following:
-```
+[source,txt]
+-----
 PS C:\> Java -version
 java version "11.0.3" 2019-04-16 LTS
 Java(TM) SE Runtime Environment 18.9 (build 11.0.3+12-LTS)
 Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.3+12-LTS, mixed mode)
-```
+-----
 
 NOTE: As of the publication of this document, please review this https://github.com/elastic/logstash/issues/10496[known issue that impacts Java 11] before proceeding.
 
@@ -46,17 +48,19 @@ NOTE: For the examples listed below, we are running Windows Server 2016, Java 11
 [[running-logstash-windows-manual]]
 ==== Running Logstash manually with PowerShell
 Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
-```
+[source,txt]
+-----
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
 PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
-```
+-----
 
 Wait for the following messages to appear, to confirm Logstash has started successfully:
-```
+[source,txt]
+-----
 [logstash.runner          ] Starting Logstash {"logstash.version"=>"7.1.0"}
 [logstash.inputs.udp      ] Starting UDP listener {:address=>"0.0.0.0:514"}
 [logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
-```
+-----
 NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell console.
 
 [[running-logstash-windows-nssm]]
@@ -64,10 +68,11 @@ NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell
 NOTE: It is recommended to validate your configuration works by running Logstash manually with PowerShell before you proceed.
 
 Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
-```
+[source,txt]
+-----
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
 PS C:\logstash-7.1.0> .\bin\nssm.exe install logstash
-```
+-----
 
 
 Once the `NSSM service installer` window appears, complete the following:
@@ -93,27 +98,31 @@ Once the service has been installed with NSSM, validate and start the service:
 
 ** Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session
 *** To verify the service exists, run the following command:
-```
+[source,txt]
+-----
 PS C:\Windows\system32> Get-Service logstash-syslog
-```
+-----
 **** You should see the newly created `logstash-syslog` service
-```
+[source,txt]
+-----
 Status   Name               DisplayName
 ------   ----               -----------
 Stopped  logstash-syslog    Logstash Syslog
-```
+-----
 *** To start the service (with no console response), run the following command:
-```
+[source,txt]
+-----
 PS C:\Windows\system32> Start-Service logstash-syslog
-```
+-----
 *** To start the service then verify it is started, run the following command:
-```
+[source,txt]
+-----
 PS C:\Windows\system32> Start-Service logstash-syslog; Get-Service logstash-syslog
 
 Status   Name               DisplayName
 ------   ----               -----------
 Running  logstash-syslog    Logstash Syslog
-```
+-----
 
 NOTE: Logstash can be stopped by running the following command in an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session: `PS C:\Windows\system32> Stop-Service logstash-syslog`
 
