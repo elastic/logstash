@@ -158,7 +158,8 @@ NOTE: Logstash can be stopped by selecting the service, then clicking `End` in t
 [[running-logstash-windows-example]]
 ==== Example Logstash Configuration
 We will configure Logstash to listen for syslog messages over port 514 with this configuration (file name is `syslog.conf`):
-```
+[source,txt]
+-----
 # Sample Logstash configuration for receiving
 # UDP syslog messages over port 514
 
@@ -173,4 +174,4 @@ output {
   elasticsearch { hosts => ["localhost:9200"] }
   stdout { codec => rubydebug }
 }
-```
+-----
