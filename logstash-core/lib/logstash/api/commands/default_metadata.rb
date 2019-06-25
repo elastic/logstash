@@ -18,6 +18,7 @@ module LogStash
            :pipeline => {
              :workers => LogStash::SETTINGS.get("pipeline.workers"),
              :batch_size => LogStash::SETTINGS.get("pipeline.batch.size"),
+             :batch_delay => LogStash::SETTINGS.get("pipeline.batch.delay"),
            }
            }
         end
