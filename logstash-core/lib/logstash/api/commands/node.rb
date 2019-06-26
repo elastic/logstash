@@ -38,7 +38,10 @@ module LogStash
             :dead_letter_queue_path,
           ).reject{|_, v|v.nil?}
           if options.fetch(:graph, false)
-            metrics.merge!(extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph))
+            extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
+            decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_with_cluster_uuids(vertex)  }
+            extended_stats[:graph]["graph"]["vertices"] = decorated_vertices
+            metrics.merge!(extended_stats)
           end
           metrics
         rescue
@@ -76,6 +79,24 @@ module LogStash
 
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
+        end
+
+        private
+        ##
+        # Returns a vertex, decorated with the cluster UUID metadata retrieved from ES
+        # Does not mutate the passed `vertex` object.
+        # @api private
+        # @param vertex [Hash{String=>Object}]
+        # @return [Hash{String=>Object}]
+        def decorate_with_cluster_uuids(vertex)
+          plugin_id = vertex["id"]&.to_s
+          return vertex unless plugin_id && LogStash::PluginMetadata.exists?(plugin_id)
+
+          plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id)
+          cluster_uuid = plugin_metadata&.get(:cluster_uuid)
+          vertex = vertex.merge("cluster_uuid" => cluster_uuid) unless cluster_uuid.nil?
+
+          vertex
         end
       end
     end
