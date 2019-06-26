@@ -83,7 +83,7 @@ module LogStash
 
         private
         ##
-        # Returns a vertex, decorated with additional metadata if available.
+        # Returns a vertex, decorated with the cluster UUID metadata retrieved from ES
         # Does not mutate the passed `vertex` object.
         # @api private
         # @param vertex [Hash{String=>Object}]
