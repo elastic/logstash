@@ -21,9 +21,15 @@ module LogStash
             :events => events_payload,
             :pipelines => pipeline_payload,
             :reloads => reloads_payload,
-            :os => os_payload
+            :os => os_payload,
+            :queue => queue
           }
           respond_with(payload, {:filter => params["filter"]})
+        end
+
+        private
+        def queue
+          @stats.queue
         end
 
         private
@@ -52,7 +58,8 @@ module LogStash
         end
 
         def pipeline_payload(val = nil)
-          @stats.pipeline(val)
+          opts = {:vertices => as_boolean(params.fetch("vertices", false))}
+          @stats.pipeline(val, opts)
         end
       end
     end
