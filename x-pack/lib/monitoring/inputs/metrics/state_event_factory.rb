@@ -38,3 +38,4 @@ module LogStash; module Inputs; class Metrics;
     end
   end
 end; end; end
+

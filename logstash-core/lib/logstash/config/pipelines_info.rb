@@ -2,7 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 #
-module LogStash; module Inputs; class Metrics; module StatsEvent;
+module LogStash; module Config;
   class PipelinesInfo
     def self.format_pipelines_info(agent, metric_store, extended_performance_collection)
       # It is important that we iterate via the agent's pipelines vs. the
@@ -24,11 +24,9 @@ module LogStash; module Inputs; class Metrics; module StatsEvent;
             "failures" => p_stats[:reloads][:failures].value
           }
         }
-        
         if extended_performance_collection
           res["vertices"] = format_pipeline_vertex_stats(p_stats[:plugins], pipeline)
         end
-        
         res
       end.compact
     end
@@ -94,10 +92,18 @@ module LogStash; module Inputs; class Metrics; module StatsEvent;
           acc
         end
         
-        acc << {
+        segment = {
           :id => plugin_id,
           :pipeline_ephemeral_id => pipeline.ephemeral_id
-        }.merge(segmented)
+        }
+
+        if LogStash::PluginMetadata.exists?(plugin_id.to_s)
+          plugin_metadata = LogStash::PluginMetadata.for_plugin(plugin_id.to_s)
+          cluster_uuid = plugin_metadata&.get(:cluster_uuid)
+          segment[:cluster_uuid] = cluster_uuid unless cluster_uuid.nil?
+        end
+
+        acc << segment.merge(segmented)
         acc
       end
     end
@@ -144,4 +150,4 @@ module LogStash; module Inputs; class Metrics; module StatsEvent;
       }
     end
   end
-end; end; end; end
+end; end;
