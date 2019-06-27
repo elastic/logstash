@@ -11,8 +11,6 @@ public class AddressState {
     private final Set<PipelineOutput> outputs = ConcurrentHashMap.newKeySet();
     private volatile PipelineInput input = null;
 
-    AddressState(String address) {}
-
     /**
      * Add the given output and ensure associated input's receivers are updated
      * @param output output to be added
