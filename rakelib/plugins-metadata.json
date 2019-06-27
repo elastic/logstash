@@ -422,7 +422,7 @@
   },
   "logstash-output-google_cloud_storage": {
     "default-plugins": false,
-    "skip-list": true
+    "skip-list": false
   },
   "logstash-output-graphite": {
     "default-plugins": true,
