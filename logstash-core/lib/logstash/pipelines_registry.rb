@@ -106,6 +106,7 @@ module LogStash
     def reload_pipeline(pipeline_id, &reload_block)
       lock = get_lock(pipeline_id)
       begin
+        lock.lock
         success = false
 
         state = @states.get(pipeline_id)
