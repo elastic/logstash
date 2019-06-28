@@ -86,7 +86,7 @@ module LogStash
         state = @states.get(pipeline_id)
         if state.nil?
           logger.error("Attempted to terminate a pipeline that does not exists", :pipeline_id => pipeline_id)
-          @states.remote(pipeline_id)
+          @states.remove(pipeline_id)
         else
           yield(state.pipeline)
           @states.put(pipeline_id, state)
