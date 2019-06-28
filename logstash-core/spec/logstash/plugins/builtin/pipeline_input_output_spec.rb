@@ -110,11 +110,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       output.multi_receive([event])
       expect(queue.pop(true).to_hash_with_metadata).to match(event.to_hash_with_metadata)
 
-      @thread = Thread.new do
-        begin
-          input.do_stop
-        end
-      end
+      Thread.new { input.do_stop }
 
       sleep 1
       output.multi_receive([event])
