@@ -64,7 +64,7 @@ module LogStash
           @states.put(pipeline_id, state)
         else
           success = yield
-          @states.put(pipeline_id, success ? PipelineState.new(pipeline_id, pipeline) : nil)
+          @states.put(pipeline_id, PipelineState.new(pipeline_id, pipeline)) if success
         end
 
         success
@@ -86,7 +86,7 @@ module LogStash
         state = @states.get(pipeline_id)
         if state.nil?
           logger.error("Attempted to terminate a pipeline that does not exists", :pipeline_id => pipeline_id)
-          @states.put(pipeline_id, nil)
+          @states.remote(pipeline_id)
         else
           yield(state.pipeline)
           @states.put(pipeline_id, state)
@@ -112,7 +112,7 @@ module LogStash
         state = @states.get(pipeline_id)
         if state.nil?
           logger.error("Attempted to reload a pipeline that does not exists", :pipeline_id => pipeline_id)
-          @states.put(pipeline_id, nil)
+          @states.remove(pipeline_id)
         else
           state.set_reloading(true)
           begin
