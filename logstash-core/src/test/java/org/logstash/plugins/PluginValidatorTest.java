@@ -1,6 +1,7 @@
 package org.logstash.plugins;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.plugins.codecs.Line;
 import org.logstash.plugins.filters.Uuid;
@@ -43,6 +44,7 @@ public class PluginValidatorTest {
         Assert.assertTrue(PluginValidator.validatePlugin(PluginLookup.PluginType.OUTPUT, Stdout.class));
     }
 
+    @Ignore("Test failing on windows for many weeks. See https://github.com/elastic/logstash/issues/10926")
     @Test
     public void testInvalidInputPlugin() throws IOException {
         Path tempJar = null;
