@@ -59,6 +59,7 @@ GEM
       childprocess
     benchmark-ips (2.7.2)
     bindata (2.4.4)
+    buftok (0.2.0)
     builder (3.2.3)
     cabin (0.9.0)
     childprocess (0.9.0)
@@ -87,6 +88,7 @@ GEM
     elasticsearch-transport (5.0.5)
       faraday
       multi_json
+    equalizer (0.0.10)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
     ffi (1.11.1-java)
@@ -109,6 +111,10 @@ GEM
       concurrent-ruby (>= 1.0)
     hashdiff (0.3.9)
     hitimes (1.3.1-java)
+    http (0.6.4)
+      http_parser.rb (~> 0.6.0)
+    http-form_data (2.1.1)
+    http_parser.rb (0.6.0-java)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
@@ -419,6 +425,12 @@ GEM
       logstash-codec-multiline
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+    logstash-input-twitter (4.0.0)
+      http-form_data (~> 2)
+      logstash-core-plugin-api (>= 1.60, <= 2.99)
+      public_suffix (~> 3)
+      stud (>= 0.0.22, < 0.1)
+      twitter (= 5.15.0)
     logstash-input-udp (3.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -526,6 +538,8 @@ GEM
     manticore (0.6.4-java)
       openssl_pkcs8_pure
     march_hare (3.1.1-java)
+    memoizable (0.4.2)
+      thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.9.2)
     metriks (0.9.9.8)
       atomic (~> 1.0)
@@ -538,6 +552,7 @@ GEM
     multipart-post (2.1.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
+    naught (1.1.0)
     nokogiri (1.10.3-java)
     numerizer (0.1.1)
     octokit (4.14.0)
@@ -591,6 +606,7 @@ GEM
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
     sequel (5.22.0)
+    simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -606,6 +622,17 @@ GEM
     tilt (2.0.9)
     treetop (1.6.10)
       polyglot (~> 0.3)
+    twitter (5.15.0)
+      addressable (~> 2.3)
+      buftok (~> 0.2.0)
+      equalizer (= 0.0.10)
+      faraday (~> 0.9.0)
+      http (>= 0.4, < 0.10)
+      http_parser.rb (~> 0.6.0)
+      json (~> 1.8)
+      memoizable (~> 0.4.0)
+      naught (~> 1.0)
+      simple_oauth (~> 0.3.0)
     tzinfo (2.0.0)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2019.1)
@@ -715,6 +742,7 @@ DEPENDENCIES
   logstash-input-stdin
   logstash-input-syslog
   logstash-input-tcp
+  logstash-input-twitter
   logstash-input-udp
   logstash-input-unix
   logstash-output-cloudwatch
