@@ -61,6 +61,8 @@ PS C:\Windows\system32> cd C:\logstash-7.1.0\
 PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
 -----
 
+NOTE: When you start Logstash without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, Logstash ignores the `pipelines.yml` file and logs a warning about it. See <<running-logstash-command-line>> and <<multiple-pipelines>> for more info.
+
 Wait for the following messages to appear, to confirm Logstash has started successfully:
 +
 [source,txt]
@@ -88,7 +90,7 @@ Once the `NSSM service installer` window appears, specify the following paramete
 ** In the `Application` tab:
 *** Path: Path to `logstash.bat`: `C:\logstash-7.1.0\bin\logstash.bat`
 *** Startup Directory: Path to the `bin` directory: `C:\logstash-7.1.0\bin`
-*** Arguments: For our example to start Logstash: `-f C:\logstash-7.1.0\config\syslog.conf`
+*** Arguments: For this example to start Logstash: `-f C:\logstash-7.1.0\config\syslog.conf`
 
 ** Review and make any changes necessary in the `Details` tab:
 *** Ensure `Startup Type` is set appropriately
@@ -145,3 +147,7 @@ output {
   stdout { codec => rubydebug }
 }
 -----
+
+[[running-logstash-windows-multiple-pipelines]]
+==== Support for running multiple pipelines
+When you start Logstash without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, Logstash ignores the `pipelines.yml` file and logs a warning about it. See <<running-logstash-command-line>> and <<multiple-pipelines>> for more info.
