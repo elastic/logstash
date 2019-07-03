@@ -1,6 +1,8 @@
 [[running-logstash-windows]]
 === Running Logstash on Windows
-Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used for running Logstash on Windows.
+Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used to test running Logstash on Windows.
+
+IMPORTANT: Specifying command line options is useful when you are testing Logstash. However, in a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution. Using the settings file makes it easier for you to specify multiple options, and it provides you with a single, versionable file that you can use to start up Logstash consistently for each run.
 
 Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task. This guide provides an example of some of the ways Logstash can run on Windows.
 
@@ -61,7 +63,7 @@ PS C:\Windows\system32> cd C:\logstash-7.1.0\
 PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
 -----
 
-NOTE: When you start Logstash without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, Logstash ignores the `pipelines.yml` file and logs a warning about it. See <<running-logstash-command-line>> and <<multiple-pipelines>> for more info.
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
 Wait for the following messages to appear, to confirm Logstash has started successfully:
 +
@@ -91,6 +93,8 @@ Once the `NSSM service installer` window appears, specify the following paramete
 *** Path: Path to `logstash.bat`: `C:\logstash-7.1.0\bin\logstash.bat`
 *** Startup Directory: Path to the `bin` directory: `C:\logstash-7.1.0\bin`
 *** Arguments: For this example to start Logstash: `-f C:\logstash-7.1.0\config\syslog.conf`
++
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
 ** Review and make any changes necessary in the `Details` tab:
 *** Ensure `Startup Type` is set appropriately
@@ -117,6 +121,8 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 *** Action: `Start a program`
 *** Program/script: `C:\logstash-7.1.0\bin\logstash.bat`
 *** Add arguments: `-f C:\logstash-7.1.0\config\syslog.conf`
++
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 *** Start in: C:\logstash-7.1.0\bin\
 
 ** Review and make any changes necessary in the `General`, `Triggers`, `Conditions`, and `Settings` tabs.
@@ -147,7 +153,3 @@ output {
   stdout { codec => rubydebug }
 }
 -----
-
-[[running-logstash-windows-multiple-pipelines]]
-==== Support for running multiple pipelines
-When you start Logstash without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, Logstash ignores the `pipelines.yml` file and logs a warning about it. See <<running-logstash-command-line>> and <<multiple-pipelines>> for more info.
