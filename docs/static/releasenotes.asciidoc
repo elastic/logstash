@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
 * <<logstash-7-1-0,Logstash 7.1.0>>
 * <<logstash-7-0-1,Logstash 7.0.1>>
@@ -12,6 +13,140 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-0]]
+=== Logstash 7.3.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.3.0
+
+* Enhance GET _node/stats/pipelines API for Metricbeat monitoring https://github.com/elastic/logstash/pull/10576[#10576]
+* Plain codec for Java https://github.com/elastic/logstash/pull/10791[#10791]
+* Add workers and batch_size to root request https://github.com/elastic/logstash/pull/10853[#10853]
+* Add Logstash JMS input to the list of default plugins https://github.com/elastic/logstash/pull/10865[#10865]
+* Do not shut down API webserver until after pipelines have been shut down https://github.com/elastic/logstash/pull/10880[#10880]
+* Restore UUID lookup to node https://github.com/elastic/logstash/pull/10884[#10884]
+
+=== Logstash Commits between 7.3 and 7.2.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.2.0..7.3"
+
+c98563189 - (HEAD -> 7.3, origin/7.3) Update minor plugin versions in gemfile lock for 7.3.0 (#10928) (2 days ago) <João Duarte>
+f04197f8b - import lock file from 7.2 (3 days ago) <Joao Duarte>
+67bddcee1 - disable testInvalidInputPlugin (3 days ago) <Joao Duarte>
+5e8a694d5 - simplify unit test (6 days ago) <Dan Hermann>
+46c1611df - use method-level ensure blocks (6 days ago) <Dan Hermann>
+1802869d8 - remote != remove (6 days ago) <Dan Hermann>
+e925b4c48 - don't put nulls in the map (6 days ago) <Dan Hermann>
+f48da1e46 - add missing lock statement (6 days ago) <Dan Hermann>
+0ff6d1134 - don't perform long-running pipeline actions inside calls to ConcurrentHashMap.compute to avoid deadlocks (6 days ago) <Dan Hermann>
+d1e92862c - serialize access to PipelineBus methods on a per-plugin basis, code cleanup in AddressState (6 days ago) <Dan Hermann>
+7d206b78d - Fix pipeline shutdown ordering (6 days ago) <Dan Hermann>
+ec07b43a5 - Add java example plugins to skiplist (7 days ago) <Karen Metts>
+2e3254d83 - docs for the Java UUID filter (7 days ago) <Dan Hermann>
+241d8b68b - docs for java_generator input (7 days ago) <Dan Hermann>
+6669e2bd1 - docs for java stdin input (7 days ago) <Dan Hermann>
+82f3b3cb7 - docs for java stdout output (7 days ago) <Dan Hermann>
+f280f48f8 - docs for Java sink output (7 days ago) <Dan Hermann>
+df4ffd589 - docs for java dots codec (7 days ago) <Dan Hermann>
+df7c7d07d - docs for Java line codec (7 days ago) <Dan Hermann>
+25b291e54 - docs for Java plain codec (7 days ago) <Dan Hermann>
+357ce1339 - Inject hash and ephemeral_id into stats (#10885) (#10918) (7 days ago) <Mike Place>
+beb0a337f - remove gcs output from skip list (8 days ago) <Joao Duarte>
+ed57c5dc5 - Inject hash and ephemeral_id into stats (8 days ago) <Mike Place>
+20fc46551 - Add workers and batch_size to root request (#10853) (#10910) (9 days ago) <Mike Place>
+c91808261 - Restore UUID lookup to node (#10884) (#10911) (9 days ago) <Mike Place>
+9a5faf24b - Enhance GET _node/stats/pipelines API for Metricbeat monitoring (#10576) (#10909) (9 days ago) <Mike Place>
+d03c0f14a - Remove debug code for p2p plus formatting (10 days ago) <Dan Hermann>
+8a048ccc2 - Do not shut down API webserver until after pipelines have been shut down (10 days ago) <Dan Hermann>
+5e970fe57 - remove the beta designation from the docs for Java plugins (10 days ago) <Dan Hermann>
+369f8e80d - Add homebrew as installation option (2 weeks ago) <Karen Metts>
+48c581b6f - Add Logstash JMS input to the list of default plugins (3 weeks ago) <Rob Bavey>
+f18992c64 - avoid clashes between Environment class methods (3 weeks ago) <Joao Duarte>
+a1e806d2c - Add details about Elastic Search dependency (3 weeks ago) <Jeff>
+b519dc1e1 - fix parsing of boolean options provided to Java plugins (4 weeks ago) <Dan Hermann>
+b76ea1989 - field_refefence: handle illegal field references in converted maps (4 weeks ago) <Ry Biesemeyer>
+9f30ea281 - Remove note about j11 (4 weeks ago) <Karen Metts>
+58dbda45f - Value of start_timestamp must to be quoted (5 weeks ago) <Florian Kelbert>
+8a2b7be32 - plain codec for Java (5 weeks ago) <Dan Hermann>
+6dd85ca2a - Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR (5 weeks ago) <Dan Hermann>
+8685d1d48 - Merge config values in LIR (5 weeks ago) <Dan Hermann>
+3d8482717 - name rpm/deb oss packages as logstash-oss (5 weeks ago) <Joao Duarte>
+78607d2bb - LIR support for octal literals in pipeline definitions (5 weeks ago) <Dan Hermann>
+682c050f1 - release notes for 7.1.1 (5 weeks ago) <Joao Duarte>
+cac98642c - Release notes for 7.1.0 (#10796) (5 weeks ago) <Karen Metts>
+2646be8d2 - Release notes for 7.0.1 (#10705) (5 weeks ago) <Logstash Machine>
+bd11485e0 - fix plugin doc version generation with default plugins (6 weeks ago) <Joao Duarte>
+d03f0ea45 - allow skipping docker artifacts during artifact:all (6 weeks ago) <Joao Duarte>
+089f36903 - generate tarballs for docker images (6 weeks ago) <Joao Duarte>
+ce0237b62 - Update doc versions for 7.x (#10817) (6 weeks ago) <Karen Metts>
+016f7318d - Bump version to 7.3.0 (#10815) (6 weeks ago) <Rob Bavey>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.2.0..7.3 *.release"
+Changed plugin versions:
+logstash-filter-http: 1.0.1 -> 1.0.2
+logstash-filter-jdbc_streaming: 1.0.6 -> 1.0.7
+logstash-filter-json: 3.0.6 -> 3.1.0
+logstash-filter-kv: 4.3.1 -> 4.3.3
+logstash-filter-memcached: 1.0.0 -> 1.0.1
+logstash-filter-mutate: 3.4.0 -> 3.5.0
+logstash-filter-useragent: 3.2.3 -> 3.2.4
+logstash-input-azure_event_hubs: 1.1.1 -> 1.1.2
+logstash-input-jms: 3.1.0 -> 3.1.0
+logstash-input-snmp: 1.1.0 -> 1.2.0
+logstash-input-tcp: 6.0.2 -> 6.0.3
+logstash-output-elastic_app_search: 1.0.0 -> 1.0.0
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Http Filter*
+
+*Jdbc_streaming Filter*
+
+* Fixed formatting in documentation [#17](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/17) and [#28](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/28) 
+
+*Json Filter*
+
+* Added better error handling, preventing some classes of malformed inputs from crashing the pipeline.
+
+*Kv Filter*
+
+* Fixed asciidoc formatting in docs
+
+* Resolved potential race condition in pipeline shutdown where the timeout enforcer could be shut down while work was still in-flight, potentially leading to stuck pipelines.
+* Resolved potential race condition in pipeline shutdown where work could be submitted to the timeout enforcer after it had been shutdown, potentially leading to stuck pipelines.
+
+*Memcached Filter*
+
+* Fixed link formatting issues in doc [#16](https://github.com/logstash-plugins/logstash-filter-memcached/pull/16)
+
+*Mutate Filter*
+
+*Useragent Filter*
+
+* Added support for OS regular expressions that use backreferences [#59](https://github.com/logstash-plugins/logstash-filter-useragent/pull/59)
+
+*Azure_event_hubs Input*
+
+* Added workaround to fix errors when using this plugin with Java 11[#38](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38)
+
+*Jms Input*
+
+*Snmp Input*
+
+* Adding oid_path_length config option [#59] (https://github.com/logstash-plugins/logstash-input-snmp/pull/59)
+* Fixing bug with table support removing index value from OIDs [#60] )https://github.com/logstash-plugins/logstash-input-snmp/issues/60)
+
+* Added information and other improvements to documentation [#57](https://github.com/logstash-plugins/logstash-input-snmp/pull/57)
+
+*Tcp Input*
+
+* Skip empty lines while reading certificate files [#144](https://github.com/logstash-plugins/logstash-input-tcp/issues/144)
+
+*Elastic_app_search Output*
+
 
 [[logstash-7-1-1]]
 === Logstash 7.1.1 Release Notes
