@@ -8,6 +8,12 @@ namespace "plugin" do
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["install"] + args)
   end
 
+  def remove_lockfile
+    if ::File.exist?(LogStash::Environment::LOCKFILE)
+      ::File.delete(LogStash::Environment::LOCKFILE)
+    end
+  end
+
   task "install-development-dependencies" => "bootstrap" do
     puts("[plugin:install-development-dependencies] Installing development dependencies")
     install_plugins("--development",  "--preserve")
@@ -26,6 +32,8 @@ namespace "plugin" do
 
   task "install-default" => "bootstrap" do
     puts("[plugin:install-default] Installing default plugins")
+
+    remove_lockfile # because we want to use the release lockfile
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
