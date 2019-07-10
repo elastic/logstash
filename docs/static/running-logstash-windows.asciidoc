@@ -55,7 +55,7 @@ NOTE: For the examples listed below, we are running Windows Server 2016, Java 11
 [[running-logstash-windows-manual]]
 ==== Running Logstash manually
 Logstash can be run manually using https://docs.microsoft.com/en-us/powershell/[PowerShell].  Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
-+
+
 [source,txt]
 -----
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
@@ -65,7 +65,7 @@ PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
 Wait for the following messages to appear, to confirm Logstash has started successfully:
-+
+
 [source,txt]
 -----
 [logstash.runner          ] Starting Logstash {"logstash.version"=>"7.1.0"}
@@ -79,7 +79,7 @@ NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell
 NOTE: It is recommended to validate your configuration works by running Logstash manually before you proceed.
 
 Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
-+
+
 [source,txt]
 -----
 PS C:\Windows\system32> cd C:\logstash-7.1.0\
