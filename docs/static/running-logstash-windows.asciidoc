@@ -23,9 +23,8 @@ C:\Program Files\Java\jdk-11.0.3
 
 ** If `JAVA_HOME` is not set, perform one of the following:
 *** Set using the GUI:
-**** Right click My Computer and select Properties.
-**** On the Advanced tab, select Environment Variables
-**** In the Environmental Variables window edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
+**** Navigate to the Windows https://docs.microsoft.com/en-us/windows/win32/procthread/environment-variables[Environmental Variables] window
+**** In the Environmental Variables window, edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
 *** Set using PowerShell:
 **** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
 +
