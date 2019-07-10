@@ -8,7 +8,12 @@ To run Logstash from the command line, use the following command:
 bin/logstash [options]
 ----
 
-NOTE: For Windows, use `bin/logstash.bat`
+To run Logstash from the Windows command line, use the following command:
+
+[source,shell]
+----
+bin/logstash.bat [options]
+----
 
 Where `options` are <<command-line-flags,command-line>> flags that you can
 specify to control Logstash execution. The location of the `bin` directory
