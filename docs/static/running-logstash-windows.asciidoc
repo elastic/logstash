@@ -15,7 +15,7 @@ After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JV
 ===== `Write-Host $env:JAVA_HOME`
 ** The output should be pointed to where the JVM software is located, for example:
 +
-[source,txt]
+[source,sh]
 -----
 PS C:\> Write-Host $env:JAVA_HOME
 C:\Program Files\Java\jdk-11.0.3
@@ -28,7 +28,7 @@ C:\Program Files\Java\jdk-11.0.3
 *** Set using PowerShell:
 **** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
 +
-[source,txt]
+[source,sh]
 -----
 PS C:\Windows\system32> SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"
 PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"
@@ -38,7 +38,7 @@ PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3
 ===== `Java -version`
 ** This command produces output similar to the following:
 +
-[source,txt]
+[source,sh]
 -----
 PS C:\> Java -version
 java version "11.0.3" 2019-04-16 LTS
@@ -50,48 +50,47 @@ NOTE: As of the publication of this document, please review this https://github.
 
 Once you have <<setup-logstash>> and validated JVM pre-requisites, you may proceed.  
 
-NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP package] to `C:\logstash-7.1.0\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-7.1.0\config\`).
+NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP package] to `C:\logstash-{logstash_version}\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-{logstash_version}\config\`).
 
 [[running-logstash-windows-manual]]
 ==== Running Logstash manually
 Logstash can be run manually using https://docs.microsoft.com/en-us/powershell/[PowerShell].  Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
 
-[source,txt]
+["source","sh",subs="attributes"]
 -----
-PS C:\Windows\system32> cd C:\logstash-7.1.0\
-PS C:\logstash-7.1.0> .\bin\logstash.bat -f .\config\syslog.conf
+PS C:\Windows\system32> cd C:\logstash-{logstash_version}\
+PS C:\logstash-{logstash_version}> .\bin\logstash.bat -f .\config\syslog.conf
 -----
 
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
 Wait for the following messages to appear, to confirm Logstash has started successfully:
 
-[source,txt]
+["source","sh",subs="attributes"]
 -----
-[logstash.runner          ] Starting Logstash {"logstash.version"=>"7.1.0"}
+[logstash.runner          ] Starting Logstash {"logstash.version"=>"{logstash_version}"}
 [logstash.inputs.udp      ] Starting UDP listener {:address=>"0.0.0.0:514"}
 [logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
 -----
-NOTE: Logstash can be stopped by sending the `ctrl` + `c` keys in the PowerShell console.
 
 [[running-logstash-windows-nssm]]
 ==== Running Logstash as a service with NSSM
 NOTE: It is recommended to validate your configuration works by running Logstash manually before you proceed.
 
-Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-7.1.0\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
+Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-{logstash_version}\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
 
-[source,txt]
+["source","sh",subs="attributes"]
 -----
-PS C:\Windows\system32> cd C:\logstash-7.1.0\
-PS C:\logstash-7.1.0> .\bin\nssm.exe install logstash
+PS C:\Windows\system32> cd C:\logstash-{logstash_version}\
+PS C:\logstash-{logstash_version}> .\bin\nssm.exe install logstash
 -----
 
 Once the `NSSM service installer` window appears, specify the following parameters in the `Application` tab:
 
 ** In the `Application` tab:
-*** Path: Path to `logstash.bat`: `C:\logstash-7.1.0\bin\logstash.bat`
-*** Startup Directory: Path to the `bin` directory: `C:\logstash-7.1.0\bin`
-*** Arguments: For this example to start Logstash: `-f C:\logstash-7.1.0\config\syslog.conf`
+*** Path: Path to `logstash.bat`: `C:\logstash-{logstash_version}\bin\logstash.bat`
+*** Startup Directory: Path to the `bin` directory: `C:\logstash-{logstash_version}\bin`
+*** Arguments: For this example to start Logstash: `-f C:\logstash-{logstash_version}\config\syslog.conf`
 +
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
@@ -118,11 +117,11 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 ** In the `Actions` tab:
 *** Click `New`, then specify the following:
 *** Action: `Start a program`
-*** Program/script: `C:\logstash-7.1.0\bin\logstash.bat`
-*** Add arguments: `-f C:\logstash-7.1.0\config\syslog.conf`
+*** Program/script: `C:\logstash-{logstash_version}\bin\logstash.bat`
+*** Add arguments: `-f C:\logstash-{logstash_version}\config\syslog.conf`
 +
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
-*** Start in: C:\logstash-7.1.0\bin\
+*** Start in: C:\logstash-{logstash_version}\bin\
 
 ** Review and make any changes necessary in the `General`, `Triggers`, `Conditions`, and `Settings` tabs.
 
@@ -135,7 +134,7 @@ NOTE: Logstash can be stopped by selecting the service, then clicking `End` in t
 [[running-logstash-windows-example]]
 ==== Example Logstash Configuration
 We will configure Logstash to listen for syslog messages over port 514 with this configuration (file name is `syslog.conf`):
-[source,txt]
+[source,yaml]
 -----
 # Sample Logstash configuration for receiving
 # UDP syslog messages over port 514
