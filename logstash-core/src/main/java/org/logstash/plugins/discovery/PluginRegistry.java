@@ -8,6 +8,7 @@ import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Output;
+import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -33,7 +34,7 @@ public final class PluginRegistry {
 
     @SuppressWarnings("unchecked")
     private static void discoverPlugins() {
-        Reflections reflections = new Reflections("");
+        Reflections reflections = new Reflections("org.logstash.plugins");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
         for (final Class<?> cls : annotated) {
             for (final Annotation annotation : cls.getAnnotations()) {
