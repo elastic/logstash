@@ -26,7 +26,7 @@ C:\Program Files\Java\jdk-11.0.3
 **** Navigate to the Windows https://docs.microsoft.com/en-us/windows/win32/procthread/environment-variables[Environmental Variables] window
 **** In the Environmental Variables window, edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
 *** Set using PowerShell:
-**** In an Administrative PowerShell session, execute the following `https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX]` commands:
+**** In an Administrative PowerShell session, execute the following https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX] commands:
 +
 [source,sh]
 -----
@@ -50,7 +50,11 @@ NOTE: As of the publication of this document, please review this https://github.
 
 Once you have <<setup-logstash>> and validated JVM pre-requisites, you may proceed.  
 
-NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3, have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP package] to `C:\logstash-{logstash_version}\`, and using the example `syslog.conf` file shown below (stored in `C:\logstash-{logstash_version}\config\`).
+NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3,
+have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP
+package] to +C:{backslash}logstash-{logstash_version}{backslash}+, and using the example
+`syslog.conf` file shown below (stored in
++C:{backslash}logstash-{logstash_version}{backslash}config{backslash}+).
 
 [[running-logstash-windows-manual]]
 ==== Running Logstash manually
@@ -58,8 +62,8 @@ Logstash can be run manually using https://docs.microsoft.com/en-us/powershell/[
 
 ["source","sh",subs="attributes"]
 -----
-PS C:\Windows\system32> cd C:\logstash-{logstash_version}\
-PS C:\logstash-{logstash_version}> .\bin\logstash.bat -f .\config\syslog.conf
+PS C:{backslash}Windows{backslash}system32> cd C:{backslash}logstash-{logstash_version}{backslash}
+PS C:{backslash}logstash-{logstash_version}> .{backslash}bin{backslash}logstash.bat -f .{backslash}config{backslash}syslog.conf
 -----
 
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
@@ -77,20 +81,24 @@ Wait for the following messages to appear, to confirm Logstash has started succe
 ==== Running Logstash as a service with NSSM
 NOTE: It is recommended to validate your configuration works by running Logstash manually before you proceed.
 
-Download https://nssm.cc/[NSSM], then extract `nssm.exe` from `nssm-<version.number>\win64\nssm.exe` to `C:\logstash-{logstash_version}\bin\`.  Then open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
+Download https://nssm.cc/[NSSM], then extract `nssm.exe` from
+`nssm-<version.number>\win64\nssm.exe` to +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}+.
+Then open an Administrative
+https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the
+following commands:
 
 ["source","sh",subs="attributes"]
 -----
-PS C:\Windows\system32> cd C:\logstash-{logstash_version}\
-PS C:\logstash-{logstash_version}> .\bin\nssm.exe install logstash
+PS C:\Windows\system32> cd C:{backslash}logstash-{logstash_version}{backslash}
+PS C:{backslash}logstash-{logstash_version}> .\bin\nssm.exe install logstash
 -----
 
 Once the `NSSM service installer` window appears, specify the following parameters in the `Application` tab:
 
 ** In the `Application` tab:
-*** Path: Path to `logstash.bat`: `C:\logstash-{logstash_version}\bin\logstash.bat`
-*** Startup Directory: Path to the `bin` directory: `C:\logstash-{logstash_version}\bin`
-*** Arguments: For this example to start Logstash: `-f C:\logstash-{logstash_version}\config\syslog.conf`
+*** Path: Path to `logstash.bat`: +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}logstash.bat+
+*** Startup Directory: Path to the `bin` directory: +C:{backslash}logstash-{logstash_version}{backslash}bin+
+*** Arguments: For this example to start Logstash: +-f C:{backslash}logstash-{logstash_version}{backslash}config{backslash}syslog.conf+
 +
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
 
@@ -117,11 +125,11 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 ** In the `Actions` tab:
 *** Click `New`, then specify the following:
 *** Action: `Start a program`
-*** Program/script: `C:\logstash-{logstash_version}\bin\logstash.bat`
-*** Add arguments: `-f C:\logstash-{logstash_version}\config\syslog.conf`
+*** Program/script: +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}logstash.bat+
+*** Add arguments: +-f C:\logstash-{logstash_version}{backslash}config{backslash}syslog.conf+
+*** Start in: +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}+
 +
 NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
-*** Start in: C:\logstash-{logstash_version}\bin\
 
 ** Review and make any changes necessary in the `General`, `Triggers`, `Conditions`, and `Settings` tabs.
 
