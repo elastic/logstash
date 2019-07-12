@@ -53,7 +53,9 @@ puts "Generating new Gemfile.template file with computed dependencies"
 gemfile = IO.read("Gemfile.template")
 base_plugin_versions.each do |plugin, version|
   dependency = compute_dependecy(version, allow_bump_for)
-  gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"")
+  if gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"").nil?
+    gemfile << "gem \"#{plugin}\", \"#{dependency}\"\n"
+  end
 end
 
 IO.write("Gemfile.template", gemfile)
