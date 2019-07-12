@@ -127,6 +127,9 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.11.1'
     compile 'org.apache.logging.log4j:log4j-core:2.11.1'
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.1'
+    compile('org.reflections:reflections:0.9.11') {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
     compile 'commons-codec:commons-codec:1.11'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
