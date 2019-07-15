@@ -55,6 +55,23 @@ no longer specify local pipeline configurations. The `pipelines.yml` file and
 settings such as `path.config` and `config.string` are inactive when centralized
 pipeline management is enabled.
 
+
+
+[float]
+[[tip-plugins]]
+=== Plugins
+
+[float]
+[[codec-compat]]
+==== Codec compatibility
+
+Logstash plugins have traditionally been developed in Ruby, and published on
+rubygems.org. New java plugins were released for GA at 7.2. 
+
+Ruby codecs are compatible only with Ruby input and output plugins. Java codecs
+are compatible only with Java input and output plugins.
+
+
 [float]
 [[tip-kafka]]
 === Kafka
