@@ -19,7 +19,7 @@ This section summarizes the changes in the following releases:
 === Logstash 7.2.1 Release Notes
 
 * Fixes pipeline to pipeline shutdown ordering https://github.com/elastic/logstash/pull/10872[#10872]
-* Do not shut down API webserver until after pipelines have been shut down https://github.com/elastic/logstash/pull/10880]
+* Changed: Do not shut down API webserver until after pipelines have been shut down https://github.com/elastic/logstash/pull/10880[#10880]
 * Documentation: documentation for java plugins:
  ** Add java example plugins to skiplist https://github.com/elastic/logstash/pull/10921[#10921]
  ** docs for Java plain codec https://github.com/elastic/logstash/pull/10870[#10870]
