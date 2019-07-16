@@ -319,7 +319,7 @@ To test the plugin, start Logstash with:
 
 [source,java]
 -----
-echo "foo,bar" | bin/logstash -e 'input { java_stdin { codec => java_codec_example } } }'
+echo "foo,bar" | bin/logstash -e 'input { java_stdin { codec => java_codec_example } }'
 -----
 
 NOTE: The Java execution engine, the default execution engine since Logstash 7.0, is required
