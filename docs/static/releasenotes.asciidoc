@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-2-1,Logstash 7.2.1>>
 * <<logstash-7-2-0,Logstash 7.2.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
 * <<logstash-7-1-0,Logstash 7.1.0>>
@@ -13,6 +14,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-2-1]]
+=== Logstash 7.2.1 Release Notes
+
+* Fixes pipeline to pipeline shutdown ordering https://github.com/elastic/logstash/pull/10872[#10872]
+* Changed: Do not shut down API webserver until after pipelines have been shut down https://github.com/elastic/logstash/pull/10880[#10880]
+* Documentation: documentation for java plugins:
+ ** Add java example plugins to skiplist https://github.com/elastic/logstash/pull/10921[#10921]
+ ** docs for Java plain codec https://github.com/elastic/logstash/pull/10870[#10870]
+ ** docs for Java line codec https://github.com/elastic/logstash/pull/10869[#10869]
+ ** docs for java dots codec https://github.com/elastic/logstash/pull/10868[#10868]
+ ** docs for Java sink output https://github.com/elastic/logstash/pull/10867[#10867]
+ ** docs for java stdout output https://github.com/elastic/logstash/pull/10866[#10866]
+ ** docs for the Java UUID filter https://github.com/elastic/logstash/pull/10859[#10859]
+ ** docs for java stdin input https://github.com/elastic/logstash/pull/10858[#10858]
+ ** docs for java_generator input https://github.com/elastic/logstash/pull/10857[#10857]
+* Documentation: Remove gcs output from skip list https://github.com/elastic/logstash/pull/10919[#10919]
+* Documentation: Remove the beta designation from the docs for Java plugins https://github.com/elastic/logstash/pull/10891[#10891]
+* Documentation: Add homebrew as installation option https://github.com/elastic/logstash/pull/10874[#10874]
+
 
 [[logstash-7-2-0]]
 === Logstash 7.2.0 Release Notes
