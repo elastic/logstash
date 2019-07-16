@@ -3,6 +3,7 @@ package org.logstash.instrument.metrics.gauge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.jruby.RubyArray;
 import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
@@ -91,8 +92,10 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
             } else if (value instanceof RubyTimestamp) {
                 lazyMetric = new RubyTimeStampGauge(key, (RubyTimestamp) value);
             } else {
-                LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}. This may result in invalid serialization.  It is recommended to " +
-                        "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key);
+                if (!(value instanceof RubyArray)) {
+                    LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}. This may result in invalid serialization.  It is recommended to " +
+                            "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key);
+                }
                 lazyMetric = new UnknownGauge(key, value);
             }
         }
