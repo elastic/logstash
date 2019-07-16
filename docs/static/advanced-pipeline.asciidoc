@@ -161,23 +161,23 @@ If your pipeline is working correctly, you should see a series of events like th
 --------------------------------------------------------------------------------
 {
     "@timestamp" => 2017-11-09T01:44:20.071Z,
-        "offset" => 325,
-      "@version" => "1",
-          "beat" => {
-            "name" => "My-MacBook-Pro.local",
+    "offset" => 325,
+    "@version" => "1",
+    "beat" => {
+        "name" => "My-MacBook-Pro.local",
         "hostname" => "My-MacBook-Pro.local",
-         "version" => "6.0.0"
+        "version" => "6.0.0"
     },
-          "host" => "My-MacBook-Pro.local",
+    "host" => "My-MacBook-Pro.local",
     "prospector" => {
         "type" => "log"
     },
     "input" => {
         "type" => "log"
     },
-        "source" => "/path/to/file/logstash-tutorial.log",
-       "message" => "83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] \"GET /presentations/logstash-monitorama-2013/images/kibana-search.png HTTP/1.1\" 200 203023 \"http://semicomplete.com/presentations/logstash-monitorama-2013/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
-          "tags" => [
+    "source" => "/path/to/file/logstash-tutorial.log",
+    "message" => "83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] \"GET /presentations/logstash-monitorama-2013/images/kibana-search.png HTTP/1.1\" 200 203023 \"http://semicomplete.com/presentations/logstash-monitorama-2013/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
+    "tags" => [
         [0] "beats_input_codec_plain_applied"
     ]
 }
@@ -289,37 +289,37 @@ After Logstash applies the grok pattern, the events will have the following JSON
 [source,json]
 --------------------------------------------------------------------------------
 {
-        "request" => "/presentations/logstash-monitorama-2013/images/kibana-search.png",
-          "agent" => "\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
-         "offset" => 325,
-           "auth" => "-",
-          "ident" => "-",
-           "verb" => "GET",
-     "prospector" => {
+    "request" => "/presentations/logstash-monitorama-2013/images/kibana-search.png",
+    "agent" => "\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
+    "offset" => 325,
+    "auth" => "-",
+    "ident" => "-",
+    "verb" => "GET",
+    "prospector" => {
         "type" => "log"
     },
-     "input" => {
+    "input" => {
         "type" => "log"
     },
-         "source" => "/path/to/file/logstash-tutorial.log",
-        "message" => "83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] \"GET /presentations/logstash-monitorama-2013/images/kibana-search.png HTTP/1.1\" 200 203023 \"http://semicomplete.com/presentations/logstash-monitorama-2013/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
-           "tags" => [
+    "source" => "/path/to/file/logstash-tutorial.log",
+    "message" => "83.149.9.216 - - [04/Jan/2015:05:13:42 +0000] \"GET /presentations/logstash-monitorama-2013/images/kibana-search.png HTTP/1.1\" 200 203023 \"http://semicomplete.com/presentations/logstash-monitorama-2013/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
+    "tags" => [
         [0] "beats_input_codec_plain_applied"
     ],
-       "referrer" => "\"http://semicomplete.com/presentations/logstash-monitorama-2013/\"",
-     "@timestamp" => 2017-11-09T02:51:12.416Z,
-       "response" => "200",
-          "bytes" => "203023",
-       "clientip" => "83.149.9.216",
-       "@version" => "1",
-           "beat" => {
-            "name" => "My-MacBook-Pro.local",
+    "referrer" => "\"http://semicomplete.com/presentations/logstash-monitorama-2013/\"",
+    "@timestamp" => 2017-11-09T02:51:12.416Z,
+    "response" => "200",
+    "bytes" => "203023",
+    "clientip" => "83.149.9.216",
+    "@version" => "1",
+    "beat" => {
+        "name" => "My-MacBook-Pro.local",
         "hostname" => "My-MacBook-Pro.local",
-         "version" => "6.0.0"
+        "version" => "6.0.0"
     },
-           "host" => "My-MacBook-Pro.local",
+    "host" => "My-MacBook-Pro.local",
     "httpversion" => "1.1",
-      "timestamp" => "04/Jan/2015:05:13:42 +0000"
+    "timestamp" => "04/Jan/2015:05:13:42 +0000"
 }
 --------------------------------------------------------------------------------
 
@@ -357,7 +357,7 @@ input {
         port => "5044"
     }
 }
- filter {
+filter {
     grok {
         match => { "message" => "%{COMBINEDAPACHELOG}"}
     }
@@ -383,25 +383,25 @@ Notice that the event now contains geographic location information:
 [source,json]
 --------------------------------------------------------------------------------
 {
-        "request" => "/presentations/logstash-monitorama-2013/images/kibana-search.png",
-          "agent" => "\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
-          "geoip" => {
-              "timezone" => "Europe/Moscow",
-                    "ip" => "83.149.9.216",
-              "latitude" => 55.7485,
+    "request" => "/presentations/logstash-monitorama-2013/images/kibana-search.png",
+    "agent" => "\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
+    "geoip" => {
+        "timezone" => "Europe/Moscow",
+        "ip" => "83.149.9.216",
+        "latitude" => 55.7485,
         "continent_code" => "EU",
-             "city_name" => "Moscow",
-          "country_name" => "Russia",
-         "country_code2" => "RU",
-         "country_code3" => "RU",
-           "region_name" => "Moscow",
-              "location" => {
+        "city_name" => "Moscow",
+        "country_name" => "Russia",
+        "country_code2" => "RU",
+        "country_code3" => "RU",
+        "region_name" => "Moscow",
+        "location" => {
             "lon" => 37.6184,
             "lat" => 55.7485
         },
-           "postal_code" => "101194",
-           "region_code" => "MOW",
-             "longitude" => 37.6184
+        "postal_code" => "101194",
+        "region_code" => "MOW",
+        "longitude" => 37.6184
     },
     ...
 --------------------------------------------------------------------------------
@@ -447,7 +447,7 @@ input {
         port => "5044"
     }
 }
- filter {
+filter {
     grok {
         match => { "message" => "%{COMBINEDAPACHELOG}"}
     }
