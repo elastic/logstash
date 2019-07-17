@@ -5,13 +5,46 @@ describe LogStash::Api::Commands::Stats do
   include_context "api setup"
 
   let(:report_method) { :run }
+  let(:extended_pipeline) { nil }
+  let(:opts) { {} }
   subject(:report) do
     factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(@agent))
-
-    factory.build(:stats).send(report_method)
+    if extended_pipeline
+      factory.build(:stats).send(report_method, "main", extended_pipeline, opts)
+    else
+      factory.build(:stats).send(report_method)
+    end
   end
 
   let(:report_class) { described_class }
+
+  describe "#plugins_stats_report" do
+    let(:report_method) { :plugins_stats_report }
+    # Enforce just the structure
+    let(:extended_pipeline) {
+      {
+      :queue => "fake_queue",
+      :hash => "fake_hash",
+      :ephemeral_id => "fake_epehemeral_id",
+      :vertices => "fake_vertices"
+      }
+    }
+    # TODO pass in a real sample vertex
+#    let(:opts) {
+#      {
+#        :vertices => "fake vertices"
+#      }
+#    }
+    it "check keys" do
+      expect(report.keys).to include(
+        :queue,
+        :hash,
+        :ephemeral_id,
+        # TODO re-add vertices -- see above
+#        :vertices
+      )
+    end
+  end
 
   describe "#events" do
     let(:report_method) { :events }
@@ -98,8 +131,6 @@ describe LogStash::Api::Commands::Stats do
         :plugins,
         :reloads,
         :queue,
-        :hash,
-        :ephemeral_id
       )
       expect(report[:main][:events].keys).to include(
         :in,
