@@ -98,6 +98,8 @@ describe LogStash::Api::Commands::Stats do
         :plugins,
         :reloads,
         :queue,
+        :hash,
+        :ephemeral_id
       )
       expect(report[:main][:events].keys).to include(
         :in,
