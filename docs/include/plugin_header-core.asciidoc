@@ -1,0 +1,14 @@
+[subs="attributes"]
+++++
+<titleabbrev>{plugin}</titleabbrev>
+++++
+
+*{ls} Core Plugin.* The {plugin} {type} plugin cannot be
+installed or uninstalled independently of {ls}.
+
+==== Getting Help
+
+For questions about the plugin, open a topic in the
+http://discuss.elastic.co[Discuss] forums. For bugs or feature requests, open an
+issue in https://github.com/logstash[Github].
+

@@ -1,23 +1,20 @@
-:plugin: sink
+:plugin: java_sink
 :type: output
 :default_codec!:
 
 ///////////////////////////////////////////
-START - GENERATED VARIABLES, DO NOT EDIT!
+REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
-:version: %VERSION%
-:release_date: %RELEASE_DATE%
-:changelog_url: %CHANGELOG_URL%
-:include_path: ../../../../logstash/docs/include
+:include_path: ../../../../../logstash/docs/include
 ///////////////////////////////////////////
-END - GENERATED VARIABLES, DO NOT EDIT!
+END - REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Sink output plugin
+=== Java_sink output plugin
 
-include::{include_path}/plugin_header.asciidoc[]
+include::{include_path}/plugin_header-core.asciidoc[]
 
 ==== Description
 
@@ -25,7 +22,7 @@ An event sink that discards any events received. Generally useful for testing th
 and filters.
 
 [id="plugins-{type}s-{plugin}-options"]
-==== Sink Output Configuration Options
+==== Java_sink Output Configuration Options
 
 There are no special configuration options for this plugin,
 but it does support the <<plugins-{type}s-{plugin}-common-options>>.
