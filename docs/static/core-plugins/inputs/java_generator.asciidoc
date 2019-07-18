@@ -3,32 +3,29 @@
 :default_codec: plain
 
 ///////////////////////////////////////////
-START - GENERATED VARIABLES, DO NOT EDIT!
+REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
-:version: %VERSION%
-:release_date: %RELEASE_DATE%
-:changelog_url: %CHANGELOG_URL%
-:include_path: ../../../../logstash/docs/include
+:include_path: ../../../../../logstash/docs/include
 ///////////////////////////////////////////
-END - GENERATED VARIABLES, DO NOT EDIT!
+END - REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Java generator input plugin
+=== Java_generator input plugin
 
-include::{include_path}/plugin_header.asciidoc[]
+include::{include_path}/plugin_header-core.asciidoc[]
 
 ==== Description
 
-Generate synthethic log events.
+Generate synthetic log events.
 
 This plugin generates a stream of synthetic events that can be used to test the correctness or performance of a
 Logstash pipeline.
 
 
 [id="plugins-{type}s-{plugin}-options"]
-==== Generator Input Configuration Options
+==== Java_generator Input Configuration Options
 
 This plugin supports the following configuration options plus the <<plugins-{type}s-{plugin}-common-options>> described later.
 

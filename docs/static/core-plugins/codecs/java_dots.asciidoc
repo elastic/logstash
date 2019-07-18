@@ -1,22 +1,19 @@
-:plugin: jdots
+:plugin: java_dots
 :type: codec
 
 ///////////////////////////////////////////
-START - GENERATED VARIABLES, DO NOT EDIT!
+REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
-:version: %VERSION%
-:release_date: %RELEASE_DATE%
-:changelog_url: %CHANGELOG_URL%
-:include_path: ../../../../logstash/docs/include
+:include_path: ../../../../../logstash/docs/include
 ///////////////////////////////////////////
-END - GENERATED VARIABLES, DO NOT EDIT!
+END - REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Java dots codec plugin
+=== Java_dots codec plugin
 
-include::{include_path}/plugin_header.asciidoc[]
+include::{include_path}/plugin_header-core.asciidoc[]
 
 ==== Description
 
