@@ -6,10 +6,26 @@ describe LogStash::Api::Commands::Node do
 
   let(:report_method) { :all }
   let(:pipeline_id) { nil }
+  let(:mocked_vertex) {{:config_name=>"elasticsearch",
+                       :plugin_type=>"output",
+                       :meta=>{
+                         :source=>{
+                           :protocol=>"str",
+                           :id=>"pipeline",
+                           :line=>1,
+                           :column=>64
+                         }
+                       },
+                       :id=>"2d2270426a2e8d7976b972b6a5318624331fa0d39fa3f903d2f3490e58a7d25a",
+                       :explicit_id=>false,
+                       :type=>"plugin"}
+                  }
   subject(:report) do
     factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(@agent))
     if pipeline_id
       factory.build(:node).send(report_method, pipeline_id)
+    elsif report_method == :decorate_with_cluster_uuids
+      factory.build(:node).send(report_method, mocked_vertex)
     else
       factory.build(:node).send(report_method)
     end
@@ -85,6 +101,19 @@ describe LogStash::Api::Commands::Node do
     )
     end
   end
-  #TODO decorate_with_cluster_uuids
+  describe "#decorate_with_cluster_uuid does not mutate" do
+    let(:report_method) { :decorate_with_cluster_uuids }
+    it "check keys" do
+      expect(report.keys).to include(
+        :config_name,
+        :plugin_type,
+        :meta,
+        :id,
+        :explicit_id,
+        :type
+      )
+    end
+  end
+
 
 end
