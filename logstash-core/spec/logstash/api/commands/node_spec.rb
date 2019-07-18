@@ -44,10 +44,47 @@ describe LogStash::Api::Commands::Node do
         :config_reload_automatic,
         :config_reload_interval,
         :dead_letter_queue_enabled,
-        :dead_letter_queue_path
         # :dead_letter_queue_path is nil in tests
         # so it is ignored
       )
     end
   end
+
+  #TODO ?graph check
+
+  describe "#os" do
+    let(:report_method) { :os }
+    it "check_keys" do
+      expect(report.keys).to include(
+        :name,
+        :arch,
+        :version,
+        :available_processors
+      )
+    end
+  end
+
+  describe "#jvm" do
+    let(:report_method) { :jvm }
+    it "check_keys" do
+      expect(report.keys).to include(
+        :pid,
+        :version,
+        :vm_version,
+        :vm_vendor,
+        :vm_name,
+        :start_time_in_millis,
+        :mem,
+        :gc_collectors
+      )
+    expect(report[:mem].keys).to include(
+      :heap_init_in_bytes,
+      :heap_max_in_bytes,
+      :non_heap_init_in_bytes,
+      :non_heap_max_in_bytes
+    )
+    end
+  end
+  #TODO decorate_with_cluster_uuids
+
 end
