@@ -2,21 +2,19 @@
 :type: filter
 
 ///////////////////////////////////////////
-START - GENERATED VARIABLES, DO NOT EDIT!
+REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
-:version: %VERSION%
-:release_date: %RELEASE_DATE%
-:changelog_url: %CHANGELOG_URL%
 :include_path: ../../../../../logstash/docs/include
 ///////////////////////////////////////////
-END - GENERATED VARIABLES, DO NOT EDIT!
+END - REPLACES GENERATED VARIABLES
 ///////////////////////////////////////////
+
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Java UUID filter plugin
+=== Java_uuid filter plugin
 
-include::{include_path}/plugin_header.asciidoc[]
+include::{include_path}/plugin_header-core.asciidoc[]
 
 ==== Description
 
@@ -36,7 +34,7 @@ represented in standard hexadecimal string format, e.g.
 "e08806fe-02af-406c-bbde-8a5ae4475e57".
 
 [id="plugins-{type}s-{plugin}-options"]
-==== Uuid Filter Configuration Options
+==== Java_uuid Filter Configuration Options
 
 This plugin supports the following configuration options plus the <<plugins-{type}s-{plugin}-common-options>> described later.
 
