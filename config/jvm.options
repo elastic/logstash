@@ -49,6 +49,8 @@
 -Djruby.compile.invokedynamic=true
 # Force Compilation
 -Djruby.jit.threshold=0
+# Make sure joni regexp interruptability is enabled
+-Djruby.regexp.interruptible=true
 
 ## heap dumps
 
