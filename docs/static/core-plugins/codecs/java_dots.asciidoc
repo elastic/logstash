@@ -1,4 +1,4 @@
-:plugin: java_dots
+:plugin: jdots
 :type: codec
 
 ///////////////////////////////////////////
@@ -11,7 +11,7 @@ END - REPLACES GENERATED VARIABLES
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Java_dots codec plugin
+=== Jdots codec plugin
 
 include::{include_path}/plugin_header-core.asciidoc[]
 
