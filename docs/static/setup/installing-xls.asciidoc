@@ -1,6 +1,7 @@
 [role="xpack"]
 [[installing-xpack-log]]
 === Installing X-Pack in Logstash
+[subs="attributes"]
 ++++
 <titleabbrev>Installing {xpack}</titleabbrev>
 ++++
