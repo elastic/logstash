@@ -1,6 +1,7 @@
 [role="xpack"]
 [[configuring-logstash]]
 === Configuring Monitoring for Logstash Nodes
+[subs="attributes"]
 ++++
 <titleabbrev>{monitoring}</titleabbrev>
 ++++
