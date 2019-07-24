@@ -1,9 +1,11 @@
 ifeval::["{versioned_docs}"!="true"]
+[subs="attributes"]
 ++++
 <titleabbrev>{plugin}</titleabbrev>
 ++++
 endif::[]
 ifeval::["{versioned_docs}"=="true"]
+[subs="attributes"]
 ++++
 <titleabbrev>{version}</titleabbrev>
 ++++
