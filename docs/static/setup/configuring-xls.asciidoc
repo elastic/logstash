@@ -1,6 +1,7 @@
 [role="xpack"]
 [[settings-xpack]]
 === {xpack} Settings in Logstash
+[subs="attributes"]
 ++++
 <titleabbrev>{xpack} Settings</titleabbrev>
 ++++
