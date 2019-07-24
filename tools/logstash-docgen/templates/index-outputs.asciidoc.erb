@@ -17,4 +17,9 @@ The following output plugins are available:
 include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
 <% end %>
 
+ifdef::asciidoctor[]
+:edit_url!:
+endif::[]
+ifndef::asciidoctor[]
 :edit_url:
+endif::[]

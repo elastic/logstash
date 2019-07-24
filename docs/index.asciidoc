@@ -227,7 +227,12 @@ include::static/best-practice.asciidoc[]
 // :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/troubleshooting.asciidoc
 include::static/troubleshooting.asciidoc[]
 
+ifdef::asciidoctor[]
+:edit_url!:
+endif::[]
+ifndef::asciidoctor[]
 :edit_url:
+endif::[]
 
 // Contributing to Logstash
 
