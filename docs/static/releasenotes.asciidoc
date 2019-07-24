@@ -65,7 +65,7 @@ This section summarizes the changes in the following releases:
 
 *Azure_event_hubs Input*
 
-* Added workaround to fix errors when using this plugin with Java 11https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38[#38]
+* Added workaround to fix errors when using this plugin with Java 11 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38[#38]
 
 *Kafka Input*
 
