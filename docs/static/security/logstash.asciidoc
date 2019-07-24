@@ -1,6 +1,7 @@
 [role="xpack"]
 [[ls-security]]
 === Configuring Security in Logstash
+[subs="attributes"]
 ++++
 <titleabbrev>{security}</titleabbrev>
 ++++
