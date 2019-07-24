@@ -6,6 +6,7 @@ describe LogStash::Api::Commands::Node do
 
   let(:report_method) { :all }
   let(:pipeline_id) { nil }
+  let(:opts) { {} }
   let(:mocked_vertex) {{:config_name=>"elasticsearch",
                        :plugin_type=>"output",
                        :meta=>{
@@ -22,8 +23,10 @@ describe LogStash::Api::Commands::Node do
                   }
   subject(:report) do
     factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(@agent))
-    if pipeline_id
-      factory.build(:node).send(report_method, pipeline_id)
+    if report_method == :pipelines
+      factory.build(:node).send(report_method, opts)
+    elsif report_method == :pipeline
+      factory.build(:node).send(report_method, pipeline_id, opts)
     elsif report_method == :decorate_with_cluster_uuids
       factory.build(:node).send(report_method, mocked_vertex)
     else
@@ -66,7 +69,26 @@ describe LogStash::Api::Commands::Node do
     end
   end
 
-  #TODO ?graph check
+  describe "#pipeline?opts" do
+    let(:report_method) { :pipeline }
+    let(:pipeline_id) { "main" }
+    let(:opts) { { :graph=>true } }
+    # Enforce just the structure
+    it "check keys" do
+      expect(report.keys).to include(
+        :ephemeral_id,
+        :hash,
+        :workers,
+        :batch_size,
+        :batch_delay,
+        :config_reload_automatic,
+        :config_reload_interval,
+        :dead_letter_queue_enabled,
+        # Be sure we display a graph when we set the option to
+        :graph
+      )
+    end
+  end
 
   describe "#os" do
     let(:report_method) { :os }
