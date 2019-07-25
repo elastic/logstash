@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-2-1,Logstash 7.2.1>>
 * <<logstash-7-2-0,Logstash 7.2.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
@@ -14,6 +15,87 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-0]]
+=== Logstash 7.3.0 Release Notes
+
+* Fixes a crash that could occur when an illegal field reference was used as part of a field key https://github.com/elastic/logstash/pull/10839[#10839]
+* Fixes a stall that could occur when using the Beta Pipeline-to-Pipeline feature by ensuring that a Pipeline Input will not shut down before its upstream pipeline https://github.com/elastic/logstash/pull/10872[#10872]
+* Fixes an issue during shutdown where the API could shut down before the pipelines have completed shutting down https://github.com/elastic/logstash/pull/10880[#10880]
+* Fixes an issue where the bundled plugins built on the Java Plugin API would fail to load on Java 11 https://github.com/elastic/logstash/pull/10951[#10951]
+* Fixes an issue where runaway matchers inside KV and Grok Filter Plugins could fail to respect configured timeouts https://github.com/elastic/logstash/pull/10978[#10978]
+* Enhanced `GET _node/stats/pipelines` API for Metricbeat monitoring https://github.com/elastic/logstash/pull/10576[#10576]
+* Enhanced `GET /` API to include `workers` and `batch_size` metadata https://github.com/elastic/logstash/pull/10853[#10853]
+* Added Plain codec for Java https://github.com/elastic/logstash/pull/10791[#10791]
+* Added JMS Input Plugin to the list of default plugins https://github.com/elastic/logstash/pull/10865[#10865]
+
+==== Plugins
+
+*Grok Filter*
+
+* Changed timeout handling using the Timeout class, resolving an issue where Logstash would fail to enforce timeouts https://github.com/logstash-plugins/logstash-filter-grok/pull/147[#147]
+
+*Http Filter*
+
+*Jdbc_streaming Filter*
+
+* Fixed formatting in documentation https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/17[#17] and https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/28[#28]
+
+*Json Filter*
+
+* Added better error handling, preventing some classes of malformed inputs from crashing the pipeline.
+
+*Kv Filter*
+
+* Changed timeout handling using the Timeout class, resolving an issue where Logstash would fail to enforce timeouts https://github.com/logstash-plugins/logstash-filter-kv/pull/84[#84]
+
+* Fixed asciidoc formatting in docs
+
+* Resolved potential race condition in pipeline shutdown where the timeout enforcer could be shut down while work was still in-flight, potentially leading to stuck pipelines.
+* Resolved potential race condition in pipeline shutdown where work could be submitted to the timeout enforcer after it had been shutdown, potentially leading to stuck pipelines.
+
+*Memcached Filter*
+
+* Fixed link formatting issues in doc https://github.com/logstash-plugins/logstash-filter-memcached/pull/16[#16]
+
+*Mutate Filter*
+
+*Useragent Filter*
+
+* Added support for OS regular expressions that use backreferences https://github.com/logstash-plugins/logstash-filter-useragent/pull/59[#59]
+
+*Azure_event_hubs Input*
+
+* Added workaround to fix errors when using this plugin with Java 11 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/38[#38]
+
+*Kafka Input*
+
+* Added support for `sasl_jaas_config` setting to allow JAAS config per plugin, rather than per JVM https://github.com/logstash-plugins/logstash-input-kafka/pull/313[#313]
+
+*Jms Input*
+
+* The JMS Input is now a default plugin distributed with Logstash
+
+*Snmp Input*
+
+* Adding oid_path_length config option https://github.com/logstash-plugins/logstash-input-snmp/pull/59[#59]
+* Fixing bug with table support removing index value from OIDs https://github.com/logstash-plugins/logstash-input-snmp/issues/60[#60]
+
+* Added information and other improvements to documentation https://github.com/logstash-plugins/logstash-input-snmp/pull/57[#57]
+
+*Tcp Input*
+
+* Skip empty lines while reading certificate files https://github.com/logstash-plugins/logstash-input-tcp/issues/144[#144]
+
+*Twitter Input*
+
+* Updated Twitter gem to v6.2.0, cleaned up obsolete monkey patches, fixed integration tests https://github.com/logstash-plugins/logstash-input-twitter/pull/63[#63]
+
+*Elastic_app_search Output*
+
+*Kafka Output*
+
+* Added support for `sasl_jaas_config` setting to allow JAAS config per plugin, rather than per JVM https://github.com/logstash-plugins/logstash-output-kafka/pull/223[#223]
 
 [[logstash-7-2-1]]
 === Logstash 7.2.1 Release Notes
@@ -37,7 +119,6 @@ This section summarizes the changes in the following releases:
 * Documentation: Remove the beta designation from the docs for Java plugins https://github.com/elastic/logstash/pull/10891[#10891]
 * Documentation: Add homebrew as installation option https://github.com/elastic/logstash/pull/10874[#10874]
 * Documentation: Running Logstash on Windows https://github.com/elastic/logstash/pull/10805[#10805]
-
 
 [[logstash-7-2-0]]
 === Logstash 7.2.0 Release Notes
