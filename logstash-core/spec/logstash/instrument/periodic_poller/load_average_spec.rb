@@ -42,6 +42,7 @@ describe LogStash::Instrument::PeriodicPoller::LoadAverage do
 
         before do
           expect(ManagementFactory).to receive(:getOperatingSystemMXBean).and_return(double("OperatingSystemMXBean", :getSystemLoadAverage => load_avg))
+          expect(ManagementFactory).to receive(:getOperatingSystemMXBean).and_return(double("OperatingSystemMXBean", :getAvailableProcessors => 4))
         end
 
         it "returns the value" do
@@ -52,6 +53,7 @@ describe LogStash::Instrument::PeriodicPoller::LoadAverage do
       context "when 'OperatingSystemMXBean.getSystemLoadAverage' doesn't return anything" do
         before do
           expect(ManagementFactory).to receive(:getOperatingSystemMXBean).and_return(double("OperatingSystemMXBean", :getSystemLoadAverage => nil))
+          expect(ManagementFactory).to receive(:getOperatingSystemMXBean).and_return(double("OperatingSystemMXBean", :getAvailableProcessors => 4))
         end
 
         it "returns nothing" do
