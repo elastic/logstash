@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-2,Logstash 6.8.2>>
 * <<logstash-6-8-1,Logstash 6.8.1>>
 * <<logstash-6-8-0,Logstash 6.8.0>>
 * <<logstash-6-7-2,Logstash 6.7.2>>
@@ -32,6 +33,29 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-2]]
+=== Logstash 6.8.2 Release Notes
+
+* Enable interrupts for Joni regexp https://github.com/elastic/logstash/pull/10978[#10978]
+* Update Docker dependencies https://github.com/elastic/logstash/pull/10986[#10986]
+
+==== Plugins
+*Grok Filter*
+
+* Use Timeout class instead of native thread interruption https://github.com/logstash-plugins/logstash-filter-grok/pull/147[#147]
+
+*HTTP Filter*
+
+* Fix exception when using debug logging https://github.com/logstash-plugins/logstash-filter-http/pull/14[#14]
+
+*KV Filter*
+
+* Use Timeout class instead of native thread interruption https://github.com/logstash-plugins/logstash-filter-kv/pull/84[#84]
+
+*Elastic App Search Output*
+
+* Support for self-managed App Search https://github.com/logstash-plugins/logstash-output-elastic_app_search/pull/6[#6]
 
 [[logstash-6-8-1]]
 === Logstash 6.8.1 Release Notes
