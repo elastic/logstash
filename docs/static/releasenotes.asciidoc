@@ -18,9 +18,10 @@ This section summarizes the changes in the following releases:
 [[logstash-7-2-1]]
 === Logstash 7.2.1 Release Notes
 
-coming[7.2.1]
-
-* Fixes pipeline to pipeline shutdown ordering https://github.com/elastic/logstash/pull/10872[#10872]
+* Changed: Make sure joni regexp interruptability is enabled Fixes https://github.com/elastic/logstash/pull/10978[#10978]
+* Fixed: Java core plugin support for Java 11 https://github.com/elastic/logstash/pull/10951[#10951]
+* Updated: Jinja2 docker dependency https://github.com/elastic/logstash/pull/10986[#10986]
+* Fixed: pipeline to pipeline shutdown ordering https://github.com/elastic/logstash/pull/10872[#10872]
 * Changed: Do not shut down API webserver until after pipelines have been shut down https://github.com/elastic/logstash/pull/10880[#10880]
 * Documentation: documentation for java plugins:
  ** Add java example plugins to skiplist https://github.com/elastic/logstash/pull/10921[#10921]
@@ -35,6 +36,7 @@ coming[7.2.1]
 * Documentation: Remove gcs output from skip list https://github.com/elastic/logstash/pull/10919[#10919]
 * Documentation: Remove the beta designation from the docs for Java plugins https://github.com/elastic/logstash/pull/10891[#10891]
 * Documentation: Add homebrew as installation option https://github.com/elastic/logstash/pull/10874[#10874]
+* Documentation: Running Logstash on Windows https://github.com/elastic/logstash/pull/10805[#10805]
 
 
 [[logstash-7-2-0]]
