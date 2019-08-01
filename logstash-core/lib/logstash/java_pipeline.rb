@@ -238,7 +238,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           org.logstash.execution.WorkerLoop.new(
               lir_execution, filter_queue_client, @events_filtered, @events_consumed,
-              @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
+              @flushRequested, @flushing, @shutdownRequested, @drain_queue, pipeline_workers == 1).run
         end
         @worker_threads << thread
       end

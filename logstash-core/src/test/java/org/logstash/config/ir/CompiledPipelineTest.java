@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.jruby.RubyArray;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -34,6 +35,10 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
+
+import static org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -107,7 +112,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.emptyMap(),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -128,7 +133,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -159,10 +164,55 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+    }
+
+    @Test
+    public void preservesInputEventInstantiationOrder() throws Exception {
+        testEventOrder(true, new int[]{0, 2, 1});
+    }
+
+    @Test
+    public void ignoresInputEventInstantiationOrder() throws Exception {
+        testEventOrder(false, null);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private void testEventOrder(boolean sortedEvents, int[] expectedOrdering) throws Exception {
+        final RubyEvent event1 = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        event1.getEvent().setField("message", 1);
+        final RubyEvent event2 = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        event2.getEvent().setField("message", 2);
+        event2.getEvent().tag("foo");
+        final RubyEvent event3 = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        event3.getEvent().setField("message", 3);
+
+        // arrange them out-of-order in the input batch to test ordering
+        RubyArray inputBatch = RubyUtil.RUBY.newArray(event1, event3, event2);
+
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                "input {mockinput{}} " +
+                        "filter { if \"foo\" not in [tags] { mockfilter { } } }" +
+                        "output {mockoutput{}}", false
+        );
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution(sortedEvents).compute(inputBatch, false, false);
+        final Collection<RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        assertThat(outputEvents.size(), is(3));
+
+        RubyEvent[] outputArray = outputEvents.toArray(new RubyEvent[0]);
+        for (int k = 0; k < outputArray.length; k++) {
+            assertThat(outputArray[k], is(inputBatch.get(expectedOrdering == null ? k : expectedOrdering[k])));
+        }
     }
 
     @Test
@@ -273,7 +323,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -297,7 +347,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -322,7 +372,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -355,7 +405,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution(false).compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -400,7 +450,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockaddfilter", () -> ADD_FIELD_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution()
+        ).buildExecution(false)
             .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));

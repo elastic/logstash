@@ -40,10 +40,11 @@ public final class WorkerLoop implements Runnable {
     public WorkerLoop(final CompiledPipeline pipeline, final QueueReadClient readClient,
         final LongAdder filteredCounter, final LongAdder consumedCounter,
         final AtomicBoolean flushRequested, final AtomicBoolean flushing,
-        final AtomicBoolean shutdownRequested, final boolean drainQueue) {
+        final AtomicBoolean shutdownRequested, final boolean drainQueue,
+        final boolean orderedEvents) {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
-        this.execution = pipeline.buildExecution();
+        this.execution = pipeline.buildExecution(orderedEvents);
         this.drainQueue = drainQueue;
         this.readClient = readClient;
         this.flushRequested = flushRequested;

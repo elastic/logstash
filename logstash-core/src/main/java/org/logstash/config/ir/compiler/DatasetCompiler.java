@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -155,13 +156,16 @@ public final class DatasetCompiler {
      * @param parents Parent Datasets
      * @param output Output Plugin (of Ruby type OutputDelegator)
      * @param terminal Set to true if this output is the only output in the pipeline
+     * @param orderedEvents When true, generates code to process events in order. Event ordering is
+     *                      guaranteed <i>only</i> with a single pipeline worker.
      * @return Output Dataset
      */
     public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
-        final AbstractOutputDelegatorExt output, final boolean terminal) {
+        final AbstractOutputDelegatorExt output, final boolean terminal, final boolean orderedEvents) {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
+
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
             computeSyntax = Closure.wrap(invokeOutput(fields.add(output), BATCH_ARG));
@@ -181,7 +185,7 @@ public final class DatasetCompiler {
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
             computeSyntax = withInputBuffering(
                 Closure.wrap(invokeOutput(fields.add(output), inputBuffer), inlineClear),
-                parentFields, inputBuffer
+                parentFields, inputBuffer, orderedEvents
             );
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
@@ -235,15 +239,32 @@ public final class DatasetCompiler {
      * @param compute Closure to execute
      * @param parents Parents to buffer results for
      * @param inputBuffer Buffer to store results in
+     * @param sorted When true, generates code to sort events by sequence number before sending
+     *               to outputs in order to preserve input event order. Event ordering is
+     *               guaranteed <i>only</i> with a single pipeline worker.
      * @return Closure wrapped by buffering parent results and clearing them
      */
-    private static Closure withInputBuffering(final Closure compute,
-        final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
+    private static Closure withInputBuffering(final Closure compute, final Collection<ValueSyntaxElement> parents,
+        final ValueSyntaxElement inputBuffer, final boolean sorted) {
         return Closure.wrap(
                 parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
-                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
-                ).toArray(MethodLevelSyntaxElement[]::new)
-        ).add(compute).add(clear(inputBuffer));
+                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer))
+                        .toArray(MethodLevelSyntaxElement[]::new))
+                .add(sorted ? eventSorter(inputBuffer) : Closure.EMPTY)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    private static Closure withInputBuffering(final Closure compute, final Collection<ValueSyntaxElement> parents,
+                                              final ValueSyntaxElement inputBuffer) {
+        return withInputBuffering(compute, parents, inputBuffer, false);
+    }
+
+    private static Closure eventSorter(ValueSyntaxElement inputBuffer) {
+        return Closure.wrap(SyntaxFactory.value("java.util.Collections")
+                .call("sort",
+                        inputBuffer,
+                        SyntaxFactory.value("new org.logstash.config.ir.compiler.Utils.EventSequenceComparator()")));
     }
 
     /**

@@ -97,10 +97,12 @@ public final class CompiledPipeline {
     /**
      * This method contains the actual compilation of the {@link Dataset} representing the
      * underlying pipeline from the Queue to the outputs.
+     * @param orderedEvents When true, generates code to process events in order. Event ordering is
+     *                      guaranteed <i>only</i> with a single pipeline worker.
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
-    public Dataset buildExecution() {
-        return new CompiledPipeline.CompiledExecution().toDataset();
+    public Dataset buildExecution(boolean orderedEvents) {
+        return new CompiledPipeline.CompiledExecution(orderedEvents).toDataset();
     }
 
     /**
@@ -247,8 +249,8 @@ public final class CompiledPipeline {
 
         private final Dataset compiled;
 
-        CompiledExecution() {
-            compiled = compile();
+        CompiledExecution(boolean orderedEvents) {
+            compiled = compile(orderedEvents);
         }
 
         Dataset toDataset() {
@@ -257,9 +259,11 @@ public final class CompiledPipeline {
 
         /**
          * Instantiates the graph of compiled {@link Dataset}.
+         * @param orderedEvents When true, generates code to process events in order. Event ordering is
+         *                      guaranteed <i>only</i> with a single pipeline worker.
          * @return Compiled {@link Dataset} representing the pipeline.
          */
-        private Dataset compile() {
+        private Dataset compile(boolean orderedEvents) {
             final Collection<Vertex> outputNodes = pipelineIR.getGraph()
                 .allLeaves().filter(CompiledPipeline.this::isOutput)
                 .collect(Collectors.toList());
@@ -267,7 +271,7 @@ public final class CompiledPipeline {
                 return Dataset.IDENTITY;
             } else {
                 return DatasetCompiler.terminalDataset(outputNodes.stream().map(
-                    leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf))
+                    leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf), orderedEvents)
                 ).collect(Collectors.toList()));
             }
         }
@@ -299,16 +303,20 @@ public final class CompiledPipeline {
          * the application of the given output.
          * @param vertex Vertex of the output to create this {@link Dataset} for
          * @param datasets All the datasets that have children passing into this output
+         * @param orderedEvents When true, generates code to process events in order. Event ordering is
+         *                      guaranteed <i>only</i> with a single pipeline worker.
          * @return Output {@link Dataset}
          */
-        private Dataset outputDataset(final Vertex vertex, final Collection<Dataset> datasets) {
+        private Dataset outputDataset(final Vertex vertex, final Collection<Dataset> datasets,
+            final boolean orderedEvents) {
             final String vertexId = vertex.getId();
 
             if (!plugins.containsKey(vertexId)) {
                 final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.outputDataset(flatten(datasets, vertex),
+                        DatasetCompiler.outputDataset(flatten(datasets, vertex, orderedEvents),
                                                       outputs.get(vertexId),
-                                                     outputs.size() == 1);
+                                                     outputs.size() == 1,
+                                                      orderedEvents);
                 LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
                 plugins.put(vertexId, prepared.instantiate());
             }
@@ -318,18 +326,20 @@ public final class CompiledPipeline {
 
         /**
          * Split the given {@link Dataset}s and return the dataset half of their elements that contains
-         * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
+         * the {@link JrubyEventExtLibrary.RubyEvent} that fulfill the given {@link EventCondition}.
          * @param datasets Datasets that are the parents of the datasets to split
          * @param condition Condition that must be fulfilled
          * @param vertex Vertex id to cache the resulting {@link Dataset} under
+         * @param orderedEvents When true, generates code to process events in order. Event ordering is
+         *                      guaranteed <i>only</i> with a single pipeline worker.
          * @return The half of the datasets contents that fulfils the condition
          */
-        private SplitDataset split(final Collection<Dataset> datasets,
-            final EventCondition condition, final Vertex vertex) {
+        private SplitDataset split(final Collection<Dataset> datasets, final EventCondition condition,
+            final Vertex vertex, final boolean orderedEvents) {
             final String key = vertex.getId();
             SplitDataset conditional = iffs.get(key);
             if (conditional == null) {
-                final Collection<Dataset> dependencies = flatten(datasets, vertex);
+                final Collection<Dataset> dependencies = flatten(datasets, vertex, orderedEvents);
                 conditional = iffs.get(key);
                 // Check that compiling the dependencies did not already instantiate the conditional
                 // by requiring its else branch.
@@ -354,14 +364,21 @@ public final class CompiledPipeline {
          * a {code filter} or and {code if} statement).
          * @param datasets Nodes from the last already compiled level
          * @param start Vertex to compile children for
+         * @param orderedEvents When true, generates code to process events in order. Event ordering is
+         *                      guaranteed <i>only</i> with a single pipeline worker.
          * @return Datasets originating from given {@link Vertex}
          */
-        private Collection<Dataset> flatten(final Collection<Dataset> datasets,
-            final Vertex start) {
+        private Collection<Dataset> flatten(final Collection<Dataset> datasets, final Vertex start,
+            final boolean orderedEvents) {
             final Collection<Dataset> result = compileDependencies(start, datasets,
-                start.incomingVertices().filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
+                start.incomingVertices().filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex),
+                orderedEvents
             );
             return result.isEmpty() ? datasets : result;
+        }
+
+        private Collection<Dataset> flatten(final Collection<Dataset> datasets, final Vertex start) {
+            return flatten(datasets, start, false);
         }
 
         /**
@@ -369,16 +386,18 @@ public final class CompiledPipeline {
          * @param datasets Datasets from previous stage
          * @param start Start Vertex that got expanded
          * @param dependencies Dependencies of {@code start}
+         * @param orderedEvents When true, generates code to process events in order. Event ordering is
+         *                      guaranteed <i>only</i> with a single pipeline worker.
          * @return Datasets compiled from vertex children
          */
-        private Collection<Dataset> compileDependencies(final Vertex start,
-            final Collection<Dataset> datasets, final Stream<Vertex> dependencies) {
+        private Collection<Dataset> compileDependencies(final Vertex start, final Collection<Dataset> datasets,
+            final Stream<Vertex> dependencies, boolean orderedEvents) {
             return dependencies.map(
                 dependency -> {
                     if (isFilter(dependency)) {
                         return filterDataset(dependency, datasets);
                     } else if (isOutput(dependency)) {
-                        return outputDataset(dependency, datasets);
+                        return outputDataset(dependency, datasets, orderedEvents);
                     } else {
                         // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
@@ -386,7 +405,8 @@ public final class CompiledPipeline {
                         final SplitDataset ifDataset = split(
                             datasets,
                             conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
-                            dependency
+                            dependency,
+                            orderedEvents
                         );
                         // It is important that we double check that we are actually dealing with the
                         // positive/left branch of the if condition

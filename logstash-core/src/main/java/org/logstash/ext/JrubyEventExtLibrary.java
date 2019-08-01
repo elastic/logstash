@@ -42,6 +42,8 @@ public final class JrubyEventExtLibrary {
          */
         private final int hash = nextHash();
 
+        private final long sequence = SEQUENCE_GENERATOR.get();
+
         private Event event;
 
         public RubyEvent(final Ruby runtime, final RubyClass klass) {
@@ -275,6 +277,10 @@ public final class JrubyEventExtLibrary {
             }
             this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             return value;
+        }
+
+        public long sequence() {
+            return sequence;
         }
 
         @Override

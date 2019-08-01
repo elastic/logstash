@@ -3,6 +3,7 @@ package org.logstash.config.ir.compiler;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -29,6 +30,18 @@ public class Utils {
             } else {
                 unfulfilled.add(e);
             }
+        }
+    }
+
+    /**
+     * Comparator for events based on the sequence of their instantiation. Used to maintain input event
+     * ordering with a single pipeline worker.
+     */
+    public static class EventSequenceComparator implements Comparator<JrubyEventExtLibrary.RubyEvent> {
+
+        @Override
+        public int compare(JrubyEventExtLibrary.RubyEvent o1, JrubyEventExtLibrary.RubyEvent o2) {
+            return Long.compare(o1.sequence(), o2.sequence());
         }
     }
 
