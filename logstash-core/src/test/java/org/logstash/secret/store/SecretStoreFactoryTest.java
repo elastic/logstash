@@ -133,7 +133,7 @@ public class SecretStoreFactoryTest {
     /**
      * Valid alternate implementation
      */
-    static class MemoryStore implements SecretStore {
+    public static class MemoryStore implements SecretStore {
 
         Map<SecretIdentifier, ByteBuffer> secrets = new HashMap(1);
 
@@ -178,7 +178,8 @@ public class SecretStoreFactoryTest {
 
         @Override
         public byte[] retrieveSecret(SecretIdentifier id) {
-            return secrets.get(id).array();
+            ByteBuffer bb = secrets.get(id);
+            return bb != null ? bb.array() : null;
         }
     }
 
