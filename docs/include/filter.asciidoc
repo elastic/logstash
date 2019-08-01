@@ -25,21 +25,26 @@ Field names can be dynamic and include parts of the event using the `%{field}`.
 
 Example:
 [source,ruby]
-    filter {
-      PLUGIN_NAME {
-        add_field => { "foo_%{somefield}" => "Hello world, from %{host}" }
-      }
-    }
+----
+filter {
+  PLUGIN_NAME {
+    add_field => { "foo_%{somefield}" => "Hello world, from %{host}" }
+  }
+}
+----
+
 [source,ruby]
-    # You can also add multiple fields at once:
-    filter {
-      PLUGIN_NAME {
-        add_field => {
-          "foo_%{somefield}" => "Hello world, from %{host}"
-          "new_field" => "new_static_value"
-        }
-      }
+----
+# You can also add multiple fields at once:
+filter {
+  PLUGIN_NAME {
+    add_field => {
+      "foo_%{somefield}" => "Hello world, from %{host}"
+      "new_field" => "new_static_value"
     }
+  }
+}
+----
 
 If the event has field `"somefield" == "hello"` this filter, on success,
 would add field `foo_hello` if it is present, with the
@@ -58,18 +63,23 @@ syntax.
 
 Example:
 [source,ruby]
-    filter {
-      PLUGIN_NAME {
-        add_tag => [ "foo_%{somefield}" ]
-      }
-    }
+----
+filter {
+  PLUGIN_NAME {
+    add_tag => [ "foo_%{somefield}" ]
+  }
+}
+----
+
 [source,ruby]
-    # You can also add multiple tags at once:
-    filter {
-      PLUGIN_NAME {
-        add_tag => [ "foo_%{somefield}", "taggedy_tag"]
-      }
-    }
+----
+# You can also add multiple tags at once:
+filter {
+  PLUGIN_NAME {
+    add_tag => [ "foo_%{somefield}", "taggedy_tag"]
+  }
+}
+----
 
 If the event has field `"somefield" == "hello"` this filter, on success,
 would add a tag `foo_hello` (and the second example would of course add a `taggedy_tag` tag).
@@ -122,19 +132,26 @@ Optional.
 If this filter is successful, remove arbitrary fields from this event.
 Fields names can be dynamic and include parts of the event using the %{field}
 Example:
+
 [source,ruby]
-    filter {
-      PLUGIN_NAME {
-        remove_field => [ "foo_%{somefield}" ]
-      }
-    }
+----
+filter {
+  PLUGIN_NAME {
+    remove_field => [ "foo_%{somefield}" ]
+  }
+}
+----
+
 [source,ruby]
-    # You can also remove multiple fields at once:
-    filter {
-      PLUGIN_NAME {
-        remove_field => [ "foo_%{somefield}", "my_extraneous_field" ]
-      }
-    }
+----
+# You can also remove multiple fields at once:
+filter {
+  PLUGIN_NAME {
+    remove_field => [ "foo_%{somefield}", "my_extraneous_field" ]
+  }
+}
+----
+
 
 If the event has field `"somefield" == "hello"` this filter, on success,
 would remove the field with name `foo_hello` if it is present. The second
@@ -151,19 +168,25 @@ Tags can be dynamic and include parts of the event using the `%{field}`
 syntax.
 
 Example:
+
 [source,ruby]
-    filter {
-      PLUGIN_NAME {
-        remove_tag => [ "foo_%{somefield}" ]
-      }
-    }
+----
+filter {
+  PLUGIN_NAME {
+    remove_tag => [ "foo_%{somefield}" ]
+  }
+}
+----
+
 [source,ruby]
-    # You can also remove multiple tags at once:
-    filter {
-      PLUGIN_NAME {
-        remove_tag => [ "foo_%{somefield}", "sad_unwanted_tag"]
-      }
-    }
+----
+# You can also remove multiple tags at once:
+filter {
+  PLUGIN_NAME {
+    remove_tag => [ "foo_%{somefield}", "sad_unwanted_tag"]
+  }
+}
+----
 
 If the event has field `"somefield" == "hello"` this filter, on success,
 would remove the tag `foo_hello` if it is present. The second example
