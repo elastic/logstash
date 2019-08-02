@@ -37,7 +37,7 @@ To set up authentication credentials for Logstash:
 
 . Use the the **Management > Roles** UI in {kib} or the `role` API to create a
 `logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
-For *indices* privileges, add `write`, `delete`, and `create_index`.
+For *indices* privileges, add `write`, `create`, `delete`, and `create_index`.
 +
 If you plan to use {ref}/getting-started-index-lifecycle-management.html[index lifecycle
 management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for indices.
@@ -50,7 +50,7 @@ POST _xpack/security/role/logstash_writer
   "indices": [
     {
       "names": [ "logstash-*" ], <2>
-      "privileges": ["write","delete","create_index","manage","manage_ilm"]  <3>
+      "privileges": ["write","create","delete","create_index","manage","manage_ilm"]  <3>
     }
   ]
 }
