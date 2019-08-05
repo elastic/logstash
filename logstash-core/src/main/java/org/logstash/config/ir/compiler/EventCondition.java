@@ -19,6 +19,7 @@ import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.Expression;
+import org.logstash.config.ir.expression.RegexValueExpression;
 import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.config.ir.expression.binary.And;
 import org.logstash.config.ir.expression.binary.Eq;
@@ -184,6 +185,11 @@ public interface EventCondition {
                 expression.getRight() instanceof EventValueExpression;
         }
 
+        private static boolean vAndR(final BinaryBooleanExpression expression) {
+            return expression.getLeft() instanceof ValueExpression &&
+                    expression.getRight() instanceof RegexValueExpression;
+        }
+
         private static EventCondition truthy(final Truthy truthy) {
             final EventCondition condition;
             final Expression inner = truthy.getExpression();
@@ -201,8 +207,13 @@ public interface EventCondition {
             final Expression uright = regex.getRight();
             if (eAndV(regex)) {
                 condition = new EventCondition.Compiler.FieldMatches(
-                    ((EventValueExpression) uleft).getFieldName(),
-                    ((ValueExpression) uright).get().toString()
+                        ((EventValueExpression) uleft).getFieldName(),
+                        ((ValueExpression) uright).get().toString()
+                );
+            } else if (vAndR(regex)) {
+                condition = new EventCondition.Compiler.ConstantMatches(
+                        ((ValueExpression) uleft).get(),
+                        ((RegexValueExpression) uright).get().toString()
                 );
             } else {
                 throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
@@ -461,6 +472,24 @@ public interface EventCondition {
                 return tomatch instanceof RubyString &&
                     !((RubyString) tomatch).match(WorkerLoop.THREAD_CONTEXT.get(), regex).isNil();
             }
+        }
+
+        private static final class ConstantMatches implements EventCondition {
+
+            private final boolean matches;
+
+            private ConstantMatches(final Object constant, final String regex) {
+                this.matches = constant instanceof String &&
+                        !(RubyUtil.RUBY.newString((String) constant).match(
+                                WorkerLoop.THREAD_CONTEXT.get(),
+                                RubyUtil.RUBY.newString(regex)).isNil());
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return matches;
+            }
+
         }
 
         private static final class ConstantStringInField implements EventCondition {
