@@ -9,6 +9,6 @@
 
 :getstarted: Let's step through creating an {plugintype} plugin using the https://github.com/logstash-plugins/logstash-output-example/[example {plugintype} plugin].
 
-:methodheader: Logstash outputs must implement the `register` and `multi_receive` methods.
+:methodheader: pass:m[Logstash outputs must implement the `register` and `multi_receive` methods.]
 
 include::include/pluginbody.asciidoc[]
