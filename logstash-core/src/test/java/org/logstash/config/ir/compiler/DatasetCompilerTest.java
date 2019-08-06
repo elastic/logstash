@@ -25,7 +25,8 @@ public final class DatasetCompilerTest {
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
-                true, false
+                true,
+                false
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );

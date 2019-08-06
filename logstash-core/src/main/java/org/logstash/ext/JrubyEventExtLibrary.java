@@ -40,14 +40,16 @@ public final class JrubyEventExtLibrary {
          * Hashcode of this instance. Used to avoid the more expensive {@link RubyObject#hashCode()}
          * since we only care about reference equality for this class anyway.
          */
-        private final int hash = nextHash();
+        private final int hash;
 
-        private final long sequence = SEQUENCE_GENERATOR.get();
+        private final long sequence;
 
         private Event event;
 
         public RubyEvent(final Ruby runtime, final RubyClass klass) {
             super(runtime, klass);
+            this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
+            this.hash = (int) (sequence ^ sequence >>> 32) + 31;
         }
 
         public static RubyEvent newRubyEvent(Ruby runtime) {
@@ -349,15 +351,6 @@ public final class JrubyEventExtLibrary {
 
         private void setEvent(Event event) {
             this.event = event;
-        }
-
-        /**
-         * Generates a fixed hashcode.
-         * @return HashCode value
-         */
-        private static int nextHash() {
-            final long sequence = SEQUENCE_GENERATOR.incrementAndGet();
-            return (int) (sequence ^ sequence >>> 32) + 31;
         }
     }
 }

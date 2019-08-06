@@ -172,12 +172,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     public void preservesInputEventInstantiationOrder() throws Exception {
-        testEventOrder(true, new int[]{0, 2, 1});
+        testEventOrder(true, new int[]{0, 1, 2});
     }
 
     @Test
     public void ignoresInputEventInstantiationOrder() throws Exception {
-        testEventOrder(false, null);
+        testEventOrder(false, new int[]{0, 2, 1});
     }
 
     @SuppressWarnings("rawtypes")
@@ -190,19 +190,26 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final RubyEvent event3 = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         event3.getEvent().setField("message", 3);
 
-        // arrange them out-of-order in the input batch to test ordering
-        RubyArray inputBatch = RubyUtil.RUBY.newArray(event1, event3, event2);
+        RubyArray inputBatch = RubyUtil.RUBY.newArray(event1, event2, event3);
 
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 "input {mockinput{}} " +
-                        "filter { if \"foo\" not in [tags] { mockfilter { } } }" +
+                        "filter { " +
+                        "  if \"foo\" not in [tags] {" +
+                        "      mockfilter1 { } " +
+                        "  } else {" +
+                        "      mockfilter2 { } " +
+                        "  } }" +
                         "output {mockoutput{}}", false
         );
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockfilter1", () -> IDENTITY_FILTER);
+        filters.put("mockfilter2", () -> ADD_FIELD_FILTER);
         new CompiledPipeline(
                 pipelineIR,
                 new CompiledPipelineTest.MockPluginFactory(
                         Collections.singletonMap("mockinput", () -> null),
-                        Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                        filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
         ).buildExecution(sortedEvents).compute(inputBatch, false, false);
@@ -211,7 +218,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         RubyEvent[] outputArray = outputEvents.toArray(new RubyEvent[0]);
         for (int k = 0; k < outputArray.length; k++) {
-            assertThat(outputArray[k], is(inputBatch.get(expectedOrdering == null ? k : expectedOrdering[k])));
+            assertThat(outputArray[k], is(inputBatch.get(expectedOrdering[k])));
         }
     }
 

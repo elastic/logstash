@@ -519,18 +519,18 @@ describe "conditionals in filter" do
     CONFIG
 
     sample_one({"type" => "original"}) do
-      clone_event_1 = subject[0]
-      expect(clone_event_1.get("type")).to eq("clone1")
-      expect(clone_event_1.get("cond1")).to eq("true")
-      expect(clone_event_1.get("cond2")).to eq(nil)
-      clone_event_2 = subject[1]
-      expect(clone_event_2.get("type")).to eq("clone2")
-      expect(clone_event_2.get("cond1")).to eq(nil)
-      expect(clone_event_2.get("cond2")).to eq("true")
-      original_event = subject[2]
+      original_event = subject[0]
       expect(original_event.get("type")).to eq("original")
       expect(original_event.get("cond1")).to eq(nil)
       expect(original_event.get("cond2")).to eq(nil)
+      clone_event_1 = subject[1]
+      expect(clone_event_1.get("type")).to eq("clone1")
+      expect(clone_event_1.get("cond1")).to eq("true")
+      expect(clone_event_1.get("cond2")).to eq(nil)
+      clone_event_2 = subject[2]
+      expect(clone_event_2.get("type")).to eq("clone2")
+      expect(clone_event_2.get("cond1")).to eq(nil)
+      expect(clone_event_2.get("cond2")).to eq("true")
     end
   end
 
