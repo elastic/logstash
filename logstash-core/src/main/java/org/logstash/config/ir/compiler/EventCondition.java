@@ -287,7 +287,7 @@ public interface EventCondition {
                     (EventValueExpression) left, (List<?>) ((ValueExpression) right).get()
                 );
             } else if (eAndE(in)) {
-                condition = in((EventValueExpression) right, (EventValueExpression) left);
+                condition = in((EventValueExpression) left, (EventValueExpression) right);
             } else if (vAndV(in)) {
                 condition = in((ValueExpression) left, (ValueExpression) right);
             } else {
@@ -571,8 +571,8 @@ public interface EventCondition {
                 if (lfound instanceof ConvertedList || lfound instanceof ConvertedMap) {
                     return false;
                 } else if (lfound instanceof RubyString && rfound instanceof RubyString) {
-                    return ((RubyString) lfound).getByteList()
-                        .indexOf(((RubyString) rfound).getByteList()) > -1;
+                    return ((RubyString) rfound).getByteList()
+                        .indexOf(((RubyString) lfound).getByteList()) > -1;
                 } else if (rfound instanceof ConvertedList) {
                     return contains((ConvertedList) rfound, lfound);
                 } else {
