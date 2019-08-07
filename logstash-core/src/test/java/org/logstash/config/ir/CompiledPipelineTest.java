@@ -50,7 +50,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that does not modify the batch.
      */
-    private static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -64,7 +64,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
      */
-    private static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -458,7 +458,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Configurable Mock {@link PluginFactory}
      */
-    private static final class MockPluginFactory implements PluginFactory {
+    static final class MockPluginFactory implements PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
