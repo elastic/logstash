@@ -195,6 +195,8 @@ public interface EventCondition {
             final Expression inner = truthy.getExpression();
             if (inner instanceof EventValueExpression) {
                 condition = truthy((EventValueExpression) inner);
+            } else if (inner instanceof ValueExpression) {
+                condition = constant(valueIsTruthy(((ValueExpression) inner).get()));
             } else {
                 throw new EventCondition.Compiler.UnexpectedTypeException(inner);
             }
@@ -455,6 +457,15 @@ public interface EventCondition {
             return value ? event -> true : event -> false;
         }
 
+        private static boolean valueIsTruthy(Object object) {
+            if (object == null) {
+                return false;
+            }
+            final String other = object.toString();
+            return other != null && !other.isEmpty() &&
+                    !Boolean.toString(false).equals(other);
+        }
+
         private static final class FieldMatches implements EventCondition {
 
             private final FieldReference field;
@@ -611,12 +622,7 @@ public interface EventCondition {
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object object = event.getEvent().getUnconvertedField(field);
-                if (object == null) {
-                    return false;
-                }
-                final String other = object.toString();
-                return other != null && !other.isEmpty() &&
-                    !Boolean.toString(false).equals(other);
+                return valueIsTruthy(object);
             }
         }
 
