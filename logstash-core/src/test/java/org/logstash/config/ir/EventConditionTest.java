@@ -1,7 +1,5 @@
 package org.logstash.config.ir;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jruby.RubyArray;
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +20,8 @@ import java.util.function.Supplier;
 
 import static org.logstash.config.ir.CompiledPipelineTest.IDENTITY_FILTER;
 import static org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public final class EventConditionTest extends RubyEnvTestCase {
 
@@ -113,10 +113,50 @@ public final class EventConditionTest extends RubyEnvTestCase {
         ).buildExecution().compute(inputBatch, false, false);
         final RubyEvent[] outputEvents = EVENT_SINKS.get(runId).toArray(new RubyEvent[0]);
 
-        MatcherAssert.assertThat(outputEvents.length, CoreMatchers.is(3));
-        MatcherAssert.assertThat(outputEvents[0], CoreMatchers.is(leftIsString1));
-        MatcherAssert.assertThat(outputEvents[1], CoreMatchers.is(rightIsList1));
-        MatcherAssert.assertThat(outputEvents[2], CoreMatchers.is(nonStringValue1));
+        assertThat(outputEvents.length, is(3));
+        assertThat(outputEvents[0], is(leftIsString1));
+        assertThat(outputEvents[1], is(rightIsList1));
+        assertThat(outputEvents[2], is(nonStringValue1));
+    }
+
+    @Test
+    public void testConditionWithConstantValue() throws Exception {
+        testConditionWithConstantValue("\"[abc]\"", 1);
+    }
+
+    @Test
+    public void testConditionWithConstantFalseLiteralValue() throws Exception {
+        testConditionWithConstantValue("\"false\"", 0);
+    }
+
+    @Test
+    public void testConditionWithConstantEmptyStringValue() throws Exception {
+        testConditionWithConstantValue("\"\"", 0);
+    }
+
+    private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                "input {mockinput{}} filter { " +
+                        "mockfilter {} } " +
+                        "output { " +
+                        "  if " + condition + " { " +
+                        "    mockoutput{}" +
+                        "  } }",
+                false
+        );
+
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                ))
+                .buildExecution()
+                .compute(RubyUtil.RUBY.newArray(RubyEvent.newRubyEvent(RubyUtil.RUBY)), false, false);
+
+        final Collection<RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        assertThat(outputEvents.size(), is(expectedMatches));
     }
 
     private Supplier<Consumer<Collection<RubyEvent>>> mockOutputSupplier() {
