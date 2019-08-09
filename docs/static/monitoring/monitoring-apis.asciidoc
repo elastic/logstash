@@ -1,8 +1,9 @@
+[float]
 [[monitoring]]
-== Monitoring APIs
+== APIs for monitoring {ls}
 
-Logstash provides the following monitoring APIs to retrieve runtime metrics
-about Logstash:
+{ls} provides monitoring APIs for retrieving runtime metrics
+about {ls}:
 
 * <<node-info-api>>
 * <<plugins-api>>
@@ -35,18 +36,18 @@ instance, you need to launch Logstash with the `--http.port` flag specified to b
 
 [float]
 [[monitoring-common-options]]
-=== Common Options
+==== Common Options
 
 The following options can be applied to all of the Logstash monitoring APIs.
 
 [float]
-==== Pretty Results
+===== Pretty Results
 
 When appending `?pretty=true` to any request made, the JSON returned
 will be pretty formatted (use it for debugging only!).
 
 [float]
-==== Human-Readable Output
+===== Human-Readable Output
 
 NOTE: For Logstash {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
 only. When you specify `human=true`, the results are returned in plain text instead of
@@ -60,6 +61,7 @@ to the query string. This makes sense when the stats results are
 being consumed by a monitoring tool, rather than intended for human
 consumption.  The default for the `human` flag is
 `false`.
+
 
 [[node-info-api]]
 === Node Info API
@@ -86,8 +88,9 @@ Gets node-level JVM info, including info about threads.
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
 Logstash monitoring APIs.
 
+[float]
 [[node-pipeline-info]]
-==== Pipeline Info
+===== Pipeline Info
 
 The following request returns a JSON document that shows pipeline info, such as the number of workers,
 batch size, and batch delay:
@@ -133,7 +136,7 @@ curl -XGET 'localhost:9600/_node/pipelines/test?pretty'
 
 Example response:
 
-[source,json]
+[source,js]
 ----------
 {
   "pipelines" : {
@@ -149,6 +152,7 @@ Example response:
 
 If you specify an invalid pipeline ID, the request returns a 404 Not Found error.
 
+[float]
 [[node-os-info]]
 ==== OS Info
 
@@ -173,6 +177,7 @@ Example response:
   }
 --------------------------------------------------
 
+[float]
 [[node-jvm-info]]
 ==== JVM Info
 
@@ -209,6 +214,7 @@ Example response:
   }
 }
 --------------------------------------------------
+
 
 [[plugins-api]]
 === Plugins Info API
@@ -255,6 +261,7 @@ Example response:
   ]
 --------------------------------------------------
 
+
 [[node-stats-api]]
 === Node Stats API
 
@@ -288,6 +295,7 @@ Gets runtime stats about cgroups when Logstash is running in a container.
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
 Logstash monitoring APIs.
 
+[float]
 [[jvm-stats]]
 ==== JVM Stats
 
@@ -355,6 +363,7 @@ Example response:
   }
 --------------------------------------------------
 
+[float]
 [[process-stats]]
 ==== Process Stats
 
@@ -387,6 +396,7 @@ Example response:
   }
 --------------------------------------------------
 
+[float]
 [[event-stats]]
 ==== Event Stats
 
@@ -412,6 +422,7 @@ Example response:
   }
 --------------------------------------------------
 
+[float]
 [[pipeline-stats]]
 ==== Pipeline Stats
 
@@ -613,6 +624,7 @@ Example response:
 }
 --------------------------------------------------
 
+[float]
 [[reload-stats]]
 ==== Reload Stats
 
@@ -635,6 +647,7 @@ Example response:
 }
 --------------------------------------------------
 
+[float]
 [[os-stats]]
 ==== OS Stats
 

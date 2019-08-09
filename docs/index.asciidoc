@@ -118,19 +118,14 @@ include::static/ingest-convert.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ls-ls-config.asciidoc
 include::static/ls-ls-config.asciidoc[]
 
-ifdef::include-xpack[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/management/configuring-centralized-pipelines.asciidoc
 include::static/management/configuring-centralized-pipelines.asciidoc[]
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring/configuring-logstash.asciidoc
-include::static/monitoring/configuring-logstash.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/security/logstash.asciidoc
 include::static/security/logstash.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setup/configuring-xls.asciidoc
 include::static/setup/configuring-xls.asciidoc[]
-endif::include-xpack[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/field-reference.asciidoc
 include::static/field-reference.asciidoc[]
@@ -190,15 +185,16 @@ include::static/deploying.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/performance-checklist.asciidoc
 include::static/performance-checklist.asciidoc[]
 
-// Monitoring overview
+// Monitoring 
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring.asciidoc
-include::static/monitoring.asciidoc[]
+include::static/monitoring/monitoring.asciidoc[]
 
-// Monitoring APIs
+// X-Pack Monitoring 
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring-apis.asciidoc
-include::static/monitoring-apis.asciidoc[]
+//:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring/configuring-logstash.asciidoc
+include::static/monitoring/monitoring-overview.asciidoc[]
+
 
 // Working with Plugins
 
