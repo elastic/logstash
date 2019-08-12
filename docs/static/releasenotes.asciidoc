@@ -27,7 +27,7 @@ This section summarizes the changes in the following releases:
 
 *Snmp Input*
 
-* Fixed GAUGE32 integer overflow [#65] (https://github.com/logstash-plugins/logstash-input-snmp/pull/65)
+* Fixed GAUGE32 integer overflow https://github.com/logstash-plugins/logstash-input-snmp/pull/65[#65]
 
 [[logstash-7-3-0]]
 === Logstash 7.3.0 Release Notes
