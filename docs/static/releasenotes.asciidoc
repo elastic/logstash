@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-2-0,Logstash 7.2.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
@@ -14,6 +15,52 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-1]]
+=== Logstash 7.3.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.3.1
+
+* Add regex support for conditionals with constants https://github.com/elastic/logstash/pull/11017[#11017]
+* Fix compilation of "[field] in [field]" event conditions https://github.com/elastic/logstash/pull/11026[#11026]
+* Add support for boolean evaluation of constants https://github.com/elastic/logstash/pull/11032[#11032]
+
+=== Logstash Commits between 7.3 and 7.3.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.3.0..7.3"
+
+2198bf507 - (HEAD -> 7.3, origin/7.3) Update patch plugin versions in gemfile lock in preparation for 7.3.1 (#11037) (16 minutes ago) <João Duarte>
+ae75547a1 - support truthy eval of constants (3 days ago) <Dan Hermann>
+db948c685 - fix compilation of [field] in [field] event conditions (4 days ago) <Dan Hermann>
+ee7570866 - add regex support for constant conditionals (6 days ago) <Dan Hermann>
+21e25b1be - bump to 7.3.1 (#11008) (12 days ago) <João Duarte>
+093cd4832 - Set state to released (#11006) (12 days ago) <Karen Metts>
+dc89225b1 - Release notes 7.3.0 (#10993) (3 weeks ago) <Ry Biesemeyer>
+e4f996c38 - Docs: Add more missing subs for asciidoctor (#10991) (3 weeks ago) <Nik Everett>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.3.0..7.3 *.release"
+Changed plugin versions:
+logstash-filter-grok: 4.1.0 -> 4.1.1
+logstash-input-elasticsearch: 4.3.1 -> 4.3.2
+logstash-input-snmp: 1.2.0 -> 1.2.1
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Grok Filter*
+
+* Fix formatting for code sample [#148](https://github.com/logstash-plugins/logstash-filter-grok/pull/148)
+
+*Elasticsearch Input*
+
+* Fixed broken link to Elasticsearch Reference  [#106](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/106)
+
+*Snmp Input*
+
+* Fixed GAUGE32 integer overflow [#65] (https://github.com/logstash-plugins/logstash-input-snmp/pull/65)
+
 
 [[logstash-7-3-0]]
 === Logstash 7.3.0 Release Notes
