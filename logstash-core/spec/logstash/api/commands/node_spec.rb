@@ -123,19 +123,4 @@ describe LogStash::Api::Commands::Node do
     )
     end
   end
-  describe "#decorate_with_cluster_uuid does not mutate" do
-    let(:report_method) { :decorate_with_cluster_uuids }
-    it "check keys" do
-      expect(report.keys).to include(
-        :config_name,
-        :plugin_type,
-        :meta,
-        :id,
-        :explicit_id,
-        :type
-      )
-    end
-  end
-
-
 end
