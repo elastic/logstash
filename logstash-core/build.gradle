@@ -9,6 +9,7 @@ description = """Logstash Core Java"""
 version = versionMap['logstash-core']
 String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
     mavenCentral()
@@ -132,7 +133,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.11'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compile 'org.codehaus.janino:janino:3.0.11'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
