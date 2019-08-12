@@ -55,8 +55,12 @@ public final class RecordIOReader implements Closeable {
         ByteBuffer versionBuffer = ByteBuffer.allocate(1);
         this.channel.read(versionBuffer);
         versionBuffer.rewind();
-        if (versionBuffer.get() != VERSION) {
-            throw new RuntimeException("Invalid file. check version");
+        byte versionInFile = versionBuffer.get();
+        if (versionInFile != VERSION) {
+            this.channel.close();
+            throw new RuntimeException(String.format(
+                    "Invalid version on PQ data file %s. Expected version: %c. Version found on file: %c",
+                    path, VERSION, versionInFile));
         }
         this.channelPosition = this.channel.position();
     }
