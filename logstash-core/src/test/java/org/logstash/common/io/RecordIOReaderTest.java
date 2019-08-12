@@ -8,7 +8,9 @@ import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.function.Function;
@@ -20,6 +22,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION;
 
 public class RecordIOReaderTest {
     private Path file;
@@ -170,6 +173,25 @@ public class RecordIOReaderTest {
                 assertThat(reader.readEvent(), equalTo(inputSerialized));
             }
         }
+    }
+
+    @Test
+    public void testVersion() throws IOException {
+        RecordIOWriter writer = new RecordIOWriter(file);
+        FileChannel channel = FileChannel.open(file, StandardOpenOption.READ);
+        ByteBuffer versionBuffer = ByteBuffer.allocate(1);
+        channel.read(versionBuffer);
+        versionBuffer.rewind();
+        channel.close();
+        assertThat(versionBuffer.get() == VERSION, equalTo(true));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testVersionMismatch() throws IOException {
+        FileChannel channel = FileChannel.open(file, StandardOpenOption.WRITE);
+        channel.write(ByteBuffer.wrap(new byte[] { '2' }));
+        channel.close();
+        RecordIOReader reader = new RecordIOReader(file);
     }
 
     private char[] fillArray(final int fillSize) {
