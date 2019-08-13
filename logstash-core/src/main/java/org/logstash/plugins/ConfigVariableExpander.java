@@ -22,18 +22,21 @@ public class ConfigVariableExpander implements AutoCloseable {
     }
 
     /**
-     * Replace all substitution variable references in @variable and returns the substituted value, or the
-     * original value if a substitution cannot be made.
+     * Replace all substitution variable references and returns the substituted value or the original value
+     * if a substitution cannot be made.
      *
-     * Process following patterns : ${VAR}, ${VAR:defaultValue}
+     * Substitution variables have the patterns: <code>${VAR}</code> or <code>${VAR:defaultValue}</code>
      *
-     * If value matches the pattern, the following precedence applies:
+     * If a substitution variable is found, the following precedence applies:
      *   Secret store value
      *   Environment entry value
      *   Default value if provided in the pattern
      *   Exception raised
      *
-     * If the value does not match the pattern, the 'value' param returns as-is
+     * If a substitution variable is not found, the value is return unchanged
+     *
+     * @param value Config value in which substitution variables, if any, should be replaced.
+     * @return Config value with any substitution variables replaced
      */
     public Object expand(Object value) {
         String variable;
