@@ -74,9 +74,13 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                 } else {
                     final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
                     final String code = generateCode(name);
-                    final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
-                    Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
-                    COMPILER.cookFile(sourceFile.toFile());
+                    if (SOURCE_DIR != null) {
+                        final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
+                        Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
+                        COMPILER.cookFile(sourceFile.toFile());
+                    } else {
+                        COMPILER.cook(code);
+                    }
                     COMPILER.setParentClassLoader(COMPILER.getClassLoader());
                     clazz = (Class<T>) COMPILER.getClassLoader().loadClass(
                         String.format("org.logstash.generated.%s", name)
@@ -125,17 +129,15 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     private static Path debugDir() {
-        final Path sourceDir;
+        Path sourceDir = null;
         try {
             final Path parentDir;
             final String dir = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
-            if (dir == null) {
-                parentDir = Files.createTempDirectory("logstash");
-            } else {
+            if (dir != null) {
                 parentDir = Paths.get(dir);
+                sourceDir = parentDir.resolve("org").resolve("logstash").resolve("generated");
+                Files.createDirectories(sourceDir);
             }
-            sourceDir = parentDir.resolve("org").resolve("logstash").resolve("generated");
-            Files.createDirectories(sourceDir);
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }
