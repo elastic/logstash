@@ -15,7 +15,7 @@ PATH
       filesize (~> 0.2)
       gems (~> 1)
       i18n (~> 1)
-      jrjackson (= 0.4.8)
+      jrjackson (= 0.4.9)
       jruby-openssl (~> 0.10)
       manticore (~> 0.6)
       minitar (~> 0.8)
@@ -131,7 +131,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.8-java)
+    jrjackson (0.4.9-java)
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
