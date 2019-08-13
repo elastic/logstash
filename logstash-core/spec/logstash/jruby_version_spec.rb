@@ -9,7 +9,7 @@ describe "JRuby Version" do
     # ref:
     #   https://github.com/logstash-plugins/logstash-filter-dns/issues/51
     #   https://github.com/jruby/jruby/pull/5722
-    expect(JRUBY_VERSION).to eq("9.2.7.0")
+    expect(JRUBY_VERSION).to eq("9.2.8.0")
   end
 end
 
