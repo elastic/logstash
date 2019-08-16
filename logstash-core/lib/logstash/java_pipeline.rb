@@ -8,6 +8,8 @@ require "logstash/instrument/collector"
 require "logstash/compiler"
 require "logstash/config/lir_serializer"
 
+java_import org.apache.logging.log4j.ThreadContext
+
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
   attr_reader \
@@ -236,6 +238,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       pipeline_workers.times do |t|
         thread = Thread.new do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
           org.logstash.execution.WorkerLoop.new(
               lir_execution, filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
@@ -305,6 +308,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
