@@ -37,8 +37,6 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
-import org.logstash.secret.store.SecretStore;
-import org.logstash.secret.store.SecretStoreExt;
 
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
@@ -366,22 +364,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
-    }
-
-    protected final boolean hasSetting(final ThreadContext context, final String name) {
-        return settings.callMethod(context, "registered?", context.runtime.newString(name)) == context.tru;
-    }
-
-    protected SecretStore getSecretStore(final ThreadContext context) {
-        String keystoreFile = hasSetting(context, "keystore.file")
-                ? getSetting(context, "keystore.file").asJavaString()
-                : null;
-        String keystoreClassname = hasSetting(context, "keystore.classname")
-                ? getSetting(context, "keystore.classname").asJavaString()
-                : null;
-        return (keystoreFile != null && keystoreClassname != null)
-                ? SecretStoreExt.getIfExists(keystoreFile, keystoreClassname)
-                : null;
     }
 
     private AbstractNamespacedMetricExt getDlqMetric(final ThreadContext context) {
