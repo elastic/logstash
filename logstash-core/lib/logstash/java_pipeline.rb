@@ -104,6 +104,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @thread = Thread.new do
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
+        ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
       rescue => e
