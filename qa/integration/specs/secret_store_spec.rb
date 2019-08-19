@@ -74,6 +74,19 @@ describe "Test that Logstash" do
     end
   end
 
+  context "will start" do
+    let(:settings) {{"pipeline.id" => "main"}}
+    it "with the wrong password and variables are NOT in settings" do
+      test_env["LOGSTASH_KEYSTORE_PASS"] = "WRONG_PASSWRD"
+      @logstash.env_variables = test_env
+      @logstash.spawn_logstash("-e", "input {generator { count => 1 }} output { }", "--path.settings", settings_dir)
+      try(num_retries) do
+        expect(@logstash.exited?).to be(true)
+      end
+      expect(@logstash.exit_code).to be(0)
+    end
+  end
+
   context "won't start " do
     let(:settings) {{"pipeline.id" => "${missing}"}}
     it "with correct password, but invalid variable " do

@@ -8,7 +8,6 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
-import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
@@ -23,15 +22,11 @@ import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.ext.JrubyEventExtLibrary;
-import org.logstash.plugins.ConfigVariableExpander;
-import org.logstash.secret.store.SecretStore;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -78,27 +73,13 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
-    public CompiledPipeline(
-            final PipelineIR pipelineIR,
-            final RubyIntegration.PluginFactory pluginFactory) {
-        this(pipelineIR, pluginFactory, null);
-    }
-
-    public CompiledPipeline(
-            final PipelineIR pipelineIR,
-            final RubyIntegration.PluginFactory pluginFactory,
-            final SecretStore secretStore) {
+    public CompiledPipeline(final PipelineIR pipelineIR,
+        final RubyIntegration.PluginFactory pluginFactory) {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
-        try (ConfigVariableExpander cve = new ConfigVariableExpander(
-                secretStore,
-                EnvironmentVariableProvider.defaultProvider())) {
-            inputs = setupInputs(cve);
-            filters = setupFilters(cve);
-            outputs = setupOutputs(cve);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage());
-        }
+        inputs = setupInputs();
+        filters = setupFilters();
+        outputs = setupOutputs();
     }
 
     public Collection<AbstractOutputDelegatorExt> outputs() {
@@ -125,7 +106,7 @@ public final class CompiledPipeline {
     /**
      * Sets up all outputs learned from {@link PipelineIR}.
      */
-    private Map<String, AbstractOutputDelegatorExt> setupOutputs(ConfigVariableExpander cve) {
+    private Map<String, AbstractOutputDelegatorExt> setupOutputs() {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
         final Map<String, AbstractOutputDelegatorExt> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
@@ -133,7 +114,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         });
         return res;
@@ -142,7 +123,7 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private Map<String, AbstractFilterDelegatorExt> setupFilters(ConfigVariableExpander cve) {
+    private Map<String, AbstractFilterDelegatorExt> setupFilters() {
         final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
         final Map<String, AbstractFilterDelegatorExt> res = new HashMap<>(filterPlugins.size(), 1.0F);
 
@@ -151,7 +132,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def)
             ));
         }
         return res;
@@ -160,7 +141,7 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby inputs learnt from {@link PipelineIR}.
      */
-    private Collection<IRubyObject> setupInputs(ConfigVariableExpander cve) {
+    private Collection<IRubyObject> setupInputs() {
         final Collection<PluginVertex> vertices = pipelineIR.getInputPluginVertices();
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
@@ -168,7 +149,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve));
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def));
             nodes.add(o);
         });
         return nodes;
@@ -209,47 +190,23 @@ public final class CompiledPipeline {
      * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
      * methods that create Java plugins
      */
-    private Map<String, Object> convertJavaArgs(final PluginDefinition def, ConfigVariableExpander cve) {
-        Map<String, Object> args = expandConfigVariables(cve, def.getArguments());
-        for (final Map.Entry<String, Object> entry : args.entrySet()) {
+    private Map<String, Object> convertJavaArgs(final PluginDefinition def) {
+        for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
             final Object value = entry.getValue();
             final String key = entry.getKey();
             final IRubyObject toput;
             if (value instanceof PluginStatement) {
                 final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
-                Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
                 toput = pluginFactory.buildCodec(
                         RubyUtil.RUBY.newString(codec.getName()),
                         Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                        codecArgs
+                        codec.getArguments()
                 );
                 Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
-                args.put(key, javaCodec);
+                def.getArguments().put(key, javaCodec);
             }
         }
-        return args;
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
-        Map<String, Object> expandedConfig = new HashMap<>();
-        for (Map.Entry<String, Object> e : configArgs.entrySet()) {
-            if (e.getValue() instanceof List) {
-                List list = (List) e.getValue();
-                List<Object> expandedObjects = new ArrayList<>();
-                for (Object o : list) {
-                    expandedObjects.add(cve.expand(o));
-                }
-                expandedConfig.put(e.getKey(), expandedObjects);
-            } else if (e.getValue() instanceof Map) {
-                expandedConfig.put(e.getKey(), expandConfigVariables(cve, (Map<String, Object>) e.getValue()));
-            } else if (e.getValue() instanceof String) {
-                expandedConfig.put(e.getKey(), cve.expand(e.getValue()));
-            } else {
-                expandedConfig.put(e.getKey(), e.getValue());
-            }
-        }
-        return expandedConfig;
+        return def.getArguments();
     }
 
     /**
