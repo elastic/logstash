@@ -143,8 +143,16 @@ describe LogStash::Api::Commands::Stats do
         )
       end
     end
+    context "when using multiple pipelines" do
+      before(:each) do
+        expect(LogStash::Config::PipelinesInfo).to receive(:format_pipelines_info).and_return([
+          {"id" => :main},
+          {"id" => :secondary},
+        ])
+      end
+      it "contains metrics for all pipelines" do
+        expect(report.keys).to include(:main, :secondary)
+      end
+    end
   end
-
-
-
 end
