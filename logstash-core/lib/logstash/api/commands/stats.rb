@@ -65,8 +65,8 @@ module LogStash
             service.agent,
             service.snapshot.metric_store,
             true).each_with_object({}) do |pipeline_stats, memo|
-              pipeline_id = pipeline_stats["id"].to_s
-              memo[pipeline_id] = pipeline_stats
+              p_id = pipeline_stats["id"].to_s
+              memo[p_id] = pipeline_stats
             end
 
           if pipeline_id.nil?

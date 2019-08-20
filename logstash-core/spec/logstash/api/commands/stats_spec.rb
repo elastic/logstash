@@ -49,4 +49,41 @@ describe LogStash::Api::Commands::Stats do
     end
 
   end
+
+  describe "pipeline stats" do
+    let(:report_method) { :pipeline }
+    it "returns information on existing pipeline" do
+      expect(report.keys).to include(:main)
+    end
+    context "for each pipeline" do
+      it "returns information on pipeline" do
+        expect(report[:main].keys).to include(
+          :events,
+          :plugins,
+          :reloads,
+          :queue,
+        )
+      end
+      it "returns event information" do
+        expect(report[:main][:events].keys).to include(
+          :in,
+          :filtered,
+          :duration_in_millis,
+          :out,
+          :queue_push_duration_in_millis
+        )
+      end
+    end
+    context "when using multiple pipelines" do
+      before(:each) do
+        expect(LogStash::Config::PipelinesInfo).to receive(:format_pipelines_info).and_return([
+          {"id" => :main},
+          {"id" => :secondary},
+        ])
+      end
+      it "contains metrics for all pipelines" do
+        expect(report.keys).to include(:main, :secondary)
+      end
+    end
+  end
 end
