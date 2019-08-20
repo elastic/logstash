@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-2-0,Logstash 7.2.0>>
 * <<logstash-7-1-1,Logstash 7.1.1>>
@@ -14,6 +15,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-1]]
+=== Logstash 7.3.1 Release Notes
+
+* Add regex support for conditionals with constants https://github.com/elastic/logstash/pull/11017[#11017]
+* Fix compilation of "[field] in [field]" event conditions https://github.com/elastic/logstash/pull/11026[#11026]
+* Add support for boolean evaluation of constants https://github.com/elastic/logstash/pull/11032[#11032]
+
+==== Plugins
+
+*Snmp Input*
+
+* Fixed GAUGE32 integer overflow https://github.com/logstash-plugins/logstash-input-snmp/pull/65[#65]
 
 [[logstash-7-3-0]]
 === Logstash 7.3.0 Release Notes
