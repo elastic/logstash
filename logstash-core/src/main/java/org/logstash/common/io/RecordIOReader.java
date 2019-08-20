@@ -59,7 +59,7 @@ public final class RecordIOReader implements Closeable {
         if (versionInFile != VERSION) {
             this.channel.close();
             throw new RuntimeException(String.format(
-                    "Invalid version on PQ data file %s. Expected version: %c. Version found on file: %c",
+                    "Invalid version on DLQ data file %s. Expected version: %c. Version found on file: %c",
                     path, VERSION, versionInFile));
         }
         this.channelPosition = this.channel.position();
