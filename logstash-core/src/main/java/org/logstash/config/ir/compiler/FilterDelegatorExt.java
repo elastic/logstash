@@ -96,8 +96,15 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     @Override
     @SuppressWarnings({"rawtypes"})
     protected RubyArray doMultiFilter(final RubyArray batch) {
-        return (RubyArray) filterMethod.call(
-                WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final IRubyObject configName = this.getConfigName(context);
+        org.apache.logging.log4j.ThreadContext.put("plugin.id", configName.toString());
+        try {
+            return (RubyArray) filterMethod.call(
+                    WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
     }
 
     @Override

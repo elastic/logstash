@@ -11,6 +11,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -75,9 +76,14 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
     @Override
     protected void doOutput(final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         try {
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            final IRubyObject configName = this.getConfigName(context);
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", configName.toString());
             strategy.multiReceive(WorkerLoop.THREAD_CONTEXT.get(), (IRubyObject) batch);
         } catch (final InterruptedException ex) {
             throw new IllegalStateException(ex);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
     }
 

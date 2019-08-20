@@ -9,6 +9,7 @@ import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -180,7 +181,10 @@ public final class DatasetCompiler {
             }
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
             computeSyntax = withInputBuffering(
-                Closure.wrap(invokeOutput(fields.add(output), inputBuffer), inlineClear),
+                Closure.wrap(
+                        setPluginIdForLog4j(output),
+                        invokeOutput(fields.add(output), inputBuffer), inlineClear,
+                        unsetPluginIdForLog4j()),
                 parentFields, inputBuffer
             );
         }
@@ -196,12 +200,13 @@ public final class DatasetCompiler {
         final ValueSyntaxElement inputBuffer, final ClassFields fields,
         final AbstractFilterDelegatorExt plugin) {
         final ValueSyntaxElement filterField = fields.add(plugin);
-        final Closure body = Closure.wrap(
+        final Closure body = Closure.wrap(setPluginIdForLog4j(plugin),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
         );
         if (plugin.hasFlush()) {
             body.add(callFilterFlush(fields, outputBuffer, filterField, !plugin.periodicFlush()));
         }
+        body.add(unsetPluginIdForLog4j());
         return body;
     }
 
@@ -296,6 +301,22 @@ public final class DatasetCompiler {
         return SyntaxFactory.ifCondition(
             condition, Closure.wrap(buffer(resultBuffer, filterPlugin.call(FLUSH, flushArgs)))
         );
+    }
+
+    private static MethodLevelSyntaxElement unsetPluginIdForLog4j() {
+        return () -> "org.apache.logging.log4j.ThreadContext.remove(\"plugin.id\")";
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt plugin) {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final IRubyObject configName = plugin.getConfigName(context);
+        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + configName + "\")";
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt plugin) {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final IRubyObject configName = plugin.getConfigName(context);
+        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + configName + "\")";
     }
 
     private static MethodLevelSyntaxElement clear(final ValueSyntaxElement field) {
