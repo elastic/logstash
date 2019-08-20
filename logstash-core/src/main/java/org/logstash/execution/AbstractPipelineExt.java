@@ -365,19 +365,28 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {
-        return settings.callMethod(context, "get_value", context.runtime.newString(name));
+        return getSetting(context, settings, name);
     }
 
     protected final boolean hasSetting(final ThreadContext context, final String name) {
+        return hasSetting(context, settings, name);
+    }
+
+    private IRubyObject getSetting(final ThreadContext context, IRubyObject settings, final String name) {
+        return settings.callMethod(context, "get_value", context.runtime.newString(name));
+    }
+
+    private boolean hasSetting(final ThreadContext context, final IRubyObject settings, final String name) {
         return settings.callMethod(context, "registered?", context.runtime.newString(name)) == context.tru;
     }
 
     protected SecretStore getSecretStore(final ThreadContext context) {
-        String keystoreFile = hasSetting(context, "keystore.file")
-                ? getSetting(context, "keystore.file").asJavaString()
+        IRubyObject settings = context.runtime.evalScriptlet("LogStash::SETTINGS");
+        String keystoreFile = hasSetting(context, settings, "keystore.file")
+                ? getSetting(context, settings, "keystore.file").asJavaString()
                 : null;
-        String keystoreClassname = hasSetting(context, "keystore.classname")
-                ? getSetting(context, "keystore.classname").asJavaString()
+        String keystoreClassname = hasSetting(context, settings, "keystore.classname")
+                ? getSetting(context, settings, "keystore.classname").asJavaString()
                 : null;
         return (keystoreFile != null && keystoreClassname != null)
                 ? SecretStoreExt.getIfExists(keystoreFile, keystoreClassname)
