@@ -10,6 +10,6 @@
 
 :getstarted: Let's step through creating a {plugintype} plugin using the https://github.com/logstash-plugins/logstash-codec-example/[example {plugintype} plugin].
 
-:methodheader: Logstash codecs must implement the `register` method, and the `decode` method or the `encode` method (or both).
+:methodheader: pass:m[Logstash codecs must implement the `register` method, and the `decode` method or the `encode` method (or both).]
 
 include::include/pluginbody.asciidoc[]
