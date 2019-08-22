@@ -66,7 +66,7 @@ module LogStash module PluginManager
         if specs.size > 0
           specs
         else
-          raise LogStash::PluginManager::PluginNotFoundError, "Cannot find plugins matching: `#{plugin_pattern}`"
+          raise LogStash::PluginManager::PluginNotFoundError, "Cannot find installed plugins matching: `#{plugin_pattern}`"
         end
       end.flatten
     end
