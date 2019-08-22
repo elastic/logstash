@@ -6,6 +6,7 @@ import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -44,13 +45,14 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @VisibleForTesting
-    public FilterDelegatorExt initForTesting(final IRubyObject filter) {
+    public FilterDelegatorExt initForTesting(final IRubyObject filter, RubyObject configNameDouble) {
         eventMetricOut = LongCounter.DUMMY_COUNTER;
         eventMetricIn = LongCounter.DUMMY_COUNTER;
         eventMetricTime = LongCounter.DUMMY_COUNTER;
         this.filter = filter;
         filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");
+        filterClass = configNameDouble.getType();
         return this;
     }
 
