@@ -16,7 +16,7 @@ collectors: one for node stats and one for pipeline stats.
 | Node Stats      | `logstash_stats`
 | Gathers details about the running node, such as memory utilization and CPU
 usage (for example, `GET /_stats`).
-+
+
 This runs on every Logstash node with {monitoring} enabled. One common
 failure is that Logstash directories are copied with their `path.data` directory
 included (`./data` by default), which copies the persistent UUID of the Logstash
