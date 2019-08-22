@@ -14,14 +14,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.jruby.Ruby;
-import org.jruby.RubyClass;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.RubyObject;
-import org.jruby.anno.JRubyClass;
-import org.jruby.anno.JRubyMethod;
-import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
@@ -40,8 +35,6 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
-
-import static org.logstash.RubyUtil.RUBY;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -461,46 +454,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         return () -> events -> events.forEach(
             event -> EVENT_SINKS.get(runId).add(event)
         );
-    }
-
-    /**
-     * Fake class to double the Ruby's method config_name()
-     * */
-    @JRubyClass(name = "PluginConfigNameMethodDouble")
-    public static class PluginConfigNameMethodDouble extends RubyObject {
-
-        static final RubyClass RUBY_META_CLASS;
-        private static RubyString name;
-
-        static {
-            RUBY_META_CLASS = RUBY.defineClass("PluginConfigNameMethodDouble", RUBY.getObject(),
-                                              PluginConfigNameMethodDouble::new);
-            RUBY_META_CLASS.defineAnnotatedMethods(org.logstash.config.ir.compiler.FakeOutClass.class);
-        }
-
-        PluginConfigNameMethodDouble(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        static PluginConfigNameMethodDouble create(RubyString name) {
-            PluginConfigNameMethodDouble.name = name;
-            return new PluginConfigNameMethodDouble(RUBY, RUBY_META_CLASS);
-        }
-
-        @JRubyMethod
-        public IRubyObject name(final ThreadContext context) {
-            return RUBY.newString("example");
-        }
-
-        @JRubyMethod(name = "config_name")
-        public IRubyObject configName(final ThreadContext context, final IRubyObject recv) {
-            return name;
-        }
-
-        @JRubyMethod
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject args) {
-            return this;
-        }
     }
 
     /**
