@@ -76,3 +76,5 @@
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom
+
+-Djdk.tls.client.protocols="TLSv1.1,TLSv1.2,TLSv1.3"
