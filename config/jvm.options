@@ -78,4 +78,4 @@
 -Djava.security.egd=file:/dev/urandom
 
 # Copy the logging context from parent threads to children
--Dlog4j2.isThreadContextMapInheritable
+-Dlog4j2.isThreadContextMapInheritable=true
