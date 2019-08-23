@@ -10,6 +10,39 @@ module LogStash
     include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
 
+    # there are settings that the pipeline uses and can be changed per pipeline instance
+    PIPELINE_SETTINGS_WHITE_LIST = [
+      "config.debug",
+      "config.support_escapes",
+      "config.reload.automatic",
+      "config.reload.interval",
+      "config.string",
+      "dead_letter_queue.enable",
+      "dead_letter_queue.max_bytes",
+      "metric.collect",
+      "pipeline.java_execution",
+      "pipeline.plugin_classloaders",
+      "path.config",
+      "path.dead_letter_queue",
+      "path.queue",
+      "pipeline.batch.delay",
+      "pipeline.batch.size",
+      "pipeline.id",
+      "pipeline.reloadable",
+      "pipeline.system",
+      "pipeline.workers",
+      "queue.checkpoint.acks",
+      "queue.checkpoint.interval",
+      "queue.checkpoint.writes",
+      "queue.checkpoint.retry",
+      "queue.drain",
+      "queue.max_bytes",
+      "queue.max_events",
+      "queue.page_capacity",
+      "queue.type",
+    ]
+
+
     def initialize
       @settings = {}
       # Theses settings were loaded from the yaml file
@@ -87,6 +120,15 @@ module LogStash
     def merge(hash, graceful = false)
       hash.each {|key, value| set_value(key, value, graceful) }
       self
+    end
+
+    def merge_pipeline_settings(hash, graceful = false)
+      hash.each do |key, _|
+        unless PIPELINE_SETTINGS_WHITE_LIST.include?(key)
+          raise ArgumentError.new("Only pipeline related settings are expected. Received \"#{key}\". Allowed settings: #{PIPELINE_SETTINGS_WHITE_LIST}")
+        end
+      end
+      merge(hash, graceful)
     end
 
     def format_settings
