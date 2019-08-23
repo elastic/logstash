@@ -341,8 +341,6 @@ module LogStash; class Pipeline < BasePipeline
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       if batch.filteredSize > 0
-
-        java_import org.apache.logging.log4j.ThreadContext
         output_batch(batch, output_events_map)
         filter_queue_client.close_batch(batch)
       end
