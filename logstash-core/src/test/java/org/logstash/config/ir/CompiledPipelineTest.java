@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
@@ -490,9 +491,10 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
                                                       final IRubyObject args, Map<String, Object> pluginArgs) {
+            final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
                 RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
-                .initForTesting(setupPlugin(name, filters));
+                    .initForTesting(setupPlugin(name, filters), configNameDouble);
         }
 
         @Override

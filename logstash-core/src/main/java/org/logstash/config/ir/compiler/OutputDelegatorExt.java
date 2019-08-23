@@ -17,7 +17,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 
 @JRubyClass(name = "OutputDelegator")
-public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
+public final class
+OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private static final long serialVersionUID = 1L;
 
@@ -75,9 +76,13 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
     @Override
     protected void doOutput(final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         try {
+            final IRubyObject pluginId = this.getId();
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
             strategy.multiReceive(WorkerLoop.THREAD_CONTEXT.get(), (IRubyObject) batch);
         } catch (final InterruptedException ex) {
             throw new IllegalStateException(ex);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
     }
 

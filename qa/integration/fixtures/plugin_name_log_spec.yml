@@ -1,0 +1,18 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    generator {
+      count => 4
+    }
+ }
+ filter {
+      sleep {
+        id => "sleep_filter_123"
+        time => 1
+      }
+ }
+ output {
+   null {}
+ }

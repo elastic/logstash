@@ -5,16 +5,20 @@ import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.RubyUtil;
 import org.logstash.execution.WorkerLoop;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
+
+import java.util.UUID;
+
+import static org.logstash.RubyUtil.RUBY;
 
 @JRubyClass(name = "FilterDelegator")
 public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
@@ -44,13 +48,15 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @VisibleForTesting
-    public FilterDelegatorExt initForTesting(final IRubyObject filter) {
+    public FilterDelegatorExt initForTesting(final IRubyObject filter, RubyObject configNameDouble) {
         eventMetricOut = LongCounter.DUMMY_COUNTER;
         eventMetricIn = LongCounter.DUMMY_COUNTER;
         eventMetricTime = LongCounter.DUMMY_COUNTER;
         this.filter = filter;
         filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");
+        filterClass = configNameDouble.getType();
+        id = RUBY.newString(UUID.randomUUID().toString());
         return this;
     }
 
@@ -96,8 +102,14 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     @Override
     @SuppressWarnings({"rawtypes"})
     protected RubyArray doMultiFilter(final RubyArray batch) {
-        return (RubyArray) filterMethod.call(
-                WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);
+        final IRubyObject pluginId = this.getId();
+        org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
+        try {
+            return (RubyArray) filterMethod.call(
+                    WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
     }
 
     @Override
@@ -112,6 +124,6 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @Override
     protected boolean getPeriodicFlush() {
-        return filter.callMethod(RubyUtil.RUBY.getCurrentContext(), "periodic_flush").isTrue();
+        return filter.callMethod(RUBY.getCurrentContext(), "periodic_flush").isTrue();
     }
 }
