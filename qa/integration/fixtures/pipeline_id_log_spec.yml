@@ -1,0 +1,12 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    generator {
+      count => 4
+    }
+ }
+ output {
+   null {}
+ }

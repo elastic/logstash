@@ -89,6 +89,7 @@ class LogStash::Agent
 
   def execute
     @thread = Thread.current # this var is implicitly used by Stud.stop?
+    LogStash::Util.set_thread_name("Agent thread")
     logger.debug("Starting agent")
 
     transition_to_running
@@ -307,7 +308,7 @@ class LogStash::Agent
 
     pipeline_actions.map do |action|
       Thread.new(action, converge_result) do |action, converge_result|
-        java.lang.Thread.currentThread().setName("Converge #{action}");
+        LogStash::Util.set_thread_name("Converge #{action}")
         # We execute every task we need to converge the current state of pipelines
         # for every task we will record the action result, that will help us
         # the results of all the task will determine if the converge was successful or not
