@@ -152,7 +152,9 @@ public final class DatasetCompiler {
         final Closure computeSyntax;
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
-            computeSyntax = Closure.wrap(invokeOutput(fields.add(output), BATCH_ARG));
+            computeSyntax = Closure.wrap(setPluginIdForLog4j(output),
+                    invokeOutput(fields.add(output), BATCH_ARG),
+                    unsetPluginIdForLog4j());
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
@@ -167,8 +169,10 @@ public final class DatasetCompiler {
                 clearSyntax = clearSyntax(parentFields);
             }
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
-            computeSyntax = withInputBuffering(
-                Closure.wrap(invokeOutput(fields.add(output), inputBuffer), inlineClear),
+            computeSyntax = withInputBuffering(Closure.wrap(
+                    setPluginIdForLog4j(output),
+                    invokeOutput(fields.add(output), inputBuffer), inlineClear,
+                    unsetPluginIdForLog4j()),
                 parentFields, inputBuffer
             );
         }
@@ -184,12 +188,13 @@ public final class DatasetCompiler {
         final ValueSyntaxElement inputBuffer, final ClassFields fields,
         final AbstractFilterDelegatorExt plugin) {
         final ValueSyntaxElement filterField = fields.add(plugin);
-        final Closure body = Closure.wrap(
+        final Closure body = Closure.wrap(setPluginIdForLog4j(plugin),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
         );
         if (plugin.hasFlush()) {
             body.add(callFilterFlush(fields, outputBuffer, filterField, !plugin.periodicFlush()));
         }
+        body.add(unsetPluginIdForLog4j());
         return body;
     }
 
@@ -284,6 +289,24 @@ public final class DatasetCompiler {
         return SyntaxFactory.ifCondition(
             condition, Closure.wrap(buffer(resultBuffer, filterPlugin.call(FLUSH, flushArgs)))
         );
+    }
+
+    private static MethodLevelSyntaxElement unsetPluginIdForLog4j() {
+        return () -> "org.apache.logging.log4j.ThreadContext.remove(\"plugin.id\")";
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt filterPlugin) {
+        final IRubyObject pluginId = filterPlugin.getId();
+        return generateLog4jContextAssignment(pluginId);
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt outputPlugin) {
+        final IRubyObject pluginId = outputPlugin.getId();
+        return generateLog4jContextAssignment(pluginId);
+    }
+
+    private static MethodLevelSyntaxElement generateLog4jContextAssignment(IRubyObject pluginId) {
+        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + pluginId + "\")";
     }
 
     private static MethodLevelSyntaxElement clear(final ValueSyntaxElement field) {

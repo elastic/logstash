@@ -61,6 +61,7 @@ public class JavaInputDelegatorExt extends RubyObject {
         }
         Thread t = new Thread(() -> {
             org.apache.logging.log4j.ThreadContext.put("pipeline.id", pipeline.pipelineId().toString());
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", this.getId(context).toString());
             input.start(queueWriter::push);
         });
         t.setName(pipeline.pipelineId().asJavaString() + "_" + input.getName() + "_" + input.getId());
