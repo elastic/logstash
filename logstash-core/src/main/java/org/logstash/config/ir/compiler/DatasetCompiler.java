@@ -307,15 +307,19 @@ public final class DatasetCompiler {
         return () -> "org.apache.logging.log4j.ThreadContext.remove(\"plugin.id\")";
     }
 
-    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt plugin) {
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt filterPlugin) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject configName = plugin.getConfigName(context);
-        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + configName + "\")";
+        final IRubyObject configName = filterPlugin.configName(context);
+        return generateLog4jContextAssignment(configName);
     }
 
-    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt plugin) {
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt outputPlugin) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject configName = plugin.getConfigName(context);
+        final IRubyObject configName = outputPlugin.configName(context);
+        return generateLog4jContextAssignment(configName);
+    }
+
+    private static MethodLevelSyntaxElement generateLog4jContextAssignment(IRubyObject configName) {
         return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + configName + "\")";
     }
 
