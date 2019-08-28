@@ -63,13 +63,16 @@ task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logsta
 
   main = "-jar"
 
+  def include = project.properties.get('include', '')
+
   doFirst {
     args = [
-      "-Djava.io.tmpdir=${buildDir.absolutePath}",
-      "-XX:+UseParNewGC", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
-      "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
-      "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
-      shadowJar.archivePath,
+            "-Djava.io.tmpdir=${buildDir.absolutePath}",
+            "-XX:+UseParNewGC", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+            "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
+            "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
+            shadowJar.archivePath,
+            include
     ]
   }
 }
