@@ -212,6 +212,10 @@
 # Where to find custom plugins
 # path.plugins: []
 #
+# Flag to output log lines of each pipeline in its separate log file. Each log filename contains the pipeline.name
+# Default is false
+# pipeline.separate_logs: false
+#
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #
 # X-Pack Monitoring
