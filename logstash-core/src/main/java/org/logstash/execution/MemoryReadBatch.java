@@ -34,7 +34,9 @@ public final class MemoryReadBatch implements QueueBatch {
     public RubyArray to_a() {
         ThreadContext context = RUBY.getCurrentContext();
         final RubyArray result = context.runtime.newArray(events.size());
+        int i = 0;
         for (final IRubyObject event : events) {
+            ((JrubyEventExtLibrary.RubyEvent) event).getEvent().setField("order", i++);
             if (!isCancelled(event)) {
                 result.add(event);
             }

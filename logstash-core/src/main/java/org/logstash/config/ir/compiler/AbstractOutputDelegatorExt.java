@@ -1,6 +1,8 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -20,6 +22,16 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 
 @JRubyClass(name = "AbstractOutputDelegator")
 public abstract class AbstractOutputDelegatorExt extends RubyObject {
+
+    class SortRubyEventByOrder implements Comparator<IRubyObject>
+    {
+        public int compare(IRubyObject a, IRubyObject b)
+        {
+            final long oa = (long)((JrubyEventExtLibrary.RubyEvent) a).getEvent().getField("order");
+            final long ob = (long)((JrubyEventExtLibrary.RubyEvent) b).getEvent().getField("order");
+            return (int)(oa - ob);
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -95,6 +107,8 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
     public IRubyObject multiReceive(final IRubyObject events) {
         @SuppressWarnings("rawtypes")
         final RubyArray batch = (RubyArray) events;
+        Collections.sort(batch, new SortRubyEventByOrder());
+
         final int count = batch.size();
         eventMetricIn.increment((long) count);
         final long start = System.nanoTime();
