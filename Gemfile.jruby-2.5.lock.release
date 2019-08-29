@@ -2,12 +2,12 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 7.4.0)
+      logstash-core (= 7.4.0.SNAPSHOT)
 
 PATH
   remote: logstash-core
   specs:
-    logstash-core (7.4.0-java)
+    logstash-core (7.4.0.SNAPSHOT-java)
       chronic_duration (~> 0.10)
       clamp (~> 0.6)
       concurrent-ruby (~> 1)
@@ -42,13 +42,13 @@ GEM
       multi_json
     awesome_print (1.7.0)
     aws-eventstream (1.0.3)
-    aws-sdk (2.11.330)
-      aws-sdk-resources (= 2.11.330)
-    aws-sdk-core (2.11.330)
+    aws-sdk (2.11.343)
+      aws-sdk-resources (= 2.11.343)
+    aws-sdk-core (2.11.343)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.330)
-      aws-sdk-core (= 2.11.330)
+    aws-sdk-resources (2.11.343)
+      aws-sdk-core (= 2.11.343)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -105,7 +105,7 @@ GEM
       clamp (~> 0.6)
       ffi
       json (>= 1.7.7)
-    gelfd (0.2.0)
+    gelfd2 (0.4.1)
     gem_publisher (1.5.0)
     gems (1.1.1)
       json
@@ -229,7 +229,7 @@ GEM
     logstash-filter-fingerprint (3.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       murmurhash3
-    logstash-filter-geoip (6.0.1-java)
+    logstash-filter-geoip (6.0.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-grok (4.1.1)
       jls-grok (~> 0.11.3)
@@ -297,7 +297,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.0.0-java)
+    logstash-input-beats (6.0.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -335,8 +335,8 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-gelf (3.2.0)
-      gelfd (= 0.2.0)
+    logstash-input-gelf (3.3.0)
+      gelfd2 (= 0.4.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
@@ -379,7 +379,7 @@ GEM
       logstash-codec-plain (~> 3.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       semantic_logger (< 4.0.0)
-    logstash-input-kafka (9.0.1)
+    logstash-input-kafka (9.1.0)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -392,10 +392,10 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-rabbitmq_connection (>= 5.0.0, < 6.0.0)
-    logstash-input-redis (3.1.4)
+    logstash-input-redis (3.5.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      redis
+      redis (~> 4)
     logstash-input-s3 (3.4.1)
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -488,7 +488,7 @@ GEM
     logstash-output-http (5.2.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 6.0.0, < 8.0.0)
-    logstash-output-kafka (8.0.2)
+    logstash-output-kafka (8.1.0)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -512,7 +512,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
       stud
-    logstash-output-s3 (4.1.9)
+    logstash-output-s3 (4.1.10)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -647,7 +647,7 @@ GEM
     unf (0.1.4-java)
     webhdfs (0.8.0)
       addressable
-    webmock (3.6.2)
+    webmock (3.7.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
