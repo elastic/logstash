@@ -119,35 +119,43 @@ clean {
   delete "${projectDir}/build/rubyDependencies.csv"
 }
 
-task bootstrap {
-  doLast {
-      rake(projectDir, buildDir, 'plugin:install-base')
-  }
-}
-
 def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-task installDefaultGems(dependsOn: assemblyDeps) {
+task installBundler(dependsOn: assemblyDeps) {
+  outputs.files file("${projectDir}/vendor/bundle/bin/bundle")
+  doLast {
+      gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
+  }
+}
+
+task bootstrap(dependsOn: installBundler) {
+  doLast {
+      setupJruby(projectDir, buildDir)
+  }
+}
+
+
+task installDefaultGems(dependsOn: bootstrap) {
   doLast {
       rake(projectDir, buildDir, 'plugin:install-default')
   }
 }
 
-task installTestGems(dependsOn: assemblyDeps) {
+task installTestGems(dependsOn: bootstrap) {
   doLast {
       rake(projectDir, buildDir, 'plugin:install-development-dependencies')
   }
 }
 
-task compileGrammar(dependsOn: assemblyDeps) {
+task compileGrammar(dependsOn: bootstrap) {
     doLast {
         rake(projectDir, buildDir, 'compile:grammar')
     }
 }
 
-task assembleTarDistribution(dependsOn: assemblyDeps) {
+task assembleTarDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -163,7 +171,7 @@ task assembleTarDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleOssTarDistribution(dependsOn: assemblyDeps) {
+task assembleOssTarDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -177,7 +185,7 @@ task assembleOssTarDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleZipDistribution(dependsOn: assemblyDeps) {
+task assembleZipDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -193,7 +201,7 @@ task assembleZipDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleOssZipDistribution(dependsOn: assemblyDeps) {
+task assembleOssZipDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")

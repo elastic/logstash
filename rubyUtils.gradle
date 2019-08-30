@@ -29,6 +29,7 @@ ext {
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
+    setupJruby = this.&setupJruby
     generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
     validatePluginJar = this.&validatePluginJar
     versionMap = new HashMap()
@@ -126,6 +127,14 @@ void rake(File projectDir, File buildDir, String task) {
                 rake['${task}'].invoke
                 """
         )
+    }
+}
+
+void setupJruby(File projectDir, File buildDir) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
+        jruby.runScriptlet("LogStash::Bundler.invoke!")
     }
 }
 
@@ -247,10 +256,6 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
-    doLast {
-        gem(projectDir, buildDir, "rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
-        gem(projectDir, buildDir, "json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
-    }
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
