@@ -179,6 +179,7 @@ module LogStash
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.path"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.password"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.cluster_uuid"))
       settings.register(LogStash::Setting::String.new("xpack.monitoring.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.elasticsearch.sniffing", false))
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.collection.pipeline.details.enabled", true))
