@@ -233,6 +233,7 @@
 #xpack.monitoring.elasticsearch.sniffing: false
 #xpack.monitoring.collection.interval: 10s
 #xpack.monitoring.collection.pipeline.details.enabled: true
+#xpack.monitoring.cluster_uuid:
 #
 # X-Pack Management
 # https://www.elastic.co/guide/en/logstash/current/logstash-centralized-pipeline-management.html
