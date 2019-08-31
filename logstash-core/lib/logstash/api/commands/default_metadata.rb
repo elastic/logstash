@@ -20,7 +20,8 @@ module LogStash
              :batch_size => LogStash::SETTINGS.get("pipeline.batch.size"),
              :batch_delay => LogStash::SETTINGS.get("pipeline.batch.delay"),
            }
-           }
+          }.merge(LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") ?
+                  {:cluster_uuid => LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid")} : {})
         end
 
         def host
