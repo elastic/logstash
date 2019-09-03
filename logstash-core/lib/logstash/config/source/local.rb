@@ -59,7 +59,7 @@ module LogStash module Config module Source
         end
 
         get_matched_files.each do |file|
-          next unless ::File.file?(file) # skip directory
+          next unless ::File.file?(file) or ::File.pipe?(file) # skip directory
 
           logger.debug("Reading config file", :config_file => file)
 
