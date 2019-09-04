@@ -38,52 +38,8 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-3]]
 === Logstash 6.8.3 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.3
-
-* Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
 * Improved logging of version mismatch in DLQ file reader (RecordIOReader) https://github.com/elastic/logstash/pull/11039[#11039]
-* Update patch plugin versions in gemfile lock for 6.8 https://github.com/elastic/logstash/pull/11093[#11093]
-* use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
-
-=== Logstash Commits between 6.8 and 6.8.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.2..6.8"
-
-38953f6f1 - (HEAD -> 6.8, origin/6.8) use 2048 bits key (14 hours ago) <Colin Surprenant>
-60c7b4274 - Update patch plugin versions in gemfile lock (#11093) (5 days ago) <João Duarte>
-e97e005bc - Docs: Fix formatting in table (#11016) (13 days ago) <Nik Everett>
-cf3ca2df0 - Docs: Fix backticks in how to docs (#11018) (2 weeks ago) <Nik Everett>
-a3581ca92 - Add missing "create" privilege to documentation (2 weeks ago) <Aaron Mildenstein>
-9a6bf77b4 - Improved logging of version mismatch in DLQ file reader (RecordIOReader) (3 weeks ago) <amitav.mohanty>
-c53a0bde2 - Update jrjackson, jackson versions (#11045) (3 weeks ago) <Rob Bavey>
-78df11783 - Bump version to 6.8.3 (#11004) (5 weeks ago) <Dan Hermann>
-cfe8cbb4b - bump docs to 6.8.2 (#10995) (5 weeks ago) <Dan Hermann>
-9f8de2dfb - Update release notes for 6.8.2 (#11000) (5 weeks ago) <Dan Hermann>
-4af28ade9 - Docs: Add missing subs (#10990) (6 weeks ago) <Nik Everett>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.2..6.8 *.release"
-Changed plugin versions:
-logstash-filter-grok: 4.1.0 -> 4.1.1
-logstash-input-elasticsearch: 4.3.1 -> 4.3.2
-logstash-output-s3: 4.1.9 -> 4.1.10
----------- DELETE UP TO HERE ------------
-
-==== Plugins
-
-*Grok Filter*
-
-* Fix formatting for code sample [#148](https://github.com/logstash-plugins/logstash-filter-grok/pull/148)
-
-*Elasticsearch Input*
-
-* Fixed broken link to Elasticsearch Reference  [#106](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/106)
-
-*S3 Output*
-
-* Added clarification for endpoint in documentation [#198](https://github.com/logstash-plugins/logstash-output-s3/pull/198)
-
+* Update jrjackson and jackson versions https://github.com/elastic/logstash/pull/11045[#11045]
 
 [[logstash-6-8-2]]
 === Logstash 6.8.2 Release Notes
