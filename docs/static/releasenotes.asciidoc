@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-3,Logstash 6.8.3>>
 * <<logstash-6-8-2,Logstash 6.8.2>>
 * <<logstash-6-8-1,Logstash 6.8.1>>
 * <<logstash-6-8-0,Logstash 6.8.0>>
@@ -33,6 +34,12 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-3]]
+=== Logstash 6.8.3 Release Notes
+
+* Improved logging of version mismatch in DLQ file reader (RecordIOReader) https://github.com/elastic/logstash/pull/11039[#11039]
+* Update jrjackson and jackson versions https://github.com/elastic/logstash/pull/11045[#11045]
 
 [[logstash-6-8-2]]
 === Logstash 6.8.2 Release Notes
