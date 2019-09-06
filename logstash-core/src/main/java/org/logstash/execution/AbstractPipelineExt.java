@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -29,6 +31,7 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -362,6 +365,35 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final IRubyObject pluginId) {
         return new JRubyWrappedWriteClientExt(context.runtime, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
             .initialize(inputQueueClient, pipelineId.asJavaString(), metric, pluginId);
+    }
+
+    @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
+    @SuppressWarnings("rawtypes")
+    public RubyArray getPipelineSourceDetails(final ThreadContext context) {
+        RubyArray res = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
+        List<RubyString> pipelineSources = new ArrayList<>(res.size());
+        for (IRubyObject part : res.toJavaArray()) {
+            SourceWithMetadata sourceWithMetadata = part.toJava(SourceWithMetadata.class);
+            String protocol = sourceWithMetadata.getProtocol();
+            switch (protocol) {
+                case "string":
+                    pipelineSources.add(RubyString.newString(context.runtime, "config string"));
+                    break;
+                case "file":
+                    pipelineSources.add(RubyString.newString(context.runtime, sourceWithMetadata.getId()));
+                    break;
+                case "x-pack-metrics":
+                    pipelineSources.add(RubyString.newString(context.runtime, "monitoring pipeline"));
+                    break;
+                case "x-pack-config-management":
+                    pipelineSources.add(RubyString.newString(context.runtime, "central pipeline management"));
+                    break;
+                case "module":
+                    pipelineSources.add(RubyString.newString(context.runtime, "module"));
+                    break;
+            }
+        }
+        return RubyArray.newArray(context.runtime, pipelineSources);
     }
 
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {

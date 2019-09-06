@@ -109,7 +109,11 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         @finished_run.make_true
       rescue => e
         close
-        logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        logger.error("Pipeline aborted due to error", pipeline_log_params)
       ensure
         @finished_execution.make_true
       end
@@ -225,11 +229,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
       config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
-      @logger.info("Starting pipeline", default_logging_keys(
+      pipeline_log_params = default_logging_keys(
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
-        "pipeline.max_inflight" => max_inflight))
+        "pipeline.max_inflight" => max_inflight,
+        "pipeline.sources" => pipeline_source_details)
+      @logger.info("Starting pipeline", pipeline_log_params)
+
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
