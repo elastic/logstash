@@ -164,10 +164,12 @@ module LogStash; class Pipeline < BasePipeline
     collect_stats
     collect_dlq_stats
 
-    @logger.info("Starting pipeline", default_logging_keys(
-      "pipeline.workers" => settings.get("pipeline.workers"),
-      "pipeline.batch.size" => settings.get("pipeline.batch.size"),
-      "pipeline.batch.delay" => settings.get("pipeline.batch.delay")))
+    pipeline_log_params = default_logging_keys(
+        "pipeline.workers" => settings.get("pipeline.workers"),
+        "pipeline.batch.size" => settings.get("pipeline.batch.size"),
+        "pipeline.batch.delay" => settings.get("pipeline.batch.delay"),
+        "pipeline.sources" => pipeline_source_details)
+    @logger.info("Starting pipeline", pipeline_log_params)
 
     @finished_execution.make_false
     @finished_run.make_false
@@ -180,7 +182,11 @@ module LogStash; class Pipeline < BasePipeline
         @finished_run.make_true
       rescue => e
         close
-        @logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        @logger.error("Pipeline aborted due to error", pipeline_log_params)
       ensure
         @finished_execution.make_true
       end
