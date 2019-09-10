@@ -178,6 +178,14 @@
 # Default is 1024mb
 # dead_letter_queue.max_bytes: 1024mb
 
+# If using dead_letter_queue.enable: true, the interval in milliseconds where if no further events eligible for the DLQ
+# have been created, a dead letter queue file will be written. A low value here will mean that more, smaller, queue files
+# may be written, while a larger value will introduce more latency between items being "written" to the dead letter queue, and
+# being available to be read by the dead_letter_queue input when items are are written infrequently.
+# Default is 5000.
+#
+# dead_letter_queue.flush_interval: 5000
+
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
 # Default is path.data/dead_letter_queue
 #

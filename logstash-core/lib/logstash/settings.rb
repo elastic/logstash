@@ -18,6 +18,7 @@ module LogStash
       "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
+      "dead_letter_queue.flush_interval",
       "dead_letter_queue.max_bytes",
       "metric.collect",
       "pipeline.java_execution",

@@ -57,6 +57,25 @@ specify a different path for the files:
 path.dead_letter_queue: "path/to/data/dead_letter_queue"
 -------------------------------------------------------------------------------
 
+Dead letter queue entries are written to a temporary file, which is then renamed
+ to a dead letter queue file, which is then eligible for ingestion. The rename
+ happens either when this temporary file is considered 'full', or when a period
+ of time has elapsed since the last dead letter queue eligible event was written
+ to the temporary file.
+
+This length of time can be set using the `dead_letter_queue.flush_interval` setting.
+ This setting is in milliseconds, and defaults to 5000ms. A low value here will mean
+ in the event of infrequent writes to the dead letter queue more, smaller, queue
+ files may be written, while a larger value will introduce more latency between
+ items being "written" to the dead letter queue, and being made available for
+ reading by the dead_letter_queue input.
+
+ Note that this value cannot be set to lower than 1000ms.
+
+[source,yaml]
+-------------------------------------------------------------------------------
+dead_letter_queue.flush_interval: 5000
+-------------------------------------------------------------------------------
 
 NOTE: You may not use the same `dead_letter_queue` path for two different
 Logstash instances.

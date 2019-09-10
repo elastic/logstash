@@ -4,6 +4,14 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
+def generate_message(number)
+  message = {}
+  number.times do |i|
+    message["field#{i}"] = "value#{i}"
+  end
+  message.to_json
+end
+
 describe "Test Dead Letter Queue" do
 
   before(:all) {
@@ -29,8 +37,7 @@ describe "Test Dead Letter Queue" do
   let(:dlq_config) {
       {
           "dead_letter_queue.enable" => true,
-          "path.dead_letter_queue" => dlq_dir,
-          "log.level" => "debug"
+          "path.dead_letter_queue" => dlq_dir
       }
   }
   let!(:config_yaml) { dlq_config.to_yaml }
@@ -68,18 +75,20 @@ describe "Test Dead Letter Queue" do
     let!(:pipelines_yaml_file) { ::File.join(settings_dir, "pipelines.yml") }
 
     before :each do
+      puts pipelines_yaml
       IO.write(pipelines_yaml_file, pipelines_yaml)
-      logstash_service.spawn_logstash("--path.settings", settings_dir, "--log.level=debug")
+      logstash_service.spawn_logstash("--path.settings", settings_dir)
     end
 
     context 'with multiple pipelines' do
+      let(:message) { generate_message(100)}
       let(:pipelines) {[
           {
               "pipeline.id" => "test",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => true,
               "pipeline.batch.size" => 1,
-              "config.string" => "input { generator { message => '{\"test\":\"one\"}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
+              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
           },
           {
               "pipeline.id" => "test2",
@@ -94,6 +103,7 @@ describe "Test Dead Letter Queue" do
     end
 
     context 'with a single pipeline' do
+      let(:message) { generate_message(100)}
       let(:pipelines) {[
         {
             "pipeline.id" => "main",
@@ -101,7 +111,7 @@ describe "Test Dead Letter Queue" do
             "dead_letter_queue.enable" => true,
             "pipeline.batch.size" => 1,
             "config.string" => "
-                input { generator{ message => '{\"test\":\"one\"}' codec => \"json\" count => 1000 }
+                input { generator{ message => '#{message}' codec => \"json\" count => 1000 }
                         dead_letter_queue { path => \"#{dlq_dir}\" commit_offsets => true }
                 }
                 filter {
@@ -117,7 +127,6 @@ describe "Test Dead Letter Queue" do
   end
 
   context 'using logstash.yml and separate config file' do
-    skip("This test fails Jenkins CI, tracked in https://github.com/elastic/logstash/issues/10275")
     let(:generator_config_file) { config_to_temp_file(@fixture.config("root",{ :dlq_dir => dlq_dir })) }
 
     before :each do

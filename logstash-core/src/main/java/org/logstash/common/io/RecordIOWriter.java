@@ -25,6 +25,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -75,7 +76,12 @@ public final class RecordIOWriter implements Closeable {
     static final int VERSION_SIZE = 1;
     static final char VERSION = '1';
 
+    private Path recordsFile;
+
+    private final AtomicBoolean hasWritten = new AtomicBoolean(false);
+
     public RecordIOWriter(Path recordsFile) throws IOException {
+        this.recordsFile = recordsFile;
         this.posInBlock = 0;
         this.currentBlockIdx = 0;
         recordsFile.toFile().createNewFile();
@@ -113,6 +119,7 @@ public final class RecordIOWriter implements Closeable {
     }
 
     public long writeEvent(byte[] eventArray) throws IOException {
+        hasWritten.set(true);
         ByteBuffer eventBuffer = ByteBuffer.wrap(eventArray);
         RecordType nextType = null;
         ByteBuffer slice = eventBuffer.slice();
@@ -138,6 +145,15 @@ public final class RecordIOWriter implements Closeable {
             slice = slice.slice();
         }
         return channel.position() - startPosition;
+    }
+
+
+    public boolean hasWritten(){
+        return hasWritten.get();
+    }
+
+    public Path getPath(){
+        return  this.recordsFile;
     }
 
     @Override

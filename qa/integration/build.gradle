@@ -27,4 +27,13 @@ task integrationTests(type: Test) {
   inputs.files fileTree("${projectDir}/specs")
   systemProperty 'logstash.core.root.dir', projectDir.absolutePath
   include '/org/logstash/integration/RSpecTests.class'
+
+  outputs.upToDateWhen {
+    if (project.hasProperty('integrationTests.rerun')) {
+      println "Rerunning Integration Tests"
+      return false
+    } else {
+      return true
+    }
+  }
 }

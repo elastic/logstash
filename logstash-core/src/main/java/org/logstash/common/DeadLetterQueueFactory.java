@@ -24,6 +24,7 @@ import org.logstash.common.io.DeadLetterQueueWriter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -53,19 +54,20 @@ public class DeadLetterQueueFactory {
      *                for each id
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
+     * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval));
     }
 
     public static DeadLetterQueueWriter release(String id) {
         return REGISTRY.remove(id);
     }
 
-    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize) {
+    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
+            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval);
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
         }
