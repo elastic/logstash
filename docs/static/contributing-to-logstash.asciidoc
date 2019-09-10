@@ -12,9 +12,9 @@ deploying your own plugin:
 
 * <<plugin-generator,Generating a New Plugin>>
 * <<input-new-plugin,How to write a Logstash input plugin>>
-* <<input-new-plugin,How to write a Logstash codec plugin>>
-* <<input-new-plugin,How to write a Logstash filter plugin>>
-* <<input-new-plugin,How to write a Logstash output plugin>>
+* <<codec-new-plugin,How to write a Logstash codec plugin>>
+* <<filter-new-plugin,How to write a Logstash filter plugin>>
+* <<output-new-plugin,How to write a Logstash output plugin>>
 * <<plugin-doc,Documenting your plugin>>
 * <<contributing-patch-plugin,Contributing a Patch to a Logstash Plugin>>
 * <<community-maintainer,Community Maintainer's Guide>>
