@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -477,7 +478,7 @@ public class DeadLetterQueueReaderTest {
             exec.submit(() -> {
                 final Event event = new Event();
                 long startTime = System.currentTimeMillis();
-                try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, (long) (10 * 1024 * 1024), 1_000_000_000, Duration.ofSeconds(10))) {
+                try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, (long) (10 * 1024 * 1024), 1_000_000_000L, Duration.ofSeconds(10))) {
                     for (int i = 0; i < eventCount; i++) {
                         event.setField(
                                 "message",
@@ -494,11 +495,18 @@ public class DeadLetterQueueReaderTest {
                     throw new IllegalStateException(ex);
                 }
             });
+
+            int i = 0;
             try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
-                for (int i = 0; i < eventCount; i++) {
-                    DLQEntry entry = readManager.pollEntry(30_000L);
-                    assertThat(entry.getReason(), is(String.valueOf(i)));
+                while(i < eventCount) {
+                    DLQEntry entry = readManager.pollEntry(10_000L);
+                    if (entry != null){
+                        assertThat(entry.getReason(), is(String.valueOf(i)));
+                        i++;
+                    }
                 }
+            } catch (Exception e){
+                throw new IllegalArgumentException("Failed to process entry number" + i, e);
             }
         } finally {
             exec.shutdown();
