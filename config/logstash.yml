@@ -220,9 +220,9 @@
 #
 # X-Pack Monitoring
 # https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
-#xpack.monitoring.enabled: false
-#xpack.monitoring.elasticsearch.username: logstash_system
-#xpack.monitoring.elasticsearch.password: password
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.username: elastic
+xpack.monitoring.elasticsearch.password: changeme
 #xpack.monitoring.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
 #xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
@@ -233,7 +233,7 @@
 #xpack.monitoring.elasticsearch.sniffing: false
 #xpack.monitoring.collection.interval: 10s
 #xpack.monitoring.collection.pipeline.details.enabled: true
-#xpack.monitoring.cluster_uuid:
+#xpack.monitoring.cluster_uuid: FOO
 #
 # X-Pack Management
 # https://www.elastic.co/guide/en/logstash/current/logstash-centralized-pipeline-management.html

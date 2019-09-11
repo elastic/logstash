@@ -19,9 +19,15 @@ module LogStash
              :workers => LogStash::SETTINGS.get("pipeline.workers"),
              :batch_size => LogStash::SETTINGS.get("pipeline.batch.size"),
              :batch_delay => LogStash::SETTINGS.get("pipeline.batch.delay"),
-           }
-          }.merge(LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") ?
-                  {:cluster_uuid => LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid")} : {})
+           },
+           :monitoring => {},
+          }.merge(LogStash::SETTINGS.get("xpack.monitoring.enabled") ?
+                  {:monitoring => {
+                    :hosts => LogStash::SETTINGS.get("xpack.monitoring.elasticsearch.hosts"),
+                    :username => LogStash::SETTINGS.get("xpack.monitoring.elasticsearch.username")
+                  }
+          } : {}).merge(LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") ?
+                        LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") : {} )
         end
 
         def host
