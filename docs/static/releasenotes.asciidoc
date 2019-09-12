@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-2,Logstash 7.3.2>>
 * <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-2-0,Logstash 7.2.0>>
@@ -15,6 +16,41 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-2]]
+=== Logstash 7.3.2 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.3.2
+
+* Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
+* avoid variable collision in pipeline stats api (backport of #11059 to 7.x) https://github.com/elastic/logstash/pull/11062[#11062]
+* give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
+* hint plugins need to be installed before bundle https://github.com/elastic/logstash/pull/11080[#11080]
+* use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
+
+=== Logstash Commits between 7.3 and 7.3.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.3.1..7.3"
+
+1071165b5 - (HEAD -> 7.3, origin/7.3) Update link to Debugging Java Performance (8 days ago) <Pavel Zubkou>
+a2d159880 - use 2048 bits key (8 days ago) <Colin Surprenant>
+10326714e - give multiple pipelines all the settings (13 days ago) <Joao Duarte>
+1de949fad - hint plugins need to be installed before bundle (2 weeks ago) <Peter Dyson>
+0e268fc4f - Docs: Fix formatting in table (#11016) (3 weeks ago) <Nik Everett>
+9002a7661 - bump to 7.3.2 (#11070) (3 weeks ago) <João Duarte>
+3f9fea96c - Bump doc versions to 7.3.1 (#11061) (3 weeks ago) <Karen Metts>
+f493f67e9 - Docs: Fix backticks in how to docs (#11018) (3 weeks ago) <Nik Everett>
+5af62d87d - Add missing "create" privilege to documentation (3 weeks ago) <Aaron Mildenstein>
+10e170d19 - avoid variable collision in pipeline stats api (#11059) (3 weeks ago) <João Duarte>
+9d805763e - Release notes draft for 7.3.1 (#11038) (3 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.3.1..7.3 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-7-3-1]]
 === Logstash 7.3.1 Release Notes
