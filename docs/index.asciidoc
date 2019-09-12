@@ -8,9 +8,9 @@
 :plugins-repo-dir:      {docdir}/../../logstash-docs/docs
 :branch:                7.3
 :major-version:         7.x
-:logstash_version:      7.3.1
-:elasticsearch_version: 7.3.1
-:kibana_version:        7.3.1
+:logstash_version:      7.3.2
+:elasticsearch_version: 7.3.2
+:kibana_version:        7.3.2
 :docker-repo:           docker.elastic.co/logstash/logstash
 :docker-image:          {docker-repo}:{logstash_version}
 
