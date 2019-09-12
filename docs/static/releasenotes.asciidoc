@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-3-2,Logstash 7.3.2>>
 * <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
 * <<logstash-7-2-1,Logstash 7.2.1>>
@@ -16,6 +17,17 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-3-2]]
+=== Logstash 7.3.2 Release Notes
+
+* Bugfix: Avoid variable collision in pipeline stats api (backport of #11059 to 7.x) https://github.com/elastic/logstash/pull/11062[#11062]
+* Bugfix: Give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
+* Docs: Hint plugins need to be installed before bundle https://github.com/elastic/logstash/pull/11080[#11080]
+* Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
+* Docs: Update link to Debugging Java Performance https://github.com/elastic/logstash/pull/11084[#11084]
+* Docs: Add missing "create" privilege to documentation https://github.com/elastic/logstash/pull/11013[#11013]
+* Tests: Use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
 
 [[logstash-7-3-1]]
 === Logstash 7.3.1 Release Notes
