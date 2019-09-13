@@ -1,30 +1,23 @@
 [[logstash-reference]]
 = Logstash Reference
 
+include::{asciidoc-dir}/../../shared/versions/stack/{source_branch}.asciidoc[]
+include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
+
 :include-xpack:         true
 :lang:                  en
 :xls-repo-dir:          {docdir}/../x-pack/docs/{lang}
 :log-repo-dir:          {docdir}
 :plugins-repo-dir:      {docdir}/../../logstash-docs/docs
-:branch:                7.1
-:major-version:         7.x
-:logstash_version:      7.1.1
-:elasticsearch_version: 7.1.1
-:kibana_version:        7.1.1
 :docker-repo:           docker.elastic.co/logstash/logstash
 :docker-image:          {docker-repo}:{logstash_version}
 
-//////////
-release-state can be: released | prerelease | unreleased
-//////////
-:release-state:         released
 :versioned_docs:        false
 
 :jdk:                   1.8.0
 :lsissue:               https://github.com/elastic/logstash/issues
 :lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
 
-include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
 
 [[introduction]]
 == Logstash Introduction
