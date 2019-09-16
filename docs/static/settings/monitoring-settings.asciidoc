@@ -25,8 +25,9 @@ the same {es} instance specified in the `outputs` section in your Logstash
 configuration, or a different one. This is *not* the URL of your dedicated
 monitoring cluster. Even if you are using a dedicated monitoring cluster, the
 Logstash metrics must be routed through your production cluster. You can specify
-a single host as a string, or specify multiple hosts as an array. Defaults to
-`http://localhost:9200`.
+a single host as a string, or specify multiple hosts as an array. Note that you
+should route Logstash metrics through coordinating nodes, and never through
+master-only nodes. Defaults to `http://localhost:9200`.
 
 `xpack.monitoring.elasticsearch.username` and `xpack.monitoring.elasticsearch.password`::
 
