@@ -25,9 +25,8 @@ module LogStash
                   {:monitoring => {
                     :hosts => LogStash::SETTINGS.get("xpack.monitoring.elasticsearch.hosts"),
                     :username => LogStash::SETTINGS.get("xpack.monitoring.elasticsearch.username")
-                  }
-          } : {}).merge(LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") ?
-                        LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid") : {} )
+                    }.merge(LogStash::SETTINGS.set?("xpack.monitoring.cluster_uuid") ?
+                      {:cluster_uuid => LogStash::SETTINGS.get("xpack.monitoring.cluster_uuid")} : {})} : {})
         end
 
         def host
