@@ -14,17 +14,16 @@ describe LogStash::Api::Commands::DefaultMetadata do
 
   describe "#plugins_stats_report" do
     let(:report_method) { :all }
+    monitoring_setting =  LogStash::SETTINGS.get_setting("xpack.monitoring.enabled")
     # Enforce just the structure
     it "check monitoring" do
-      allow(LogStash::SETTINGS).to receive(:get).and_call_original
-      allow(LogStash::SETTINGS).to receive(:get).with("xpack.monitoring.enabled").and_return(true)
+      allow(monitoring_setting).to receive(:default).and_return(true)
       expect(report.keys).to include(
         :monitoring
         )
     end
     it "check monitoring does not appear when not enabled" do
-      allow(LogStash::SETTINGS).to receive(:get).and_call_original
-      allow(LogStash::SETTINGS).to receive(:get).with("xpack.monitoring.enabled").and_return(false)
+      allow(monitoring_setting).to receive(:value).and_return(false)
       expect(report.keys).not_to include(
         :monitoring
         )
