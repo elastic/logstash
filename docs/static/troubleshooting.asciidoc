@@ -30,6 +30,7 @@ executable files to the temp directory. This situation causes subsequent failure
 
 *Sample error*
 
+[source,sh]
 -----
 [2018-03-25T12:23:01,149][ERROR][org.logstash.Logstash ]
 java.lang.IllegalStateException: org.jruby.exceptions.RaiseException:
@@ -44,6 +45,58 @@ Operation not permitted
 * Change setting to mount `/tmp` with `exec`.
 * Specify an alternate directory using the `-Djava.io.tmpdir` setting in the `jvm.options` file.
  
+
+[float] 
+[[ts-startup]] 
+== {ls} start up
+
+[float] 
+[[ts-illegal-reflective-error]] 
+=== 'Illegal reflective access' errors
+
+// https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
+
+Running Logstash with Java 11 results in warnings similar to these:
+
+[source,sh]
+-----
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.jruby.util.SecurityHelper (file:/Users/chrisuser/logstash-6.7.0/logstash-core/lib/jars/jruby-complete-9.2.6.0.jar) to field java.lang.reflect.Field.modifiers
+WARNING: Please consider reporting this to the maintainers of org.jruby.util.SecurityHelper
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+-----
+
+These errors appear related to https://github.com/jruby/jruby/issues/4834[a known issue with JRuby].
+
+*Work around*
+
+Try adding these values to the `jvm.options` file.
+
+[source,sh]
+-----
+--add-opens=java.base/java.lang=ALL-UNNAMED 
+--add-opens=java.base/java.security=ALL-UNNAMED 
+--add-opens=java.base/java.util=ALL-UNNAMED 
+--add-opens=java.base/java.security.cert=ALL-UNNAMED 
+--add-opens=java.base/java.util.zip=ALL-UNNAMED 
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED 
+--add-opens=java.base/java.util.regex=ALL-UNNAMED 
+--add-opens=java.base/java.net=ALL-UNNAMED 
+--add-opens=java.base/java.io=ALL-UNNAMED 
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/javax.crypto=ALL-UNNAMED
+--add-opens=java.management/sun.management=ALL-UNNAMED
+-----
+
+*Notes:*
+
+* These settings allow Logstash to start without warnings in Java 11, but they
+prevent Logstash from starting on Java 8.
+* This workaround has been tested with simple pipelines. If you have experiences
+to share, please comment in the
+https://github.com/elastic/logstash/issues/10496[issue].
+
 
 [float] 
 [[ts-ingest]] 
