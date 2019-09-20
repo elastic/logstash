@@ -90,7 +90,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     end
 
     def plugin_name
-      return name.text_value
+      return name.text_value + "L:#{line_and_column[0]},C:#{line_and_column[1]}"
     end
 
     def expr_attributes
