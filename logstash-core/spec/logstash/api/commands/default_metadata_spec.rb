@@ -12,6 +12,10 @@ describe LogStash::Api::Commands::DefaultMetadata do
 
   let(:report_class) { described_class }
 
+  after :each do
+    LogStash::SETTINGS.reset
+  end
+
   describe "#plugins_stats_report" do
     let(:report_method) { :all }
     monitoring_setting =  LogStash::SETTINGS.get_setting("xpack.monitoring.enabled")
