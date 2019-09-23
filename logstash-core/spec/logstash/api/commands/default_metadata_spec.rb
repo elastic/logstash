@@ -21,13 +21,13 @@ describe LogStash::Api::Commands::DefaultMetadata do
     monitoring_setting =  LogStash::SETTINGS.get_setting("xpack.monitoring.enabled")
     # Enforce just the structure
     it "check monitoring" do
-      allow(monitoring_setting).to receive(:default).and_return(true)
+      LogStash::SETTINGS.set_value("xpack.monitoring.enabled", true)
       expect(report.keys).to include(
         :monitoring
         )
     end
     it "check monitoring does not appear when not enabled" do
-      allow(monitoring_setting).to receive(:value).and_return(false)
+      LogStash::SETTINGS.set_value("xpack.monitoring.enabled", false)
       expect(report.keys).not_to include(
         :monitoring
         )
