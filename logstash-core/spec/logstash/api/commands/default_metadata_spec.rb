@@ -18,7 +18,6 @@ describe LogStash::Api::Commands::DefaultMetadata do
 
   describe "#plugins_stats_report" do
     let(:report_method) { :all }
-    monitoring_setting =  LogStash::SETTINGS.get_setting("xpack.monitoring.enabled")
     # Enforce just the structure
     it "check monitoring" do
       LogStash::SETTINGS.set_value("xpack.monitoring.enabled", true)
