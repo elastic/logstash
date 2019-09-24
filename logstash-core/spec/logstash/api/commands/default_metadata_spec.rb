@@ -13,6 +13,7 @@ describe LogStash::Api::Commands::DefaultMetadata do
   let(:report_class) { described_class }
 
   after :each do
+    LogStash::SETTINGS.register(LogStash::Setting::Boolean.new("xpack.monitoring.enabled", false)) unless LogStash::SETTINGS.registered?("xpack.monitoring.enabled")
     LogStash::SETTINGS.reset
   end
 
