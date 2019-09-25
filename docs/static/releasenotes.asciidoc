@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-4-0,Logstash 7.4.0>>
 * <<logstash-7-3-2,Logstash 7.3.2>>
 * <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
@@ -17,6 +18,151 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-4-0]]
+=== Logstash 7.4.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.4.0
+
+* Add regex support for conditionals with constants https://github.com/elastic/logstash/pull/11017[#11017]
+* Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
+* Preserve input event ordering with single pipeline worker https://github.com/elastic/logstash/pull/11020[#11020]
+* Fix compilation of "[field] in [field]" event conditions https://github.com/elastic/logstash/pull/11026[#11026]
+* Add support for boolean evaluation of constants https://github.com/elastic/logstash/pull/11032[#11032]
+* Improved logging of version mismatch in DLQ file reader (RecordIOReader) https://github.com/elastic/logstash/pull/11039[#11039]
+* update jruby to 9.2.8.0 https://github.com/elastic/logstash/pull/11041[#11041]
+* Expand config variables for Java plugins https://github.com/elastic/logstash/pull/11043[#11043]
+* Fix javadoc warning https://github.com/elastic/logstash/pull/11046[#11046]
+* Integration test for Java plugins https://github.com/elastic/logstash/pull/11054[#11054]
+* Create secret store from correct settings path https://github.com/elastic/logstash/pull/11060[#11060]
+* avoid variable collision in pipeline stats api (backport of #11059 to 7.x) https://github.com/elastic/logstash/pull/11062[#11062]
+* Use correct execution engine for test-and-exit mode https://github.com/elastic/logstash/pull/11067[#11067]
+* give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
+* hint plugins need to be installed before bundle https://github.com/elastic/logstash/pull/11080[#11080]
+* support substitutions in pipelines.yml file https://github.com/elastic/logstash/pull/11081[#11081]
+* Do not write generated Java files to disk unless debug flag is set https://github.com/elastic/logstash/pull/11082[#11082]
+* Add pipeline.id to log lines https://github.com/elastic/logstash/pull/11087[#11087]
+* prepare 7.4 branch for 7.4.0 https://github.com/elastic/logstash/pull/11092[#11092]
+* Update minor plugin versions in gemfile lock for 7.4 https://github.com/elastic/logstash/pull/11096[#11096]
+* [Doc]Deprecate LS Netflow module and point to FB Netflow module https://github.com/elastic/logstash/pull/11113[#11113]
+* use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
+* remove mention of pipeline to pipeline being Beta https://github.com/elastic/logstash/pull/11150[#11150]
+* Backport release notes to 7.4 branch https://github.com/elastic/logstash/pull/11159[#11159]
+
+=== Logstash Commits between 7.4 and 7.3.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.3.2..7.4"
+
+184c699 - (HEAD -> 7.4, origin/7.4) Backport release notes to 7.4 branch (#11159) (20 hours ago) <João Duarte>
+57ee2ac - Add note about illegal reflective access (6 days ago) <Karen Metts>
+d3248f3 - remove mention of pipeline to pipeline being Beta (6 days ago) <Joao Duarte>
+c26b45d - Deprecate LS Netflow module and point to FB Netflow module (9 days ago) <Karen Metts>
+1764f5d - Update logstash to use shared version files (#11133) (13 days ago) <Karen Metts>
+6da7c34 - Fixed links in contributing-to-logstash page (13 days ago) <Kuba Clark>
+959f5d8 - Update link to Debugging Java Performance (3 weeks ago) <Pavel Zubkou>
+281baf4 - use 2048 bits key (3 weeks ago) <Colin Surprenant>
+6f8c677 - support substitutions in pipelines.yml file (4 weeks ago) <Joao Duarte>
+7488ca7 - give multiple pipelines all the settings (4 weeks ago) <Joao Duarte>
+b7992b8 - Update minor plugin versions in gemfile lock (#11096) (4 weeks ago) <João Duarte>
+5e0da89 - prepare 7.4 branch for 7.4.0 (#11092) (4 weeks ago) <João Duarte>
+72f4828 - (origin/update_lock_1567076658) Enhancements to Logstash Benchmarking Tool  (#10253) (4 weeks ago) <Aarti Gupta>
+a3ac21d - Add pipeline.id to log lines fixes #8290, #10521 (4 weeks ago) <andsel>
+6d140f0 - Enhanced API testing (#10972) (4 weeks ago) <Mike Place>
+3e99e1f - Update Reflections library (4 weeks ago) <Dan Hermann>
+5125e07 - Write generated Java files to disk only if debug flag is set (4 weeks ago) <Dan Hermann>
+44f08e2 - hint plugins need to be installed before bundle (4 weeks ago) <Peter Dyson>
+ea101ce - Docs: Fix formatting in table (#11016) (5 weeks ago) <Nik Everett>
+c75ef87 - Use correct execution engine for test-and-exit mode (5 weeks ago) <Dan Hermann>
+0e90733 - Docs: Fix backticks in how to docs (#11018) (5 weeks ago) <Nik Everett>
+334b874 - Integration test for Java plugins (5 weeks ago) <Dan Hermann>
+0f25107 - Fix misleading log message (5 weeks ago) <Rob Bavey>
+fe6783b - Add missing "create" privilege to documentation (5 weeks ago) <Aaron Mildenstein>
+accc636 - avoid variable collision in pipeline stats api (#11059) (5 weeks ago) <João Duarte>
+c2391b1 - Improved logging of version mismatch in DLQ file reader (RecordIOReader) (6 weeks ago) <amitav.mohanty>
+8f78612 - fix javadoc warning (6 weeks ago) <Dan Hermann>
+2375ae1 - Expand config variables for Java plugins (6 weeks ago) <Dan Hermann>
+085d936 - update jruby to 9.2.8.0 (6 weeks ago) <Joao Duarte>
+b2e8b0b - Update jrjackson, jackson versions (6 weeks ago) <Rob Bavey>
+d64e5a7 - support truthy eval of constants (7 weeks ago) <Dan Hermann>
+4b5dc34 - fix compilation of [field] in [field] event conditions (7 weeks ago) <Dan Hermann>
+120b6a7 - add regex support for constant conditionals (7 weeks ago) <Dan Hermann>
+3293c22 - Docs: Add more missing subs for asciidoctor (#10991) (9 weeks ago) <Nik Everett>
+6810c19 - update Jinja2 docker dependency (9 weeks ago) <Ry Biesemeyer>
+524dd45 - make sure joni regexp interruptability is enabled (9 weeks ago) <Colin Surprenant>
+f474ecb - Incorporate review comments (9 weeks ago) <Karen Metts>
+bd5f84a - Prepare core plugin docs for inclusion in LS ref (9 weeks ago) <Karen Metts>
+3d00f3e - Fix include path (10 weeks ago) <DeDe Morton>
+859b37f - Fix formatting for nested version attributes (3 months ago) <Karen Metts>
+e4538fd - Document running Logstash on Windows (#10805) (3 months ago) <Rob Waight>
+2f8be2c - [7.x clean backport of #10934] logstash-input-twitter as a default plugin (#10953) (3 months ago) <Colin Surprenant>
+b4f01e8 - Expose DLQ writers to all types of plugins, not just Ruby outputs (3 months ago) <Rodrigo López Dato>
+fe4b6ee - Allow LogStash::Event to be instantiated with a Java Event (3 months ago) <Rodrigo López Dato>
+072d336 - fix plugin version bump rake task (3 months ago) <Joao Duarte>
+534c267 - Cleanup gradle tasks and dependency installation (3 months ago) <Joao Duarte>
+ae409ca - bump 7.x to 7.4.0 (#10932) (3 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.3.2..7.4 *.release"
+Changed plugin versions:
+logstash-filter-geoip: 6.0.1 -> 6.0.3
+logstash-input-beats: 6.0.0 -> 6.0.1
+logstash-input-gelf: 3.2.0 -> 3.3.0
+logstash-input-kafka: 9.0.1 -> 9.1.0
+logstash-input-redis: 3.1.4 -> 3.5.0
+logstash-output-kafka: 8.0.2 -> 8.1.0
+logstash-output-s3: 4.1.9 -> 4.1.10
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Geoip Filter*
+
+* Fixed docs for missing region_code [#158](https://github.com/logstash-plugins/logstash-filter-geoip/pull/158)
+
+* Update of GeoLite2 DB [#157](https://github.com/logstash-plugins/logstash-filter-geoip/pull/157)
+
+*Beats Input*
+
+* Updated Jackson dependencies [#366](https://github.com/logstash-plugins/logstash-input-beats/pull/366)
+
+*Gelf Input*
+
+* Updated library to gelfd2 [#48](https://github.com/logstash-plugins/logstash-input-gelf/pull/48)
+
+*Kafka Input*
+
+* Updated Kafka client version to 2.3.0
+
+*Redis Input*
+
+* Updated redis client dependency to ~> 4
+
+* Changed `redis_type` to `data_type` in .rb file [#70](https://github.com/logstash-plugins/logstash-input-redis/issues/70) and asciidoc file [#71](https://github.com/logstash-plugins/logstash-input-redis/issues/71)
+
+* Added support for renamed redis commands [#29](https://github.com/logstash-plugins/logstash-input-redis/issues/29)
+
+* Add channel to the event https://github.com/logstash-plugins/logstash-input-redis/issues/46[#46]
+
+* Docs: Set the default_codec doc attribute.
+
+* Docs: Fix broken asciidoc ID
+
+* Add support for SSL https://github.com/logstash-plugins/logstash-input-redis/issues/61[#61]
+* Add support for Redis unix sockets https://github.com/logstash-plugins/logstash-input-redis/issues/64[#64]
+
+* Update gemspec summary
+
+* Pin 'redis' gem dependency to major version range 3.x
+
+*Kafka Output*
+
+* Updated kafka client to version 2.3.0
+
+*S3 Output*
+
+* Added clarification for endpoint in documentation [#198](https://github.com/logstash-plugins/logstash-output-s3/pull/198)
+
 
 [[logstash-7-3-2]]
 === Logstash 7.3.2 Release Notes
