@@ -36,23 +36,23 @@ This section summarizes the changes in the following releases:
 * Backport release notes to 7.4 branch https://github.com/elastic/logstash/pull/11159[#11159]
 * Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
 
-NOTICE: Deprecate LS Netflow module and point to FB Netflow module https://github.com/elastic/logstash/pull/11113[#11113]
+NOTICE: Deprecate {ls} Netflow module and point to {fb} Netflow module https://github.com/elastic/logstash/pull/11113[#11113]
 
 ==== Plugins
 
 *Geoip Filter*
 
-* Fixed docs for missing region_code [#158](https://github.com/logstash-plugins/logstash-filter-geoip/pull/158)
+* Fixed docs for missing region_code https://github.com/logstash-plugins/logstash-filter-geoip/pull/158[#158]
 
-* Update of GeoLite2 DB [#157](https://github.com/logstash-plugins/logstash-filter-geoip/pull/157)
+* Update of GeoLite2 DB https://github.com/logstash-plugins/logstash-filter-geoip/pull/157[#157]
 
 *Beats Input*
 
-* Updated Jackson dependencies [#366](https://github.com/logstash-plugins/logstash-input-beats/pull/366)
+* Updated Jackson dependencies https://github.com/logstash-plugins/logstash-input-beats/pull/366[#366]
 
 *Gelf Input*
 
-* Updated library to gelfd2 [#48](https://github.com/logstash-plugins/logstash-input-gelf/pull/48)
+* Updated library to gelfd2 https://github.com/logstash-plugins/logstash-input-gelf/pull/48[#48]
 
 *Kafka Input*
 
@@ -61,8 +61,8 @@ NOTICE: Deprecate LS Netflow module and point to FB Netflow module https://githu
 *Redis Input*
 
 * Updated redis client dependency to ~> 4
-* Changed `redis_type` to `data_type` in .rb file [#70](https://github.com/logstash-plugins/logstash-input-redis/issues/70) and asciidoc file [#71](https://github.com/logstash-plugins/logstash-input-redis/issues/71)
-* Added support for renamed redis commands [#29](https://github.com/logstash-plugins/logstash-input-redis/issues/29)
+* Changed `redis_type` to `data_type` in .rb file https://github.com/logstash-plugins/logstash-input-redis/issues/70[#70] and asciidoc file https://github.com/logstash-plugins/logstash-input-redis/issues/71[#71]
+* Added support for renamed redis commands https://github.com/logstash-plugins/logstash-input-redis/issues/29[#29]
 * Add channel to the event https://github.com/logstash-plugins/logstash-input-redis/issues/46[#46]
 * Add support for SSL https://github.com/logstash-plugins/logstash-input-redis/issues/61[#61]
 * Add support for Redis unix sockets https://github.com/logstash-plugins/logstash-input-redis/issues/64[#64]
@@ -73,7 +73,7 @@ NOTICE: Deprecate LS Netflow module and point to FB Netflow module https://githu
 
 *S3 Output*
 
-* Added clarification for endpoint in documentation [#198](https://github.com/logstash-plugins/logstash-output-s3/pull/198)
+* Added clarification for endpoint in documentation https://github.com/logstash-plugins/logstash-output-s3/pull/198[#198]
 
 [[logstash-7-3-2]]
 === Logstash 7.3.2 Release Notes
