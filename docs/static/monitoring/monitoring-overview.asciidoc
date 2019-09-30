@@ -29,7 +29,7 @@ expected to be the production cluster. This configuration enables the production
 {es} cluster to add metadata (for example, its cluster UUID) to the Logstash
 monitoring data then route it to the monitoring clusters. For more information 
 about typical monitoring architectures, see 
-{xpack-ref}/how-monitoring-works.html[How Monitoring Works]. 
+{ref}/how-monitoring-works.html[How monitoring works]. 
 
 include::collectors.asciidoc[]
 include::monitoring-output.asciidoc[]
