@@ -232,6 +232,12 @@ The log level. Valid options are:
 | The directory where Logstash will write its log to.
 | `LOGSTASH_HOME/logs`
 
+| `pipeline.separate_logs`
+|  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled Logstash will create a different log file for each pipeline,
+using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in Logstash,
+separating each log lines per pipeline could be helpful in case you need to troubleshoot what’s happening in a single pipeline, without interference of the other ones.
+| `false`
+
 | `path.plugins`
 | Where to find custom plugins. You can specify this setting multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
@@ -240,4 +246,3 @@ The log level. Valid options are:
 | Platform-specific. See <<dir-layout>>.
 
 |=======================================================================
-
