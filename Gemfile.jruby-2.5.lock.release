@@ -15,7 +15,7 @@ PATH
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
-      jrjackson (= 0.4.9)
+      jrjackson (= 0.4.10)
       jruby-openssl (>= 0.9.20)
       manticore (>= 0.5.4, < 1.0.0)
       minitar (~> 0.6.1)
@@ -124,7 +124,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.9-java)
+    jrjackson (0.4.10-java)
     jruby-openssl (0.10.2-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
