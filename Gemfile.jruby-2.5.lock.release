@@ -39,13 +39,13 @@ GEM
       atomic (~> 1.1)
     awesome_print (1.7.0)
     aws-eventstream (1.0.3)
-    aws-sdk (2.11.343)
-      aws-sdk-resources (= 2.11.343)
-    aws-sdk-core (2.11.343)
+    aws-sdk (2.11.365)
+      aws-sdk-resources (= 2.11.365)
+    aws-sdk-core (2.11.365)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.343)
-      aws-sdk-core (= 2.11.343)
+    aws-sdk-resources (2.11.365)
+      aws-sdk-core (= 2.11.365)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -186,12 +186,12 @@ GEM
       rspec (~> 3.0)
       rspec-wait
       stud (>= 0.0.20)
-    logstash-filter-aggregate (2.9.0)
+    logstash-filter-aggregate (2.9.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-anonymize (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       murmurhash3
-    logstash-filter-cidr (3.1.2-java)
+    logstash-filter-cidr (3.1.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-clone (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -299,12 +299,12 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-exec (3.3.2)
+    logstash-input-exec (3.3.3)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.1.10)
+    logstash-input-file (4.1.11)
       addressable
       logstash-codec-multiline (~> 3.0)
       logstash-codec-plain
@@ -338,13 +338,13 @@ GEM
       logstash-mixin-http_client (>= 6.0.0, < 7.0.0)
       rufus-scheduler (~> 3.0.9)
       stud (~> 0.0.22)
-    logstash-input-imap (3.0.6)
+    logstash-input-imap (3.0.7)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       mail (~> 2.6.3)
       mime-types (= 2.6.2)
       stud (~> 0.0.22)
-    logstash-input-jdbc (4.3.13)
+    logstash-input-jdbc (4.3.16)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
@@ -426,8 +426,8 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.2, < 1.0.0)
-    logstash-mixin-rabbitmq_connection (5.0.2-java)
-      march_hare (~> 3.0)
+    logstash-mixin-rabbitmq_connection (5.1.0-java)
+      march_hare (~> 4.0)
       stud (~> 0.0.22)
     logstash-output-cloudwatch (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -519,7 +519,7 @@ GEM
       mime-types (>= 1.16, < 4)
     manticore (0.6.4-java)
       openssl_pkcs8_pure
-    march_hare (3.1.1-java)
+    march_hare (4.1.1-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
@@ -579,14 +579,14 @@ GEM
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
     ruby-progressbar (1.8.3)
-    rubyzip (1.2.3)
+    rubyzip (1.2.4)
     rufus-scheduler (3.0.9)
       tzinfo
     safe_yaml (1.0.5)
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.23.0)
+    sequel (5.25.0)
     simple_oauth (0.3.1)
     sinatra (1.4.8)
       rack (~> 1.5)
@@ -603,7 +603,7 @@ GEM
     term-ansicolor (1.3.2)
       tins (~> 1.0)
     thread_safe (0.3.6-java)
-    tilt (2.0.9)
+    tilt (2.0.10)
     tins (1.6.0)
     treetop (1.4.15)
       polyglot
@@ -621,7 +621,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.0)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2019.2)
+    tzinfo-data (1.2019.3)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.8.0)
