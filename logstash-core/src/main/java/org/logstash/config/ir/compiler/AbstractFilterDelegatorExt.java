@@ -40,6 +40,10 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     }
 
     protected void initMetrics(final String id, final AbstractNamespacedMetricExt namespacedMetric) {
+        initMetrics(id, namespacedMetric, null);
+    }
+
+    protected void initMetrics(final String id, final AbstractNamespacedMetricExt namespacedMetric, String codeRef) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         this.id = RubyString.newString(context.runtime, id);
         synchronized(namespacedMetric.getMetric()) {
@@ -48,6 +52,9 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
             eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
             eventMetricTime = LongCounter.fromRubyBase(metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY);
             namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
+            if (codeRef != null) {
+                namespacedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(codeRef));
+            }
         }
     }
 

@@ -78,12 +78,17 @@ public final class PluginFactoryExt {
         public static IRubyObject filterDelegator(final ThreadContext context,
                                                   final IRubyObject recv, final IRubyObject[] args) {
             final RubyHash arguments = (RubyHash) args[2];
-            final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
-            filterInstance.callMethod(
-                    context, "metric=",
-                    ((AbstractMetricExt) args[3]).namespace(context, id.intern())
-            );
+            RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
+            String configRef = arguments.op_aref(context, configRefKey).asJavaString();
+            arguments.remove(configRefKey);
+
+            final IRubyObject filterInstance = args[1].callMethod(context, "new", new IRubyObject[]{RubyUtil.RUBY.newString(configRef), arguments});
+            final AbstractMetricExt typeScopedMetric = (AbstractMetricExt) args[3];
+            final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, id.intern());
+            scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configRef));
+
+            filterInstance.callMethod(context, "metric=", scopedMetric);
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
                     .initialize(context, filterInstance, id);
@@ -228,6 +233,7 @@ public final class PluginFactoryExt {
             pluginsById.add(id);
             final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
 
+            String configReference = "L:" + line + ", C:" + column;
             if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
                 final Map<String, Object> newArgs = new HashMap<>(args);
@@ -239,6 +245,7 @@ public final class PluginFactoryExt {
                 final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
                 rubyArgs.putAll(newArgs);
                 if (type == PluginLookup.PluginType.OUTPUT) {
+                    rubyArgs.put("config-ref", configReference);
                     return new OutputDelegatorExt(context.runtime, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS).initialize(
                             context,
                             new IRubyObject[]{
@@ -248,6 +255,7 @@ public final class PluginFactoryExt {
                             }
                     );
                 } else if (type == PluginLookup.PluginType.FILTER) {
+                    rubyArgs.putAll(Collections.singletonMap("config-ref", configReference));
                     return filterDelegator(
                             context, null,
                             new IRubyObject[]{
@@ -255,9 +263,10 @@ public final class PluginFactoryExt {
                             }
                     );
                 } else {
-                    final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
+                    final IRubyObject pluginInstance = klass.callMethod(context, "new", new IRubyObject[]{RubyUtil.RUBY.newString(configReference), rubyArgs});
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                     scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
+                    scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configReference));
                     pluginInstance.callMethod(context, "metric=", scopedMetric);
                     pluginInstance.callMethod(context, "execution_context=", executionCntx);
                     return pluginInstance;
@@ -287,7 +296,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (output != null) {
-                        return JavaOutputDelegatorExt.create(name, id, typeScopedMetric, output);
+                        return JavaOutputDelegatorExt.create(name, id, typeScopedMetric, output, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate output: " + pluginClass);
                     }
@@ -309,7 +318,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (filter != null) {
-                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs);
+                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate filter: " + pluginClass);
                     }
@@ -331,7 +340,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (input != null) {
-                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }
@@ -344,7 +353,7 @@ public final class PluginFactoryExt {
                             final Context pluginContext = executionContext.toContext(type, metrics.getRoot(context));
                             final Codec codec = ctor.newInstance(config, pluginContext);
                             PluginUtil.validateConfig(codec, config);
-                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec));
+                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec, configReference));
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
                                 throw new IllegalStateException((ex).getCause());

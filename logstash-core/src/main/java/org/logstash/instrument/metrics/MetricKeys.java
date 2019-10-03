@@ -13,6 +13,8 @@ public final class MetricKeys {
 
     public static final RubySymbol NAME_KEY = RubyUtil.RUBY.newSymbol("name");
 
+    public static final RubySymbol CONFIG_REF_KEY = RubyUtil.RUBY.newSymbol("config-ref");
+
     public static final RubySymbol EVENTS_KEY = RubyUtil.RUBY.newSymbol("events");
 
     public static final RubySymbol OUT_KEY = RubyUtil.RUBY.newSymbol("out");

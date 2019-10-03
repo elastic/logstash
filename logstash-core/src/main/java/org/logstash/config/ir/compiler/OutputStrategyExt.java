@@ -225,11 +225,11 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 5)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
+            output = args[0].callMethod(context, "new", new IRubyObject[]{args[3], args[4]});
             initOutputCallsite(outputClass);
             output.callMethod(context, "metric=", args[1]);
             output.callMethod(context, "execution_context=", args[2]);

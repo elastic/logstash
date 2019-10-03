@@ -42,11 +42,11 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
     public static JavaOutputDelegatorExt create(final String configName, final String id,
         final AbstractMetricExt metric,
         final Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> outputFunction,
-        final Runnable closeAction, final Runnable registerAction) {
+        final Runnable closeAction, final Runnable registerAction, String configReference) {
         final JavaOutputDelegatorExt instance =
             new JavaOutputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_OUTPUT_DELEGATOR_CLASS);
         instance.configName = RubyUtil.RUBY.newString(configName);
-        instance.initMetrics(id, metric);
+        instance.initMetrics(id, metric, configReference);
         instance.outputFunction = outputFunction;
         instance.closeAction = closeAction;
         instance.registerAction = registerAction;
@@ -55,11 +55,11 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     public static JavaOutputDelegatorExt create(final String configName, final String id,
                                                 final AbstractMetricExt metric,
-                                                final Output output) {
+                                                final Output output, String configReference) {
         final JavaOutputDelegatorExt instance =
                 new JavaOutputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_OUTPUT_DELEGATOR_CLASS);
         instance.configName = RubyUtil.RUBY.newString(configName);
-        instance.initMetrics(id, metric);
+        instance.initMetrics(id, metric, configReference);
         instance.output = output;
         instance.outputFunction = instance::outputRubyEvents;
         instance.closeAction = instance::outputClose;

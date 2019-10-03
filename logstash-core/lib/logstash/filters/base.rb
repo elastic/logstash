@@ -121,10 +121,11 @@ class LogStash::Filters::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params)
-    super
-    config_init(@params)
+  def initialize(code_reference, params)
+    super(params)
+    config_init(nil, @params)
     @threadsafe = true
+    @code_reference = code_reference
   end # def initialize
 
   public
@@ -173,6 +174,11 @@ class LogStash::Filters::Base < LogStash::Plugin
   public
   def threadsafe?
     @threadsafe
+  end
+
+  public
+  def code_reference
+    @code_reference
   end
 
   # a filter instance should call filter_matched from filter if the event

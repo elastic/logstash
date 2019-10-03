@@ -198,7 +198,7 @@ public class JavaCodecDelegatorTest extends MetricTestCase {
     }
 
     private JavaCodecDelegator constructCodecDelegator() {
-        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec);
+        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec, null);
     }
 
     private abstract class AbstractCodec implements Codec {

@@ -55,9 +55,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params={})
-    super
-    config_init(@params)
+  def initialize(code_reference, params={})
+    super(params)
+    @code_reference = code_reference
+    config_init(code_reference, @params)
 
     if self.workers != 1
       raise LogStash::ConfigurationError, "You are using a plugin that doesn't support workers but have set the workers value explicitly! This plugin uses the #{concurrency} and doesn't need this option"
@@ -88,6 +89,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
     else
       events.each {|event| receive(event) }
     end
+  end
+
+  public
+  def code_reference
+    @code_reference
   end
 
   def workers_not_supported(message=nil)

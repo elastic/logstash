@@ -46,7 +46,7 @@ module LogStash::Config::Mixin
     base.extend(LogStash::Config::Mixin::DSL)
   end
 
-  def config_init(params)
+  def config_init(parent_code_reference, params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
 
@@ -83,14 +83,14 @@ module LogStash::Config::Mixin
       params[name.to_s] = deep_replace(value)
     end
 
-    if !self.class.validate(params)
+    if !self.class.validate(parent_code_reference, params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.runner.configuration.invalid_plugin_settings")
     end
 
     # now that we know the parameters are valid, we can obfuscate the original copy
     # of the parameters before storing them as an instance variable
-    self.class.secure_params!(original_params)
+    self.class.secure_params!(parent_code_reference, original_params)
     @original_params = original_params
 
     # warn about deprecated variable use
@@ -223,7 +223,7 @@ module LogStash::Config::Mixin
       @@version_notice_given = false
     end # def inherited
 
-    def validate(params)
+    def validate(parent_code_reference, params)
       @plugin_name = config_name
       @plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
       is_valid = true
@@ -232,7 +232,7 @@ module LogStash::Config::Mixin
 
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
-      is_valid &&= validate_check_parameter_values(params)
+      is_valid &&= validate_check_parameter_values(parent_code_reference, params)
 
       return is_valid
     end # def validate
@@ -318,7 +318,7 @@ module LogStash::Config::Mixin
       return is_valid
     end
 
-    def process_parameter_value(value, config_settings)
+    def process_parameter_value(parent_code_reference, value, config_settings)
       config_val = config_settings[:validate]
 
       if config_settings[:list]
@@ -326,17 +326,17 @@ module LogStash::Config::Mixin
         # Empty lists are converted to nils
         return true, [] if value.empty?
 
-        validated_items = value.map {|v| validate_value(v, config_val)}
+        validated_items = value.map {|v| validate_value(parent_code_reference, v, config_val)}
         is_valid = validated_items.all? {|sr| sr[0] }
         processed_value = validated_items.map {|sr| sr[1]}
       else
-        is_valid, processed_value = validate_value(value, config_val)
+        is_valid, processed_value = validate_value(parent_code_reference, value, config_val)
       end
 
       return [is_valid, processed_value]
     end
 
-    def validate_check_parameter_values(params)
+    def validate_check_parameter_values(parent_code_reference, params)
       # Filter out parameters that match regexp keys.
       # These are defined in plugins like this:
       #   config /foo.*/ => ...
@@ -349,7 +349,7 @@ module LogStash::Config::Mixin
 
           config_settings = @config[config_key]
 
-          is_valid, processed_value = process_parameter_value(value, config_settings)
+          is_valid, processed_value = process_parameter_value(parent_code_reference, value, config_settings)
 
           if is_valid
             # Accept coerced value if valid
@@ -382,7 +382,7 @@ module LogStash::Config::Mixin
       return nil
     end
 
-    def validate_value(value, validator)
+    def validate_value(parent_code_reference, value, validator)
       # Validator comes from the 'config' pieces of plugins.
       # They look like this
       #   config :mykey => lambda do |value| ... end
@@ -411,7 +411,9 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
-              value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
+              parent_plugin_name = self.config_name
+              codec = LogStash::Plugin.lookup("codec", value.first).new
+              value = LogStash::Codecs::Delegator.new(codec, parent_plugin_name, parent_code_reference)
               return true, value
             else
               value = value.first
@@ -545,10 +547,10 @@ module LogStash::Config::Mixin
       return true, result
     end # def validate_value
 
-    def secure_params!(params)
+    def secure_params!(code_reference, params)
       params.each do |key, value|
         if [:uri, :password].include? @config[key][:validate]
-          is_valid, processed_value = process_parameter_value(value, @config[key])
+          is_valid, processed_value = process_parameter_value(code_reference, value, @config[key])
           params[key] = processed_value
         end
       end

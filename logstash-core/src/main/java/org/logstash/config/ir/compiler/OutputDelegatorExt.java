@@ -11,6 +11,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -39,14 +40,17 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
         final ExecutionContextExt executionContext,
         final OutputStrategyExt.OutputStrategyRegistryExt strategyRegistry) {
         this.outputClass = outputClass;
-        initMetrics(
-            args.op_aref(context, RubyString.newString(context.runtime, "id")).asJavaString(),
-            metric
-        );
+
+        String id = args.op_aref(context, RubyString.newString(context.runtime, "id")).asJavaString();
+        RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
+        String configRef = args.op_aref(context, configRefKey).asJavaString();
+        initMetrics(id, metric, configRef);
+
+        args.remove(configRefKey);
         strategy = (OutputStrategyExt.AbstractOutputStrategyExt) strategyRegistry.classFor(
             context, concurrency(context)
         ).newInstance(
-            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, args},
+            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, RubyUtil.RUBY.newString(configRef), args},
             Block.NULL_BLOCK
         );
         return this;

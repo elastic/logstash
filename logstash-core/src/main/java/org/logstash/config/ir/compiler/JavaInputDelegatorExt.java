@@ -38,11 +38,12 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     public static JavaInputDelegatorExt create(final JavaBasePipelineExt pipeline,
                                                final AbstractNamespacedMetricExt metric, final Input input,
-                                               final Map<String, Object> pluginArgs) {
+                                               final Map<String, Object> pluginArgs, String configRef) {
         final JavaInputDelegatorExt instance =
                 new JavaInputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_INPUT_DELEGATOR_CLASS);
         AbstractNamespacedMetricExt scopedMetric = metric.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newSymbol(input.getId()));
         scopedMetric.gauge(RubyUtil.RUBY.getCurrentContext(), MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(input.getName()));
+        scopedMetric.gauge(RubyUtil.RUBY.getCurrentContext(), MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configRef));
         instance.setMetric(RubyUtil.RUBY.getCurrentContext(), scopedMetric);
         instance.input = input;
         instance.pipeline = pipeline;

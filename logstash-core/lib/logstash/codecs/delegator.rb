@@ -1,7 +1,9 @@
 module LogStash::Codecs
   class Delegator < SimpleDelegator
-    def initialize(obj)
+    def initialize(obj, parent_plugin_name, parent_code_reference)
       super(obj)
+      @parent_plugin_name = parent_plugin_name
+      @parent_code_reference = parent_code_reference
       @encode_metric = LogStash::Instrument::NamespacedNullMetric.new
       @decode_metric = LogStash::Instrument::NamespacedNullMetric.new
     end
@@ -14,6 +16,8 @@ module LogStash::Codecs
       __getobj__.metric = metric
 
       __getobj__.metric.gauge(:name, __getobj__.class.config_name)
+      __getobj__.metric.gauge("parent-code-ref", @parent_code_reference)
+      __getobj__.metric.gauge("parent-name", @parent_plugin_name)
 
       @encode_metric = __getobj__.metric.namespace(:encode)
       @encode_metric.counter(:writes_in)

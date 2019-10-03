@@ -53,12 +53,13 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params={})
-    super
+  def initialize(code_reference, params={})
+    super(params)
     @threadable = false
     @stop_called = Concurrent::AtomicBoolean.new(false)
-    config_init(@params)
+    config_init(code_reference, @params)
     @tags ||= []
+    @code_reference = code_reference
   end # def initialize
 
   public
@@ -91,6 +92,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
   public
   def stop?
     @stop_called.value
+  end
+
+  public
+  def code_reference
+    @code_reference
   end
 
   def clone
