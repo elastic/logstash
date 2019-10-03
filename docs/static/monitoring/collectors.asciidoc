@@ -1,6 +1,7 @@
+[float]
 [role="xpack"]
 [[logstash-monitoring-collectors]]
-==== Collectors
+===== Collectors
 
 Collectors, as their name implies, collect things. In {monitoring} for Logstash, 
 collectors are just <<pipeline,Inputs>> in the same way that ordinary Logstash 
