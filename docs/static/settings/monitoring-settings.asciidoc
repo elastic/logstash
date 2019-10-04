@@ -1,6 +1,6 @@
 [role="xpack"]
 [[monitoring-settings]]
-==== Monitoring Settings in Logstash
+==== Monitoring settings for internal collection
 ++++
 <titleabbrev>Monitoring Settings</titleabbrev>
 ++++
@@ -10,9 +10,9 @@ control how monitoring data is collected from your Logstash nodes. However, the
 defaults work best in most circumstances. For more information about configuring
 Logstash, see <<logstash-settings-file>>.
 
-[float]
+
 [[monitoring-general-settings]]
-===== General Monitoring Settings
+===== General monitoring settings
 
 `xpack.monitoring.enabled`::
 
@@ -35,9 +35,8 @@ username and password that the Logstash instance uses to authenticate for
 shipping monitoring data.
 
 
-[float]
 [[monitoring-collection-settings]]
-==== Monitoring Collection Settings
+===== Monitoring collection settings
 
 `xpack.monitoring.collection.interval`::
 
@@ -45,9 +44,9 @@ Controls how often data samples are collected and shipped on the Logstash side.
 Defaults to `10s`. If you modify the collection interval, set the 
 `xpack.monitoring.min_interval_seconds` option in `kibana.yml` to the same value.
 
-[float]
+
 [[monitoring-ssl-settings]]
-===== {monitoring} TLS/SSL Settings
+===== {monitoring} TLS/SSL settings
 
 You can configure the following Transport Layer Security (TLS) or
 Secure Sockets Layer (SSL) settings. For more information, see 

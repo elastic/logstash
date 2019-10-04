@@ -1,3 +1,4 @@
+[float]
 [role="xpack"]
 [[logstash-monitoring-output]]
 ==== Output
@@ -15,6 +16,7 @@ collection when issues exist with the output.
 IMPORTANT: It is critical that all Logstash nodes share the same setup. 
 Otherwise, monitoring data might be routed in different ways or to different places.
 
+[float]
 [[logstash-monitoring-default]]
 ===== Default Configuration
 
