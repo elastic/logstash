@@ -1,35 +1,27 @@
 [role="xpack"]
-[[logstash-monitoring-overview]]
-=== {monitoring} Overview
-++++
-<titleabbrev>Overview</titleabbrev>
-++++
+[[configuring-logstash]]
+== Monitoring {ls} with {xpack}
 
-This section deals with Logstash, including an explanation of its internal parts
-at a high level. {monitoring} for Logstash represents a total of two pieces:
+Use the {stack} {monitor-features} to gain insight into the health of
+{ls} instances running in your environment.
 
-* <<logstash-monitoring-collectors,Collectors>>
-* <<logstash-monitoring-output,Output>>
+For an introduction to monitoring your Elastic stack, including {es}
+and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].
 
-These pieces are created when {monitoring} for Logstash is enabled, and they 
-live outside of the default Logstash pipeline in a dedicated monitoring
-pipeline. This configuration means that all data and processing has a minimal 
-impact on ordinary Logstash processing. As a secondary benefit of existing in a 
-separate pipeline, existing Logstash features, such as the 
-<<plugins-outputs-elasticsearch,`elasticsearch` output>>, can be reused to 
-benefit from its retry policies. 
 
-NOTE: The `elasticsearch` output that is used by {monitoring} for Logstash is 
-configured exclusively via settings found in `logstash.yml`. It is not 
-configured by using anything from the Logstash configurations that might also be 
-using their own separate `elasticsearch` outputs.
+[float]
+[[configuring-logstash-xpack]]
+=== Configuring {xpack} monitoring for {ls}
 
-The {es} cluster that is configured for use with {monitoring} for Logstash is 
-expected to be the production cluster. This configuration enables the production 
-{es} cluster to add metadata (for example, its cluster UUID) to the Logstash
-monitoring data then route it to the monitoring clusters. For more information 
-about typical monitoring architectures, see 
-{xpack-ref}/how-monitoring-works.html[How Monitoring Works]. 
+Make sure monitoring is enabled on your {es} cluster. Then configure one of
+these methods to collect {ls} metrics:
 
-include::collectors.asciidoc[]
-include::monitoring-output.asciidoc[]
+* <<monitoring-with-metricbeat, {metricbeat} collection>>
+* <<monitoring-internal-collection,Internal collection>>
+
+
+include::monitoring-mb.asciidoc[]
+include::monitoring-internal.asciidoc[]
+include::monitoring-ui.asciidoc[]
+include::pipeline-viewer.asciidoc[]
+include::troubleshooting.asciidoc[]

@@ -1,5 +1,5 @@
 [[pipeline-to-pipeline]]
-=== Pipeline-to-Pipeline Communication (Beta)
+=== Pipeline-to-Pipeline Communication
 
 When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 

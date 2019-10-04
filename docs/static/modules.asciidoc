@@ -8,7 +8,7 @@ These modules are available:
 
 * <<connecting-to-cloud,Elastic Cloud>>
 * <<arcsight-module>>
-* <<netflow-module>>
+* <<netflow-module,Netflow Module (deprecated)>>
 * <<azure-module, Microsoft Azure Module>>
 
 Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
