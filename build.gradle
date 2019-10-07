@@ -141,6 +141,12 @@ task installTestGems(dependsOn: assemblyDeps) {
   }
 }
 
+task compileGrammar(dependsOn: assemblyDeps) {
+    doLast {
+        rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
 task assembleTarDistribution(dependsOn: assemblyDeps) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
