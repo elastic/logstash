@@ -147,6 +147,14 @@ describe LogStash::Runner do
         expect(subject.run(args)).to eq(1)
       end
     end
+
+    context "with invalid field reference literal" do
+      let(:pipeline_string) { "input { } output { if [[f[[[oo] == [bar] { } }" }
+      it "should fail by returning a bad exit code" do
+        expect(logger).to receive(:fatal)
+        expect(subject.run(args)).to eq(1)
+      end
+    end
   end
   describe "pipeline settings" do
     let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
