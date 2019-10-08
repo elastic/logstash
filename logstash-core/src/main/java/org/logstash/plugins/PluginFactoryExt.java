@@ -78,8 +78,10 @@ public final class PluginFactoryExt {
         public static IRubyObject filterDelegator(final ThreadContext context,
                                                   final IRubyObject recv, final IRubyObject[] args) {
             final RubyHash arguments = (RubyHash) args[2];
-            final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
+            RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
+            arguments.remove(configRefKey);
+            final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             filterInstance.callMethod(
                     context, "metric=",
                     ((AbstractMetricExt) args[3]).namespace(context, id.intern())
@@ -87,20 +89,6 @@ public final class PluginFactoryExt {
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
                     .initialize(context, filterInstance, id);
-//            final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
-//            RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
-//            String configRef = arguments.op_aref(context, configRefKey).asJavaString();
-//            arguments.remove(configRefKey);
-//
-//            final IRubyObject filterInstance = args[1].callMethod(context, "new", new IRubyObject[]{RubyUtil.RUBY.newString(configRef), arguments});
-//            final AbstractMetricExt typeScopedMetric = (AbstractMetricExt) args[3];
-//            final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, id.intern());
-//            scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configRef));
-//
-//            filterInstance.callMethod(context, "metric=", scopedMetric);
-//            filterInstance.callMethod(context, "execution_context=", args[4]);
-//            return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
-//                    .initialize(context, filterInstance, id);
         }
 
         public Plugins(final Ruby runtime, final RubyClass metaClass) {

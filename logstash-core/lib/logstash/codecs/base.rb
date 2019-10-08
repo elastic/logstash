@@ -13,7 +13,6 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   end
 
   def initialize(params={})
-    puts "initalize in Base::Codec"
     super
     config_init(nil, @params)
     register if respond_to?(:register)
