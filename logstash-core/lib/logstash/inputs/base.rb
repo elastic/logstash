@@ -59,7 +59,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @stop_called = Concurrent::AtomicBoolean.new(false)
     config_init(code_reference, @params)
     @tags ||= []
-    @code_reference = code_reference
   end # def initialize
 
   public
@@ -92,11 +91,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
   public
   def stop?
     @stop_called.value
-  end
-
-  public
-  def code_reference
-    @code_reference
   end
 
   def clone

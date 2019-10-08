@@ -57,7 +57,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   def initialize(code_reference, params={})
     super(params)
-    @code_reference = code_reference
     config_init(code_reference, @params)
 
     if self.workers != 1
@@ -89,11 +88,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
     else
       events.each {|event| receive(event) }
     end
-  end
-
-  public
-  def code_reference
-    @code_reference
   end
 
   def workers_not_supported(message=nil)
