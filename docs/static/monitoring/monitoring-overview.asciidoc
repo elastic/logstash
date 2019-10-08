@@ -13,7 +13,7 @@ and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].
 [[configuring-logstash-xpack]]
 === Configuring {xpack} monitoring for {ls}
 
-Make sure monitoring is enabled on your {es} cluster. Then configure one of
+Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
 * <<monitoring-with-metricbeat, {metricbeat} collection>>
