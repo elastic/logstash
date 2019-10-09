@@ -117,21 +117,21 @@ NOTE: Upgrading between non-consecutive major versions (5.x to 7.x, for example)
 supported. We recommend that you upgrade to 6.x, and then upgrade to 7.x.
 
 [float]
-[[upgrade-to-6.7-rec]]
-==== Upgrade to {ls} 6.7 before upgrading to 7.0
+[[upgrade-to-6.8-rec]]
+==== Upgrade to {ls} 6.8 before upgrading to 7.0
 
-If you haven't already, upgrade to version 6.7 before you upgrade to 7.0. If
+If you haven't already, upgrade to version 6.8 before you upgrade to 7.0. If
 you're using other products in the {stack}, upgrade {ls} as part of the
 {stack-ref}/upgrading-elastic-stack.html[{stack} upgrade process].
 
-TIP: Upgrading to {ls} 6.7 will give you a head-start on new 7.0 features, including
+TIP: Upgrading to {ls} 6.8 will give you a head-start on new 7.0 features, including
 the java execution engine and the strict field reference parser, while you're still running 6.x.
 This step helps reduce risk and makes roll backs easier if you hit
 a snag.
 
 //TO DO:  Add links [[field-ref-strict]] and [[java-exec-default]] after upgrade docs are merged
 
-Upgrading to 6.7 is required because the {es} index template was modified to
+Upgrading to 6.8 is required because the {es} index template was modified to
 be compatible with {es} 7.0 (the `_type` setting changed from `doc` to `_doc`).
 
 
