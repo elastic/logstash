@@ -213,6 +213,8 @@ module LogStash; module Config; module AST
 
   class Plugins < Node; end
   class Plugin < Node
+    attr_accessor :source_file, :source_line
+
     def plugin_type
       if recursive_select_parent(Plugin).any?
         return "codec"
@@ -233,12 +235,12 @@ module LogStash; module Config; module AST
       # If any parent is a Plugin, this must be a codec.
 
       if attributes.elements.nil?
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect})" << (plugin_type == "codec" ? "" : "\n")
       else
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
 
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
       end
     end
 
@@ -255,7 +257,7 @@ module LogStash; module Config; module AST
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect}, #{attributes_code})"
       end
     end
 

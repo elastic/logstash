@@ -38,6 +38,9 @@ module LogStash; class BasePipeline < AbstractPipeline
     parsed_config = grammar.parse(config_str)
     raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
 
+    plugins = parsed_config.recursive_select(LogStash::Config::AST::Plugin)
+    added_source_line_column(pipeline_config, plugins)
+
     parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
     config_code = parsed_config.compile
 
@@ -68,9 +71,16 @@ module LogStash; class BasePipeline < AbstractPipeline
 
   private
 
+  def added_source_line_column(pipeline_config, plugins)
+    for plugin in plugins do
+      remapped_line = pipeline_config.lookup_source_and_line(plugin.line_and_column[0])
+      plugin.source_file = remapped_line[0]
+      plugin.source_line = remapped_line[1]
+    end
+  end
 
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
+  def plugin(plugin_type, name, line, column, source_file, source_line, *args)
+    @plugin_factory.plugin(plugin_type, name, line, column, source_file, source_line, *args)
   end
 
   def default_logging_keys(other_keys = {})

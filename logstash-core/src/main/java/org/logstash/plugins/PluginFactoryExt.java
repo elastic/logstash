@@ -121,7 +121,7 @@ public final class PluginFactoryExt {
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -141,7 +141,7 @@ public final class PluginFactoryExt {
                                                       Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -161,7 +161,7 @@ public final class PluginFactoryExt {
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -171,7 +171,7 @@ public final class PluginFactoryExt {
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), 0, 0, null, 0, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -179,27 +179,33 @@ public final class PluginFactoryExt {
         public Codec buildDefaultCodec(String codecName) {
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+                    codecName, 0, 0, null, 0, Collections.emptyMap(), Collections.emptyMap()
             ));
         }
 
         @SuppressWarnings("unchecked")
-        @JRubyMethod(required = 4, optional = 1)
+        @JRubyMethod(required = 6, optional = 1)
         public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
+            String sourceFile = args[4].convertToString().asJavaString();
+            int sourceLine = args[5].convertToInteger().getIntValue();
+
             return plugin(
                     context,
                     PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                     args[1].asJavaString(),
                     args[2].convertToInteger().getIntValue(),
                     args[3].convertToInteger().getIntValue(),
-                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>(),
+                    sourceFile,
+                    sourceLine,
+                    args.length > 6 ? (Map<String, IRubyObject>) args[6] : new HashMap<>(),
                     null
             );
         }
 
         @SuppressWarnings("unchecked")
         private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                                   final int line, final int column, final Map<String, IRubyObject> args,
+                                   final int line, final int column, final String sourceFile, final int sourceLine,
+                                   final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
             final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
@@ -230,7 +236,13 @@ public final class PluginFactoryExt {
             pluginsById.add(id);
             final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
 
-            String configReference = "L:" + line + ", C:" + column;
+            final String configReference;
+            if (sourceFile == null) {
+                configReference = "S: <no file>, L:" + line + ", C:" + column;
+            } else {
+                configReference = "S: " + sourceFile + ", L:" + sourceLine + ", C:" + column;
+            }
+
             if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
                 final Map<String, Object> newArgs = new HashMap<>(args);

@@ -1,5 +1,6 @@
 package org.logstash.common;
 
+import org.jruby.anno.JRubyMethod;
 import org.logstash.config.ir.HashableWithSource;
 
 import java.util.Arrays;
@@ -37,6 +38,11 @@ public class SourceWithMetadata implements HashableWithSource {
 
     public String getText() {
         return text;
+    }
+
+    @JRubyMethod(name = "lines_count")
+    public int getLinesCount() {
+        return text.split("\\n").length;
     }
 
     private static final Pattern emptyString = Pattern.compile("^\\s*$");

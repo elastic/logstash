@@ -44,5 +44,19 @@ module LogStash module Config
       logger.debug("Merged config")
       logger.debug("\n\n#{config_string}")
     end
+
+    def lookup_source_and_line(merged_config_line)
+      remaining_lines = merged_config_line
+      matching_part = nil
+      for source_with_meta in @config_parts do
+        if remaining_lines < source_with_meta.lines_count
+          matching_part = source_with_meta
+          break
+        end
+        remaining_lines = remaining_lines - source_with_meta.lines_count
+      end
+      raise IndexError if matching_part == nil && remaining_lines > 0
+      return matching_part.id, remaining_lines
+    end
   end
 end end
