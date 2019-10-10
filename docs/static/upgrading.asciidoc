@@ -99,8 +99,6 @@ supported.
 [[upgrading-logstash-7.0]]
 === Upgrading Logstash to 7.0
 
-coming[7.0.0]
-
 Before upgrading Logstash:
 
 * Read the <<releasenotes>>.
