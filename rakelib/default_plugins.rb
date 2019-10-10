@@ -14,6 +14,9 @@ module LogStash
     def self.is_released?(plugin)
       require 'gems'
       Gems.info(plugin) != "This rubygem could not be found."
+    rescue Gems::NotFound => e
+      puts "Could not find gem #{plugin}"
+      false
     end
 
     def self.fetch_plugins_for(type)
