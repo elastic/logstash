@@ -96,10 +96,6 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       return name.text_value
     end
 
-    def plugin_name_extended
-      return plugin_name + "L:#{line_and_column[0]},C:#{line_and_column[1]}"
-    end
-
     def expr_attributes
       # Turn attributes into a hash map
       self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
