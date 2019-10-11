@@ -94,7 +94,7 @@ puts "Pushing commit.."
 `git remote add upstream git@github.com:elastic/logstash.git`
 `git push upstream #{branch_name}`
 
-current_release = YAML.parse(IO.read("versions.yml"))["logstash"]
+current_release = YAML.safe_load(IO.read("versions.yml"))["logstash"]
 puts "Creating Pull Request"
 pr_title = "bump lock file for #{current_release}"
 
