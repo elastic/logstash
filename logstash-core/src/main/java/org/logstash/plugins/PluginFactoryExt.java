@@ -80,7 +80,7 @@ public final class PluginFactoryExt {
             final RubyHash arguments = (RubyHash) args[2];
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
             RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
-            arguments.remove(configRefKey);
+            RubyString configRefValue = (RubyString) arguments.remove(configRefKey);
             final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             filterInstance.callMethod(
                     context, "metric=",
@@ -88,7 +88,7 @@ public final class PluginFactoryExt {
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
-                    .initialize(context, filterInstance, id);
+                    .initialize(context, filterInstance, id, configRefValue);
         }
 
         public Plugins(final Ruby runtime, final RubyClass metaClass) {
@@ -118,50 +118,56 @@ public final class PluginFactoryExt {
         @SuppressWarnings("unchecked")
         @Override
         public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final String sourceFile, final int sourceLine,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 6)
         public IRubyObject buildInput(final ThreadContext context, final IRubyObject[] args) {
             return buildInput(
                     (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
+                    args[3].asJavaString(), args[4].convertToInteger().getIntValue(),
+                    args[5], null
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine,final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 6)
         public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
                                                       final IRubyObject[] args) {
             return buildOutput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3], null
+                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3].asJavaString(),
+                    args[4].convertToInteger().getIntValue(),
+                    args[5], null
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine, final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(), null, 0,
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }

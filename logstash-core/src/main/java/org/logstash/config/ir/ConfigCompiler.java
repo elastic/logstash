@@ -17,27 +17,18 @@ public final class ConfigCompiler {
     }
 
     /**
-     * @param config Logstash Config String
+     * @param pipelineConfig Logstash single pipeline's Config
      * @param supportEscapes The value of the setting {@code config.support_escapes}
      * @return Compiled {@link PipelineIR}
-     * @throws IncompleteSourceWithMetadataException On Broken Configuration
      */
-    public static PipelineIR configToPipelineIR(final String config, final boolean supportEscapes)
-        throws IncompleteSourceWithMetadataException {
+    public static PipelineIR configToPipelineIR(final IRubyObject pipelineConfig, final boolean supportEscapes) {
         final IRubyObject compiler = RubyUtil.RUBY.executeScript(
             "require 'logstash/compiler'\nLogStash::Compiler",
             ""
         );
         final IRubyObject code =
             compiler.callMethod(RubyUtil.RUBY.getCurrentContext(), "compile_sources",
-                new IRubyObject[]{
-                    RubyUtil.RUBY.newArray(
-                        JavaUtil.convertJavaToRuby(
-                            RubyUtil.RUBY,
-                            new SourceWithMetadata("str", "pipeline", 0, 0, config)
-                        )
-                    ),
-                    RubyUtil.RUBY.newBoolean(supportEscapes)
+                new IRubyObject[]{pipelineConfig, RubyUtil.RUBY.newBoolean(supportEscapes)
                 }
             );
         return code.toJava(PipelineIR.class);

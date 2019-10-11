@@ -32,13 +32,14 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     private boolean flushes;
 
     @JRubyMethod(name="initialize")
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject filter, final IRubyObject id) {
+    public IRubyObject initialize(final ThreadContext context, final IRubyObject filter, final IRubyObject id,
+                                  final RubyString configRef) {
         this.id = (RubyString) id;
         this.filter = filter;
         filterClass = filter.getSingletonClass().getRealClass();
         filterMethod = filterClass.searchMethod(FILTER_METHOD_NAME);
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) filter.callMethod(context, "metric");
-        initMetrics(this.id.asJavaString(), namespacedMetric);
+        initMetrics(this.id.asJavaString(), namespacedMetric, configRef.asJavaString());
         flushes = filter.respondsTo("flush");
         return this;
     }

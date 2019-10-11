@@ -72,8 +72,11 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Plugins < Node; end
   class Plugin < Node
+
+    attr_accessor :source_file, :source_line
+
     def expr
-      jdsl.iPlugin(source_meta, plugin_type_enum, self.plugin_name, self.expr_attributes)
+      jdsl.iPlugin(source_meta, plugin_type_enum, self.plugin_name, source_file, source_line, self.expr_attributes)
     end
 
     def plugin_type_enum

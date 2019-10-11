@@ -131,9 +131,11 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final String sourceFile = v.getSourceFile();
+            final int sourceLine = v.getSourceLine();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), sourceFile, sourceLine, convertArgs(def), convertJavaArgs(def, cve)
             ));
         });
         return res;
@@ -149,9 +151,11 @@ public final class CompiledPipeline {
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            final String sourceFile = vertex.getSourceFile();
+            final int sourceLine = vertex.getSourceLine();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), sourceFile, sourceLine, convertArgs(def), convertJavaArgs(def, cve)
             ));
         }
         return res;
@@ -166,9 +170,11 @@ public final class CompiledPipeline {
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final String sourceFile = v.getSourceFile();
+            final int sourceLine = v.getSourceLine();
             IRubyObject o = pluginFactory.buildInput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve));
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), sourceFile, sourceLine, convertArgs(def), convertJavaArgs(def, cve));
             nodes.add(o);
         });
         return nodes;

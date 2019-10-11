@@ -39,10 +39,6 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         super(runtime, metaClass);
     }
 
-    protected void initMetrics(final String id, final AbstractNamespacedMetricExt namespacedMetric) {
-        initMetrics(id, namespacedMetric, null);
-    }
-
     protected void initMetrics(final String id, final AbstractNamespacedMetricExt namespacedMetric, String codeRef) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         this.id = RubyString.newString(context.runtime, id);

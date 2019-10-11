@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.jruby.RubyInteger;
+import org.jruby.RubyString;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -228,6 +230,11 @@ public class DSL {
             throw new RuntimeException("Noop could not instantiate metadata, this should never happen");
         }
         return new NoopStatement(null);
+    }
+
+    public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName,
+                                          RubyString sourceFile, RubyInteger sourceLine, Map<String, Object> pluginArguments) {
+        return new PluginStatement(meta, new PluginDefinition(pluginType, pluginName, pluginArguments), sourceFile, sourceLine);
     }
 
     public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName, Map<String, Object> pluginArguments) {

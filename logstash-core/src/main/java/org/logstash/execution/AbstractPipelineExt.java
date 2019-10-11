@@ -153,9 +153,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
-            getSetting(context, "config.support_escapes").isTrue()
+        lir = ConfigCompiler.configToPipelineIR(pipelineSettings,
+                getSetting(context, "config.support_escapes").isTrue()
         );
         return this;
     }

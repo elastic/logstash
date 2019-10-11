@@ -42,22 +42,25 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
 
         @Override
         public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final String sourceFile, final int sourceLine,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
-            return rubyFactory.buildInput(name, line, column, args, pluginArgs);
+            return rubyFactory.buildInput(name, line, column, sourceFile, sourceLine, args, pluginArgs);
         }
 
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine, final IRubyObject args,
                                                       final Map<String, Object> pluginArgs) {
-            return rubyFactory.buildOutput(name, line, column, args, pluginArgs);
+            return rubyFactory.buildOutput(name, line, column, sourceFile, sourceLine, args, pluginArgs);
         }
 
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine, final IRubyObject args,
                                                       final Map<String, Object> pluginArgs) {
-            return rubyFactory.buildFilter(name, line, column, args, pluginArgs);
+            return rubyFactory.buildFilter(name, line, column, sourceFile, sourceLine, args, pluginArgs);
         }
 
         @Override
