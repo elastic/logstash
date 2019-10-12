@@ -16,8 +16,8 @@ module LogStash::Codecs
       __getobj__.metric = metric
 
       __getobj__.metric.gauge(:name, __getobj__.class.config_name)
-      __getobj__.metric.gauge("parent-code-ref", @parent_code_reference)
-      __getobj__.metric.gauge("parent-name", @parent_plugin_name)
+      __getobj__.metric.gauge(:"parent-code-ref", @parent_code_reference)
+      __getobj__.metric.gauge(:"parent-name", @parent_plugin_name)
 
       @encode_metric = __getobj__.metric.namespace(:encode)
       @encode_metric.counter(:writes_in)

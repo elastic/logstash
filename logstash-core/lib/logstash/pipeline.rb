@@ -72,7 +72,7 @@ module LogStash; class BasePipeline < AbstractPipeline
   private
 
   def added_source_line_column(pipeline_config, plugins)
-    for plugin in plugins do
+    plugins.each do |plugin|
       remapped_line = pipeline_config.lookup_source_and_line(plugin.line_and_column[0])
       plugin.source_file = remapped_line[0]
       plugin.source_line = remapped_line[1]

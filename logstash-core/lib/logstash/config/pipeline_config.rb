@@ -48,14 +48,14 @@ module LogStash module Config
     def lookup_source_and_line(merged_config_line)
       remaining_lines = merged_config_line
       matching_part = nil
-      for source_with_meta in @config_parts do
+      @config_parts.each do |source_with_meta|
         if remaining_lines < source_with_meta.lines_count
           matching_part = source_with_meta
           break
         end
         remaining_lines = remaining_lines - source_with_meta.lines_count
       end
-      raise IndexError if matching_part == nil && remaining_lines > 0
+      raise IndexError if matching_part.nil? && remaining_lines > 0
       return matching_part.id, remaining_lines
     end
   end
