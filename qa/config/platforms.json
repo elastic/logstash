@@ -7,10 +7,9 @@
     "centos-7": { "box": "elastic/centos-7-x86_64", "type": "redhat" },
     "oel-6": { "box": "elastic/oraclelinux-6-x86_64", "type": "redhat" },
     "oel-7": { "box": "elastic/oraclelinux-7-x86_64", "type": "redhat" },
-    "debian-8": { "box": "elastic/debian-8-x86_64", "type": "debian", "specific":  true },
-    "debian-9": { "box": "elastic/debian-9-x86_64", "type": "debian"},
-    "opensuse-13": { "box": "elastic/opensuse-13-x86_64", "type": "suse" },
-    "opensuse-13": { "box": "elastic/opensuse-42-x86_64", "type": "suse" },
-    "sles-12": { "box": "elastic/sles-12-x86_64", "type": "suse", "specific": true }
+    "debian-8": { "box": "elastic/debian-8-x86_64", "type": "debian" },
+    "debian-9": { "box": "elastic/debian-9-x86_64", "type": "debian" },
+    "opensuse-42": { "box": "elastic/opensuse-42-x86_64", "type": "suse" },
+    "sles-12": { "box": "elastic/sles-12-x86_64", "type": "suse" }
   }
 }
