@@ -9,7 +9,7 @@ command-line option specified. For example:
 
 [source,shell]
 ----------------------------------
-bin/logstash –f apache.config --config.reload.automatic
+bin/logstash -f apache.config --config.reload.automatic
 ----------------------------------
 
 NOTE: The `--config.reload.automatic` option is not available when you specify the `-e` flag to pass
