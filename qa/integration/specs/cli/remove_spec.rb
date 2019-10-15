@@ -45,7 +45,7 @@ describe "CLI > logstash-plugin remove" do
 
             expect(execute.exit_code).to eq(1)
             expect(execute.stderr_and_stdout).to match(/Failed to remove "logstash-codec-json"/)
-            expect(execute.stderr_and_stdout).to match(/logstash-input-kafka/) # one of the dependency
+            expect(execute.stderr_and_stdout).to match(/logstash-integration-kafka/) # one of the dependency
             expect(execute.stderr_and_stdout).to match(/logstash-output-udp/) # one of the dependency
 
             presence_check = @logstash_plugin.list("logstash-codec-json")
@@ -78,7 +78,7 @@ describe "CLI > logstash-plugin remove" do
 
           expect(execute.exit_code).to eq(1)
           expect(execute.stderr_and_stdout).to match(/Failed to remove "logstash-codec-json"/)
-          expect(execute.stderr_and_stdout).to match(/logstash-input-kafka/) # one of the dependency
+          expect(execute.stderr_and_stdout).to match(/logstash-integration-kafka/) # one of the dependency
           expect(execute.stderr_and_stdout).to match(/logstash-output-udp/) # one of the dependency
 
           presence_check = @logstash_plugin.list("logstash-codec-json")
