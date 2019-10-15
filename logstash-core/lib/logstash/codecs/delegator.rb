@@ -1,9 +1,9 @@
 module LogStash::Codecs
   class Delegator < SimpleDelegator
-    def initialize(obj, parent_plugin_name, parent_code_reference)
+    def initialize(obj, parent_plugin_name)
       super(obj)
       @parent_plugin_name = parent_plugin_name
-      @parent_code_reference = parent_code_reference
+      @parent_code_reference = nil
       @encode_metric = LogStash::Instrument::NamespacedNullMetric.new
       @decode_metric = LogStash::Instrument::NamespacedNullMetric.new
     end
@@ -27,6 +27,10 @@ module LogStash::Codecs
       @decode_metric.counter(:writes_in)
       @decode_metric.counter(:out)
       @decode_metric.report_time(:duration_in_millis, 0)
+    end
+
+    def parent_code_reference=(parent_code_reference)
+      @parent_code_reference = parent_code_reference
     end
 
     def encode(event)

@@ -53,11 +53,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(code_reference, params={})
-    super(params)
+  def initialize(params={})
+    super
     @threadable = false
     @stop_called = Concurrent::AtomicBoolean.new(false)
-    config_init(code_reference, @params)
+    config_init(@params)
     @tags ||= []
   end # def initialize
 
@@ -97,6 +97,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
     cloned = super
     cloned.codec = @codec.clone if @codec
     cloned
+  end
+
+  def codec
+    params["codec"]
   end
 
   def metric=(metric)

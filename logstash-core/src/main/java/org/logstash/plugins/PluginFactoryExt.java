@@ -278,10 +278,13 @@ public final class PluginFactoryExt {
                             }
                     );
                 } else {
-                    final IRubyObject pluginInstance = klass.callMethod(context, "new", new IRubyObject[]{RubyUtil.RUBY.newString(configReference), rubyArgs});
+                    final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                     scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                     scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configReference));
+                    // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+                    IRubyObject codec = pluginInstance.callMethod(context, "codec");
+                    codec.callMethod(context, "parent_code_reference=", RubyUtil.RUBY.newString(configReference));
                     pluginInstance.callMethod(context, "metric=", scopedMetric);
                     pluginInstance.callMethod(context, "execution_context=", executionCntx);
                     return pluginInstance;

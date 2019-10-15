@@ -229,8 +229,11 @@ public final class OutputStrategyExt {
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", new IRubyObject[]{args[3], args[4]});
+            output = args[0].callMethod(context, "new", args[4]);
             initOutputCallsite(outputClass);
+            // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+            IRubyObject codec = output.callMethod(context, "codec");
+            codec.callMethod(context, "parent_code_reference=", args[3]);
             output.callMethod(context, "metric=", args[1]);
             output.callMethod(context, "execution_context=", args[2]);
             return this;
