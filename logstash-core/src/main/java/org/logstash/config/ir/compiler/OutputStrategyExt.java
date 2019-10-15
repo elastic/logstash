@@ -154,9 +154,9 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 5)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final RubyHash pluginArgs = (RubyHash) args[3];
+            final RubyHash pluginArgs = (RubyHash) args[4];
             workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
             if (workerCount.isNil()) {
                 workerCount = RubyFixnum.one(context.runtime);
@@ -169,6 +169,9 @@ public final class OutputStrategyExt {
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
                 final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
                 initOutputCallsite(outputClass);
+                // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+                IRubyObject codec = output.callMethod(context, "codec");
+                codec.callMethod(context, "parent_code_reference=", args[3]);
                 output.callMethod(context, "metric=", args[1]);
                 output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);

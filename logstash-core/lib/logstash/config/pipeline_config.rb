@@ -49,7 +49,7 @@ module LogStash module Config
       remaining_lines = merged_config_line
       matching_part = nil
       @config_parts.each do |source_with_meta|
-        if remaining_lines < source_with_meta.lines_count
+        if remaining_lines <= source_with_meta.lines_count
           matching_part = source_with_meta
           break
         end

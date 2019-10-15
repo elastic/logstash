@@ -22,8 +22,16 @@ public class PluginStatement extends Statement {
 
     public PluginStatement(SourceWithMetadata meta, PluginDefinition pluginDefinition, RubyString sourceFile, RubyInteger sourceLine) {
         this(meta, pluginDefinition);
-        this.sourceFile = sourceFile.asJavaString();
-        this.sourceLine = sourceLine.getIntValue();
+        if (sourceFile == null) {
+            this.sourceFile = "<CLI>";
+        } else {
+            this.sourceFile = sourceFile.asJavaString();
+        }
+        if (sourceLine == null) {
+            this.sourceLine = -1;
+        } else {
+            this.sourceLine = sourceLine.getIntValue();
+        }
     }
 
     @Override

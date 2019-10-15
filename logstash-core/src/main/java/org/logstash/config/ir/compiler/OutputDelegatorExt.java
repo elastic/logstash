@@ -50,7 +50,7 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
         strategy = (OutputStrategyExt.AbstractOutputStrategyExt) strategyRegistry.classFor(
             context, concurrency(context)
         ).newInstance(
-            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, args},
+            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, RubyUtil.RUBY.newString(configRef), args},
             Block.NULL_BLOCK
         );
         return this;

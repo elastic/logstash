@@ -74,6 +74,14 @@ describe LogStash::Config::PipelineConfig do
   end
 
   describe "source and line remapping" do
+    context "when pipeline is constructed from single file single line" do
+      let (:pipeline_conf_string) { 'input { generator1 }' }
+      subject { described_class.new(source, pipeline_id, [org.logstash.common.SourceWithMetadata.new("file", "/tmp/1", 0, 0, pipeline_conf_string)], settings) }
+      it "return the same line of the queried" do
+        expect(subject.lookup_source_and_line(1)[1]).to eq(1)
+      end
+    end
+
     context "when pipeline is constructed from single file" do
       let (:pipeline_conf_string) { 'input {
                                        generator1
@@ -81,7 +89,7 @@ describe LogStash::Config::PipelineConfig do
       subject { described_class.new(source, pipeline_id, [org.logstash.common.SourceWithMetadata.new("file", "/tmp/1", 0, 0, pipeline_conf_string)], settings) }
 
       it "return the same line of the queried" do
-        expect(subject.lookup_source_and_line(0)[1]).to eq(0)
+        expect(subject.lookup_source_and_line(1)[1]).to eq(1)
         expect(subject.lookup_source_and_line(2)[1]).to eq(2)
       end
 
@@ -110,7 +118,7 @@ describe LogStash::Config::PipelineConfig do
       end
 
       it "return the line of second segment" do
-        expect(subject.lookup_source_and_line(3)).to eq(["/tmp/output", 0])
+        expect(subject.lookup_source_and_line(4)).to eq(["/tmp/output", 1])
       end
 
       it "throw exception if line is out of bound" do

@@ -7,6 +7,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 
 import static org.logstash.RubyUtil.RUBY;
 
@@ -58,6 +59,19 @@ public class FakeOutClass extends RubyObject {
     public IRubyObject register() {
         registerCallCount++;
         return this;
+    }
+
+    @JRubyMethod(name = "codec")
+    public IRubyObject codec() {
+        final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
+                "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
+                ""
+        );
+        final IRubyObject codecDelegator =
+                codecDelegatorClass.callMethod(RubyUtil.RUBY.getCurrentContext(), "new",
+                        new IRubyObject[]{RubyUtil.RUBY.newString("Fake Codec Object"),  null}
+                );
+        return codecDelegator;
     }
 
     @JRubyMethod(name = "metric=")
