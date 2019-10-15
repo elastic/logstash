@@ -135,7 +135,7 @@ it before you upgrade.
 
 To drain the queue:
  
-. In the logstash.yml file, set `queue.drain:true`.
+. In the logstash.yml file, set `queue.drain: true`.
 . Restart Logstash for this setting to take effect. 
 . Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
