@@ -1,7 +1,10 @@
 # encoding: utf-8
 require "digest"
 
+java_import org.logstash.config.ir.ConfigSourceSegment
+
 module LogStash module Config
+
   class PipelineConfig
     include LogStash::Util::Loggable
 
@@ -45,18 +48,26 @@ module LogStash module Config
       logger.debug("\n\n#{config_string}")
     end
 
-    def lookup_source_and_line(merged_config_line)
-      remaining_lines = merged_config_line
-      matching_part = nil
-      @config_parts.each do |source_with_meta|
-        if remaining_lines <= source_with_meta.lines_count
-          matching_part = source_with_meta
-          break
-        end
-        remaining_lines = remaining_lines - source_with_meta.lines_count
+    def lookup_source_and_line(merged_line_number)
+      res = source_map.find { |source_segment| source_segment.contains(merged_line_number) }
+      if res == nil
+        raise IndexError
       end
-      raise IndexError if matching_part.nil? && remaining_lines > 0
-      return matching_part.id, remaining_lines
+      [res.getSource(), res.rebase(merged_line_number)]
+    end
+
+    private
+    def source_map
+      @source_map ||= begin
+        offset = 0
+        source_map = []
+        config_parts.each do |config_part|
+          source_segment = ConfigSourceSegment.new config_part.id, offset, config_part.getLinesCount()
+          source_map << source_segment
+          offset += source_segment.getLength()
+        end
+        source_map.freeze
+      end
     end
   end
 end end
