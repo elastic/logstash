@@ -458,9 +458,6 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.2, < 1.0.0)
-    logstash-mixin-rabbitmq_connection (5.1.0-java)
-      march_hare (~> 4.0)
-      stud (~> 0.0.22)
     logstash-output-cloudwatch (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
@@ -752,7 +749,6 @@ DEPENDENCIES
   logstash-integration-rabbitmq
   logstash-mixin-aws
   logstash-mixin-http_client
-  logstash-mixin-rabbitmq_connection
   logstash-output-cloudwatch
   logstash-output-csv
   logstash-output-elastic_app_search
