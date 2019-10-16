@@ -17,7 +17,7 @@ describe LogStash::FilterDelegator do
 
   let(:filter_id) { "my_filter" }
   let(:config) do
-    { "host" => "127.0.0.1", "id" => filter_id }
+    { "host" => "127.0.0.1", "id" => filter_id, "config-ref" => "S:<test source>, L: 1"}
   end
   let(:metric) {
     LogStash::Instrument::NamespacedMetric.new(

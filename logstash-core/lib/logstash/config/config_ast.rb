@@ -233,11 +233,17 @@ module LogStash; module Config; module AST
 
     def compile_initializer
       # If any parent is a Plugin, this must be a codec.
+      puts ">>> calling compile_initializer() for #{plugin_type}"
 
       if attributes.elements.nil?
         return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect})" << (plugin_type == "codec" ? "" : "\n")
       else
-        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
+        attrs = attributes.recursive_select(Attribute)
+        attrs.each do |attribute|
+          attribute.source_file = source_file
+          attribute.source_line = source_line
+        end
+        settings = attrs.collect(&:compile).reject(&:empty?)
 
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
         return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
@@ -311,7 +317,12 @@ module LogStash; module Config; module AST
     end
   end
   class Attribute < Node
+    attr_accessor :source_file, :source_line
     def compile
+      if value.is_a?(Plugin)
+        value.source_file = source_file
+        value.source_line = source_line
+      end
       return %Q(#{name.compile} => #{value.compile})
     end
   end

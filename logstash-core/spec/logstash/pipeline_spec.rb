@@ -61,6 +61,13 @@ class DummyCodec < LogStash::Codecs::Base
 
   def close
   end
+
+  def codec
+    self
+  end
+
+  def parent_code_reference=(code_ref)
+  end
 end
 
 class DummyOutputMore < ::LogStash::Outputs::DummyOutput

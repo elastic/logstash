@@ -11,7 +11,7 @@ describe LogStash::FilterDelegator do
 
   let(:filter_id) { "my-filter" }
   let(:config) do
-    { "host" => "127.0.0.1", "id" => filter_id }
+    { "host" => "127.0.0.1", "id" => filter_id, "config-ref" => "S: <filter_delegator_spec.rb> L: 14" }
   end
   let(:collector) {LogStash::Instrument::Collector.new}
   let(:metric) { LogStash::Instrument::Metric.new(collector).namespace(:null) }

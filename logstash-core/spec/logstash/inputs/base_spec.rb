@@ -95,7 +95,7 @@ describe "LogStash::Inputs::Base#decorate" do
     end
 
     it "should clone the codec when cloned" do
-      expect(input.codec).not_to eq(cloned.codec)
+      expect(input.codec_attribute).not_to eq(cloned.codec_attribute)
     end
 
     it "should preserve codec params" do
