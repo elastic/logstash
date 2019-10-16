@@ -79,6 +79,3 @@
 
 # Copy the logging context from parent threads to children
 -Dlog4j2.isThreadContextMapInheritable=true
-
-# Avoid Nashorn deprecation logs in JDK > 11
--Dnashorn.args=--no-deprecation-warning
