@@ -129,10 +129,10 @@ describe "Test Monitoring API" do
       result = logstash_service.monitoring_api.logging_get
       result["loggers"].each do | k, v |
         #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
-        if k.eql?("logstash.agent") || k.start_with?("org.logstash") || k.eql?("org.reflections.Reflections")
-          expect(v).to eq("INFO")
-        else
+        if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog"))
           expect(v).to eq("ERROR")
+        else
+          expect(v).to eq("INFO")
         end
       end
 
