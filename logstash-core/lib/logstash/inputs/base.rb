@@ -99,6 +99,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     cloned
   end
 
+  #used only in tests
   def codec_attribute
     @codec
   end

@@ -7,14 +7,7 @@ import co.elastic.logstash.api.DeadLetterQueueWriter;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Output;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyBasicObject;
-import org.jruby.RubyClass;
-import org.jruby.RubyHash;
-import org.jruby.RubyInteger;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -282,11 +275,19 @@ public final class PluginFactoryExt {
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                     scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                     scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configReference));
-                    // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
-                    IRubyObject codec = pluginInstance.callMethod(context, "codec");
-                    codec.callMethod(context, "parent_code_reference=", RubyUtil.RUBY.newString(configReference));
-                    pluginInstance.callMethod(context, "metric=", scopedMetric);
-                    pluginInstance.callMethod(context, "execution_context=", executionCntx);
+
+                    if (type == PluginLookup.PluginType.INPUT) {
+                        final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
+                                "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
+                                "");
+                        if (pluginInstance.getType().instance_of_p(context, codecDelegatorClass).isTrue()) {
+                            // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+                            IRubyObject codec = pluginInstance.callMethod(context, "codec");
+                            codec.callMethod(context, "parent_code_reference=", RubyUtil.RUBY.newString(configReference));
+                        }
+                        pluginInstance.callMethod(context, "metric=", scopedMetric);
+                        pluginInstance.callMethod(context, "execution_context=", executionCntx);
+                    }
                     return pluginInstance;
                 }
             } else {
