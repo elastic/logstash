@@ -39,45 +39,9 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-4]]
 === Logstash 6.8.4 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.4
-
-=== Logstash Commits between 6.8 and 6.8.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.3..6.8"
-
-1e4628fc5 - (HEAD -> 6.8, origin/6.8) syntax fix (2 days ago) <Sachin Frayne>
-bb899404c - replace YAML.parse with YAML.safe_load in release tool (6 days ago) <João Duarte>
-b6d7dd124 - handling missing gems during generatePluginsVersion (7 days ago) <Joao Duarte>
-55b95267f - Clarify monitoring hosts should not be master-only (10 days ago) <Jason Tedor>
-5c2efa53c - Update patch plugin versions in gemfile lock (#11189) (2 weeks ago) <João Duarte>
-f27ca4e3e - Update JrJackson (#11185) (2 weeks ago) <Rob Bavey>
-95afa3cf1 - Update patch plugin versions in gemfile lock (#11182) (2 weeks ago) <João Duarte>
-062d35f7f - Add note about illegal reflective access (4 weeks ago) <Karen Metts>
-c439be0ff - Update logstash to use shared version files (#11144) (4 weeks ago) <Karen Metts>
-87d96fede - Fixed links in contributing-to-logstash page (5 weeks ago) <Kuba Clark>
-cf9533b4e - bump to 6.8.4 (#11121) (6 weeks ago) <João Duarte>
-41deec644 - bump docs to 6.8.3 (#11120) (6 weeks ago) <João Duarte>
-c68aa0fc6 - Release notes draft for 6.8.3 (#11118) (6 weeks ago) <Logstash Machine>
-3c65d186b - Update link to Debugging Java Performance (6 weeks ago) <Pavel Zubkou>
-38953f6f1 - use 2048 bits key (6 weeks ago) <Colin Surprenant>
-60c7b4274 - Update patch plugin versions in gemfile lock (#11093) (7 weeks ago) <João Duarte>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.3..6.8 *.release"
-Changed plugin versions:
-logstash-filter-aggregate: 2.9.0 -> 2.9.1
-logstash-filter-cidr: 3.1.2 -> 3.1.3
-logstash-filter-grok: 4.1.0 -> 4.1.1
-logstash-input-beats: 5.1.8 -> 5.1.9
-logstash-input-elasticsearch: 4.3.1 -> 4.3.2
-logstash-input-exec: 3.3.2 -> 3.3.3
-logstash-input-file: 4.1.10 -> 4.1.11
-logstash-input-imap: 3.0.6 -> 3.0.7
-logstash-input-jdbc: 4.3.13 -> 4.3.16
-logstash-mixin-rabbitmq_connection: 5.0.2 -> 5.1.0
-logstash-output-s3: 4.1.9 -> 4.1.10
----------- DELETE UP TO HERE ------------
+* Update JrJackson to 0.4.10 [#11185](https://github.com/elastic/logstash/pull/11185)
+* [DOCS] Add note about illegal reflective access [#11152](https://github.com/elastic/logstash/pull/11152)
+* [DOCS] Clarify monitoring hosts should not be master-only [#11194](https://github.com/elastic/logstash/pull/11194)
 
 ==== Plugins
 
@@ -90,7 +54,7 @@ logstash-output-s3: 4.1.9 -> 4.1.10
 
 *Cidr Filter*
 
-* Support string arrays in network setting
+* Support string arrays in network setting [#21](https://github.com/logstash-plugins/logstash-filter-cidr/pull/21)
 
 *Grok Filter*
 
@@ -102,7 +66,7 @@ logstash-output-s3: 4.1.9 -> 4.1.10
 
 *Elasticsearch Input*
 
-* Fixed broken link to Elasticsearch Reference  [#106](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/106)
+* Fixed broken link to Elasticsearch Reference [#106](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/106)
 
 *Exec Input*
 
@@ -119,12 +83,8 @@ logstash-output-s3: 4.1.9 -> 4.1.10
 *Jdbc Input*
 
 * Add support for prepared statements [Issue 233](https://github.com/logstash-plugins/logstash-input-jdbc/issues/233)
-
 * Use atomic booleam to load drivers once
-* Added CHANGELOG entries
-
 * Added support for driver loading in JDK 9+ [Issue 331](https://github.com/logstash-plugins/logstash-input-jdbc/issues/331)
-* Gem released without CHANGELOG additions
 
 *Rabbitmq_connection Mixin*
 
@@ -134,7 +94,6 @@ logstash-output-s3: 4.1.9 -> 4.1.10
 *S3 Output*
 
 * Added clarification for endpoint in documentation [#198](https://github.com/logstash-plugins/logstash-output-s3/pull/198)
-
 
 [[logstash-6-8-3]]
 === Logstash 6.8.3 Release Notes
