@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-4-1,Logstash 7.4.1>>
 * <<logstash-7-4-0,Logstash 7.4.0>>
 * <<logstash-7-3-2,Logstash 7.3.2>>
 * <<logstash-7-3-1,Logstash 7.3.1>>
@@ -18,6 +19,104 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-4-1]]
+=== Logstash 7.4.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.4.1
+
+* remove 10k character truncation from log4j2.properties https://github.com/elastic/logstash/pull/11206[#11206]
+* bump lock file for 7.4.1 https://github.com/elastic/logstash/pull/11211[#11211]
+
+=== Logstash Commits between 7.4 and 7.4.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.4.0..7.4"
+
+b1ac63cdb - (HEAD -> 7.4, origin/7.4) doc: replace unicode non-breaking hyphen U+8211 with ASCII hyphen (2 days ago) <Ry Biesemeyer>
+0b9fbca75 - syntax fix (2 days ago) <Sachin Frayne>
+45f21a27b - bump lock file for 7.4.1 (#11211) (6 days ago) <Logstash Machine>
+3a62db05e - replace YAML.parse with YAML.safe_load in release tool (6 days ago) <João Duarte>
+f03523528 - Update reference to last 6.x version to be 6.8 (7 days ago) <Karen Metts>
+6f695de95 - handling missing gems during generatePluginsVersion (7 days ago) <Joao Duarte>
+2741fc2dd - remove 10k character truncation from log4j2.properties (7 days ago) <João Duarte>
+884ba0334 - Add remaining review comments from #11033 (8 days ago) <Karen Metts>
+fb13d3b7f - Clarify monitoring hosts should not be master-only (12 days ago) <Jason Tedor>
+882648fd6 - Add metricbeat as monitoring option (#11191) (13 days ago) <Karen Metts>
+c4214a221 - clarify: config.reload.interval is seconds (2 weeks ago) <Andrew Siegman>
+710dad9da - Update JrJackson (#11184) (2 weeks ago) <Rob Bavey>
+e1f749533 - Update patch plugin versions in gemfile lock for 7.4.1 (#11181) (2 weeks ago) <João Duarte>
+4740893b9 - bump to 7.4.1 (#11179) (2 weeks ago) <João Duarte>
+2e0376062 - [DOCS] Fixes links to monitoring content (#11166) (#11173) (2 weeks ago) <Lisa Cawley>
+5333ed211 - Release notes draft for 7.4.0 (#11163) (2 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.4.0..7.4 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.0.0 -> 6.0.1
+logstash-filter-aggregate: 2.9.0 -> 2.9.1
+logstash-filter-cidr: 3.1.2 -> 3.1.3
+logstash-filter-prune: 3.0.3 -> 3.0.4
+logstash-input-beats: 6.0.1 -> 6.0.3
+logstash-input-exec: 3.3.2 -> 3.3.3
+logstash-input-file: 4.1.10 -> 4.1.11
+logstash-input-imap: 3.0.6 -> 3.0.7
+logstash-input-jdbc: 4.3.13 -> 4.3.16
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Cef Codec*
+
+* Fixed support for deep dot notation [#73](https://github.com/logstash-plugins/logstash-codec-cef/pull/73)
+
+*Aggregate Filter*
+
+* bugfix: fix inactivity timeout feature when processing old logs (PR [#103](https://github.com/logstash-plugins/logstash-filter-aggregate/pull/103), thanks @jdratlif for his contribution!)
+* docs: fix several typos in documentation
+* docs: enhance example 4 documentation
+* ci: enhance plugin continuous integration
+
+*Cidr Filter*
+
+* Support string arrays in network setting
+
+*Prune Filter*
+
+# 3.0.4
+* Fixed regex to prevent Exception in sprintf call [#25](https://github.com/logstash-plugins/logstash-filter-prune/pull/25)
+* Changed testing to docker [#27](https://github.com/logstash-plugins/logstash-filter-prune/pull/27)
+* Added clarification in docs around whitelist_values
+* Changed tests from insist to expect
+
+*Beats Input*
+
+* Fixed configuration example in doc [#371](https://github.com/logstash-plugins/logstash-input-beats/pull/371)
+
+* Improved handling of invalid compressed content [#368](https://github.com/logstash-plugins/logstash-input-beats/pull/368)
+
+*Exec Input*
+
+* Docs: improved doc on memory usage [#27](https://github.com/logstash-plugins/logstash-input-exec/pull/27)
+
+*File Input*
+
+* Fixed link to FAQ [#247](https://github.com/logstash-plugins/logstash-input-file/pull/247)
+
+*Imap Input*
+
+* Added facility to use IMAP uid to retrieve new mails instead of "NOT SEEN" [#36](https://github.com/logstash-plugins/logstash-input-imap/pull/36)
+
+*Jdbc Input*
+
+* Add support for prepared statements [Issue 233](https://github.com/logstash-plugins/logstash-input-jdbc/issues/233)
+
+* Use atomic booleam to load drivers once
+* Added CHANGELOG entries
+
+* Added support for driver loading in JDK 9+ [Issue 331](https://github.com/logstash-plugins/logstash-input-jdbc/issues/331)
+* Gem released without CHANGELOG additions
+
 
 [[logstash-7-4-0]]
 === Logstash 7.4.0 Release Notes
