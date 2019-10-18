@@ -123,13 +123,4 @@ describe "Test Logstash Pipeline id" do
     end
     expect(@ls.exit_code).to be >= 0
   end
-
-  @private
-  def wait_logstash_process_terminate
-    num_retries = 100
-    try(num_retries) do
-      expect(@ls.exited?).to be(true)
-    end
-    expect(@ls.exit_code).to be(0)
-  end
 end
