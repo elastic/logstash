@@ -18,7 +18,6 @@ dependency,dependencyUrl,licenseOverride
 "bytelist:",http://github.com/jruby/bytelist,EPL-1.0
 "cabin:0.9.0",https://github.com/jordansissel/ruby-cabin,Apache-2.0
 "childprocess:0.9.0",http://github.com/enkessler/childprocess,MIT
-"chronic_duration:0.10.6",https://github.com/hpoydar/chronic_duration,MIT
 "clamp:0.6.5",http://github.com/mdub/clamp,MIT
 "coderay:1.1.2",http://coderay.rubychan.de,MIT
 "com.fasterxml.jackson.core:jackson-annotations:2.9.5",https://github.com/FasterXML/jackson-annotations,Apache-2.0
