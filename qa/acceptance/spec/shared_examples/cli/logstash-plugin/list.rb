@@ -31,6 +31,7 @@ shared_examples "logstash list" do |logstash|
         result = logstash.run_command_in_path("bin/logstash-plugin list --verbose")
 
         stdout = StringIO.new(result.stdout)
+        stdout.set_encoding(Encoding::UTF_8)
         while line = stdout.gets
           expect(line).to match(/^#{plugin_name_with_version}$/)
 
