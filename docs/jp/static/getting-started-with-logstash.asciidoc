@@ -101,7 +101,7 @@ echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main"
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
-Logstashをシステムサービスとして管理する方法の詳細については、{logstash}running-logstash.html[Logstashの実行]を参照してください。
+Logstashをシステムサービスとして管理する方法の詳細については、&#8203;{logstash}running-logstash.html[Logstashの実行]&#8203;を参照してください。
 
 endif::[]
 
@@ -146,13 +146,13 @@ sudo yum install logstash
 
 WARNING: CentOS 5のようにまだRPM v3を使用している古いRPMベースのデストリビューションでは、リポジトリは機能しません。
 
-Logstashをシステムサービスとして管理するには、{logstash}running-logstash.html[Logstashの実行]を参照してください。
+Logstashをシステムサービスとして管理するには、&#8203;{logstash}running-logstash.html[Logstashの実行]&#8203;を参照してください。
 
 endif::[]
 
 ==== Docker
 
-DockerコンテナとしてLogstashを実行するためのイメージが用意されています。Elastic Dockerレジストリから利用できます。Logstash Dockerコンテナの設定方法と実行方法の詳細については、{logstash}docker.html[Docker]を参照してください。
+DockerコンテナとしてLogstashを実行するためのイメージが用意されています。Elastic Dockerレジストリから利用できます。Logstash Dockerコンテナの設定方法と実行方法の詳細については、&#8203;{logstash}docker.html[Docker]&#8203;を参照してください。
 
 [[first-event]]
 === 最初のイベントの格納
@@ -173,7 +173,7 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
-NOTE: `bin`ディレクトリのロケーションはプラットフォームにより異なります。お使いのシステムで`bin\logstash`の場所を見つけるには、{logstash}dir-layout.html[dir layout]を参照してください。
+NOTE: `bin`ディレクトリのロケーションはプラットフォームにより異なります。お使いのシステムで`bin\logstash`の場所を見つけるには、&#8203;{logstash}dir-layout.html[dir layout]&#8203;を参照してください。
 
 `-e`フラグを使用すると、コマンドラインから設定ディレクトリを指定できます。コマンドラインで設定を指定すると、繰り返しの間にファイルを編集しなくても、設定をすばやくテストできます。
 例のパイプラインは、標準input`stdin`のinputを使用し、そのinputを標準output`stdout`に構造化された形式で移します。
