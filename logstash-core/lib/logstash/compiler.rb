@@ -7,7 +7,7 @@ module LogStash; class Compiler
   include ::LogStash::Util::Loggable
 
   def self.compile_sources(pipeline_config, support_escapes)
-    sources_with_metadata = pipeline_config.config_parts#[org.logstash.common.SourceWithMetadata.new("str", "pipeline", 0, 0, pipeline_config.config_string)]
+   sources_with_metadata = [org.logstash.common.SourceWithMetadata.new("str", "pipeline", 0, 0, pipeline_config.config_string)]
     graph_sections = sources_with_metadata.map do |swm|
       self.compile_graph(pipeline_config, swm, support_escapes)
     end
