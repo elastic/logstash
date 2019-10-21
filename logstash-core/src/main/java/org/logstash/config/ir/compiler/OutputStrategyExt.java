@@ -169,9 +169,9 @@ public final class OutputStrategyExt {
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
                 final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
                 initOutputCallsite(outputClass);
-                // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+                // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
                 IRubyObject codec = output.callMethod(context, "codec");
-                codec.callMethod(context, "parent_code_reference=", args[3]);
+                codec.callMethod(context, "parent_config_reference=", args[3]);
                 output.callMethod(context, "metric=", args[1]);
                 output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);
@@ -234,9 +234,9 @@ public final class OutputStrategyExt {
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
             output = args[0].callMethod(context, "new", args[4]);
             initOutputCallsite(outputClass);
-            // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+            // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
             IRubyObject codec = output.callMethod(context, "codec");
-            codec.callMethod(context, "parent_code_reference=", args[3]);
+            codec.callMethod(context, "parent_config_reference=", args[3]);
             output.callMethod(context, "metric=", args[1]);
             output.callMethod(context, "execution_context=", args[2]);
             return this;

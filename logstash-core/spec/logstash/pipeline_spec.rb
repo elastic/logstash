@@ -66,7 +66,7 @@ class DummyCodec < LogStash::Codecs::Base
     self
   end
 
-  def parent_code_reference=(code_ref)
+  def parent_config_reference=(code_ref)
   end
 end
 

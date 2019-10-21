@@ -233,8 +233,6 @@ module LogStash; module Config; module AST
 
     def compile_initializer
       # If any parent is a Plugin, this must be a codec.
-      puts ">>> calling compile_initializer() for #{plugin_type}"
-
       if attributes.elements.nil?
         return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{source_file.inspect}, #{source_line.inspect})" << (plugin_type == "codec" ? "" : "\n")
       else
