@@ -27,10 +27,10 @@ image:static/images/logstash.png[]
 すべてここから始まります。
 
 * あらゆる種類のログデータを処理
-** 多数の{logstash}advanced-pipeline.html[Apache]などのWebログやJavaの{logstash}plugins-inputs-log4j.html[log4j]などのアプリケーションログを容易に収集
-** {logstash}plugins-inputs-syslog.html[syslog]、{logstash}plugins-inputs-eventlog.html[Windows event logs]、ネットワークやファイアウォールのログなど、多様な形式のログをキャプチャ
+** 多数の&#8203;{logstash}advanced-pipeline.html[Apache]&#8203;などのWebログやJavaの&#8203;{logstash}plugins-inputs-log4j.html[log4j]&#8203;などのアプリケーションログを容易に収集
+** {logstash}plugins-inputs-syslog.html[syslog]&#8203;、&#8203;{logstash}plugins-inputs-eventlog.html[Windows event logs]&#8203;、ネットワークやファイアウォールのログなど、多様な形式のログをキャプチャ
 * https://www.elastic.co/products/beats/filebeat[Filebeat]との安全で補足的なログ転送を利用
-* {logstash}plugins-inputs-ganglia.html[Ganglia]、{logstash}plugins-codecs-collectd.html[collectd]、{logstash}plugins-codecs-netflow.html[NetFlow]、{logstash}plugins-inputs-jmx.html[JMX]を始めとする数多くのインフラストラクチャとアプリケーションプラットフォームのメトリクスを{logstash}plugins-inputs-tcp.html[TCP]と{logstash}plugins-inputs-udp.html[UDP]を通して収集
+* {logstash}plugins-inputs-ganglia.html[Ganglia]&#8203;、&#8203;{logstash}plugins-codecs-collectd.html[collectd]&#8203;、&#8203;{logstash}plugins-codecs-netflow.html[NetFlow]&#8203;、&#8203;{logstash}plugins-inputs-jmx.html[JMX]&#8203;を始めとする数多くのインフラストラクチャとアプリケーションプラットフォームのメトリクスを&#8203;{logstash}plugins-inputs-tcp.html[TCP]&#8203;と&#8203;{logstash}plugins-inputs-udp.html[UDP]&#8203;を通して収集
 
 [float]
 === Web
@@ -38,10 +38,10 @@ image:static/images/logstash.png[]
 World Wide Webを解放します。
 
 * {logstash}plugins-inputs-http.html[HTTPリクエスト]をイベントに変換
-** ソーシャルセンチメント分析に{logstash}plugins-inputs-twitter.html[Twitter]などのWebサービスFirehoseから習得
+** ソーシャルセンチメント分析に&#8203;{logstash}plugins-inputs-twitter.html[Twitter]&#8203;などのWebサービスFirehoseから習得
 ** GitHub、HipChat、JIRAを始めとする無数のアプリケーションのWebhookサポート
-** 数多くの https://www.elastic.co/products/x-pack/alerting[Watcher]アラート事例
-* オンデマンド方式の{logstash}plugins-inputs-http_poller.html[HTTPエンドポイント]のポーリングによりイベントを作成
+** 数多くの &#8203;https://www.elastic.co/products/x-pack/alerting[Watcher]&#8203;アラート事例
+* オンデマンド方式の&#8203;{logstash}plugins-inputs-http_poller.html[HTTPエンドポイント]&#8203;のポーリングによりイベントを作成
 ** Webアプリケーションインターフェイスからヘルス、パフォーマンス、メトリクスといったさまざまな種類のデータを広く一般にキャプチャ
 ** 受信よりもポーリングの制御が優先される状況に最適  
 
@@ -49,8 +49,8 @@ World Wide Webを解放します。
 === データの格納とストリーム
 すでに所有しているデータからさらなる価値を見つけます。
 
-* {logstash}plugins-inputs-jdbc.html[JDBC]インターフェイスを使用して、リレーショナルデータベースまたはNoSQLストアからのデータの理解を深める
-* Apache {logstash}plugins-outputs-kafka.html[Kafka]、{logstash}plugins-outputs-rabbitmq.html[RabbitMQ]、{logstash}plugins-outputs-sqs.html[Amazon SQS]、{logstash}plugins-outputs-zeromq.html[ZeroMQ]のようなメッセージングキューからのさまざまなデータストリームを統合
+* {logstash}plugins-inputs-jdbc.html[JDBC]&#8203;インターフェイスを使用して、リレーショナルデータベースまたはNoSQLストアからのデータの理解を深める
+* Apache &#8203;{logstash}plugins-outputs-kafka.html[Kafka]&#8203;、&#8203;{logstash}plugins-outputs-rabbitmq.html[RabbitMQ]&#8203;、&#8203;{logstash}plugins-outputs-sqs.html[Amazon SQS]&#8203;、&#8203;{logstash}plugins-outputs-zeromq.html[ZeroMQ]&#8203;のようなメッセージングキューからのさまざまなデータストリームを統合
 
 [float]
 === センサとIoT
@@ -65,9 +65,9 @@ World Wide Webを解放します。
 
 データが良ければ良いほど、知識は深まります。取得時にデータをきれいにして変換し、インデックス作成時または出力時にほぼリアルタイムの情報をすぐに取得します。Logstashは、パターン照合、ジオマッピング、動的なルックアップ機能とともに、数多くの集約や変形ですぐに使用できます。
 
-* {logstash}plugins-filters-grok.html[Grok]は、主要なLogstashフィルタで、非構造データから構造を展開するために至る所で使用されます。Web、システム、ネットワークを始めとする各種のイベント形式をすばやく分析することを目的とした数多くの統合パターンを利用してください。
-* IPアドレスからの{logstash}plugins-filters-geoip.html[位置座標]の解読、複雑な {logstash}plugins-filters-date.html[日付] の標準化、{logstash}plugins-filters-kv.html[キーと値のペア]および {logstash}plugins-filters-csv.html[CSV] データの単純化、機密情報の{logstash}plugins-filters-anonymize.html[匿名化]、および {logstash}plugins-filters-translate.html[ローカルルックアップ] やElasticsearchの{logstash}plugins-filters-elasticsearch.html[クエリ]でのデータの整形により視野が広がります。
-* {logstash}plugins-codecs-json.html[JSON]イベントや{logstash}plugins-codecs-multiline.html[multiline]イベントのような共通イベント構造の処理を容易にするために、コーディックがよく使用されます。
+* {logstash}plugins-filters-grok.html[Grok]&#8203;は、主要なLogstashフィルタで、非構造データから構造を展開するために至る所で使用されます。Web、システム、ネットワークを始めとする各種のイベント形式をすばやく分析することを目的とした数多くの統合パターンを利用してください。
+* IPアドレスからの&#8203;{logstash}plugins-filters-geoip.html[位置座標]&#8203;の解読、複雑な &#8203;{logstash}plugins-filters-date.html[日付]&#8203; の標準化、&#8203;{logstash}plugins-filters-kv.html[キーと値のペア]&#8203;および &#8203;{logstash}plugins-filters-csv.html[CSV]&#8203; データの単純化、機密情報の&#8203;{logstash}plugins-filters-anonymize.html[匿名化]&#8203;、および &#8203;{logstash}plugins-filters-translate.html[ローカルルックアップ]&#8203; やElasticsearchの&#8203;{logstash}plugins-filters-elasticsearch.html[クエリ]&#8203;でのデータの整形により視野が広がります。
+* {logstash}plugins-codecs-json.html[JSON]&#8203;イベントや&#8203;{logstash}plugins-codecs-multiline.html[multiline]&#8203;イベントのような共通イベント構造の処理を容易にするために、コーディックがよく使用されます。
 
 [float]
 == 格納庫の選択
@@ -81,7 +81,7 @@ World Wide Webを解放します。
 *分析*
 
 * {logstash}plugins-outputs-elasticsearch.html[Elasticsearch]
-* {logstash}plugins-outputs-mongodb.html[MongoDB]や{logstash}plugins-outputs-riak.html[Riak]などのデータストア
+* {logstash}plugins-outputs-mongodb.html[MongoDB]&#8203;や&#8203;{logstash}plugins-outputs-riak.html[Riak]&#8203;などのデータストア
 
 |
 
@@ -95,7 +95,7 @@ World Wide Webを解放します。
 
 *監視*
 
-* {logstash}plugins-outputs-nagios,html[Nagios]
+* {logstash}plugins-outputs-nagios.html[Nagios]
 * {logstash}plugins-outputs-ganglia.html[Ganglia]
 * {logstash}plugins-outputs-zabbix.html[Zabbix]
 * {logstash}plugins-outputs-graphite.html[Graphite]
@@ -106,7 +106,7 @@ World Wide Webを解放します。
 
 *アラート*
 
-* Elasticsearchでの https://www.elastic.co/products/watcher[Watcher] 
+* Elasticsearchでの &#8203;https://www.elastic.co/products/watcher[Watcher] 
 * {logstash}plugins-outputs-email.html[Email]
 * {logstash}plugins-outputs-pagerduty.html[Pagerduty]
 * {logstash}plugins-outputs-hipchat.html[HipChat]

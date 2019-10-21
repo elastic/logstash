@@ -96,7 +96,7 @@ image:static/images/logstash.png[]
 
 *모니터링*
 
-* {logstash}plugins-outputs-nagios[Nagios]
+* {logstash}plugins-outputs-nagios.html[Nagios]
 * {logstash}plugins-outputs-ganglia.html[Ganglia]
 * {logstash}plugins-outputs-zabbix.html[Zabbix]
 * {logstash}plugins-outputs-graphite.html[Graphite]
