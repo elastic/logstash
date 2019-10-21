@@ -30,7 +30,7 @@ public final class RubyIntegration {
         AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine, IRubyObject args,
             Map<String, Object> pluginArgs);
 
-        IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs);
+        IRubyObject buildCodec(RubyString name, String sourceFile, int sourceLine, IRubyObject args, Map<String, Object> pluginArgs);
 
         Codec buildDefaultCodec(String codecName);
 

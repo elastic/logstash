@@ -30,7 +30,7 @@ public class TestPluginFactory implements RubyIntegration.PluginFactory {
     }
 
     @Override
-    public IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs) {
+    public IRubyObject buildCodec(RubyString name, String sourceFile, int sourceLine, IRubyObject args, Map<String, Object> pluginArgs) {
         return null;
     }
 

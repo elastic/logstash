@@ -64,8 +64,9 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
-            return rubyFactory.buildCodec(name, args, pluginArgs);
+        public IRubyObject buildCodec(final RubyString name, final String sourceFile, final int sourceLine,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+            return rubyFactory.buildCodec(name, sourceFile, sourceLine, args, pluginArgs);
         }
 
         @Override

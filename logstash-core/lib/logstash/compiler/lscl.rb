@@ -98,7 +98,11 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def expr_attributes
       # Turn attributes into a hash map
-      self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
+      self.attributes.recursive_select(Attribute).map {|attribute|
+        attribute.source_file = source_file
+        attribute.source_line = source_line
+        attribute
+      }.map(&:expr).map {|k,v|
         if v.java_kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
           [k, v.get]
         else
@@ -133,7 +137,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   end
 
   class Attribute < Node
+    attr_accessor :source_file, :source_line
     def expr
+      if value.is_a?(Plugin)
+        value.source_file = source_file
+        value.source_line = source_line
+      end
       [name.text_value, value.expr]
     end
   end

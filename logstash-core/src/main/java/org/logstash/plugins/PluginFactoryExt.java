@@ -167,10 +167,11 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(final RubyString name, final String sourceFile, final int sourceLine,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, null, 0, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), 0, 0, sourceFile, sourceLine, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -280,9 +281,10 @@ public final class PluginFactoryExt {
                         final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
                                 "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
                                 "");
-                        if (pluginInstance.getType().instance_of_p(context, codecDelegatorClass).isTrue()) {
-                            // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
-                            IRubyObject codec = pluginInstance.callMethod(context, "codec");
+
+                        // WARNING: order is important since metric= create gauges with data assigned from parent_code_reference=
+                        IRubyObject codec = pluginInstance.callMethod(context, "codec");
+                        if (codec.getType().instance_of_p(context, codecDelegatorClass).isTrue()) {
                             codec.callMethod(context, "parent_code_reference=", RubyUtil.RUBY.newString(configReference));
                         }
                         pluginInstance.callMethod(context, "metric=", scopedMetric);

@@ -34,6 +34,14 @@ public class PluginStatement extends Statement {
         }
     }
 
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public int getSourceLine() {
+        return sourceLine;
+    }
+
     @Override
     public boolean sourceComponentEquals(SourceComponent sourceComponent) {
         if (sourceComponent == null) return false;
