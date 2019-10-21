@@ -48,7 +48,7 @@ describe "Test Monitoring API" do
     end
   end
 
-  it 'can retrieve dlq stats' do
+  it "can retrieve dlq stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
@@ -142,6 +142,89 @@ describe "Test Monitoring API" do
     end
   end
 
+  it "can retrieve pipeline metrics stats - config string" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # event_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.pipeline_stats("main") rescue nil
+      puts "<><><> #{result} <><><>"
+      expect(result).not_to be_nil
+
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+       inputs_stats = result.fetch("plugins").fetch("inputs")[0]
+       config_ref = inputs_stats.fetch("config-ref")
+       puts ">>> inputs_stats: #{inputs_stats} <<<"
+       expect(config_ref).to eq("S: config_string, L:1, C:8")
+    end
+  end
+
+  describe "multifile pipelines" do
+
+    let!(:settings_dir) { Stud::Temporary.directory("logstash-splitted-pipeline-config-test") }
+
+    it "can retrieve pipeline metrics stats - multiple files" do
+      IO.write(settings_dir + "/pipeline_1_piece.conf", """
+      input {
+      	stdin {
+      	  codec => json {
+      	    charset => \"UTF-8\"
+      	  }
+      	}
+      }
+
+      filter {
+      	sleep {
+      		time => 1
+      	}
+      }
+      """)
+
+      IO.write(settings_dir + "/pipeline_2_piece.conf", """
+      output {
+       	stdout {
+       	  codec => rubydebug
+       	}
+      }
+      """)
+
+      logstash_service = @fixture.get_service("logstash")
+      logstash_service.spawn_logstash("--path.config", settings_dir)
+      logstash_service.wait_for_logstash
+
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        # event_stats can fail if the stats subsystem isn't ready
+        result = logstash_service.monitoring_api.pipeline_stats("main") rescue nil
+        expect(result).not_to be_nil
+
+        inputs_stats = result.fetch("plugins").fetch("inputs")[0]
+        config_ref = inputs_stats.fetch("config-ref")
+        expect_source_ref(config_ref, "pipeline_1_piece.conf", 3, 8)
+
+        input_codec_stats = result.fetch("plugins").fetch("codecs").select { |c| c["name"] == "json"}.first
+        expect(input_codec_stats).not_to be_nil
+        config_ref = input_codec_stats.fetch("config-ref")
+        expect_source_ref(config_ref, "pipeline_1_piece.conf", 3, 0)
+
+        filters_stats = result.fetch("plugins").fetch("filters")[0]
+        config_ref = filters_stats.fetch("config-ref")
+        expect_source_ref(config_ref, "pipeline_1_piece.conf", 11, 8)
+
+        outputs_stats = result.fetch("plugins").fetch("outputs")[0]
+        config_ref = outputs_stats.fetch("config-ref")
+        expect_source_ref(config_ref, "pipeline_2_piece.conf", 3, 9)
+
+        output_codec_stats = result.fetch("plugins").fetch("codecs").select { |c| c["name"] == "rubydebug"}.first
+        expect(output_codec_stats).not_to be_nil
+        config_ref = output_codec_stats.fetch("parent-code-ref")
+        expect_source_ref(config_ref, "pipeline_2_piece.conf", 3, 9)
+      end
+    end
+  end
+
   private
 
   def logging_get_assert(logstash_service, logstash_level, slowlog_level)
@@ -157,6 +240,10 @@ describe "Test Monitoring API" do
 
   def logging_put_assert(result)
     expect(result["acknowledged"]).to be(true)
+  end
+
+  def expect_source_ref(config_ref, filename, expected_line, expected_column)
+    expect(config_ref).to match("S: \/tmp\/logstash-splitted-pipeline-config-test.*\/#{filename}, L:#{expected_line}, C:#{expected_column}")
   end
 
 end
