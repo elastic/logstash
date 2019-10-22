@@ -219,7 +219,7 @@ describe "Test Monitoring API" do
 
         output_codec_stats = result.fetch("plugins").fetch("codecs").select { |c| c["name"] == "rubydebug"}.first
         expect(output_codec_stats).not_to be_nil
-        config_ref = output_codec_stats.fetch("parent-code-ref")
+        config_ref = output_codec_stats.fetch("parent-config-ref")
         expect_source_ref(config_ref, "pipeline_2_piece.conf", 3, 9)
       end
     end
