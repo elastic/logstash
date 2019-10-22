@@ -186,13 +186,11 @@ include::static/deploying.asciidoc[]
 include::static/performance-checklist.asciidoc[]
 
 // Monitoring 
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring.asciidoc
+:edit_url!:
 include::static/monitoring/monitoring.asciidoc[]
 
 // X-Pack Monitoring 
-
-//:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring/configuring-logstash.asciidoc
+:edit_url!:
 include::static/monitoring/monitoring-overview.asciidoc[]
 
 
