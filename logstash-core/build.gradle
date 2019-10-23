@@ -152,7 +152,6 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     compile 'org.javassist:javassist:3.26.0-GA'
-    //compile 'com.google.guava:guava:22.0'
     testCompile 'org.apache.logging.log4j:log4j-core:2.12.1:tests'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:2.3.0'
