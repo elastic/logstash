@@ -7,6 +7,15 @@ require "logstash/inputs/base"
 require "logstash/filters/base"
 require "support/shared_contexts"
 
+class CustomFilterDeprecable < LogStash::Filters::Base
+  config_name "simple_plugin"
+    config :host, :validate => :string
+
+    def register
+      @deprecation_logger.deprecated("Deprecated feature {}", "hydrocarbon car")
+    end
+end
+
 describe LogStash::Plugin do
   context "reloadable" do
     context "by default" do
@@ -377,6 +386,22 @@ describe LogStash::Plugin do
     end
   end
 
+  describe "deprecation logger" do
+    let(:config) do
+      {
+        "host" => "127.0.0.1"
+      }
+    end
+
+    context "when a plugin is registered" do
+      subject { CustomFilterDeprecable.new(config) }
+
+      it "deprecation logger is available to be used" do
+        subject.register
+        expect(subject.deprecation_logger).not_to be_nil
+      end
+    end
+  end
 
   context "When the plugin record a metric" do
     let(:config) { {} }
