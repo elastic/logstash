@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 
 /**
@@ -132,7 +132,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
         Path sourceDir = null;
         try {
             final Path parentDir;
-            final String dir = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
+            final String dir = System.getProperty(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
             if (dir != null) {
                 parentDir = Paths.get(dir);
                 sourceDir = parentDir.resolve("org").resolve("logstash").resolve("generated");
