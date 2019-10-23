@@ -12,7 +12,7 @@ def block_ports(range)
 
   range.each do |port|
     begin
-      server = TCPServer.new("localhost", port)
+      server = TCPServer.new("127.0.0.1", port)
       servers << server
     rescue => e
       # The port can already be taken
@@ -45,7 +45,7 @@ describe LogStash::WebServer do
 
   subject { LogStash::WebServer.new(logger,
                                     agent,
-                                    { :http_host => "localhost", :http_ports => port_range })}
+                                    { :http_host => "127.0.0.1", :http_ports => port_range })}
 
   let(:port_range) { 10000..10010 }
 
@@ -89,8 +89,9 @@ describe LogStash::WebServer do
     after(:each) { free_ports(@servers) }
 
     context "when we have available ports" do
+      let(:blocked_range) { 10000..10005 }
       before(:each) do
-        @servers = block_ports(10000..10005)
+        @servers = block_ports(blocked_range)
       end
 
       it "successfully find an available port" do
@@ -99,10 +100,13 @@ describe LogStash::WebServer do
         end
 
         sleep(1)
+        address = subject.address
+        port = address.split(":").last.to_i
+        expect(port_range).to cover(port)
+        expect(blocked_range).to_not cover(port)
 
-        response = open("http://localhost:10006").read
+        response = open("http://#{address}").read
         expect { LogStash::Json.load(response) }.not_to raise_error
-        expect(subject.address).to eq("localhost:10006")
 
         subject.stop
         t.join
