@@ -46,6 +46,7 @@ import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.SnapshotExt;
+import org.logstash.log.DeprecationLoggerExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
@@ -176,6 +177,8 @@ public final class RubyUtil {
     public static final RubyClass LOGGER;
 
     public static final RubyModule LOGGABLE_MODULE;
+
+    public static final RubyClass DEPRECATION_LOGGER;
 
     public static final RubyClass SLOW_LOGGER;
 
@@ -446,6 +449,10 @@ public final class RubyUtil {
         SLOW_LOGGER = loggingModule.defineClassUnder(
             "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+        DEPRECATION_LOGGER = loggingModule.defineClassUnder(
+            "DeprecationLogger", RUBY.getObject(), DeprecationLoggerExt::new);
+        DEPRECATION_LOGGER.defineAnnotatedMethods(DeprecationLoggerExt.class);
+
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         ABSTRACT_PIPELINE_CLASS =
