@@ -2,8 +2,6 @@
 require "logstash/instrument/periodic_poller/cgroup"
 require "spec_helper"
 
-LogStash::Logging::Logger::configure_logging("DEBUG")
-
 module LogStash module Instrument module PeriodicPoller
 describe "cgroup stats" do
   let(:relative_path) { "/docker/a1f61" }
