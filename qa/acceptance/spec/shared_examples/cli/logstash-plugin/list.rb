@@ -33,7 +33,8 @@ shared_examples "logstash list" do |logstash|
         stdout = StringIO.new(result.stdout)
         stdout.set_encoding(Encoding::UTF_8)
         while line = stdout.gets
-          expect(line).to match(/^#{plugin_name_with_version}$/)
+          match = line.match(/^#{plugin_name_with_version}$/)
+          expect(match).to_not be_nil
 
           # Integration Plugins list their sub-plugins, e.g.,
           # ~~~
@@ -41,9 +42,10 @@ shared_examples "logstash list" do |logstash|
           # ├── logstash-input-kafka
           # └── logstash-output-kafka
           # ~~~
-          if Regexp.last_match[:type] == 'integration'
+          if match[:type] == 'integration'
             while line = stdout.gets
-              expect(line).to match(/^(?: [├└]── )#{plugin_name}$/)
+              match = line.match(/^(?: [├└]── )#{plugin_name}$/)
+              expect(match).to_not be_nil
               break if line.start_with?(' └')
             end
           end
