@@ -51,26 +51,27 @@ public final class ConfigCompiler {
         Graph inputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.INPUT);
         Graph outputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.OUTPUT);
 
-        Graph filterGraph = null;
-        for (Map<PluginDefinition.Type, Graph> graphSection : graphSections) {
-            if (graphSection.containsKey(PluginDefinition.Type.FILTER)) {
-                Graph filter = graphSection.get(PluginDefinition.Type.FILTER);
-                if (filterGraph == null) {
-                    filterGraph = filter;
-                } else {
-                    filterGraph.chain(filter);
-                }
-            }
-        }
+        Graph filterGraph = graphSections.stream()
+                .filter(section -> section.containsKey(PluginDefinition.Type.FILTER))
+                .map(section -> section.get(PluginDefinition.Type.FILTER))
+                .reduce(ConfigCompiler::chainWithUntypedException).orElse(null);
 
         String originalSource = sourcesWithMetadata.stream().map(SourceWithMetadata::getText).collect(joining("\n"));
         return new PipelineIR(inputGraph, filterGraph, outputGraph, originalSource);
     }
 
+    private static Graph chainWithUntypedException(Graph g1, Graph g2) {
+        try {
+            return g1.chain(g2);
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
+        }
+    }
+
     private static Graph combineGraphSectionsOf(List<Map<PluginDefinition.Type, Graph>> graphSections,
-                                                PluginDefinition.Type input) throws InvalidIRException {
+                                                PluginDefinition.Type pluginType) throws InvalidIRException {
         List<Graph> inputGraphs = graphSections.stream()
-                .map(map -> map.get(input))
+                .map(map -> map.get(pluginType))
                 .filter(Objects::nonNull)
                 .collect(toList());
         return Graph.combine(inputGraphs.toArray(new Graph[0])).graph;
@@ -79,10 +80,10 @@ public final class ConfigCompiler {
     private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) {
         Map<PluginDefinition.Type, Statement> pluginStatements = compileImperative(swm, supportEscapes);
         return pluginStatements.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> compileStatementToGraph(e.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> toGraphWithUntypedException(e.getValue())));
     }
 
-    private static Graph compileStatementToGraph(Statement s) {
+    private static Graph toGraphWithUntypedException(Statement s) {
         try {
             return s.toGraph();
         } catch (InvalidIRException iirex) {
