@@ -12,8 +12,7 @@ import org.logstash.config.ir.imperative.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 /**
  * Java Implementation of the config compiler that is implemented by wrapping the Ruby
@@ -42,18 +41,16 @@ public final class ConfigCompiler {
     }
 
     public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, boolean supportEscapes) throws InvalidIRException {
-        List<Map<PluginDefinition.Type, Graph>> graphSections = new ArrayList<>();
-        for (SourceWithMetadata swm : sourcesWithMetadata) {
-            Map<PluginDefinition.Type, Graph> stringGraphMap = compileGraph(swm, supportEscapes);
-            graphSections.add(stringGraphMap);
-        }
+        Map<PluginDefinition.Type, List<Graph>> groupedPipelineSections = sourcesWithMetadata.stream()
+                .map(swm -> compileGraph(swm, supportEscapes))
+                .flatMap(m -> m.entrySet().stream())
+                .filter(e -> e.getValue() != null)
+                .collect(groupingBy(Map.Entry::getKey,
+                                mapping(Map.Entry::getValue, toList())));
 
-        Graph inputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.INPUT);
-        Graph outputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.OUTPUT);
-
-        Graph filterGraph = graphSections.stream()
-                .filter(section -> section.containsKey(PluginDefinition.Type.FILTER))
-                .map(section -> section.get(PluginDefinition.Type.FILTER))
+        Graph inputGraph = Graph.combine(groupedPipelineSections.get(PluginDefinition.Type.INPUT).toArray(new Graph[0])).graph;
+        Graph outputGraph = Graph.combine(groupedPipelineSections.get(PluginDefinition.Type.OUTPUT).toArray(new Graph[0])).graph;
+        Graph filterGraph = groupedPipelineSections.get(PluginDefinition.Type.FILTER).stream()
                 .reduce(ConfigCompiler::chainWithUntypedException).orElse(null);
 
         String originalSource = sourcesWithMetadata.stream().map(SourceWithMetadata::getText).collect(joining("\n"));
@@ -66,15 +63,6 @@ public final class ConfigCompiler {
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
-    }
-
-    private static Graph combineGraphSectionsOf(List<Map<PluginDefinition.Type, Graph>> graphSections,
-                                                PluginDefinition.Type pluginType) throws InvalidIRException {
-        List<Graph> inputGraphs = graphSections.stream()
-                .map(map -> map.get(pluginType))
-                .filter(Objects::nonNull)
-                .collect(toList());
-        return Graph.combine(inputGraphs.toArray(new Graph[0])).graph;
     }
 
     private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) {
