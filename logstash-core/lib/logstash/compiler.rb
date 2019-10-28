@@ -9,7 +9,7 @@ module LogStash; class Compiler
 
   # Used only in lir_serializer_spec
   def self.compile_sources(sources_with_metadata, support_escapes)
-    ConfigCompiler.compileSources(source_with_metadata, support_escapes)
+    ConfigCompiler.compileSources(sources_with_metadata, support_escapes)
   end
 
   def self.compile_imperative(source_with_metadata, support_escapes)
