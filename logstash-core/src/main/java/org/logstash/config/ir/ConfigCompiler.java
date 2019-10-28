@@ -7,10 +7,10 @@ import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
-import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.config.ir.imperative.Statement;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -33,11 +33,6 @@ public final class ConfigCompiler {
      */
     public static PipelineIR configToPipelineIR(final String config, final boolean supportEscapes)
         throws IncompleteSourceWithMetadataException {
-        final IRubyObject compiler = RubyUtil.RUBY.executeScript(
-            "require 'logstash/compiler'\nLogStash::Compiler",
-            ""
-        );
-
         SourceWithMetadata sourceWithMetadata = new SourceWithMetadata("str", "pipeline", 0, 0, config);
         try {
             return compileSources(Arrays.asList(sourceWithMetadata), supportEscapes);
@@ -53,17 +48,8 @@ public final class ConfigCompiler {
             graphSections.add(stringGraphMap);
         }
 
-        List<Graph> inputGraphs = graphSections.stream()
-                .map(map -> map.get(PluginDefinition.Type.INPUT))
-                .filter(Objects::nonNull)
-                .collect(toList());
-        Graph inputGraph = Graph.combine(inputGraphs.toArray(new Graph[0])).graph;
-
-        List<Graph> outputGraphs = graphSections.stream()
-                .map(map -> map.get(PluginDefinition.Type.OUTPUT))
-                .filter(Objects::nonNull)
-                .collect(toList());
-        Graph outputGraph = Graph.combine(outputGraphs.toArray(new Graph[0])).graph;
+        Graph inputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.INPUT);
+        Graph outputGraph = combineGraphSectionsOf(graphSections, PluginDefinition.Type.OUTPUT);
 
         Graph filterGraph = null;
         for (Map<PluginDefinition.Type, Graph> graphSection : graphSections) {
@@ -81,15 +67,27 @@ public final class ConfigCompiler {
         return new PipelineIR(inputGraph, filterGraph, outputGraph, originalSource);
     }
 
-    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) throws InvalidIRException {
-        Map<PluginDefinition.Type, Graph> graphMap = new HashMap<>();
-        Map<PluginDefinition.Type, Statement> map = compileImperative(swm, supportEscapes);
-        for (Map.Entry<PluginDefinition.Type, Statement> entry : map.entrySet()) {
-            final PluginDefinition.Type section = entry.getKey();
-            final Statement compiled = entry.getValue();
-            graphMap.put(section, compiled.toGraph());
+    private static Graph combineGraphSectionsOf(List<Map<PluginDefinition.Type, Graph>> graphSections,
+                                                PluginDefinition.Type input) throws InvalidIRException {
+        List<Graph> inputGraphs = graphSections.stream()
+                .map(map -> map.get(input))
+                .filter(Objects::nonNull)
+                .collect(toList());
+        return Graph.combine(inputGraphs.toArray(new Graph[0])).graph;
+    }
+
+    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) {
+        Map<PluginDefinition.Type, Statement> pluginStatements = compileImperative(swm, supportEscapes);
+        return pluginStatements.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> compileStatementToGraph(e.getValue())));
+    }
+
+    private static Graph compileStatementToGraph(Statement s) {
+        try {
+            return s.toGraph();
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
         }
-        return graphMap;
     }
 
     private static Map<PluginDefinition.Type, Statement> compileImperative(SourceWithMetadata sourceWithMetadata,
@@ -107,14 +105,14 @@ public final class ConfigCompiler {
                 });
         RubyHash hash = (RubyHash) code;
         Map<PluginDefinition.Type, Statement> result = new HashMap<>();
-        result.put(PluginDefinition.Type.INPUT, readRubyHashValue(hash, "input", Statement.class));
-        result.put(PluginDefinition.Type.FILTER, readRubyHashValue(hash, "filter", Statement.class));
-        result.put(PluginDefinition.Type.OUTPUT, readRubyHashValue(hash, "output", Statement.class));
+        result.put(PluginDefinition.Type.INPUT, readStatementFromRubyHash(hash, "input"));
+        result.put(PluginDefinition.Type.FILTER, readStatementFromRubyHash(hash, "filter"));
+        result.put(PluginDefinition.Type.OUTPUT, readStatementFromRubyHash(hash, "output"));
         return result;
     }
 
-    private static <T> T readRubyHashValue(RubyHash hash, String key, Class<T> valueType) {
+    private static Statement readStatementFromRubyHash(RubyHash hash, String key) {
         IRubyObject inputValue = hash.op_aref(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newSymbol(key));
-        return inputValue.toJava(valueType);
+        return inputValue.toJava(Statement.class);
     }
 }
