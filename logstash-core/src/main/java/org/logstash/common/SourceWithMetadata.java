@@ -39,6 +39,10 @@ public class SourceWithMetadata implements HashableWithSource {
         return text;
     }
 
+    public int getLinesCount() {
+        return text.split("\\n").length;
+    }
+
     private static final Pattern emptyString = Pattern.compile("^\\s*$");
 
     public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text) throws IncompleteSourceWithMetadataException {
@@ -56,11 +60,11 @@ public class SourceWithMetadata implements HashableWithSource {
             return false;
         }).collect(Collectors.toList());
 
-        if (!(this.getText() instanceof String)) {
-          badAttributes.add(this.getText());
+        if (getText() == null) {
+          badAttributes.add("text is null");
         }
 
-        if (!badAttributes.isEmpty()){
+        if (!badAttributes.isEmpty()) {
             String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") "
                     + this.toString();
             throw new IncompleteSourceWithMetadataException(message);

@@ -6,6 +6,8 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
+
 @RunWith(Parameterized.class)
 public class SourceWithMetadataTest {
     private final ParameterGroup parameterGroup;
@@ -54,5 +56,16 @@ public class SourceWithMetadataTest {
     @Test(expected = IncompleteSourceWithMetadataException.class)
     public void itShouldThrowWhenMissingAField() throws IncompleteSourceWithMetadataException {
         new SourceWithMetadata(parameterGroup.protocol, parameterGroup.path, parameterGroup.line, parameterGroup.column, parameterGroup.text);
+    }
+
+    @Test
+    public void testCountLinesStripTrailingNewline() throws IncompleteSourceWithMetadataException {
+        String text = "input {\n " +
+                "  stdin {}\n" +
+                "}\n" +
+                "\n";
+        SourceWithMetadata sut = new SourceWithMetadata("proto", "path", 1, 1, text);
+
+        assertEquals("Trailing newline MUSTN'T be counted as line",3, sut.getLinesCount());
     }
 }
