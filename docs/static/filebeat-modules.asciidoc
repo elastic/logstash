@@ -13,19 +13,13 @@ You can use {filebeat} modules with {ls}, but you need to do some extra setup.
 The simplest approach is to <<use-ingest-pipelines,set up and use the ingest
 pipelines>> provided by {filebeat}.
 
-/////
-//Commenting out this section until we can update docs to use ECS-compliant.
-//fields for 7.0
-//
-//If the ingest pipelines don't meet your
-//requirements, you can
-//<<logstash-config-for-filebeat-modules,create {ls} configurations>> to use
-//instead of the ingest pipelines.
-//
-//Either approach allows you to use the configurations, index templates, and
-//dashboards available with {filebeat} modules, as long as you maintain the
-//field structure expected by the index and dashboards.
-/////
+If the ingest pipelines don't meet your requirements, you can
+<<logstash-config-for-filebeat-modules,create {ls} configurations>> to use
+instead of the ingest pipelines.
+
+Either approach allows you to use the configurations, index templates, and
+dashboards available with {filebeat} modules, as long as you maintain the field
+structure expected by the index and dashboards.
 
 [[use-ingest-pipelines]]
 === Use ingest pipelines for parsing
@@ -100,92 +94,84 @@ documentation for more information about setting up and running modules.
 For a full example, see <<use-filebeat-modules-kafka>>.
 
 
-/////
-//Commenting out this section until we can update docs to use ECS-compliant.
-//fields for 7.0
-//
-//[[logstash-config-for-filebeat-modules]]
-//=== Use {ls} pipelines for parsing
-//
-//The examples in this section show how to build {ls} pipeline configurations that
-//replace the ingest pipelines provided with {filebeat} modules. The pipelines
-//take the data collected by {filebeat} modules, parse it into fields expected by
-//the {filebeat} index, and send the fields to {es} so that you can visualize the
-//data in the pre-built dashboards provided by {filebeat}.
-//
-//This approach is more time consuming than using the existing ingest pipelines to
-//parse the data, but it gives you more control over how the data is processed.
-//By writing your own pipeline configurations, you can do additional processing,
-//such as dropping fields, after the fields are extracted, or you can move your
-//load from {es} ingest nodes to {ls} nodes.
-//
-//Before deciding to replaced the ingest pipelines with {ls} configurations,
-//read <<use-ingest-pipelines>>.
-//
-//Here are some examples that show how to implement {ls} configurations to replace
-//ingest pipelines:
-//
-//* <<parsing-apache2>>
-//* <<parsing-mysql>>
-//* <<parsing-nginx>>
-//* <<parsing-system>>
-//
-//TIP: {ls} provides an <<ingest-converter,ingest pipeline conversion tool>>
-//to help you migrate ingest pipeline definitions to {ls} configs. The tool does
-//not currently support all the processors that are available for ingest node, but
-//it's a good starting point.
-//
-//[[parsing-apache2]]
-//==== Apache 2 Logs
-//
-//The {ls} pipeline configuration in this example shows how to ship and parse
-//access and error logs collected by the
-//{filebeat-ref}/filebeat-module-apache.html[`apache` {filebeat} module].
-//
-//[source,json]
-//----------------------------------------------------------------------------
-//include::filebeat_modules/apache2/pipeline.conf[]
-//----------------------------------------------------------------------------
-//
-//
-//[[parsing-mysql]]
-//==== MySQL Logs
-//
-//The {ls} pipeline configuration in this example shows how to ship and parse
-//error and slowlog logs collected by the
-//{filebeat-ref}/filebeat-module-mysql.html[`mysql` {filebeat} module].
-//
-//[source,json]
-//----------------------------------------------------------------------------
-//include::filebeat_modules/mysql/pipeline.conf[]
-//----------------------------------------------------------------------------
-//
-//
-//[[parsing-nginx]]
-//==== Nginx Logs
-//
-//The {ls} pipeline configuration in this example shows how to ship and parse
-//access and error logs collected by the
-//{filebeat-ref}/filebeat-module-nginx.html[`nginx` {filebeat} module].
-//
-//[source,json]
-//----------------------------------------------------------------------------
-//include::filebeat_modules/nginx/pipeline.conf[]
-//----------------------------------------------------------------------------
-//
-//
-//[[parsing-system]]
-//==== System Logs
-//
-//The {ls} pipeline configuration in this example shows how to ship and parse
-//system logs collected by the
-//{filebeat-ref}/filebeat-module-system.html[`system` {filebeat} module].
-//
-//[source,json]
-//----------------------------------------------------------------------------
-//include::filebeat_modules/system/pipeline.conf[]
-//----------------------------------------------------------------------------
-/////
+[[logstash-config-for-filebeat-modules]]
+=== Use {ls} pipelines for parsing
+
+The examples in this section show how to build {ls} pipeline configurations that
+replace the ingest pipelines provided with {filebeat} modules. The pipelines
+take the data collected by {filebeat} modules, parse it into fields expected by
+the {filebeat} index, and send the fields to {es} so that you can visualize the
+data in the pre-built dashboards provided by {filebeat}.
+
+This approach is more time consuming than using the existing ingest pipelines to
+parse the data, but it gives you more control over how the data is processed.
+By writing your own pipeline configurations, you can do additional processing,
+such as dropping fields, after the fields are extracted, or you can move your
+load from {es} ingest nodes to {ls} nodes.
+
+Before deciding to replaced the ingest pipelines with {ls} configurations,
+read <<use-ingest-pipelines>>.
+
+Here are some examples that show how to implement {ls} configurations to replace
+ingest pipelines:
+
+* <<parsing-apache2>>
+* <<parsing-mysql>>
+* <<parsing-nginx>>
+* <<parsing-system>>
+
+TIP: {ls} provides an <<ingest-converter,ingest pipeline conversion tool>>
+to help you migrate ingest pipeline definitions to {ls} configs. The tool does
+not currently support all the processors that are available for ingest node, but
+it's a good starting point.
+
+[[parsing-apache2]]
+==== Apache 2 Logs
+
+The {ls} pipeline configuration in this example shows how to ship and parse
+access and error logs collected by the
+{filebeat-ref}/filebeat-module-apache.html[`apache` {filebeat} module].
+
+[source,json]
+-----
+include::filebeat_modules/apache2/pipeline.conf[]
+-----
+
+[[parsing-mysql]]
+==== MySQL Logs
+
+The {ls} pipeline configuration in this example shows how to ship and parse
+error and slowlog logs collected by the
+{filebeat-ref}/filebeat-module-mysql.html[`mysql` {filebeat} module].
+
+[source,json]
+-----
+include::filebeat_modules/mysql/pipeline.conf[]
+-----
+
+[[parsing-nginx]]
+==== Nginx Logs
+
+The {ls} pipeline configuration in this example shows how to ship and parse
+access and error logs collected by the
+{filebeat-ref}/filebeat-module-nginx.html[`nginx` {filebeat} module].
+
+[source,json]
+-----
+include::filebeat_modules/nginx/pipeline.conf[]
+-----
+
+[[parsing-system]]
+==== System Logs
+
+The {ls} pipeline configuration in this example shows how to ship and parse
+system logs collected by the
+{filebeat-ref}/filebeat-module-system.html[`system` {filebeat} module].
+
+[source,json]
+-----
+include::filebeat_modules/system/pipeline.conf[]
+-----
 
 include::fb-ls-kafka-example.asciidoc[]
 
