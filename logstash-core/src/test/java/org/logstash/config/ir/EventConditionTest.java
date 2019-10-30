@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.logstash.config.ir.CompiledPipelineTest.IDENTITY_FILTER;
+import static org.logstash.config.ir.CompiledPipelineTest.createRubyPipelineConfig;
 import static org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -55,12 +56,12 @@ public final class EventConditionTest extends RubyEnvTestCase {
     @SuppressWarnings("rawtypes")
     public void testInclusionWithFieldInField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                createRubyPipelineConfig("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
                         "output { " +
                         "  if [left] in [right] { " +
                         "    mockoutput{}" +
-                        "  } }",
+                        "  } }"),
                 false
         );
 
@@ -136,12 +137,12 @@ public final class EventConditionTest extends RubyEnvTestCase {
 
     private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                createRubyPipelineConfig("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
                         "output { " +
                         "  if " + condition + " { " +
                         "    mockoutput{}" +
-                        "  } }",
+                        "  } }"),
                 false
         );
 

@@ -121,7 +121,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
-        throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
+        throws NoSuchAlgorithmException {
         reporter = new PipelineReporterExt(
             context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
@@ -153,9 +153,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
-            getSetting(context, "config.support_escapes").isTrue()
+        lir = ConfigCompiler.configToPipelineIR(pipelineSettings,
+                getSetting(context, "config.support_escapes").isTrue()
         );
         return this;
     }

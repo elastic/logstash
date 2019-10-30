@@ -8,13 +8,14 @@ import org.logstash.config.ir.graph.Graph;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.logstash.config.ir.CompiledPipelineTest.createRubyPipelineConfig;
 
 public class ConfigCompilerTest extends RubyEnvTestCase {
 
     @Test
     public void testConfigToPipelineIR() throws Exception {
         final PipelineIR pipelineIR =
-            ConfigCompiler.configToPipelineIR("input {stdin{}} output{stdout{}}", false);
+            ConfigCompiler.configToPipelineIR(createRubyPipelineConfig("input {stdin{}} output{stdout{}}"), false);
         assertThat(pipelineIR.getOutputPluginVertices().size(), is(1));
         assertThat(pipelineIR.getFilterPluginVertices().size(), is(0));
     }
@@ -62,6 +63,6 @@ public class ConfigCompilerTest extends RubyEnvTestCase {
 
     private static String graphHash(final String config)
         throws IncompleteSourceWithMetadataException {
-        return ConfigCompiler.configToPipelineIR(config, false).uniqueHash();
+        return ConfigCompiler.configToPipelineIR(createRubyPipelineConfig(config), false).uniqueHash();
     }
 }
