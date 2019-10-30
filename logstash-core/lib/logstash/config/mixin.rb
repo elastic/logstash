@@ -411,7 +411,9 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
-              value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
+              parent_plugin_name = self.config_name
+              codec = LogStash::Plugin.lookup("codec", value.first).new
+              value = LogStash::Codecs::Delegator.new(codec, parent_plugin_name)
               return true, value
             else
               value = value.first

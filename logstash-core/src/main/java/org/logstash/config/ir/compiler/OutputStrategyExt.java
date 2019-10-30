@@ -3,12 +3,8 @@ package org.logstash.config.ir.compiler;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyHash;
-import org.jruby.RubyObject;
+
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -154,9 +150,9 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 5)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final RubyHash pluginArgs = (RubyHash) args[3];
+            final RubyHash pluginArgs = (RubyHash) args[4];
             workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
             if (workerCount.isNil()) {
                 workerCount = RubyFixnum.one(context.runtime);
@@ -169,6 +165,9 @@ public final class OutputStrategyExt {
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
                 final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
                 initOutputCallsite(outputClass);
+                // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
+                IRubyObject codec = output.callMethod(context, "codec");
+                codec.callMethod(context, "parent_config_reference=", args[3]);
                 output.callMethod(context, "metric=", args[1]);
                 output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);
@@ -225,12 +224,23 @@ public final class OutputStrategyExt {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 5)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
+            output = args[0].callMethod(context, "new", args[4]);
             initOutputCallsite(outputClass);
+
+            final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
+                    "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
+                    "");
+            // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
+            IRubyObject codec = output.callMethod(context, "codec");
+            if (codec instanceof RubyBasicObject) {
+                if (((RubyBasicObject) codec).instance_of_p(context, codecDelegatorClass).isTrue()) {
+                    codec.callMethod(context, "parent_config_reference=", args[3]);
+                }
+            }
             output.callMethod(context, "metric=", args[1]);
             output.callMethod(context, "execution_context=", args[2]);
             return this;

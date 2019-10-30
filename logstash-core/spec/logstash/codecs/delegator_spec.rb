@@ -23,7 +23,7 @@ describe LogStash::Codecs::Delegator do
   let(:codec) { LogStash::Codecs::MockCodec.new }
 
   subject do
-    delegator = described_class.new(codec)
+    delegator = described_class.new(codec, "MockCodec")
     delegator.metric = metric.namespace([:stats, :pipelines, :main, :plugins, :codecs, :my_id])
     delegator
   end

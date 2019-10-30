@@ -24,7 +24,7 @@ public final class RubyIntegration {
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine,
             IRubyObject args, Map<String, Object> pluginArgs);
 
-        AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,
+        AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine,
             IRubyObject args, Map<String, Object> pluginArgs);
 
         AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine, IRubyObject args,

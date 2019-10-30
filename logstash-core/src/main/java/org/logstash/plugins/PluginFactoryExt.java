@@ -132,20 +132,23 @@ public final class PluginFactoryExt {
         @SuppressWarnings("unchecked")
         @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine,final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(), "TODO", -1,
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 6)
         public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
                                                       final IRubyObject[] args) {
             return buildOutput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3], null
+                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3].asJavaString(),
+                    args[4].convertToInteger().getIntValue(),
+                    args[5], null
             );
         }
 
@@ -251,6 +254,7 @@ public final class PluginFactoryExt {
                 final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
                 rubyArgs.putAll(newArgs);
                 if (type == PluginLookup.PluginType.OUTPUT) {
+                    rubyArgs.put("config-ref", configReference);
                     return new OutputDelegatorExt(context.runtime, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS).initialize(
                             context,
                             new IRubyObject[]{
@@ -313,7 +317,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (output != null) {
-                        return JavaOutputDelegatorExt.create(name, id, typeScopedMetric, output);
+                        return JavaOutputDelegatorExt.create(name, id, typeScopedMetric, output, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate output: " + pluginClass);
                     }

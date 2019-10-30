@@ -131,9 +131,11 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final String sourceFile = v.getSourceFile();
+            final int sourceLine = v.getSourceLine();
             res.put(v.getId(), pluginFactory.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), sourceFile, sourceLine, convertArgs(def), convertJavaArgs(def, cve)
             ));
         });
         return res;

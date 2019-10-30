@@ -17,7 +17,7 @@ public final class PipelineTestUtil {
         final Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> consumer) {
         return JavaOutputDelegatorExt.create(
             "someClassName", "someId", NullMetricExt.create(), consumer, () -> {},
-            () -> {}
+            () -> {}, "L:test, C:test"
         );
     }
 }

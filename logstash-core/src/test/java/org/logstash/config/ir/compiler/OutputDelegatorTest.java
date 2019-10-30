@@ -41,6 +41,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         pluginArgs = RubyHash.newHash(RUBY);
         pluginArgs.put("id", "foo");
         pluginArgs.put("arg1", "val1");
+        pluginArgs.put("config-ref", "<Test only config reference>");
     }
 
     @Override
@@ -114,6 +115,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
     @Test
     public void singleConcurrencyStrategyIsDefault() {
+        pluginArgs.put("config-ref", "<Test only config reference>");
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
         IRubyObject concurrency = outputDelegator.concurrency(RUBY.getCurrentContext());
         assertEquals(RUBY.newSymbol("single"), concurrency);
@@ -128,6 +130,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         };
 
         for (StrategyPair pair : outputStrategies) {
+            pluginArgs.put("config-ref", "<Test only config reference>");
             FakeOutClass.setOutStrategy(RUBY.getCurrentContext(), null, pair.symbol);
             OutputDelegatorExt outputDelegator = constructOutputDelegator();
 
@@ -153,6 +156,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         };
         final ThreadContext context = RUBY.getCurrentContext();
         for (RubySymbol symbol : outputStrategies) {
+            pluginArgs.put("config-ref", "<Test only config reference>");
             FakeOutClass.create().initialize(context);
             FakeOutClass.setOutStrategy(RUBY.getCurrentContext(), null, symbol);
             OutputDelegatorExt outputDelegator = constructOutputDelegator();
