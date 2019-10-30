@@ -504,8 +504,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final String sourceFile, final int sourceLine, final IRubyObject args,
+                                      Map<String, Object> pluginArgs) {
             return setupPlugin(name, inputs);
         }
 

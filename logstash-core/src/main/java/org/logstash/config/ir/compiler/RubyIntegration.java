@@ -21,7 +21,7 @@ public final class RubyIntegration {
      */
     public interface PluginFactory {
 
-        IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
+        IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine,
             IRubyObject args, Map<String, Object> pluginArgs);
 
         AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,

@@ -1,5 +1,7 @@
 package org.logstash.config.ir.imperative;
 
+import org.jruby.RubyInteger;
+import org.jruby.RubyString;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
@@ -10,10 +12,34 @@ import org.logstash.config.ir.graph.Vertex;
 
 public class PluginStatement extends Statement {
     private final PluginDefinition pluginDefinition;
+    private String sourceFile;
+    private int sourceLine;
 
     public PluginStatement(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
         super(meta);
         this.pluginDefinition = pluginDefinition;
+    }
+
+    public PluginStatement(SourceWithMetadata meta, PluginDefinition pluginDefinition, RubyString sourceFile, RubyInteger sourceLine) {
+        this(meta, pluginDefinition);
+        if (sourceFile == null) {
+            this.sourceFile = "<CLI>";
+        } else {
+            this.sourceFile = sourceFile.asJavaString();
+        }
+        if (sourceLine == null) {
+            this.sourceLine = -1;
+        } else {
+            this.sourceLine = sourceLine.getIntValue();
+        }
+    }
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public int getSourceLine() {
+        return sourceLine;
     }
 
     @Override
@@ -34,7 +60,7 @@ public class PluginStatement extends Statement {
 
     @Override
     public Graph toGraph() throws InvalidIRException {
-        Vertex pluginVertex = new PluginVertex(getSourceWithMetadata(), pluginDefinition);
+        Vertex pluginVertex = new PluginVertex(getSourceWithMetadata(), pluginDefinition, sourceFile, sourceLine);
         Graph g = Graph.empty();
         g.addVertex(pluginVertex);
         return g;

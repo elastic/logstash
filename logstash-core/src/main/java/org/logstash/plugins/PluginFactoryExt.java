@@ -7,14 +7,7 @@ import co.elastic.logstash.api.DeadLetterQueueWriter;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Output;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyBasicObject;
-import org.jruby.RubyClass;
-import org.jruby.RubyHash;
-import org.jruby.RubyInteger;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -116,19 +109,21 @@ public final class PluginFactoryExt {
         @SuppressWarnings("unchecked")
         @Override
         public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+                                      final String sourceFile, final int sourceLine,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
+        @JRubyMethod(required = 6)
         public IRubyObject buildInput(final ThreadContext context, final IRubyObject[] args) {
             return buildInput(
                     (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
+                    args[3].asJavaString(), args[4].convertToInteger().getIntValue(),
+                    args[5], null
             );
         }
 
@@ -139,7 +134,7 @@ public final class PluginFactoryExt {
                                                       Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), "TODO", -1,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -159,7 +154,7 @@ public final class PluginFactoryExt {
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), "TODO", -1,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -169,7 +164,7 @@ public final class PluginFactoryExt {
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), 0, 0,  "TODO", -1, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -177,27 +172,33 @@ public final class PluginFactoryExt {
         public Codec buildDefaultCodec(String codecName) {
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+                    codecName, 0, 0, "TODO", -1, Collections.emptyMap(), Collections.emptyMap()
             ));
         }
 
         @SuppressWarnings("unchecked")
-        @JRubyMethod(required = 4, optional = 1)
+        @JRubyMethod(required = 6, optional = 1)
         public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
+            String sourceFile = args[4].convertToString().asJavaString();
+            int sourceLine = args[5].convertToInteger().getIntValue();
+
             return plugin(
                     context,
                     PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                     args[1].asJavaString(),
                     args[2].convertToInteger().getIntValue(),
                     args[3].convertToInteger().getIntValue(),
-                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>(),
+                    sourceFile,
+                    sourceLine,
+                    args.length > 6 ? (Map<String, IRubyObject>) args[6] : new HashMap<>(),
                     null
             );
         }
 
         @SuppressWarnings("unchecked")
         private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                                   final int line, final int column, final Map<String, IRubyObject> args,
+                                   final int line, final int column, final String sourceFile, final int sourceLine,
+                                   final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
             final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
@@ -227,6 +228,13 @@ public final class PluginFactoryExt {
             }
             pluginsById.add(id);
             final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
+
+            final String configReference;
+            if (sourceFile == null) {
+                configReference = "S: <no file>, L:" + line + ", C:" + column;
+            } else {
+                configReference = "S: " + sourceFile + ", L:" + sourceLine + ", C:" + column;
+            }
 
             if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
@@ -258,8 +266,21 @@ public final class PluginFactoryExt {
                     final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                     scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
-                    pluginInstance.callMethod(context, "metric=", scopedMetric);
-                    pluginInstance.callMethod(context, "execution_context=", executionCntx);
+                    scopedMetric.gauge(context, MetricKeys.CONFIG_REF_KEY, RubyUtil.RUBY.newString(configReference));
+
+                    if (type == PluginLookup.PluginType.INPUT) {
+                        final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
+                                "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
+                                "");
+
+                        // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
+                        IRubyObject codec = pluginInstance.callMethod(context, "codec");
+                        if (codec.getType().instance_of_p(context, codecDelegatorClass).isTrue()) {
+                            codec.callMethod(context, "parent_config_reference=", RubyUtil.RUBY.newString(configReference));
+                        }
+                        pluginInstance.callMethod(context, "metric=", scopedMetric);
+                        pluginInstance.callMethod(context, "execution_context=", executionCntx);
+                    }
                     return pluginInstance;
                 }
             } else {
@@ -331,7 +352,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (input != null) {
-                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }

@@ -15,7 +15,7 @@ import java.util.Map;
 public class TestPluginFactory implements RubyIntegration.PluginFactory {
 
     @Override
-    public IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
+    public IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine, IRubyObject args, Map<String, Object> pluginArgs) {
         return null;
     }
 
