@@ -56,9 +56,10 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
 
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine, final IRubyObject args,
                                                       final Map<String, Object> pluginArgs) {
-            return rubyFactory.buildFilter(name, line, column, args, pluginArgs);
+            return rubyFactory.buildFilter(name, line, column, sourceFile, sourceLine, args, pluginArgs);
         }
 
         @Override

@@ -149,9 +149,11 @@ public final class CompiledPipeline {
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            final String sourceFile = vertex.getSourceFile();
+            final int sourceLine = vertex.getSourceLine();
             res.put(vertex.getId(), pluginFactory.buildFilter(
                     RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), sourceFile, sourceLine, convertArgs(def), convertJavaArgs(def, cve)
             ));
         }
         return res;

@@ -71,15 +71,17 @@ public final class PluginFactoryExt {
         public static IRubyObject filterDelegator(final ThreadContext context,
                                                   final IRubyObject recv, final IRubyObject[] args) {
             final RubyHash arguments = (RubyHash) args[2];
-            final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
+            RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
+            RubyString configRefValue = (RubyString) arguments.remove(configRefKey);
+            final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
             filterInstance.callMethod(
                     context, "metric=",
                     ((AbstractMetricExt) args[3]).namespace(context, id.intern())
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
-                    .initialize(context, filterInstance, id);
+                    .initialize(context, filterInstance, id, configRefValue);
         }
 
         public Plugins(final Ruby runtime, final RubyClass metaClass) {
@@ -150,11 +152,12 @@ public final class PluginFactoryExt {
         @SuppressWarnings("unchecked")
         @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+                                                      final RubyInteger column, final String sourceFile,
+                                                      final int sourceLine, final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(), "TODO", -1,
+                    name.asJavaString(), line.getIntValue(), column.getIntValue(), sourceFile, sourceLine,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -257,6 +260,7 @@ public final class PluginFactoryExt {
                             }
                     );
                 } else if (type == PluginLookup.PluginType.FILTER) {
+                    rubyArgs.putAll(Collections.singletonMap("config-ref", configReference));
                     return filterDelegator(
                             context, null,
                             new IRubyObject[]{
@@ -331,7 +335,7 @@ public final class PluginFactoryExt {
                     }
 
                     if (filter != null) {
-                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs);
+                        return JavaFilterDelegatorExt.create(name, id, typeScopedMetric, filter, pluginArgs, configReference);
                     } else {
                         throw new IllegalStateException("Unable to instantiate filter: " + pluginClass);
                     }

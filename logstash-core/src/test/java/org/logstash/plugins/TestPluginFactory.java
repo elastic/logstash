@@ -25,7 +25,7 @@ public class TestPluginFactory implements RubyIntegration.PluginFactory {
     }
 
     @Override
-    public AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, String sourceFile, int sourceLine, IRubyObject args, Map<String, Object> pluginArgs) {
         return null;
     }
 

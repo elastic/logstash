@@ -42,13 +42,14 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     public static JavaFilterDelegatorExt create(final String configName, final String id,
                                                 final AbstractNamespacedMetricExt metric,
-                                                final Filter filter, final Map<String, Object> pluginArgs) {
+                                                final Filter filter, final Map<String, Object> pluginArgs,
+                                                final String configReference) {
         final JavaFilterDelegatorExt instance =
                 new JavaFilterDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_FILTER_DELEGATOR_CLASS);
         instance.configName = RubyUtil.RUBY.newString(configName);
         AbstractNamespacedMetricExt scopedMetric =
                 metric.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newSymbol(filter.getId()));
-        instance.initMetrics(id, scopedMetric);
+        instance.initMetrics(id, scopedMetric, configReference);
         instance.filter = filter;
         instance.initializeFilterMatchListener(pluginArgs);
         return instance;
