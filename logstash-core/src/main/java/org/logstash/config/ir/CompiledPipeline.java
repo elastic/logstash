@@ -190,9 +190,13 @@ public final class CompiledPipeline {
             final String key = entry.getKey();
             final Object toput;
             if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                PluginStatement pluginStatement = (PluginStatement) value;
+                final String sourceFile = pluginStatement.getSourceFile();
+                final int sourceLine = pluginStatement.getSourceLine();
+                final PluginDefinition codec = pluginStatement.getPluginDefinition();
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
+                    sourceFile, sourceLine,
                     Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
                     codec.getArguments()
                 );
@@ -218,10 +222,14 @@ public final class CompiledPipeline {
             final String key = entry.getKey();
             final IRubyObject toput;
             if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                PluginStatement pluginStatement = (PluginStatement) value;
+                final String sourceFile = pluginStatement.getSourceFile();
+                final int sourceLine = pluginStatement.getSourceLine();
+                final PluginDefinition codec = pluginStatement.getPluginDefinition();
                 Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
                 toput = pluginFactory.buildCodec(
                         RubyUtil.RUBY.newString(codec.getName()),
+                        sourceFile, sourceLine,
                         Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
                         codecArgs
                 );

@@ -41,13 +41,16 @@ public class JavaCodecDelegator implements Codec {
     protected final CounterMetric decodeMetricTime;
 
 
-    public JavaCodecDelegator(final Context context, final Codec codec) {
+    public JavaCodecDelegator(final Context context, final Codec codec, final String codeRef) {
         this.codec = codec;
 
         final NamespacedMetric metric = context.getMetric(codec);
 
         synchronized(metric.root()) {
             metric.gauge(MetricKeys.NAME_KEY.asJavaString(), codec.getName());
+            if (codeRef != null) {
+                metric.gauge(MetricKeys.CONFIG_REF_KEY.asJavaString(), RubyUtil.RUBY.newString(codeRef));
+            }
 
             final NamespacedMetric encodeMetric = metric.namespace(ENCODE_KEY);
             encodeMetricIn = encodeMetric.counter(IN_KEY);

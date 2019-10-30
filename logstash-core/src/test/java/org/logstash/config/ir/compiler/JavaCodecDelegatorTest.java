@@ -2,7 +2,6 @@ package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Event;
-import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.PluginConfigSpec;
 import com.google.common.collect.ImmutableMap;
 import org.jruby.RubyHash;
@@ -198,7 +197,7 @@ public class JavaCodecDelegatorTest extends MetricTestCase {
     }
 
     private JavaCodecDelegator constructCodecDelegator() {
-        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec);
+        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec, null);
     }
 
     private abstract class AbstractCodec implements Codec {

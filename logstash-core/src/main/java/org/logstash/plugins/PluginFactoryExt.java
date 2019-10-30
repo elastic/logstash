@@ -161,10 +161,11 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(final RubyString name, final String sourceFile, final int sourceLine,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0,  "TODO", -1, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), 0, 0, sourceFile, sourceLine, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -172,7 +173,7 @@ public final class PluginFactoryExt {
         public Codec buildDefaultCodec(String codecName) {
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    codecName, 0, 0, "TODO", -1, Collections.emptyMap(), Collections.emptyMap()
+                    codecName, 0, 0, "<implicit codec>", 0, Collections.emptyMap(), Collections.emptyMap()
             ));
         }
 
@@ -365,7 +366,7 @@ public final class PluginFactoryExt {
                             final Context pluginContext = executionContext.toContext(type, metrics.getRoot(context));
                             final Codec codec = ctor.newInstance(config, pluginContext);
                             PluginUtil.validateConfig(codec, config);
-                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec));
+                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec, configReference));
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
                                 throw new IllegalStateException((ex).getCause());
