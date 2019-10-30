@@ -24,33 +24,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-4-2]]
 === Logstash 7.4.2 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.4.2
-
-* bump version to 7.4.2 https://github.com/elastic/logstash/pull/11256[#11256]
-* remove logging setting in cgroup_spec.rb https://github.com/elastic/logstash/pull/11271[#11271]
-
-=== Logstash Commits between 7.4 and 7.4.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.4.1..7.4"
-
-e853377d5 - (HEAD -> 7.4, origin/7.4) dont mutate SETTINGS object in keystore specs (5 days ago) <Joao Duarte>
-a1930f25a - remove logging setting in cgroup_spec.rb (5 days ago) <Joao Duarte>
-68dea86c5 - improve reliability of webserver port binding (7 days ago) <Joao Duarte>
-2bdf43942 - bump version to 7.4.2 (#11256) (7 days ago) <João Duarte>
-85ebdfb2a - Remove edit_me link overrides for monitoring topics (7 days ago) <Karen Metts>
-49cd71541 - Release notes draft for 7.4.1 (#11229) (8 days ago) <Logstash Machine>
-934a84a72 - ensure output of plugin list is utf8 (12 days ago) <Joao Duarte>
-29b49df04 - Disable dlq integration tests due to multiple intermittent failures (12 days ago) <João Duarte>
-6d38f054e - validate plugin list output respecting integration plugins (13 days ago) <Ry Biesemeyer>
-3cac2b8e0 - Fix typo in doc-for-plugin (13 days ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.4.1..7.4 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
+No user facing changes in this release.
 
 [[logstash-7-4-1]]
 === Logstash 7.4.1 Release Notes
