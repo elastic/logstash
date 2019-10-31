@@ -4,6 +4,7 @@
 
 require "spec_helper"
 require "logstash/environment"
+require "logstash/config/pipeline_config"
 
 describe ::LogStash::Config::LIRSerializer do
   let(:config) do
@@ -21,8 +22,10 @@ describe ::LogStash::Config::LIRSerializer do
     [org.logstash.common.SourceWithMetadata.new("string", "spec", config)]
   end
 
+  let(:pipeline_config) { LogStash::Config::PipelineConfig.new("x-pack_lir_serializer_test", "lir", config_source_with_metadata, LogStash::SETTINGS) }
+
   let(:lir_pipeline) do
-    ::LogStash::Compiler.compile_sources(config_source_with_metadata, LogStash::SETTINGS)
+    ::LogStash::Compiler.compile_sources(pipeline_config, LogStash::SETTINGS)
   end
 
   describe "#serialize" do
