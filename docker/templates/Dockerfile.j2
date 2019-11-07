@@ -12,11 +12,11 @@
 {% endif -%}
 
 
-FROM centos:7
+FROM centos:8
 
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
-RUN yum update -y && yum install -y java-11-openjdk-devel which && \
+RUN yum update -y && yum install -y java-11 which && \
     yum clean all
 
 # Provide a non-root user to run the process.
