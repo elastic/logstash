@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-5,Logstash 6.8.5>>
 * <<logstash-6-8-4,Logstash 6.8.4>>
 * <<logstash-6-8-3,Logstash 6.8.3>>
 * <<logstash-6-8-2,Logstash 6.8.2>>
@@ -35,6 +36,61 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-5]]
+=== Logstash 6.8.5 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.5
+
+* remove logging setting in cgroup_spec.rb https://github.com/elastic/logstash/pull/11271[#11271]
+
+=== Logstash Commits between 6.8 and 6.8.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.4..6.8"
+
+7516754d0 - (HEAD -> 6.8, origin/6.8) Update patch plugin versions in gemfile lock for 6.8.5 (#11296) (3 minutes ago) <Logstash Machine>
+515e40c09 - remove logging setting in cgroup_spec.rb (2 weeks ago) <Joao Duarte>
+bbda6c76d - improve reliability of webserver port binding (3 weeks ago) <Joao Duarte>
+30d41024c - bump to 6.8.5 (#11257) (3 weeks ago) <João Duarte>
+f14924c04 - Release notes draft for 6.8.4 (#11228) (3 weeks ago) <Logstash Machine>
+165be509e - Fix typo in doc-for-plugin (4 weeks ago) <Karen Metts>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.4..6.8 *.release"
+Changed plugin versions:
+logstash-filter-dns: 3.0.13 -> 3.0.14
+logstash-filter-jdbc_static: 1.0.6 -> 1.0.7
+logstash-filter-jdbc_streaming: 1.0.7 -> 1.0.10
+logstash-input-jdbc: 4.3.16 -> 4.3.18
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Dns Filter*
+
+* Added documentation on the `nameserver` option for relying on `/etc/resolv.conf` to configure the resolver
+
+*Jdbc_static Filter*
+
+* Fixed issue with driver verification using Java 11 [#51](https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/51)
+
+*Jdbc_streaming Filter*
+
+* Fixed driver loading [#35](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/35)
+
+* Added support for prepared statements [PR 32](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/32)
+* Added support for `sequel_opts` to pass options to the 3rd party Sequel library.
+
+* Added support for driver loading in JDK 9+ [Issue 25](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/issues/25)
+* Added support for multiple driver jars [Issue #21](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/issues/21)
+
+*Jdbc Input*
+
+* Fix issue with driver loading [#356](https://github.com/logstash-plugins/logstash-input-jdbc/pull/356)
+
+* Added documentation to provide more info about jdbc driver loading [#352](https://github.com/logstash-plugins/logstash-input-jdbc/pull/352)
+
 
 [[logstash-6-8-4]]
 === Logstash 6.8.4 Release Notes
