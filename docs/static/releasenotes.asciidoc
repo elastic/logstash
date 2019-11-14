@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-5-0,Logstash 7.5.0>>
 * <<logstash-7-3-2,Logstash 7.3.2>>
 * <<logstash-7-3-1,Logstash 7.3.1>>
 * <<logstash-7-3-0,Logstash 7.3.0>>
@@ -17,6 +18,118 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-5-0]]
+=== Logstash 7.5.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.5.0
+
+* give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
+* support substitutions in pipelines.yml file https://github.com/elastic/logstash/pull/11081[#11081]
+* bump 7.x to 7.5.0 https://github.com/elastic/logstash/pull/11091[#11091]
+* use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
+* Added origins of pipeline configurations https://github.com/elastic/logstash/pull/11123[#11123]
+* remove mention of pipeline to pipeline being Beta https://github.com/elastic/logstash/pull/11150[#11150]
+* Backport release notes to 7.x https://github.com/elastic/logstash/pull/11160[#11160]
+* [DOCS] Fixes links to monitoring content https://github.com/elastic/logstash/pull/11166[#11166]
+* Update .ruby-version to jruby-9.2.8.0 https://github.com/elastic/logstash/pull/11198[#11198]
+* remove 10k character truncation from log4j2.properties https://github.com/elastic/logstash/pull/11206[#11206]
+* Remove  from system properties if Java runtime is less than 11 https://github.com/elastic/logstash/pull/11225[#11225]
+* remove logging setting in cgroup_spec.rb https://github.com/elastic/logstash/pull/11271[#11271]
+
+=== Logstash Commits between 7.5 and 7.4.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.4.2..7.5"
+
+f354b47ea - (HEAD -> 7.5, origin/7.5) don't rely on expect match and last_match in qa test (2 weeks ago) <Joao Duarte>
+77c57570e - dont mutate SETTINGS object in keystore specs (3 weeks ago) <Joao Duarte>
+820fef4e9 - remove logging setting in cgroup_spec.rb (3 weeks ago) <Joao Duarte>
+2804651a7 - improve reliability of webserver port binding (3 weeks ago) <Joao Duarte>
+0db05498b - Remove edit_me link overrides for monitoring topics (3 weeks ago) <Karen Metts>
+1eb0d01b7 - Revert "Update .ruby-version to jruby-9.2.8.0" (4 weeks ago) <Joao Duarte>
+f7311517b - ensure output of plugin list is utf8 (4 weeks ago) <Joao Duarte>
+21d41f9c4 - Disable dlq integration tests due to multiple intermittent failures (4 weeks ago) <João Duarte>
+7b1c0f9c6 - Fixes intermittent failing build due to Puma server going down bad on shutdown request (4 weeks ago) <andsel>
+9d3d3eaf4 - validate plugin list output respecting integration plugins (4 weeks ago) <Ry Biesemeyer>
+f57868662 - Fix typo in doc-for-plugin (4 weeks ago) <Karen Metts>
+35cb71eda - more resilient testing of logging level setting (4 weeks ago) <Joao Duarte>
+78ffbb31b - Fix to avoid Nashorn error regarding the unknown flag `--no-deprecation-warning` for JDK < 11. closes 11221 (4 weeks ago) <andsel>
+6e360c64e - bump lock file for 7.5.0 (#11223) (4 weeks ago) <Logstash Machine>
+e5a48e4ea - bump to 7.5.0 (4 weeks ago) <Joao Duarte>
+1cf8a7b8d - plugins: replace kafka input/output with integration (4 weeks ago) <Ry Biesemeyer>
+5a8cef4e8 - plugins: replace rabbitmq input/output with integration (4 weeks ago) <Ry Biesemeyer>
+d278efda4 - doc: replace unicode non-breaking hyphen U+8211 with ASCII hyphen (4 weeks ago) <Ry Biesemeyer>
+08fd76ab3 - make pipeline grammars more accurately capture field references (4 weeks ago) <Ry Biesemeyer>
+138e1f91e - regenerate config parsers from unmodified grammar definitions (4 weeks ago) <Ry Biesemeyer>
+96dfeb501 - add tasks for generating config parsers (4 weeks ago) <Ry Biesemeyer>
+a9def1e10 - syntax fix (4 weeks ago) <Sachin Frayne>
+a6f02a382 - replace YAML.parse with YAML.safe_load in release tool (5 weeks ago) <João Duarte>
+afcb04577 - Update .ruby-version to jruby-9.2.8.0 (5 weeks ago) <João Duarte>
+f48b261af - Update reference to last 6.x version to be 6.8 (5 weeks ago) <Karen Metts>
+8d19b5f07 - handling missing gems during generatePluginsVersion (5 weeks ago) <Joao Duarte>
+15f0de348 - remove 10k character truncation from log4j2.properties (5 weeks ago) <João Duarte>
+32b831010 - Add remaining review comments from #11033 (5 weeks ago) <Karen Metts>
+3db93d5eb - Added section in logstash.yml documentation to describe feature (5 weeks ago) <andsel>
+fc9c0e0ca - Added LS configuration variable 'pipeline.separate_logs' to separate logs per pipelines - use log4j RoutingAppender - avoid output to main log files when log per pipeline is enabled - closes 10427 (5 weeks ago) <andsel>
+0d6bb46ed - Clarify monitoring hosts should not be master-only (6 weeks ago) <Jason Tedor>
+9c9266fe3 - Add metricbeat as monitoring option (#11190) (6 weeks ago) <Karen Metts>
+70c38b596 - clarify: config.reload.interval is seconds (6 weeks ago) <Andrew Siegman>
+fc0db0d95 - [DOCS] Fixes links to monitoring content (#11166) (#11172) (6 weeks ago) <Lisa Cawley>
+dfb3cb5a3 - Update version of jrjackson (7 weeks ago) <Rob Bavey>
+a91e3b6be - Backport release notes to 7.x (#11160) (7 weeks ago) <João Duarte>
+3e7ec18e3 - Add note about illegal reflective access (8 weeks ago) <Karen Metts>
+0953ad929 - remove mention of pipeline to pipeline being Beta (8 weeks ago) <Joao Duarte>
+975ef25a8 - Deprecate LS Netflow module and point to FB Netflow module (8 weeks ago) <Karen Metts>
+20c4d8639 - Update logstash to use shared version files (#11132) (9 weeks ago) <Karen Metts>
+30d3865dc - Fixed links in contributing-to-logstash page (9 weeks ago) <Kuba Clark>
+1cbaeebb4 - Added origins of pipeline's configuration (es config string, the paths of config files used, module). (9 weeks ago) <andsel>
+652e1b70a - Update link to Debugging Java Performance (2 months ago) <Pavel Zubkou>
+c12acff15 - use 2048 bits key (2 months ago) <Colin Surprenant>
+5f5bbeed1 - support substitutions in pipelines.yml file (3 months ago) <Joao Duarte>
+cd91f9b2b - give multiple pipelines all the settings (3 months ago) <Joao Duarte>
+9bedd9e09 - bump 7.x to 7.5.0 (#11091) (3 months ago) <João Duarte>
+309338470 - Enhancements to Logstash Benchmarking Tool  (#10253) (3 months ago) <Aarti Gupta>
+056c3e3bb - Add pipeline.id to log lines fixes #8290, #10521 (3 months ago) <andsel>
+18ba98aa9 - Enhanced API testing (#10972) (3 months ago) <Mike Place>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.4.2..7.5 *.release"
+Changed plugin versions:
+logstash-input-kafka: 9.1.0 -> 9.1.0
+logstash-input-rabbitmq: 6.0.3 -> 6.0.3
+logstash-integration-kafka: 10.0.0 -> 10.0.0
+logstash-integration-rabbitmq: 7.0.0 -> 7.0.0
+logstash-mixin-rabbitmq_connection: 5.0.2 -> 5.0.2
+logstash-output-elasticsearch: 10.1.0 -> 10.2.1
+logstash-output-kafka: 8.1.0 -> 8.1.0
+logstash-output-rabbitmq: 5.1.1 -> 5.1.1
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Kafka Input*
+
+*Rabbitmq Input*
+
+*Kafka Integration*
+
+*Rabbitmq Integration*
+
+*Rabbitmq_connection Mixin*
+
+*Elasticsearch Output*
+
+* Fixed wording and corrected option in documentation [#881](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/881) [#883](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/883)
+
+* Deprecation: Added warning about connecting a default Distribution of Logstash with an OSS version of ES [#875](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/875)
+* Added template for connecting to ES 8.x [#871](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/871)
+* Added sniffing support for ES 8.x [#878](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/878)
+
+*Kafka Output*
+
+*Rabbitmq Output*
+
 
 [[logstash-7-3-2]]
 === Logstash 7.3.2 Release Notes
