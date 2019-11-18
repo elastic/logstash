@@ -10,6 +10,7 @@ class PluginVersionWorking
     output
     codec
     filter
+    integration
   ).freeze
 
   PLUGIN_PACKAGE_NAME_PATTERN = %r{^logstash-#{Regexp::union(PLUGIN_PACKAGE_TYPES)}-}
