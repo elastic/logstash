@@ -97,6 +97,9 @@ include::static/upgrading.asciidoc[]
 :edit_url!:
 include::static/configuration.asciidoc[]
 
+:edit_url!:
+include::static/security/logstash.asciidoc[]
+
 // Advanced Logstash Configurion
 
 :edit_url!:
@@ -125,12 +128,6 @@ include::static/ls-ls-config.asciidoc[]
 
 :edit_url!:
 include::static/management/configuring-centralized-pipelines.asciidoc[]
-
-:edit_url!:
-include::static/security/logstash.asciidoc[]
-
-:edit_url!:
-include::static/setup/configuring-xls.asciidoc[]
 
 :edit_url!:
 include::static/field-reference.asciidoc[]
