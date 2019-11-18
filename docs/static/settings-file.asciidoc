@@ -63,7 +63,7 @@ modules:
 
 IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
 
-The `logstash.yml` file includes the following settings. If you are using X-Pack, also see {logstash-ref}/settings-xpack.html[X-Pack Settings in Logstash].
+The `logstash.yml` file includes the following settings. 
 
 [options="header"]
 |=======================================================================
