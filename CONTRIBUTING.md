@@ -12,7 +12,7 @@ That said, some basic guidelines, which you are free to ignore :)
 
 Want to lurk about and see what others are doing with Logstash?
 
-* The irc channel (#logstash on irc.freenode.org) is a good place for this
+* The #logstash channel on Elastic Stack Community slack (https://elasticstack.slack.com/channels/logstash) is a good place to start. 
 * The [forum](https://discuss.elastic.co/c/logstash) is also
   great for learning from others.
 
@@ -21,12 +21,11 @@ Want to lurk about and see what others are doing with Logstash?
 Have a problem you want Logstash to solve for you?
 
 * You can ask a question in the [forum](https://discuss.elastic.co/c/logstash)
-* Alternately, you are welcome to join the IRC channel #logstash on
-irc.freenode.org and ask for help there!
+* You are welcome to join Elastic Stack Community slack (https://elasticstack.slack.com) and ask for help on the #logstash channel.
 
 ## Have an Idea or Feature Request?
 
-* File a ticket on [GitHub](https://github.com/elastic/logstash/issues). Please remember that GitHub is used only for issues and feature requests. If you have a general question, the [forum](https://discuss.elastic.co/c/logstash) or IRC would be the best place to ask.
+* File a ticket on [GitHub](https://github.com/elastic/logstash/issues). Please remember that GitHub is used only for issues and feature requests. If you have a general question, the [forum](https://discuss.elastic.co/c/logstash) or Elastic Stack Community slack (https://elasticstack.slack.com) is the best place to ask.
 
 ## Something Not Working? Found a Bug?
 
@@ -49,10 +48,10 @@ get in touch with our security team [here](https://www.elastic.co/community/secu
 
 If you have a bugfix or new feature that you would like to contribute to Logstash, and you think it will take
 more than a few minutes to produce the fix (ie; write code), it is worth discussing the change with the Logstash
-users and developers first. You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
+users and developers first. You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or Elastic Stack Community slack (https://elasticstack.slack.com).
 
 Please note that Pull Requests without tests and documentation may not be merged. If you would like to contribute but do not have
-experience with writing tests, please ping us on IRC/forum or create a PR and ask our help.
+experience with writing tests, please ping us on the forum or create a PR and ask for our help.
 
 If you would like to contribute to Logstash, but don't know where to start, you can use the GitHub labels "adoptme"
 and "low hanging fruit". Issues marked with these labels are relatively easy, and provides a good starting
@@ -71,7 +70,7 @@ Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contr
 
 This document provides guidelines on editing a logstash plugin's CHANGELOG file.
 
-#### What's a CHANGELOG file?
+### What's a CHANGELOG file?
 
 According to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/):
 
@@ -107,14 +106,23 @@ then you should still create an entry in the changelog, using the word `Unreleas
 
 Most code in logstash-plugins comes from self-contained changes in the form of pull requests, so each entry should:
 
-1. be a summary of the Pull Request and contain a markdown link to it.
-2. start with [BREAKING], when it denotes a breaking change.
-  * Note: Breaking changes should warrant a major version bump.
-3. after [BREAKING], start with one of the following keywords:
-    `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
-4. keep multiple entries with the same keyword in the same changelog revision together.
+1. Be a summary of the Pull Request and contain a markdown link to the PR.
+2. Begin your entry with an introductory label if appropriate. Labels include:
+    `[DOC]`, `[BREAKING]`, `[SECURITY]`.  
+    NOTE: Your PR may not need a label.
+3. After the label, start with one of the following keywords:
+    `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`.
+4. Keep multiple entries with the same keyword in the same changelog revision together.
 
-The meaning of the keywords is as follows (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#how):
+Labels: TODO: What's the right word here? Labels? Tags? Headers? Something else?
+- **`[BREAKING]`** for a breaking change.
+ Note that breaking changes should warrant a major version bump.
+- **`[DOC]`** for a change that affects only documentation, and not code.
+- **`[SECURITY]`** for a security fix. If you're working on a security issue, 
+please make sure to follow the process outlined by our security team. 
+If you haven't done so already, please [get in touch with them](https://www.elastic.co/community/security) first.
+
+Keywords (copied from [keepachangelog.com](https://keepachangelog.com/en/1.0.0/#how)):
 
 - **`Added`** for new features.
 - **`Changed`** for changes in existing functionality.
@@ -134,6 +142,9 @@ Example:
 - Changed default value of `number_of_threads` from 2 to 1 [#101](http://example.org)
 - Changed default value of `execution_bugs` from 30 to 0 [#104](http://example.org)
 - [BREAKING] Removed obsolete option `enable_telnet` option [#100](http://example.org)
+
+## 3.3.3
+- [DOC] Fixed incorrect formatting of code sample [#85](http://example.org)
 
 ## 3.3.2
 - Fixed incorrect serialization of input data when encoding was `Emacs-Mule` [#84](http://example.org)
@@ -196,4 +207,3 @@ Keep these in mind as both authors and reviewers of PRs:
   * If no, ask for clarifications on the PR. This will usually lead to changes in the code such as renaming of variables/functions or extracting of functions or simply adding "why" inline comments. But first ask the author for clarifications before assuming any intent on their part.
 
 * I must not focus on personal preferences or nitpicks. If I understand the code in the PR but simply would've implemented the same solution a different way that's great but its not feedback that belongs in the PR. Such feedback only serves to slow down progress for little to no gain.
-
