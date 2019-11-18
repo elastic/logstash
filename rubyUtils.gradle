@@ -183,7 +183,7 @@ task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
-    inputs.file("${projectDir}/versions.yml")
+    inputs.file(versionsPath)
     outputs.file(jrubyTarPath)
     dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
 }
