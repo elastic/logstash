@@ -11,11 +11,13 @@ require "logstash/plugins/registry"
 require "logstash/modules/util"
 require "monitoring/monitoring"
 require "monitoring/inputs/metrics"
+require "monitoring/outputs/elasticsearch_monitoring"
 require "config_management/extension"
 require "modules/xpack_scaffold"
 require "filters/azure_event"
 
 LogStash::PLUGIN_REGISTRY.add(:input, "metrics", LogStash::Inputs::Metrics)
+LogStash::PLUGIN_REGISTRY.add(:output, "elasticsearch_monitoring", LogStash::Outputs::ElasticSearchMonitoring)
 LogStash::PLUGIN_REGISTRY.add(:universal, "monitoring", LogStash::MonitoringExtension)
 LogStash::PLUGIN_REGISTRY.add(:universal, "config_management", LogStash::ConfigManagement::Extension)
 

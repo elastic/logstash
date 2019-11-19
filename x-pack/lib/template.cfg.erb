@@ -11,7 +11,7 @@ input {
   }
 }
 output {
-  elasticsearch {
+  elasticsearch_monitoring {
   <% if cloud_id? %>
     cloud_id => "<%= cloud_id %>"
     <% if cloud_auth %>
