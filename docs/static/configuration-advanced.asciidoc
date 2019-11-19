@@ -1,0 +1,6 @@
+[[configuration-advanced]]
+== Advanced Logstash Configurations
+
+You can take {ls} beyond basic configuration to handle more advanced
+requirements, such as multiple pipelines, communication between {ls} pipelines,
+and multiple line events. 
