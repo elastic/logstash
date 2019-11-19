@@ -11,7 +11,7 @@ input {
   }
 }
 output {
-  elasticsearch {
+  elasticsearch_monitoring {
     hosts => <%= es_hosts %>
     bulk_path => "/_monitoring/bulk?system_id=logstash&system_api_version=<%= system_api_version %>&interval=1s"
     manage_template => false
