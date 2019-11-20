@@ -27,7 +27,6 @@ This section summarizes the changes in the following releases:
 * Provide log appender per pipeline https://github.com/elastic/logstash/pull/11108[#11108]
 * Use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
 * Add origins of pipeline configurations https://github.com/elastic/logstash/pull/11123[#11123]
-* Update .ruby-version to jruby-9.2.8.0 https://github.com/elastic/logstash/pull/11198[#11198]
 * Remove 10k character truncation from log4j2.properties https://github.com/elastic/logstash/pull/11206[#11206]
 * Remove from system properties if Java runtime is less than 11 https://github.com/elastic/logstash/pull/11225[#11225] to
 fix https://github.com/elastic/logstash/issues/11221[#11221]
