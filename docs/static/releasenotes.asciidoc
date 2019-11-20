@@ -24,7 +24,7 @@ This section summarizes the changes in the following releases:
 
 * Give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
 * Support substitutions in pipelines.yml file https://github.com/elastic/logstash/pull/11081[#11081]
-* Provide feature/log appender per pipeline https://github.com/elastic/logstash/pull/11108[#11108]
+* Provide log appender per pipeline https://github.com/elastic/logstash/pull/11108[#11108]
 * Use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
 * Add origins of pipeline configurations https://github.com/elastic/logstash/pull/11123[#11123]
 * Update .ruby-version to jruby-9.2.8.0 https://github.com/elastic/logstash/pull/11198[#11198]
