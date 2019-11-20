@@ -32,16 +32,6 @@ This section summarizes the changes in the following releases:
 fix https://github.com/elastic/logstash/issues/11221[#11221]
 * [DOC] Add metricbeat as a monitoring option https://github.com/elastic/logstash/issues/11190[#11190]
 
-TBD
-
-2804651a7 - improve reliability of webserver port binding (4 weeks ago) <Joao Duarte> 
-35cb71eda - more resilient testing of logging level setting (5 weeks ago) <Joao Duarte>
-78ffbb31b - Fix to avoid Nashorn error regarding the unknown flag `--no-deprecation-warning` for JDK < 11. closes 11221 (5 weeks ago) <andsel>
-15f0de348 - remove 10k character truncation from log4j2.properties (6 weeks ago) <João Duarte>
-fc9c0e0ca - Added LS configuration variable 'pipeline.separate_logs' to separate logs per pipelines - use log4j RoutingAppender - avoid output to main log files when log per pipeline is enabled - closes 10427 (6 weeks ago) <andsel>
-1cbaeebb4 - Added origins of pipeline's configuration (es config string, the paths of config files used, module). (10 weeks ago) <andsel>
-
-
 ==== Plugins
 
 *Kafka Integration*
