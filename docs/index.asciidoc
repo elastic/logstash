@@ -207,6 +207,7 @@ include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
 include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
 include::{plugins-repo-dir}/plugins/filters.asciidoc[]
 include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
+include::{plugins-repo-dir}/plugins/integrations.asciidoc[]
 
 // FAQ and Troubleshooting
 
