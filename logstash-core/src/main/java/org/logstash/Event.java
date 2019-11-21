@@ -296,7 +296,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     public Object remove(final FieldReference field) {
-        return Accessors.del(data, field);
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                // removal of metadata is actually emptying metadata.
+                final ConvertedMap old_value =  ConvertedMap.newFromMap(this.metadata);
+                this.metadata = new ConvertedMap();
+                return Javafier.deep(old_value);
+            case FieldReference.META_CHILD:
+                return Accessors.del(metadata, field);
+            default:
+                return Accessors.del(data, field);
+        }
     }
 
     @Override
