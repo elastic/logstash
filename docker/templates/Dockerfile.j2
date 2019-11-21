@@ -11,13 +11,21 @@
   {% set tarball = 'logstash-%s.tar.gz' % elastic_version -%}
 {% endif -%}
 
+{% if image_flavor == 'ubi7' -%}
+  {% set base_image = 'registry.access.redhat.com/ubi7/ubi-minimal:7.7' -%}
+  {% set package_manager = 'microdnf'  -%}
+{% else -%}
+  {% set base_image = 'centos:7'  -%}
+  {% set package_manager = 'yum' -%}
+{% endif -%}
 
-FROM centos:7
+
+FROM {{ base_image }}
 
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
-RUN yum update -y && yum install -y java-11-openjdk-devel which && \
-    yum clean all
+RUN {{ package_manager }} update -y && {{ package_manager }} install -y java-11-openjdk-devel which && \
+    {{ package_manager }} clean all
 
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \
@@ -43,7 +51,11 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
 ADD config/pipelines.yml config/pipelines.yml
-ADD config/logstash-{{ image_flavor }}.yml config/logstash.yml
+{% if image_flavor == 'oss' -%}
+ADD config/logstash-oss.yml config/logstash.yml
+{% else -%}
+ADD config/logstash-full.yml config/logstash.yml
+{% endif -%}
 ADD config/log4j2.properties config/
 ADD pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/

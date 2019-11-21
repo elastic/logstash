@@ -182,16 +182,22 @@ namespace "artifact" do
   desc "Build docker image"
   task "docker" => ["prepare", "generate_build_metadata", "tar"] do
     puts("[docker] Building docker image")
-    build_docker(false)
+    build_docker
   end
 
   desc "Build OSS docker image"
   task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
     puts("[docker_oss] Building OSS docker image")
-    build_docker(true)
+    build_docker('oss')
   end
 
-  desc "Generate Dockerfile for default and oss images"
+  desc "Build UBI7 docker image"
+  task "docker_ubi7" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker_ubi7] Building UBI docker image")
+    build_docker('ubi7')
+  end
+
+  desc "Generate Dockerfile for default, ubi7 and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
     build_dockerfiles
@@ -211,6 +217,7 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_ubi7"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
   end
@@ -539,18 +546,15 @@ namespace "artifact" do
     end
   end # def package
 
-  def build_docker(oss = false)
+  def build_docker(image = nil)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      if oss
-        system(env, "make build-from-local-oss-artifacts")
-      else
-        system(env, "make build-from-local-artifacts")
-      end
+      make_job = image.nil? ?  "make build-from-local-artifacts"  : "make build-from-local-#{image}-artifacts"
+      system(env, make_job)
     end
   end
 
