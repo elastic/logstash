@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-5-0,Logstash 7.5.0>>
 * <<logstash-7-4-2,Logstash 7.4.2>>
 * <<logstash-7-4-1,Logstash 7.4.1>>
 * <<logstash-7-4-0,Logstash 7.4.0>>
@@ -20,6 +21,42 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-5-0]]
+=== Logstash 7.5.0 Release Notes
+
+* Give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
+* Support substitutions in pipelines.yml file https://github.com/elastic/logstash/pull/11081[#11081]
+* Provide log appender per pipeline https://github.com/elastic/logstash/pull/11108[#11108]
+* Use 2048 bits key in OpenSSL socket specs https://github.com/elastic/logstash/pull/11115[#11115]
+* Add origins of pipeline configurations https://github.com/elastic/logstash/pull/11123[#11123]
+* Remove 10k character truncation from log4j2.properties https://github.com/elastic/logstash/pull/11206[#11206]
+* Remove from system properties if Java runtime is less than 11 https://github.com/elastic/logstash/pull/11225[#11225] to
+fix https://github.com/elastic/logstash/issues/11221[#11221]
+* [DOC] Add metricbeat as a monitoring option https://github.com/elastic/logstash/issues/11190[#11190]
+
+==== Plugins
+
+*Kafka Integration*
+
+* Initial release of the
+https://github.com/logstash-plugins/logstash-integration-kafka[Kafka
+Integration Plugin], which combines previously-separate Kafka plugins and shared
+dependencies into a single codebase
+
+*Rabbitmq Integration*
+
+* Initial release of the
+https://github.com/logstash-plugins/logstash-integration-rabbitmq[RabbitMQ
+Integration Plugin], which combines previously-separate RabbitMQ plugins and
+shared dependencies into a single codebase
+
+*Elasticsearch Output*
+
+* Fixed wording and corrected option in documentation https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/881[#881] https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/883[#883]
+* Deprecation: Added warning about connecting a default Distribution of Logstash with an OSS version of ES https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/875[#875]
+* Added template for connecting to ES 8.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/871[#871]
+* Added sniffing support for ES 8.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/878[#878]
 
 [[logstash-7-4-2]]
 === Logstash 7.4.2 Release Notes
