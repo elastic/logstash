@@ -453,4 +453,32 @@ public final class EventTest {
         assertEquals(list, Arrays.asList("hello"));
 
     }
+
+    @Test
+    public void removeMetadataField() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final RubyString s = (RubyString)event.remove("[@metadata][foo]");
+        assertEquals(s.toString(), "bar");
+
+        assertFalse(event.includes("[@metadata][foo]"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void removeMetadata() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final Map<String, Object> m = (Map)(event.remove("[@metadata]"));
+        assertEquals(m.get("foo"), "bar");
+
+        assertTrue(event.getMetadata().isEmpty());
+        assertFalse(event.includes("[@metadata][foo]"));
+    }
 }
