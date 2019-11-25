@@ -38,7 +38,13 @@ module LogStash module PluginManager
 
     private
     def spec
-      @gem.spec
+      gem_spec = @gem.spec
+      def gem_spec.for_cache
+        spec = dup
+        spec.test_files = nil
+        spec
+      end
+      gem_spec
     end
 
     def spec_dir
