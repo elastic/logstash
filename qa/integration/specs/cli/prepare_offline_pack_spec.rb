@@ -50,7 +50,7 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
       filters = @logstash_plugin.list(plugins_to_pack.first)
                                 .stderr_and_stdout.split("\n")
                                 .delete_if do |line|
-                                  line =~ /cext|JAVA_OPT|fatal|^WARNING|Option \w+ was deprecated/
+                                  line =~ /cext|JAVA_OPT|fatal|^WARNING|Option \w+ was deprecated|sun.nio.ch/
                                 end
 
       expect(unpacked.plugins.collect(&:name)).to include(*filters)
