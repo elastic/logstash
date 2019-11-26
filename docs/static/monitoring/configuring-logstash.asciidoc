@@ -10,7 +10,7 @@ To monitor Logstash nodes:
 
 . Identify where to send monitoring data. This cluster is often referred to as
 the _production cluster_. For examples of typical monitoring architectures, see
-{xpack-ref}/how-monitoring-works.html[How Monitoring Works].
+{ref}/how-monitoring-works.html[How monitoring works].
 +
 --
 IMPORTANT: To visualize Logstash as part of the Elastic Stack (as shown in Step
@@ -26,7 +26,7 @@ is disabled in {es} and data is ignored from all other sources.
 . Configure your Logstash nodes to send metrics by setting the
 `xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security} is enabled,
 you also need to specify the credentials for the 
-{stack-ov}/built-in-users.html[built-in `logstash_system` user]. For more information about these settings, see <<monitoring-settings>>.
+{ref}/built-in-users.html[built-in `logstash_system` user]. For more information about these settings, see <<monitoring-settings>>.
 +
 --
 [source,yaml]

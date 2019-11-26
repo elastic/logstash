@@ -15,5 +15,5 @@ branching logic, overlaid with important metrics, like events per second, for
 each plugin in the view.
 
 This documentation focuses on the {monitoring} infrastructure and setup in
-Logstash. For an introduction to monitoring your Elastic stack, including {es}
-and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].
+Logstash. For an introduction to monitoring your Elastic stack, see
+{ref}/monitor-elasticsearch-cluster.html[Monitor a cluster].
