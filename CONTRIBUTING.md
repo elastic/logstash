@@ -77,7 +77,7 @@ Where possible, we:
  3. change the default to be new behaviour, optionally allowing users to opt out in favor of the old behaviour (MAJOR), and eventually
  4. remove the old behaviour's implementation from the code-base (MAJOR, potentially along-side #3).
 
-If you request or submit a change that is flagged as a "breaking change", we have several paths forward:
+Once a pull request is marked as a "breaking change", it becomes necessary to either:
  - refactor into a non-breaking change targeted at next minor; OR
  - split into non-breaking change targeted at next minor, plus breaking change targeted at next major
 
@@ -214,4 +214,3 @@ Keep these in mind as both authors and reviewers of PRs:
   * If no, ask for clarifications on the PR. This will usually lead to changes in the code such as renaming of variables/functions or extracting of functions or simply adding "why" inline comments. But first ask the author for clarifications before assuming any intent on their part.
 
 * I must not focus on personal preferences or nitpicks. If I understand the code in the PR but simply would've implemented the same solution a different way that's great but its not feedback that belongs in the PR. Such feedback only serves to slow down progress for little to no gain.
-
