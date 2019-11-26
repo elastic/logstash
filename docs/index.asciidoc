@@ -203,11 +203,11 @@ include::static/plugin-manager.asciidoc[]
 
 // These files do their own pass blocks
 
+include::{plugins-repo-dir}/plugins/integrations.asciidoc[]
 include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
 include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
 include::{plugins-repo-dir}/plugins/filters.asciidoc[]
 include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
-include::{plugins-repo-dir}/plugins/integrations.asciidoc[]
 
 // FAQ and Troubleshooting
 
