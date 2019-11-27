@@ -12,10 +12,10 @@ require "logstash/instrument/collector"
 require "logstash/filter_delegator"
 require "logstash/compiler"
 
-java_import org.apache.logging.log4j.ThreadContext
-
 module LogStash; class BasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
+
+  java_import org.apache.logging.log4j.ThreadContext
 
   attr_reader :inputs, :filters, :outputs
 
