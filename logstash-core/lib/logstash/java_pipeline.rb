@@ -8,10 +8,11 @@ require "logstash/instrument/collector"
 require "logstash/compiler"
 require "logstash/config/lir_serializer"
 
-java_import org.apache.logging.log4j.ThreadContext
-
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
+
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader \
     :worker_threads,
     :events_consumed,
