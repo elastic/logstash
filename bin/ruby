@@ -12,7 +12,7 @@
 #   DEBUG=1 to output debugging information
 
 # use faster starting JRuby options see https://github.com/jruby/jruby/wiki/Improving-startup-time
-export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1"
+export JRUBY_OPTS="${JRUBY_OPTS---dev}"
 
 unset CDPATH
 
