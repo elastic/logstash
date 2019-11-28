@@ -1,10 +1,10 @@
 # encoding: utf-8
 require "digest"
 
-java_import org.logstash.config.ir.ConfigSourceSegment
-
 module LogStash module Config
   class PipelineConfig
+    java_import org.logstash.config.ir.ConfigSourceSegment
+
     include LogStash::Util::Loggable
 
     attr_reader :source, :pipeline_id, :config_parts, :settings, :read_at
