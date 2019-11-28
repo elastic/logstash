@@ -28,21 +28,20 @@ public final class AckedReadBatch implements QueueBatch {
     }
 
     private AckedReadBatch(final JRubyAckedQueueExt queue, final int size, final long timeout) {
-        ThreadContext context = RUBY.getCurrentContext();
-        AckedBatch batch = null;
+        AckedBatch batch;
         try {
             batch = queue.readBatch(size, timeout);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
         if (batch == null) {
-            originals = RubyHash.newHash(context.runtime);
+            originals = RubyHash.newHash(RUBY);
             ackedBatch = null;
         } else {
             ackedBatch = batch;
-            originals = ackedBatch.toRubyHash(context);
+            originals = ackedBatch.toRubyHash(RUBY);
         }
-        generated = RubyHash.newHash(context.runtime);
+        generated = RubyHash.newHash(RUBY);
     }
 
     @Override
@@ -55,18 +54,17 @@ public final class AckedReadBatch implements QueueBatch {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public RubyArray to_a() {
-        ThreadContext context = RUBY.getCurrentContext();
-        final RubyArray result = context.runtime.newArray(filteredSize());
+        final RubyArray result = RUBY.newArray(filteredSize());
         for (final JrubyEventExtLibrary.RubyEvent event
                 : (Collection<JrubyEventExtLibrary.RubyEvent>) originals.keys()) {
             if (!MemoryReadBatch.isCancelled(event)) {
-                result.add(event);
+                result.append(event);
             }
         }
         for (final JrubyEventExtLibrary.RubyEvent event
                 : (Collection<JrubyEventExtLibrary.RubyEvent>) generated.keys()) {
             if (!MemoryReadBatch.isCancelled(event)) {
-                result.add(event);
+                result.append(event);
             }
         }
         return result;
