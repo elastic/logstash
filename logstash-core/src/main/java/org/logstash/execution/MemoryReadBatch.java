@@ -1,7 +1,6 @@
 package org.logstash.execution;
 
 import org.jruby.RubyArray;
-import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -32,11 +31,10 @@ public final class MemoryReadBatch implements QueueBatch {
     @Override
     @SuppressWarnings({"rawtypes"})
     public RubyArray to_a() {
-        ThreadContext context = RUBY.getCurrentContext();
-        final RubyArray result = context.runtime.newArray(events.size());
+        final RubyArray result = RUBY.newArray(events.size());
         for (final IRubyObject event : events) {
             if (!isCancelled(event)) {
-                result.add(event);
+                result.append(event);
             }
         }
         return result;
