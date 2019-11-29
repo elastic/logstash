@@ -54,7 +54,12 @@ If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
 authenticate for accessing the configuration data. The username you specify here
 should have the `logstash_admin` role, which provides access to `.logstash-*`
-indices for managing configurations. 
+indices for managing configurations.
+
+`xpack.management.elasticsearch.proxy`::
+
+Optional setting that allows you to specify a proxy URL if Logstash needs to use a proxy
+to reach your Elasticsearch cluster.
 
 `xpack.management.elasticsearch.ssl.certificate_authority`::
 

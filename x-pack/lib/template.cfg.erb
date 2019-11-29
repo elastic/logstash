@@ -18,6 +18,9 @@ output {
     document_type => "%{[@metadata][document_type]}"
     index => ""
     sniffing => <%= sniffing %>
+  <% if proxy? %>
+    proxy => "<%= proxy %>"
+  <% end %>
   <% if auth? %>
     user => "<%= user %>"
     password => "<%= password %>"
