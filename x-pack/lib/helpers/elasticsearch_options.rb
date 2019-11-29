@@ -15,6 +15,7 @@ module LogStash module Helpers
         password
         cloud_id
         cloud_auth
+        proxy
       )
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
@@ -43,6 +44,7 @@ module LogStash module Helpers
       end
       opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
       opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
+      opts['proxy'] = settings.get("xpack.#{feature}.elasticsearch.proxy")
 
       if cacert = settings.get("xpack.#{feature}.elasticsearch.ssl.certificate_authority")
         opts['cacert'] = cacert

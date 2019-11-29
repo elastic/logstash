@@ -40,6 +40,10 @@ If your {es} is protected with basic authentication, these settings provide the
 username and password that the Logstash instance uses to authenticate for
 shipping monitoring data.
 
+`xpack.monitoring.elasticsearch.proxy`::
+
+Optional setting that allows you to specify a proxy URL if Logstash needs to use a proxy
+to reach your Elasticsearch cluster.
 
 [[monitoring-collection-settings]]
 ===== Monitoring collection settings
