@@ -6,7 +6,7 @@ module LogStash module Helpers
   module ElasticsearchOptions
     extend self
 
-    ES_SETTINGS =%w(ssl.certificate_authority ssl.truststore.path ssl.keystore.path hosts username password)
+    ES_SETTINGS =%w(ssl.certificate_authority ssl.truststore.path ssl.keystore.path hosts username password proxy)
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
     # feature supports falling back to modules if the feature is not specified in logstash.yml
@@ -24,6 +24,7 @@ module LogStash module Helpers
       opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
       opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
       opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
+      opts['proxy'] = settings.get("xpack.#{feature}.elasticsearch.proxy")
 
       if cacert = settings.get("xpack.#{feature}.elasticsearch.ssl.certificate_authority")
         opts['cacert'] = cacert
