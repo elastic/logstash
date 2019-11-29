@@ -29,6 +29,7 @@ module LogStash
         @es_hosts = es_settings['hosts']
         @user = es_settings['user']
         @password = es_settings['password']
+        @proxy = es_settings['proxy']
         @ca_path = es_settings['cacert']
         @truststore_path = es_settings['truststore']
         @truststore_password = es_settings['truststore_password']
@@ -38,7 +39,7 @@ module LogStash
         @ssl_certificate_verification = (es_settings['verification_mode'] == 'certificate')
       end
 
-      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid
+      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :proxy
       attr_accessor :ca_path, :truststore_path, :truststore_password
       attr_accessor :keystore_path, :keystore_password, :sniffing, :ssl_certificate_verification
 
@@ -48,6 +49,10 @@ module LogStash
 
       def collection_timeout_interval
         TimeUnit::SECONDS.convert(@collection_timeout_interval, TimeUnit::NANOSECONDS)
+      end
+
+      def proxy?
+        proxy
       end
 
       def auth?
@@ -174,6 +179,7 @@ module LogStash
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.password"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.proxy"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.certificate_authority"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.path"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))
