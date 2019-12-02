@@ -10,7 +10,7 @@ To monitor Logstash nodes:
 
 . Identify where to send monitoring data. This cluster is often referred to as
 the _production cluster_. For examples of typical monitoring architectures, see
-{xpack-ref}/how-monitoring-works.html[How Monitoring Works].
+{ref}/how-monitoring-works.html[How monitoring works].
 +
 --
 IMPORTANT: To visualize Logstash as part of the Elastic Stack (as shown in Step
