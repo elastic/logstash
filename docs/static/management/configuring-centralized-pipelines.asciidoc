@@ -13,7 +13,7 @@ feature.
 +
 --
 For more information, see https://www.elastic.co/subscriptions and 
-{xpack-ref}/license-management.html[License Management].
+{stack-ov}/license-management.html[License Management].
 --
 
 . Specify 
