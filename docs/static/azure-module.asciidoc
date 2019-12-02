@@ -492,7 +492,7 @@ the event originated.
 ==== Deploying the module in production 
 
 Use security best practices to secure your configuration.
-See {stack-ov}/xpack-security.html for details and recommendations.
+See {ref}/secure-cluster.html[Secure a cluster] for details and recommendations.
 
 [[azure-resources]]
 ==== Microsoft Azure resources 
