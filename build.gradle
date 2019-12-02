@@ -124,7 +124,7 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
 }
 
 task installBundler(dependsOn: assemblyDeps) {
-  outputs.files file("${projectDir}/vendor/bundle/bin/bundle")
+  outputs.dir("${projectDir}/vendor/bundle")
   doLast {
       gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
   }
