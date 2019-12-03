@@ -210,10 +210,10 @@ include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
 // FAQ and Troubleshooting
 
-// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/faq.asciidoc
+:edit_url!:
 include::static/best-practice.asciidoc[]
 
-// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/troubleshooting.asciidoc
+:edit_url!:
 include::static/troubleshooting.asciidoc[]
 
 :edit_url:
