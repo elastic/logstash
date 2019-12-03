@@ -123,8 +123,8 @@ Enterprise-grade security is available across the entire delivery chain.
 {logstash-ref}/ls-security.html[Logstash to Elasticsearch].
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
-To enable Elasticsearch security, consult the
-{xpack-ref}/xpack-security.html[X-Pack documentation].
+To enable Elasticsearch security, consult
+{ref}/secure-cluster.html[Secure a cluster].
 
 [float]
 ==== Monitoring
