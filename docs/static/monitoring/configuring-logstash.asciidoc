@@ -10,7 +10,7 @@ To monitor Logstash nodes:
 
 . Identify where to send monitoring data. This cluster is often referred to as
 the _production cluster_. For examples of typical monitoring architectures, see
-{xpack-ref}/how-monitoring-works.html[How Monitoring Works].
+{ref}/how-monitoring-works.html[How monitoring works].
 +
 --
 IMPORTANT: To visualize Logstash as part of the Elastic Stack (as shown in Step
@@ -102,6 +102,6 @@ image:static/monitoring/images/monitoring-ui.png["Monitoring",link="monitoring/i
 
 When upgrading from older versions of {xpack}, the built-in `logstash_system`
 user is disabled for security reasons. To resume monitoring,
-{xpack-ref}/monitoring-troubleshooting.html[change the password and re-enable the logstash_system user].
+{ref}/monitoring-troubleshooting.html[change the password and re-enable the logstash_system user].
 
 include::{log-repo-dir}/static/settings/monitoring-settings.asciidoc[]
