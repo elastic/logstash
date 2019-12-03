@@ -119,7 +119,7 @@ it using HTTPS. For example, use a `hosts` setting like `https://localhost:9600`
 ID and password so that {metricbeat} can collect metrics successfully: 
 
 .. Create a user on the production cluster that has the 
-`remote_monitoring_collector` {stack-ov}/built-in-roles.html[built-in role]. 
+`remote_monitoring_collector` {ref}/built-in-roles.html[built-in role]. 
 
 .. Add the `username` and `password` settings to the module configuration 
 file (`logstash-xpack.yml`).
@@ -180,9 +180,9 @@ must provide a valid user ID and password so that {metricbeat} can send metrics
 successfully: 
 
 .. Create a user on the monitoring cluster that has the 
-`remote_monitoring_agent` {stack-ov}/built-in-roles.html[built-in role]. 
+`remote_monitoring_agent` {ref}/built-in-roles.html[built-in role]. 
 Alternatively, use the `remote_monitoring_user` 
-{stack-ov}/built-in-users.html[built-in user]. 
+{ref}/built-in-users.html[built-in user]. 
 +
 TIP: If you're using index lifecycle management, the remote monitoring user
 requires additional privileges to create and read indices. For more
