@@ -16,4 +16,4 @@ each plugin in the view.
 
 This documentation focuses on the {monitoring} infrastructure and setup in
 Logstash. For an introduction to monitoring your Elastic stack, including {es}
-and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].
+and {kib}, see {ref}/monitor-elasticsearch-cluster.html[Monitor a cluster].
