@@ -204,7 +204,7 @@ data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
 {security} comes preconfigured with a
-{stack-ov}/built-in-users.html[`logstash_system` built-in user]
+{ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
 monitoring function, and _should not_ be used for any other purpose - it is
 specifically _not intended_ for use within a Logstash pipeline.
