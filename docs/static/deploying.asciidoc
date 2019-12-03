@@ -124,7 +124,7 @@ Enterprise-grade security is available across the entire delivery chain.
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
 To enable Elasticsearch security, see 
-{ref}/elasticsearch-security.html[Secure a cluster].
+{ref}/secure-cluster.html[Secure a cluster].
 
 [float]
 ==== Monitoring
