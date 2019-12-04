@@ -7,8 +7,7 @@ import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.JavaProxy;
-import org.jruby.javasupport.JavaObject;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -103,7 +102,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(final ThreadContext context) throws InterruptedException {
-        return JavaObject.wrap(context.runtime, readBatch());
+        return RubyUtil.toRubyObject(readBatch());
     }
 
     @Override
@@ -148,11 +147,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      * @return Extracted queue batch
      */
     private static QueueBatch extractQueueBatch(final IRubyObject batch) {
-        if (batch instanceof JavaProxy) {
-            return (QueueBatch) ((JavaObject)batch.dataGetStruct()).getValue();
-        } else {
-            return (QueueBatch)((JavaObject)batch).getValue();
-        }
+        return JavaUtil.unwrapIfJavaObject(batch);
     }
 
     /**

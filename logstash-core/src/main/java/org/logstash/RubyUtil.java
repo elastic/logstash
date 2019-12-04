@@ -5,7 +5,9 @@ import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
@@ -599,6 +601,15 @@ public final class RubyUtil {
         );
         clazz.defineAnnotatedMethods(jclass);
         return clazz;
+    }
+
+    /**
+     * Convert a Java object to a Ruby representative.
+     * @param javaObject the object to convert (might be null)
+     * @return a Ruby wrapper
+     */
+    public static IRubyObject toRubyObject(Object javaObject) {
+        return JavaUtil.convertJavaToRuby(RUBY, javaObject);
     }
 
 }
