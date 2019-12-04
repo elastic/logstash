@@ -281,11 +281,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_inputs
     @input_threads.each do |thread|
-      if thread.class == Java::JavaObject
-        thread.to_java.join
-      else
-        thread.join
-      end
+      thread.join # Thread or java.lang.Thread (both have #join)
     end
   end
 

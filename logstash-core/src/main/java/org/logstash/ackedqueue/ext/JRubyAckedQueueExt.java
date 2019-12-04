@@ -9,7 +9,6 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
@@ -114,16 +113,14 @@ public final class JRubyAckedQueueExt extends RubyObject {
     }
 
     @JRubyMethod(name = "read_batch", required = 2)
-    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit,
-        IRubyObject timeout) {
+    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit, IRubyObject timeout) {
         AckedBatch b;
         try {
             b = readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
-        // TODO: return proper Batch object
-        return (b == null) ? context.nil : JavaObject.wrap(context.runtime, b);
+        return RubyUtil.toRubyObject(b);
     }
 
     public AckedBatch readBatch(int limit, long timeout) throws IOException {
