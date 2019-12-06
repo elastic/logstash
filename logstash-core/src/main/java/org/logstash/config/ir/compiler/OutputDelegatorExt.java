@@ -43,14 +43,14 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
         String id = args.op_aref(context, RubyString.newString(context.runtime, "id")).asJavaString();
         RubyString configRefKey = RubyString.newString(context.runtime, "config-ref");
-        String configRef = args.op_aref(context, configRefKey).asJavaString();
-        initMetrics(id, metric, configRef);
+        RubyString configRefValue = (RubyString) args.op_aref(context, configRefKey);
+        initMetrics(id, metric, configRefValue.asJavaString());
 
         args.remove(configRefKey);
         strategy = (OutputStrategyExt.AbstractOutputStrategyExt) strategyRegistry.classFor(
             context, concurrency(context)
         ).newInstance(
-            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, RubyUtil.RUBY.newString(configRef), args},
+            context, new IRubyObject[]{outputClass, namespacedMetric, executionContext, configRefValue, args},
             Block.NULL_BLOCK
         );
         return this;

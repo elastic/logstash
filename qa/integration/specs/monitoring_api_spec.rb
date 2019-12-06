@@ -153,14 +153,12 @@ describe "Test Monitoring API" do
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # event_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.pipeline_stats("main") rescue nil
-      puts "<><><> #{result} <><><>"
       expect(result).not_to be_nil
 
       # we use fetch here since we want failed fetches to raise an exception
       # and trigger the retry block
        inputs_stats = result.fetch("plugins").fetch("inputs")[0]
        config_ref = inputs_stats.fetch("config-ref")
-       puts ">>> inputs_stats: #{inputs_stats} <<<"
        expect(config_ref).to eq("S: config_string, L:1, C:8")
     end
   end

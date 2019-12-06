@@ -231,13 +231,13 @@ public final class OutputStrategyExt {
             output = args[0].callMethod(context, "new", args[4]);
             initOutputCallsite(outputClass);
 
-            final IRubyObject codecDelegatorClass = RubyUtil.RUBY.executeScript(
+            final RubyClass codecDelegatorClass = (RubyClass) RubyUtil.RUBY.executeScript(
                     "require 'logstash/codecs/delegator'\nLogStash::Codecs::Delegator",
                     "");
             // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
             IRubyObject codec = output.callMethod(context, "codec");
             if (codec instanceof RubyBasicObject) {
-                if (((RubyBasicObject) codec).instance_of_p(context, codecDelegatorClass).isTrue()) {
+                if (codecDelegatorClass.isInstance(codec)) {
                     codec.callMethod(context, "parent_config_reference=", args[3]);
                 }
             }

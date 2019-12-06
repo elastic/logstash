@@ -284,7 +284,7 @@ public final class PluginFactoryExt {
 
                         // WARNING: order is important since metric= create gauges with data assigned from parent_config_reference=
                         IRubyObject codec = pluginInstance.callMethod(context, "codec");
-                        if (codec.getType().instance_of_p(context, codecDelegatorClass).isTrue()) {
+                        if (((RubyClass) codecDelegatorClass).isInstance(codec)) {
                             codec.callMethod(context, "parent_config_reference=", RubyUtil.RUBY.newString(configReference));
                         }
                         pluginInstance.callMethod(context, "metric=", scopedMetric);

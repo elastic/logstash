@@ -66,20 +66,6 @@ describe LogStash::Compiler do
       it "should provide the original source" do
         expect(pipeline.original_source).to eq(sources.join("\n"))
       end
-
-#       describe "applying protocol and id metadata" do
-#         it "should apply the correct source metadata to all components" do
-#           # TODO: seems to be a jruby regression we cannot currently call each on a stream
-#           pipeline.get_plugin_vertices.each do |pv|
-#             name_idx = pv.plugin_definition.name.split("_").last
-#             source_protocol_idx = pv.source_with_metadata.protocol.split("_").last
-#             source_id_idx = pv.source_with_metadata.id.split("_").last
-#
-#             expect(name_idx).to eq(source_protocol_idx)
-#             expect(name_idx).to eq(source_id_idx)
-#           end
-#         end
-#       end
     end
 
     describe "complex configs" do

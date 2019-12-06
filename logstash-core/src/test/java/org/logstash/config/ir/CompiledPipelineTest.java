@@ -15,9 +15,11 @@ import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jruby.RubyArray;
+import org.jruby.RubyClass;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
@@ -112,13 +114,13 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         );
 
         final IRubyObject pipelineConfig =
-                pipelineConfigClass.callMethod(RubyUtil.RUBY.getCurrentContext(), "new",
+                ((RubyClass) pipelineConfigClass).newInstance(RubyUtil.RUBY.getCurrentContext(),
                         new IRubyObject[] {
                                 RubyUtil.RUBY.getNil(), /*source*/
                                 RubyUtil.RUBY.newString("main"), /*pipeline_id*/
                                 configParts,
                                 RubyUtil.RUBY.getNil(), /*settings*/
-                        });
+                        }, Block.NULL_BLOCK);
         return pipelineConfig;
     }
 
