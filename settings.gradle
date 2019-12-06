@@ -1,3 +1,5 @@
+rootProject.name = "logstash"
+
 include ':logstash-core', 'logstash-core-benchmarks', 'ingest-converter', 'benchmark-cli', 'logstash-integration-tests', 'dependencies-report'
 project(':logstash-core').projectDir = new File('./logstash-core')
 project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benchmarks')
