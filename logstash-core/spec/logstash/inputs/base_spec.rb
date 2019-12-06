@@ -113,4 +113,32 @@ describe "LogStash::Inputs::Base#fix_streaming_codecs" do
     tcp.instance_eval { fix_streaming_codecs }
     expect(tcp.codec.charset).to eq("CP1252")
   end
+
+  it "should switch plain codec to line" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "plain" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "plain", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::Line")
+  end
+
+  it "should switch json codec to json_lines" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "json" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "json", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::JSONLines")
+  end
 end
