@@ -40,6 +40,7 @@ public class DefaultDeprecationLoggerTest {
 
     @After
     public void tearDown() throws IOException {
+        LogManager.shutdown();
         LogTestUtils.deleteLogFile("logstash-deprecation.log");
         LogTestUtils.reloadLogConfiguration();
     }
