@@ -113,7 +113,7 @@ read <<use-ingest-pipelines>>.
 Here are some examples that show how to implement {ls} configurations to replace
 ingest pipelines:
 
-* <<parsing-apache2>>
+* <<parsing-apache>>
 * <<parsing-mysql>>
 * <<parsing-nginx>>
 * <<parsing-system>>
@@ -123,8 +123,8 @@ to help you migrate ingest pipeline definitions to {ls} configs. The tool does
 not currently support all the processors that are available for ingest node, but
 it's a good starting point.
 
-[[parsing-apache2]]
-==== Apache 2 Logs
+[[parsing-apache]]
+==== Apache Logs
 
 The {ls} pipeline configuration in this example shows how to ship and parse
 access and error logs collected by the
@@ -132,7 +132,7 @@ access and error logs collected by the
 
 [source,json]
 ----------------------------------------------------------------------------
-include::filebeat_modules/apache2/pipeline.conf[]
+include::filebeat_modules/apache/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 
