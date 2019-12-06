@@ -110,8 +110,6 @@ To monitor multiple {ls} instances, specify a list of hosts, for example:
 hosts: ["http://localhost:9601","http://localhost:9602","http://localhost:9603"]
 ----------------------------------
 
-*Encrypted communications.* If you configured {ls} to use encrypted communications, you must access
-it using HTTPS. For example, use a `hosts` setting like `https://localhost:9600`.
 // end::configure-ls-module[]
 
 // tag::remote-monitoring-user[]
