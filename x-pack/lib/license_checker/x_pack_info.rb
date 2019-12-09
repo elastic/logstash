@@ -9,7 +9,7 @@ java_import java.util.concurrent.TimeUnit
 
 module LogStash
   module LicenseChecker
-    LICENSE_TYPES = ['trial', 'basic', 'standard', 'gold', 'platinum']
+    LICENSE_TYPES = ['trial', 'basic', 'standard', 'gold', 'platinum', 'enterprise']
 
     class XPackInfo
       include LogStash::Util::Loggable
