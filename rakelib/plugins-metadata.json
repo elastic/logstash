@@ -148,12 +148,12 @@
     "skip-list": true
   },
   "logstash-filter-jdbc_static": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-filter-jdbc_streaming": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-filter-json": {
     "default-plugins": true,
@@ -317,8 +317,8 @@
     "skip-list": true
   },
   "logstash-input-jdbc": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-jms": {
     "default-plugins": true,
@@ -399,6 +399,10 @@
     "skip-list": false
   },
   "logstash-input-unix": {
+    "default-plugins": true,
+    "skip-list": false
+  },
+  "logstash-integration-jdbc": {
     "default-plugins": true,
     "skip-list": false
   },
