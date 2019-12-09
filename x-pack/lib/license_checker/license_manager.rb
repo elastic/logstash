@@ -18,8 +18,6 @@ module LogStash
 
       attr_reader :last_updated
 
-      LICENSE_TYPES = :trial, :basic, :standard, :gold, :platinum
-
       def initialize (reader, feature, refresh_period=30, refresh_unit=TimeUnit::SECONDS)
         @license_reader = reader
         @feature = feature

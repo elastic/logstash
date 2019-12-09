@@ -22,7 +22,7 @@ LogStash::PLUGIN_REGISTRY.add(:universal, "monitoring", LogStash::MonitoringExte
 LogStash::PLUGIN_REGISTRY.add(:universal, "config_management", LogStash::ConfigManagement::Extension)
 
 license_levels = Hash.new
-license_levels.default = ["basic", "trial", "standard", "gold", "platinum"]
+license_levels.default = LogStash::LicenseChecker::LICENSE_TYPES
 
 xpack_modules.each do |name|
   path = File.join(File.dirname(__FILE__), "..", "..", "modules", name, "configuration")
