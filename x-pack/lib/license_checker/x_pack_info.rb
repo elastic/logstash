@@ -9,10 +9,10 @@ java_import java.util.concurrent.TimeUnit
 
 module LogStash
   module LicenseChecker
+    LICENSE_TYPES = ['trial', 'basic', 'standard', 'gold', 'platinum']
+
     class XPackInfo
       include LogStash::Util::Loggable
-
-      LICENSE_TYPES = :trial, :basic, :standard, :gold, :platinum
 
       def initialize(license, features = nil, installed=true, failed = false)
         @license = license
