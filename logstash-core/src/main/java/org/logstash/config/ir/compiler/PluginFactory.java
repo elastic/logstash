@@ -8,6 +8,7 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
+import org.logstash.common.SourceWithMetadata;
 
 import java.util.Map;
 
@@ -18,9 +19,7 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
 
     Input buildInput(String name, String id, Configuration configuration, Context context);
 
-    Filter buildFilter(
-            String name, String id, Configuration configuration, Context context
-    );
+    Filter buildFilter(String name, String id, Configuration configuration, Context context);
 
     final class Default implements PluginFactory {
 
@@ -41,23 +40,21 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+        public IRubyObject buildInput(final RubyString name, final SourceWithMetadata source,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
-            return rubyFactory.buildInput(name, line, column, args, pluginArgs);
+            return rubyFactory.buildInput(name, source, args, pluginArgs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final SourceWithMetadata source, final IRubyObject args,
                                                       final Map<String, Object> pluginArgs) {
-            return rubyFactory.buildOutput(name, line, column, args, pluginArgs);
+            return rubyFactory.buildOutput(name, source, args, pluginArgs);
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final SourceWithMetadata source, final IRubyObject args,
                                                       final Map<String, Object> pluginArgs) {
-            return rubyFactory.buildFilter(name, line, column, args, pluginArgs);
+            return rubyFactory.buildFilter(name, source, args, pluginArgs);
         }
 
         @Override

@@ -91,6 +91,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractNamespacedMetricExt dlqMetric;
 
+    private @SuppressWarnings({"rawtypes"}) RubyArray configParts;
+
     private RubyString configString;
 
     private RubyString configHash;
@@ -132,6 +134,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 MessageDigest.getInstance("SHA1").digest(configString.getBytes())
             )
         );
+        configParts = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
         settings = pipelineSettings.callMethod(context, "settings");
         final IRubyObject id = getSetting(context, "pipeline.id");
         if (id.isNil()) {
@@ -154,7 +157,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
+            configParts,
             getSetting(context, "config.support_escapes").isTrue()
         );
         return this;

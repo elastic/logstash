@@ -115,51 +115,37 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+        public IRubyObject buildInput(final RubyString name, final SourceWithMetadata source,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), source,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
-        public IRubyObject buildInput(final ThreadContext context, final IRubyObject[] args) {
-            return buildInput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
-            );
-        }
 
         @SuppressWarnings("unchecked")
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final SourceWithMetadata source,
+                                                      final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), source,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
-        @JRubyMethod(required = 4)
-        public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
-                                                      final IRubyObject[] args) {
-            return buildOutput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3], null
-            );
-        }
+
 
         @SuppressWarnings("unchecked")
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final SourceWithMetadata source, final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
+                    name.asJavaString(), source,
                     (Map<String, IRubyObject>) args, pluginArgs
             );
         }
@@ -167,37 +153,38 @@ public final class PluginFactoryExt {
         @SuppressWarnings("unchecked")
         @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+            SourceWithMetadata emptySource = null;
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), emptySource, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
         @Override
         public Codec buildDefaultCodec(String codecName) {
+            SourceWithMetadata emptySource = null;
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+                    codecName, emptySource, Collections.emptyMap(), Collections.emptyMap()
             ));
         }
 
         @SuppressWarnings("unchecked")
-        @JRubyMethod(required = 4, optional = 1)
+        @JRubyMethod(required = 3, optional = 1)
         public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
             return plugin(
                     context,
                     PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                     args[1].asJavaString(),
-                    args[2].convertToInteger().getIntValue(),
-                    args[3].convertToInteger().getIntValue(),
-                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>(),
+                    (SourceWithMetadata) args[2],
+                    args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>(),
                     null
             );
         }
 
         @SuppressWarnings("unchecked")
         private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                                   final int line, final int column, final Map<String, IRubyObject> args,
+                                   final SourceWithMetadata source, final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
             final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
@@ -207,8 +194,9 @@ public final class PluginFactoryExt {
             } else {
                 id = lir.getGraph().vertices().filter(
                         v -> v.getSourceWithMetadata() != null
-                                && v.getSourceWithMetadata().getLine() == line
-                                && v.getSourceWithMetadata().getColumn() == column
+                                && v.getSourceWithMetadata().getProtocol().equals(source.getProtocol())
+                                && v.getSourceWithMetadata().getLine().equals(source.getLine())
+                                && v.getSourceWithMetadata().getColumn().equals(source.getColumn())
                 ).findFirst().map(Vertex::getId).orElse(null);
             }
             if (id == null) {
