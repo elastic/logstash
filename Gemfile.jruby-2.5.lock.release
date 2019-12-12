@@ -2,12 +2,12 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 7.5.1)
+      logstash-core (= 7.5.1.SNAPSHOT)
 
 PATH
   remote: logstash-core
   specs:
-    logstash-core (7.5.1-java)
+    logstash-core (7.5.1.SNAPSHOT-java)
       chronic_duration (~> 0.10)
       clamp (~> 0.6)
       concurrent-ruby (~> 1)
@@ -42,13 +42,13 @@ GEM
       multi_json
     awesome_print (1.7.0)
     aws-eventstream (1.0.3)
-    aws-sdk (2.11.410)
-      aws-sdk-resources (= 2.11.410)
-    aws-sdk-core (2.11.410)
+    aws-sdk (2.11.414)
+      aws-sdk-resources (= 2.11.414)
+    aws-sdk-core (2.11.414)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.410)
-      aws-sdk-core (= 2.11.410)
+    aws-sdk-resources (2.11.414)
+      aws-sdk-core (= 2.11.414)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -61,7 +61,7 @@ GEM
     benchmark-ips (2.7.2)
     bindata (2.4.4)
     buftok (0.2.0)
-    builder (3.2.3)
+    builder (3.2.4)
     cabin (0.9.0)
     childprocess (0.9.0)
       ffi (~> 1.0, >= 1.0.11)
@@ -373,7 +373,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-jms (3.1.1-java)
+    logstash-input-jms (3.1.2-java)
       jruby-jms (>= 1.2.0)
       logstash-codec-json (~> 3.0)
       logstash-codec-plain (~> 3.0)
