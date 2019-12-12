@@ -143,4 +143,34 @@ describe LogStash::Util::CloudSettingId do
       expect(subject.other_identifiers).to eq(["anotherid", "andanother"])
     end
   end
+
+  describe "when given acceptable input (with empty kibana uuid), the accessors:" do
+    let(:input) { "a-test:ZWNlLmhvbWUubGFuJHRlc3Qk" } # ece.home.lan$test$
+
+    it '#original has a value' do
+      expect(subject.original).to eq(input)
+    end
+    it '#decoded has a value' do
+      expect(subject.decoded).to eq("ece.home.lan$test$")
+    end
+    it '#label has a value' do
+      expect(subject.label).to eq("a-test")
+    end
+    it '#elasticsearch_host has a value' do
+      expect(subject.elasticsearch_host).to eq("test.ece.home.lan:443")
+    end
+    it '#elasticsearch_scheme has a value' do
+      expect(subject.elasticsearch_scheme).to eq("https")
+    end
+    it '#kibana_host has a value' do
+      # NOTE: kibana part is not relevant -> this is how python/beats(go) code behaves
+      expect(subject.kibana_host).to eq(".ece.home.lan:443")
+    end
+    it '#kibana_scheme has a value' do
+      expect(subject.kibana_scheme).to eq("https")
+    end
+    it '#to_s has a value of #decoded' do
+      expect(subject.to_s).to eq(subject.decoded)
+    end
+  end
 end
