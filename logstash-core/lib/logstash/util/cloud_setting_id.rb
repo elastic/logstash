@@ -57,7 +57,7 @@ module LogStash module Util class CloudSettingId
 
     @elasticsearch_host, @kibana_host, *@other_identifiers = segments
     @elasticsearch_host, @elasticsearch_port = @elasticsearch_host.split(":")
-    @kibana_host, @kibana_port = @kibana_host.split(":")
+    @kibana_host, @kibana_port = @kibana_host.split(":") if @kibana_host
     @elasticsearch_port ||= cloud_port
     @kibana_port ||= cloud_port
     @other_identifiers ||= []
@@ -72,7 +72,9 @@ module LogStash module Util class CloudSettingId
     if @kibana_host == "undefined"
       raise ArgumentError.new("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.")
     end
+
     @kibana_scheme = "https"
+    @kibana_host ||= String.new # non-sense really to have '.my-host:443' but we're mirroring others
     @kibana_host.concat(cloud_host)
     @kibana_host.concat(":#{@kibana_port}")
   end
