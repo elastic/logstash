@@ -24,6 +24,7 @@ import org.logstash.RubyUtil;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.DLQWriterAdapter;
 import org.logstash.common.NullDeadLetterQueueWriter;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
@@ -57,8 +58,7 @@ import java.util.UUID;
 public final class PluginFactoryExt {
 
     @JRubyClass(name = "PluginFactory")
-    public static final class Plugins extends RubyBasicObject
-        implements RubyIntegration.PluginFactory {
+    public static final class Plugins extends RubyBasicObject implements RubyIntegration.PluginFactory {
 
         private static final long serialVersionUID = 1L;
 
@@ -114,7 +114,6 @@ public final class PluginFactoryExt {
         }
 
         @SuppressWarnings("unchecked")
-        @Override
         public IRubyObject buildInput(final RubyString name, final SourceWithMetadata source,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
@@ -126,7 +125,6 @@ public final class PluginFactoryExt {
 
 
         @SuppressWarnings("unchecked")
-        @Override
         public AbstractOutputDelegatorExt buildOutput(final RubyString name, final SourceWithMetadata source,
                                                       final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
@@ -140,7 +138,6 @@ public final class PluginFactoryExt {
 
 
         @SuppressWarnings("unchecked")
-        @Override
         public AbstractFilterDelegatorExt buildFilter(final RubyString name, final SourceWithMetadata source, final IRubyObject args,
                                                       Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
@@ -151,7 +148,6 @@ public final class PluginFactoryExt {
         }
 
         @SuppressWarnings("unchecked")
-        @Override
         public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
             SourceWithMetadata emptySource = null;
             return plugin(
@@ -160,7 +156,6 @@ public final class PluginFactoryExt {
             );
         }
 
-        @Override
         public Codec buildDefaultCodec(String codecName) {
             SourceWithMetadata emptySource = null;
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
