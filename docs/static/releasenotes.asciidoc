@@ -28,7 +28,7 @@ This section summarizes the changes in the following releases:
 
 * Mention the path of DLQ to indicate DLQ if full for which pipeline https://github.com/elastic/logstash/pull/11280[#11280]
 * Fix: eliminates a crash that could occur at pipeline startup when the pipeline references a java-based plugin that had been installed via offline plugin pack https://github.com/elastic/logstash/pull/11340[#11340]
-* Support remove_field on metadata and tests [7.5 clean backport of #11334] https://github.com/elastic/logstash/pull/11342[#11342]
+* Fix: The common `remove_field` plugin option now correctly works on `@metadata` fields https://github.com/elastic/logstash/pull/11342[#11342]
 * Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
 * test codec against class name string to prevent class equivalence bug with a Delegator https://github.com/elastic/logstash/pull/11401[#11401]
 * update grok filter to 4.2.0 (for LS 7.5.1) https://github.com/elastic/logstash/pull/11432[#11432]
