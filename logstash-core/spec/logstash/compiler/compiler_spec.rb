@@ -32,6 +32,24 @@ describe LogStash::Compiler do
     end
   end
 
+  describe "compile with empty source" do
+    subject(:source_id) { "fake_sourcefile" }
+    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
+    subject(:compiled) { puts "PCOMP"; described_class.compile_pipeline(source_with_metadata, settings) }
+
+    let(:sources_with_metadata) do
+      [
+        org.logstash.common.SourceWithMetadata.new("str", "in_plugin", 0, 0, "input { input_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "out_plugin", 0, 0, "output { output_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "<empty>", 0, 0, "     ")
+      ]
+    end
+
+    it "should compile only the text parts" do
+      described_class.compile_sources(sources_with_metadata, false)
+    end
+  end
+
   describe "compiling to Pipeline" do
     subject(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }

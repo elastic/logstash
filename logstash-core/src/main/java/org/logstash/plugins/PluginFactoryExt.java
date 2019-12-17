@@ -12,7 +12,6 @@ import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
@@ -24,6 +23,7 @@ import org.logstash.RubyUtil;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.DLQWriterAdapter;
 import org.logstash.common.NullDeadLetterQueueWriter;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
@@ -115,61 +115,41 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line, final RubyInteger column,
+        public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
                                       final IRubyObject args, Map<String, Object> pluginArgs) {
             return plugin(
-                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args, pluginArgs
-            );
-        }
-
-        @JRubyMethod(required = 4)
-        public IRubyObject buildInput(final ThreadContext context, final IRubyObject[] args) {
-            return buildInput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(),
-                    args[3], null
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT, name.asJavaString(),
+                    source, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
-                                                      Map<String, Object> pluginArgs) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return (AbstractOutputDelegatorExt) plugin(
-                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args, pluginArgs
-            );
-        }
-
-        @JRubyMethod(required = 4)
-        public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
-                                                      final IRubyObject[] args) {
-            return buildOutput(
-                    (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3], null
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT, name.asJavaString(),
+                    source, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
-                                                      Map<String, Object> pluginArgs) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return (AbstractFilterDelegatorExt) plugin(
-                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER,
-                    name.asJavaString(), line.getIntValue(), column.getIntValue(),
-                    (Map<String, IRubyObject>) args, pluginArgs
+                    RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER, name.asJavaString(),
+                    source, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
+                                      Map<String, Object> pluginArgs) {
             return plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    name.asJavaString(), 0, 0, (Map<String, IRubyObject>) args, pluginArgs
+                    name.asJavaString(), source, (Map<String, IRubyObject>) args, pluginArgs
             );
         }
 
@@ -177,27 +157,25 @@ public final class PluginFactoryExt {
         public Codec buildDefaultCodec(String codecName) {
             return (Codec) JavaUtil.unwrapJavaValue(plugin(
                     RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                    codecName, 0, 0, Collections.emptyMap(), Collections.emptyMap()
+                    codecName, null, Collections.emptyMap(), Collections.emptyMap()
             ));
         }
 
         @SuppressWarnings("unchecked")
-        @JRubyMethod(required = 4, optional = 1)
+        @JRubyMethod(required = 3, optional = 1)
         public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
             return plugin(
                     context,
                     PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                     args[1].asJavaString(),
-                    args[2].convertToInteger().getIntValue(),
-                    args[3].convertToInteger().getIntValue(),
-                    args.length > 4 ? (Map<String, IRubyObject>) args[4] : new HashMap<>(),
+                    JavaUtil.unwrapIfJavaObject(args[2]),
+                    args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>(),
                     null
             );
         }
-
         @SuppressWarnings("unchecked")
         private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                                   final int line, final int column, final Map<String, IRubyObject> args,
+                                   SourceWithMetadata source, final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
             final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
@@ -205,17 +183,17 @@ public final class PluginFactoryExt {
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
             } else {
-                id = lir.getGraph().vertices().filter(
-                        v -> v.getSourceWithMetadata() != null
-                                && v.getSourceWithMetadata().getLine() == line
-                                && v.getSourceWithMetadata().getColumn() == column
-                ).findFirst().map(Vertex::getId).orElse(null);
+                id = lir.getGraph().vertices()
+                        .filter(v -> v.getSourceWithMetadata() != null
+                                && v.getSourceWithMetadata().equalsWithoutText(source))
+                        .findFirst()
+                        .map(Vertex::getId).orElse(null);
             }
             if (id == null) {
                 throw context.runtime.newRaiseException(
                         RubyUtil.CONFIGURATION_ERROR_CLASS,
-                        String.format(
-                                "Could not determine ID for %s/%s", type.rubyLabel().asJavaString(), name
+                        String.format("Could not determine ID for %s/%s, source don't matched: %s",
+                                type.rubyLabel().asJavaString(), name, source
                         )
                 );
             }

@@ -18,6 +18,7 @@ public class SourceWithMetadata implements HashableWithSource {
     private final Integer line;
     private final Integer column;
     private final String text;
+    private int linesCount;
 
     public String getProtocol() {
         return this.protocol;
@@ -60,11 +61,13 @@ public class SourceWithMetadata implements HashableWithSource {
           badAttributes.add(this.getText());
         }
 
-        if (!badAttributes.isEmpty()){
+        if (!badAttributes.isEmpty()) {
             String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") "
                     + this.toString();
             throw new IncompleteSourceWithMetadataException(message);
         }
+
+        this.linesCount = text.split("\\n").length;
     }
 
     public SourceWithMetadata(String protocol, String id, String text) throws IncompleteSourceWithMetadataException {
@@ -92,5 +95,16 @@ public class SourceWithMetadata implements HashableWithSource {
     // Fields used in the hashSource and hashCode methods to ensure uniqueness
     private Collection<Object> hashableAttributes() {
         return Arrays.asList(this.getId(), this.getProtocol(), this.getLine(), this.getColumn(), this.getText());
+    }
+
+    public int getLinesCount() {
+        return linesCount;
+    }
+
+    public boolean equalsWithoutText(SourceWithMetadata other) {
+        return getProtocol().equals(other.getProtocol())
+                && getId().equals(other.getId())
+                && getLine().equals(other.getLine())
+                && getColumn().equals(other.getColumn());
     }
 }

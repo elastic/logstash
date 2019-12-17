@@ -54,6 +54,10 @@ module LogStash; class BasePipeline < AbstractPipeline
     end
   end
 
+  def line_to_source(line, column)
+    pipeline_config.lookup_source(line, column)
+  end
+
   def reloadable?
     configured_as_reloadable? && reloadable_plugins?
   end
@@ -69,8 +73,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   private
 
 
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
+  def plugin(plugin_type, name, source, *args)
+    @plugin_factory.plugin(plugin_type, name, source, *args)
   end
 
   def default_logging_keys(other_keys = {})

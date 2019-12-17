@@ -93,6 +93,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private RubyString configString;
 
+    @SuppressWarnings("rawtypes")
+    private RubyArray configParts;
+
     private RubyString configHash;
 
     private IRubyObject settings;
@@ -121,12 +124,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
-        throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
+        throws NoSuchAlgorithmException {
         reporter = new PipelineReporterExt(
             context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
+        configParts = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
         configHash = context.runtime.newString(
             Hex.encodeHexString(
                 MessageDigest.getInstance("SHA1").digest(configString.getBytes())
@@ -153,10 +157,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
-            getSetting(context, "config.support_escapes").isTrue()
-        );
+        boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+        lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
         return this;
     }
 
@@ -370,7 +372,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
     @SuppressWarnings("rawtypes")
     public RubyArray getPipelineSourceDetails(final ThreadContext context) {
-        RubyArray res = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
+        RubyArray res = configParts;
         List<RubyString> pipelineSources = new ArrayList<>(res.size());
         for (IRubyObject part : res.toJavaArray()) {
             SourceWithMetadata sourceWithMetadata = part.toJava(SourceWithMetadata.class);

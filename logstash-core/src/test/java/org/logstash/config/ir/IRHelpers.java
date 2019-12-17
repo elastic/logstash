@@ -1,6 +1,9 @@
 package org.logstash.config.ir;
 
 import org.hamcrest.MatcherAssert;
+import org.jruby.RubyArray;
+import org.jruby.javasupport.JavaUtil;
+import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -164,5 +167,12 @@ public class IRHelpers {
             out.append(RANDOM_CHARS.charAt(pos));
         }
         return out.toString();
+    }
+
+
+    @SuppressWarnings("rawtypes")
+    public static RubyArray toSourceWithMetadata(String config) throws IncompleteSourceWithMetadataException {
+        return RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
+                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config)));
     }
 }

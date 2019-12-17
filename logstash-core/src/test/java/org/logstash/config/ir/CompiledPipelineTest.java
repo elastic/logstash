@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
@@ -25,6 +24,7 @@ import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
@@ -97,7 +97,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void buildsTrivialPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} output{mockoutput{}}", false
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} output{mockoutput{}}"), false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
@@ -116,7 +116,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void buildsStraightPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { mockfilter {} mockfilter {} mockfilter {}} output{mockoutput{}}",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} mockfilter {} mockfilter {}} output{mockoutput{}}"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -136,7 +136,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     public void buildsForkedPipeline() throws Exception {
-        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(IRHelpers.toSourceWithMetadata(
             "input {mockinput{}} filter { " +
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
@@ -144,7 +144,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
                 "}} " +
-                "} output {mockoutput{} }",
+                "} output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -268,9 +268,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         new CompiledPipeline(
                 ConfigCompiler.configToPipelineIR(
-                        "input {mockinput{}} output { " +
+                        IRHelpers.toSourceWithMetadata("input {mockinput{}} output { " +
                                 String.format("if \"z\" %s /z/ { ", operator) +
-                                " mockoutput{} } }",
+                                " mockoutput{} } }"),
                         false
                 ),
                 new CompiledPipelineTest.MockPluginFactory(
@@ -289,7 +289,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void equalityCheckOnCompositeField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { if 4 == [list] { mockaddfilter {} } if 5 == [map] { mockaddfilter {} } } output {mockoutput{} }",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if 4 == [list] { mockaddfilter {} } if 5 == [map] { mockaddfilter {} } } output {mockoutput{} }"),
                 false
         );
         final Collection<String> s = new ArrayList<>();
@@ -320,7 +320,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void conditionalWithNullField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { if [foo] == [bar] { mockaddfilter {} } } output {mockoutput{} }",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if [foo] == [bar] { mockaddfilter {} } } output {mockoutput{} }"),
                 false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -344,7 +344,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void conditionalNestedMetaFieldPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -369,7 +369,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void moreThan255Parents() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { " +
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
                 "mockaddfilter {} " +
@@ -377,7 +377,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 "mockfilter {} " +
                 Strings.repeat("} else if [foo] != \"bar\" {" +
                     "mockfilter {} ", 300) + " } } " +
-                "} output {mockoutput{} }",
+                "} output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -426,11 +426,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         new CompiledPipeline(
             ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                    IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                     String.format("if %s { ", conditional) +
                     " mockaddfilter {} " +
                     "} " +
-                    "} output {mockoutput{} }",
+                    "} output {mockoutput{} }"),
                 false
             ),
             new CompiledPipelineTest.MockPluginFactory(
@@ -476,28 +476,28 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return setupPlugin(name, inputs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-                                                      final RubyInteger column, final IRubyObject args,
-                                                      Map<String, Object> pluginArgs) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return new FilterDelegatorExt(
                 RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
                 .initForTesting(setupPlugin(name, filters));
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
+                                      Map<String, Object> pluginArgs) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 

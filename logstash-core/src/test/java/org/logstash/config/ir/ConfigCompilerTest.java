@@ -2,8 +2,13 @@ package org.logstash.config.ir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
+import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -13,8 +18,10 @@ public class ConfigCompilerTest extends RubyEnvTestCase {
 
     @Test
     public void testConfigToPipelineIR() throws Exception {
+        IRubyObject swm = JavaUtil.convertJavaToRuby(
+                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, "input {stdin{}} output{stdout{}}"));
         final PipelineIR pipelineIR =
-            ConfigCompiler.configToPipelineIR("input {stdin{}} output{stdout{}}", false);
+            ConfigCompiler.configToPipelineIR(RubyUtil.RUBY.newArray(swm), false);
         assertThat(pipelineIR.getOutputPluginVertices().size(), is(1));
         assertThat(pipelineIR.getFilterPluginVertices().size(), is(0));
     }
@@ -60,8 +67,9 @@ public class ConfigCompilerTest extends RubyEnvTestCase {
         assertThat(graphHash(config), is(first));
     }
 
-    private static String graphHash(final String config)
-        throws IncompleteSourceWithMetadataException {
-        return ConfigCompiler.configToPipelineIR(config, false).uniqueHash();
+    private static String graphHash(final String config) throws IncompleteSourceWithMetadataException {
+        IRubyObject swm = JavaUtil.convertJavaToRuby(
+                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config));
+        return ConfigCompiler.configToPipelineIR(RubyUtil.RUBY.newArray(swm), false).uniqueHash();
     }
 }

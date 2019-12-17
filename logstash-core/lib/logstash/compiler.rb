@@ -6,8 +6,14 @@ java_import org.logstash.config.ir.graph.Graph
 module LogStash; class Compiler
   include ::LogStash::Util::Loggable
 
+   def self.empty_or_space(str)
+     str.match(/\A\s*\Z/).nil? == false
+   end
+
   def self.compile_sources(sources_with_metadata, support_escapes)
-    graph_sections = sources_with_metadata.map do |swm|
+    graph_sections = sources_with_metadata.reject do |swm|
+       self.empty_or_space(swm.text)
+    end.map do |swm|
       self.compile_graph(swm, support_escapes)
     end
 

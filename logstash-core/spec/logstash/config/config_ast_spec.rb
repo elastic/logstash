@@ -209,6 +209,7 @@ describe LogStashConfigParser do
           eval(@code)
         end
         def plugin(*args);end
+        def line_to_source(*args);end
       end
     end
     context "(filters)" do
@@ -262,6 +263,7 @@ describe LogStashConfigParser do
           eval(@code)
         end
         def plugin(*args);end
+        def line_to_source(*args);end
       end
     end
 
