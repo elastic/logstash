@@ -5,6 +5,8 @@ module LogStash module Config
   class PipelineConfig
     include LogStash::Util::Loggable
 
+    LineToSource = Struct.new("LineToSource", :bounds, :source)
+
     attr_reader :source, :pipeline_id, :config_parts, :settings, :read_at
 
     def initialize(source, pipeline_id, config_parts, settings)
@@ -43,6 +45,31 @@ module LogStash module Config
       end
       logger.debug("Merged config")
       logger.debug("\n\n#{config_string}")
+    end
+
+    def lookup_source(global_line_number, source_column)
+      res = source_references.find { |line_to_source| line_to_source.bounds.include? global_line_number }
+      if res == nil
+        raise IndexError, "can't find the config segment related to line #{global_line_number}"
+      end
+      swm = res.source
+      SourceWithMetadata.new(swm.getProtocol(), swm.getId(), global_line_number + 1 - res.bounds.begin, source_column, swm.getText())
+    end
+
+    private
+    def source_references
+      @source_refs ||= begin
+        offset = 0
+        source_refs = []
+        config_parts.each do |config_part|
+          #line numbers starts from 1 in text files
+          lines_range = (config_part.getLine() + offset + 1..config_part.getLinesCount() + offset)
+          source_segment = LineToSource.new(lines_range, config_part)
+          source_refs << source_segment
+          offset += config_part.getLinesCount()
+        end
+        source_refs.freeze
+      end
     end
   end
 end end

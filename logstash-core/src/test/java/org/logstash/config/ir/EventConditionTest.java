@@ -55,12 +55,12 @@ public final class EventConditionTest extends RubyEnvTestCase {
     @SuppressWarnings("rawtypes")
     public void testInclusionWithFieldInField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
                         "output { " +
                         "  if [left] in [right] { " +
                         "    mockoutput{}" +
-                        "  } }",
+                        "  } }"),
                 false
         );
 
@@ -136,12 +136,12 @@ public final class EventConditionTest extends RubyEnvTestCase {
 
     private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
                         "output { " +
                         "  if " + condition + " { " +
                         "    mockoutput{}" +
-                        "  } }",
+                        "  } }"),
                 false
         );
 
