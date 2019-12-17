@@ -30,7 +30,7 @@ This section summarizes the changes in the following releases:
 * Fix: eliminates a crash that could occur at pipeline startup when the pipeline references a java-based plugin that had been installed via offline plugin pack https://github.com/elastic/logstash/pull/11340[#11340]
 * Fix: The common `remove_field` plugin option now correctly works on `@metadata` fields https://github.com/elastic/logstash/pull/11342[#11342]
 * Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
-* test codec against class name string to prevent class equivalence bug with a Delegator https://github.com/elastic/logstash/pull/11401[#11401]
+* Fix: eliminates a regression introduced in 7.2.0 where streaming-oriented inputs configured with payload-oriented codecs (`plain` or `json`) would use them as-is instead of using the appropriate line-oriented codec implementation (`lines` or `json_lines`, respectively) https://github.com/elastic/logstash/pull/11401[#11401]
 * update grok filter to 4.2.0 (for LS 7.5.1) https://github.com/elastic/logstash/pull/11432[#11432]
 * Fix: handle cloud-id with an empty kibana part https://github.com/elastic/logstash/pull/11435[#11435]
 * bump dependencies for patch release https://github.com/elastic/logstash/pull/11438[#11438]
