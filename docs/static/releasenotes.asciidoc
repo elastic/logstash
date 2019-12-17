@@ -39,44 +39,47 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-0,Logstash 6.1.0>>
 
 [[logstash-6-8-6]]
-* bump version to 6.8.6 https://github.com/elastic/logstash/pull/11327[#11327]
+=== Logstash 6.8.6 Release Notes
+
 * Support remove_field on metadata and tests https://github.com/elastic/logstash/pull/11334[#11334]
-* [DOCS] Fixes monitoring link https://github.com/elastic/logstash/pull/11341[#11341]
-* [DOCS] Replaces occurrences of xpack-ref https://github.com/elastic/logstash/pull/11366[#11366]
-* [DOCS] Added older release notice. https://github.com/elastic/logstash/pull/11409[#11409]
 
 ==== Plugins
 
 *Fluent Codec*
 
-* Handle EventTime msgpack extension to handle nanosecond precision time and add its parameter [#18](https://github.com/logstash-plugins/logstash-codec-fluent/pull/18)
+* Handle EventTime msgpack extension to handle nanosecond precision time and add its parameter https://github.com/logstash-plugins/logstash-codec-fluent/pull/18[#18]
 
 *Elasticsearch Filter*
 
-* Loosen restrictions on Elasticsearch gem ([#120](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120))
+* Loosen restrictions on Elasticsearch gem https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120[#120]
 
 *Grok Filter*
 
-*  Added: support for timeout_scope [#153](https://github.com/logstash-plugins/logstash-filter-grok/pull/153)
+*  Added support for timeout_scope. 
+Improved grok filter performance in multi-match scenarios. If you've noticed
+some slowdown in grok and you're using many more workers than cores, this update
+allows you to configure the
+https://github.com/logstash-plugins/logstash-filter-grok/blob/master/docs/index.asciidoc#timeout_scope[timeout_scope
+setting] to improve performance. https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]
 
 *Elasticsearch Input*
 
-* Loosen restrictions on Elasticsearch gem [#110](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/110)
+* Loosen restrictions on Elasticsearch gem https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/110[#110]
 
 *Gelf Input*
 
-* Updated library to gelfd2 [#48](https://github.com/logstash-plugins/logstash-input-gelf/pull/48)
+* Updated library to gelfd2 https://github.com/logstash-plugins/logstash-input-gelf/pull/48[#48]
 
 *Http Input*
 
-* Update netty and tcnative dependency [#118](https://github.com/logstash-plugins/logstash-input-http/issues/118)
+* Update netty and tcnative dependency https://github.com/logstash-plugins/logstash-input-http/issues/118[#118]
 
-* Added 201 to valid response codes [#114](https://github.com/logstash-plugins/logstash-input-http/issues/114)
+* Added 201 to valid response codes https://github.com/logstash-plugins/logstash-input-http/issues/114[#114]
 * Documented response\_code option
 
 *Jdbc Input*
 
-* Fixed issue where paging settings in configuration were not being honored [#361](https://github.com/logstash-plugins/logstash-input-jdbc/pull/361)
+* Fixed issue where paging settings in configuration were not being honored https://github.com/logstash-plugins/logstash-input-jdbc/pull/361[#361]
 
 *Rabbitmq Input*
 
@@ -84,14 +87,14 @@ This section summarizes the changes in the following releases:
 
 *Snmp Input*
 
-* Fixed GAUGE32 integer overflow [#65] (https://github.com/logstash-plugins/logstash-input-snmp/pull/65)
+* Fixed GAUGE32 integer overflow https://github.com/logstash-plugins/logstash-input-snmp/pull/65[#65]
 
-* Adding oid_path_length config option [#59] (https://github.com/logstash-plugins/logstash-input-snmp/pull/59)
-* Fixing bug with table support removing index value from OIDs [#60] )https://github.com/logstash-plugins/logstash-input-snmp/issues/60)
+* Adding oid_path_length config option https://github.com/logstash-plugins/logstash-input-snmp/pull/59[#59]
+* Fixing bug with table support removing index value from OIDs https://github.com/logstash-plugins/logstash-input-snmp/issues/60[#60]
 
-* Added information and other improvements to documentation [#57](https://github.com/logstash-plugins/logstash-input-snmp/pull/57)
+* Added information and other improvements to documentation https://github.com/logstash-plugins/logstash-input-snmp/pull/57[#57]
 
-* Added support for querying SNMP tables [#49] (https://github.com/logstash-plugins/logstash-input-snmp/pull/49)
+* Added support for querying SNMP tables https://github.com/logstash-plugins/logstash-input-snmp/pull/49[#49]
 * Changed three error messages in the base_client to include the target address for clarity in the logs.
 
 
