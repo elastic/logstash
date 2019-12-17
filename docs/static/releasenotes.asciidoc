@@ -50,7 +50,12 @@ This section summarizes the changes in the following releases:
 
 *Grok Filter*
 
-*  Added: support for timeout_scope https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]
+*  Added support for timeout_scope. 
+Improved grok filter performance in multi-match scenarios. If you've noticed
+some slowdown in grok and you're using many more workers than cores, this update
+allows you to configure the
+https://github.com/logstash-plugins/logstash-filter-grok/blob/master/docs/index.asciidoc#timeout_scope[timeout_scope
+setting] to improve performance. https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]*  Added: support for timeout_scope https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]
 
 *Jdbc_static Filter*
 
