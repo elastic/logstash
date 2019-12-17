@@ -23,10 +23,12 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+[[logstash-7-5-1]]
+=== Logstash 7.5.1 Release Notes
 
 * Mention the path of DLQ to indicate DLQ if full for which pipeline https://github.com/elastic/logstash/pull/11280[#11280]
 * Changed GemInstaller to don't blank  gemspec attribute https://github.com/elastic/logstash/pull/11340[#11340]
-* [7.5 clean backport of #11334] support remove_field on metadata and tests https://github.com/elastic/logstash/pull/11342[#11342]
+* Support remove_field on metadata and tests [7.5 clean backport of #11334] https://github.com/elastic/logstash/pull/11342[#11342]
 * Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
 * bump version to 7.5.1 https://github.com/elastic/logstash/pull/11363[#11363]
 * [DOCS] Replaces occurrences of xpack-ref https://github.com/elastic/logstash/pull/11366[#11366]
@@ -44,19 +46,19 @@ This section summarizes the changes in the following releases:
 
 *Elasticsearch Filter*
 
-* Loosen restrictions on Elasticsearch gem ([#120](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120))
+* Loosen restrictions on Elasticsearch gem https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120[#120]
 
 *Grok Filter*
 
-*  Added: support for timeout_scope [#153](https://github.com/logstash-plugins/logstash-filter-grok/pull/153)
+*  Added: support for timeout_scope https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]
 
 *Jdbc_static Filter*
 
-* Fixed issue with driver verification using Java 11 [#51](https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/51)
+* Fixed issue with driver verification using Java 11 https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/51[#51]
 
 *Jdbc_streaming Filter*
 
-* Fixed driver loading [#35](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/35)
+* Fixed driver loading https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/35[#35]
 
 * Added support for prepared statements [PR 32](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/32)
 * Added support for `sequel_opts` to pass options to the 3rd party Sequel library.
