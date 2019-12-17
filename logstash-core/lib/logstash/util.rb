@@ -39,7 +39,12 @@ module LogStash::Util
 
   def self.get_thread_id(thread)
     if RUBY_ENGINE == "jruby"
-      JRuby.reference(thread).native_thread.id
+      native_thread = JRuby.reference(thread).native_thread
+      if native_thread
+        native_thread.id
+      else
+        raise Exception.new("Native thread is nil")
+      end
     else
       raise Exception.new("Native thread IDs aren't supported outside of JRuby")
     end
