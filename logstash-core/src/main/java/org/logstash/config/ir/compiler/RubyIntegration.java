@@ -1,9 +1,9 @@
 package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
-import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.common.SourceWithMetadata;
 
 import java.util.Map;
 
@@ -21,16 +21,17 @@ public final class RubyIntegration {
      */
     public interface PluginFactory {
 
-        IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args, Map<String, Object> pluginArgs);
+        IRubyObject buildInput(RubyString name, SourceWithMetadata source,
+                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        AbstractOutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args, Map<String, Object> pluginArgs);
+        AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source,
+                                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        AbstractFilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column, IRubyObject args,
-            Map<String, Object> pluginArgs);
+        AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args,
+                                               Map<String, Object> pluginArgs);
 
-        IRubyObject buildCodec(RubyString name, IRubyObject args, Map<String, Object> pluginArgs);
+        IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args,
+                               Map<String, Object> pluginArgs);
 
         Codec buildDefaultCodec(String codecName);
 

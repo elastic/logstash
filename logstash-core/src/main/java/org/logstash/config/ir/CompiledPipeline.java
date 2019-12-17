@@ -132,8 +132,7 @@ public final class CompiledPipeline {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
-                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
             ));
         });
         return res;
@@ -150,8 +149,7 @@ public final class CompiledPipeline {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve)
+                    RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
             ));
         }
         return res;
@@ -167,8 +165,7 @@ public final class CompiledPipeline {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
             IRubyObject o = pluginFactory.buildInput(
-                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def), convertJavaArgs(def, cve));
+                    RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve));
             nodes.add(o);
         });
         return nodes;
@@ -189,10 +186,11 @@ public final class CompiledPipeline {
             final Object toput;
             if (value instanceof PluginStatement) {
                 final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    codec.getArguments()
+                        source, Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                        codec.getArguments()
                 );
             } else {
                 toput = value;
@@ -217,10 +215,11 @@ public final class CompiledPipeline {
             final IRubyObject toput;
             if (value instanceof PluginStatement) {
                 final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
                 Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
                 toput = pluginFactory.buildCodec(
                         RubyUtil.RUBY.newString(codec.getName()),
-                        Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                        source, Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
                         codecArgs
                 );
                 Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
