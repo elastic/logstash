@@ -23,10 +23,6 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
-[[logstash-7-5-1]]
-=== Logstash 7.5.1 Release Notes
-
-=== Logstash Pull Requests with label v7.5.1
 
 * Mention the path of DLQ to indicate DLQ if full for which pipeline https://github.com/elastic/logstash/pull/11280[#11280]
 * Changed GemInstaller to don't blank  gemspec attribute https://github.com/elastic/logstash/pull/11340[#11340]
