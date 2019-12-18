@@ -26,7 +26,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-5-1]]
 === Logstash 7.5.1 Release Notes
 
-* Mention the path of DLQ to indicate DLQ if full for which pipeline https://github.com/elastic/logstash/pull/11280[#11280]
+* Improved usefullness of log messages when reporting full DLQ by including the relevant DLQ's path https://github.com/elastic/logstash/pull/11280[#11280]
 * Fix: eliminates a crash that could occur at pipeline startup when the pipeline references a java-based plugin that had been installed via offline plugin pack https://github.com/elastic/logstash/pull/11340[#11340]
 * Fix: The common `remove_field` plugin option now correctly works on `@metadata` fields https://github.com/elastic/logstash/pull/11342[#11342]
 * Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
