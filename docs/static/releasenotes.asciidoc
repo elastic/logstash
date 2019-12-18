@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-5-1,Logstash 7.5.1>>
 * <<logstash-7-5-0,Logstash 7.5.0>>
 * <<logstash-7-4-2,Logstash 7.4.2>>
 * <<logstash-7-4-1,Logstash 7.4.1>>
@@ -21,6 +22,79 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-5-1]]
+=== Logstash 7.5.1 Release Notes
+
+* Improved usefullness of log messages when reporting full DLQ by including the relevant DLQ's path https://github.com/elastic/logstash/pull/11280[#11280]
+* Fix: eliminates a crash that could occur at pipeline startup when the pipeline references a java-based plugin that had been installed via offline plugin pack https://github.com/elastic/logstash/pull/11340[#11340]
+* Fix: The common `remove_field` plugin option now correctly works on `@metadata` fields https://github.com/elastic/logstash/pull/11342[#11342]
+* Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
+* Fix: eliminates a regression introduced in 7.2.0 where streaming-oriented inputs configured with payload-oriented codecs (`plain` or `json`) would use them as-is instead of using the appropriate line-oriented codec implementation (`lines` or `json_lines`, respectively) https://github.com/elastic/logstash/pull/11401[#11401]
+* Fix: handle cloud-id with an empty kibana part https://github.com/elastic/logstash/pull/11435[#11435]
+* bump dependencies for patch release https://github.com/elastic/logstash/pull/11438[#11438]
+
+
+==== Plugins
+
+*Dns Filter*
+
+* Added documentation on the `nameserver` option for relying on `/etc/resolv.conf` to configure the resolver
+
+*Elasticsearch Filter*
+
+* Loosen restrictions on Elasticsearch gem https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120[#120]
+
+*Grok Filter*
+
+* Improved grok filter performance in multi-match scenarios. If you've noticed
+some slowdown in grok and you're using many more workers than cores, this update
+allows you to configure the
+https://github.com/logstash-plugins/logstash-filter-grok/blob/master/docs/index.asciidoc#timeout_scope[timeout_scope
+setting] to improve performance. https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153] 
+
+*Jdbc_static Filter*
+
+* Fixed issue with driver verification using Java 11 https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/51[#51]
+
+*Jdbc_streaming Filter*
+
+* Fixed driver loading https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/35[#35]
+* Added support for prepared statements https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/32[#32]
+* Added support for `sequel_opts` to pass options to the 3rd party Sequel library.
+* Added support for driver loading in JDK 9+ https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/issues/25[#25]
+* Added support for multiple driver jars https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/issues/21[#21]
+
+*Elasticsearch Input*
+
+* Loosen restrictions on Elasticsearch gem https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/110[#110]
+
+*Http Input*
+
+* Update netty and tcnative dependency https://github.com/logstash-plugins/logstash-input-http/issues/118[#118]
+* Added 201 to valid response codes https://github.com/logstash-plugins/logstash-input-http/issues/114[#114]
+* Documented response\_code option
+
+*Jdbc Input*
+
+* Fixed issue where paging settings in configuration were not being honored https://github.com/logstash-plugins/logstash-input-jdbc/pull/361[#361]
+* Fix issue with driver loading https://github.com/logstash-plugins/logstash-input-jdbc/pull/356[#356]
+* Added documentation to provide more info about jdbc driver loading https://github.com/logstash-plugins/logstash-input-jdbc/pull/352[#352]
+
+*Jms Input*
+
+* Docs: Added additional troubleshooting information https://github.com/logstash-plugins/logstash-input-jms/pull/38[#38]
+
+*Rabbitmq Integration*
+
+* Fixes issue in Output where failure to register connection recovery hooks prevented the output from starting
+* Improves Input Plugin documentation to better align with upstream guidance https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/4[#4]
+
+*Elasticsearch Output*
+
+* Opened type removal logic for extension. This allows X-Pack Elasticsearch output to continue using types for special case `/_monitoring` bulk endpoint, enabling a fix for Logstash #11312. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/900[#900]
+* Fixed 8.x type removal compatibility issue https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/892[#892]
+
 
 [[logstash-7-5-0]]
 === Logstash 7.5.0 Release Notes
