@@ -31,7 +31,6 @@ This section summarizes the changes in the following releases:
 * Fix: The common `remove_field` plugin option now correctly works on `@metadata` fields https://github.com/elastic/logstash/pull/11342[#11342]
 * Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
 * Fix: eliminates a regression introduced in 7.2.0 where streaming-oriented inputs configured with payload-oriented codecs (`plain` or `json`) would use them as-is instead of using the appropriate line-oriented codec implementation (`lines` or `json_lines`, respectively) https://github.com/elastic/logstash/pull/11401[#11401]
-* update grok filter to 4.2.0, adding `timeout_scope` option which can be used to reduce performance overhead https://github.com/elastic/logstash/pull/11432[#11432]
 * Fix: handle cloud-id with an empty kibana part https://github.com/elastic/logstash/pull/11435[#11435]
 * bump dependencies for patch release https://github.com/elastic/logstash/pull/11438[#11438]
 
@@ -48,8 +47,7 @@ This section summarizes the changes in the following releases:
 
 *Grok Filter*
 
-*  Added support for timeout_scope. 
-Improved grok filter performance in multi-match scenarios. If you've noticed
+* Improved grok filter performance in multi-match scenarios. If you've noticed
 some slowdown in grok and you're using many more workers than cores, this update
 allows you to configure the
 https://github.com/logstash-plugins/logstash-filter-grok/blob/master/docs/index.asciidoc#timeout_scope[timeout_scope
