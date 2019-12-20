@@ -38,8 +38,11 @@ public class ConfigVariableExpander implements AutoCloseable {
 
     /**
      * Creates a ConfigVariableExpander that doesn't lookup any secreted placeholder.
+     *
+     * @param envVarProvider EnvironmentVariableProvider to use as source of substitutions
+     * @return an variable expander that uses envVarProvider as source
      * */
-    static ConfigVariableExpander withoutSecret(EnvironmentVariableProvider envVarProvider) {
+    public static ConfigVariableExpander withoutSecret(EnvironmentVariableProvider envVarProvider) {
         return new ConfigVariableExpander(null, envVarProvider);
     }
 

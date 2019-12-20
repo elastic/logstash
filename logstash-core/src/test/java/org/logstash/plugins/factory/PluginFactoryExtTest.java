@@ -17,8 +17,7 @@
  * under the License.
  */
 
-
-package org.logstash.plugins;
+package org.logstash.plugins.factory;
 
 import co.elastic.logstash.api.*;
 import org.jruby.RubyArray;
@@ -34,6 +33,8 @@ import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.RubyEnvTestCase;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
+import org.logstash.plugins.MetricTestCase;
+import org.logstash.plugins.PluginLookup;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -44,10 +45,9 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertEquals;
 import static org.logstash.RubyUtil.NAMESPACED_METRIC_CLASS;
 import static org.logstash.RubyUtil.RUBY;
-import static org.logstash.plugins.MetricTestCase.runRubyScript;
 
 /**
- * Tests for {@link PluginFactoryExt.Plugins}.
+ * Tests for {@link PluginFactoryExt}.
  */
 public final class PluginFactoryExtTest extends RubyEnvTestCase {
 
@@ -89,11 +89,11 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
         SourceWithMetadata sourceWithMetadata = new SourceWithMetadata("proto", "path", 1, 8, "input {mockinput{ id => \"${CUSTOM}\"}} output{mockoutput{}}");
         final PipelineIR pipelineIR = compilePipeline(sourceWithMetadata);
 
-        PluginFactoryExt.Metrics metricsFactory = createMetricsFactory();
-        PluginFactoryExt.ExecutionContext execContextFactory = createExecutionContextFactory();
+        PluginMetricsFactoryExt metricsFactory = createMetricsFactory();
+        ExecutionContextFactoryExt execContextFactory = createExecutionContextFactory();
         Map<String, String> envVars = new HashMap<>();
         envVars.put("CUSTOM", "test");
-        PluginFactoryExt.Plugins sut = new PluginFactoryExt.Plugins(RubyUtil.RUBY, RubyUtil.PLUGIN_FACTORY_CLASS,
+        PluginFactoryExt sut = new PluginFactoryExt(RubyUtil.RUBY, RubyUtil.PLUGIN_FACTORY_CLASS,
                 mockPluginResolver);
         sut.init(pipelineIR, metricsFactory, execContextFactory, RubyUtil.FILTER_DELEGATOR_CLASS, envVars::get);
 
@@ -116,24 +116,24 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
         return ConfigCompiler.configToPipelineIR(sourcesWithMetadata, false);
     }
 
-    private static PluginFactoryExt.ExecutionContext createExecutionContextFactory() {
-        PluginFactoryExt.ExecutionContext execContextFactory = new PluginFactoryExt.ExecutionContext(RubyUtil.RUBY,
+    private static ExecutionContextFactoryExt createExecutionContextFactory() {
+        ExecutionContextFactoryExt execContextFactory = new ExecutionContextFactoryExt(RubyUtil.RUBY,
                 RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS);
         execContextFactory.initialize(RubyUtil.RUBY.getCurrentContext(), null, null,
                 RubyUtil.RUBY.newString("no DLQ"));
         return execContextFactory;
     }
 
-    private static PluginFactoryExt.Metrics createMetricsFactory() {
+    private static PluginMetricsFactoryExt createMetricsFactory() {
         final IRubyObject metricWithCollector =
-                runRubyScript("require \"logstash/instrument/collector\"\n" +
+                MetricTestCase.runRubyScript("require \"logstash/instrument/collector\"\n" +
                         "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
 
         NamespacedMetricExt metric = new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
                 .initialize(RUBY.getCurrentContext(), metricWithCollector, RUBY.newEmptyArray());
 
 
-        PluginFactoryExt.Metrics metricsFactory = new PluginFactoryExt.Metrics(RubyUtil.RUBY, RubyUtil.PLUGIN_METRIC_FACTORY_CLASS);
+        PluginMetricsFactoryExt metricsFactory = new PluginMetricsFactoryExt(RubyUtil.RUBY, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS);
         metricsFactory.initialize(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newString("main"), metric);
         return metricsFactory;
     }

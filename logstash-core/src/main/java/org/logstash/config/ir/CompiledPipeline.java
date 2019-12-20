@@ -119,7 +119,7 @@ public final class CompiledPipeline {
             filters = setupFilters(cve);
             outputs = setupOutputs(cve);
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage());
+            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
     }
 
