@@ -41,12 +41,16 @@ public class Dots implements Codec {
 
     private final String id;
 
-    public Dots(final Configuration configuration, final Context context) {
-        this();
+    public Dots(final String id, final Configuration configuration, final Context context) {
+        this((id != null && !id.isEmpty()) ? id : UUID.randomUUID().toString());
     }
 
-    private Dots() {
-        this.id = UUID.randomUUID().toString();
+    public Dots(final Configuration configuration, final Context context) {
+        this(UUID.randomUUID().toString());
+    }
+
+    private Dots(String id) {
+        this.id = id;
     }
 
     @Override
@@ -66,7 +70,7 @@ public class Dots implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new Dots();
+        return new Dots(UUID.randomUUID().toString());
     }
 
     @Override
