@@ -51,7 +51,7 @@ public abstract class MetricTestCase extends RubyEnvTestCase {
         executionContext = new ExecutionContextExt(RUBY, EXECUTION_CONTEXT_CLASS);
     }
 
-    protected static IRubyObject runRubyScript(String script) {
+    public static IRubyObject runRubyScript(String script) {
         IRubyObject m = RUBY.evalScriptlet(script);
         return m;
     }

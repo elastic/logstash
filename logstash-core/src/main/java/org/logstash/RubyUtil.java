@@ -73,9 +73,11 @@ import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
-import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
 import org.logstash.util.UtilExt;
+import org.logstash.plugins.factory.ExecutionContextFactoryExt;
+import org.logstash.plugins.factory.PluginMetricsFactoryExt;
+import org.logstash.plugins.factory.PluginFactoryExt;
 
 import java.util.stream.Stream;
 
@@ -193,7 +195,7 @@ public final class RubyUtil {
 
     public static final RubyClass EXECUTION_CONTEXT_FACTORY_CLASS;
 
-    public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
+    public static final RubyClass PLUGIN_METRICS_FACTORY_CLASS;
 
     public static final RubyClass PLUGIN_FACTORY_CLASS;
 
@@ -259,16 +261,16 @@ public final class RubyUtil {
         METRIC_SNAPSHOT_CLASS.defineAnnotatedMethods(SnapshotExt.class);
         EXECUTION_CONTEXT_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
             "ExecutionContextFactory", RUBY.getObject(),
-            PluginFactoryExt.ExecutionContext::new
+            ExecutionContextFactoryExt::new
         );
-        PLUGIN_METRIC_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
-            "PluginMetricFactory", RUBY.getObject(), PluginFactoryExt.Metrics::new
+        PLUGIN_METRICS_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "PluginMetricsFactory", RUBY.getObject(), PluginMetricsFactoryExt::new
         );
         SHUTDOWN_WATCHER_CLASS =
             setupLogstashClass(ShutdownWatcherExt::new, ShutdownWatcherExt.class);
-        PLUGIN_METRIC_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Metrics.class);
+        PLUGIN_METRICS_FACTORY_CLASS.defineAnnotatedMethods(PluginMetricsFactoryExt.class);
         EXECUTION_CONTEXT_FACTORY_CLASS.defineAnnotatedMethods(
-            PluginFactoryExt.ExecutionContext.class
+            ExecutionContextFactoryExt.class
         );
         METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
             "MetricException", RUBY.getException(), MetricExt.MetricException::new
@@ -546,9 +548,9 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
         PLUGIN_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
-            "PluginFactory", RUBY.getObject(), PluginFactoryExt.Plugins::new
+            "PluginFactory", RUBY.getObject(), PluginFactoryExt::new
         );
-        PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Plugins.class);
+        PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.class);
         UNIVERSAL_PLUGIN_CLASS =
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         EVENT_DISPATCHER_CLASS =
