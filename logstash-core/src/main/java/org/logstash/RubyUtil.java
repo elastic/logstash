@@ -55,6 +55,7 @@ import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.util.UtilExt;
 
 import java.util.stream.Stream;
 
@@ -308,6 +309,7 @@ public final class RubyUtil {
         NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
         NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
+        UTIL_MODULE.defineAnnotatedMethods(UtilExt.class);
         ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
