@@ -46,7 +46,7 @@ module LogStash::Util
   def self.thread_info(thread)
     # When the `thread` is dead, `Thread#backtrace` returns `nil`; fall back to an empty array.
     backtrace = (thread.backtrace || []).map do |line|
-      line.gsub(LogStash::Environment::LOGSTASH_HOME, "[...]")
+      line.sub(LogStash::Environment::LOGSTASH_HOME, "[...]")
     end
 
     blocked_on = case backtrace.first
