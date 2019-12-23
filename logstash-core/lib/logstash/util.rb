@@ -11,10 +11,8 @@ module LogStash::Util
   def self.set_thread_name(name)
     previous_name = Java::java.lang.Thread.currentThread.getName() if block_given?
 
-    if RUBY_ENGINE == "jruby"
-      # Keep java and ruby thread names in sync.
-      Java::java.lang.Thread.currentThread.setName(name)
-    end
+    # Keep java and ruby thread names in sync.
+    Java::java.lang.Thread.currentThread.setName(name)
     Thread.current[:name] = name
 
     if UNAME == "linux"
