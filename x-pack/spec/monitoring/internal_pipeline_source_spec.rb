@@ -101,7 +101,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
         end
       end
 
-      %w(basic standard trial gold platinum).each  do |license_type|
+      LogStash::LicenseChecker::LICENSE_TYPES.each  do |license_type|
         context "With a valid #{license_type} license" do
           let(:license_type) { license_type }
           let(:license) do

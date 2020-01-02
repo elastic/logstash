@@ -17,7 +17,7 @@ disabled for security reasons. To resume monitoring:
 --
 [source, sh]
 ---------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_password
+PUT _security/user/logstash_system/_password
 {
   "password": "newpassword"
 }
@@ -30,7 +30,7 @@ PUT _xpack/security/user/logstash_system/_password
 --
 [source, sh]
 ---------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_enable
+PUT _security/user/logstash_system/_enable
 ---------------------------------------------------------------
 //CONSOLE
 --

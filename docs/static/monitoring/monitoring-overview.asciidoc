@@ -5,8 +5,8 @@
 Use the {stack} {monitor-features} to gain insight into the health of
 {ls} instances running in your environment.
 
-For an introduction to monitoring your Elastic stack, including {es}
-and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].
+For an introduction to monitoring your Elastic stack, see
+{ref}/monitor-elasticsearch-cluster.html[Monitoring a cluster].
 
 
 [float]

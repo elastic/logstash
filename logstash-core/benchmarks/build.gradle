@@ -19,7 +19,7 @@ buildscript {
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.17'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
   }
 }
 
@@ -32,15 +32,13 @@ jar {
 }
 
 ext {
-  jmh = 1.18
+  jmh = 1.22
 }
 
 dependencies {
   compile project(':logstash-core')
   compile "org.openjdk.jmh:jmh-core:$jmh"
-  compile "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-  compile "org.openjdk.jmh:jmh-core-benchmarks:$jmh"
-  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
+  annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
   compile 'com.google.guava:guava:21.0'
   compile 'commons-io:commons-io:2.5'
   runtime 'joda-time:joda-time:2.8.2'
@@ -68,7 +66,7 @@ task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logsta
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+UseParNewGC", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+            "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
             "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
             "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
             shadowJar.archivePath,

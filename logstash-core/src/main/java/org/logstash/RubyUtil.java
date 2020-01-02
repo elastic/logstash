@@ -5,7 +5,9 @@ import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
@@ -46,12 +48,14 @@ import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.SnapshotExt;
+import org.logstash.log.DeprecationLoggerExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.util.UtilExt;
 
 import java.util.stream.Stream;
 
@@ -176,6 +180,8 @@ public final class RubyUtil {
     public static final RubyClass LOGGER;
 
     public static final RubyModule LOGGABLE_MODULE;
+
+    public static final RubyClass DEPRECATION_LOGGER;
 
     public static final RubyClass SLOW_LOGGER;
 
@@ -303,6 +309,7 @@ public final class RubyUtil {
         NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
         NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
+        UTIL_MODULE.defineAnnotatedMethods(UtilExt.class);
         ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
@@ -446,6 +453,10 @@ public final class RubyUtil {
         SLOW_LOGGER = loggingModule.defineClassUnder(
             "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+        DEPRECATION_LOGGER = loggingModule.defineClassUnder(
+            "DeprecationLogger", RUBY.getObject(), DeprecationLoggerExt::new);
+        DEPRECATION_LOGGER.defineAnnotatedMethods(DeprecationLoggerExt.class);
+
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         ABSTRACT_PIPELINE_CLASS =
@@ -592,6 +603,15 @@ public final class RubyUtil {
         );
         clazz.defineAnnotatedMethods(jclass);
         return clazz;
+    }
+
+    /**
+     * Convert a Java object to a Ruby representative.
+     * @param javaObject the object to convert (might be null)
+     * @return a Ruby wrapper
+     */
+    public static IRubyObject toRubyObject(Object javaObject) {
+        return JavaUtil.convertJavaToRuby(RUBY, javaObject);
     }
 
 }

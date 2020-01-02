@@ -127,7 +127,8 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:2.12.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.12.1'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.12.1'
     compile 'org.apache.logging.log4j:log4j-core:2.12.1'
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
     compile('org.reflections:reflections:0.9.11') {

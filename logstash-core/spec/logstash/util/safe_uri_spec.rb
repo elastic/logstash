@@ -17,6 +17,22 @@ module LogStash module Util
       end
     end
 
+    describe "equality" do
+      subject { LogStash::Util::SafeURI.new("https://localhost:9200/uri") }
+
+      it "should eql/== to dup" do
+        expect(subject == subject.clone).to be true
+        expect(subject == subject.dup).to be true
+        expect(subject.eql? subject.dup).to be true
+      end
+
+      it "should eql to same uri" do
+        uri = LogStash::Util::SafeURI.new("https://localhost:9200/uri")
+        expect(uri.eql? subject).to be true
+        expect(subject.hash).to eql uri.hash
+      end
+    end
+
     describe "handling escapable fields" do
       let(:user) { "u%20" }
       let(:password) { "p%20ss" }
@@ -70,6 +86,53 @@ module LogStash module Util
             end
           end
         end
+      end
+    end
+
+    describe "normalization" do
+      subject { LogStash::Util::SafeURI.new("HTTPS://FOO:BaR@S11.ORG") }
+
+      it "should normalize" do # like URI().normalize
+        subject.normalize!
+        expect(subject.to_s).to eq('https://FOO:xxxxxx@s11.org/')
+      end
+    end
+
+    describe "writers" do
+      subject { LogStash::Util::SafeURI.new("http://sample.net") }
+
+      it "should update :user" do
+        subject.user = 'user'
+        expect(subject.user).to eq('user')
+        expect(subject.to_s).to eq('http://user@sample.net/')
+      end
+
+      it "should update :password" do
+        subject.user = 'user'
+        subject.password = 'pass'
+        expect(subject.password).to eq('pass')
+      end
+
+      it "should update :path" do
+        subject.path = '/path'
+        expect(subject.path).to eq('/path')
+        expect(subject.to_s).to eq('http://sample.net/path')
+
+        subject.path = ''
+        expect(subject.path).to eq('/')
+        expect(subject.to_s).to eq('http://sample.net/')
+      end
+
+      it "should update :host" do
+        subject.host = '127.0.0.1'
+        expect(subject.host).to eq('127.0.0.1')
+        expect(subject.to_s).to eq('http://127.0.0.1/')
+      end
+
+      it "should update :scheme" do
+        subject.update(:scheme, 'https')
+        expect(subject.scheme).to eq('https')
+        expect(subject.to_s).to eq('https://sample.net/')
       end
     end
   end

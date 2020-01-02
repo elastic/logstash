@@ -57,8 +57,8 @@ def elasticsearch(options = {})
 end
 
 def start_es_xpack_trial
-  if elasticsearch_client.perform_request(:get, '_xpack/license').body['license']['type'] != 'trial'
-    resp = elasticsearch_client.perform_request(:post, '_xpack/license/start_trial', "acknowledge" => true)
+  if elasticsearch_client.perform_request(:get, '_license').body['license']['type'] != 'trial'
+    resp = elasticsearch_client.perform_request(:post, '_license/start_trial', "acknowledge" => true)
     if resp.body["trial_was_started"] != true
       raise "Trial not started: #{resp.body}"
     end

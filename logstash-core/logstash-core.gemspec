@@ -53,8 +53,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1"
-  gem.add_runtime_dependency "rack", '~> 1', '>= 1.6.11'
-  gem.add_runtime_dependency "sinatra", '~> 1', '>= 1.4.6'
+  gem.add_runtime_dependency "rack", '~> 2'
+  gem.add_runtime_dependency "sinatra", '~> 2'
   gem.add_runtime_dependency 'puma', '~> 4'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.10" # >= 0.9.13 Required to support TLSv1.2
 
@@ -69,6 +69,6 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "elasticsearch", "~> 5"
+  gem.add_runtime_dependency "elasticsearch", '~> 7'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 end

@@ -13,7 +13,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,39 +24,21 @@ public class LogstashConfigurationFactoryTest {
 
     private static final String CONFIG = "log4j2-log-pipeline-test.properties";
 
-    private static Map<String, String> systemPropertiesDump = new HashMap<>();
     private static Map<String, String> dumpedLog4jThreadContext;
+    private static SystemPropsSnapshotHelper snapshotHelper = new SystemPropsSnapshotHelper();
 
     @BeforeClass
     public static void beforeClass() {
-        dumpSystemProperty("log4j.configurationFile");
-        dumpSystemProperty("ls.log.format");
-        dumpSystemProperty("ls.logs");
-        dumpSystemProperty(LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
-
+        snapshotHelper.takeSnapshot("log4j.configurationFile", "ls.log.format", "ls.logs",
+                LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
         dumpedLog4jThreadContext = ThreadContext.getImmutableContext();
-    }
-
-    private static void dumpSystemProperty(String propertyName) {
-        systemPropertiesDump.put(propertyName, System.getProperty(propertyName));
     }
 
     @AfterClass
     public static void afterClass() {
         ThreadContext.putAll(dumpedLog4jThreadContext);
-
-        restoreSystemProperty("log4j.configurationFile");
-        restoreSystemProperty("ls.log.format");
-        restoreSystemProperty("ls.logs");
-        restoreSystemProperty(LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
-    }
-
-    private static void restoreSystemProperty(String propertyName) {
-        if (systemPropertiesDump.get(propertyName) == null) {
-            System.clearProperty(propertyName);
-        } else {
-            System.setProperty(propertyName, systemPropertiesDump.get(propertyName));
-        }
+        snapshotHelper.restoreSnapshot("log4j.configurationFile", "ls.log.format", "ls.logs",
+                LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
     }
 
     @Before

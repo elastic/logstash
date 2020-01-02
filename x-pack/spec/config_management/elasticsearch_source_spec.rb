@@ -336,8 +336,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         end
       end
 
-
-      %w(standard trial standard gold platinum).each do |license_type|
+      # config management can be used with any license type except basic
+      (::LogStash::LicenseChecker::LICENSE_TYPES - ["basic"]).each do |license_type|
         context "With a valid #{license_type} license, it should return a pipeline" do
 
           before do
@@ -356,7 +356,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           end
         end
       end
-
     end
 
     context "with multiples `pipeline_id` configured" do

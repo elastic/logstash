@@ -5,6 +5,16 @@ class PluginVersionWorking
   EXPORT_FILE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", "plugins_version_docs.json"))
   PLUGIN_METADATA = JSON.parse(IO.read(::File.expand_path(::File.join(::File.dirname(__FILE__), "plugins-metadata.json"))))
 
+  PLUGIN_PACKAGE_TYPES = %w(
+    input
+    output
+    codec
+    filter
+    integration
+  ).freeze
+
+  PLUGIN_PACKAGE_NAME_PATTERN = %r{^logstash-#{Regexp::union(PLUGIN_PACKAGE_TYPES)}-}
+
   # Simple class to make sure we get the right version for the document
   # since we will record multiple versions for one plugin
   class VersionDependencies
@@ -117,7 +127,7 @@ class PluginVersionWorking
     # Bundler doesn't seem to provide us with `spec.metadata` for remotely
     # discovered plugins (via rubygems.org api), so we have to choose by
     # a name pattern instead of by checking spec.metadata["logstash_plugin"]
-    definition.resolve.select { |spec| spec.name =~ /^logstash-(input|filter|output|codec)-/ }.each do |spec|
+    definition.resolve.select { |spec| spec.name =~ PLUGIN_PACKAGE_NAME_PATTERN }.each do |spec|
       dependencies[spec.name] ||= []
       dependencies[spec.name] << VersionDependencies.new(spec.version, from)
     end

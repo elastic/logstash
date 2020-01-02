@@ -46,6 +46,7 @@ class LogStash::Plugin
 
   def initialize(params=nil)
     @logger = self.logger
+    @deprecation_logger = self.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
     @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),

@@ -1,10 +1,6 @@
 package org.logstash.plugins;
 
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.DeadLetterQueueWriter;
-import co.elastic.logstash.api.EventFactory;
-import co.elastic.logstash.api.NamespacedMetric;
-import co.elastic.logstash.api.Plugin;
+import co.elastic.logstash.api.*;
 import org.apache.logging.log4j.Logger;
 
 public class TestContext implements Context {
@@ -21,6 +17,11 @@ public class TestContext implements Context {
 
     @Override
     public Logger getLogger(Plugin plugin) {
+        return null;
+    }
+
+    @Override
+    public DeprecationLogger getDeprecationLogger(Plugin plugin) {
         return null;
     }
 
