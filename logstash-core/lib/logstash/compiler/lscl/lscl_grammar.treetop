@@ -234,7 +234,7 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule selector_element
-    "[" [^\],]+ "]"
+    "[" [^\]\[,]+ "]"
     <LogStash::Compiler::LSCL::AST::SelectorElement>
   end
 

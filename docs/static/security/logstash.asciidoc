@@ -44,7 +44,7 @@ management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/role/logstash_writer
+POST _security/role/logstash_writer
 {
   "cluster": ["manage_index_templates", "monitor", "manage_ilm"], <1>
   "indices": [
@@ -71,7 +71,7 @@ the `user` API:
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/user/logstash_internal
+POST _security/user/logstash_internal
 {
   "password" : "x-pack-test-password",
   "roles" : [ "logstash_writer"],
@@ -121,7 +121,7 @@ privileges  for the Logstash indices. You can create roles from the
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/role/logstash_reader
+POST _security/role/logstash_reader
 {
   "indices": [
     {
@@ -142,7 +142,7 @@ also assign the `logstash_admin` role. You can create and manage users from the
 +
 [source, sh]
 ---------------------------------------------------------------
-POST _xpack/security/user/logstash_user
+POST _security/user/logstash_user
 {
   "password" : "x-pack-test-password",
   "roles" : [ "logstash_reader", "logstash_admin"], <1>
@@ -204,7 +204,7 @@ data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
 {security} comes preconfigured with a
-{stack-ov}/built-in-users.html[`logstash_system` built-in user]
+{ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
 monitoring function, and _should not_ be used for any other purpose - it is
 specifically _not intended_ for use within a Logstash pipeline.
@@ -215,7 +215,7 @@ password API:
 
 [source,js]
 ---------------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_password
+PUT _security/user/logstash_system/_password
 {
   "password": "t0p.s3cr3t"
 }
@@ -236,7 +236,7 @@ You can enable the user through the `user` API:
 
 [source,js]
 ---------------------------------------------------------------------
-PUT _xpack/security/user/logstash_system/_enable
+PUT _security/user/logstash_system/_enable
 ---------------------------------------------------------------------
 // CONSOLE
 

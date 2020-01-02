@@ -1,5 +1,5 @@
 [[pipeline-to-pipeline]]
-=== Pipeline-to-Pipeline Communication (Beta)
+=== Pipeline-to-Pipeline Communication
 
 When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 
@@ -34,7 +34,7 @@ When events are sent across pipelines, their data is fully copied. Modifications
 The `pipeline` plugin may be the most efficient way to communicate between pipelines, but it still incurs a performance cost. Logstash must duplicate each event in full on the Java heap for each downstream pipeline. Using this feature may affect the heap memory utilization of Logstash.
 
 [[delivery-guarantees]]
-===== Delivery Guarantees
+===== Delivery guarantees
 In its standard configuration the `pipeline` input/output has at-least-once delivery guarantees. The output will be
 blocked if the address is blocked or unavailable.
 

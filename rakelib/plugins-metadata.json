@@ -329,8 +329,8 @@
     "skip-list": true
   },
   "logstash-input-kafka": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-log4j2": {
     "default-plugins": false,
@@ -349,8 +349,8 @@
     "skip-list": false
   },
   "logstash-input-rabbitmq": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-rackspace": {
     "default-plugins": false,
@@ -402,6 +402,14 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-kafka": {
+    "default-plugins": true,
+    "skip-list": false
+  },
+  "logstash-integration-rabbitmq": {
+    "default-plugins": true,
+    "skip-list": false
+  },
   "logstash-output-cloudwatch": {
     "default-plugins": true,
     "skip-list": false
@@ -449,8 +457,8 @@
     "skip-list": true
   },
   "logstash-output-kafka": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-logentries": {
     "default-plugins": false,
@@ -482,8 +490,8 @@
     "skip-list": false
   },
   "logstash-output-rabbitmq": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-rackspace": {
     "default-plugins": false,

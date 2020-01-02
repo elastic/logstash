@@ -20,7 +20,8 @@ module LogStash
       class RemoteConfigError < LogStash::Error; end
 
       PIPELINE_INDEX = ".logstash"
-      VALID_LICENSES = %w(trial standard gold platinum)
+      # exclude basic
+      VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
       FEATURE_EXTERNAL = 'logstash'
       SUPPORTED_PIPELINE_SETTINGS = %w(

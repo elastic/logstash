@@ -6,7 +6,6 @@ import org.jruby.RubyClass;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -66,7 +65,7 @@ public class JavaInputDelegatorExt extends RubyObject {
         });
         t.setName(pipeline.pipelineId().asJavaString() + "_" + input.getName() + "_" + input.getId());
         t.start();
-        return JavaObject.wrap(context.getRuntime(), t);
+        return RubyUtil.toRubyObject(t);
     }
 
     @JRubyMethod(name = "metric=")

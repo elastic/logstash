@@ -8,10 +8,11 @@ require "logstash/instrument/collector"
 require "logstash/compiler"
 require "logstash/config/lir_serializer"
 
-java_import org.apache.logging.log4j.ThreadContext
-
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
+
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader \
     :worker_threads,
     :events_consumed,
@@ -280,11 +281,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_inputs
     @input_threads.each do |thread|
-      if thread.class == Java::JavaObject
-        thread.to_java.join
-      else
-        thread.join
-      end
+      thread.join # Thread or java.lang.Thread (both have #join)
     end
   end
 

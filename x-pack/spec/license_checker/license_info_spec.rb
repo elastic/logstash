@@ -94,14 +94,14 @@ describe LogStash::LicenseChecker::XPackInfo do
       let(:status) { 'expired' }
       it_behaves_like 'available? returns correctly', true
       it_behaves_like 'active? returns correctly', false
-      it_behaves_like 'one_of? returns correctly', %w(basic trial standard gold platinum), true
+      it_behaves_like 'one_of? returns correctly', LogStash::LicenseChecker::LICENSE_TYPES, true
     end
 
     context 'the license is active' do
       let(:status) { 'active' }
       it_behaves_like 'available? returns correctly', true
       it_behaves_like 'active? returns correctly', true
-      it_behaves_like 'one_of? returns correctly', %w(basic trial standard gold platinum), true
+      it_behaves_like 'one_of? returns correctly', LogStash::LicenseChecker::LICENSE_TYPES, true
     end
   end
 

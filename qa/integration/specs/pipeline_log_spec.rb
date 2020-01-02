@@ -73,12 +73,54 @@ describe "Test Logstash Pipeline id" do
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
   end
 
+  it "should separate pipeline output in its own log file" do
+    pipeline_name = "custom_pipeline"
+    settings = {
+      "path.logs" => temp_dir,
+      "pipeline.id" => pipeline_name,
+      "pipeline.separate_logs" => true
+    }
+    IO.write(@ls.application_settings_file, settings.to_yaml)
+    @ls.spawn_logstash("-w", "1" , "-e", config)
+    wait_logstash_process_terminate()
+
+    pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
+    expect(File.exists?(pipeline_log_file)).to be true
+    content = IO.read(pipeline_log_file)
+    expect(content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
+
+    plainlog_file = "#{temp_dir}/logstash-plain.log"
+    expect(File.exists?(plainlog_file)).to be true
+    plaing_log_content = IO.read(plainlog_file)
+    expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
+  end
+
+  it "should not create separate pipelines log files if not enabled" do
+    pipeline_name = "custom_pipeline"
+    settings = {
+      "path.logs" => temp_dir,
+      "pipeline.id" => pipeline_name,
+      "pipeline.separate_logs" => false
+    }
+    IO.write(@ls.application_settings_file, settings.to_yaml)
+    @ls.spawn_logstash("-w", "1" , "-e", config)
+    wait_logstash_process_terminate()
+
+    pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
+    expect(File.exists?(pipeline_log_file)).to be false
+
+    plainlog_file = "#{temp_dir}/logstash-plain.log"
+    expect(File.exists?(plainlog_file)).to be true
+    plaing_log_content = IO.read(plainlog_file)
+    expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
+  end
+
   @private
   def wait_logstash_process_terminate
     num_retries = 100
     try(num_retries) do
       expect(@ls.exited?).to be(true)
     end
-    expect(@ls.exit_code).to be(0)
+    expect(@ls.exit_code).to be >= 0
   end
 end
