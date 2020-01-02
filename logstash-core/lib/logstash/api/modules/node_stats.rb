@@ -53,10 +53,6 @@ module LogStash
           @stats.process
         end
 
-        def mem_payload
-          @stats.memory
-        end
-
         def pipeline_payload(val = nil)
           opts = {:vertices => as_boolean(params.fetch("vertices", false))}
           @stats.pipeline(val, opts)
