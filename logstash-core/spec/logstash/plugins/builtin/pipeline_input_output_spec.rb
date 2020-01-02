@@ -101,6 +101,23 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         output.do_close
       end
     end
+
+    it "stopped input should process events until upstream outputs stop" do
+      start_input
+      output.register
+      pipeline_bus.setBlockOnUnlisten(true)
+
+      output.multi_receive([event])
+      expect(queue.pop(true).to_hash_with_metadata).to match(event.to_hash_with_metadata)
+
+      Thread.new { input.do_stop }
+
+      sleep 1
+      output.multi_receive([event])
+      expect(queue.pop(true).to_hash_with_metadata).to match(event.to_hash_with_metadata)
+
+      output.do_close
+    end
   end
 
   describe "one output to multiple inputs" do

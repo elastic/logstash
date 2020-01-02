@@ -63,7 +63,7 @@ modules:
 
 IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
 
-The `logstash.yml` file includes the following settings. If you are using X-Pack, also see {logstash-ref}/settings-xpack.html[X-Pack Settings in Logstash].
+The `logstash.yml` file includes the following settings. 
 
 [options="header"]
 |=======================================================================
@@ -108,6 +108,10 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | When set to `true`, forces Logstash to exit during shutdown even if there are still inflight events
   in memory. By default, Logstash will refuse to quit until all received events
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
+| `false`
+
+| `pipeline.plugin_classloaders`
+| (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
 | `false`
 
 | `path.config`
@@ -228,6 +232,12 @@ The log level. Valid options are:
 | The directory where Logstash will write its log to.
 | `LOGSTASH_HOME/logs`
 
+| `pipeline.separate_logs`
+|  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled Logstash will create a different log file for each pipeline,
+using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in Logstash,
+separating each log lines per pipeline could be helpful in case you need to troubleshoot what’s happening in a single pipeline, without interference of the other ones.
+| `false`
+
 | `path.plugins`
 | Where to find custom plugins. You can specify this setting multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
@@ -236,4 +246,3 @@ The log level. Valid options are:
 | Platform-specific. See <<dir-layout>>.
 
 |=======================================================================
-

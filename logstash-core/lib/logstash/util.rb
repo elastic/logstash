@@ -11,10 +11,8 @@ module LogStash::Util
   def self.set_thread_name(name)
     previous_name = Java::java.lang.Thread.currentThread.getName() if block_given?
 
-    if RUBY_ENGINE == "jruby"
-      # Keep java and ruby thread names in sync.
-      Java::java.lang.Thread.currentThread.setName(name)
-    end
+    # Keep java and ruby thread names in sync.
+    Java::java.lang.Thread.currentThread.setName(name)
     Thread.current[:name] = name
 
     if UNAME == "linux"
@@ -37,18 +35,10 @@ module LogStash::Util
     Thread.current[:plugin] = plugin
   end
 
-  def self.get_thread_id(thread)
-    if RUBY_ENGINE == "jruby"
-      JRuby.reference(thread).native_thread.id
-    else
-      raise Exception.new("Native thread IDs aren't supported outside of JRuby")
-    end
-  end
-
   def self.thread_info(thread)
     # When the `thread` is dead, `Thread#backtrace` returns `nil`; fall back to an empty array.
     backtrace = (thread.backtrace || []).map do |line|
-      line.gsub(LogStash::Environment::LOGSTASH_HOME, "[...]")
+      line.sub(LogStash::Environment::LOGSTASH_HOME, "[...]")
     end
 
     blocked_on = case backtrace.first
@@ -58,7 +48,7 @@ module LogStash::Util
                  end
 
     {
-      "thread_id" => get_thread_id(thread),
+      "thread_id" => get_thread_id(thread), # might be nil for dead threads
       "name" => thread[:name],
       "plugin" => (thread[:plugin] ? thread[:plugin].debug_info : nil),
       "backtrace" => backtrace,

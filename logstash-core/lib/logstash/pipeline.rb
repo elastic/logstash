@@ -15,6 +15,8 @@ require "logstash/compiler"
 module LogStash; class BasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
@@ -162,22 +164,29 @@ module LogStash; class Pipeline < BasePipeline
     collect_stats
     collect_dlq_stats
 
-    @logger.info("Starting pipeline", default_logging_keys(
-      "pipeline.workers" => settings.get("pipeline.workers"),
-      "pipeline.batch.size" => settings.get("pipeline.batch.size"),
-      "pipeline.batch.delay" => settings.get("pipeline.batch.delay")))
+    pipeline_log_params = default_logging_keys(
+        "pipeline.workers" => settings.get("pipeline.workers"),
+        "pipeline.batch.size" => settings.get("pipeline.batch.size"),
+        "pipeline.batch.delay" => settings.get("pipeline.batch.delay"),
+        "pipeline.sources" => pipeline_source_details)
+    @logger.info("Starting pipeline", pipeline_log_params)
 
     @finished_execution.make_false
     @finished_run.make_false
 
     @thread = Thread.new do
       begin
-        LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
+        LogStash::Util.set_thread_name("[#{pipeline_id}]-manager")
+        ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
       rescue => e
         close
-        @logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        @logger.error("Pipeline aborted due to error", pipeline_log_params)
       ensure
         @finished_execution.make_true
       end
@@ -300,7 +309,8 @@ module LogStash; class Pipeline < BasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
-          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          LogStash::Util::set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
           _pipeline.worker_loop(_b_size, _b_delay)
         end
         @worker_threads << thread
@@ -430,6 +440,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
@@ -535,6 +546,8 @@ module LogStash; class Pipeline < BasePipeline
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
 
     @flusher_thread = Thread.new do
+      LogStash::Util.set_thread_name("[#{pipeline_id}]-flusher-thread")
+      ThreadContext.put("pipeline.id", pipeline_id)
       while Stud.stoppable_sleep(5, 0.1) { stopped? }
         flush
         break if stopped?

@@ -7,8 +7,8 @@ logstash-core-plugin-api: 2.1.16
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
 jruby:
-  version: 9.2.7.0
-  sha1: dc35f9bb991f526f058bf6b9591c460f98cffe9e
+  version: 9.2.9.0
+  sha1: 39ef88eb5e7319402b15c048f638f26e2b9c4f4c
 
 # jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby for logstash runtime only,
 # not for the compile-time jars
@@ -21,5 +21,6 @@ jruby:
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when
 #       bundler evaluates the gemspec via bin/logstash
 # Ensure Jackson version here is kept in sync with version used by jrjackson gem
-jrjackson: 0.4.7
-jackson: 2.9.8
+jrjackson: 0.4.10
+jackson: 2.9.9
+jackson-databind: 2.9.9.3

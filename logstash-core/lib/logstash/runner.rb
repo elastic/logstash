@@ -113,6 +113,11 @@ class LogStash::Runner < Clamp::StrictCommand
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
 
+  option ["--plugin-classloaders"], :flag,
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
+
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",
@@ -249,6 +254,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.logs", setting("path.logs"))
     java.lang.System.setProperty("ls.log.format", setting("log.format"))
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
 
@@ -331,7 +337,8 @@ class LogStash::Runner < Clamp::StrictCommand
         # TODO(ph): make it better for multiple pipeline
         if results.success?
           results.response.each do |pipeline_config|
-            LogStash::BasePipeline.new(pipeline_config)
+            pipeline_class = pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::BasePipeline
+            pipeline_class.new(pipeline_config)
           end
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"

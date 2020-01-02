@@ -50,7 +50,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that does not modify the batch.
      */
-    private static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -64,7 +64,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
      */
-    private static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -250,6 +250,43 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @Test
+    public void correctlyCompilesRegexMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+        verifyRegex("=~", 1);
+    }
+
+    @Test
+    public void correctlyCompilesRegexNoMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+        verifyRegex("!~", 0);
+    }
+
+    private void verifyRegex(String operator, int expectedEvents)
+            throws IncompleteSourceWithMetadataException {
+        final Event event = new Event();
+
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
+
+        new CompiledPipeline(
+                ConfigCompiler.configToPipelineIR(
+                        "input {mockinput{}} output { " +
+                                String.format("if \"z\" %s /z/ { ", operator) +
+                                " mockoutput{} } }",
+                        false
+                ),
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockaddfilter", () -> null),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution()
+                .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(expectedEvents));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(expectedEvents >= 1));
+        outputEvents.clear();
+    }
+
+    @Test
     public void equalityCheckOnCompositeField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 "input {mockinput{}} filter { if 4 == [list] { mockaddfilter {} } if 5 == [map] { mockaddfilter {} } } output {mockoutput{} }",
@@ -386,6 +423,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final Event event) throws IncompleteSourceWithMetadataException {
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
+
         new CompiledPipeline(
             ConfigCompiler.configToPipelineIR(
                 "input {mockinput{}} filter { " +
@@ -420,7 +458,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Configurable Mock {@link PluginFactory}
      */
-    private static final class MockPluginFactory implements PluginFactory {
+    static final class MockPluginFactory implements PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 

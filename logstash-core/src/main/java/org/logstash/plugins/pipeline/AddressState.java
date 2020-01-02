@@ -4,16 +4,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class for representing the state of an internal address.
+ * Represents the state of an internal address.
  */
 public class AddressState {
-    private final String address;
+
     private final Set<PipelineOutput> outputs = ConcurrentHashMap.newKeySet();
     private volatile PipelineInput input = null;
-
-    AddressState(String address) {
-        this.address = address;
-    }
 
     /**
      * Add the given output and ensure associated input's receivers are updated
@@ -38,14 +34,13 @@ public class AddressState {
      * @return true if successful, false if another input is listening
      */
     public synchronized boolean assignInputIfMissing(PipelineInput newInput) {
+        // We aren't changing anything
         if (input == null) {
             input = newInput;
             return true;
-        } else if (input == newInput) {
-            return true; // We aren't changing anything
+        } else {
+            return input == newInput;
         }
-
-        return false;
     }
 
     /**

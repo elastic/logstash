@@ -35,6 +35,7 @@ module LogStash
       # will block until the other compute finishes so no mutex is necessary
       # for synchronizing compute calls
       @states = java.util.concurrent.ConcurrentHashMap.new
+      @locks = java.util.concurrent.ConcurrentHashMap.new
     end
 
     # Execute the passed creation logic block and create a new state upon success
@@ -46,24 +47,28 @@ module LogStash
     #
     # @return [Boolean] new pipeline creation success
     def create_pipeline(pipeline_id, pipeline, &create_block)
+      lock = get_lock(pipeline_id)
+      lock.lock
+
       success = false
 
-      @states.compute(pipeline_id) do |_, state|
-        if state
-          if state.terminated?
-            success = yield
-            state.set_pipeline(pipeline)
-          else
-            logger.error("Attempted to create a pipeline that already exists", :pipeline_id => pipeline_id)
-          end
-          state
-        else
+      state = @states.get(pipeline_id)
+      if state
+        if state.terminated?
           success = yield
-          success ? PipelineState.new(pipeline_id, pipeline) : nil
+          state.set_pipeline(pipeline)
+        else
+          logger.error("Attempted to create a pipeline that already exists", :pipeline_id => pipeline_id)
         end
+        @states.put(pipeline_id, state)
+      else
+        success = yield
+        @states.put(pipeline_id, PipelineState.new(pipeline_id, pipeline)) if success
       end
 
       success
+    ensure
+      lock.unlock
     end
 
     # Execute the passed termination logic block
@@ -72,15 +77,19 @@ module LogStash
     #
     # @yieldparam [Pipeline] the pipeline to terminate
     def terminate_pipeline(pipeline_id, &stop_block)
-      @states.compute(pipeline_id) do |_, state|
-        if state.nil?
-          logger.error("Attempted to terminate a pipeline that does not exists", :pipeline_id => pipeline_id)
-          nil
-        else
-          yield(state.pipeline)
-          state
-        end
+      lock = get_lock(pipeline_id)
+      lock.lock
+
+      state = @states.get(pipeline_id)
+      if state.nil?
+        logger.error("Attempted to terminate a pipeline that does not exists", :pipeline_id => pipeline_id)
+        @states.remove(pipeline_id)
+      else
+        yield(state.pipeline)
+        @states.put(pipeline_id, state)
       end
+    ensure
+      lock.unlock
     end
 
     # Execute the passed reloading logic block in the context of the reloading state and set new pipeline in state
@@ -91,25 +100,28 @@ module LogStash
     #
     # @return [Boolean] new pipeline creation success
     def reload_pipeline(pipeline_id, &reload_block)
+      lock = get_lock(pipeline_id)
+      lock.lock
       success = false
 
-      @states.compute(pipeline_id) do |_, state|
-        if state.nil?
-          logger.error("Attempted to reload a pipeline that does not exists", :pipeline_id => pipeline_id)
-          nil
-        else
-          state.set_reloading(true)
-          begin
-            success, new_pipeline = yield
-            state.set_pipeline(new_pipeline)
-          ensure
-            state.set_reloading(false)
-          end
-          state
+      state = @states.get(pipeline_id)
+      if state.nil?
+        logger.error("Attempted to reload a pipeline that does not exists", :pipeline_id => pipeline_id)
+        @states.remove(pipeline_id)
+      else
+        state.set_reloading(true)
+        begin
+          success, new_pipeline = yield
+          state.set_pipeline(new_pipeline)
+        ensure
+          state.set_reloading(false)
         end
+        @states.put(pipeline_id, state)
       end
 
-      success
+    success
+    ensure
+      lock.unlock
     end
 
     # @param pipeline_id [String, Symbol] the pipeline id
@@ -160,6 +172,12 @@ module LogStash
         if state && (!block_given? || yield(state))
           memo[id] = state.pipeline
         end
+      end
+    end
+
+    def get_lock(pipeline_id)
+      @locks.compute_if_absent(pipeline_id) do |k|
+        java.util.concurrent.locks.ReentrantLock.new
       end
     end
   end

@@ -1,6 +1,7 @@
 [role="xpack"]
 [[ls-security]]
 === Configuring Security in Logstash
+[subs="attributes"]
 ++++
 <titleabbrev>{security}</titleabbrev>
 ++++
@@ -36,7 +37,7 @@ To set up authentication credentials for Logstash:
 
 . Use the the **Management > Roles** UI in {kib} or the `role` API to create a
 `logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
-For *indices* privileges, add `write`, `delete`, and `create_index`.
+For *indices* privileges, add `write`, `create`, `delete`, and `create_index`.
 +
 If you plan to use {ref}/getting-started-index-lifecycle-management.html[index lifecycle
 management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for indices.
@@ -49,19 +50,16 @@ POST _security/role/logstash_writer
   "indices": [
     {
       "names": [ "logstash-*" ], <2>
-      "privileges": ["write","delete","create_index","manage","manage_ilm"]  <3>
+      "privileges": ["write","create","delete","create_index","manage","manage_ilm"]  <3>
     }
   ]
 }
 ---------------------------------------------------------------
-
 <1> The cluster needs the `manage_ilm` privilege if 
 {ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
 is enabled.
-
 <2> If you use a custom Logstash index pattern, specify your custom pattern
 instead of the default `logstash-*` pattern.
-
 <3> If {ref}/getting-started-index-lifecycle-management.html[index lifecycle
 management] is enabled, the role requires the `manage` and `manage_ilm`
 privileges to load index lifecycle policies, create rollover aliases, and create
@@ -133,7 +131,6 @@ POST _security/role/logstash_reader
   ]
 }
 ---------------------------------------------------------------
-
 <1> If you use a custom Logstash index pattern, specify that pattern
 instead of the default `logstash-*` pattern.
 
@@ -152,7 +149,6 @@ POST _security/user/logstash_user
   "full_name" : "Kibana User for Logstash"
 }
 ---------------------------------------------------------------
-
 <1> `logstash_admin` is a built-in role that provides access to `.logstash-*`
 indices for managing configurations.
 
@@ -208,13 +204,14 @@ data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
 {security} comes preconfigured with a
-{stack-ov}/built-in-users.html[`logstash_system` built-in user]
+{ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
 monitoring function, and _should not_ be used for any other purpose - it is
 specifically _not intended_ for use within a Logstash pipeline.
 
 By default, the `logstash_system` user does not have a password. The user will
-not be enabled until you set a password. See {stack-ov}/built-in-users.html#set-built-in-user-passwords[Setting built-in user passwords].
+not be enabled until you set a password. See
+{ref}/built-in-users.html#set-built-in-user-passwords[Setting built-in user passwords].
 
 Then configure the user and password in the `logstash.yml` configuration file:
 
@@ -250,6 +247,5 @@ You configure the user and password in the `logstash.yml` configuration file:
 xpack.management.elasticsearch.username: logstash_admin_user <1>
 xpack.management.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
-
 <1> The user you specify here must have the built-in `logstash_admin` role as
 well as the `logstash_writer` role that you created earlier.

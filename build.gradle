@@ -119,51 +119,43 @@ clean {
   delete "${projectDir}/build/rubyDependencies.csv"
 }
 
-task bootstrap {}
-
-project(":logstash-core") {
-  ["rubyTests", "test"].each { tsk ->
-    tasks.getByPath(":logstash-core:" + tsk).configure {
-      dependsOn bootstrap
-    }
-  }
-}
-
-task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
-  inputs.files file("${projectDir}/Gemfile.template")
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files file("${projectDir}/versions.yml")
-  outputs.file("${projectDir}/Gemfile")
-  outputs.file("${projectDir}/Gemfile.lock")
-  outputs.dir("${projectDir}/logstash-core/lib/jars")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
-  doLast {
-      gem(projectDir, buildDir, "rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
-      gem(projectDir, buildDir, "json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
-      rake(projectDir, buildDir, 'plugin:install-default')
-  }
-}
-
 def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-task installTestGems(dependsOn: assemblyDeps) {
-  inputs.files file("${projectDir}/Gemfile.template")
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files file("${projectDir}/versions.yml")
-  outputs.file("${projectDir}/Gemfile")
-  outputs.file("${projectDir}/Gemfile.lock")
-  outputs.dir("${projectDir}/logstash-core/lib/jars")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.5.0")
+task installBundler(dependsOn: assemblyDeps) {
+  outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
   doLast {
-      gem(projectDir, buildDir, "rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
-      gem(projectDir, buildDir, "json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
+      gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
+  }
+}
+
+task bootstrap(dependsOn: installBundler) {
+  doLast {
+      setupJruby(projectDir, buildDir)
+  }
+}
+
+
+task installDefaultGems(dependsOn: bootstrap) {
+  doLast {
+      rake(projectDir, buildDir, 'plugin:install-default')
+  }
+}
+
+task installTestGems(dependsOn: bootstrap) {
+  doLast {
       rake(projectDir, buildDir, 'plugin:install-development-dependencies')
   }
 }
 
-task assembleTarDistribution(dependsOn: assemblyDeps) {
+task compileGrammar(dependsOn: bootstrap) {
+    doLast {
+        rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
+task assembleTarDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -175,12 +167,11 @@ task assembleTarDistribution(dependsOn: assemblyDeps) {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
-      gem(projectDir, buildDir, "rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
       rake(projectDir, buildDir, 'artifact:tar')
   }
 }
 
-task assembleOssTarDistribution(dependsOn: assemblyDeps) {
+task assembleOssTarDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -194,7 +185,7 @@ task assembleOssTarDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleZipDistribution(dependsOn: assemblyDeps) {
+task assembleZipDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -210,7 +201,7 @@ task assembleZipDistribution(dependsOn: assemblyDeps) {
   }
 }
 
-task assembleOssZipDistribution(dependsOn: assemblyDeps) {
+task assembleOssZipDistribution(dependsOn: bootstrap) {
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -223,6 +214,14 @@ task assembleOssZipDistribution(dependsOn: assemblyDeps) {
   doLast {
       rake(projectDir, buildDir, 'artifact:zip_oss')
 
+  }
+}
+
+project(":logstash-core") {
+  ["rubyTests", "test"].each { tsk ->
+    tasks.getByPath(":logstash-core:" + tsk).configure {
+      dependsOn installTestGems
+    }
   }
 }
 
@@ -318,13 +317,13 @@ task generateLicenseReportInputs() {
     }
 }
 
-task generatePluginsVersion(dependsOn: bootstrap) {
+task generatePluginsVersion(dependsOn: installDefaultGems) {
   doLast {
       rake(projectDir, buildDir, 'generate_plugins_version')
   }
 }
 
-bootstrap.dependsOn installTestGems
+bootstrap.dependsOn assemblyDeps
 
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
@@ -421,7 +420,7 @@ if (!oss) {
   project(":logstash-xpack") {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
-        dependsOn bootstrap
+        dependsOn installTestGems
       }
     }
     tasks.getByPath(":logstash-xpack:rubyIntegrationTests").configure {

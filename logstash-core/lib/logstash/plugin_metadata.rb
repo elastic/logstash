@@ -29,9 +29,7 @@ module LogStash
   class PluginMetadata
     include LogStash::Util::Loggable
 
-    Thread.exclusive do
-      @registry = ThreadSafe::Cache.new unless defined?(@registry)
-    end
+    REGISTRY = ThreadSafe::Cache.new unless defined?(REGISTRY)
 
     class << self
       ##
@@ -42,7 +40,7 @@ module LogStash
       # @return [PluginMetadata]: the metadata object for the provided `plugin_id`; if no
       #                           metadata object exists, it will be created.
       def for_plugin(plugin_id)
-        @registry.compute_if_absent(plugin_id) { PluginMetadata.new }
+        REGISTRY.compute_if_absent(plugin_id) { PluginMetadata.new }
       end
 
       ##
@@ -53,7 +51,7 @@ module LogStash
       #
       # @return [Boolean]
       def exists?(plugin_id)
-        @registry.key?(plugin_id)
+        REGISTRY.key?(plugin_id)
       end
 
       ##
@@ -64,14 +62,14 @@ module LogStash
       # @return [Boolean]
       def delete_for_plugin(plugin_id)
         logger.debug("Removing metadata for plugin #{plugin_id}")
-        old_registry = @registry.delete(plugin_id)
+        old_registry = REGISTRY.delete(plugin_id)
         old_registry.clear unless old_registry.nil?
       end
 
       ##
       # @api private
       def reset!
-        @registry.clear
+        REGISTRY.clear
       end
     end
 

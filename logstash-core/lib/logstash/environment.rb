@@ -43,6 +43,8 @@ module LogStash
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
+           Setting::Boolean.new("pipeline.plugin_classloaders", false),
+           Setting::Boolean.new("pipeline.separate_logs", false),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
@@ -163,11 +165,15 @@ module LogStash
     end
 
     def windows?
-      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+      host_os =~ WINDOW_OS_RE
     end
 
     def linux?
-      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
+      host_os =~ LINUX_OS_RE
+    end
+
+    def host_os
+      RbConfig::CONFIG['host_os']
     end
 
     def locales_path(path)

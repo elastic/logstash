@@ -1,12 +1,14 @@
 package org.logstash.plugins;
 
 import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Password;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.Codec;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.codecs.Line;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,5 +107,107 @@ public class ConfigurationImplTest {
         Assert.assertTrue(codec instanceof Line);
     }
 
-}
+    @Test
+    public void testDowncastFromLongToDouble() {
+        long defaultValue = 1L;
+        PluginConfigSpec<Double> doubleConfig = PluginConfigSpec.floatSetting(numberKey, defaultValue, false, false);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap(numberKey, defaultValue));
+        double x = config.get(doubleConfig);
+        Assert.assertEquals(defaultValue, x, 0.001);
+    }
 
+    @Test
+    public void testUriValue() {
+        String defaultUri = "https://user:password@www.site.com:99";
+        String uri = "https://user:password@www.site2.com:99";
+        PluginConfigSpec<URI> uriConfig = PluginConfigSpec.uriSetting("test", defaultUri);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap("test", uri));
+        URI u = config.get(uriConfig);
+        Assert.assertEquals(uri, u.toString());
+    }
+
+    @Test
+    public void testUriDefaultValue() {
+        String defaultUri = "https://user:password@www.site.com:99";
+        PluginConfigSpec<URI> uriConfig = PluginConfigSpec.uriSetting("test", defaultUri);
+        Configuration config = new ConfigurationImpl(Collections.emptyMap());
+        URI u = config.get(uriConfig);
+        Assert.assertEquals(defaultUri, u.toString());
+    }
+
+    @Test
+    public void testBadUriThrows() {
+        String uri = "http://www.si%%te.com";
+        PluginConfigSpec<URI> uriConfig = PluginConfigSpec.uriSetting("test", uri);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap("test", uri));
+        try {
+            config.get(uriConfig);
+            Assert.fail("Did not catch invalid URI");
+        } catch (IllegalStateException e1) {
+            Assert.assertTrue(e1.getMessage().contains("Invalid URI specified for"));
+        } catch (Exception e2) {
+            Assert.fail("Did not throw correct exception for invalid URI");
+        }
+    }
+
+    @Test
+    public void testBadDefaultUriThrows() {
+        String uri = "http://www.si%%te.com";
+        PluginConfigSpec<URI> uriConfig = PluginConfigSpec.uriSetting("test", uri);
+        Configuration config = new ConfigurationImpl(Collections.emptyMap());
+        try {
+            config.get(uriConfig);
+            Assert.fail("Did not catch invalid URI");
+        } catch (IllegalStateException e1) {
+            Assert.assertTrue(e1.getMessage().contains("Invalid default URI specified for"));
+        } catch (Exception e2) {
+            Assert.fail("Did not throw correct exception for invalid URI");
+        }
+    }
+
+    @Test
+    public void testPassword() {
+        String myPassword = "mysecret";
+        PluginConfigSpec<Password> passwordConfig = PluginConfigSpec.passwordSetting("passwordTest");
+        Configuration config = new ConfigurationImpl(Collections.singletonMap("passwordTest", myPassword));
+        Password p = config.get(passwordConfig);
+        Assert.assertEquals(Password.class, p.getClass());
+        Assert.assertEquals(myPassword, p.getPassword());
+        Assert.assertEquals("<password>", p.toString());
+    }
+
+    @Test
+    public void testPasswordDefaultValue() {
+        // default values for passwords are a bad idea, but they should still work
+        String myPassword = "mysecret";
+        PluginConfigSpec<Password> passwordConfig = PluginConfigSpec.passwordSetting("passwordTest", myPassword, false, false);
+        Configuration config = new ConfigurationImpl(Collections.emptyMap());
+        Password p = config.get(passwordConfig);
+        Assert.assertEquals(Password.class, p.getClass());
+        Assert.assertEquals(myPassword, p.getPassword());
+        Assert.assertEquals("<password>", p.toString());
+    }
+
+    @Test
+    public void testBooleanValues() {
+        PluginConfigSpec<Boolean> booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, false, false, false);
+        Configuration config = new ConfigurationImpl(Collections.singletonMap(booleanKey, "tRuE"));
+        boolean value = config.get(booleanConfig);
+        Assert.assertTrue(value);
+
+        config = new ConfigurationImpl(Collections.singletonMap(booleanKey, "false"));
+        value = config.get(booleanConfig);
+        Assert.assertFalse(value);
+
+        booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, false, false, false);
+        config = new ConfigurationImpl(Collections.emptyMap());
+        value = config.get(booleanConfig);
+        Assert.assertFalse(value);
+
+        booleanConfig = PluginConfigSpec.booleanSetting(booleanKey, true, false, false);
+        config = new ConfigurationImpl(Collections.emptyMap());
+        value = config.get(booleanConfig);
+        Assert.assertTrue(value);
+    }
+
+}

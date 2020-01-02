@@ -2,13 +2,19 @@ package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.PluginConfigSpec;
 import com.google.common.collect.ImmutableMap;
 import org.jruby.RubyHash;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.plugins.ContextImpl;
+import org.logstash.plugins.MetricTestCase;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
@@ -16,7 +22,7 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
-public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
+public class JavaCodecDelegatorTest extends MetricTestCase {
     private Codec codec;
 
     @Before
@@ -28,11 +34,6 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
         super.setup();
     }
 
-    @Override
-    protected String getBaseMetricsPath() {
-        return "codec/foo";
-    }
-
     @Test
     public void plainCodecDelegatorInitializesCleanly() {
         constructCodecDelegator();
@@ -41,7 +42,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     @Test
     public void plainCodecPluginPushesPluginNameToMetric() {
         constructCodecDelegator();
-        final RubyHash metricStore = getMetricStore(new String[]{"codec", "foo"});
+        final RubyHash metricStore = getMetricStore(new String[]{"codecs", "foo"});
         final String pluginName = getMetricStringValue(metricStore, "name");
 
         assertEquals(codec.getName(), pluginName);
@@ -158,42 +159,38 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     }
 
     @Test
-    public void encodeDelegatesCall() throws Codec.EncodeException {
+    public void encodeDelegatesCall() throws IOException {
         codec = Mockito.spy(new AbstractCodec() {
             @Override
-            public boolean encode(final Event event, final ByteBuffer buffer) {
-                return true;
-            }
+            public void encode(final Event event, final OutputStream out) {}
         });
 
         final JavaCodecDelegator codecDelegator = constructCodecDelegator();
 
         final Event e = new org.logstash.Event();
-        final ByteBuffer b = ByteBuffer.wrap(new byte[] {});
+        final OutputStream out = new ByteArrayOutputStream();
 
-        codecDelegator.encode(e, b);
+        codecDelegator.encode(e, out);
 
-        Mockito.verify(codec, Mockito.times(1)).encode(e, b);
+        Mockito.verify(codec, Mockito.times(1)).encode(e, out);
     }
 
     @Test
-    public void encodeIncrementsEventCount() throws Codec.EncodeException {
+    public void encodeIncrementsEventCount() throws IOException {
         codec = new AbstractCodec() {
             @Override
-            public boolean encode(final Event event, final ByteBuffer buffer) {
-                return true;
-            }
+            public void encode(final Event event, final OutputStream out) {}
         };
 
         final JavaCodecDelegator codecDelegator = constructCodecDelegator();
 
-        codecDelegator.encode(new org.logstash.Event(), ByteBuffer.wrap(new byte[] {}));
+        codecDelegator.encode(new org.logstash.Event(), new ByteArrayOutputStream());
 
         assertEquals(1, getMetricLongValue("encode", "writes_in"));
     }
 
     private RubyHash getMetricStore(final String type) {
-        return getMetricStore(new String[]{"codec", "foo", type});
+        return getMetricStore(new String[]{"codecs", "foo", type});
     }
 
     private long getMetricLongValue(final String type, final String symbolName) {
@@ -201,7 +198,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
     }
 
     private JavaCodecDelegator constructCodecDelegator() {
-        return new JavaCodecDelegator(metric, codec);
+        return new JavaCodecDelegator(new ContextImpl(null, this.getInstance()), codec);
     }
 
     private abstract class AbstractCodec implements Codec {
@@ -216,7 +213,7 @@ public class JavaCodecDelegatorTest extends PluginDelegatorTestCase {
         }
 
         @Override
-        public boolean encode(final Event event, final ByteBuffer buffer) throws EncodeException {
+        public void encode(final Event event, final OutputStream out) throws IOException {
             throw new UnsupportedOperationException();
         }
 

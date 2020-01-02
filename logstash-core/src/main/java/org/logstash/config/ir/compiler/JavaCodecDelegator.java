@@ -1,7 +1,11 @@
 package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
+import co.elastic.logstash.api.Context;
+import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.Metric;
+import co.elastic.logstash.api.NamespacedMetric;
 import co.elastic.logstash.api.PluginConfigSpec;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.ThreadContext;
@@ -10,6 +14,8 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
@@ -18,45 +24,39 @@ import java.util.function.Consumer;
 
 public class JavaCodecDelegator implements Codec {
 
-    public static final RubySymbol ENCODE_KEY = RubyUtil.RUBY.newSymbol("encode");
-    public static final RubySymbol DECODE_KEY = RubyUtil.RUBY.newSymbol("decode");
-    public static final RubySymbol IN_KEY = RubyUtil.RUBY.newSymbol("writes_in");
+    public static final String ENCODE_KEY = "encode";
+    public static final String DECODE_KEY = "decode";
+    public static final String IN_KEY = "writes_in";
 
     private final Codec codec;
 
-    protected final AbstractNamespacedMetricExt metricEncode;
+    protected final CounterMetric encodeMetricIn;
 
-    protected final AbstractNamespacedMetricExt metricDecode;
+    protected final CounterMetric encodeMetricTime;
 
-    protected final LongCounter encodeMetricIn;
+    protected final CounterMetric decodeMetricIn;
 
-    protected final LongCounter encodeMetricTime;
+    protected final CounterMetric decodeMetricOut;
 
-    protected final LongCounter decodeMetricIn;
-
-    protected final LongCounter decodeMetricOut;
-
-    protected final LongCounter decodeMetricTime;
+    protected final CounterMetric decodeMetricTime;
 
 
-    public JavaCodecDelegator(final AbstractNamespacedMetricExt metric,
-                               final Codec codec) {
+    public JavaCodecDelegator(final Context context, final Codec codec) {
         this.codec = codec;
 
-        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final AbstractNamespacedMetricExt namespacedMetric =
-            metric.namespace(context, RubyUtil.RUBY.newSymbol(codec.getId()));
-        synchronized(namespacedMetric.getMetric()) {
-            metricEncode = namespacedMetric.namespace(context, ENCODE_KEY);
-            encodeMetricIn = LongCounter.fromRubyBase(metricEncode, IN_KEY);
-            encodeMetricTime = LongCounter.fromRubyBase(metricEncode, MetricKeys.DURATION_IN_MILLIS_KEY);
+        final NamespacedMetric metric = context.getMetric(codec);
 
-            metricDecode = namespacedMetric.namespace(context, DECODE_KEY);
-            decodeMetricIn = LongCounter.fromRubyBase(metricDecode, IN_KEY);
-            decodeMetricOut = LongCounter.fromRubyBase(metricDecode, MetricKeys.OUT_KEY);
-            decodeMetricTime = LongCounter.fromRubyBase(metricDecode, MetricKeys.DURATION_IN_MILLIS_KEY);
+        synchronized(metric.root()) {
+            metric.gauge(MetricKeys.NAME_KEY.asJavaString(), codec.getName());
 
-            namespacedMetric.gauge(context, MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(codec.getName()));
+            final NamespacedMetric encodeMetric = metric.namespace(ENCODE_KEY);
+            encodeMetricIn = encodeMetric.counter(IN_KEY);
+            encodeMetricTime = encodeMetric.counter(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
+
+            final NamespacedMetric decodeMetric = metric.namespace(DECODE_KEY);
+            decodeMetricIn = decodeMetric.counter(IN_KEY);
+            decodeMetricOut = decodeMetric.counter(MetricKeys.OUT_KEY.asJavaString());
+            decodeMetricTime = decodeMetric.counter(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
         }
     }
 
@@ -89,16 +89,14 @@ public class JavaCodecDelegator implements Codec {
     }
 
     @Override
-    public boolean encode(final Event event, final ByteBuffer buffer) throws EncodeException {
+    public void encode(final Event event, final OutputStream out) throws IOException {
         encodeMetricIn.increment();
 
         final long start = System.nanoTime();
 
-        final boolean ret = codec.encode(event, buffer);
+        codec.encode(event, out);
 
         decodeMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
-
-        return ret;
     }
 
     @Override

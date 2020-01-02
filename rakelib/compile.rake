@@ -8,7 +8,10 @@ end
 
 namespace "compile" do
   desc "Compile the config grammar"
-  task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
+  task "grammar" => %w(
+    logstash-core/lib/logstash/config/grammar.rb
+    logstash-core/lib/logstash/compiler/lscl/lscl_grammar.rb
+  )
 
   def safe_system(*args)
     if !system(*args)

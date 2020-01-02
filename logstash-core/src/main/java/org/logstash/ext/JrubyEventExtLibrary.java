@@ -71,6 +71,8 @@ public final class JrubyEventExtLibrary {
                 this.event = new Event(
                     ConvertedMap.newFromRubyHash(context, (RubyHash) data)
                 );
+            } else if (data != null && data.getJavaClass().equals(Event.class)) {
+                this.event = data.toJava(Event.class);
             } else {
                 initializeFallback(context, data);
             }
@@ -96,7 +98,7 @@ public final class JrubyEventExtLibrary {
                 }
                 this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             } else {
-                this.event.setField(r, Valuefier.convert(value));
+                this.event.setField(r, safeValueifierConvert(value));
             }
             return value;
         }
@@ -317,6 +319,22 @@ public final class JrubyEventExtLibrary {
         private static FieldReference extractFieldReference(final RubyString reference) {
             try {
                 return FieldReference.from(reference);
+            } catch (FieldReference.IllegalSyntaxException ise) {
+                throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
+            }
+        }
+
+        /**
+         * Shared logic to wrap {@link FieldReference.IllegalSyntaxException}s that are raised by
+         * {@link Valuefier#convert(Object)} when encountering illegal syntax in a ruby-exception
+         * that can be easily handled within the ruby plugins
+         *
+         * @param value a {@link Object} to be passed to {@link Valuefier#convert(Object)}
+         * @return the resulting {@link Object} (see: {@link Valuefier#convert(Object)})
+         */
+        private static Object safeValueifierConvert(final Object value) {
+            try {
+                return Valuefier.convert(value);
             } catch (FieldReference.IllegalSyntaxException ise) {
                 throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
             }

@@ -9,6 +9,7 @@ description = """Logstash Core Java"""
 version = versionMap['logstash-core']
 String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
     mavenCentral()
@@ -68,8 +69,11 @@ task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
+    exclude '/org/logstash/config/ir/EventConditionTest.class'
     exclude '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
     exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    exclude '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    exclude '/org/logstash/plugins/CounterMetricImplTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -79,8 +83,11 @@ task rubyTests(type: Test) {
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
+    include '/org/logstash/config/ir/EventConditionTest.class'
     include '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
     include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    include '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    include '/org/logstash/plugins/CounterMetricImplTest.class'
 }
 
 test {
@@ -120,15 +127,19 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:2.11.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.11.1'
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.1'
-    compile 'commons-codec:commons-codec:1.11'
+    implementation 'org.apache.logging.log4j:log4j-api:2.12.1'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.12.1'
+    compile 'org.apache.logging.log4j:log4j-core:2.12.1'
+    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
+    compile('org.reflections:reflections:0.9.11') {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    compile 'commons-codec:commons-codec:1.13'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile 'org.codehaus.janino:janino:3.0.11'
+    compile 'org.codehaus.janino:janino:3.1.0'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     if (customJRubyDir == "") {
         compile "org.jruby:jruby-complete:${jrubyVersion}"
@@ -138,12 +149,11 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
     // Do not upgrade this, later versions require GPL licensed code in javac-shaded that is
     // Apache2 incompatible
-    compile('com.google.googlejavaformat:google-java-format:1.1') {
+    compile('com.google.googlejavaformat:google-java-format:1.7') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile 'org.javassist:javassist:3.24.0-GA'
-    compile 'com.google.guava:guava:20.0'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.11.1:tests'
+    compile 'org.javassist:javassist:3.26.0-GA'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.12.1:tests'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testCompile 'org.elasticsearch:securemock:1.2'

@@ -36,9 +36,7 @@ describe "OpenSSL defaults" do
     # https://github.com/jordansissel/ruby-flores/blob/master/spec/flores/pki_integration_spec.rb
     # since these helpers were created to fix this particular issue
     let(:csr) { Flores::PKI::CertificateSigningRequest.new }
-    # Here, I use a 1024-bit key for faster tests.
-    # Please do not use such small keys in production.
-    let(:key_bits) { 1024 }
+    let(:key_bits) { 2048 }
     let(:key) { OpenSSL::PKey::RSA.generate(key_bits, 65537) }
     let(:certificate_duration) { Flores::Random.number(1..86400) }
 

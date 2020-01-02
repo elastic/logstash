@@ -53,7 +53,9 @@ puts "Generating new Gemfile.template file with computed dependencies"
 gemfile = IO.read("Gemfile.template")
 base_plugin_versions.each do |plugin, version|
   dependency = compute_dependecy(version, allow_bump_for)
-  gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"")
+  if gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"").nil?
+    gemfile << "gem \"#{plugin}\", \"#{dependency}\"\n"
+  end
 end
 
 IO.write("Gemfile.template", gemfile)
@@ -94,7 +96,7 @@ puts "Pushing commit.."
 `git remote add upstream git@github.com:elastic/logstash.git`
 `git push upstream #{branch_name}`
 
-current_release = YAML.parse(IO.read("versions.yml"))["logstash"]
+current_release = YAML.safe_load(IO.read("versions.yml"))["logstash"]
 puts "Creating Pull Request"
 pr_title = "bump lock file for #{current_release}"
 

@@ -41,21 +41,23 @@ automatically detect your environment and install the correct startup method
 JAVA_HOME environment variable during package installation time, you may get an
 error message, and Logstash will be unable to start properly.
 
-IMPORTANT: Users have reported issues with Debian or RPM install packages and Java 11. 
-We are investigating and tracking in https://github.com/elastic/logstash/issues/10593[Issue #10593].
-
 [float]
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
-Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
+The {ls} binaries are available from 
+https://www.elastic.co/downloads/logstash[https://www.elastic.co/downloads].
+Download the Logstash installation file for your host environment--TARG.GZ, DEB,
+ZIP, or RPM. 
+
+Unpack the file. Do not install Logstash into a directory path that
+contains colon (:) characters.
 
 [NOTE]
 --
 These packages are free to use under the Elastic license. They contain open 
 source and free commercial features and access to paid commercial features.  
-{xpack-ref}/license-management.html[Start a 30-day trial] to try out all of the 
+{stack-ov}/license-management.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels. 
@@ -232,6 +234,51 @@ WARNING: The repositories do not work with older rpm based distributions
 See the {logstash-ref}/running-logstash.html[Running Logstash] document for managing Logstash as a system service.
 
 endif::[]
+
+[float]
+[[brew]]
+=== Installing {ls} on macOS with Homebrew
+
+Elastic publishes Homebrew formulae so you can install {ls} with the
+https://brew.sh/[Homebrew] package manager.
+
+To install with Homebrew, you first need to tap the Elastic Homebrew repository:
+
+[source,sh]
+-------------------------
+brew tap elastic/tap
+-------------------------
+
+After you've tapped the Elastic Homebrew repo, you can use `brew install` to
+install the default distribution of {ls}:
+
+[source,sh]
+-------------------------
+brew install elastic/tap/logstash-full
+-------------------------
+
+This installs the most recently released default distribution of {ls}.
+To install the OSS distribution, specify `elastic/tap/logstash-oss`.
+
+
+[float]
+[[brew-start]]
+==== Starting {ls} with Homebrew
+
+To have launchd start elastic/tap/logstash-full now and restart at login, run:
+
+[source,sh]
+-----
+brew services start elastic/tap/logstash-full
+-----
+
+To run {ls}, in the foreground, run:
+
+[source,sh]
+-----
+logstash
+-----
+
 
 ==== Docker
 

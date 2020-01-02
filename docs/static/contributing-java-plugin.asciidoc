@@ -1,8 +1,6 @@
 [[contributing-java-plugin]]
 == Contributing a Java Plugin
 
-beta[]
-
 Now you can write your own Java plugin for use with {ls}.
 We have provided instructions and GitHub examples to give
 you a head start. 
@@ -17,8 +15,7 @@ The APIs are in the `co.elastic.logstash.api` package.
 A Java plugin might break if it references classes or specific concrete
 implementations of API interfaces outside that package. The implementation of
 classes outside of the API package may change at any time.
-* Coming in a future release: Tooling to automate the packaging and deployment of
-Java plugins in Logstash. (Currently, this process is manual.)
+* Tooling to automate the packaging and deployment of Java plugins in Logstash.
 
 [float]
 === Process overview

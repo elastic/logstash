@@ -13,6 +13,9 @@ shared_examples "logstash list" do |logstash|
       logstash.uninstall
     end
 
+    let(:plugin_name) { /logstash-(?<type>\w+)-(?<name>\w+)/ }
+    let(:plugin_name_with_version) { /#{plugin_name}\s\(\d+\.\d+.\d+(.\w+)?\)/ }
+
     context "without a specific plugin" do
       it "display a list of plugins" do
         result = logstash.run_command_in_path("bin/logstash-plugin list")
@@ -26,8 +29,26 @@ shared_examples "logstash list" do |logstash|
 
       it "list the plugins with their versions" do
         result = logstash.run_command_in_path("bin/logstash-plugin list --verbose")
-        result.stdout.split("\n").each do |plugin|
-          expect(plugin).to match(/^logstash-\w+-\w+\s\(\d+\.\d+.\d+(.\w+)?\)/)
+
+        stdout = StringIO.new(result.stdout)
+        stdout.set_encoding(Encoding::UTF_8)
+        while line = stdout.gets
+          match = line.match(/^#{plugin_name_with_version}$/)
+          expect(match).to_not be_nil
+
+          # Integration Plugins list their sub-plugins, e.g.,
+          # ~~~
+          # logstash-integration-kafka (10.0.0)
+          # ├── logstash-input-kafka
+          # └── logstash-output-kafka
+          # ~~~
+          if match[:type] == 'integration'
+            while line = stdout.gets
+              match = line.match(/^(?: [├└]── )#{plugin_name}$/)
+              expect(match).to_not be_nil
+              break if line.start_with?(' └')
+            end
+          end
         end
       end
     end

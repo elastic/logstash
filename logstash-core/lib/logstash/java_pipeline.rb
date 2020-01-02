@@ -10,6 +10,9 @@ require "logstash/config/lir_serializer"
 
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
+
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader \
     :worker_threads,
     :events_consumed,
@@ -102,11 +105,16 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @thread = Thread.new do
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
+        ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
       rescue => e
         close
-        logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        logger.error("Pipeline aborted due to error", pipeline_log_params)
       ensure
         @finished_execution.make_true
       end
@@ -222,11 +230,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
       config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
-      @logger.info("Starting pipeline", default_logging_keys(
+      pipeline_log_params = default_logging_keys(
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
-        "pipeline.max_inflight" => max_inflight))
+        "pipeline.max_inflight" => max_inflight,
+        "pipeline.sources" => pipeline_source_details)
+      @logger.info("Starting pipeline", pipeline_log_params)
+
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
@@ -236,6 +247,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       pipeline_workers.times do |t|
         thread = Thread.new do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
           org.logstash.execution.WorkerLoop.new(
               lir_execution, filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
@@ -269,11 +281,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_inputs
     @input_threads.each do |thread|
-      if thread.class == Java::JavaObject
-        thread.to_java.join
-      else
-        thread.join
-      end
+      thread.join # Thread or java.lang.Thread (both have #join)
     end
   end
 
@@ -305,6 +313,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e

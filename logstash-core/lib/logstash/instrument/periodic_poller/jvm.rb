@@ -153,12 +153,15 @@ module LogStash module Instrument module PeriodicPoller
       old  = {}
       old = old.merge!(heap["CMS Old Gen"]) if heap.has_key?("CMS Old Gen")
       old = old.merge!(heap["PS Old Gen"])  if heap.has_key?("PS Old Gen")
+      old = old.merge!(heap["G1 Old Gen"])  if heap.has_key?("G1 Old Gen")
       young = {}
       young = young.merge!(heap["Par Eden Space"]) if heap.has_key?("Par Eden Space")
       young = young.merge!(heap["PS Eden Space"])  if heap.has_key?("PS Eden Space")
+      young = young.merge!(heap["G1 Eden Space"])  if heap.has_key?("G1 Eden Space")
       survivor = {}
       survivor = survivor.merge!(heap["Par Survivor Space"]) if heap.has_key?("Par Survivor Space")
       survivor = survivor.merge!(heap["PS Survivor Space"])  if heap.has_key?("PS Survivor Space")
+      survivor = survivor.merge!(heap["G1 Survivor Space"])  if heap.has_key?("G1 Survivor Space")
       {
         "young"    => aggregate_information_for(young),
         "old"      => aggregate_information_for(old),

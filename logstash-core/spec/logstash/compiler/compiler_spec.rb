@@ -252,6 +252,34 @@ describe LogStash::Compiler do
           expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
         end
 
+        describe "a filter plugin with a repeated hash directive with duplicated keys" do
+          let(:source) { "input { } filter { #{plugin_source} } output { } " }
+          let(:plugin_source) do
+            %q[
+              grok {
+                match => { "message" => "foo" }
+                match => { "message" => "bar" }
+                break_on_match => false
+              }
+          ]
+          end
+          subject(:c_plugin) { compiled[:filter] }
+
+          let(:expected_plugin_args) do
+            {
+                "match" => {
+                    "message" => ["foo", "bar"]
+                },
+                "break_on_match" => "false"
+            }
+          end
+
+          it "should merge the values of the duplicate keys into an array" do
+            expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
+          end
+
+        end
+
         describe "a filter plugin that has nested Hash directives" do
           let(:source) { "input { } filter { #{plugin_source} } output { } " }
           let(:plugin_source) do

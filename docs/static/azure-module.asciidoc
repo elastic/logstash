@@ -125,7 +125,6 @@ modules:
       - "Endpoint=sb://...EntityPath=insights-logs-querystorewaitstatistics"
       - "Endpoint=sb://...EntityPath=insights-logs-timeouts"
 -----
-
 <1> The `consumer_group` (optional) is highly recommended. See <<azure_best_practices>>.
 <2> The `storage_connection` (optional) sets the Azure Blob Storage connection for tracking processing state for Event Hubs when scaling out a deployment with multiple Logstash instances. See <<scaling-blob>> for additional details.
 <3> See <<azure_best_practices>> for guidelines on choosing an appropriate number of threads.
@@ -168,7 +167,7 @@ modules:
     var.input.azure_event_hubs.event_hubs:
       - ["name",                                    "initial_position",  "storage_container",  "decorate_events",  "event_hub_connection"]                                   <3>
       - ["insights-operational-logs",                 "TAIL",              "activity-logs1",    "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"]
-      - ["insights-operational-logs",                 "TAIL",              "activity_logs2",<4>   "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"] 
+      - ["insights-operational-logs",                 "TAIL",              "activity_logs2",  "true",             "Endpoint=sb://...EntityPath=insights-operational-logs"]   <4>  
       - ["insights-metrics-pt1m",                     "TAIL",              "dbmetrics",         "true",             "Endpoint=sb://...EntityPath=insights-metrics-pt1m"]
       - ["insights-logs-blocks",                      "TAIL",              "dbblocks",          "true",             "Endpoint=sb://...EntityPath=insights-logs-blocks"]
       - ["insights-logs-databasewaitstatistics",      "TAIL",              "dbwaitstats",       "false",            "Endpoint=sb://...EntityPath=insights-logs-databasewaitstatistics"]
@@ -177,7 +176,6 @@ modules:
       - ["insights-logs-querystorewaitstatistics",    "TAIL",              "dbstorewaitstats",  "true",             "Endpoint=sb://...EntityPath=insights-logs-querystorewaitstatistics"]
       - ["insights-logs-timeouts",                    "TAIL",              "dbtimeouts",        "true",             "Endpoint=sb://...EntityPath=insights-logs-timeouts"]
 -----
-
 <1> You can specify global Event Hub options. They will be overridden by any configurations specified in the event_hubs option.
 <2> See <<azure_best_practices>> for guidelines on choosing an appropriate number of threads.
 <3> The header array must be defined with name in the first position. Other options can be defined in any order. The per Event Hub configuration takes precedence. Any values not defined per Event Hub use the global config value.
@@ -494,7 +492,7 @@ the event originated.
 ==== Deploying the module in production 
 
 Use security best practices to secure your configuration.
-See {stack-ov}/elasticsearch-security.html[Securing the {stack}] for details and recommendations.
+See {ref}/secure-cluster.html[Secure a cluster] for details and recommendations.
 
 [[azure-resources]]
 ==== Microsoft Azure resources 

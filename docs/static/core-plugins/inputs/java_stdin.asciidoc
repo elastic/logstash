@@ -1,0 +1,35 @@
+:plugin: java_stdin
+:type: input
+:default_codec: java_line
+
+///////////////////////////////////////////
+REPLACES GENERATED VARIABLES
+///////////////////////////////////////////
+:include_path: ../../../../../logstash/docs/include
+///////////////////////////////////////////
+END - REPLACES GENERATED VARIABLES
+///////////////////////////////////////////
+
+[id="plugins-{type}s-{plugin}"]
+
+=== Java_stdin input plugin
+
+include::{include_path}/plugin_header-core.asciidoc[]
+
+==== Description
+
+Read events from standard input.
+
+By default, each event is assumed to be terminated by end-of-line. If you want events delimited in a different
+method, you'll need to use a codec with support for that encoding.
+
+[id="plugins-{type}s-{plugin}-options"]
+==== Java_stdin Input Configuration Options
+
+There are no special configuration options for this plugin,
+but it does support the <<plugins-{type}s-{plugin}-common-options>>.
+
+[id="plugins-{type}s-{plugin}-common-options"]
+include::{include_path}/{type}.asciidoc[]
+
+:default_codec!:
