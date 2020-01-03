@@ -39,7 +39,7 @@ a tarball.  This is because Logstash uses Java during installation to
 automatically detect your environment and install the correct startup method
 (SysV init scripts, Upstart, or systemd).  If Logstash is unable to find the
 JAVA_HOME environment variable during package installation time, you may get an
-error message, and Logstash will be unable to start properly.
+error message and Logstash will be unable to start properly.
 
 [float]
 [[installing-binary]]
