@@ -63,9 +63,9 @@
 		"skip-list": false
 	},
 	"logstash-codec-java_codec_example": {
-    "default-plugins": false,
-    "skip-list": true
-  },
+		"default-plugins": false,
+		"skip-list": true
+	},
 	"logstash-codec-json": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -200,9 +200,9 @@
 		"skip-list": false
 	},
 	"logstash-filter-java_filter_example": {
-    "default-plugins": false,
-    "skip-list": true
-  },
+		"default-plugins": false,
+		"skip-list": true
+	},
 	"logstash-filter-json": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -386,9 +386,9 @@
 		"skip-list": true
 	},
 	"logstash-input-java_input_example": {
-    "default-plugins": false,
-    "skip-list": true
-  },
+		"default-plugins": false,
+		"skip-list": true
+	},
 	"logstash-input-pipe": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -544,9 +544,9 @@
 		"skip-list": false
 	},
 	"logstash-output-java_output_example": {
-    "default-plugins": false,
-    "skip-list": true
-  },
+		"default-plugins": false,
+		"skip-list": true
+	},
 	"logstash-output-kafka": {
 		"default-plugins": true,
 		"core-specs": false,
