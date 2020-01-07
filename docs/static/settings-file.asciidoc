@@ -85,10 +85,14 @@ The `logstash.yml` file includes the following settings.
 | Use the Java execution engine.
 | true
 
-| `pipeline.workers`
-| The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
-  If you find that events are backing up, or that the
-  CPU is not saturated, consider increasing this number to better utilize machine processing power.
+| `pipeline.workers` 
+| The number of workers that will, in parallel, execute the filter and output
+stages of the pipeline. This setting uses the
+https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html#availableProcessors()[`java.lang.Runtime.getRuntime.availableProcessors`]
+value as a default if not overridden by `pipeline.workers` in `pipelines.yml` or
+`pipeline.workers` from `logstash.yml`.  If you have modified this setting and
+see that events are backing up, or that the CPU is not saturated, consider
+increasing this number to better utilize machine processing power. 
 | Number of the host's CPU cores
 
 | `pipeline.batch.size`
