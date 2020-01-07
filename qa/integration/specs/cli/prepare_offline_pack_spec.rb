@@ -35,6 +35,26 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
     end
   end
 
+  context "creating a pack for integration plugins" do
+    let(:plugin_to_pack) { "logstash-integration-jdbc" }
+
+
+    it "successfully create a pack" do
+      execute = @logstash_plugin.prepare_offline_pack(plugin_to_pack, temporary_zip_file)
+
+      expect(execute.exit_code).to eq(0)
+      expect(execute.stderr_and_stdout).to match(/Offline package created at/)
+      expect(execute.stderr_and_stdout).to match(/#{temporary_zip_file}/)
+
+      unpacked = unpack(temporary_zip_file)
+      expect(unpacked.plugins.collect(&:name)).to include(plugin_to_pack)
+      expect(unpacked.plugins.size).to eq(1)
+
+      expect(unpacked.dependencies.size).to be > 0
+    end
+  end
+
+
   context "create a pack from a wildcard" do
     let(:plugins_to_pack) { %w(logstash-filter-*) }
 
@@ -50,7 +70,7 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
       filters = @logstash_plugin.list(plugins_to_pack.first)
                                 .stderr_and_stdout.split("\n")
                                 .delete_if do |line|
-                                  line =~ /cext|JAVA_OPT|fatal|^WARNING|Option \w+ was deprecated/
+                                  line =~ /cext|├──|└──|logstash-integration|JAVA_OPT|fatal|^WARNING|Option \w+ was deprecated/
                                 end
 
       expect(unpacked.plugins.collect(&:name)).to include(*filters)
