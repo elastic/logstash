@@ -60,19 +60,23 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     public static <T extends Dataset> ComputeStepSyntaxElement<T> create(
         final String id,
-        final Iterable<MethodSyntaxElement> methods, final ClassFields fields,
-        final Class<T> interfce) {
+        final Iterable<MethodSyntaxElement> methods,
+        final ClassFields fields,
+        final Class<T> interfce)
+    {
         return new ComputeStepSyntaxElement<>(id, methods, fields, interfce);
     }
 
-    private ComputeStepSyntaxElement(final String id,
+    private ComputeStepSyntaxElement(
+        final String id,
         final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields, final Class<T> interfce)
+        final ClassFields fields,
+        final Class<T> interfce)
     {
+        this.id = id;
         this.methods = methods;
         this.fields = fields;
         type = interfce;
-        this.id = id;
     }
 
     @SuppressWarnings("unchecked")

@@ -75,3 +75,9 @@
 #   Default is path.data/dead_letter_queue
 #
 #   path.dead_letter_queue:
+
+
+ - pipeline.id: test
+   config.string: "input { generator {} } filter { drop { id => 'sleep1' } } output { stdout { id => 'sleep1' } }"
+ - pipeline.id: another_test
+   config.string: "input { generator {} } filter { drop { id => 'sleep1' } } output { stdout { id => 'toto' } }"

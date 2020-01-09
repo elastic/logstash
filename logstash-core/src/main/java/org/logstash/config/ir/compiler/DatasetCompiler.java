@@ -76,8 +76,12 @@ public final class DatasetCompiler {
             );
         }
         return ComputeStepSyntaxElement.create(
-            vertexId, Arrays.asList(compute.compute(), compute.clear(),
-            MethodSyntaxElement.right(right)), compute.fields(), SplitDataset.class
+            vertexId,
+            Arrays.asList(compute.compute(),
+            compute.clear(),
+            MethodSyntaxElement.right(right)),
+            compute.fields(),
+            SplitDataset.class
         );
     }
 
