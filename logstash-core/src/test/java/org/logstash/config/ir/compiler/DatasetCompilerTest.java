@@ -22,10 +22,11 @@ public final class DatasetCompilerTest {
     public void compilesOutputDataset() {
         assertThat(
             DatasetCompiler.outputDataset(
+                "foo",
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
                 true
-            ).instantiate("foo").compute(RubyUtil.RUBY.newArray(), false, false),
+            ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );
     }
@@ -34,8 +35,9 @@ public final class DatasetCompilerTest {
     public void compilesSplitDataset() {
         final FieldReference key = FieldReference.from("foo");
         final SplitDataset left = DatasetCompiler.splitDataset(
+            "bar",
             Collections.emptyList(), event -> event.getEvent().includes(key)
-        ).instantiate("bar");
+        ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
         final JrubyEventExtLibrary.RubyEvent falseEvent =

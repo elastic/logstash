@@ -33,8 +33,11 @@ public final class DatasetCompiler {
         // Utility Class
     }
 
-    public static ComputeStepSyntaxElement<SplitDataset> splitDataset(final Collection<Dataset> parents,
-        final EventCondition condition) {
+    public static ComputeStepSyntaxElement<SplitDataset> splitDataset(
+        final String vertexId,
+        final Collection<Dataset> parents,
+        final EventCondition condition)
+    {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement ifData = fields.add(new ArrayList<>());
         final ValueSyntaxElement elseData = fields.add(new ArrayList<>());
@@ -73,19 +76,23 @@ public final class DatasetCompiler {
             );
         }
         return ComputeStepSyntaxElement.create(
-            Arrays.asList(compute.compute(), compute.clear(), MethodSyntaxElement.right(right)),
-            compute.fields(), SplitDataset.class
+            vertexId, Arrays.asList(compute.compute(), compute.clear(),
+            MethodSyntaxElement.right(right)), compute.fields(), SplitDataset.class
         );
     }
 
     /**
      * Compiles a {@link Dataset} representing a filter plugin without flush behaviour.
+     * @param vertexId {@link String} associated vertex ID
      * @param parents Parent {@link Dataset} to aggregate for this filter
      * @param plugin Filter Plugin
      * @return Dataset representing the filter plugin
      */
-    public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
-        final AbstractFilterDelegatorExt plugin) {
+    public static ComputeStepSyntaxElement<Dataset> filterDataset(
+        final String vertexId,
+        final Collection<Dataset> parents,
+        final AbstractFilterDelegatorExt plugin)
+    {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
@@ -104,7 +111,7 @@ public final class DatasetCompiler {
                 parentFields, inputBufferField
             );
         }
-        return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
+        return prepare(vertexId, withOutputBuffering(compute, clear, outputBuffer, fields));
     }
 
     /**
@@ -113,23 +120,23 @@ public final class DatasetCompiler {
      * trivial dataset that does not invoke any computation whatsoever.</p>
      * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
      * {@link Collections#emptyList()}.
-     * @param key String {@link String} unique key for this {@link Dataset}
+     * @param id String {@link String} unique id for this {@link Dataset}
      * @param parents Parent {@link Dataset} to sum and terminate
      * @return Dataset representing the sum of given parent {@link Dataset}
      */
-    public static Dataset terminalDataset(final String key, final Collection<Dataset> parents) {
+    public static Dataset terminalDataset(final String id, final Collection<Dataset> parents) {
         final int count = parents.size();
         final Dataset result;
         if (count > 1) {
             final ClassFields fields = new ClassFields();
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
-            result = compileOutput(
+            result = compileOutput(id,
                 Closure.wrap(
                     parentFields.stream().map(DatasetCompiler::computeDataset)
                         .toArray(MethodLevelSyntaxElement[]::new)
                 ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
-            ).instantiate(key);
+            ).instantiate();
         } else if (count == 1) {
             // No need for a terminal dataset here, if there is only a single parent node we can
             // call it directly.
@@ -153,12 +160,15 @@ public final class DatasetCompiler {
      * {@link DynamicMethod#call(org.jruby.runtime.ThreadContext, IRubyObject, org.jruby.RubyModule, String, IRubyObject[], Block)}
      * using an {@code IRubyObject[]} field that is repopulated with the current Event array on
      * every call to {@code compute}.
+     * @param vertexId {@link String} associated vertex ID
      * @param parents Parent Datasets
      * @param output Output Plugin (of Ruby type OutputDelegator)
      * @param terminal Set to true if this output is the only output in the pipeline
      * @return Output Dataset
      */
-    public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
+    public static ComputeStepSyntaxElement<Dataset> outputDataset(
+        final String vertexId,
+        final Collection<Dataset> parents,
         final AbstractOutputDelegatorExt output, final boolean terminal) {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
@@ -185,7 +195,7 @@ public final class DatasetCompiler {
                 parentFields, inputBuffer
             );
         }
-        return compileOutput(computeSyntax, clearSyntax, fields);
+        return compileOutput(vertexId, computeSyntax, clearSyntax, fields);
     }
 
     private static ValueSyntaxElement invokeOutput(final ValueSyntaxElement output,
@@ -223,9 +233,9 @@ public final class DatasetCompiler {
      * @param compute Method definitions for {@code compute} and {@code clear}
      * @return Dataset Instance
      */
-    private static ComputeStepSyntaxElement<Dataset> prepare(final DatasetCompiler.ComputeAndClear compute) {
+    private static ComputeStepSyntaxElement<Dataset> prepare(final String vertexId, final DatasetCompiler.ComputeAndClear compute) {
         return ComputeStepSyntaxElement.create(
-            Arrays.asList(compute.compute(), compute.clear()), compute.fields(), Dataset.class
+            vertexId, Arrays.asList(compute.compute(), compute.clear()), compute.fields(), Dataset.class
         );
     }
 
@@ -313,10 +323,14 @@ public final class DatasetCompiler {
         return res;
     }
 
-    private static ComputeStepSyntaxElement<Dataset> compileOutput(final Closure syntax,
-        final Closure clearSyntax, final ClassFields fields) {
+    private static ComputeStepSyntaxElement<Dataset> compileOutput(
+        final String vertexId,
+        final Closure syntax,
+        final Closure clearSyntax,
+        final ClassFields fields)
+    {
         return prepare(
-            computeAndClear(syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields)
+            vertexId, computeAndClear(syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields)
         );
     }
 

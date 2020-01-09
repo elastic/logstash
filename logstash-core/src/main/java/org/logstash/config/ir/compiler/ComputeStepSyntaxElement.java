@@ -35,7 +35,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
      * Global cache of runtime compiled classes to prevent duplicate classes being compiled.
      * The key is a String uniquely identifying a ComputeStepSyntaxElement such as the
      * associated vertex ID which is unique across a single pipeline but remains the same
-     * across workers {@link Dataset CompiledExecution}
+     * across workers threads own {@link Dataset CompiledExecution}
      */
     private static final Map<String, Class<? extends Dataset>> CLASS_CACHE
         = new HashMap<>();
@@ -52,28 +52,38 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     private final Class<T> type;
 
+    /**
+     * Unique ID within a pipeline but should be identical across workers
+     * {@link Dataset CompiledExecution}
+     */
+    private String id;
+
     public static <T extends Dataset> ComputeStepSyntaxElement<T> create(
+        final String id,
         final Iterable<MethodSyntaxElement> methods, final ClassFields fields,
         final Class<T> interfce) {
-        return new ComputeStepSyntaxElement<>(methods, fields, interfce);
+        return new ComputeStepSyntaxElement<>(id, methods, fields, interfce);
     }
 
-    private ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields, final Class<T> interfce) {
+    private ComputeStepSyntaxElement(final String id,
+        final Iterable<MethodSyntaxElement> methods,
+        final ClassFields fields, final Class<T> interfce)
+    {
         this.methods = methods;
         this.fields = fields;
         type = interfce;
+        this.id = id;
     }
 
     @SuppressWarnings("unchecked")
-    public T instantiate(String classCacheKey) {
+    public T instantiate() {
         // We need to globally synchronize to avoid concurrency issues with the internal class
         // loader and the CLASS_CACHE
         synchronized (COMPILER) {
             try {
                 final Class<? extends Dataset> clazz;
-                if (CLASS_CACHE.containsKey(classCacheKey)) {
-                    clazz = CLASS_CACHE.get(classCacheKey);
+                if (CLASS_CACHE.containsKey(id)) {
+                    clazz = CLASS_CACHE.get(id);
                 } else {
                     final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
                     final String code = generateCode(name);
@@ -88,7 +98,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                     clazz = (Class<T>) COMPILER.getClassLoader().loadClass(
                         String.format("org.logstash.generated.%s", name)
                     );
-                    CLASS_CACHE.put(classCacheKey, clazz);
+                    CLASS_CACHE.put(id, clazz);
                 }
                 return (T) clazz.<T>getConstructor(Map.class).newInstance(ctorArguments());
             } catch (final CompileException | ClassNotFoundException | IOException

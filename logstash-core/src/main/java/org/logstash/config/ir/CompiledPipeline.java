@@ -327,11 +327,11 @@ public final class CompiledPipeline {
 
             if (!plugins.containsKey(vertexId)) {
                 final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.filterDataset(flatten(datasets, vertex),
+                        DatasetCompiler.filterDataset(vertexId, flatten(datasets, vertex),
                                                       filters.get(vertexId));
                 LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
 
-                plugins.put(vertexId, prepared.instantiate(vertexId));
+                plugins.put(vertexId, prepared.instantiate());
             }
 
             return plugins.get(vertexId);
@@ -349,11 +349,11 @@ public final class CompiledPipeline {
 
             if (!plugins.containsKey(vertexId)) {
                 final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.outputDataset(flatten(datasets, vertex),
+                        DatasetCompiler.outputDataset(vertexId, flatten(datasets, vertex),
                                                       outputs.get(vertexId),
                                                      outputs.size() == 1);
                 LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
-                plugins.put(vertexId, prepared.instantiate(vertexId));
+                plugins.put(vertexId, prepared.instantiate());
             }
 
             return plugins.get(vertexId);
@@ -378,11 +378,11 @@ public final class CompiledPipeline {
                 // by requiring its else branch.
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
-                        DatasetCompiler.splitDataset(dependencies, condition);
+                        DatasetCompiler.splitDataset(key, dependencies, condition);
                     LOGGER.debug(
                         "Compiled conditional\n {} \n into \n {}", vertex, prepared
                     );
-                    conditional = prepared.instantiate(key);
+                    conditional = prepared.instantiate();
                     iffs.put(key, conditional);
                 }
 
