@@ -113,10 +113,11 @@ public final class DatasetCompiler {
      * trivial dataset that does not invoke any computation whatsoever.</p>
      * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
      * {@link Collections#emptyList()}.
+     * @param key String {@link String} unique key for this {@link Dataset}
      * @param parents Parent {@link Dataset} to sum and terminate
      * @return Dataset representing the sum of given parent {@link Dataset}
      */
-    public static Dataset terminalDataset(final Collection<Dataset> parents) {
+    public static Dataset terminalDataset(final String key, final Collection<Dataset> parents) {
         final int count = parents.size();
         final Dataset result;
         if (count > 1) {
@@ -128,7 +129,7 @@ public final class DatasetCompiler {
                     parentFields.stream().map(DatasetCompiler::computeDataset)
                         .toArray(MethodLevelSyntaxElement[]::new)
                 ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
-            ).instantiate();
+            ).instantiate(key);
         } else if (count == 1) {
             // No need for a terminal dataset here, if there is only a single parent node we can
             // call it directly.

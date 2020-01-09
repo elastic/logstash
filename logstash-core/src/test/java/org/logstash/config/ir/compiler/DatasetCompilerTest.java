@@ -25,7 +25,7 @@ public final class DatasetCompilerTest {
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
                 true
-            ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
+            ).instantiate("foo").compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );
     }
@@ -35,7 +35,7 @@ public final class DatasetCompilerTest {
         final FieldReference key = FieldReference.from("foo");
         final SplitDataset left = DatasetCompiler.splitDataset(
             Collections.emptyList(), event -> event.getEvent().includes(key)
-        ).instantiate();
+        ).instantiate("bar");
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
         final JrubyEventExtLibrary.RubyEvent falseEvent =

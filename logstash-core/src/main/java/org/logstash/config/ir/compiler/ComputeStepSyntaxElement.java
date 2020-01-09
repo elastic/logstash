@@ -32,9 +32,12 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     private static final ISimpleCompiler COMPILER = new SimpleCompiler();
 
     /**
-     * Cache of runtime compiled classes to prevent duplicate classes being compiled.
+     * Global cache of runtime compiled classes to prevent duplicate classes being compiled.
+     * The key is a String uniquely identifying a ComputeStepSyntaxElement such as the
+     * associated vertex ID which is unique across a single pipeline but remains the same
+     * across workers {@link Dataset CompiledExecution}
      */
-    private static final Map<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
+    private static final Map<String, Class<? extends Dataset>> CLASS_CACHE
         = new HashMap<>();
 
     /**
@@ -63,14 +66,14 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     @SuppressWarnings("unchecked")
-    public T instantiate() {
+    public T instantiate(String classCacheKey) {
         // We need to globally synchronize to avoid concurrency issues with the internal class
         // loader and the CLASS_CACHE
         synchronized (COMPILER) {
             try {
                 final Class<? extends Dataset> clazz;
-                if (CLASS_CACHE.containsKey(this)) {
-                    clazz = CLASS_CACHE.get(this);
+                if (CLASS_CACHE.containsKey(classCacheKey)) {
+                    clazz = CLASS_CACHE.get(classCacheKey);
                 } else {
                     final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
                     final String code = generateCode(name);
@@ -85,7 +88,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                     clazz = (Class<T>) COMPILER.getClassLoader().loadClass(
                         String.format("org.logstash.generated.%s", name)
                     );
-                    CLASS_CACHE.put(this, clazz);
+                    CLASS_CACHE.put(classCacheKey, clazz);
                 }
                 return (T) clazz.<T>getConstructor(Map.class).newInstance(ctorArguments());
             } catch (final CompileException | ClassNotFoundException | IOException

@@ -309,7 +309,7 @@ public final class CompiledPipeline {
             if (outputNodes.isEmpty()) {
                 return Dataset.IDENTITY;
             } else {
-                return DatasetCompiler.terminalDataset(outputNodes.stream().map(
+                return DatasetCompiler.terminalDataset(pipelineIR.uniqueHash(), outputNodes.stream().map(
                     leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf))
                 ).collect(Collectors.toList()));
             }
@@ -331,7 +331,7 @@ public final class CompiledPipeline {
                                                       filters.get(vertexId));
                 LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
 
-                plugins.put(vertexId, prepared.instantiate());
+                plugins.put(vertexId, prepared.instantiate(vertexId));
             }
 
             return plugins.get(vertexId);
@@ -353,7 +353,7 @@ public final class CompiledPipeline {
                                                       outputs.get(vertexId),
                                                      outputs.size() == 1);
                 LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
-                plugins.put(vertexId, prepared.instantiate());
+                plugins.put(vertexId, prepared.instantiate(vertexId));
             }
 
             return plugins.get(vertexId);
@@ -382,7 +382,7 @@ public final class CompiledPipeline {
                     LOGGER.debug(
                         "Compiled conditional\n {} \n into \n {}", vertex, prepared
                     );
-                    conditional = prepared.instantiate();
+                    conditional = prepared.instantiate(key);
                     iffs.put(key, conditional);
                 }
 
