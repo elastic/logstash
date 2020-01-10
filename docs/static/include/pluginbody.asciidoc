@@ -779,6 +779,24 @@ will be discussed further in the testing section of this document.
 Another kind of external dependency is on jar files.  This will be described
 in the "Add a `gemspec` file" section.
 
+===== Deprecated features
+
+As a plugin evolves, an option or feature may no longer serve the
+intended purpose, and the developer may want to _deprecate_ its usage.
+Deprecation warns users about the option's status, so they aren't caught by
+surprise when it is removed in a later release.
+
+{ls} 7.6 introduced a _deprecation logger_ to make handling those situations
+easier. You can use the
+https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support[adapter]
+to ensure that your plugin can use the deprecation logger while still supporting
+older versions of {ls}. See the
+https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support/blob/master/README.md[readme]
+for more information and for instructions on using the adapter.
+
+Deprecations are noted in the `logstash-deprecation.log` file in the
+`log` directory.
+
 ===== Add a Gemfile
 
 Gemfiles allow Ruby's Bundler to maintain the dependencies for your plugin.
