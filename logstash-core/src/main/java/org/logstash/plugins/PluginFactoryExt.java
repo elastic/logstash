@@ -236,6 +236,7 @@ public final class PluginFactoryExt {
                     final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                     scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
+                    initConfigMetrics(context, source, scopedMetric);
                     pluginInstance.callMethod(context, "metric=", scopedMetric);
                     pluginInstance.callMethod(context, "execution_context=", executionCntx);
                     return pluginInstance;
@@ -338,6 +339,14 @@ public final class PluginFactoryExt {
                 }
             }
         }
+    }
+
+    private static void initConfigMetrics(ThreadContext context, SourceWithMetadata source,
+                                          AbstractNamespacedMetricExt scopedMetric) {
+        AbstractNamespacedMetricExt metricConfigReference = scopedMetric.namespace(context, MetricKeys.CONFIG_REF_KEY);
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_SOURCE_KEY, RubyUtil.RUBY.newString(source.getId()));
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_LINE_KEY, RubyUtil.RUBY.newFixnum(source.getLine()));
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_COLUMN_KEY, RubyUtil.RUBY.newFixnum(source.getColumn()));
     }
 
     @JRubyClass(name = "ExecutionContextFactory")

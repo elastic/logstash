@@ -3,6 +3,7 @@ require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
+require "pp"
 
 describe "Test Monitoring API" do
   before(:all) {
@@ -142,6 +143,26 @@ describe "Test Monitoring API" do
       # all log levels should be reset to original values
       logging_put_assert logstash_service.monitoring_api.logging_reset
       logging_get_assert logstash_service, "INFO", "TRACE"
+    end
+  end
+
+  it "can retrieve pipeline metrics stats - config string" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # event_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.pipeline_stats("main") rescue nil
+      expect(result).not_to be_nil
+
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+      inputs_stats = result.fetch("plugins").fetch("inputs")[0]
+      config_ref = inputs_stats.fetch("config-ref")
+      expect(config_ref.fetch("source")).to eq("config_string")
+      expect(config_ref.fetch("line")).to eq(1)
+      expect(config_ref.fetch("column")).to eq(8)
     end
   end
 
