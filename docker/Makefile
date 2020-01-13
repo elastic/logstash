@@ -12,7 +12,7 @@ else
   VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
-IMAGE_FLAVORS ?= oss full ubi7
+IMAGE_FLAVORS ?= oss full
 DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
@@ -20,7 +20,7 @@ HTTPD ?= logstash-docker-artifact-server
 
 FIGLET := pyfiglet -w 160 -f puffy
 
-all: build-from-local-artifacts build-from-local-oss-artifacts build-from-local-ubi7-artifacts public-dockerfiles
+all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
 
 lint: venv
 	flake8 tests
@@ -45,16 +45,6 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
 	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
-	  (docker kill $(HTTPD); false);
-	-docker kill $(HTTPD)
-
-build-from-local-ubi7-artifacts: venv dockerfile env2yaml
-	docker run --rm -d --name=$(HTTPD) \
-	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
-	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	pyfiglet -f puffy -w 160 "Building: ubi7"; \
-	docker build --network=host -t $(IMAGE_TAG)-ubi7:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi7 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -93,18 +83,9 @@ public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  -D local_artifacts='false' \
 	  -D release='$(RELEASE)' \
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-oss && \
-	jinja2 \
-	  -D elastic_version='$(ELASTIC_VERSION)' \
-	  -D version_tag='$(VERSION_TAG)' \
-	  -D image_flavor='ubi7' \
-	  -D local_artifacts='false' \
-	  -D release='$(RELEASE)' \
-	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ubi7 && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
 	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-ubi7 Dockerfile && \
-	tar -zcf ../logstash-ubi7-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
