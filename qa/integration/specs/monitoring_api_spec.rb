@@ -3,7 +3,6 @@ require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
-require "pp"
 
 describe "Test Monitoring API" do
   before(:all) {
@@ -160,9 +159,73 @@ describe "Test Monitoring API" do
       # and trigger the retry block
       inputs_stats = result.fetch("plugins").fetch("inputs")[0]
       config_ref = inputs_stats.fetch("config-ref")
-      expect(config_ref.fetch("source")).to eq("config_string")
-      expect(config_ref.fetch("line")).to eq(1)
-      expect(config_ref.fetch("column")).to eq(8)
+      expect_source_reference(config_ref, "config_string", 1, 8)
+#       expect(config_ref.fetch("source")).to eq("config_string")
+#       expect(config_ref.fetch("line")).to eq(1)
+#       expect(config_ref.fetch("column")).to eq(8)
+    end
+  end
+
+  describe "multifile pipelines" do
+
+    let!(:settings_dir) { Stud::Temporary.directory("logstash-splitted-pipeline-config-test") }
+
+    it "can retrieve pipeline metrics stats - multiple files" do
+      IO.write(settings_dir + "/pipeline_1_piece.conf", """
+      input {
+      	stdin {
+      	  codec => json {
+      	    charset => \"UTF-8\"
+      	  }
+      	}
+      }
+      filter {
+      	sleep {
+      		time => 1
+      	}
+      }
+      """)
+
+      IO.write(settings_dir + "/pipeline_2_piece.conf", """
+      output {
+       	stdout {
+       	  codec => rubydebug
+       	}
+      }
+      """)
+
+      logstash_service = @fixture.get_service("logstash")
+      logstash_service.spawn_logstash("--path.config", settings_dir)
+      logstash_service.wait_for_logstash
+
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        # event_stats can fail if the stats subsystem isn't ready
+        result = logstash_service.monitoring_api.pipeline_stats("main") rescue nil
+        expect(result).not_to be_nil
+
+        inputs_stats = result.fetch("plugins").fetch("inputs")[0]
+        config_ref = inputs_stats.fetch("config-ref")
+        expect_source_reference_file(config_ref, "pipeline_1_piece.conf", 3, 8)
+
+        input_codec_stats = result.fetch("plugins").fetch("codecs").select { |c| c["name"] == "json"}.first
+        expect(input_codec_stats).not_to be_nil
+        config_ref = input_codec_stats.fetch("config-ref")
+        expect_source_reference_file(config_ref, "pipeline_1_piece.conf", 4, 19)
+
+#TODO enable this after the filter and output plugins exposes the metrics!
+        #filters_stats = result.fetch("plugins").fetch("filters")[0]
+        #config_ref = filters_stats.fetch("config-ref")
+        #expect_source_reference_file(config_ref, "pipeline_1_piece.conf", 11, 8)
+        #
+        #outputs_stats = result.fetch("plugins").fetch("outputs")[0]
+        #config_ref = outputs_stats.fetch("config-ref")
+        #expect_source_reference_file(config_ref, "pipeline_2_piece.conf", 3, 9)
+        #
+        #output_codec_stats = result.fetch("plugins").fetch("codecs").select { |c| c["name"] == "rubydebug"}.first
+        #expect(output_codec_stats).not_to be_nil
+        #config_ref = output_codec_stats.fetch("parent-config-ref")
+        #expect_source_reference_file(config_ref, "pipeline_2_piece.conf", 3, 9)
+      end
     end
   end
 
@@ -181,6 +244,19 @@ describe "Test Monitoring API" do
 
   def logging_put_assert(result)
     expect(result["acknowledged"]).to be(true)
+  end
+
+  def expect_source_reference(config_ref, source, line, column)
+    expect(config_ref.fetch("source")).to eq(source)
+    expect(config_ref.fetch("line")).to eq(line)
+    expect(config_ref.fetch("column")).to eq(column)
+  end
+
+  def expect_source_reference_file(config_ref, filename, line, column)
+#     expect(config_ref.fetch("source")).to match("\/tmp\/logstash-splitted-pipeline-config-test.*\/#{filename}")
+    expect(config_ref.fetch("source")).to match(".*#{filename}")
+    expect(config_ref.fetch("line")).to eq(line)
+    expect(config_ref.fetch("column")).to eq(column)
   end
 
 end
