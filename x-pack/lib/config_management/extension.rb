@@ -27,6 +27,8 @@ module LogStash
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.username", "logstash_system"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.password"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.hosts", String, [ "https://localhost:9200" ] ))
+        settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.cloud_id"))
+        settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.cloud_auth"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.certificate_authority"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.truststore.path"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.truststore.password"))

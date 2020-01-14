@@ -41,6 +41,16 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil]
       )
 
+      it "has a cloud_id setting" do
+        name = "xpack.management.elasticsearch.cloud_id"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
+
+      it "has a cloud_auth setting" do
+        name = "xpack.management.elasticsearch.cloud_auth"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
+
       describe 'deprecated and renamed settings' do
         define_deprecated_and_renamed_settings(
             "xpack.management.elasticsearch.url"    => "xpack.management.elasticsearch.hosts",

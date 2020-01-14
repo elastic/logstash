@@ -103,7 +103,9 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   describe ".new" do
     before do
       allow_any_instance_of(described_class).to receive(:setup_license_checker)
+      allow_any_instance_of(described_class).to receive(:license_check)
     end
+
     context "when password isn't set" do
       let(:settings) do
         {
@@ -114,8 +116,43 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           #"xpack.management.elasticsearch.password" => elasticsearch_password,
         }
       end
+
       it "should raise an ArgumentError" do
         expect { described_class.new(system_settings) }.to raise_error(ArgumentError)
+      end
+    end
+
+    context "cloud settings" do
+      let(:cloud_name) { 'abcdefghijklmnopqrstuvxyz' }
+      let(:cloud_domain) { 'elastic.co' }
+      let(:cloud_id) { "label:#{Base64.urlsafe_encode64("#{cloud_domain}$#{cloud_name}$ignored")}" }
+
+      let(:settings) do
+        {
+            "xpack.management.enabled" => true,
+            "xpack.management.pipeline.id" => "main",
+            "xpack.management.elasticsearch.cloud_id" => cloud_id,
+            "xpack.management.elasticsearch.cloud_auth" => "#{elasticsearch_username}:#{elasticsearch_password}"
+        }
+      end
+
+      it "should not raise an ArgumentError" do
+        expect { described_class.new(system_settings) }.not_to raise_error
+      end
+
+      context "when cloud_auth isn't set" do
+        let(:settings) do
+          {
+              "xpack.management.enabled" => true,
+              "xpack.management.pipeline.id" => "main",
+              "xpack.management.elasticsearch.cloud_id" => cloud_id,
+              #"xpack.management.elasticsearch.cloud_auth" => "#{elasticsearch_username}:#{elasticsearch_password}"
+          }
+        end
+
+        it "should raise an ArgumentError" do
+          expect { described_class.new(system_settings) }.to raise_error(ArgumentError)
+        end
       end
     end
   end
