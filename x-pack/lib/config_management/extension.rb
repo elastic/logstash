@@ -6,6 +6,7 @@ require "logstash/environment"
 require "config_management/hooks"
 require "config_management/elasticsearch_source"
 require "config_management/bootstrap_check"
+require 'helpers/elasticsearch_options'
 
 module LogStash
   module ConfigManagement
@@ -21,12 +22,14 @@ module LogStash
         require "logstash/runner"
         logger.trace("Registering additionals settings")
 
+        default_host = LogStash::Helpers::ElasticsearchOptions::DEFAULT_HOST
+
         settings.register(LogStash::Setting::Boolean.new("xpack.management.enabled", false))
         settings.register(LogStash::Setting::TimeValue.new("xpack.management.logstash.poll_interval", "5s"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.pipeline.id", String, ["main"]))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.username", "logstash_system"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.password"))
-        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.hosts", String, [ "https://localhost:9200" ] ))
+        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.hosts", String, [ default_host ] ))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.cloud_id"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.cloud_auth"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.certificate_authority"))

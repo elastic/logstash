@@ -179,8 +179,10 @@ module LogStash
     def additionals_settings(settings)
       logger.trace("registering additionals_settings")
 
+      default_host = LogStash::Helpers::ElasticsearchOptions::DEFAULT_HOST
+
       settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.enabled", false))
-      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, [ "http://localhost:9200" ] ))
+      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, [ default_host ] ))
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.interval", "10s"))
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))

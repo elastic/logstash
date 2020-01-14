@@ -132,6 +132,32 @@ describe LogStash::Helpers::ElasticsearchOptions do
         expect(es_options.keys).to_not include("username")
         expect(es_options.keys).to_not include("password")
       end
+
+      context 'hosts also set' do
+        let(:settings) do
+          super.merge(
+              "xpack.monitoring.elasticsearch.hosts" => 'https://localhost:9200'
+          )
+        end
+
+        it "raises due invalid configuration" do
+          expect { test_class.es_options_from_settings_or_modules('monitoring', system_settings) }.
+              to raise_error(ArgumentError, /Both.*?cloud_id.*?and.*?hosts.*?specified/)
+        end
+      end
+
+      context 'username also set' do
+        let(:settings) do
+          super.merge(
+              "xpack.monitoring.elasticsearch.username" => 'elastic'
+          )
+        end
+
+        it "raises due invalid configuration" do
+          expect { test_class.es_options_from_settings_or_modules('monitoring', system_settings) }.
+              to raise_error(ArgumentError, /Both.*?cloud_auth.*?and.*?username.*?specified/)
+        end
+      end
     end
   end
 

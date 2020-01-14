@@ -17,6 +17,8 @@ module LogStash module Helpers
         cloud_auth
       )
 
+    DEFAULT_HOST = 'https://localhost:9200'.freeze
+
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
     # feature supports falling back to modules if the feature is not specified in logstash.yml
     def es_options_from_settings_or_modules(feature, settings)
@@ -32,11 +34,13 @@ module LogStash module Helpers
       # ES output does not allow both to be configured thus only fill hosts when cloud_id not set
       if cloud_id = settings.get("xpack.#{feature}.elasticsearch.cloud_id")
         opts['cloud_id'] = cloud_id
+        check_cloud_id_configuration!(feature, settings)
       else
         opts['hosts'] = settings.get("xpack.#{feature}.elasticsearch.hosts")
       end
       if cloud_auth = settings.get("xpack.#{feature}.elasticsearch.cloud_auth")
         opts['cloud_auth'] = cloud_auth
+        check_cloud_auth_configuration!(feature, settings)
       else
         opts['user'] = settings.get("xpack.#{feature}.elasticsearch.username")
         opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
@@ -101,7 +105,7 @@ module LogStash module Helpers
       modules_configured?(settings) && !feature_configured?(feature, settings)
     end
 
-    # If not settings are configured, then assume that the feature has not been configured.
+    # If no settings are configured, then assume that the feature has not been configured.
     # The assumption is that with security setup, at least one setting (password or certificates)
     # should be configured. If security is not setup, and defaults 'just work' for monitoring, then
     # this will need to be reconsidered.
@@ -132,4 +136,23 @@ module LogStash module Helpers
       # As only one module is supported in the initial rollout, use the first one found
       modules_array.first
     end
+
+    private
+
+    def check_cloud_id_configuration!(feature, settings)
+      return if !settings.set?("xpack.#{feature}.elasticsearch.hosts")
+
+      raise ArgumentError.new("Both \"xpack.#{feature}.elasticsearch.cloud_id\" and " +
+                              "\"xpack.#{feature}.elasticsearch.hosts\" specified, please only use one of those.")
+    end
+
+    def check_cloud_auth_configuration!(feature, settings)
+      return if !settings.set?("xpack.#{feature}.elasticsearch.username") &&
+                !settings.set?("xpack.#{feature}.elasticsearch.password")
+
+      raise ArgumentError.new("Both \"xpack.#{feature}.elasticsearch.cloud_auth\" and " +
+                              "\"xpack.#{feature}.elasticsearch.username\"/\"xpack.#{feature}.elasticsearch.password\" " +
+                              "specified, please only use one of those.")
+    end
+
   end end end
