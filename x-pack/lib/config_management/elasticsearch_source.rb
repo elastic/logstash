@@ -35,8 +35,16 @@ module LogStash
 
       def initialize(settings)
         super(settings)
-        if @settings.get("xpack.management.enabled") && !@settings.get_setting("xpack.management.elasticsearch.password").set?
-          raise ArgumentError.new("You must set the password using the \"xpack.management.elasticsearch.password\" in logstash.yml")
+        if @settings.get("xpack.management.enabled")
+          if @settings.get_setting("xpack.management.elasticsearch.cloud_id").set?
+            if !@settings.get_setting("xpack.management.elasticsearch.cloud_auth").set?
+              raise ArgumentError.new("You must set credentials using \"xpack.management.elasticsearch.cloud_auth\" in logstash.yml")
+            end
+          else
+            if !@settings.get_setting("xpack.management.elasticsearch.password").set?
+              raise ArgumentError.new("You must set the password using \"xpack.management.elasticsearch.password\" in logstash.yml")
+            end
+          end
         end
 
         @es_options = es_options_from_settings('management', settings)
