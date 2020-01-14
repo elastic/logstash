@@ -7,9 +7,15 @@ module LogStash module Helpers
     extend self
 
     ES_SETTINGS =%w(
-      ssl.certificate_authority ssl.truststore.path ssl.keystore.path
-      hosts username password cloud_id cloud_auth
-    )
+        ssl.certificate_authority
+        ssl.truststore.path
+        ssl.keystore.path
+        hosts
+        username
+        password
+        cloud_id
+        cloud_auth
+      )
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
     # feature supports falling back to modules if the feature is not specified in logstash.yml
