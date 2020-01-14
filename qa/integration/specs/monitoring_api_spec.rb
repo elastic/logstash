@@ -160,9 +160,6 @@ describe "Test Monitoring API" do
       inputs_stats = result.fetch("plugins").fetch("inputs")[0]
       config_ref = inputs_stats.fetch("config-ref")
       expect_source_reference(config_ref, "config_string", 1, 8)
-#       expect(config_ref.fetch("source")).to eq("config_string")
-#       expect(config_ref.fetch("line")).to eq(1)
-#       expect(config_ref.fetch("column")).to eq(8)
     end
   end
 
@@ -253,7 +250,6 @@ describe "Test Monitoring API" do
   end
 
   def expect_source_reference_file(config_ref, filename, line, column)
-#     expect(config_ref.fetch("source")).to match("\/tmp\/logstash-splitted-pipeline-config-test.*\/#{filename}")
     expect(config_ref.fetch("source")).to match(".*#{filename}")
     expect(config_ref.fetch("line")).to eq(line)
     expect(config_ref.fetch("column")).to eq(column)
