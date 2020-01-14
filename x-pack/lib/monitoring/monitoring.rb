@@ -6,11 +6,12 @@ require "logstash/agent"
 require "monitoring/internal_pipeline_source"
 require "logstash/config/pipeline_config"
 require 'helpers/elasticsearch_options'
-java_import java.util.concurrent.TimeUnit
 
 module LogStash
   class MonitoringExtension < LogStash::UniversalPlugin
     include LogStash::Util::Loggable
+
+    java_import java.util.concurrent.TimeUnit
 
     class TemplateData
       def initialize(node_uuid,
@@ -29,6 +30,8 @@ module LogStash
         @es_hosts = es_settings['hosts']
         @user = es_settings['user']
         @password = es_settings['password']
+        @cloud_id = es_settings['cloud_id']
+        @cloud_auth = es_settings['cloud_auth']
         @ca_path = es_settings['cacert']
         @truststore_path = es_settings['truststore']
         @truststore_password = es_settings['truststore_password']
@@ -38,7 +41,7 @@ module LogStash
         @ssl_certificate_verification = (es_settings['verification_mode'] == 'certificate')
       end
 
-      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid
+      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth
       attr_accessor :ca_path, :truststore_path, :truststore_password
       attr_accessor :keystore_path, :keystore_password, :sniffing, :ssl_certificate_verification
 
@@ -48,6 +51,14 @@ module LogStash
 
       def collection_timeout_interval
         TimeUnit::SECONDS.convert(@collection_timeout_interval, TimeUnit::NANOSECONDS)
+      end
+
+      def cloud_id?
+        !!cloud_id
+      end
+
+      def cloud_auth?
+        !!cloud_auth && cloud_id?
       end
 
       def auth?
@@ -109,7 +120,7 @@ module LogStash
       def monitoring_enabled?(settings)
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
 
-        if settings.set?("xpack.monitoring.elasticsearch.hosts")
+        if settings.set?("xpack.monitoring.elasticsearch.hosts") || settings.set?("xpack.monitoring.elasticsearch.cloud_id")
           logger.warn("xpack.monitoring.enabled has not been defined, but found elasticsearch configuration. Please explicitly set `xpack.monitoring.enabled: true` in logstash.yml")
           true
         else
@@ -174,6 +185,8 @@ module LogStash
       settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.password"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.cloud_id"))
+      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.cloud_auth"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.certificate_authority"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.path"))
       settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))

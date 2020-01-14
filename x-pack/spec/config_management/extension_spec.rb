@@ -40,6 +40,16 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil]
       )
+
+      it "has a cloud_id setting" do
+        name = "xpack.management.elasticsearch.cloud_id"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
+
+      it "has a cloud_auth setting" do
+        name = "xpack.management.elasticsearch.cloud_auth"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
     end
   end
 end
