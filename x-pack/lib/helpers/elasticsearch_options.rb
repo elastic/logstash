@@ -6,7 +6,10 @@ module LogStash module Helpers
   module ElasticsearchOptions
     extend self
 
-    ES_SETTINGS =%w(ssl.certificate_authority ssl.truststore.path ssl.keystore.path hosts username password)
+    ES_SETTINGS =%w(
+      ssl.certificate_authority ssl.truststore.path ssl.keystore.path
+      hosts username password cloud_id cloud_auth
+    )
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
     # feature supports falling back to modules if the feature is not specified in logstash.yml
@@ -14,14 +17,24 @@ module LogStash module Helpers
       only_modules_configured?(feature, settings) ? es_options_from_modules(settings) : es_options_from_settings(feature, settings)
     end
 
-    # Populate the Elasticsearch options from LogStashSettings file, based on the feature that is being
-    # used.
+    # Populate the Elasticsearch options from LogStashSettings file, based on the feature that is being used.
+    # @return Hash
     def es_options_from_settings(feature, settings)
       opts = {}
 
-      opts['hosts'] = settings.get("xpack.#{feature}.elasticsearch.hosts")
-      opts['user'] = settings.get("xpack.#{feature}.elasticsearch.username")
-      opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
+      # NOTE: both management and monitoring register hosts with a "localhost:9200" default,
+      # ES output does not allow both to be configured thus only fill hosts when cloud_id not set
+      if cloud_id = settings.get("xpack.#{feature}.elasticsearch.cloud_id")
+        opts['cloud_id'] = cloud_id
+      else
+        opts['hosts'] = settings.get("xpack.#{feature}.elasticsearch.hosts")
+      end
+      if cloud_auth = settings.get("xpack.#{feature}.elasticsearch.cloud_auth")
+        opts['cloud_auth'] = cloud_auth
+      else
+        opts['user'] = settings.get("xpack.#{feature}.elasticsearch.username")
+        opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
+      end
       opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
       opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
 
