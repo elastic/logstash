@@ -310,7 +310,8 @@ public final class PluginFactoryExt {
                     }
 
                     if (input != null) {
-                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline, typeScopedMetric, input, pluginArgs);
+                        return JavaInputDelegatorExt.create((JavaBasePipelineExt) executionContext.pipeline,
+                                typeScopedMetric, input, pluginArgs, source);
                     } else {
                         throw new IllegalStateException("Unable to instantiate input: " + pluginClass);
                     }
@@ -323,7 +324,7 @@ public final class PluginFactoryExt {
                             final Context pluginContext = executionContext.toContext(type, metrics.getRoot(context));
                             final Codec codec = ctor.newInstance(config, pluginContext);
                             PluginUtil.validateConfig(codec, config);
-                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec));
+                            return JavaUtil.convertJavaToRuby(RubyUtil.RUBY, new JavaCodecDelegator(pluginContext, codec, source));
                         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                             if (ex instanceof InvocationTargetException && ex.getCause() != null) {
                                 throw new IllegalStateException((ex).getCause());

@@ -9,6 +9,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -37,12 +38,19 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     public static JavaInputDelegatorExt create(final JavaBasePipelineExt pipeline,
                                                final AbstractNamespacedMetricExt metric, final Input input,
-                                               final Map<String, Object> pluginArgs) {
+                                               final Map<String, Object> pluginArgs, SourceWithMetadata source) {
         final JavaInputDelegatorExt instance =
                 new JavaInputDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_INPUT_DELEGATOR_CLASS);
-        AbstractNamespacedMetricExt scopedMetric = metric.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newSymbol(input.getId()));
-        scopedMetric.gauge(RubyUtil.RUBY.getCurrentContext(), MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(input.getName()));
-        instance.setMetric(RubyUtil.RUBY.getCurrentContext(), scopedMetric);
+        ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        AbstractNamespacedMetricExt scopedMetric = metric.namespace(context, RubyUtil.RUBY.newSymbol(input.getId()));
+        scopedMetric.gauge(context, MetricKeys.NAME_KEY, RubyUtil.RUBY.newString(input.getName()));
+
+        AbstractNamespacedMetricExt metricConfigReference = scopedMetric.namespace(context, MetricKeys.CONFIG_REF_KEY);
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_SOURCE_KEY, RubyUtil.RUBY.newString(source.getId()));
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_LINE_KEY, RubyUtil.RUBY.newFixnum(source.getLine()));
+        metricConfigReference.gauge(context, MetricKeys.CONFIG_COLUMN_KEY, RubyUtil.RUBY.newFixnum(source.getColumn()));
+
+        instance.setMetric(context, scopedMetric);
         instance.input = input;
         instance.pipeline = pipeline;
         instance.initializeQueueWriter(pluginArgs);

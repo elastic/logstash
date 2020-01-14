@@ -4,15 +4,12 @@ import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Event;
-import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import co.elastic.logstash.api.PluginConfigSpec;
-import org.jruby.RubySymbol;
-import org.jruby.runtime.ThreadContext;
 import org.logstash.RubyUtil;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
-import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,13 +38,24 @@ public class JavaCodecDelegator implements Codec {
     protected final CounterMetric decodeMetricTime;
 
 
-    public JavaCodecDelegator(final Context context, final Codec codec) {
+    /**
+     * @param context plugin's context to pass through.
+     * @param codec the codec plugin's instance.
+     * @param source is optional, it's not used when no codec are specified and fallback to default one.
+     * */
+    public JavaCodecDelegator(final Context context, final Codec codec, SourceWithMetadata source) {
         this.codec = codec;
 
         final NamespacedMetric metric = context.getMetric(codec);
 
         synchronized(metric.root()) {
             metric.gauge(MetricKeys.NAME_KEY.asJavaString(), codec.getName());
+            if (source != null) {
+                NamespacedMetric metricConfigReference = metric.namespace(MetricKeys.CONFIG_REF_KEY.asJavaString());
+                metricConfigReference.gauge(MetricKeys.CONFIG_SOURCE_KEY.asJavaString(), RubyUtil.RUBY.newString(source.getId()));
+                metricConfigReference.gauge(MetricKeys.CONFIG_LINE_KEY.asJavaString(), RubyUtil.RUBY.newFixnum(source.getLine()));
+                metricConfigReference.gauge(MetricKeys.CONFIG_COLUMN_KEY.asJavaString(), RubyUtil.RUBY.newFixnum(source.getColumn()));
+            }
 
             final NamespacedMetric encodeMetric = metric.namespace(ENCODE_KEY);
             encodeMetricIn = encodeMetric.counter(IN_KEY);
