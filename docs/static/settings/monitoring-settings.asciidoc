@@ -86,7 +86,7 @@ Optional settings that provide the password to the keystore.
 
 `xpack.monitoring.elasticsearch.cloud_id`::
 
-If you're using Elasticsearch cloud, you should specify the identifier here.
+If you're using {es} in {ecloud}, you should specify the identifier here.
 This is an alternative to specifying `xpack.monitoring.elasticsearch.hosts`,
 which should not be used if `cloud_id` is configured.
 The {es} instances that you want to ship your Logstash metrics to. This might be
@@ -95,7 +95,7 @@ configuration, or a different one.
 
 `xpack.monitoring.elasticsearch.cloud_auth`::
 
-If you're using Elasticsearch cloud, you can set your auth credentials here.
+If you're using {es} in {ecloud}, you can set your auth credentials here.
 This is an alternative to having `xpack.monitoring.elasticsearch.username`
 and `xpack.monitoring.elasticsearch.password` - those should not be used if
 `cloud_auth` is configured.
