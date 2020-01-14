@@ -225,7 +225,7 @@
 #xpack.monitoring.elasticsearch.password: password
 #xpack.monitoring.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
 # an alternative to hosts + username/password settings is to use cloud_id/cloud_auth
-#xpack.monitoring.elasticsearch.cloud_id: xxxxxxxxxx
+#xpack.monitoring.elasticsearch.cloud_id: monitoring_cluster_id:xxxxxxxxxx
 #xpack.monitoring.elasticsearch.cloud_auth: logstash_system:password
 #xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
@@ -245,7 +245,7 @@
 #xpack.management.elasticsearch.password: password
 #xpack.management.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
 # an alternative to hosts + username/password settings is to use cloud_id/cloud_auth
-#xpack.management.elasticsearch.cloud_id: xxxxxxxxxx
+#xpack.management.elasticsearch.cloud_id: management_cluster_id:xxxxxxxxxx
 #xpack.management.elasticsearch.cloud_auth: logstash_admin_user:password
 #xpack.management.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
 #xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
