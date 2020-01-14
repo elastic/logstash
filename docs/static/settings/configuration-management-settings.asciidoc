@@ -92,5 +92,5 @@ If you're using Elasticsearch cloud, you can set your auth credentials here.
 This is an alternative to having `xpack.management.elasticsearch.username`
 and `xpack.management.elasticsearch.password` - those should not be used if
 `cloud_auth` is configured.
-The username you specify here should have the `logstash_admin` role, which
+The credentials you specify here should be for a user with the `logstash_admin` role, which
 provides access to `.logstash-*` indices for managing configurations.
