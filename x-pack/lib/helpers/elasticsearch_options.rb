@@ -17,8 +17,6 @@ module LogStash module Helpers
         cloud_auth
       )
 
-    DEFAULT_HOST = 'https://localhost:9200'.freeze
-
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
     # feature supports falling back to modules if the feature is not specified in logstash.yml
     def es_options_from_settings_or_modules(feature, settings)
@@ -30,8 +28,6 @@ module LogStash module Helpers
     def es_options_from_settings(feature, settings)
       opts = {}
 
-      # NOTE: both management and monitoring register hosts with a "localhost:9200" default,
-      # ES output does not allow both to be configured thus only fill hosts when cloud_id not set
       if cloud_id = settings.get("xpack.#{feature}.elasticsearch.cloud_id")
         opts['cloud_id'] = cloud_id
         check_cloud_id_configuration!(feature, settings)
