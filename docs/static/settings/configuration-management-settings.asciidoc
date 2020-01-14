@@ -52,9 +52,9 @@ section in your Logstash configuration, or a different one. Defaults to
 
 If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
-authenticate for accessing the configuration data. The username you specify here
-should have the `logstash_admin` role, which provides access to `.logstash-*`
-indices for managing configurations. 
+authenticate for accessing the configuration data.
+The username you specify here should have the `logstash_admin` role, which
+provides access to `.logstash-*` indices for managing configurations.
 
 `xpack.management.elasticsearch.ssl.certificate_authority`::
 
@@ -78,3 +78,19 @@ the client’s certificate.
 `xpack.management.elasticsearch.ssl.keystore.password`::
 
 Optional setting that provides the password to the keystore.
+
+`xpack.management.elasticsearch.cloud_id`::
+
+If you're using Elasticsearch cloud, you should specify the identifier here.
+This is an alternative to specifying `xpack.management.elasticsearch.hosts`,
+if `cloud_id` is set having also a `hosts` configuration makes no sense.
+This {es} instance will store the Logstash pipeline configurations and metadata.
+
+`xpack.management.elasticsearch.cloud_auth`::
+
+If you're using Elasticsearch cloud, you can set your auth credentials here.
+This is an alternative to having `xpack.management.elasticsearch.username`
+and `xpack.management.elasticsearch.password` - those should not be used if
+`cloud_auth` is configured.
+The username you specify here should have the `logstash_admin` role, which
+provides access to `.logstash-*` indices for managing configurations.
