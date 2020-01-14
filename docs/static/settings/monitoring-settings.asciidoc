@@ -88,7 +88,7 @@ Optional settings that provide the password to the keystore.
 
 If you're using Elasticsearch cloud, you should specify the identifier here.
 This is an alternative to specifying `xpack.monitoring.elasticsearch.hosts`,
-if `cloud_id` is set having also a `hosts` configuration makes no sense.
+which should not be used if `cloud_id` is configured.
 The {es} instances that you want to ship your Logstash metrics to. This might be
 the same {es} instance specified in the `outputs` section in your Logstash
 configuration, or a different one.
