@@ -83,7 +83,7 @@ Optional setting that provides the password to the keystore.
 
 If you're using Elasticsearch cloud, you should specify the identifier here.
 This is an alternative to specifying `xpack.management.elasticsearch.hosts`,
-if `cloud_id` is set having also a `hosts` configuration makes no sense.
+which should not be used if `cloud_id` is configured.
 This {es} instance will store the Logstash pipeline configurations and metadata.
 
 `xpack.management.elasticsearch.cloud_auth`::
