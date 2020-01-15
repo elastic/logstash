@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-6-0,Logstash 7.6.0>>
 * <<logstash-7-5-2,Logstash 7.5.2>>
 * <<logstash-7-5-1,Logstash 7.5.1>>
 * <<logstash-7-5-0,Logstash 7.5.0>>
@@ -23,6 +24,108 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-6-0]]
+=== Logstash 7.6.0 Release Notes
+
+* Feature: Introduce deprecation logger for internal classes and plugins. https://github.com/elastic/logstash/pull/11260[#11260] and https://github.com/elastic/logstash/pull/11486[#11486]
+
+** The Deprecation logger is a unified way for Logstash components to log deprecation notices into a separate file,
+ located by default at `log/logstash-deprecation.log`. This file gives users a single location to see if they are using features that may stop working after a major upgrade.
+
+* Feature: Add support for cloud-id/auth for Logstash monitoring/management https://github.com/elastic/logstash/pull/11496[#11496]
+
+* Feature: Initial release of the https://github.com/logstash-plugins/logstash-integration-jdbc[Jdbc Integration Plugin],
+which combines previously-separate Jdbc plugins and shared dependencies into a single codebase
+
+* Fixed: Regression where compilation of multiple pipelines experiences slowdown https://github.com/elastic/logstash/issues/11560[#11560]
+
+** The fix for the Java execution pipeline compilation slowdown relative to the number of workers in https://github.com/elastic/logstash/issues/11482[#11482]
+ introduced a regression which caused a slowdown of pipeline compilation when using multiple pipelines. This
+ fix solves that regression and the original issue when using multiple workers.
+* Updated puma to 4.x https://github.com/elastic/logstash/pull/11241[#11241]
+* Updated jruby to 9.2.9.0 https://github.com/elastic/logstash/pull/11281[#11281]
+* Fixed: Correct directory for versions.yml file when building plugins https://github.com/elastic/logstash/pull/11318[#11318]
+This fixes an issue where a `versions.yml` was unnecessarily required when trying to build native Java plugins
+
+* Updated sinatra and rack to 2.x https://github.com/elastic/logstash/pull/11354[#11354]
+* Changed: base JRUBY_OPTS to default to --dev (for 'fast' scripts) https://github.com/elastic/logstash/pull/11355[#11355]
+* Fixed: Removed use of deprecated Thread.exclusive method, which caused a warning message every time logstash started. https://github.com/elastic/logstash/pull/11388[#11388]
+* Add Enterprise license level https://www.elastic.co/subscriptions[subscription] https://github.com/elastic/logstash/pull/11407[#11407]
+* [DOC] Remove module-only disclaimer for cloud id https://github.com/elastic/logstash/pull/11469[#11469]
+* [DOC] Add details about pipeline.workers https://github.com/elastic/logstash/pull/11474[#11474]
+* [DOC] Add deprecation notice to internal collectors for monitoring https://github.com/elastic/logstash/pull/11526[#11526]
+* Build: Fail license report job on missing licenses https://github.com/elastic/logstash/pull/11554[#11554]
+* Fixed: Updated log4j2.properties file that the Docker container image uses to also log the pipeline.id. https://github.com/elastic/logstash/pull/11567[#11567]
+
+==== Plugins
+
+*Jdbc Integration*
+
+* Initial release of the
+https://github.com/logstash-plugins/logstash-integration-jdbc[Jdbc
+Integration Plugin], which combines previously-separate Jdbc plugins and shared
+dependencies into a single codebase
+
+*Cef Codec*
+
+* Fixed CEF short to long name translation for ahost/agentHostName field, according to documentation https://github.com/logstash-plugins/logstash-codec-cef/pull/75[#75]
+
+*Fluent Codec*
+
+* Handle EventTime msgpack extension to handle nanosecond precision time and add its parameter https://github.com/logstash-plugins/logstash-codec-fluent/pull/18[#18]
+
+*Dns Filter*
+
+* Fixed an issue where each missed lookup could result in unreclaimed memory (https://github.com/jruby/jruby/issues/6015[jruby bug]) by handling lookup misses without raising exceptions https://github.com/logstash-plugins/logstash-filter-dns/pull/61[#61]
+
+* Added restriction on JRuby resolv.rb patch to versions prior to 9.2.9.0 https://github.com/logstash-plugins/logstash-filter-dns/pull/58[#58]
+
+* Fixed asciidoc formatting for unordered list and a code sample in docs https://github.com/logstash-plugins/logstash-filter-dns/pull/57[#57]
+
+* Added search domains to the `nameserver` option https://github.com/logstash-plugins/logstash-filter-dns/pull/56[#56]
+
+*Elasticsearch Filter*
+
+* Feat: support cloud_id / cloud_auth configuration https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/122[#122]
+
+
+*Beats Input*
+
+* Updated Jackson dependencies
+
+*Elasticsearch Input*
+
+* Feat: Added support for cloud_id / cloud_auth configuration https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/112[#112]
+
+* Changed Elasticsearch Client transport to use Manticore https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/111[#111]
+
+*File Input*
+
+* Fix regression in `exclude` handling. Patterns are matched against the filename, not full path.
+    https://github.com/logstash-plugins/logstash-input-file/issues/237[#237]
+
+*Http Input*
+
+* Revert updates to netty and tcnative since CBC ciphers are still used in many contexts
+
+*Csv Output*
+
+* Docs: Correct typos https://github.com/logstash-plugins/logstash-output-csv/pull/19[#19]
+* Docs: Fix formatting after code sample https://github.com/logstash-plugins/logstash-output-csv/pull/22[#22]
+
+*Elasticsearch Output*
+
+* Feat: Added support for cloud_id and cloud_auth https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/906[#906]
+
+*S3 Output*
+
+* Added ability to specify https://aws.amazon.com/s3/storage-classes/#__[ONEZONE_IA] as storage_class
+
+*Udp Output*
+
+* Fixed plugin crash upon socket write exception https://github.com/logstash-plugins/logstash-output-udp/pull/10[#10]
+* Added support for the 'retry_count' and 'retry_backoff_ms' options https://github.com/logstash-plugins/logstash-output-udp/pull/12[#12]
 
 [[logstash-7-5-2]]
 === Logstash 7.5.2 Release Notes
