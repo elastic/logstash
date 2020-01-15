@@ -81,6 +81,7 @@ plugin_changes.each do |plugin, versions|
     next if line.match(/^##/)
     line.gsub!(/^\+/, "")
     line.gsub!(/ #(?<number>\d+)\s*$/, " https://github.com/logstash-plugins/#{plugin}/issues/\\k<number>[#\\k<number>]")
+    line.gsub!(/\[#(?<number>\d+)\]\((?<url>[^)]*)\)/, "\\k<url>[#\\k<number>]")
     line.gsub!(/^\s+-/, "*")
     report << line
   end
