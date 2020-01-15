@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-6-0,Logstash 7.6.0>>
 * <<logstash-7-5-2,Logstash 7.5.2>>
 * <<logstash-7-5-1,Logstash 7.5.1>>
 * <<logstash-7-5-0,Logstash 7.5.0>>
@@ -23,6 +24,173 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-6-0]]
+=== Logstash 7.6.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.6.0
+
+* stop installing rake and json on every bootstrap https://github.com/elastic/logstash/pull/11102[#11102]
+* [DOCS] Fixes links to Stack Overview https://github.com/elastic/logstash/pull/11239[#11239]
+* upgrade puma to 4.x https://github.com/elastic/logstash/pull/11241[#11241]
+* Feature/deprecation logger https://github.com/elastic/logstash/pull/11260[#11260]
+* remove logging setting in cgroup_spec.rb https://github.com/elastic/logstash/pull/11271[#11271]
+* Mention the path of DLQ to indicate DLQ if full for which pipeline https://github.com/elastic/logstash/pull/11280[#11280]
+* Fixed: avoid touch of log files before deleting it (issue #11307) https://github.com/elastic/logstash/pull/11311[#11311]
+* Correct directory for versions.yml file https://github.com/elastic/logstash/pull/11318[#11318]
+* Support remove_field on metadata and tests https://github.com/elastic/logstash/pull/11334[#11334]
+* Changed GemInstaller to don't blank  gemspec attribute https://github.com/elastic/logstash/pull/11340[#11340]
+* [DOCS] Fixes monitoring link https://github.com/elastic/logstash/pull/11341[#11341]
+* bump sinatra and rack to 2.x https://github.com/elastic/logstash/pull/11354[#11354]
+* Fix: do not leak ThreadContext into the system https://github.com/elastic/logstash/pull/11356[#11356]
+* Refactor: avoid ThreadContext retrieval + use Ruby API https://github.com/elastic/logstash/pull/11365[#11365]
+* [DOCS] Replaces occurrences of xpack-ref https://github.com/elastic/logstash/pull/11366[#11366]
+* Build: fix bundle bin path in bundler task https://github.com/elastic/logstash/pull/11381[#11381]
+* Added retry in deletion of log file during integration test (deprecation logger) https://github.com/elastic/logstash/pull/11387[#11387]
+* Changed: avoid JavaObject wrapping in Ruby methods https://github.com/elastic/logstash/pull/11391[#11391]
+* Clean close of log file after read in test and addition of LogManager's shutdown to clean teardown https://github.com/elastic/logstash/pull/11399[#11399]
+* test codec against class name string to prevent class equivalence bug with a Delegator https://github.com/elastic/logstash/pull/11401[#11401]
+* Add "enterprise" license level https://github.com/elastic/logstash/pull/11407[#11407]
+* Fix: SafeURI normalize and eql? to work as expected https://github.com/elastic/logstash/pull/11443[#11443]
+* Fix/refact use source with metadata instead of plain text https://github.com/elastic/logstash/pull/11456[#11456]
+* Fix: (move and) make get_thread_id "nil safe" https://github.com/elastic/logstash/pull/11458[#11458]
+* [7.6 clean backport of #11482] cache compiled datasets https://github.com/elastic/logstash/pull/11491[#11491]
+* start inputs only when all WorkerLoop are fully initialized https://github.com/elastic/logstash/pull/11492[#11492]
+* Feat: x-pack cloud id/auth for monitoring/management https://github.com/elastic/logstash/pull/11496[#11496]
+
+8367abb6c - Changed plugin factory creation to use SourceWithMedata and not destructured line and column (29 hours ago) <andsel>
+c7a4f3014 - Test: try to deal with (potentially) flaky spec (3 days ago) <Karol Bucek>
+60a7cd1de - Update offline pack tests for integration plugins (5 days ago) <Rob Bavey>
+f06c5ef80 - Replace references to JDBC plugins with integration plugins (5 days ago) <Rob Bavey>
+3eb5f94f2 - Update JrJackson and jackson deps (6 days ago) <Rob Bavey>
+97b2273b3 - Fix: SafeURI normalize and eql? to work as expected (2 weeks ago) <Karol Bucek>
+fa199fe1e - Test: Java proxied QueueReadClient unwrapping (3 weeks ago) <Karol Bucek>
+9d497a13f - Changed: avoid JavaObject wrapping in Ruby methods (3 weeks ago) <Karol Bucek>
+8ccf78ab3 - Fix: handle cloud-id with an empty kibana part (5 weeks ago) <Karol Bucek>
+c69e61fd2 - test codec against class name string to prevent class equivalence bug with a Delegator (5 weeks ago) <Colin Surprenant>
+8fd34b068 - Covered the read of logfile content with try-resource to avoid to keep a file descriptor open that later prohibited access to the process itself. Also added clean shutdown of LogManager before deleting log files used by log. (5 weeks ago) <andsel>
+c7d786e46 - Changed the deletion of log files to use retry mechanism and avoid flaky errors on Windows builds (related to #11307) (5 weeks ago) <andsel>
+6bf0c9356 - remove use of thread.exclusive in plugin_metadata.rb (5 weeks ago) <Joao Duarte>
+df3abef89 - introduce enterprise license level (5 weeks ago) <Joao Duarte>
+25a0ecdda - refactor list of license_types (5 weeks ago) <Joao Duarte>
+f3a24217c - Remove ref to encrypted communications (6 weeks ago) <Karen Metts>
+d9cd2bdce - setup jruby and bundler/rake before artifact rake tasks (6 weeks ago) <Joao Duarte>
+4c57f52d8 - Disable flaky test "should include the http address" (6 weeks ago) <João Duarte>
+fdf6b1c20 - Add default edit_links to pages (6 weeks ago) <Karen Metts>
+508a33523 - [DOCS] Replaces occurrences of xpack-ref (#11366) (#11379) (6 weeks ago) <Lisa Cawley>
+bd66db544 - Add UBI based docker images (6 weeks ago) <Rob Bavey>
+6d776f365 - Changed: base-line JRUBY_OPTS to default to --dev (6 weeks ago) <Karol Bucek>
+dfa8ea719 - Refactor: avoid ThreadContext retrieval + use Ruby API (6 weeks ago) <Karol Bucek>
+ba51feea2 - Build: fix bundle bin path in bundler task (6 weeks ago) <Karol Bucek>
+1b995d7d9 - Release notes 7.5.0 refined (6 weeks ago) <Karen Metts>
+6842aba9e - stop installing rake and json on every bootstrap (6 weeks ago) <Joao Duarte>
+16c085588 - Fix: do not leak ThreadContext into the system (6 weeks ago) <Karol Bucek>
+1431df892 - Incorporate review comments (7 weeks ago) <Karen Metts>
+22871cc19 - Add plugin integrations to doc (7 weeks ago) <Karen Metts>
+62cc9afa8 - bump sinatra and rack to 2.x (#11354) (7 weeks ago) <João Duarte>
+b7f79ac52 - Fixes monitoring link (7 weeks ago) <lcawl>
+b81c900b5 - Remove license header from pipelines_info.rb (7 weeks ago) <João Duarte>
+17fe14c08 - Changed GemInstaller to don't blank gemspec attribute, close 11325 (7 weeks ago) <andsel>
+27b717938 - support remove_field on metadata and tests (7 weeks ago) <Colin Surprenant>
+94b93af75 - remove leftover jruby version check in spec file (8 weeks ago) <Joao Duarte>
+03f9cc9f4 - remove JRuby resolv.rb patch following fix in 9.2.9.0 (8 weeks ago) <Colin Surprenant>
+6346d03f6 - update jruby to 9.2.9.0 (8 weeks ago) <Joao Duarte>
+fc5d39c68 - docgen: add integration plugins for plugin discovery (8 weeks ago) <Ry Biesemeyer>
+5aa8c7068 - docgen: no-op refactor bringing plugin types list out of regexp (8 weeks ago) <Ry Biesemeyer>
+17f584a84 - Fixed: avoid touch of log files before deleting it (issue #11307) (8 weeks ago) <andsel>
+764589e2c - correct directory for versions.yml file (8 weeks ago) <Dan Hermann>
+e7d87d0da - Remove xls settings page (8 weeks ago) <Karen Metts>
+4654b6050 - Restructure configuration content (8 weeks ago) <Karen Metts>
+9b308ae67 - Introduced DeprecationLogger for use in core code and exposed to Java and Ruby plugins. Closes 11049 (9 weeks ago) <andsel>
+3dd117a34 - Mention the path of DLQ to indicate DLQ if full for which pipeline (9 weeks ago) <amitav.mohanty>
+81e7b18b2 - (lisa) don't rely on expect match and last_match in qa test (3 months ago) <Joao Duarte>
+1f14cba3e - dont mutate SETTINGS object in keystore specs (3 months ago) <Joao Duarte>
+382f6d76d - remove logging setting in cgroup_spec.rb (3 months ago) <Joao Duarte>
+6bf1ed932 - improve reliability of webserver port binding (3 months ago) <Joao Duarte>
+5b5e47972 - Remove edit_me link overrides for monitoring topics (3 months ago) <Karen Metts>
+4fd33e40a - Update logstash-core/build.gradle (3 months ago) <João Duarte>
+743723bf9 - update jar dependencies (3 months ago) <Joao Duarte>
+afe4f8189 - update core jars. remove dependency on org.eclipse (3 months ago) <Joao Duarte>
+1c874854d - upgrade puma to 4.x (3 months ago) <Joao Duarte>
+bb4b62d06 - Revert "Update .ruby-version to jruby-9.2.8.0" (3 months ago) <Joao Duarte>
+382baf401 - Fixes links to Stack Overview (3 months ago) <lcawl>
+b9039dcb5 - ensure output of plugin list is utf8 (3 months ago) <Joao Duarte>
+e22868db5 - Disable dlq integration tests due to multiple intermittent failures (3 months ago) <João Duarte>
+331e8678c - Fixes intermittent failing build due to Puma server going down bad on shutdown request (3 months ago) <andsel>
+0a89c4cee - validate plugin list output respecting integration plugins (3 months ago) <Ry Biesemeyer>
+2d868cfb6 - Fix typo in doc-for-plugin (3 months ago) <Karen Metts>
+472d333ad - more resilient testing of logging level setting (3 months ago) <Joao Duarte>
+391169b3d - Fix to avoid Nashorn error regarding the unknown flag `--no-deprecation-warning` for JDK < 11. closes 11221 (3 months ago) <andsel>
+
+==== Plugins
+
+*Jdbc Integration*
+
+* Initial release of the
+https://github.com/logstash-plugins/logstash-integration-jdbc[Jdbc
+Integration Plugin], which combines previously-separate Jdbc plugins and shared
+dependencies into a single codebase
+
+
+*Cef Codec*
+
+* Fixed CEF short to long name translation for ahost/agentHostName field, according to documentation https://github.com/logstash-plugins/logstash-codec-cef/pull/75[#75]
+
+*Fluent Codec*
+
+* Handle EventTime msgpack extension to handle nanosecond precision time and add its parameter https://github.com/logstash-plugins/logstash-codec-fluent/pull/18[#18]
+
+*Dns Filter*
+
+* Fixed an issue where each missed lookup could result in unreclaimed memory ([jruby bug](https://github.com/jruby/jruby/issues/6015)) by handling lookup misses without raising exceptions https://github.com/logstash-plugins/logstash-filter-dns/pull/61[#61]
+
+* Added restriction on JRuby resolv.rb patch to versions prior to 9.2.9.0 https://github.com/logstash-plugins/logstash-filter-dns/pull/58[#58]
+
+* Fixed asciidoc formatting for unordered list and a code sample in docshttps://github.com/logstash-plugins/logstash-filter-dns/pull/57[#57]
+
+* Added search domains to the `nameserver` option https://github.com/logstash-plugins/logstash-filter-dns/pull/56[#56]
+
+*Elasticsearch Filter*
+
+* Feat: support cloud_id / cloud_auth configuration https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/122[#122]
+
+
+*Beats Input*
+
+* Security: update netty deps - avoid CBC ciphers hhttps://github.com/logstash-plugins/logstash-input-beats/pull/376[#376]
+
+* Updated Jackson dependencies
+
+*Elasticsearch Input*
+
+* Feat: Added support for cloud_id / cloud_auth configuration https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/112[#112]
+
+* Changed Elasticsearch Client transport to use Manticore https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/111[#111]
+
+*File Input*
+
+* Fix regression in `exclude` handling. Patterns are matched against the filename, not full path.
+    [Issue #237](https://github.com/logstash-plugins/logstash-input-file/issues/237)
+
+*Csv Output*
+
+* Docs: Correct typos https://github.com/logstash-plugins/logstash-output-csv/pull/19[#19]
+* Docs: Fix formatting after code sample https://github.com/logstash-plugins/logstash-output-csv/pull/22[#22]
+
+*Elasticsearch Output*
+
+* Feat: Added support for cloud_id and cloud_auth https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/906[#906]
+
+*S3 Output*
+
+* Added ability to specify [ONEZONE_IA](https://aws.amazon.com/s3/storage-classes/#__) as storage_class
+
+*Udp Output*
+
+* Fixed plugin crash upon socket write exception https://github.com/logstash-plugins/logstash-output-udp/pull/10[#10]
+* Added support for the 'retry_count' and 'retry_backoff_ms' options https://github.com/logstash-plugins/logstash-output-udp/pull/12[#12]
+
 
 [[logstash-7-5-2]]
 === Logstash 7.5.2 Release Notes
