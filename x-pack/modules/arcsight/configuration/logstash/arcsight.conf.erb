@@ -21,7 +21,7 @@ input {
     bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", String, "localhost:39092"))) %>
     topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", String, ["eb-cef"]))) %>
     <%= LogStash::Arcsight::ConfigHelper.kafka_input_ssl_sasl_config(self) %>
-    type => syslog
+    type => _doc
   }
   <% end %>
 
@@ -31,7 +31,7 @@ input {
     codec => cef { delimiter => "\r\n" }
     port => <%= setting("var.input.tcp.port", 5000) %>
     <%= LogStash::Arcsight::ConfigHelper.tcp_input_ssl_config(self) %>
-    type => syslog
+    type => _doc
   }
   <% end %>
 }
@@ -67,5 +67,5 @@ filter {
 }
 
 output {
-  <%= elasticsearch_output_config('syslog') %>
+  <%= elasticsearch_output_config('_doc') %>
 }
