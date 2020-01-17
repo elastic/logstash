@@ -147,9 +147,10 @@ dependencies {
         compile files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
     }
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
-    // Do not upgrade this, later versions require GPL licensed code in javac-shaded that is
+    // WARNING: DO NOT UPGRADE "google-java-format"
+    // later versions require GPL licensed code in javac-shaded that is
     // Apache2 incompatible
-    compile('com.google.googlejavaformat:google-java-format:1.7') {
+    compile('com.google.googlejavaformat:google-java-format:1.1') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     compile 'org.javassist:javassist:3.26.0-GA'
