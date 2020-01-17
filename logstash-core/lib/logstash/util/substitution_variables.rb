@@ -51,7 +51,7 @@ module ::LogStash::Util::SubstitutionVariables
             "or as an Environment entry and there is no default value given."
       end
 
-      if [ "hosts", :uri ].include?(name_or_validator.join)
+      if [ "hosts", :uri, :array ].include?(name_or_validator.join)
         if replacement.to_s.include?(",")
           logger.debug("Splitting `#{placeholder}` into an array")
           replacement_array = replacement.split(",")
