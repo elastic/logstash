@@ -108,6 +108,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
+  option "--pipeline.ordered", "ORDERED",
+    I18n.t("logstash.runner.flag.pipeline-ordered"),
+    :attribute_name => "pipeline.ordered",
+    :default => LogStash::SETTINGS.get_default("pipeline.ordered")
+
   option ["--java-execution"], :flag,
          I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",

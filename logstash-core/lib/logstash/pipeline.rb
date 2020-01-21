@@ -293,6 +293,7 @@ module LogStash; class Pipeline < BasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      verify_event_ordering!(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -653,4 +654,12 @@ module LogStash; class Pipeline < BasePipeline
   def draining_queue?
     @drain_queue ? !filter_queue_client.empty? : false
   end
+
+  def verify_event_ordering!(pipeline_workers)
+    # the Ruby execution keep event order by design but when using a single worker only
+    if settings.get("pipeline.ordered") == "true" && pipeline_workers > 1
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker")
+    end
+  end
+
 end; end

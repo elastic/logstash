@@ -45,6 +45,7 @@ module LogStash
            Setting::Boolean.new("pipeline.reloadable", true),
            Setting::Boolean.new("pipeline.plugin_classloaders", false),
            Setting::Boolean.new("pipeline.separate_logs", false),
+   Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),

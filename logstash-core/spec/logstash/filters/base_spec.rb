@@ -52,6 +52,17 @@ end
 
 describe LogStash::Filters::NOOP do
   extend PipelineHelpers
+  let(:settings) do
+    # settings is used by sample_one.
+    # This was originally set directly in sample_one and
+    # pipeline.workers was also set to 1. I am preserving
+    # this setting here for the sake of minimizing change
+    # but unsure if this is actually required.
+
+    s = LogStash::SETTINGS.clone
+    s.set_value("pipeline.workers", 1)
+    s
+  end
 
   describe "adding multiple values to one field" do
     config <<-CONFIG

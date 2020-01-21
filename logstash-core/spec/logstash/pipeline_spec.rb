@@ -1020,4 +1020,13 @@ describe LogStash::Pipeline do
       end
     end
   end
+
+  context "event ordering" do
+    let(:pipeline) { mock_pipeline_from_string("input { } output { }", mock_settings("pipeline.ordered" => true, "pipeline.workers" => 2)) }
+
+    it "fail running when ordering is set to true and there are multiple workers" do
+      expect{pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
+      pipeline.close
+    end
+  end
 end
