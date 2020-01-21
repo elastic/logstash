@@ -57,6 +57,15 @@
 #
 # pipeline.unsafe_shutdown: false
 #
+# Set the pipeline event ordering. Options are "auto" (the default), "true" or "false".
+# "auto" will  automatically enable ordering if the 'pipeline.workers' setting
+# is also set to '1'.
+# "true" will enforce ordering on the pipeline and prevent logstash from starting
+# if there are multiple workers.
+# "false" will disable any extra processing necessary for preserving ordering.
+#
+pipeline.ordered: auto
+#
 # ------------ Pipeline Configuration Settings --------------
 #
 # Where to fetch the pipeline configuration for the main pipeline

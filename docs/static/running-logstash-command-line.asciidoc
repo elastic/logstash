@@ -107,6 +107,19 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   backing up, or that  the CPU is not saturated, consider increasing this number to better utilize
   machine processing power. The default is the number of the host's CPU cores.
 
+*`--pipeline.ordered ORDERED`*::
+  Preserves events order. Possible values are `auto` (default), `true` and `false`.
+  This setting
+  will work only when also using a single worker for the pipeline.
+  Note that when enabled, it may impact the performance of the filters
+  and ouput processing.
+  The `auto` option will automatically enable ordering if the
+  `pipeline.workers` setting is set to `1`.
+  Use `true` to enable ordering on the pipeline and prevent logstash
+  from starting if there are multiple workers.
+  Use `false` to disable any extra processing necessary for preserving
+  ordering.
+
 *`-b, --pipeline.batch.size SIZE`*::
   Size of batches the pipeline is to work in. This option defines the maximum number of events an
   individual worker thread will collect from inputs before attempting to execute its filters and outputs.
@@ -189,4 +202,3 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 
 *`-h, --help`*::
   Print help
-
