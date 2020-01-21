@@ -17,7 +17,7 @@ Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
 * <<monitoring-with-metricbeat, {metricbeat} collection>>
-* <<monitoring-internal-collection,Internal collection>>
+* <<monitoring-internal-collection,Internal collection (deprecated)>>
 
 
 include::monitoring-mb.asciidoc[]
