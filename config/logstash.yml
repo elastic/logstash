@@ -215,6 +215,10 @@
 # Flag to output log lines of each pipeline in its separate log file. Each log filename contains the pipeline.name
 # Default is false
 # pipeline.separate_logs: false
+
+# Flag to disable the webserver
+# Default is false
+# webserver.disabled: false
 #
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #

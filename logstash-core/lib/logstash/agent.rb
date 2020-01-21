@@ -96,7 +96,7 @@ class LogStash::Agent
 
     converge_state_and_update
 
-    start_webserver
+    start_webserver_if
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -368,6 +368,19 @@ class LogStash::Agent
     end
   end
 
+  # Start the webserver, only if parameter 'webserver.disabled' is set to false (default value)
+  def start_webserver_if
+    if webserver_disabled == false
+      start_webserver
+    else
+      @logger.info("Disabled webserver via parameter 'webserver.disabled' in 'logstash.yml' configuration file")
+    end
+  end
+
+  def webserver_disabled
+    return @settings.get_setting("webserver.disabled").value
+  end
+
   def start_webserver
     @webserver_control_lock.synchronize do
       options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
@@ -378,6 +391,7 @@ class LogStash::Agent
       end
     end
   end
+
 
   def stop_webserver
     @webserver_control_lock.synchronize do
