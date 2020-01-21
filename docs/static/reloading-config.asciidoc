@@ -21,7 +21,7 @@ checks the config files for changes (in seconds).
 
 If Logstash is already running without auto-reload enabled, you can force Logstash to
 reload the config file and restart the pipeline by sending a SIGHUP (signal hangup) to the
-process running Logstash. For example:
+process running Logstash, but it's not supported on Windows OS. For example:
 
 [source,shell]
 ----------------------------------
