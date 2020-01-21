@@ -2,8 +2,10 @@
 [[monitoring-internal-collection]]
 === Collect {ls} monitoring data using internal collectors
 ++++
-<titleabbrev>Internal collection</titleabbrev>
+<titleabbrev>Internal collection (deprecated)</titleabbrev>
 ++++
+
+deprecated[7.7.0]
 
 Using internal collectors for {ls} {monitoring} these components:
 
