@@ -183,6 +183,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "config.reload.interval",
     :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
+  option ["--http.enabled"], "ENABLED",
+         I18n.t("logstash.runner.flag.http_enabled"),
+         :attribute_name => 'http.enabled',
+         :default => LogStash::SETTINGS.get_default('http.enabled')
+
   option ["--http.host"], "HTTP_HOST",
     I18n.t("logstash.runner.flag.http_host"),
     :attribute_name => "http.host",

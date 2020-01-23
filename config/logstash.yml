@@ -90,6 +90,27 @@
 #
 # config.support_escapes: false
 #
+# ------------ HTTP API Settings -------------
+# Define settings related to the HTTP API here.
+#
+# The HTTP API is enabled by default. It can be disabled, but features that rely
+# on it will not work as intended.
+# http.enabled: true
+#
+# By default, the HTTP API is bound to only the host's local loopback interface,
+# ensuring that it is not accessible to the rest of the network. Because the API
+# includes neither authentication nor authorization and has not been hardened or
+# tested for use as a publicly-reachable API, binding to publicly accessible IPs
+# should be avoided where possible.
+#
+# http.host: 127.0.0.1
+#
+# The HTTP API web server will listen on an available port from the given range.
+# Values can be specified as a single port (e.g., `9600`), or an inclusive range
+# of ports (e.g., `9600-9700`).
+#
+# http.port: 9600-9700
+#
 # ------------ Module Settings ---------------
 # Define modules here.  Modules definitions must be defined as an array.
 # The simple way to see this is to prepend each `name` with a `-`, and keep

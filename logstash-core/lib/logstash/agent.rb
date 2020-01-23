@@ -96,7 +96,7 @@ class LogStash::Agent
 
     converge_state_and_update
 
-    start_webserver
+    start_webserver_if_enabled
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -365,6 +365,14 @@ class LogStash::Agent
       when LogStash::PipelineAction::Stop
         dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
       end
+    end
+  end
+
+  def start_webserver_if_enabled
+    if @settings.get_value("http.enabled")
+      start_webserver
+    else
+      @logger.info("HTTP API is disabled (`http.enabled=false`); webserver will not be started.")
     end
   end
 
