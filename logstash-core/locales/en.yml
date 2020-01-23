@@ -282,6 +282,9 @@ en:
           e.g. 'username:<password>'
         configtest: |+
           Check configuration for valid syntax and then exit.
+        http_enabled: |+
+          Can be used to disable the Web API, which is
+          enabled by default.
         http_host: Web API binding host
         http_port: Web API http port
         pipeline-id: |+
