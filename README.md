@@ -183,6 +183,14 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 3- To execute the complete test-suite including the integration tests run:
 
     ./gradlew check
+    
+4- To execute a single Ruby test run:
+
+    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests    
+
+5- To execute single spec for integration test, run:
+
+    ./gradlew integrationTests -PrubyIntegrationSpecs=specs/slowlog_spec.rb
 
 Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
 
