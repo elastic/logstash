@@ -90,6 +90,19 @@ task rubyTests(type: Test) {
     include '/org/logstash/plugins/CounterMetricImplTest.class'
 }
 
+task singleRubyTest(type: Test) {
+    if (!project.hasProperty("rubySingleSpec")) {
+        throw new GradleException('-PrubySingleSpec MUST be passed, example ./gradlew singleRubyTest ' +
+                '-PrubySingleSpec=logstash-core/spec/logstash/api/commands/default_metadata_spec.rb')
+    }
+    def rubySingleSpec = ((String) project.property("rubySingleSpec")).split(/\s+/).join(",")
+    systemProperty 'org.logstash.single.specs', rubySingleSpec
+    systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/spec")
+    include '/org/logstash/RSpecSingleTests.class'
+}
+
 test {
     exclude '/**'
 }
