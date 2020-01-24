@@ -40,7 +40,7 @@ Remove the `#` at the beginning of the line to enable the setting.
 [[define-cluster__uuid]]
 ==== Define `cluster_uuid`
 To bind the metrics of {ls} to a specific cluster, define the `monitoring.cluster_uuid` 
-in configuration file (logstash.yml):
+in the configuration file (logstash.yml):
 
 
 [source,yaml]
