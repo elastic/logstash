@@ -36,6 +36,20 @@ Remove the `#` at the beginning of the line to enable the setting.
 
 --
 
+[float]
+[[define-cluster__uuid]]
+==== Define `cluster_uuid`
+To bind the metrics of {ls} to a specifi cluster, define the `monitoring.cluster_uuid` 
+in configuration file (logstash.yml):
+
+
+[source,yaml]
+----------------------------------
+monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
+----------------------------------
+
+--
+
 
 [float]
 [[configure-metricbeat]]
