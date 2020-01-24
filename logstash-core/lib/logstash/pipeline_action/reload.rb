@@ -47,16 +47,18 @@ module LogStash module PipelineAction
 
       logger.info("Reloading pipeline", "pipeline.id" => pipeline_id)
 
+      status = nil
       pipelines.compute(pipeline_id) do |_,pipeline|
         status = Stop.new(pipeline_id).execute(agent, pipelines)
 
         if status
-          return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
-        else
-          return status
+          status Create.new(@pipeline_config, @metric).execute(agent, pipelines)
         end
+
         pipeline
       end
+
+      LogStash::ConvergeResult::ActionResult.create(self, status)
     end
   end
 end end

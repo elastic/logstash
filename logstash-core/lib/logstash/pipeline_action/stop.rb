@@ -12,7 +12,8 @@ module LogStash module PipelineAction
     end
 
     def execute(agent, pipelines)
-      pipelines.compute(pipeline_id) do |_,pipeline|
+      # We only have work to do if the pipeline does, in-fact, exist
+      pipelines.computeIfPresent(pipeline_id) do |_,pipeline|
         pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
         pipeline.thread.join
         nil # delete the pipeline

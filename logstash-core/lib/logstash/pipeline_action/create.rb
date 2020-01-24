@@ -43,10 +43,12 @@ module LogStash module PipelineAction
       status = nil
       pipelines.compute(pipeline_id) do |id,value|
         if value
-          LogStash::ConvergeResult::ActionResult.create(self, true)
+          # Something started it ahead of us, nothing to do here
+          status = true
+        else
+          status = pipeline.start # block until the pipeline is correctly started or crashed
+          pipeline # The pipeline is successfully started we can add it to the map
         end
-        status = pipeline.start # block until the pipeline is correctly started or crashed
-        pipeline # The pipeline is successfully started we can add it to the map
       end
 
 
