@@ -48,7 +48,6 @@ in configuration file (logstash.yml):
 monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ----------------------------------
 
---
 
 
 [float]
