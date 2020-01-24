@@ -51,3 +51,24 @@ sudo /etc/init.d/logstash start
 -------------------------------------------
 
 The auto-generated configuration file for SysV systems is `/etc/init.d/logstash`.
+
+[[running-logstash-custom]]
+==== Running Logstash by specifying a custom startup style
+
+Using the system-install command, you can generate a specific startup script. Available options are: sysv, upstart, systemd.
+
+For example, to generate a SysV script, run:
+
+[source,sh]
+--------------------------------------------
+sudo /usr/share/logstash/bin/system-install /etc/logstash/startup.options sysv
+-------------------------------------------
+
+The SysV script can then be found at the default location `/etc/init.d/logstash`.
+
+For full documentation of the system-install command:
+
+[source,sh]
+--------------------------------------------
+/usr/share/logstash/bin/system-install --help
+-------------------------------------------
