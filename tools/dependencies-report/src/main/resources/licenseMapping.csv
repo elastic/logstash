@@ -6,10 +6,10 @@ dependency,dependencyUrl,licenseOverride
 "avro:1.9.1",https://github.com/apache/avro/tree/master/lang/ruby,Apache-2.0
 "awesome_print:1.7.0",https://github.com/awesome-print/awesome_print,MIT
 "aws-eventstream:1.0.3",https://github.com/aws/aws-sdk-ruby/tree/master/gems/aws-eventstream,Apache-2.0
-"aws-sdk-core:2.11.431",http://github.com/aws/aws-sdk-ruby,Apache-2.0
-"aws-sdk-resources:2.11.431",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-core:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-resources:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sdk-v1:1.67.0",http://aws.amazon.com/sdkforruby,Apache-2.0
-"aws-sdk:2.11.431",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sigv4:1.1.0",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "back_pressure:1.0.0",https://github.com/yaauie/ruby_back_pressure,Apache-2.0
 "backports:3.11.3",http://github.com/marcandre/backports,MIT

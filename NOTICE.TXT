@@ -432,7 +432,7 @@ AWS SDK for Ruby
 Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 ==========
-Notice for: aws-sdk-core-2.11.431
+Notice for: aws-sdk-core-2.11.429
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -640,7 +640,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-resources-2.11.431
+Notice for: aws-sdk-resources-2.11.429
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -864,7 +864,7 @@ distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 ANY KIND, either express or implied. See the License for the specific
 language governing permissions and limitations under the License.
 ==========
-Notice for: aws-sdk-2.11.431
+Notice for: aws-sdk-2.11.429
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -7284,6 +7284,26 @@ Eclipse Public License - v 2.0
     look for such a notice.
 
     You may add additional accurate notices of copyright ownership.
+==========
+Notice for: org.reflections:reflections-0.9.11
+----------
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+
+Also licensed under BSD-2-Clause according to https://github.com/ronmamo/reflections/blob/0.9.11/pom.xml#L20-L22
+
 ==========
 Notice for: org.slf4j:slf4j-api-1.7.25
 ----------
