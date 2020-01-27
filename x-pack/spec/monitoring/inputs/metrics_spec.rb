@@ -175,7 +175,7 @@ describe LogStash::Inputs::Metrics do
       describe "normal pipelines" do
         before(:each) do
           allow(pipeline).to receive(:system?).and_return(false)
-          allow(metrics_input).to receive(:state_event_for).with(pipeline).and_return(state_event)
+          allow(metrics_input).to receive(:state_event_for).with(pipeline).and_return([state_event])
           allow(metrics_input).to receive(:emit_event)
 
           metrics_input.update_pipeline_state(pipeline)
