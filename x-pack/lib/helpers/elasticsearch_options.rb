@@ -26,38 +26,44 @@ module LogStash module Helpers
     # Populate the Elasticsearch options from LogStashSettings file, based on the feature that is being used.
     # @return Hash
     def es_options_from_settings(feature, settings)
+      prefix = if feature == "monitoring" &&
+                    LogStash::MonitoringExtension.use_direct_shipping?(settings)
+                 ""
+               else
+                 "xpack."
+               end
       opts = {}
 
-      if cloud_id = settings.get("xpack.#{feature}.elasticsearch.cloud_id")
+      if cloud_id = settings.get("#{prefix}#{feature}.elasticsearch.cloud_id")
         opts['cloud_id'] = cloud_id
-        check_cloud_id_configuration!(feature, settings)
+        check_cloud_id_configuration!(feature, settings, prefix)
       else
-        opts['hosts'] = settings.get("xpack.#{feature}.elasticsearch.hosts")
+        opts['hosts'] = settings.get("#{prefix}#{feature}.elasticsearch.hosts")
       end
-      if cloud_auth = settings.get("xpack.#{feature}.elasticsearch.cloud_auth")
+      if cloud_auth = settings.get("#{prefix}#{feature}.elasticsearch.cloud_auth")
         opts['cloud_auth'] = cloud_auth
-        check_cloud_auth_configuration!(feature, settings)
+        check_cloud_auth_configuration!(feature, settings, prefix)
       else
-        opts['user'] = settings.get("xpack.#{feature}.elasticsearch.username")
-        opts['password'] = settings.get("xpack.#{feature}.elasticsearch.password")
+        opts['user'] = settings.get("#{prefix}#{feature}.elasticsearch.username")
+        opts['password'] = settings.get("#{prefix}#{feature}.elasticsearch.password")
       end
-      opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
-      opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
+      opts['sniffing'] = settings.get("#{prefix}#{feature}.elasticsearch.sniffing")
+      opts['ssl_certificate_verification'] = settings.get("#{prefix}#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
 
-      if cacert = settings.get("xpack.#{feature}.elasticsearch.ssl.certificate_authority")
+      if cacert = settings.get("#{prefix}#{feature}.elasticsearch.ssl.certificate_authority")
         opts['cacert'] = cacert
         opts['ssl'] = true
       end
 
-      if truststore = settings.get("xpack.#{feature}.elasticsearch.ssl.truststore.path")
+      if truststore = settings.get("#{prefix}#{feature}.elasticsearch.ssl.truststore.path")
         opts['truststore'] = truststore
-        opts['truststore_password'] = settings.get("xpack.#{feature}.elasticsearch.ssl.truststore.password")
+        opts['truststore_password'] = settings.get("#{prefix}#{feature}.elasticsearch.ssl.truststore.password")
         opts['ssl'] = true
       end
 
-      if keystore = settings.get("xpack.#{feature}.elasticsearch.ssl.keystore.path")
+      if keystore = settings.get("#{prefix}#{feature}.elasticsearch.ssl.keystore.path")
         opts['keystore'] = keystore
-        opts['keystore_password']= settings.get("xpack.#{feature}.elasticsearch.ssl.keystore.password")
+        opts['keystore_password']= settings.get("#{prefix}#{feature}.elasticsearch.ssl.keystore.password")
         opts['ssl'] = true
       end
       opts
@@ -135,19 +141,19 @@ module LogStash module Helpers
 
     private
 
-    def check_cloud_id_configuration!(feature, settings)
-      return if !settings.set?("xpack.#{feature}.elasticsearch.hosts")
+    def check_cloud_id_configuration!(feature, settings, prefix)
+      return if !settings.set?("#{prefix}#{feature}.elasticsearch.hosts")
 
-      raise ArgumentError.new("Both \"xpack.#{feature}.elasticsearch.cloud_id\" and " +
-                              "\"xpack.#{feature}.elasticsearch.hosts\" specified, please only use one of those.")
+      raise ArgumentError.new("Both \"#{prefix}#{feature}.elasticsearch.cloud_id\" and " +
+                              "\"#{prefix}#{feature}.elasticsearch.hosts\" specified, please only use one of those.")
     end
 
-    def check_cloud_auth_configuration!(feature, settings)
-      return if !settings.set?("xpack.#{feature}.elasticsearch.username") &&
-                !settings.set?("xpack.#{feature}.elasticsearch.password")
+    def check_cloud_auth_configuration!(feature, settings, prefix)
+      return if !settings.set?("#{prefix}#{feature}.elasticsearch.username") &&
+                !settings.set?("#{prefix}#{feature}.elasticsearch.password")
 
-      raise ArgumentError.new("Both \"xpack.#{feature}.elasticsearch.cloud_auth\" and " +
-                              "\"xpack.#{feature}.elasticsearch.username\"/\"xpack.#{feature}.elasticsearch.password\" " +
+      raise ArgumentError.new("Both \"#{prefix}#{feature}.elasticsearch.cloud_auth\" and " +
+                              "\"#{prefix}#{feature}.elasticsearch.username\"/\"#{prefix}#{feature}.elasticsearch.password\" " +
                               "specified, please only use one of those.")
     end
 
