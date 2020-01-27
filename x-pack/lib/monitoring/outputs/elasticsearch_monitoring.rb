@@ -10,7 +10,7 @@ module LogStash module Outputs
     config :document_type, :validate => :string
 
     def use_event_type?(client)
-      true
+      !LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
     end
   end
 end; end

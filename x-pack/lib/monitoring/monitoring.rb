@@ -88,6 +88,22 @@ module LogStash
       def get_binding
         binding
       end
+
+      def monitoring_endpoint
+        if LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
+          "/_bulk/"
+        else
+          "/_monitoring/bulk?system_id=logstash&system_api_version=#{system_api_version}&interval=1s"
+        end
+      end
+
+      def monitoring_index
+        if LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
+          ".monitoring-logstash-#{system_api_version}-" + Time.now.utc.to_date.strftime("%Y.%m.%d")
+        else
+          "" #let the ES xpack's reporter to create it
+        end
+      end
     end
 
     class PipelineRegisterHook
@@ -124,6 +140,7 @@ module LogStash
       # To help keep passivity, assume that if "xpack.monitoring.elasticsearch.hosts" has been set that monitoring should be enabled.
       # return true if xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
       def monitoring_enabled?(settings)
+        return settings.get_value("monitoring.enabled") if settings.set?("monitoring.enabled")
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
 
         if settings.set?("xpack.monitoring.elasticsearch.hosts") || settings.set?("xpack.monitoring.elasticsearch.cloud_id")
@@ -157,22 +174,51 @@ module LogStash
       end
 
       def generate_pipeline_config(settings)
-        collection_interval = settings.get("xpack.monitoring.collection.interval")
-        collection_timeout_interval = settings.get("xpack.monitoring.collection.timeout_interval")
-        extended_performance_collection = settings.get("xpack.monitoring.collection.pipeline.details.enabled")
-        config_collection = settings.get("xpack.monitoring.collection.config.enabled")
+        if settings.set?("xpack.monitoring.enabled") && settings.set?("monitoring.enabled")
+          raise ArgumentError.new("\"xpack.monitoring.enabled\" is configured while also \"monitoring.enabled\"")
+        end
+
+        if any_set?(settings, /^xpack.monitoring/) && any_set?(settings, /^monitoring./)
+          raise ArgumentError.new("\"xpack.monitoring.*\" settings can't be configured while using \"monitoring.*\"")
+        end
+
+        if MonitoringExtension.use_direct_shipping?(settings)
+          opt = retrieve_collection_settings(settings)
+        else
+          opt = retrieve_collection_settings(settings, "xpack.")
+          deprecation_logger.deprecated("xpack.monitoring.* settings are deprecated use the new monitoring.*. Please see https://www.elastic.co/guide/en/logstash/current/monitoring-internal-collection.html")
+        end
         es_settings = es_options_from_settings_or_modules('monitoring', settings)
         data = TemplateData.new(LogStash::SETTINGS.get("node.uuid"), API_VERSION,
                                 es_settings,
-                                collection_interval, collection_timeout_interval,
-                                extended_performance_collection, config_collection)
+                                opt[:collection_interval], opt[:collection_timeout_interval],
+                                opt[:extended_performance_collection], opt[:config_collection])
 
         template_path = ::File.join(::File.dirname(__FILE__), "..", "template.cfg.erb")
         template = ::File.read(template_path)
         ERB.new(template, 3).result(data.get_binding)
       end
+
+      private
+      def retrieve_collection_settings(settings, prefix="")
+        opt = {}
+        opt[:collection_interval] = settings.get("#{prefix}monitoring.collection.interval")
+        opt[:collection_timeout_interval] = settings.get("#{prefix}monitoring.collection.timeout_interval")
+        opt[:extended_performance_collection] = settings.get("#{prefix}monitoring.collection.pipeline.details.enabled")
+        opt[:config_collection] = settings.get("#{prefix}monitoring.collection.config.enabled")
+        opt
+      end
+
+      def any_set?(settings, regexp)
+        !settings.get_subset(regexp).to_hash.keys.select { |k| settings.set?(k)}.empty?
+      end
     end
 
+    def self.use_direct_shipping?(settings)
+      settings.get("monitoring.enabled")
+    end
+
+    public
     def initialize
       # nothing to do here
     end
@@ -184,30 +230,37 @@ module LogStash
 
     def additionals_settings(settings)
       logger.trace("registering additionals_settings")
-
-      settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.enabled", false))
-      settings.register(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, [ "http://localhost:9200" ] ))
-      settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.interval", "10s"))
-      settings.register(LogStash::Setting::TimeValue.new("xpack.monitoring.collection.timeout_interval", "10m"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.username", "logstash_system"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.password"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.cloud_id"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.cloud_auth"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.certificate_authority"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.path"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.truststore.password"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.path"))
-      settings.register(LogStash::Setting::NullableString.new("xpack.monitoring.elasticsearch.ssl.keystore.password"))
-      settings.register(LogStash::Setting::String.new("xpack.monitoring.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
-      settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.elasticsearch.sniffing", false))
-      settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.collection.pipeline.details.enabled", true))
-      settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.collection.config.enabled", true))
+      # Deprecated settings from 7.7
+      register_monitoring_settings(settings, "xpack.")
+      # Direct shipping settings
+      register_monitoring_settings(settings)
 
       settings.register(LogStash::Setting::String.new("node.uuid", ""))
     rescue => e
       logger.error e.message
       logger.error e.backtrace.to_s
       raise e
+    end
+
+    private
+    def register_monitoring_settings(settings, prefix = "")
+      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.enabled", false))
+      settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.hosts", String, [ "http://localhost:9200" ] ))
+      settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.interval", "10s"))
+      settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.username", "logstash_system"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.password"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.cloud_id"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.cloud_auth"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate_authority"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.path"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.password"))
+      settings.register(LogStash::Setting::String.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
+      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.elasticsearch.sniffing", false))
+      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
+      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.config.enabled", true))
     end
   end
 end
