@@ -5,16 +5,30 @@
 module LogStash; module Inputs; class Metrics;
   class StateEventFactory
     require "logstash/config/lir_serializer"
-    def initialize(pipeline)
+
+    def initialize(pipeline, cluster_uuid, collection_interval = 10)
       raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaPipeline)
-      @event = LogStash::Event.new
 
-      @event.set("[@metadata]", {
-        "document_type" => "logstash_state",
-        "timestamp" => Time.now
-      })
+      pipeline_doc = {"pipeline" => pipeline_data(pipeline)}
 
-      @event.set("[pipeline]", pipeline_data(pipeline))
+      if (LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS))
+        event_body = {
+          "type" => "logstash_state",
+          "logstash_state" => pipeline_doc,
+          "cluster_uuid" => cluster_uuid,
+          "interval_ms" => collection_interval * 1000,
+          "timestamp" => DateTime.now.strftime('%Y-%m-%dT%k:%M:%S.%L%z')
+        }
+      else
+        event_body = pipeline_doc
+      end
+
+      @event = LogStash::Event.new(
+        {"@metadata" => {
+          "document_type" => "logstash_state",
+          "timestamp" => Time.now
+        }}.merge(event_body)
+      )
 
       @event.remove("@timestamp")
       @event.remove("@version")

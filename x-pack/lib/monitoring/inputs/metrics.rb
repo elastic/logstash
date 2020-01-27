@@ -44,6 +44,7 @@ module LogStash module Inputs
     def register
       @global_stats = fetch_global_stats
       @agent = nil
+      @cluster_uuids = nil
       @settings = LogStash::SETTINGS.clone
       @last_updated_pipeline_hashes = []
       @agent = execution_context.agent if execution_context
@@ -105,15 +106,28 @@ module LogStash module Inputs
     end
 
     def update(snapshot)
+      if LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
+        @cluster_uuids ||= extract_cluster_uuids(snapshot.metric_store)
+      end
       update_stats(snapshot)
       update_states
     end
 
     def update_stats(snapshot)
       @logger.debug("Metrics input: received a new snapshot", :created_at => snapshot.created_at, :snapshot => snapshot) if @logger.debug?
+      if @cluster_uuids.nil? || @cluster_uuids.empty?
+        fire_stats_event(snapshot, nil)
+      else
+        @cluster_uuids.each do |cluster_uuid|
+          fire_stats_event(snapshot, cluster_uuid)
+        end
+      end
+    end
 
+    private
+    def fire_stats_event(snapshot, cluster_uuid)
       begin
-        event = StatsEventFactory.new(@global_stats, snapshot).make(agent, @extended_performance_collection)
+        event = StatsEventFactory.new(@global_stats, snapshot, cluster_uuid).make(agent, @extended_performance_collection, @collection_interval)
       rescue => e
         if @logger.debug?
           @logger.error("Failed to create monitoring event", :message => e.message, :error => e.class.name, :backtrace => e.backtrace)
@@ -132,6 +146,7 @@ module LogStash module Inputs
       emit_event(event)
     end
 
+    public
     def update_states
       return unless @agent
 
@@ -153,12 +168,19 @@ module LogStash module Inputs
     def update_pipeline_state(pipeline)
       return if pipeline.system?
       if @config_collection
-        emit_event(state_event_for(pipeline))
+        events = state_event_for(pipeline)
+        events.each { |event| emit_event(event) }
       end
     end
 
     def state_event_for(pipeline)
-      StateEventFactory.new(pipeline).make()
+      if @cluster_uuids.nil? || @cluster_uuids.empty?
+        [StateEventFactory.new(pipeline, nil, @collection_interval).make()]
+      else
+        @cluster_uuids.map do |cluster_uuid|
+          StateEventFactory.new(pipeline, cluster_uuid, @collection_interval).make()
+        end
+      end
     end
 
     def emit_event(event)
@@ -186,6 +208,25 @@ module LogStash module Inputs
           "batch_size" => LogStash::SETTINGS.get("pipeline.batch.size"),
         }
       }
+    end
+
+    def extract_cluster_uuids(stats)
+      result = stats.extract_metrics([:stats, :pipelines, :main, :config], :cluster_uuids)
+      if result && !result[:cluster_uuids].empty?
+        cluster_uuids = result[:cluster_uuids]
+        @logger.info("Found cluster_uuids from elasticsearch output plugins", :cluster_uuids => cluster_uuids)
+        if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
+          @logger.warn("Found monitoring.cluster_uuid setting configured in logstash.yml while using the ones discovered from elasticsearch output plugins, ignoring setting monitoring.cluster_uuid")
+        end
+        cluster_uuids
+      else
+        if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
+          [LogStash::SETTINGS.get("monitoring.cluster_uuid")]
+        else
+          @logger.warn("Can't find any cluster_uuid from elasticsearch output plugins nor monitoring.cluster_uuid in logstash.yml is defined")
+          [""]
+        end
+      end
     end
   end
 end; end

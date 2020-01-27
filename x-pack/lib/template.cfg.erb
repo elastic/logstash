@@ -20,10 +20,10 @@ output {
   <% else %>
     hosts => <%= es_hosts %>
   <% end %>
-    bulk_path => "/_monitoring/bulk?system_id=logstash&system_api_version=<%= system_api_version %>&interval=1s"
+    bulk_path => "<%= monitoring_endpoint %>"
     manage_template => false
     document_type => "%{[@metadata][document_type]}"
-    index => ""
+    index => "<%= monitoring_index %>"
     sniffing => <%= sniffing %>
   <% if auth? && !cloud_auth? %>
     user => "<%= user %>"
