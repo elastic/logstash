@@ -8,7 +8,6 @@ require "thread"
 java_import org.logstash.common.SourceWithMetadata
 
 module PipelineHelpers
-
   class SpecSamplerInput < LogStash::Inputs::Base
     config_name "spec_sampler_input"
 
@@ -58,9 +57,7 @@ module PipelineHelpers
 
     describe "\"#{name}\"" do
       let(:pipeline) do
-        settings = ::LogStash::SETTINGS.clone
         settings.set_value("queue.drain", true)
-        settings.set_value("pipeline.workers", 1)
         LogStash::JavaPipeline.new(
           LogStash::Config::PipelineConfig.new(
             LogStash::Config::Source::Local, :main,
@@ -73,9 +70,9 @@ module PipelineHelpers
       end
       let(:event) do
         sample_event = [sample_event] unless sample_event.is_a?(Array)
-        next sample_event.collect do |e|
+        sample_event.map do |e|
           e = { "message" => e } if e.is_a?(String)
-          next LogStash::Event.new(e)
+          LogStash::Event.new(e)
         end
       end
 
