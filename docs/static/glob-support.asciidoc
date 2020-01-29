@@ -41,7 +41,7 @@ Matches config files ending in `.conf` in the specified path.
 `"/var/log/*.log"`::
 Matches log files ending in `.log` in the specified path.
 
-`"/var/log/**/*.log`::
+`"/var/log/**/*.log"`::
 Matches log files ending in `.log` in subdirectories under the specified path.
 
 `"/path/to/logs/{app1,app2,app3}/data.log"`::
