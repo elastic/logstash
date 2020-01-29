@@ -297,7 +297,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.0.5-java)
+    logstash-input-beats (6.0.4-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -717,7 +717,7 @@ DEPENDENCIES
   logstash-filter-uuid
   logstash-filter-xml
   logstash-input-azure_event_hubs
-  logstash-input-beats
+  logstash-input-beats (= 6.0.4)
   logstash-input-couchdb_changes
   logstash-input-dead_letter_queue
   logstash-input-elasticsearch
