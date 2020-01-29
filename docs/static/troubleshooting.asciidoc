@@ -156,8 +156,7 @@ input {stdin{}} output {stdout{}}
 -----
 
 To better identify the offending pipeline, {ls} could separate its logs by pipeline.
-To switch on the log per pipeline feature is sufficient to enable `pipeline.separate_logs` in your `logstash.yml`
-or passing the `-Dls.pipeline.separate_logs=true` on command line.
+Switch on the log per pipeline feature by enabling it, put `pipeline.separate_logs: true` in your `logstash.yml`.
 
 For more complex pipelines, the problem could be caused by a series of plugins in
 a specific order. Troubleshooting these pipelines usually requires trial and error.
