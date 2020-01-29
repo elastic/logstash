@@ -212,6 +212,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -488,7 +489,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         @flushRequested,
         @flushing,
         @shutdownRequested,
-        @drain_queue)
+        @drain_queue,
+        @preserve_event_order)
     rescue => e
       @logger.error(
         "Worker loop initialization error",
@@ -508,5 +510,20 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     keys = {:pipeline_id => pipeline_id}.merge other_keys
     keys[:thread] ||= thread.inspect if thread
     keys
+  end
+
+  def preserve_event_order?(pipeline_workers)
+    case settings.get("pipeline.ordered")
+    when "auto"
+      if settings.set?("pipeline.workers") && settings.get("pipeline.workers") == 1
+        @logger.warn("'pipeline.ordered' is enabled and is likely less efficient, consider disabling if preserving event order is not necessary")
+        return true
+      end
+    when "true"
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker") if pipeline_workers > 1
+      return true
+    end
+
+    false
   end
 end; end
