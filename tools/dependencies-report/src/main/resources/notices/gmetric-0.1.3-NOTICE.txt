@@ -1,3 +1,0 @@
-source: https://github.com/igrigorik/gmetric/blob/master/README.md
-
-The MIT License, Copyright (c) 2009 Ilya Grigorik

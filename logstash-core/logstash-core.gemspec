@@ -54,6 +54,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1"
   gem.add_runtime_dependency "rack", '~> 2'
+  gem.add_runtime_dependency "mustermann", '~> 1.0.3'
   gem.add_runtime_dependency "sinatra", '~> 2'
   gem.add_runtime_dependency 'puma', '~> 4'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.10" # >= 0.9.13 Required to support TLSv1.2
