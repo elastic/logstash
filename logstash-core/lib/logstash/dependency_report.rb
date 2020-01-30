@@ -32,8 +32,9 @@ class LogStash::DependencyReport < Clamp::Command
     command = ["./gradlew", "generateLicenseReport", "-PlicenseReportInputCSV=#{ruby_output_path}", "-PlicenseReportOutputCSV=#{output_path}"]
     puts "Executing #{command}"
     system(*command)
+
     if $?.exitstatus != 0
-      raise "Could not run gradle java deps! Exit status #{$?.exitstatus}"
+      raise "generateLicenseReport failed with exit status #{$?.exitstatus}"
     end
 
     nil
