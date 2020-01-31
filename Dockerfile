@@ -31,6 +31,7 @@ ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
 ADD licenses /opt/logstash/licenses
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
 ADD Gemfile.template /opt/logstash/Gemfile.template
+ADD Gemfile.jruby-2.5.lock.release /opt/logstash/Gemfile.jruby-2.5.lock.release
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
 ADD rakelib /opt/logstash/rakelib
