@@ -13,6 +13,10 @@ class LogStash::DependencyReport < Clamp::Command
   option [ "--csv" ], "OUTPUT_PATH", "The path to write the dependency report in csv format.",
     :required => true, :attribute_name => :output_path
 
+  OTHER_DEPENDENCIES = [
+    ["jruby", "", "http://jruby.org", "EPL-2.0"]
+  ]
+
   def execute
     require "csv"
 
@@ -24,6 +28,8 @@ class LogStash::DependencyReport < Clamp::Command
       gems.each { |d| csv << d }
       puts "Finding gem embedded java/jar dependencies"
       jars.each { |d| csv << d }
+      puts "Adding non-gem non-jar dependencies (such as jruby distribution)"
+      OTHER_DEPENDENCIES.each { |d| csv << d }
     end
     puts "Wrote temporary ruby deps CSV to #{ruby_output_path}"
 
