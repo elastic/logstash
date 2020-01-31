@@ -109,7 +109,7 @@ By writing your own pipeline configurations, you can do additional processing,
 such as dropping fields, after the fields are extracted, or you can move your
 load from {es} ingest nodes to {ls} nodes.
 
-Before deciding to replaced the ingest pipelines with {ls} configurations,
+Before deciding to replace the ingest pipelines with {ls} configurations,
 read <<use-ingest-pipelines>>.
 
 Here are some examples that show how to implement {ls} configurations to replace
