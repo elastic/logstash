@@ -106,7 +106,7 @@ dependency,dependencyUrl,licenseOverride
 "metriks:0.9.9.8","https://github.com/eric/metriks/",MIT
 "mime-types:2.6.2",https://github.com/mime-types/ruby-mime-types/,MIT
 "minitar:0.9",https://github.com/halostatue/minitar/,RUBY|BSD-2-Clause
-"msgpack:1.3.1","https://github.com/msgpack/msgpack-ruby",Apache-2.0
+"msgpack:1.3.2","https://github.com/msgpack/msgpack-ruby",Apache-2.0
 "multi_json:1.14.1","https://github.com/intridea/multi_json",MIT
 "multipart-post:2.1.1","https://github.com/nicksieger/multipart-post",MIT
 "murmurhash3:0.1.6","https://github.com/funny-falcon/",MIT
