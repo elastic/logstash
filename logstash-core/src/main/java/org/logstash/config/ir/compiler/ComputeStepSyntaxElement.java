@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -33,9 +32,11 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     private static final ISimpleCompiler COMPILER = new SimpleCompiler();
 
     /**
-     * Sequential counter to generate the class name
+     * Global cache of runtime compiled classes to prevent duplicate classes being compiled.
+     * across pipelines and workers.
      */
-    private static final AtomicLong classSeqCount = new AtomicLong();
+    private static final Map<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
+        = new HashMap<>(5000);
 
     /**
      * Pattern to remove redundant {@code ;} from formatted code since {@link Formatter} does not
@@ -43,74 +44,94 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
      */
     private static final Pattern REDUNDANT_SEMICOLON = Pattern.compile("\n[ ]*;\n");
 
+    private static final String CLASS_NAME_PLACEHOLDER = "CLASS_NAME_PLACEHOLDER";
+
+    private static final Pattern CLASS_NAME_PLACEHOLDER_REGEX = Pattern.compile(CLASS_NAME_PLACEHOLDER);
+
     private final Iterable<MethodSyntaxElement> methods;
 
     private final ClassFields fields;
 
     private final Class<T> type;
 
-    private final long classSeq;
+    private final String normalizedSource;
 
     public static <T extends Dataset> ComputeStepSyntaxElement<T> create(
-        final Iterable<MethodSyntaxElement> methods, final ClassFields fields,
-        final Class<T> interfce) {
+        final Iterable<MethodSyntaxElement> methods,
+        final ClassFields fields,
+        final Class<T> interfce)
+    {
         return new ComputeStepSyntaxElement<>(methods, fields, interfce);
     }
 
-    private ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields, final Class<T> interfce) {
+    private ComputeStepSyntaxElement(
+        final Iterable<MethodSyntaxElement> methods,
+        final ClassFields fields,
+        final Class<T> interfce)
+    {
         this.methods = methods;
         this.fields = fields;
         type = interfce;
-        classSeq = classSeqCount.incrementAndGet();
+
+        // normalizes away the name of the class so that two classes of different name but otherwise
+        // equivalent syntax get correctly compared by {@link #equals(Object)}.
+        normalizedSource = generateCode(CLASS_NAME_PLACEHOLDER);
     }
 
     @SuppressWarnings("unchecked")
-    public T instantiate(Class<? extends Dataset> clazz) {
-        try {
-            return (T) clazz.<T>getConstructor(Map.class).newInstance(ctorArguments());
+    public T instantiate() {
+         try {
+             final Class<? extends Dataset> clazz = compile();
+             return (T) clazz.getConstructor(Map.class).newInstance(ctorArguments());
         } catch (final NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public Class<? extends Dataset> compile() {
-        // We need to globally synchronize to avoid concurrency issues with the internal class loader
-        // Per https://github.com/elastic/logstash/pull/11482 we should review this lock. 
-        synchronized (COMPILER) {
-            try {
-                final Class<? extends Dataset> clazz;
-                final String name = String.format("CompiledDataset%d", classSeq);
-                final String code = generateCode(name);
-                if (SOURCE_DIR != null) {
-                    final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
-                    Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
-                    COMPILER.cookFile(sourceFile.toFile());
-                } else {
-                    COMPILER.cook(code);
-                }
-                COMPILER.setParentClassLoader(COMPILER.getClassLoader());
-                clazz = (Class<? extends Dataset>)COMPILER.getClassLoader().loadClass(
-                        String.format("org.logstash.generated.%s", name)
-                );
+    /**
+     * This method is NOT thread-safe, and must have exclusive access to `COMPILER`
+     * so that the resulting `ClassLoader` after each `SimpleCompiler#cook()` operation
+     * can be teed up as the parent for the next cook operation.
+     * Also note that synchronizing on `COMPILER` also protects the global CLASS_CACHE.
+     */
 
+    @SuppressWarnings("unchecked")
+    private  Class<? extends Dataset> compile() {
+        try {
+            synchronized (COMPILER) {
+                Class<? extends Dataset> clazz = CLASS_CACHE.get(this);
+                if (clazz == null) {
+                    final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
+                    final String code = CLASS_NAME_PLACEHOLDER_REGEX.matcher(normalizedSource).replaceAll(name);
+                    if (SOURCE_DIR != null) {
+                        final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
+                        Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
+                        COMPILER.cookFile(sourceFile.toFile());
+                    } else {
+                        COMPILER.cook(code);
+                    }
+                    COMPILER.setParentClassLoader(COMPILER.getClassLoader());
+                    clazz = (Class<T>) COMPILER.getClassLoader().loadClass(
+                        String.format("org.logstash.generated.%s", name)
+                    );
+                    CLASS_CACHE.put(this, clazz);
+                }
                 return clazz;
-            } catch (final CompileException | ClassNotFoundException | IOException ex) {
-                throw new IllegalStateException(ex);
             }
+        } catch (final CompileException | ClassNotFoundException | IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
 
     @Override
     public int hashCode() {
-        return normalizedSource().hashCode();
+        return normalizedSource.hashCode();
     }
 
     @Override
     public boolean equals(final Object other) {
         return other instanceof ComputeStepSyntaxElement &&
-            normalizedSource().equals(((ComputeStepSyntaxElement<?>) other).normalizedSource());
+            normalizedSource.equals(((ComputeStepSyntaxElement<?>) other).normalizedSource);
     }
 
     private String generateCode(final String name) {
@@ -160,15 +181,6 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                 result.put(fieldDefinition.getName(), fieldDefinition.getCtorArgument())
         );
         return result;
-    }
-
-    /**
-     * Normalizes away the name of the class so that two classes of different name but otherwise
-     * equivalent syntax get correctly compared by {@link #equals(Object)}.
-     * @return Source of this class, with its name set to {@code CONSTANT}.
-     */
-    private String normalizedSource() {
-        return this.generateCode("CONSTANT");
     }
 
     /**

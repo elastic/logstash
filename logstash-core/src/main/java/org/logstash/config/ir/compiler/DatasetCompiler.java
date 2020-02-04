@@ -90,7 +90,6 @@ public final class DatasetCompiler {
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
         final Closure compute;
-
         if (parents.isEmpty()) {
             compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
         } else {
@@ -117,16 +116,29 @@ public final class DatasetCompiler {
      * @param parents Parent {@link Dataset} to sum and terminate
      * @return Dataset representing the sum of given parent {@link Dataset}
      */
-    public static ComputeStepSyntaxElement<Dataset> terminalDataset(final Collection<Dataset> parents) {
-        final ClassFields fields = new ClassFields();
-        final Collection<ValueSyntaxElement> parentFields =
-            parents.stream().map(fields::add).collect(Collectors.toList());
-        return compileOutput(
-            Closure.wrap(
-                parentFields.stream().map(DatasetCompiler::computeDataset)
-                    .toArray(MethodLevelSyntaxElement[]::new)
-            ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
-        );
+    public static Dataset terminalDataset(final Collection<Dataset> parents) {
+        final int count = parents.size();
+        final Dataset result;
+        if (count > 1) {
+            final ClassFields fields = new ClassFields();
+            final Collection<ValueSyntaxElement> parentFields =
+                parents.stream().map(fields::add).collect(Collectors.toList());
+            result = compileOutput(
+                Closure.wrap(
+                    parentFields.stream().map(DatasetCompiler::computeDataset)
+                        .toArray(MethodLevelSyntaxElement[]::new)
+                ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
+            ).instantiate();
+        } else if (count == 1) {
+            // No need for a terminal dataset here, if there is only a single parent node we can
+            // call it directly.
+            result = parents.iterator().next();
+        } else {
+            throw new IllegalArgumentException(
+                "Cannot create Terminal Dataset for an empty number of parent datasets"
+            );
+        }
+        return result;
     }
 
     /**
@@ -198,8 +210,13 @@ public final class DatasetCompiler {
         final ValueSyntaxElement ifData, final ValueSyntaxElement elseData) {
         final ValueSyntaxElement eventVal = event.access();
         return Closure.wrap(
-                SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
-                        .call("filterEvents", inputBuffer, condition, ifData, elseData)
+            SyntaxFactory.value("org.logstash.config.ir.compiler.Utils").call(
+                "filterEvents",
+                inputBuffer,
+                condition,
+                ifData,
+                elseData
+            )
         );
     }
 
