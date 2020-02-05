@@ -1,0 +1,24 @@
+[[processing]] 
+== Logstash Processing Details
+
+NOTE: This is a new section. We're still working on it.
+
+[float] 
+[[proc-details]] 
+== {ls} behind the scenes
+
+Understanding how {ls} works can help you set up your environment more
+effectively.
+
+[float] 
+[[event-ordering]] 
+=== Event ordering 
+
+Event ordering info goes here. 
+
+
+
+
+
+
+
