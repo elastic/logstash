@@ -129,9 +129,9 @@ logstash-{version} directory, the command is:
 ----
 xattr -d -r com.apple.quarantine logstash-{version}
 ----
-Alternatively, you can add a security override for both `jdk.app` and
-`controller.app` by following the instructions in the _How to open an app that
-hasn’t been notarized or is from an unidentified developer_ section of
+Alternatively, you can add a security override if a Gatekeeper popup appears by
+following the instructions in the _How to open an app that hasn’t been notarized
+or is from an unidentified developer_ section of
 https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
 ====
 
