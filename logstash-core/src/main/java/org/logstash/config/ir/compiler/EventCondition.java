@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+
+import org.jruby.Ruby;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
@@ -33,7 +35,6 @@ import org.logstash.config.ir.expression.binary.Or;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
-import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -481,7 +482,7 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object tomatch = event.getEvent().getUnconvertedField(field);
                 return tomatch instanceof RubyString &&
-                    !((RubyString) tomatch).match(WorkerLoop.THREAD_CONTEXT.get(), regex).isNil();
+                    !((RubyString) tomatch).match(RubyUtil.RUBY.getCurrentContext(), regex).isNil();
             }
         }
 
@@ -490,10 +491,11 @@ public interface EventCondition {
             private final boolean matches;
 
             private ConstantMatches(final Object constant, final String regex) {
+                final Ruby runtime = RubyUtil.RUBY;
                 this.matches = constant instanceof String &&
-                        !(RubyUtil.RUBY.newString((String) constant).match(
-                                WorkerLoop.THREAD_CONTEXT.get(),
-                                RubyUtil.RUBY.newString(regex)).isNil());
+                        !(runtime.newString((String) constant).match(
+                                runtime.getCurrentContext(),
+                                runtime.newString(regex)).isNil());
             }
 
             @Override

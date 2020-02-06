@@ -61,7 +61,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     }
 
     public static ConvertedMap newFromRubyHash(final RubyHash o) {
-        return newFromRubyHash(WorkerLoop.THREAD_CONTEXT.get(), o);
+        return newFromRubyHash(o.getRuntime().getCurrentContext(), o);
     }
 
     public static ConvertedMap newFromRubyHash(final ThreadContext context, final RubyHash o) {

@@ -12,7 +12,6 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 
@@ -78,7 +77,7 @@ OutputDelegatorExt extends AbstractOutputDelegatorExt {
         try {
             final IRubyObject pluginId = this.getId();
             org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
-            strategy.multiReceive(WorkerLoop.THREAD_CONTEXT.get(), (IRubyObject) batch);
+            strategy.multiReceive(getRuntime().getCurrentContext(), (IRubyObject) batch);
         } catch (final InterruptedException ex) {
             throw new IllegalStateException(ex);
         } finally {

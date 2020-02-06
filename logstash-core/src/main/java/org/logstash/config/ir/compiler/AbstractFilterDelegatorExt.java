@@ -11,7 +11,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -131,7 +130,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     @SuppressWarnings("rawtypes")
     public RubyArray flush(final IRubyObject input) {
         RubyHash options = (RubyHash) input;
-        final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();
+        final ThreadContext context = options.getRuntime().getCurrentContext();
         final IRubyObject newEvents = doFlush(context, options);
         final RubyArray result;
         if (newEvents.isNil()) {
