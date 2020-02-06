@@ -12,7 +12,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.execution.WorkerLoop;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -106,7 +105,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
         org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
         try {
             return (RubyArray) filterMethod.call(
-                    WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch);
+                    getRuntime().getCurrentContext(), filter, filterClass, FILTER_METHOD_NAME, batch);
         } finally {
             org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
