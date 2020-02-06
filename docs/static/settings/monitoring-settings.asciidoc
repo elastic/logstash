@@ -50,6 +50,11 @@ Controls how often data samples are collected and shipped on the Logstash side.
 Defaults to `10s`. If you modify the collection interval, set the 
 `xpack.monitoring.min_interval_seconds` option in `kibana.yml` to the same value.
 
+`xpack.monitoring.collection.write_direct.enabled`::
+
+Forces the internal collectors to write directly to the monitoring {es} without
+traversing the monitoring exporter provided by {es}. Disabled by default, this setting
+is intermediate step in deprecating the internal collectors.
 
 [[monitoring-ssl-settings]]
 ===== {monitoring} TLS/SSL settings
