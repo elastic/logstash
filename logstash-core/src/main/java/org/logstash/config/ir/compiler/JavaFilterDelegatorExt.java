@@ -76,9 +76,10 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
         if (filter.requiresFlush()) {
             Collection<Event> outputEvents = filter.flush(filterMatchListener);
-            @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
+            final Ruby runtime = context.runtime;
+            @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(runtime, outputEvents.size());
             for (Event outputEvent : outputEvents) {
-                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
+                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(runtime, (org.logstash.Event)outputEvent));
             }
             return newBatch;
         }
