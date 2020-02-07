@@ -130,7 +130,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     @SuppressWarnings("rawtypes")
     public RubyArray flush(final IRubyObject input) {
         RubyHash options = (RubyHash) input;
-        final ThreadContext context = options.getRuntime().getCurrentContext();
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         final IRubyObject newEvents = doFlush(context, options);
         final RubyArray result;
         if (newEvents.isNil()) {
