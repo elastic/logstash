@@ -105,7 +105,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
         org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
         try {
             return (RubyArray) filterMethod.call(
-                    getRuntime().getCurrentContext(), filter, filterClass, FILTER_METHOD_NAME, batch);
+                    RUBY.getCurrentContext(), filter, filterClass, FILTER_METHOD_NAME, batch);
         } finally {
             org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
