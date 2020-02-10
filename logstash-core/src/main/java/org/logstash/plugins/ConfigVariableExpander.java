@@ -16,6 +16,13 @@ public class ConfigVariableExpander implements AutoCloseable {
     private SecretStore secretStore;
     private EnvironmentVariableProvider envVarProvider;
 
+    /**
+     * Creates a ConfigVariableExpander that doesn't lookup any secreted placeholder.
+     * */
+    static ConfigVariableExpander withoutSecret(EnvironmentVariableProvider envVarProvider) {
+        return new ConfigVariableExpander(null, envVarProvider);
+    }
+
     public ConfigVariableExpander(SecretStore secretStore, EnvironmentVariableProvider envVarProvider) {
         this.secretStore = secretStore;
         this.envVarProvider = envVarProvider;

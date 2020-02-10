@@ -22,6 +22,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.DLQWriterAdapter;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.NullDeadLetterQueueWriter;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.PipelineIR;
@@ -56,6 +57,11 @@ import java.util.UUID;
 
 public final class PluginFactoryExt {
 
+    @FunctionalInterface
+    public interface PluginResolver {
+        PluginLookup.PluginClass resolve(PluginLookup.PluginType type, String name);
+    }
+
     @JRubyClass(name = "PluginFactory")
     public static final class Plugins extends RubyBasicObject
         implements RubyIntegration.PluginFactory {
@@ -74,6 +80,10 @@ public final class PluginFactoryExt {
 
         private RubyClass filterClass;
 
+        private ConfigVariableExpander configVariables;
+
+        private PluginResolver pluginResolver;
+
         @JRubyMethod(name = "filter_delegator", meta = true, required = 5)
         public static IRubyObject filterDelegator(final ThreadContext context,
                                                   final IRubyObject recv, final IRubyObject[] args) {
@@ -90,7 +100,12 @@ public final class PluginFactoryExt {
         }
 
         public Plugins(final Ruby runtime, final RubyClass metaClass) {
+            this(runtime, metaClass, PluginLookup::lookup);
+        }
+
+        Plugins(final Ruby runtime, final RubyClass metaClass, PluginResolver pluginResolver) {
             super(runtime, metaClass);
+            this.pluginResolver = pluginResolver;
         }
 
         @JRubyMethod(required = 4)
@@ -106,10 +121,18 @@ public final class PluginFactoryExt {
         public PluginFactoryExt.Plugins init(final PipelineIR lir, final PluginFactoryExt.Metrics metrics,
                                              final PluginFactoryExt.ExecutionContext executionContext,
                                              final RubyClass filterClass) {
+            return this.init(lir, metrics, executionContext, filterClass, EnvironmentVariableProvider.defaultProvider());
+        }
+
+        PluginFactoryExt.Plugins init(final PipelineIR lir, final PluginFactoryExt.Metrics metrics,
+                                      final PluginFactoryExt.ExecutionContext executionContext,
+                                      final RubyClass filterClass,
+                                      final EnvironmentVariableProvider envVars) {
             this.lir = lir;
             this.metrics = metrics;
             this.executionContext = executionContext;
             this.filterClass = filterClass;
+            this.configVariables = ConfigVariableExpander.withoutSecret(envVars);
             return this;
         }
 
@@ -178,16 +201,17 @@ public final class PluginFactoryExt {
                                    SourceWithMetadata source, final Map<String, IRubyObject> args,
                                    Map<String, Object> pluginArgs) {
             final String id;
-            final PluginLookup.PluginClass pluginClass = PluginLookup.lookup(type, name);
+            final PluginLookup.PluginClass pluginClass = pluginResolver.resolve(type, name);
 
             if (type == PluginLookup.PluginType.CODEC) {
                 id = UUID.randomUUID().toString();
             } else {
-                id = lir.getGraph().vertices()
+                String unresolvedId = lir.getGraph().vertices()
                         .filter(v -> v.getSourceWithMetadata() != null
                                 && v.getSourceWithMetadata().equalsWithoutText(source))
                         .findFirst()
                         .map(Vertex::getId).orElse(null);
+                id = (String) configVariables.expand(unresolvedId);
             }
             if (id == null) {
                 throw context.runtime.newRaiseException(
