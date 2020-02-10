@@ -74,6 +74,7 @@ task javaTests(type: Test) {
     exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
     exclude '/org/logstash/plugins/NamespacedMetricImplTest.class'
     exclude '/org/logstash/plugins/CounterMetricImplTest.class'
+    exclude '/org/logstash/plugins/PluginFactoryExtTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -88,6 +89,7 @@ task rubyTests(type: Test) {
     include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
     include '/org/logstash/plugins/NamespacedMetricImplTest.class'
     include '/org/logstash/plugins/CounterMetricImplTest.class'
+    include '/org/logstash/plugins/PluginFactoryExtTest.class'
 }
 
 test {

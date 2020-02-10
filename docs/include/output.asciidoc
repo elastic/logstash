@@ -89,4 +89,6 @@ output {
 }
 ---------------------------------------------------------------------------------------------------
 
+NOTE: Variable substitution in the `id` field only supports environment variables
+      and does not support the use of values from the secret store.
 
