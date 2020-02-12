@@ -98,7 +98,10 @@ No user facing changes in this release.
 * Backport release notes to 7.4 branch https://github.com/elastic/logstash/pull/11159[#11159]
 * Docs: Fix backticks in how to docs https://github.com/elastic/logstash/pull/11018[#11018]
 
-NOTICE: Deprecate {ls} Netflow module and point to {filebeat} Netflow module https://github.com/elastic/logstash/pull/11113[#11113]
+NOTICE: {ls} Netflow module has been deprecated and replaced by the
+{filebeat-ref}/filebeat-module-netflow.html[{Filebeat} Netflow Module] which is
+compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]
+https://github.com/elastic/logstash/pull/11113[#11113]
 
 ==== Plugins
 
