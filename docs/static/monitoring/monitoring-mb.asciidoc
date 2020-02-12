@@ -28,7 +28,7 @@ commented out:
 
 [source,yaml]
 ----------------------------------
-monitoring.enabled: false
+xpack.monitoring.enabled: false
 ----------------------------------
 
 Remove the `#` at the beginning of the line to enable the setting.
