@@ -40,8 +40,8 @@ data collection. For more information about the configuration options for the
 collectors, see <<monitoring-settings>>.
 
 WARNING: Unlike {monitoring} for {es} and {kib}, there is no 
-`xpack.monitoring.collection.enabled` setting on Logstash. You must use the 
-`xpack.monitoring.enabled` setting to enable and disable data collection. 
+`pack.monitoring.collection.enabled` setting on Logstash. You must use the
+`monitoring.enabled` setting to enable and disable data collection.
 
 If gaps exist in the monitoring charts in {kib}, it is typically because either 
 a collector failed or the monitoring cluster did not receive the data (for 

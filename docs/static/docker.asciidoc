@@ -153,7 +153,7 @@ Some example translations are shown here:
 **Environment Variable**:: **Logstash Setting**
 `PIPELINE_WORKERS`:: `pipeline.workers`
 `LOG_LEVEL`:: `log.level`
-`XPACK_MONITORING_ENABLED`:: `xpack.monitoring.enabled`
+`MONITORING_ENABLED`:: `monitoring.enabled`
 
 In general, any setting listed in the <<logstash-settings-file, settings
 documentation>> can be configured with this technique.
@@ -170,9 +170,9 @@ images:
 
 [horizontal]
 `http.host`:: `0.0.0.0`
-`xpack.monitoring.elasticsearch.hosts`:: `http://elasticsearch:9200`
+`monitoring.elasticsearch.hosts`:: `http://elasticsearch:9200`
 
-NOTE: The setting `xpack.monitoring.elasticsearch.hosts` is not
+NOTE: The setting `monitoring.elasticsearch.hosts` is not
 defined in the `-oss` image.
 
 These settings are defined in the default `logstash.yml`. They can be overridden

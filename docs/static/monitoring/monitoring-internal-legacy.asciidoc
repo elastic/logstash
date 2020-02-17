@@ -1,0 +1,17 @@
+[role="xpack"]
+[[monitoring-internal-collection-legacy]]
+=== Collect {ls} monitoring data using internal legacy collectors
+++++
+<titleabbrev>Legacy internal collection (deprecated)</titleabbrev>
+++++
+
+deprecated[7.7.0]
+
+Starting in {ls} version 7.7, the legacy settings for internal collection are deprecated and
+will be removed in version 8.0.0. Instead of sending monitoring data to {es} exporter,
+it’s recommended that you use the <<monitoring-internal-collection,internal collection>>
+to route monitoring data directly to your monitoring indices.
+
+Or as an alternative to internal collection, use <<monitoring-with-metricbeat, {metricbeat} collection>>.
+
+

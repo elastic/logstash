@@ -226,8 +226,8 @@ Then configure the user and password in the `logstash.yml` configuration file:
 
 [source,yaml]
 ----------------------------------------------------------
-xpack.monitoring.elasticsearch.username: logstash_system
-xpack.monitoring.elasticsearch.password: t0p.s3cr3t
+monitoring.elasticsearch.username: logstash_system
+monitoring.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
 
 If you initially installed an older version of {xpack}, and then upgraded, the
