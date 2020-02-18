@@ -5,7 +5,7 @@
 <titleabbrev>Internal collection</titleabbrev>
 ++++
 
-IMPORTANT: This functionality will be deprecated in 7.7.0
+IMPORTANT: This functionality is scheduled for deprecation in 7.7.0
 
 Using internal collectors for {ls} {monitoring} these components:
 
