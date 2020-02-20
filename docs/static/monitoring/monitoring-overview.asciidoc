@@ -6,8 +6,8 @@ Use the {stack} {monitor-features} to gain insight into the health of
 {ls} instances running in your environment.
 
 For an introduction to monitoring your Elastic stack, see
-{ref}/monitor-elasticsearch-cluster.html[Monitoring a cluster].
-
+{ref}/monitor-elasticsearch-cluster.html[Monitoring a cluster] in the
+{ref}[Elasticsearch Reference].
 
 [float]
 [[configuring-logstash-xpack]]
@@ -16,12 +16,20 @@ For an introduction to monitoring your Elastic stack, see
 Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
-* <<monitoring-with-metricbeat, {metricbeat} collection>>
-* <<monitoring-internal-collection,Internal collection (deprecated)>>
+* <<monitoring-with-metricbeat, {metricbeat} collection>>. Metricbeat collects
+monitoring data from your Filebeat instance and sends it directly to your
+monitoring cluster.
+
+* <<monitoring-internal-collection,Internal collection>>. Internal collectors send
+monitoring data directly to your monitoring cluster.
+
+* <<monitoring-internal-collection-legacy,Legacy internal collection>>. Legacy
+internal collectors send monitoring data to your production cluster.
 
 
 include::monitoring-mb.asciidoc[]
 include::monitoring-internal.asciidoc[]
+include::monitoring-internal-legacy.asciidoc[]
 include::monitoring-ui.asciidoc[]
 include::pipeline-viewer.asciidoc[]
 include::troubleshooting.asciidoc[]

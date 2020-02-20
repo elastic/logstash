@@ -2,143 +2,110 @@
 [[monitoring-internal-collection]]
 === Collect {ls} monitoring data using internal collectors
 ++++
-<titleabbrev>Internal collection (deprecated)</titleabbrev>
+<titleabbrev>Internal collection</titleabbrev>
 ++++
 
-deprecated[7.7.0]
-
-Using internal collectors for {ls} {monitoring} these components:
-
-* <<logstash-monitoring-collectors,Collectors>>
-* <<logstash-monitoring-output,Output>>
-
-These pieces live outside of the default Logstash pipeline in a dedicated monitoring
-pipeline. This configuration ensures that all data and processing has a minimal
-impact on ordinary Logstash processing. Existing Logstash features, such as the
-<<plugins-outputs-elasticsearch,`elasticsearch` output>>, can be reused to
-benefit from its retry policies. 
-
-NOTE: The `elasticsearch` output that is used by {monitoring} for Logstash is 
-configured exclusively via settings found in `logstash.yml`. It is not 
-configured by using anything from the Logstash configurations that might also be 
-using their own separate `elasticsearch` outputs.
-
-The {es} cluster that is configured for use with {monitoring} for Logstash is 
-expected to be the production cluster. This configuration enables the production 
-{es} cluster to add metadata (for example, its cluster UUID) to the Logstash
-monitoring data then route it to the monitoring clusters. For more information 
-about typical monitoring architectures, see 
-{ref}/how-monitoring-works.html[How monitoring works] in the {ref}[Elasticsearch Reference]. 
-
-include::collectors.asciidoc[]
-include::monitoring-output.asciidoc[]
-
-
-[[configure-internal-collectors]]
-==== Configure {ls} monitoring with internal collectors
-++++
-<titleabbrev>Configure internal collection</titleabbrev>
-++++
-
-To monitor Logstash nodes:
-
-. Specify where to send monitoring data. This cluster is often referred to as
-the _production cluster_. For examples of typical monitoring architectures, see
-{ref}/how-monitoring-works.html[How monitoring works].
-+
---
-IMPORTANT: To visualize Logstash as part of the Elastic Stack (as shown in Step
-6), send metrics to your _production_ cluster. Sending metrics to a dedicated
-monitoring cluster will show the Logstash metrics under the _monitoring_ cluster.
-
---
-
-. Verify that the `xpack.monitoring.collection.enabled` setting is `true` on the
-production cluster. If that setting is `false`, the collection of monitoring data
-is disabled in {es} and data is ignored from all other sources.
-
-. Configure your Logstash nodes to send metrics by setting the
-`xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security} is
-enabled, you also need to specify the credentials for the
-{ref}/built-in-users.html[built-in `logstash_system` user]. For more
-information about these settings, see <<monitoring-settings>>.
-+
---
-[source,yaml]
---------------------------------------------------
-xpack.monitoring.elasticsearch.hosts: ["http://es-prod-node-1:9200", "http://es-prod-node-2:9200"] <1>
-xpack.monitoring.elasticsearch.username: "logstash_system" <2>
-xpack.monitoring.elasticsearch.password: "changeme"
---------------------------------------------------
-
-<1> If SSL/TLS is enabled on the production cluster, you must
-connect through HTTPS. As of v5.2.1, you can specify multiple
-Elasticsearch hosts as an array as well as specifying a single
-host as a string. If multiple URLs are specified, Logstash
-can round-robin requests to these production nodes.
-<2> If {security} is disabled on the production cluster, you can omit these 
-`username` and `password` settings. 
---
-
-. If SSL/TLS is enabled on the production {es} cluster, specify the trusted
-CA certificates that will be used to verify the identity of the nodes
-in the cluster.
-+
---
-To add a CA certificate to a Logstash node's trusted certificates, you
-can specify the location of the PEM encoded certificate with the
-`certificate_authority` setting:
-
-[source,yaml]
---------------------------------------------------
-xpack.monitoring.elasticsearch.ssl.certificate_authority: /path/to/ca.crt
---------------------------------------------------
-
-Alternatively, you can configure trusted certificates using a truststore
-(a Java Keystore file that contains the certificates):
-
-[source,yaml]
---------------------------------------------------
-xpack.monitoring.elasticsearch.ssl.truststore.path: /path/to/file
-xpack.monitoring.elasticsearch.ssl.truststore.password: password
---------------------------------------------------
-
-Also, optionally, you can set up client certificate using a keystore
-(a Java Keystore file that contains the certificate):
-
-[source,yaml]
---------------------------------------------------
-xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
-xpack.monitoring.elasticsearch.ssl.keystore.password: password
---------------------------------------------------
-
-Set sniffing to `true` to enable discovery of other nodes of the {es} cluster.
-It defaults to `false`.
-
-[source,yaml]
---------------------------------------------------
-xpack.monitoring.elasticsearch.sniffing: false
---------------------------------------------------
-
---
-
-. Restart your Logstash nodes.
-
-. To verify your {monitoring} configuration, point your web browser at your {kib}
-host, and select **Monitoring** from the side navigation. Metrics reported from
-your Logstash nodes should be visible in the Logstash section. When security is
-enabled, to view the monitoring dashboards you must log in to {kib} as a user
-who has the `kibana_user` and `monitoring_user` roles.
-+
-image::images/monitoring-ui.png["Monitoring",link="monitoring/images/monitoring-ui.png"]
-
-[float]
-[[monitoring-upgraded-logstash]]
-===== Re-enabling Logstash Monitoring After Upgrading
-
-When upgrading from older versions of {xpack}, the built-in `logstash_system`
-user is disabled for security reasons. To resume monitoring,
-change the password and re-enable the logstash_system user.
-
+KEEP THIS AT THE END?
 include::../settings/monitoring-settings.asciidoc[]
 
+
+
+
+Use internal collectors to send {ls} monitoring data directly to your
+monitoring cluster.
+
+As an alternative to internal collection, use
+<<monitoring-with-metricbeat>>. When you use internal collection
+instead of {metricbeat}, you have fewer pieces of software to install
+and maintain.
+
+To learn about monitoring in general, see 
+{ref}/monitor-elasticsearch-cluster.html[Monitor a cluster]. 
+
+. Create an API key or user that has appropriate authority to send system-level monitoring
+data to {es}. For example, you can use the built-in +{beat_monitoring_user}+ user or
+assign the built-in +{beat_monitoring_user}+ role to another user. For more
+information on the required privileges, see <<ls-monitoring-user>>.
+For more information on how to use API keys, see TBD.
+
+TODO: LS API keys
+
+. Add the `monitoring` settings in the {beatname_uc} configuration file. If you
+configured the {es} output and want to send {beatname_uc} monitoring events to
+the same {es} cluster, specify the following minimal configuration:
++
+["source","yml",subs="attributes"]
+--------------------
+monitoring:
+  enabled: true
+  elasticsearch:
+    api_key:  id:api_key <1>
+    username: {beat_monitoring_user}
+    password: somepassword
+--------------------
+<1> Specify one of `api_key` or `username`/`password`.
++
+If you want to send monitoring events to an https://cloud.elastic.co/[{ecloud}]
+monitoring cluster, you can use two simpler settings. When defined, these settings
+overwrite settings from other parts in the configuration. For example:
++
+[source,yaml]
+--------------------
+monitoring:
+  enabled: true
+  cloud.id: 'staging:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRjZWM2ZjI2MWE3NGJmMjRjZTMzYmI4ODExYjg0Mjk0ZiRjNmMyY2E2ZDA0MjI0OWFmMGNjN2Q3YTllOTYyNTc0Mw=='
+  cloud.auth: 'elastic:{pwd}'
+--------------------
++
+If you want to send monitoring events to a separate {es} cluster
+(referred to as the _monitoring cluster_), you must specify additional
+configuration options. For example:
++
+["source","yml",subs="attributes"]
+--------------------
+monitoring:
+  enabled: true
+  cluster_uuid: PRODUCTION_ES_CLUSTER_UUID <1>
+  elasticsearch:
+    hosts: ["https://example.com:9200", "https://example2.com:9200"] <2>
+    api_key:  id:api_key <3>
+    username: {beat_monitoring_user}
+    password: somepassword
+--------------------
+<1> This setting identifies the {es} cluster under which the
+monitoring data for this {beatname_uc} instance will appear in the
+Stack Monitoring UI. To get a cluster's `cluster_uuid`,
+call the `GET /` API against that cluster.
+<2> This setting identifies the hosts and port numbers of {es} nodes
+that are part of the monitoring cluster.
+<3> Specify one of `api_key` or `username`/`password`.
++
+If you want to use PKI authentication to send monitoring events to
+{es}, you must specify a different set of configuration options. For
+example:
++
+[source,yaml]
+--------------------
+monitoring:
+  enabled: true
+  cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
+  elasticsearch:
+    hosts: ["https://example.com:9200", "https://example2.com:9200"]
+    username: ""
+    ssl:
+      ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+      ssl.certificate: "/etc/pki/client/cert.pem"
+      ssl.key: "/etc/pki/client/cert.key"
+--------------------
++
+You must specify the `username` as `""` explicitly so that
+the username from the client certificate (`CN`) is used. See
+TBD for more information about SSL settings.
+
+
+. Start {ls}.
+
+. {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}]. 
+
+TODO: This is from Beats.  What's appropriate for Logstash?
+//include::shared-monitor-config.asciidoc[]
