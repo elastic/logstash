@@ -59,9 +59,17 @@ namespace "artifact" do
       # plugins which use jar-dependencies.
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
+
+      # Without this when JRuby runs 'pleaserun' gem using the AdoptOpenJDK, during the post install script
+      # it claims that modules are not open for private introspection and suggest it's missing --add-opens
+      # so including these files JRuby run with modules opened to private introspection.
+      "vendor/jruby/bin/.jruby.java_opts",
+      "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
+      "jdk/**/*",
+      "jdk.app/**/*",
     ]
   end
 
@@ -124,53 +132,104 @@ namespace "artifact" do
   task "all" => ["prepare", "build"]
   task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8"]
 
-  desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:tar] Building tar.gz of default plugins")
+  desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
+  task "archives" => ["prepare", "generate_build_metadata"] do
+    #with bundled JDKs
+    ["linux", "windows", "darwin"].each do |os_name|
+      puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}")
+      system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name}")
+      case os_name
+      when "linux"
+        build_tar('ELASTIC-LICENSE', platform: '-linux-x86_64')
+      when "windows"
+        build_zip('ELASTIC-LICENSE', platform: '-windows-x86_64')
+      when "darwin"
+        build_tar('ELASTIC-LICENSE', platform: '-darwin-x86_64')
+      end
+      system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
+    end
+
+    #without JDK
+    system("./gradlew bootstrap") #force the build of Logstash jars
+    build_tar('ELASTIC-LICENSE', platform: '-no-jdk')
+    build_zip('ELASTIC-LICENSE', platform: '-no-jdk')
+  end
+
+  desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
+  task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
     build_tar('ELASTIC-LICENSE')
   end
 
-  desc "Build an OSS tar.gz of default logstash plugins with all dependencies"
-  task "tar_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:tar] Building tar.gz of default plugins")
-    build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder)
-  end
+  desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
+  task "archives_oss" => ["prepare", "generate_build_metadata"] do
+    #with bundled JDKs
+    ["linux", "windows", "darwin"].each do |os_name|
+      puts("[artifact:archives_oss] Building OSS tar.gz/zip of default plugins for OS: #{os_name}")
+      system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name}")
+      case os_name
+      when "linux"
+        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-linux-x86_64')
+      when "windows"
+        build_zip('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-windows-x86_64')
+      when "darwin"
+        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-darwin-x86_64')
+      end
+      system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
+    end
 
-  desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:zip] Building zip of default plugins")
-    build_zip('ELASTIC-LICENSE')
+    #without JDK
+    system("./gradlew bootstrap") #force the build of Logstash jars
+    build_tar('APACHE-LICENSE-2.0',"-oss", oss_excluder, platform: '-no-jdk')
+    build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder, platform: '-no-jdk')
   end
-
-  desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:zip] Building zip of default plugins")
-    build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder)
-  end
-
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
+    package_with_jdk("centos", "5")
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    #without JDKs
+    system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
+    package_with_jdk("centos", "5", :oss)
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    #without JDKs
+    system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", "5", :oss)
   end
 
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:deb] building deb package")
+    #with bundled JDKs
+    puts("[artifact:deb] building deb package for OS: linux")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
+    package_with_jdk("ubuntu", "12.04")
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    #without JDKs
+    system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", "12.04")
   end
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:deb] building deb package")
+    puts("[artifact:deb_oss] building deb package")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
+    package_with_jdk("ubuntu", "12.04", :oss)
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    #without JDKs
+    system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", "12.04", :oss)
   end
 
@@ -197,19 +256,19 @@ namespace "artifact" do
   end
 
   desc "Build docker image"
-  task "docker" => ["prepare", "generate_build_metadata", "tar"] do
+  task "docker" => ["prepare", "generate_build_metadata", "archives"] do
     puts("[docker] Building docker image")
     build_docker('full')
   end
 
   desc "Build OSS docker image"
-  task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+  task "docker_oss" => ["prepare", "generate_build_metadata", "archives_oss"] do
     puts("[docker_oss] Building OSS docker image")
     build_docker('oss')
   end
 
   desc "Build UBI8 docker image"
-  task "docker_ubi8" => %w(prepare generate_build_metadata tar) do
+  task "docker_ubi8" => %w(prepare generate_build_metadata archives) do
     puts("[docker_ubi8] Building UBI docker image")
     build_docker('ubi8')
   end
@@ -247,10 +306,8 @@ namespace "artifact" do
     Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm"].invoke
     Rake::Task["artifact:rpm_oss"].invoke
-    Rake::Task["artifact:zip"].invoke
-    Rake::Task["artifact:zip_oss"].invoke
-    Rake::Task["artifact:tar"].invoke
-    Rake::Task["artifact:tar_oss"].invoke
+    Rake::Task["artifact:archives"].invoke
+    Rake::Task["artifact:archives_oss"].invoke
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_oss"].invoke
@@ -343,47 +400,45 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(license, tar_suffix = nil, excluder=nil)
+
+  def build_tar(license, tar_suffix = nil, excluder=nil, platform: '')
     require "zlib"
-    require "archive/tar/minitar"
+    require 'rubygems'
+    require 'rubygems/package'
     ensure_logstash_version_constant_defined
-    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
+    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.tar.gz"
     if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
       puts("[artifact:tar] Source code not modified. Skipping build of #{tarpath}")
       return
     end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
-    tar = Archive::Tar::Minitar::Output.new(gz)
-    files(excluder).each do |path|
-      write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
+    Gem::Package::TarWriter.new(gz) do |tar|
+      files(excluder).each do |path|
+        write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
+      end
+
+      source_license_path = "licenses/#{license}.txt"
+      fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
+      write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
+
+      # add build.rb to tar
+      metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
+      path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
+      write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
     end
-
-    source_license_path = "licenses/#{license}.txt"
-    fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
-    write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
-
-    # add build.rb to tar
-    metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
-    path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
-    write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
-
-    tar.close
     gz.close
-    puts "Complete: #{tarpath}"
   end
+
 
   def write_to_tar(tar, path, path_in_tar)
     stat = File.lstat(path)
-    opts = {
-      :size => stat.size,
-      :mode => stat.mode,
-      :mtime => stat.mtime
-    }
     if stat.directory?
-      tar.tar.mkdir(path_in_tar, opts)
+      tar.mkdir(path_in_tar, stat.mode)
+    elsif stat.symlink?
+      tar.add_symlink(path_in_tar, File.readlink(path), stat.mode)
     else
-      tar.tar.add_file_simple(path_in_tar, opts) do |io|
+      tar.add_file_simple(path_in_tar, stat.mode, stat.size) do |io|
         File.open(path,'rb') do |fd|
           chunk = nil
           size = 0
@@ -396,10 +451,10 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(license, zip_suffix = "", excluder=nil)
+  def build_zip(license, zip_suffix = "", excluder=nil, platform: '')
     require 'zip'
     ensure_logstash_version_constant_defined
-    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.zip"
+    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
@@ -422,7 +477,11 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package(platform, version, variant=:standard)
+  def package_with_jdk(platform, version, variant=:standard)
+    package(platform, version, variant, true)
+  end
+
+  def package(platform, version, variant=:standard, bundle_jdk=false)
     oss = variant == :oss
 
     require "stud/temporary"
@@ -482,8 +541,19 @@ namespace "artifact" do
       dir.input("#{path}=/etc/logstash")
     end
 
+    if bundle_jdk
+      case platform
+        when "debian", "ubuntu"
+          arch_suffix = "amd64"
+        else
+          arch_suffix = "x86_64"
+      end
+    else
+      arch_suffix = "no-jdk"
+    end
+
     ensure_logstash_version_constant_defined
-    package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
+    package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}-#{arch_suffix}.TYPE"
 
     File.join(basedir, "config", "startup.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
@@ -529,7 +599,7 @@ namespace "artifact" do
         out.license = license
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
-        out.attributes[:deb_suggests] = "java8-runtime-headless"
+        out.attributes[:deb_suggests] = "java8-runtime-headless" unless bundle_jdk
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
@@ -553,13 +623,23 @@ namespace "artifact" do
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
     out.name = oss ? "logstash-oss" : "logstash"
-    out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     out.architecture = "all"
+    if bundle_jdk
+      case platform
+        when "redhat", "centos"
+          out.architecture = "x86_64"
+        when "debian", "ubuntu"
+          out.architecture = "amd64"
+      end
+    else
+      out.architecture = "all"
+    end
+    out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     # TODO(sissel): Include the git commit hash?
     out.iteration = "1" # what revision?
-    out.url = "http://www.elasticsearch.org/overview/logstash/"
+    out.url = "https://www.elastic.co/logstash"
     out.description = "An extensible logging pipeline"
-    out.vendor = "Elasticsearch"
+    out.vendor = "Elastic"
 
     # Because we made a mistake in naming the RC version numbers, both rpm and deb view
     # "1.5.0.rc1" higher than "1.5.0". Setting the epoch to 1 ensures that we get a kind
