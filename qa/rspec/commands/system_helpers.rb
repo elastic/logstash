@@ -19,14 +19,16 @@ require_relative "base"
 
 module ServiceTester
   module SystemD
-    def running?(hosts, package)
+    def running?(hosts, package, jdk_path='/usr/bin/java')
       stdout = ""
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
       end
+      stdout.force_encoding(Encoding::UTF_8)
       (
         stdout.match(/Active: active \(running\)/) &&
+        stdout.match(/^\s*└─\d*\s.*#{jdk_path}/) &&
         stdout.match(/#{package}.service - #{package}/)
       )
     end
@@ -40,13 +42,19 @@ module ServiceTester
   end
 
   module InitD
-    def running?(hosts, package)
+    def running?(hosts, package, jdk_path='/usr/bin/java')
       stdout = ""
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("initctl status #{package}")
         stdout = cmd.stdout
       end
-      stdout.match(/#{package} start\/running/)
+      running = stdout.match(/#{package} start\/running/)
+      pid = stdout.match(/#{package} start\/running, process (\d*)/).captures[0]
+      at(hosts, {in: :serial}) do |host|
+        cmd = sudo_exec!("ps ax | grep #{pid}")
+        stdout = cmd.stdout
+      end
+      (running && stdout.match(/#{jdk_path}/))
     end
 
     def service_manager(service, action, host=nil)
