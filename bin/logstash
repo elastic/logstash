@@ -1,7 +1,5 @@
 #!/bin/bash
-# Run logstash from source
-#
-# This is most useful when done from a git checkout.
+# Run logstash
 #
 # Usage:
 #   bin/logstash <command> [arguments]

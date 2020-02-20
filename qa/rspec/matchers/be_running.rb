@@ -23,3 +23,9 @@ RSpec::Matchers.define :be_running do
     subject.running?(subject.hosts, subject.name)
   end
 end
+
+RSpec::Matchers.define :be_running_with do |expected_jdk_path|
+  match do |subject|
+    subject.running?(subject.hosts, subject.name, expected_jdk_path)
+  end
+end

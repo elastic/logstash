@@ -82,5 +82,23 @@ module ServiceTester
     def delete_file(path, host)
       run_command("rm -rf #{path}", host)
     end
+
+    def package_for(filename, skip_jdk_infix, bundled_jdk, base=ServiceTester::Base::LOCATION)
+      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+      File.join(base, "#{filename}#{jdk_arch_ext}.#{package_extension}")
+    end
+
+    private
+    def jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+      if skip_jdk_infix
+        ""
+      else
+        if bundled_jdk
+          "-" + architecture_extension
+        else
+          "-no-jdk"
+        end
+      end
+    end
   end
 end
