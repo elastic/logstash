@@ -6,10 +6,10 @@
 {% endif -%}
 
 {% if image_flavor == 'oss' -%}
-  {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-oss-%s-linux-x86_64.tar.gz' % elastic_version -%}
   {% set license = 'Apache 2.0' -%}
 {% else -%}
-  {% set tarball = 'logstash-%s.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-%s-linux-x86_64.tar.gz' % elastic_version -%}
   {% set license = 'Elastic License' -%}
 {% endif -%}
 
@@ -29,7 +29,7 @@ FROM {{ base_image }}
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
 # Minimal distributions also require findutils tar gzip (procps for integration tests)
-RUN {{ package_manager }} update -y && {{ package_manager }} install -y procps findutils tar gzip java-11-openjdk-devel which && \
+RUN {{ package_manager }} update -y && {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
     {{ package_manager }} clean all
 
 # Provide a non-root user to run the process.

@@ -32,8 +32,12 @@ module ServiceTester
       stdout.match(/^Status: install ok installed$/)
     end
 
-    def package_for(filename, base=ServiceTester::Base::LOCATION)
-      File.join(base, "#{filename}.deb")
+    def package_extension
+      "deb"
+    end
+
+    def architecture_extension
+      "amd64"
     end
 
     def install(package, host=nil)

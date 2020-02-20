@@ -18,27 +18,35 @@
 require_relative '../spec_helper'
 require          'logstash/version'
 
-# This test checks if the current package could used to update from the latest version released.
-RSpec.shared_examples "updated" do |logstash|
+# This test checks if a package is possible to be installed without errors.
+RSpec.shared_examples "installable_with_jdk" do |logstash|
 
-  before(:all) { logstash.uninstall }
-  after(:all)  do
-    logstash.stop_service # make sure the service is stopped
-    logstash.uninstall #remove the package to keep uniform state
+  before(:all) do
+    #unset to force it using bundled JDK to run LS
+    logstash.run_command("unset JAVA_HOME")
   end
 
   before(:each) do
-    options={:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./", :skip_jdk_infix => true }
-    logstash.install(options) # make sure latest version is installed
+    logstash.uninstall
+    logstash.install({:bundled_jdk => true, :version => LOGSTASH_VERSION})
   end
 
-  it "can be updated an run on #{logstash.hostname}" do
+  after(:each) do
+    logstash.uninstall
+  end
+
+  it "is installed on #{logstash.hostname}" do
     expect(logstash).to be_installed
-    # Performing the update
-    logstash.install({:version => LOGSTASH_VERSION})
-    expect(logstash).to be_installed
-    # starts the service to be sure it runs after the upgrade
+  end
+
+  it "is running on #{logstash.hostname}" do
     logstash.start_service
-    expect(logstash).to be_running
+    expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+    logstash.stop_service
+  end
+
+  it "is removable on #{logstash.hostname}" do
+    logstash.uninstall
+    expect(logstash).to be_removed
   end
 end
