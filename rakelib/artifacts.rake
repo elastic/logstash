@@ -392,6 +392,12 @@ namespace "artifact" do
     end
   end
 
+  task "jdk" do |task, args|
+    system('./gradlew copyJdk')
+    #unless File.exists?(File.join("vendor", "jruby"))
+  end # jruby
+
+
   def ensure_logstash_version_constant_defined
     # we do not want this file required when rake (ruby) parses this file
     # only when there is a task executing, not at the very top of this file
