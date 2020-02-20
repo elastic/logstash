@@ -22,20 +22,8 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Config1
-    def _1
-      elements[0]
-    end
-
-    def plugin_section
+    def _
       elements[1]
-    end
-
-    def _2
-      elements[2]
-    end
-
-    def _3
-      elements[4]
     end
   end
 
@@ -51,45 +39,33 @@ module LogStashCompilerLSCLGrammar
     end
 
     i0, s0 = index, []
-    r1 = _nt__
+    s1, i1 = [], index
+    loop do
+      i2, s2 = index, []
+      r3 = _nt__
+      s2 << r3
+      if r3
+        r4 = _nt_plugin_section
+        s2 << r4
+      end
+      if s2.last
+        r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+        r2.extend(Config0)
+      else
+        @index = i2
+        r2 = nil
+      end
+      if r2
+        s1 << r2
+      else
+        break
+      end
+    end
+    r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
     s0 << r1
     if r1
-      r2 = _nt_plugin_section
-      s0 << r2
-      if r2
-        r3 = _nt__
-        s0 << r3
-        if r3
-          s4, i4 = [], index
-          loop do
-            i5, s5 = index, []
-            r6 = _nt__
-            s5 << r6
-            if r6
-              r7 = _nt_plugin_section
-              s5 << r7
-            end
-            if s5.last
-              r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-              r5.extend(Config0)
-            else
-              @index = i5
-              r5 = nil
-            end
-            if r5
-              s4 << r5
-            else
-              break
-            end
-          end
-          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-          s0 << r4
-          if r4
-            r8 = _nt__
-            s0 << r8
-          end
-        end
-      end
+      r5 = _nt__
+      s0 << r5
     end
     if s0.last
       r0 = instantiate_node(LogStash::Compiler::LSCL::AST::Config,input, i0...index, s0)
