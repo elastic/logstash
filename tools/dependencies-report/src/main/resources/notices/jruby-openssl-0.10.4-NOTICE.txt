@@ -1,4 +1,4 @@
-source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
+source: https://github.com/jruby/jruby-openssl/blob/v0.10.4/LICENSE.txt
 
 JRuby-OpenSSL is distributed under the same license as JRuby a tri EPL/GPL/LGPL
 license. You can use it, redistribute it and/or modify it under the terms of the:

@@ -91,7 +91,7 @@ dependency,dependencyUrl,licenseOverride
 "joni","https://github.com/jruby/joni/",MIT
 "jrjackson:0.4.11",https://github.com/guyboertje/jrjackson,Apache-2.0
 "jruby-jms:1.3.0",https://github.com/reidmorrison/jruby-jms,Apache-2.0
-"jruby-openssl:0.10.2","https://github.com/jruby/jruby-openssl/",EPL-1.0
+"jruby-openssl:0.10.4","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-readline","https://github.com/jruby/jruby-readline",EPL-1.0
 "jruby-stdin-channel:0.2.0","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
 "json-generator","https://github.com/tmattia/json-generator/",MIT
