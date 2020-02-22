@@ -411,8 +411,7 @@ your data into Elasticsearch.
 TIP: You can run Elasticsearch on your own hardware, or use our
 https://www.elastic.co/cloud/elasticsearch-service[hosted {es} Service] on
 Elastic Cloud. The Elasticsearch Service is available on both AWS and GCP.
-https://www.elastic.co/cloud/elasticsearch-service/signup[Try the {es} Service
-for free].
+{ess-trial}[Try the {es} Service for free].
 
 The Logstash pipeline can index the data into an
 Elasticsearch cluster. Edit the `first-pipeline.conf` file and replace the entire `output` section with the following
