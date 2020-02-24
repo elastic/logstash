@@ -5,8 +5,6 @@
 <titleabbrev>Internal collection</titleabbrev>
 ++++
 
-IMPORTANT: This functionality is scheduled for deprecation in 7.7.0
-
 Using internal collectors for {ls} {monitoring} these components:
 
 * <<logstash-monitoring-collectors,Collectors>>
