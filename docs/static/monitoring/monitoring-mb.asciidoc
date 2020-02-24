@@ -6,7 +6,7 @@
 <titleabbrev>{metricbeat} collection</titleabbrev>
 ++++
 
-In 7.3 and later, you can use {metricbeat} to collect data about {ls} 
+You can use {metricbeat} to collect data about {ls} 
 and ship it to the monitoring cluster, rather than routing it through the 
 production cluster as described in <<monitoring-internal-collection>>.
 
