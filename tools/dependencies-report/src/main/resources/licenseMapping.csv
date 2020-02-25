@@ -3,17 +3,17 @@ dependency,dependencyUrl,licenseOverride
 "asm:6.0",http://asm.objectweb.org,BSD-3-Clause
 "atomic:1.1.101",http://github.com/ruby-concurrency/atomic,Apache-2.0
 "avl_tree:1.2.1",https://github.com/nahi/avl_tree,BSD-2-Clause-FreeBSD
-"avro:1.9.1",https://github.com/apache/avro/tree/master/lang/ruby,Apache-2.0
+"avro:1.9.2",https://github.com/apache/avro/tree/master/lang/ruby,Apache-2.0
 "awesome_print:1.7.0",https://github.com/awesome-print/awesome_print,MIT
 "aws-eventstream:1.0.3",https://github.com/aws/aws-sdk-ruby/tree/master/gems/aws-eventstream,Apache-2.0
-"aws-sdk-core:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
-"aws-sdk-resources:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-core:2.11.451",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk-resources:2.11.451",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sdk-v1:1.67.0",http://aws.amazon.com/sdkforruby,Apache-2.0
-"aws-sdk:2.11.429",http://github.com/aws/aws-sdk-ruby,Apache-2.0
+"aws-sdk:2.11.451",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sigv4:1.1.0",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "back_pressure:1.0.0",https://github.com/yaauie/ruby_back_pressure,Apache-2.0
 "backports:3.11.3",http://github.com/marcandre/backports,MIT
-"bindata:2.4.4",http://github.com/dmendel/bindata,BSD-2-Clause
+"bindata:2.4.5",http://github.com/dmendel/bindata,BSD-2-Clause
 "bouncycastle",https://www.bouncycastle.org,MIT
 "buftok:0.2.0",https://github.com/sferik/buftok,MIT
 "builder:3.2.4",http://onestepback.org,MIT
@@ -39,7 +39,7 @@ dependency,dependencyUrl,licenseOverride
 "commons-codec:commons-codec:1.10.0",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-codec:commons-codec:1.13",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-logging:commons-logging:1.2.0",http://commons.apache.org/proper/commons-logging/,Apache-2.0
-"concurrent-ruby:1.1.5",http://www.concurrent-ruby.com,MIT
+"concurrent-ruby:1.1.6",http://www.concurrent-ruby.com,MIT
 "controls.js:",https://github.com/controlsjs/controls.js,GPL-3.0-only
 "crack:0.4.3",http://github.com/jnunemaker/crack,MIT
 "dalli:2.7.10",https://github.com/petergoldstein/dalli,MIT
@@ -52,7 +52,7 @@ dependency,dependencyUrl,licenseOverride
 "elasticsearch:5.0.5",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "equalizer:0.0.11",https://github.com/dkubb/equalizer,MIT
 "faraday:0.15.4",https://github.com/lostisland/faraday,MIT
-"ffi:1.12.1",https://github.com/ffi/ffi,BSD-3-CLAUSE
+"ffi:1.12.2",https://github.com/ffi/ffi,BSD-3-CLAUSE
 "filesize:0.2.0",https://github.com/dominikh,MIT
 "filewatch:0.9.0",https://github.com/jordansissel/ruby-filewatch,MIT
 "ftw:0.0.48",https://github.com/jordansissel/ruby-ftw,Apache-2.0
@@ -106,7 +106,7 @@ dependency,dependencyUrl,licenseOverride
 "metriks:0.9.9.8","https://github.com/eric/metriks/",MIT
 "mime-types:2.6.2",https://github.com/mime-types/ruby-mime-types/,MIT
 "minitar:0.9",https://github.com/halostatue/minitar/,RUBY|BSD-2-Clause
-"msgpack:1.3.1","https://github.com/msgpack/msgpack-ruby",Apache-2.0
+"msgpack:1.3.3","https://github.com/msgpack/msgpack-ruby",Apache-2.0
 "multi_json:1.14.1","https://github.com/intridea/multi_json",MIT
 "multipart-post:2.1.1","https://github.com/nicksieger/multipart-post",MIT
 "murmurhash3:0.1.6","https://github.com/funny-falcon/",MIT
@@ -115,7 +115,7 @@ dependency,dependencyUrl,licenseOverride
 "nailgun","http://martiansoftware.com/nailgun",Apache-2.0
 "naught:1.1.0","https://github.com/avdi/naught/",MIT
 "nio4r:2.5.2","https://github.com/socketry/nio4r",MIT
-"nokogiri:1.10.7","http://nokogiri.org/",MIT
+"nokogiri:1.10.8","http://nokogiri.org/",MIT
 "numerizer:0.1.1","https://github.com/jduff/numerizer/",MIT
 "openssl_pkcs8_pure:0.0.0.2",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
 "options",https://github.com/headius/options,Apache-2.0
@@ -155,7 +155,7 @@ dependency,dependencyUrl,licenseOverride
 "puma:4.3.1",http://puma.io,BSD-3-Clause
 "racc:",https://github.com/tenderlove/racc, TODO: https://github.com/tenderlove/racc/blob/master/COPYING vs https://github.com/jruby/jruby/blob/master/COPYING#L89
 "rack-protection:2.0.8.1",http://github.com/rkh/rack-protection,MIT
-"rack:2.1.1",http://rack.github.io/,MIT
+"rack:2.2.2",http://rack.github.io/,MIT
 "rake:12.3.3",https://github.com/ruby/rake,MIT
 "redis:4.1.3",https://github.com/redis/redis-rb,MIT
 "rspec-core:3.7.1",https://github.com/rspec/rspec-core,MIT
@@ -171,7 +171,7 @@ dependency,dependencyUrl,licenseOverride
 "rumbster:1.1.0",https://github.com/aesterline/rumbster,Apache-2.0
 "safe_yaml:1.0.4",https://github.com/dtao/safe_yaml,MIT
 "semantic_logger:3.4.1",https://github.com/rocketjob/semantic_logger,Apache-2.0
-"sequel:5.28.0",https://github.com/jeremyevans/sequel,MIT
+"sequel:5.29.0",https://github.com/jeremyevans/sequel,MIT
 "simple_oauth:0.3.1",https://github.com/laserlemon/simple_oauth,MIT
 "sinatra:2.0.8.1",https://github.com/sinatra/sinatra,MIT
 "slop:3.6.0",https://github.com/leejarvis/slop,MIT
