@@ -15,7 +15,7 @@ PATH
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
-      jrjackson (= 0.4.10)
+      jrjackson (= 0.4.11)
       jruby-openssl (>= 0.9.20)
       manticore (>= 0.5.4, < 1.0.0)
       minitar (~> 0.6.1)
@@ -124,8 +124,8 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.10-java)
-    jruby-openssl (0.10.2-java)
+    jrjackson (0.4.11-java)
+    jruby-openssl (0.10.4-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
     json-schema (2.6.2)
@@ -254,7 +254,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-sleep (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-split (3.1.7)
+    logstash-filter-split (3.1.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-syslog_pri (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -304,7 +304,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.1.11)
+    logstash-input-file (4.1.16)
       addressable
       logstash-codec-multiline (~> 3.0)
       logstash-codec-plain
@@ -328,7 +328,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.2-java)
+    logstash-input-http (3.3.3-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -433,7 +433,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
       rufus-scheduler (~> 3.0.9)
-    logstash-output-csv (3.0.7)
+    logstash-output-csv (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-filter-json
       logstash-input-generator
@@ -474,7 +474,7 @@ GEM
     logstash-output-null (3.0.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-pagerduty (3.0.8)
+    logstash-output-pagerduty (3.0.9)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-output-pipe (3.0.6)
@@ -535,7 +535,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.10.7-java)
+    nokogiri (1.10.8-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
@@ -567,15 +567,15 @@ GEM
       rspec-core (~> 3.9.0)
       rspec-expectations (~> 3.9.0)
       rspec-mocks (~> 3.9.0)
-    rspec-core (3.9.0)
-      rspec-support (~> 3.9.0)
+    rspec-core (3.9.1)
+      rspec-support (~> 3.9.1)
     rspec-expectations (3.9.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
-    rspec-mocks (3.9.0)
+    rspec-mocks (3.9.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
-    rspec-support (3.9.0)
+    rspec-support (3.9.2)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
     ruby-progressbar (1.8.3)

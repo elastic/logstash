@@ -110,7 +110,7 @@ dependency,dependencyUrl,licenseOverride
 "mustache:0.99.8","https://github.com/mustache/mustache",MIT
 "nailgun","http://martiansoftware.com/nailgun",Apache-2.0
 "naught:1.1.0","https://github.com/avdi/naught/",MIT
-"nokogiri:1.10.7","http://nokogiri.org/",MIT
+"nokogiri:1.10.8","http://nokogiri.org/",MIT
 "numerizer:0.1.1","https://github.com/jduff/numerizer/",MIT
 "openssl_pkcs8_pure:0.0.0.2",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
 "options",https://github.com/headius/options,Apache-2.0
