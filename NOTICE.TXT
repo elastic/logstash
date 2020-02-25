@@ -5660,7 +5660,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: nokogiri-1.10.7
+Notice for: nokogiri-1.10.8
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
