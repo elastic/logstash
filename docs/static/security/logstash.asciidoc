@@ -3,7 +3,7 @@
 === Configuring Security in Logstash
 [subs="attributes"]
 ++++
-<titleabbrev>{security}</titleabbrev>
+<titleabbrev>Configuring Security</titleabbrev>
 ++++
 
 The Logstash {es} plugins ({logstash-ref}/plugins-outputs-elasticsearch.html[output],
@@ -203,7 +203,7 @@ If you plan to ship Logstash {logstash-ref}/monitoring-logstash.html[monitoring]
 data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
-{security} comes preconfigured with a
+The {security-features} come preconfigured with a
 {ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
 monitoring function, and _should not_ be used for any other purpose - it is

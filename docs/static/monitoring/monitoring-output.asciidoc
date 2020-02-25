@@ -32,8 +32,8 @@ All data produced by {monitoring} for Logstash is indexed in the monitoring
 cluster by using the `.monitoring-logstash` template, which is managed by the
 {ref}/es-monitoring-exporters.html[exporters] within {es}. 
 
-If you are working with a cluster that has {security} enabled, extra steps are 
-necessary to properly configure Logstash. For more information, see 
+If you are working with a cluster that has {security-features} enabled, extra
+steps are necessary to properly configure Logstash. For more information, see 
 <<configuring-logstash>>. 
 
 IMPORTANT: When discussing security relative to the `elasticsearch` output, it
