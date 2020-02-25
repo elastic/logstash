@@ -229,7 +229,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:ephemeral_id, ephemeral_id)
       config_metric.gauge(:hash, lir.unique_hash)
       config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
-      config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
       pipeline_log_params = default_logging_keys(
         "pipeline.workers" => pipeline_workers,
