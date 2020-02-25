@@ -114,8 +114,8 @@ that the bulk failed because the ingest queue is full. Logstash will retry sendi
 
 Check {es} to see if it needs attention.
 
-* {ref}/cluster-stats.html
-* {ref}/es-monitoring.html
+* {ref}/cluster-stats.html[cluster stats API]
+* {ref}/monitor-elasticsearch-cluster.html[Monitor a cluster]
 
 *Sample error*
 

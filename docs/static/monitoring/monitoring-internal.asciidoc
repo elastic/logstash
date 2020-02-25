@@ -58,8 +58,8 @@ production cluster. If that setting is `false`, the collection of monitoring dat
 is disabled in {es} and data is ignored from all other sources.
 
 . Configure your Logstash nodes to send metrics by setting the
-`xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security} is
-enabled, you also need to specify the credentials for the
+`xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security-features}
+are enabled, you also need to specify the credentials for the
 {ref}/built-in-users.html[built-in `logstash_system` user]. For more
 information about these settings, see <<monitoring-settings>>.
 +
@@ -76,8 +76,8 @@ connect through HTTPS. As of v5.2.1, you can specify multiple
 Elasticsearch hosts as an array as well as specifying a single
 host as a string. If multiple URLs are specified, Logstash
 can round-robin requests to these production nodes.
-<2> If {security} is disabled on the production cluster, you can omit these 
-`username` and `password` settings. 
+<2> If {security-features} are disabled on the production cluster, you can omit 
+these `username` and `password` settings. 
 --
 
 . If SSL/TLS is enabled on the production {es} cluster, specify the trusted
