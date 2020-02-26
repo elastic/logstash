@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-7,Logstash 6.8.7>>
 * <<logstash-6-8-6,Logstash 6.8.6>>
 * <<logstash-6-8-5,Logstash 6.8.5>>
 * <<logstash-6-8-4,Logstash 6.8.4>>
@@ -37,6 +38,44 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-7]]
+=== Logstash 6.8.7 Release Notes
+
+* Update JrJackson and jackson dependencies https://github.com/elastic/logstash/pull/11478[#11478]
+* Backport SharedHelpers.trap memleak fix to 6.8 https://github.com/elastic/logstash/pull/11468[#11468]
+
+==== Plugins
+
+*Split Filter*
+
+* Fixed issue where @target optimization would stop event.remove(@field) from being called, which can be expensive with large split fields. https://github.com/logstash-plugins/logstash-filter-split/pull/40[#40]
+
+*File Input*
+
+* Added configuration setting exit_after_read to read to EOF and terminate the input https://github.com/logstash-plugins/logstash-input-file/pull/240[#240]
+
+* Fixed bug in conversion of sincedb_clean_after setting https://github.com/logstash-plugins/logstash-input-file/pull/257[#257]
+
+* Fixed bug in delete of multiple watched files https://github.com/logstash-plugins/logstash-input-file/pull/254[#254]
+
+* Fixed sinceDB to work spaces filename https://github.com/logstash-plugins/logstash-input-file/pull/249[#249]
+
+* Fixed regression in `exclude` handling. Patterns are matched against the filename, not full path https://github.com/logstash-plugins/logstash-input-file/issues/237[#237]
+
+*Http Input*
+
+* Revert updates to netty and tcnative since CBC ciphers are still used in many contexts.
+More about the reasoning can be found https://github.com/elastic/logstash/issues/11499#issuecomment-580333510[here]
+
+*Csv Output*
+
+* Docs: Correct typos https://github.com/logstash-plugins/logstash-output-csv/pull/19[#19]
+* Docs: Fix formatting after code sample https://github.com/logstash-plugins/logstash-output-csv/pull/22[#22]
+
+*Pagerduty Output*
+
+* Changed `service_key` to allow dynamic values https://github.com/logstash-plugins/logstash-output-pagerduty/pull/16[#16]
 
 [[logstash-6-8-6]]
 === Logstash 6.8.6 Release Notes
