@@ -114,7 +114,8 @@ Most code in logstash-plugins comes from self-contained changes in the form of p
     `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`.
 4. Keep multiple entries with the same keyword in the same changelog revision together.
 
-Labels: TODO: What's the right word here? Labels? Tags? Headers? Something else?
+Labels (optional):
+
 - **`[BREAKING]`** for a breaking change.
  Note that breaking changes should warrant a major version bump.
 - **`[DOC]`** for a change that affects only documentation, and not code.
