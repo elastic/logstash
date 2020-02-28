@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * <h3>Compiled Logstash Pipeline Configuration.</h3>
+ * <h2>Compiled Logstash Pipeline Configuration.</h2>
  * This class represents an executable pipeline, compiled from the configured topology that is
  * learnt from {@link PipelineIR}.
  * Each compiled pipeline consists in graph of {@link Dataset} that represent either a
