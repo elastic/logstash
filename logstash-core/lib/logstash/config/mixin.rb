@@ -337,7 +337,6 @@ module LogStash::Config::Mixin
         value = Array(value) # coerce scalars to lists
         return true, value if value.frozen?
         # Empty lists are converted to nils
-        return true, [] if value.empty?
 
         return validate_value(value, :uri_list) if config_val == :uri
 
@@ -348,7 +347,7 @@ module LogStash::Config::Mixin
         is_valid, processed_value = validate_value(value, config_val)
       end
 
-      return [is_valid, processed_value]
+      return is_valid, processed_value
     end
 
     def validate_check_parameter_values(params)
