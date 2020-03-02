@@ -335,6 +335,7 @@ module LogStash::Config::Mixin
 
       if config_settings[:list]
         value = Array(value) # coerce scalars to lists
+        return true, value if value.frozen?
         # Empty lists are converted to nils
         return true, [] if value.empty?
 
@@ -403,7 +404,7 @@ module LogStash::Config::Mixin
       # (see LogStash::Inputs::File for example)
       result = nil
 
-      value = deep_replace(value)
+      value = value.frozen? ? value : deep_replace(value)
 
       if validator.nil?
         return true, value
