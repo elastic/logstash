@@ -580,7 +580,7 @@ module LogStash::Config::Mixin
 
     def hash_or_array(value)
       if !value.is_a?(Hash)
-        value = [*value] # coerce scalar to array if necessary
+        value = Array(value) # coerce scalar to array if necessary
       end
       return value
     end
