@@ -15,11 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-java_import "org.logstash.secret.store.SecretStoreExt"
-
 require_relative 'lazy_singleton'
 
 module ::LogStash::Util::SubstitutionVariables
+
+  java_import "org.logstash.secret.store.SecretStoreExt"
 
   include LogStash::Util::Loggable
 
@@ -31,13 +31,19 @@ module ::LogStash::Util::SubstitutionVariables
   # Recursive method to replace substitution variable references in parameters
   def deep_replace(value)
     if value.is_a?(Hash)
-      value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+      value.each do |key, val|
+        repl = deep_replace(val)
+        if !val.eql?(repl) || !key.is_a?(String)
+          value[key.to_s] = repl
+        end
       end
     else
       if value.is_a?(Array)
-        value.each_index do | valueArrayIndex|
-          value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
+        value.each_with_index do |elem, index|
+          repl = deep_replace(elem)
+          if !elem.eql?(repl)
+            value[index] = repl
+          end
         end
       else
         return replace_placeholders(value)
