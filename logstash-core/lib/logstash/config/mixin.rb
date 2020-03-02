@@ -300,14 +300,6 @@ module LogStash::Config::Mixin
       return true
     end # def validate_check_invalid_parameter_names
 
-    def validate_check_required_parameter(config_key, config_opts, k, v)
-      if config_key.is_a?(Regexp)
-        (k =~ config_key && v)
-      elsif config_key.is_a?(String)
-        k && v
-      end
-    end
-
     def validate_check_required_parameter_names(params)
       is_valid = true
 
