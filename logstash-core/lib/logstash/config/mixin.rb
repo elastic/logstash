@@ -77,15 +77,11 @@ module LogStash::Config::Mixin
     # Set defaults from 'config :foo, :default => somevalue'
     self.class.get_config.each do |name, opts|
       next if params.include?(name.to_s)
+
       if opts.include?(:default) and (name.is_a?(Symbol) or name.is_a?(String))
         # default values should be cloned if possible
-        # cloning prevents
-        case opts[:default]
-          when FalseClass, TrueClass, NilClass, Numeric
-            params[name.to_s] = opts[:default]
-          else
-            params[name.to_s] = opts[:default].clone
-        end
+        default = opts[:default]
+        params[name.to_s] = default.frozen? ? default : default.clone
       end
 
       # Allow plugins to override default values of config settings
@@ -96,7 +92,7 @@ module LogStash::Config::Mixin
 
     # Resolve environment variables references
     params.each do |name, value|
-      params[name.to_s] = deep_replace(value)
+      params[name.to_s] = deep_replace(value) if !value.frozen?
     end
 
     if !self.class.validate(params)

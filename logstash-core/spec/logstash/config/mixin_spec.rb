@@ -554,4 +554,31 @@ describe LogStash::Config::Mixin do
       end
     end
   end
+
+  context "defaults" do
+    subject do
+      Class.new(LogStash::Filters::Base) do
+        include LogStash::Config::Mixin
+
+        @@frozen_string_default = "default".freeze
+        @@frozen_array_default = [ 'foo', 'bar' ].freeze
+        @@frozen_hash_default = { 'foo' => 'bar' }.freeze
+
+        config_name "test_defaults"
+        config :sample_opt, :validate => :string, :default => ""
+        config :frozen_opt, :validate => :string, :default => @@frozen_string_default
+        config :boolean_opt, :validate => :boolean, :default => true
+        config :array_opt, :validate => :array, :default => @@frozen_array_default
+        config :hashy_opt, :validate => :hash, :default => @@frozen_hash_default
+      end.new({})
+    end
+
+    it "should have defaults" do
+      expect( subject.sample_opt ).to eql '' # dup-ed
+      expect( subject.boolean_opt ).to eql true
+      expect( subject.frozen_opt ).to be subject.class.class_variable_get :@@frozen_string_default # not dup-ed
+      expect( subject.array_opt ).to be subject.class.class_variable_get :@@frozen_array_default
+      expect( subject.hashy_opt ).to be subject.class.class_variable_get :@@frozen_hash_default
+    end
+  end
 end
