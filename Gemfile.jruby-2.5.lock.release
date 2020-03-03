@@ -241,7 +241,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-kv (4.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-memcached (0.1.1)
+    logstash-filter-memcached (0.1.2)
       dalli (~> 2.7)
       logstash-core-plugin-api (~> 2.0)
     logstash-filter-metrics (4.0.6)
