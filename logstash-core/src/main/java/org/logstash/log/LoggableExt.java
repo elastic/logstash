@@ -1,20 +1,15 @@
 package org.logstash.log;
 
-import co.elastic.logstash.api.DeprecationLogger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.InstanceVariables;
 import org.logstash.RubyUtil;
-import org.logstash.common.SourceWithMetadata;
 
 import static org.logstash.RubyUtil.RUBY;
 
@@ -50,7 +45,7 @@ public final class LoggableExt {
     }
 
     private static RubyString log4jName(final ThreadContext context, final RubyModule self) {
-        IRubyObject name = self.name19();
+        IRubyObject name = self.name(context);
         if (name.isNil()) {
             final RubyClass clazz;
             if (self instanceof RubyClass) {
@@ -58,7 +53,7 @@ public final class LoggableExt {
             } else {
                 clazz = self.getMetaClass();
             }
-            name = clazz.name19();
+            name = clazz.name(context);
             if (name.isNil()) {
                 name = clazz.to_s();
             }
