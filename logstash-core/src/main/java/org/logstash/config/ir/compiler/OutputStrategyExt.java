@@ -54,8 +54,8 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod
-        public IRubyObject classes() {
-            return map.rb_values();
+        public IRubyObject classes(final ThreadContext context) {
+            return map.values(context);
         }
 
         @JRubyMethod
@@ -78,7 +78,7 @@ public final class OutputStrategyExt {
                     String.format(
                         "Could not find output delegator strategy of type '%s'. Value strategies: %s",
                         type.asJavaString(),
-                        map.rb_values().stream().map(v -> ((IRubyObject) v).asJavaString())
+                        map.values(context).stream().map(v -> ((IRubyObject) v).asJavaString())
                             .collect(Collectors.joining(", "))
                     )
                 );
