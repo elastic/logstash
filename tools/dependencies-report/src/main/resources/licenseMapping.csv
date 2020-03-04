@@ -152,7 +152,7 @@ dependency,dependencyUrl,licenseOverride
 "pry:0.12.2",http://pryrepl.org,MIT
 "psych:2.2.4",https://github.com/ruby/psych,MIT
 "public_suffix:3.1.1",https://simonecarletti.com/code/publicsuffix-ruby,MIT
-"puma:4.3.1",http://puma.io,BSD-3-Clause
+"puma:4.3.3",http://puma.io,BSD-3-Clause
 "racc:",https://github.com/tenderlove/racc, TODO: https://github.com/tenderlove/racc/blob/master/COPYING vs https://github.com/jruby/jruby/blob/master/COPYING#L89
 "rack-protection:2.0.8.1",http://github.com/rkh/rack-protection,MIT
 "rack:2.2.2",http://rack.github.io/,MIT
