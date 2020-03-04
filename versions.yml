@@ -1,7 +1,7 @@
 ---
 # alpha and beta qualifiers are now added via VERSION_QUALIFIER environment var
-logstash: 7.6.1
-logstash-core: 7.6.1
+logstash: 7.6.2
+logstash-core: 7.6.2
 logstash-core-plugin-api: 2.1.16
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
