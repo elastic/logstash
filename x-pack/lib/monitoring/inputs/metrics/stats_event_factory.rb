@@ -33,7 +33,7 @@ module LogStash; module Inputs; class Metrics;
           "logstash_stats" => metrics_doc,
           "cluster_uuid" => @cluster_uuid,
           "interval_ms" => collection_interval * 1000,
-          "timestamp" => DateTime.now.strftime('%Y-%m-%dT%k:%M:%S.%L%z')
+          "timestamp" => DateTime.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         }
       else
         event_body = metrics_doc
