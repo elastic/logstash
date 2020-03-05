@@ -78,3 +78,7 @@ the client’s certificate.
 `xpack.management.elasticsearch.ssl.keystore.password`::
 
 Optional setting that provides the password to the keystore.
+
+`xpack.management.elasticsearch.ssl.verification_mode`::
+
+Option to validate the server’s certificate. Defaults to `certificate`. To disable, set to `none`. Disabling this severely compromises security.
