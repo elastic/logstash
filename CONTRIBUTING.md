@@ -54,7 +54,7 @@ Please note that Pull Requests without tests and documentation may not be merged
 experience with writing tests, please ping us on the forum or create a PR and ask for our help.
 
 If you would like to contribute to Logstash, but don't know where to start, you can use the GitHub labels "adoptme",
-"low hanging fruit" and "good first issue". Issues marked with these labels are relatively easy, and provides a good starting
+"low hanging fruit" and "good first issue". Issues marked with these labels are relatively easy, and provide a good starting
 point to contribute to Logstash.
 
 See the following links:
