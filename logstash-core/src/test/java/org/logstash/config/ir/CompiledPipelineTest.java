@@ -1,6 +1,8 @@
 package org.logstash.config.ir;
 
+import co.elastic.logstash.api.Codec;
 import com.google.common.base.Strings;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,19 +14,27 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.jruby.RubyInteger;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.ConvertedList;
+import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
+import co.elastic.logstash.api.Configuration;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
+import co.elastic.logstash.api.Context;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -41,7 +51,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that does not modify the batch.
      */
-    private static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -55,7 +65,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     /**
      * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
      */
-    private static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
+    static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
         String.join(
             "\n",
             "output = Object.new",
@@ -88,7 +98,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void buildsTrivialPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} output{mockoutput{}}", false
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} output{mockoutput{}}"), false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
@@ -107,7 +117,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void buildsStraightPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { mockfilter {} mockfilter {} mockfilter {}} output{mockoutput{}}",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} mockfilter {} mockfilter {}} output{mockoutput{}}"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -127,7 +137,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     public void buildsForkedPipeline() throws Exception {
-        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(IRHelpers.toSourceWithMetadata(
             "input {mockinput{}} filter { " +
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
@@ -135,7 +145,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
                 "}} " +
-                "} output {mockoutput{} }",
+                "} output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -241,9 +251,101 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @Test
+    public void correctlyCompilesRegexMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+        verifyRegex("=~", 1);
+    }
+
+    @Test
+    public void correctlyCompilesRegexNoMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+        verifyRegex("!~", 0);
+    }
+
+    private void verifyRegex(String operator, int expectedEvents)
+            throws IncompleteSourceWithMetadataException {
+        final Event event = new Event();
+
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
+
+        new CompiledPipeline(
+                ConfigCompiler.configToPipelineIR(
+                        IRHelpers.toSourceWithMetadata("input {mockinput{}} output { " +
+                                String.format("if \"z\" %s /z/ { ", operator) +
+                                " mockoutput{} } }"),
+                        false
+                ),
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockaddfilter", () -> null),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution()
+                .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(expectedEvents));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(expectedEvents >= 1));
+        outputEvents.clear();
+    }
+
+    @Test
+    public void equalityCheckOnCompositeField() throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if 4 == [list] { mockaddfilter {} } if 5 == [map] { mockaddfilter {} } } output {mockoutput{} }"),
+                false
+        );
+        final Collection<String> s = new ArrayList<>();
+        s.add("foo");
+        final Map<String, Object> m = new HashMap<>();
+        m.put("foo", "bar");
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        testEvent.getEvent().setField("list", ConvertedList.newFromList(s));
+        testEvent.getEvent().setField("map", ConvertedMap.newFromMap(m));
+
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        filters,
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+        MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
+    }
+
+    @Test
+    public void conditionalWithNullField() throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if [foo] == [bar] { mockaddfilter {} } } output {mockoutput{} }"),
+                false
+        );
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        filters,
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+        MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.is("bar"));
+    }
+
+    @Test
     public void conditionalNestedMetaFieldPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }",
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { if [@metadata][foo][bar] { mockaddfilter {} } } output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -268,7 +370,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     public void moreThan255Parents() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
-            "input {mockinput{}} filter { " +
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                 "if [foo] != \"bar\" { " +
                 "mockfilter {} " +
                 "mockaddfilter {} " +
@@ -276,7 +378,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 "mockfilter {} " +
                 Strings.repeat("} else if [foo] != \"bar\" {" +
                     "mockfilter {} ", 300) + " } } " +
-                "} output {mockoutput{} }",
+                "} output {mockoutput{} }"),
             false
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -322,13 +424,14 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final Event event) throws IncompleteSourceWithMetadataException {
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
+
         new CompiledPipeline(
             ConfigCompiler.configToPipelineIR(
-                "input {mockinput{}} filter { " +
+                    IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                     String.format("if %s { ", conditional) +
                     " mockaddfilter {} " +
                     "} " +
-                    "} output {mockoutput{} }",
+                    "} output {mockoutput{} }"),
                 false
             ),
             new CompiledPipelineTest.MockPluginFactory(
@@ -349,14 +452,14 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> mockOutputSupplier() {
         return () -> events -> events.forEach(
-            event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event)
+            event -> EVENT_SINKS.get(runId).add(event)
         );
     }
 
     /**
-     * Configurable Mock {@link RubyIntegration.PluginFactory}
+     * Configurable Mock {@link PluginFactory}
      */
-    private static final class MockPluginFactory implements RubyIntegration.PluginFactory {
+    static final class MockPluginFactory implements PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
@@ -374,28 +477,35 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+        public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
+                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return setupPlugin(name, inputs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
-            final RubyInteger column, final IRubyObject args) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
+                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+            final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
-                RubyUtil.RUBY, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS)
-                .initForTesting(setupPlugin(name, filters));
+                RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
+                    .initForTesting(setupPlugin(name, filters), configNameDouble);
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
+                                      Map<String, Object> pluginArgs) {
             throw new IllegalStateException("No codec setup expected in this test.");
+        }
+
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
+            return null;
         }
 
         private static <T> T setupPlugin(final RubyString name,
@@ -407,6 +517,17 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
+        }
+
+        @Override
+        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
+            return null;
+        }
+
+        @Override
+        public Filter buildFilter(final String name, final String id,
+                                  final Configuration configuration, final Context context) {
+            return null;
         }
     }
 }

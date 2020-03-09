@@ -2,6 +2,7 @@ package org.logstash.benchmark.cli;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,8 @@ public final class BenchmarkMeta {
 
     private final String testcase;
 
+    private final Path configpath;
+
     private final String version;
 
     private final LsVersionType vtype;
@@ -20,14 +23,16 @@ public final class BenchmarkMeta {
 
     private final int batchsize;
 
-    BenchmarkMeta(final String testcase, final String version, final LsVersionType vtype,
-        final int workers, final int batchsize) {
+    BenchmarkMeta(final String testcase, final Path configpath, final String version, final LsVersionType vtype,
+                  final int workers, final int batchsize) {
         this.testcase = testcase;
+        this.configpath = configpath;
         this.version = version;
         this.vtype = vtype;
         this.workers = workers;
         this.batchsize = batchsize;
     }
+
 
     public String getVersion() {
         return version;
@@ -36,6 +41,8 @@ public final class BenchmarkMeta {
     public String getTestcase() {
         return testcase;
     }
+
+    public Path getConfigPath() { return configpath; }
 
     public LsVersionType getVtype() {
         return vtype;
@@ -52,6 +59,7 @@ public final class BenchmarkMeta {
     public Map<String, Object> asMap() {
         final Map<String, Object> result = new HashMap<>();
         result.put("test_name", testcase);
+        result.put("test_config_path", configpath);
         result.put("os_name", SystemUtils.OS_NAME);
         result.put("os_version", SystemUtils.OS_VERSION);
         try {

@@ -12,12 +12,14 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 
+import static org.logstash.RubyUtil.RUBY;
+
 @JRubyClass(name = "OutputDelegator")
-public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
+public final class
+OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private static final long serialVersionUID = 1L;
 
@@ -75,9 +77,13 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
     @Override
     protected void doOutput(final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         try {
-            strategy.multiReceive(WorkerLoop.THREAD_CONTEXT.get(), (IRubyObject) batch);
+            final IRubyObject pluginId = this.getId();
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
+            strategy.multiReceive(RUBY.getCurrentContext(), (IRubyObject) batch);
         } catch (final InterruptedException ex) {
             throw new IllegalStateException(ex);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
     }
 

@@ -1,6 +1,8 @@
 package org.logstash.ext;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -8,11 +10,14 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 
 @JRubyClass(name = "AckedWriteClient")
 public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClientExt {
+
+    private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
 
@@ -23,10 +28,10 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
         final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
             context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
-            (JRubyAckedQueueExt) queue.toJava(
+            queue.toJava(
                 JRubyAckedQueueExt.class
             ),
-            (AtomicBoolean) closed.toJava(AtomicBoolean.class)
+            closed.toJava(AtomicBoolean.class)
         );
     }
 
@@ -69,4 +74,14 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
             throw new IllegalStateException("Tried to write to a closed queue.");
         }
     }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.write(new Event(event));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }

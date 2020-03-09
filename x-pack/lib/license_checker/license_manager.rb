@@ -18,8 +18,6 @@ module LogStash
 
       attr_reader :last_updated
 
-      LICENSE_TYPES = :trial, :basic, :standard, :gold, :platinum
-
       def initialize (reader, feature, refresh_period=30, refresh_unit=TimeUnit::SECONDS)
         @license_reader = reader
         @feature = feature
@@ -38,9 +36,6 @@ module LogStash
 
       def fetch_xpack_info
         xpack_info = @license_reader.fetch_xpack_info
-
-        # TODO: we should be more lenient when we're having issues
-        xpack_info ||= XPackInfo.xpack_not_installed
 
         update_xpack_info(xpack_info)
       end

@@ -13,9 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static junit.framework.TestCase.assertEquals;
 
-/**
- * Created by andrewvc on 1/5/17.
- */
 public class DepthFirstTest {
     Graph g = Graph.empty();
     final AtomicInteger visitCount = new AtomicInteger();

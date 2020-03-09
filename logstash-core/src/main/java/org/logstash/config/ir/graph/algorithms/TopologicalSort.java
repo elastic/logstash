@@ -6,9 +6,6 @@ import org.logstash.config.ir.graph.Vertex;
 
 import java.util.*;
 
-/**
- * Created by andrewvc on 1/7/17.
- */
 public class TopologicalSort {
     public static class UnexpectedGraphCycleError extends Exception {
         private static final long serialVersionUID = 1778155790783320839L;

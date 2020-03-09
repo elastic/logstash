@@ -1,6 +1,7 @@
 require_relative "monitoring_api"
 
 require "childprocess"
+require_relative "../patch/childprocess-modern-java"
 require "bundler"
 require "socket"
 require "tempfile"
@@ -18,6 +19,10 @@ class LogstashService < Service
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 60
+
+  TIMEOUT_MAXIMUM = 60 * 10 # 10mins.
+
+  class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
 
   @process = nil
 
@@ -201,24 +206,52 @@ class LogstashService < Service
   end
 
   def plugin_cli
-    PluginCli.new(@logstash_home)
+    PluginCli.new(self)
   end
 
   def lock_file
     File.join(@logstash_home, "Gemfile.lock")
   end
 
-  class PluginCli
-    class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
+  def run_cmd(cmd_args, change_dir = true, environment = {})
+    out = Tempfile.new("content")
+    out.sync = true
 
-    TIMEOUT_MAXIMUM = 60 * 10 # 10mins.
+    cmd, *args = cmd_args
+    process = ChildProcess.build(cmd, *args)
+    environment.each do |k, v|
+      process.environment[k] = v
+    end
+    process.io.stdout = process.io.stderr = out
+
+    Bundler.with_clean_env do
+      if change_dir
+        Dir.chdir(@logstash_home) do
+          process.start
+        end
+      else
+        process.start
+      end
+    end
+
+    process.poll_for_exit(TIMEOUT_MAXIMUM)
+    out.rewind
+    ProcessStatus.new(process.exit_code, out.read)
+  end
+
+  def run(*args)
+    run_cmd [ @logstash_bin, *args ]
+  end
+
+  class PluginCli
+
     LOGSTASH_PLUGIN = File.join("bin", "logstash-plugin")
 
     attr_reader :logstash_plugin
 
-    def initialize(logstash_home)
-      @logstash_plugin = File.join(logstash_home, LOGSTASH_PLUGIN)
-      @logstash_home = logstash_home
+    def initialize(logstash_service)
+      @logstash = logstash_service
+      @logstash_plugin = File.join(@logstash.logstash_home, LOGSTASH_PLUGIN)
     end
 
     def remove(plugin_name)
@@ -243,36 +276,12 @@ class LogstashService < Service
       run("install #{plugin_name}")
     end
 
-    def run_raw(cmd_parameters, change_dir = true, environment = {})
-      out = Tempfile.new("content")
-      out.sync = true
-
-      parts = cmd_parameters.split(" ")
-      cmd = parts.shift
-
-      process = ChildProcess.build(cmd, *parts)
-      environment.each do |k, v|
-        process.environment[k] = v
-      end
-      process.io.stdout = process.io.stderr = out
-
-      Bundler.with_clean_env do
-        if change_dir
-          Dir.chdir(@logstash_home) do
-            process.start
-          end
-        else
-          process.start
-        end
-      end
-
-      process.poll_for_exit(TIMEOUT_MAXIMUM)
-      out.rewind
-      ProcessStatus.new(process.exit_code, out.read)
-    end
-
     def run(command)
       run_raw("#{logstash_plugin} #{command}")
+    end
+
+    def run_raw(cmd, change_dir = true, environment = {})
+      @logstash.run_cmd(cmd.split(' '), change_dir, environment)
     end
   end
 end

@@ -6,6 +6,32 @@ packages called gems and hosted on RubyGems.org. The plugin manager accessed via
 lifecycle of plugins in your Logstash deployment. You can install, remove and upgrade plugins using the Command Line
 Interface (CLI) invocations described below.
 
+[IMPORTANT]
+.macOS Gatekeeper warnings
+====
+Apple's rollout of stricter notarization requirements affected the notarization
+of the {version} {ls} artifacts. If macOS Catalina displays a dialog when you
+first run {ls} that interrupts it, you will need to take an action to allow it
+to run.
+To prevent Gatekeeper checks on the {ls} files, run the following command on the
+downloaded `.tar.gz` archive or the directory to which was extracted:
+[source,sh]
+----
+xattr -d -r com.apple.quarantine <archive-or-directory>
+----
+For example, if the `.tar.gz` file was extracted to the default
+logstash-{version} directory, the command is:
+[source,sh,subs="attributes"]
+----
+xattr -d -r com.apple.quarantine logstash-{version}
+----
+Alternatively, you can add a security override if a Gatekeeper popup appears by
+following the instructions in the _How to open an app that hasn’t been notarized
+or is from an unidentified developer_ section of
+https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
+====
+
+
 [float]
 [[http-proxy]]
 === Proxy configuration

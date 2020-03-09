@@ -7,8 +7,7 @@ import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.JavaProxy;
-import org.jruby.javasupport.JavaObject;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -22,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
+
+    private static final long serialVersionUID = 1L;
 
     protected int batchSize = 125;
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
@@ -101,7 +102,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(final ThreadContext context) throws InterruptedException {
-        return JavaObject.wrap(context.runtime, readBatch());
+        return RubyUtil.toRubyObject(readBatch());
     }
 
     @Override
@@ -120,6 +121,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     /**
      * Closes the specified batch. This JRuby extension method is currently used only in the
      * original pipeline and rspec tests.
+     * @param batch specified batch
+     * @throws IOException if an IO error occurs
      */
     @JRubyMethod(name = "close_batch")
     public void rubyCloseBatch(final IRubyObject batch) throws IOException {
@@ -129,6 +132,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     /**
      * Initializes metric on the specified batch. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param batch specified batch
      */
     @JRubyMethod(name = "start_metrics")
     public void rubyStartMetrics(final IRubyObject batch) {
@@ -139,18 +143,17 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      * Extracts QueueBatch from one of two possible IRubyObject classes. Only the Ruby pipeline
      * uses JavaProxy instances, so once that is fully deprecated, this method can be simplified
      * to eliminate the type check.
+     * @param batch specified IRubyObject batch
+     * @return Extracted queue batch
      */
     private static QueueBatch extractQueueBatch(final IRubyObject batch) {
-        if (batch instanceof JavaProxy) {
-            return (QueueBatch) ((JavaObject)batch.dataGetStruct()).getValue();
-        } else {
-            return (QueueBatch)((JavaObject)batch).getValue();
-        }
+        return JavaUtil.unwrapIfJavaObject(batch);
     }
 
     /**
      * Increments the filter metrics. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param size numeric value by which to increment metric
      */
     @JRubyMethod(name = "add_filtered_metrics")
     public void rubyAddFilteredMetrics(final IRubyObject size) {
@@ -160,6 +163,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     /**
      * Increments the output metrics. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param size numeric value by which to increment metric
      */
     @JRubyMethod(name = "add_output_metrics")
     public void rubyAddOutputMetrics(final IRubyObject size) {

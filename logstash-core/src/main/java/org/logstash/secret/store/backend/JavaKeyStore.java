@@ -41,7 +41,7 @@ public final class JavaKeyStore implements SecretStore {
     private static final String KEYSTORE_TYPE = "pkcs12";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String PATH_KEY = "keystore.file";
-    private static final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
+    private final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
     private KeyStore keyStore;
     private char[] keyStorePass;
     private Path keyStorePath;
@@ -138,6 +138,9 @@ public final class JavaKeyStore implements SecretStore {
         return new File(new String(path)).exists();
     }
 
+    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
+    // since this project still supports Java 8, suppress the warning.
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable {
         SecretStoreUtil.clearChars(keyStorePass);

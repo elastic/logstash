@@ -124,7 +124,7 @@ Enterprise-grade security is available across the entire delivery chain.
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
 To enable Elasticsearch security, see 
-{stack-ov}/elasticsearch-security.html[Securing the {stack}].
+{ref}/secure-cluster.html[Secure a cluster].
 
 [float]
 ==== Monitoring
@@ -158,7 +158,7 @@ Logstash can expose endpoint listeners with the respective
 <<plugins-inputs-http,HTTP>> input plugins. The data sources enumerated below
 are typically ingested through one of these three protocols.
 
-NOTE: The TCP protocol does not support application-level acknowledgements, so
+NOTE: The TCP and UDP protocols do not support application-level acknowledgements, so
 connectivity issues may result in data loss.
 
 For high availability scenarios, a third-party hardware or software load

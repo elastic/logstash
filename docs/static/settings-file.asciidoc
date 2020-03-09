@@ -63,7 +63,7 @@ modules:
 
 IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
 
-The `logstash.yml` file includes the following settings. If you are using X-Pack, also see {logstash-ref}/settings-xpack.html[X-Pack Settings in Logstash].
+The `logstash.yml` file includes the following settings. 
 
 [options="header"]
 |=======================================================================
@@ -81,10 +81,18 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The ID of the pipeline.
 | `main`
 
-| `pipeline.workers`
-| The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
-  If you find that events are backing up, or that the
-  CPU is not saturated, consider increasing this number to better utilize machine processing power.
+| `pipeline.java_execution`
+| Use the Java execution engine.
+| true
+
+| `pipeline.workers` 
+| The number of workers that will, in parallel, execute the filter and output
+stages of the pipeline. This setting uses the
+https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html#availableProcessors()[`java.lang.Runtime.getRuntime.availableProcessors`]
+value as a default if not overridden by `pipeline.workers` in `pipelines.yml` or
+`pipeline.workers` from `logstash.yml`.  If you have modified this setting and
+see that events are backing up, or that the CPU is not saturated, consider
+increasing this number to better utilize machine processing power. 
 | Number of the host's CPU cores
 
 | `pipeline.batch.size`
@@ -105,6 +113,26 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
   in memory. By default, Logstash will refuse to quit until all received events
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 | `false`
+
+| `pipeline.plugin_classloaders`
+| (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
+| `false`
+
+| `pipeline.ordered`
+a|
+Set the pipeline event ordering.Valid options are:
+
+* `auto`
+* `true`
+* `false`
+
+`auto` will  automatically enable ordering if the `pipeline.workers` setting is also set to `1`.
+`true` will enforce ordering on the pipeline and prevent logstash from starting
+if there are multiple workers.
+`false` will disable the processing required to preserve order. Ordering will not be
+guaranteed, but you save the processing cost of preserving order.
+
+| `auto`
 
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
@@ -174,9 +202,13 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The maximum number of written events before forcing a checkpoint when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.writes: 0` to set this value to unlimited.
 | 1024
 
+| `queue.checkpoint.retry`
+| When enabled, Logstash will retry once per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances.
+| `false`
+
 | `queue.drain`
 | When enabled, Logstash waits until the persistent queue is drained before shutting down.
-| false
+| `false`
 
 | `dead_letter_queue.enable`
 | Flag to instruct Logstash to enable the DLQ feature supported by plugins.
@@ -220,6 +252,12 @@ The log level. Valid options are:
 | The directory where Logstash will write its log to.
 | `LOGSTASH_HOME/logs`
 
+| `pipeline.separate_logs`
+|  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled Logstash will create a different log file for each pipeline,
+using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in Logstash,
+separating each log lines per pipeline could be helpful in case you need to troubleshoot what’s happening in a single pipeline, without interference of the other ones.
+| `false`
+
 | `path.plugins`
 | Where to find custom plugins. You can specify this setting multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
@@ -228,4 +266,3 @@ The log level. Valid options are:
 | Platform-specific. See <<dir-layout>>.
 
 |=======================================================================
-

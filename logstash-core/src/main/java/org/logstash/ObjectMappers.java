@@ -71,6 +71,8 @@ public final class ObjectMappers {
      */
     private abstract static class NonTypedScalarSerializer<T> extends StdScalarSerializer<T> {
 
+        private static final long serialVersionUID = -2292969459229763087L;
+
         NonTypedScalarSerializer(final Class<T> t) {
             super(t);
         }
@@ -87,6 +89,8 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@link String}.
      */
     private static final class RubyStringSerializer extends StdSerializer<RubyString> {
+
+        private static final long serialVersionUID = 7644231054988076676L;
 
         RubyStringSerializer() {
             super(RubyString.class);
@@ -112,6 +116,8 @@ public final class ObjectMappers {
 
     public static final class RubyStringDeserializer extends StdDeserializer<RubyString> {
 
+        private static final long serialVersionUID = -4444548655926831232L;
+
         RubyStringDeserializer() {
             super(RubyString.class);
         }
@@ -129,6 +135,8 @@ public final class ObjectMappers {
      */
     private static final class RubySymbolSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubySymbol> {
+
+        private static final long serialVersionUID = -1822329780680815791L;
 
         RubySymbolSerializer() {
             super(RubySymbol.class);
@@ -148,6 +156,8 @@ public final class ObjectMappers {
     private static final class RubyFloatSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyFloat> {
 
+        private static final long serialVersionUID = 1480899084198662737L;
+
         RubyFloatSerializer() {
             super(RubyFloat.class);
         }
@@ -165,6 +175,8 @@ public final class ObjectMappers {
      */
     private static final class RubyBooleanSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyBoolean> {
+
+        private static final long serialVersionUID = -8517286459600197793L;
 
         RubyBooleanSerializer() {
             super(RubyBoolean.class);
@@ -184,6 +196,8 @@ public final class ObjectMappers {
     private static final class RubyFixnumSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyFixnum> {
 
+        private static final long serialVersionUID = 13956019593330324L;
+
         RubyFixnumSerializer() {
             super(RubyFixnum.class);
         }
@@ -201,6 +215,8 @@ public final class ObjectMappers {
      * deserialization happens via {@link ObjectMappers.TimestampDeserializer}.
      */
     public static final class TimestampSerializer extends StdSerializer<Timestamp> {
+
+        private static final long serialVersionUID = 5492714135094815910L;
 
         TimestampSerializer() {
             super(Timestamp.class);
@@ -225,6 +241,8 @@ public final class ObjectMappers {
 
     public static final class TimestampDeserializer extends StdDeserializer<Timestamp> {
 
+        private static final long serialVersionUID = -8802997528159345068L;
+
         TimestampDeserializer() {
             super(Timestamp.class);
         }
@@ -242,6 +260,8 @@ public final class ObjectMappers {
      */
     private static final class RubyBignumSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyBignum> {
+
+        private static final long serialVersionUID = -8986657763732429619L;
 
         RubyBignumSerializer() {
             super(RubyBignum.class);
@@ -261,6 +281,8 @@ public final class ObjectMappers {
     private static final class RubyBigDecimalSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyBigDecimal> {
 
+        private static final long serialVersionUID = 1648145951897474391L;
+
         RubyBigDecimalSerializer() {
             super(RubyBigDecimal.class);
         }
@@ -273,13 +295,15 @@ public final class ObjectMappers {
     }
 
     /**
-     * Serializer for {@link JrubyTimestampExtLibrary.RubyTimestamp} that serializes it exactly the
+     * Serializer for {@link org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp} that serializes it exactly the
      * same way {@link ObjectMappers.TimestampSerializer} serializes
      * {@link Timestamp} to ensure consistent serialization across Java and Ruby
      * representation of {@link Timestamp}.
      */
     public static final class RubyTimestampSerializer
         extends StdSerializer<JrubyTimestampExtLibrary.RubyTimestamp> {
+
+        private static final long serialVersionUID = -6571512782595488363L;
 
         RubyTimestampSerializer() {
             super(JrubyTimestampExtLibrary.RubyTimestamp.class);
@@ -310,6 +334,8 @@ public final class ObjectMappers {
      */
     private static final class RubyNilSerializer extends StdSerializer<RubyNil> {
 
+        private static final long serialVersionUID = 7950663544839173004L;
+
         RubyNilSerializer() {
             super(RubyNil.class);
         }
@@ -332,6 +358,8 @@ public final class ObjectMappers {
     }
 
     private static final class RubyNilDeserializer extends StdDeserializer<RubyNil> {
+
+        private static final long serialVersionUID = 4903218049590688689L;
 
         RubyNilDeserializer() {
             super(RubyNil.class);

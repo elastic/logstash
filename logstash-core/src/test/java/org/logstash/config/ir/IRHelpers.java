@@ -1,6 +1,9 @@
 package org.logstash.config.ir;
 
 import org.hamcrest.MatcherAssert;
+import org.jruby.RubyArray;
+import org.jruby.javasupport.JavaUtil;
+import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -10,22 +13,16 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
-import org.logstash.config.ir.imperative.Statement;
 
-import javax.xml.transform.Source;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.stream.IntStream;
 
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 
-/**
- * Created by andrewvc on 9/19/16.
- */
 public class IRHelpers {
     public static void assertSyntaxEquals(SourceComponent left, SourceComponent right) {
         String message = String.format("Expected '%s' to equal '%s'", left, right);
@@ -170,5 +167,12 @@ public class IRHelpers {
             out.append(RANDOM_CHARS.charAt(pos));
         }
         return out.toString();
+    }
+
+
+    @SuppressWarnings("rawtypes")
+    public static RubyArray toSourceWithMetadata(String config) throws IncompleteSourceWithMetadataException {
+        return RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
+                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config)));
     }
 }

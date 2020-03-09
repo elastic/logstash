@@ -5,6 +5,6 @@ unset CDPATH
 setup
 
 # use faster starting JRuby options see https://github.com/jruby/jruby/wiki/Improving-startup-time
-export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1"
+export JRUBY_OPTS="${JRUBY_OPTS---dev}"
 
 ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/rspec.rb" "$@"

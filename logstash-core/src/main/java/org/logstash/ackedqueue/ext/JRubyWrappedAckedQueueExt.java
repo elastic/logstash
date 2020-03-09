@@ -22,20 +22,23 @@ import org.logstash.ext.JrubyEventExtLibrary;
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
+    private static final long serialVersionUID = 1L;
+
     private JRubyAckedQueueExt queue;
     private final AtomicBoolean isClosed = new AtomicBoolean();
 
-    @JRubyMethod(optional = 7)
+    @JRubyMethod(optional = 8)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 7, 0);
+        args = Arity.scanArgs(context.runtime, args, 8, 0);
         int capacity = RubyFixnum.num2int(args[1]);
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        long queueMaxBytes = RubyFixnum.num2long(args[6]);
+        boolean checkpointRetry = !((RubyBoolean)args[6]).isFalse();
+        long queueMaxBytes = RubyFixnum.num2long(args[7]);
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
-                checkpointMaxWrites, checkpointMaxAcks, queueMaxBytes);
+                checkpointMaxWrites, checkpointMaxAcks, checkpointRetry, queueMaxBytes);
         this.queue.open();
 
         return this;

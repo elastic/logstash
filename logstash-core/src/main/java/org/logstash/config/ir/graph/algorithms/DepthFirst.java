@@ -7,9 +7,6 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * Created by andrewvc on 1/5/17.
- */
 public class DepthFirst {
     public static Stream<Vertex> depthFirst(Graph g) {
         return depthFirst(g.getRoots());

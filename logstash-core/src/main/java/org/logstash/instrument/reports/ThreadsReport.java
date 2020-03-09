@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 /**
  * A ThreadsReport object used to hold the hot threads information
- * Created by purbon on 12/12/15.
  */
 public class ThreadsReport {
 

@@ -19,6 +19,8 @@ import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     public QueueFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
@@ -42,6 +44,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         getSetting(context, settings, "queue.checkpoint.writes"),
                         getSetting(context, settings, "queue.checkpoint.acks"),
                         getSetting(context, settings, "queue.checkpoint.interval"),
+                        getSetting(context, settings, "queue.checkpoint.retry"),
                         getSetting(context, settings, "queue.max_bytes")
                     }
                 );

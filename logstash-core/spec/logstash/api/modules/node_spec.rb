@@ -123,6 +123,7 @@ describe LogStash::Api::Modules::Node do
       root_structure = {
         "pipelines" => {
           "main" => {
+            "ephemeral_id" => String,
             "workers" => Numeric,
             "batch_size" => Numeric,
             "batch_delay" => Numeric,

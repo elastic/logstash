@@ -9,7 +9,6 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
@@ -34,13 +33,16 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
-    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                            int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
-        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, maxBytes);
+        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, checkpointRetry,
+                maxBytes);
         return queueExt;
     }
 
-    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                 int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         this.queue = new Queue(
             SettingsImpl.fileSettingsBuilder(path)
                 .capacity(capacity)
@@ -48,6 +50,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
                 .queueMaxBytes(maxBytes)
                 .checkpointMaxAcks(checkpointMaxAcks)
                 .checkpointMaxWrites(checkpointMaxWrites)
+                .checkpointRetry(checkpointRetry)
                 .elementClass(Event.class)
                 .build()
         );
@@ -105,17 +108,19 @@ public final class JRubyAckedQueueExt extends RubyObject {
         }
     }
 
+    public void write(Event event) throws IOException {
+        this.queue.write(event);
+    }
+
     @JRubyMethod(name = "read_batch", required = 2)
-    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit,
-        IRubyObject timeout) {
+    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit, IRubyObject timeout) {
         AckedBatch b;
         try {
             b = readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
-        // TODO: return proper Batch object
-        return (b == null) ? context.nil : JavaObject.wrap(context.runtime, b);
+        return RubyUtil.toRubyObject(b);
     }
 
     public AckedBatch readBatch(int limit, long timeout) throws IOException {

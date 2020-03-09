@@ -102,6 +102,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
     self.class.concurrency
   end
 
+  def metric=(metric)
+    super
+    # Hack to create a new metric namespace using 'plugins' as the root
+    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id))
+    metric
+  end
+
   def execution_context=(context)
     super
     # There is no easy way to propage an instance variable into the codec, because the codec

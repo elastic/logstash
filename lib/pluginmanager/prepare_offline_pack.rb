@@ -60,7 +60,7 @@ You need to specify at least one plugin or use a wildcard expression.
 
 Examples:
 bin/logstash-plugin prepare-offline-pack logstash-input-beats
-bin/logstash-plugin prepare-offline-pack logstash-filter-jdbc logstash-input-beats
+bin/logstash-plugin prepare-offline-pack logstash-filter-kv logstash-input-beats
 bin/logstash-plugin prepare-offline-pack logstash-filter-*
 bin/logstash-plugin prepare-offline-pack logstash-filter-* logstash-input-beats
 

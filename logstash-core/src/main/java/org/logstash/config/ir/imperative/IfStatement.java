@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * Created by andrewvc on 9/6/16.
  * if 5 {
  *
  * }

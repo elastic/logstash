@@ -4,9 +4,11 @@
 
 require "modules/module_license_checker"
 require "logstash/modules/settings_merger"
+require 'license_checker/x_pack_info'
 
 describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
+  let(:license_types) { LogStash::LicenseChecker::LICENSE_TYPES }
 
   let(:settings) { LogStash::Runner::SYSTEM_SETTINGS }
 
@@ -15,7 +17,8 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
     before(:each) {
       expect(subject).to receive(:license_reader).and_return(mock_reader)
-      expect(mock_reader).to receive(:fetch_xpack_info).and_return(nil)
+      expect(mock_reader).to receive(:fetch_xpack_info).and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
+
     }
     let(:mock_reader) {double("reader")}
 
@@ -53,7 +56,7 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
   end
 
   context "any license" do
-    let(:subject) {LogStash::LicenseChecker::ModuleLicenseChecker.new(name,  ["basic", "trial", "standard", "gold", "platinum"])}
+    let(:subject) {LogStash::LicenseChecker::ModuleLicenseChecker.new(name, license_types)}
     let(:returned_license) {"basic"}
     let(:name) {"foo_module"}
     let(:settings) do
@@ -101,7 +104,7 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
   end
 
   context "no license" do
-    let(:subject) {LogStash::LicenseChecker::ModuleLicenseChecker.new(name,  ["basic", "trial", "standard", "gold", "platinum"])}
+    let(:subject) {LogStash::LicenseChecker::ModuleLicenseChecker.new(name, license_types)}
     let(:name) {"foo_module"}
     let(:settings) do
       LogStash::SETTINGS.clone.tap do |settings|

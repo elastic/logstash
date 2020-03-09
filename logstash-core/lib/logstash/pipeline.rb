@@ -15,6 +15,8 @@ require "logstash/compiler"
 module LogStash; class BasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
@@ -52,6 +54,10 @@ module LogStash; class BasePipeline < AbstractPipeline
     end
   end
 
+  def line_to_source(line, column)
+    pipeline_config.lookup_source(line, column)
+  end
+
   def reloadable?
     configured_as_reloadable? && reloadable_plugins?
   end
@@ -67,8 +73,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   private
 
 
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
+  def plugin(plugin_type, name, source, *args)
+    @plugin_factory.plugin(plugin_type, name, source, *args)
   end
 
   def default_logging_keys(other_keys = {})
@@ -107,7 +113,22 @@ module LogStash; class Pipeline < BasePipeline
     @flushing = Concurrent::AtomicReference.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
     @worker_shutdown = java.util.concurrent.atomic.AtomicBoolean.new(false)
+
+    # @finished_execution signals that the pipeline thread has finished its execution
+    # regardless of any exceptions; it will always be true when the thread completes
+    @finished_execution = Concurrent::AtomicBoolean.new(false)
+
+    # @finished_run signals that the run methods called in the pipeline thread was completed
+    # without errors and it will NOT be set if the run method exits from an exception; this
+    # is by design and necessary for the wait_until_started semantic
+    @finished_run = Concurrent::AtomicBoolean.new(false)
+
+    @thread = nil
   end # def initialize
+
+  def finished_execution?
+    @finished_execution.true?
+  end
 
   def ready?
     @ready.value
@@ -147,21 +168,31 @@ module LogStash; class Pipeline < BasePipeline
     collect_stats
     collect_dlq_stats
 
-    @logger.info("Starting pipeline", default_logging_keys(
-      "pipeline.workers" => settings.get("pipeline.workers"),
-      "pipeline.batch.size" => settings.get("pipeline.batch.size"),
-      "pipeline.batch.delay" => settings.get("pipeline.batch.delay")))
+    pipeline_log_params = default_logging_keys(
+        "pipeline.workers" => settings.get("pipeline.workers"),
+        "pipeline.batch.size" => settings.get("pipeline.batch.size"),
+        "pipeline.batch.delay" => settings.get("pipeline.batch.delay"),
+        "pipeline.sources" => pipeline_source_details)
+    @logger.info("Starting pipeline", pipeline_log_params)
 
-    @finished_execution = Concurrent::AtomicBoolean.new(false)
+    @finished_execution.make_false
+    @finished_run.make_false
 
     @thread = Thread.new do
       begin
-        LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
+        LogStash::Util.set_thread_name("[#{pipeline_id}]-manager")
+        ThreadContext.put("pipeline.id", pipeline_id)
         run
-        @finished_execution.make_true
+        @finished_run.make_true
       rescue => e
         close
-        @logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        @logger.error("Pipeline aborted due to error", pipeline_log_params)
+      ensure
+        @finished_execution.make_true
       end
     end
 
@@ -176,15 +207,14 @@ module LogStash; class Pipeline < BasePipeline
 
   def wait_until_started
     while true do
-      # This should be changed with an appropriate FSM
-      # It's an edge case, if we have a pipeline with
-      # a generator { count => 1 } its possible that `Thread#alive?` doesn't return true
-      # because the execution of the thread was successful and complete
-      if @finished_execution.true?
+      if @finished_run.true?
+        # it completed run without exception
         return true
-      elsif !thread.alive?
+      elsif thread.nil? || !thread.alive?
+        # some exception occured and the thread is dead
         return false
       elsif running?
+        # fully initialized and running
         return true
       else
         sleep 0.01
@@ -263,6 +293,7 @@ module LogStash; class Pipeline < BasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      verify_event_ordering!(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -283,9 +314,10 @@ module LogStash; class Pipeline < BasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
+          LogStash::Util::set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
           _pipeline.worker_loop(_b_size, _b_delay)
         end
-        Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
         @worker_threads << thread
       end
 
@@ -377,6 +409,14 @@ module LogStash; class Pipeline < BasePipeline
     filter_queue_client.add_output_metrics(batch.filtered_size)
   end
 
+  def resolve_cluster_uuids
+    outputs.each_with_object(Set.new) do |output, cluster_uuids|
+      if LogStash::PluginMetadata.exists?(output.id)
+        cluster_uuids << LogStash::PluginMetadata.for_plugin(output.id).get(:cluster_uuid)
+      end
+    end.to_a.compact
+  end
+
   def wait_inputs
     @input_threads.each(&:join)
   end
@@ -405,6 +445,8 @@ module LogStash; class Pipeline < BasePipeline
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
+    ThreadContext.put("plugin.id", plugin.id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
@@ -425,9 +467,14 @@ module LogStash; class Pipeline < BasePipeline
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
       sleep(1)
+      begin
+        plugin.do_close
+      rescue => close_exception
+        @logger.debug("Input plugin raised exception while closing, ignoring",
+                      default_logging_keys(:plugin => plugin.class.config_name, :exception => close_exception.message,
+                                           :backtrace => close_exception.backtrace))
+      end
       retry
-    ensure
-      plugin.do_close
     end
   end # def inputworker
 
@@ -505,6 +552,8 @@ module LogStash; class Pipeline < BasePipeline
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
 
     @flusher_thread = Thread.new do
+      LogStash::Util.set_thread_name("[#{pipeline_id}]-flusher-thread")
+      ThreadContext.put("pipeline.id", pipeline_id)
       while Stud.stoppable_sleep(5, 0.1) { stopped? }
         flush
         break if stopped?
@@ -525,7 +574,7 @@ module LogStash; class Pipeline < BasePipeline
 
   # Calculate the uptime in milliseconds
   #
-  # @return [Fixnum] Uptime in milliseconds, 0 if the pipeline is not started
+  # @return [Integer] Uptime in milliseconds, 0 if the pipeline is not started
   def uptime
     return 0 if started_at.nil?
     ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
@@ -605,4 +654,12 @@ module LogStash; class Pipeline < BasePipeline
   def draining_queue?
     @drain_queue ? !filter_queue_client.empty? : false
   end
+
+  def verify_event_ordering!(pipeline_workers)
+    # the Ruby execution keep event order by design but when using a single worker only
+    if settings.get("pipeline.ordered") == "true" && pipeline_workers > 1
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker")
+    end
+  end
+
 end; end

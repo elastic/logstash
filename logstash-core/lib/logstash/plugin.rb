@@ -3,6 +3,8 @@ require "logstash/config/mixin"
 require "concurrent"
 require "securerandom"
 
+require_relative 'plugin_metadata'
+
 class LogStash::Plugin
   include LogStash::Util::Loggable
 
@@ -44,6 +46,7 @@ class LogStash::Plugin
 
   def initialize(params=nil)
     @logger = self.logger
+    @deprecation_logger = self.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
     @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),
@@ -70,7 +73,11 @@ class LogStash::Plugin
   # main task terminates
   def do_close
     @logger.debug("Closing", :plugin => self.class.name)
-    close
+    begin
+      close
+    ensure
+      LogStash::PluginMetadata.delete_for_plugin(self.id)
+    end
   end
 
   # Subclasses should implement this close method if you need to perform any
@@ -135,5 +142,23 @@ class LogStash::Plugin
   def self.lookup(type, name)
     require "logstash/plugins/registry"
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
+  end
+
+  ##
+  # Returns this plugin's metadata key/value store.
+  #
+  # @see LogStash::PluginMetadata for restrictions and caveats.
+  # @since 7.1
+  #
+  # @usage:
+  # ~~~
+  # if defined?(plugin_metadata)
+  #   plugin_metadata.set(:foo, 'value')
+  # end
+  # ~~~
+  #
+  # @return [LogStash::PluginMetadata]
+  def plugin_metadata
+    LogStash::PluginMetadata.for_plugin(self.id)
   end
 end # class LogStash::Plugin

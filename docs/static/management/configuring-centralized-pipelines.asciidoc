@@ -13,7 +13,7 @@ feature.
 +
 --
 For more information, see https://www.elastic.co/subscriptions and 
-{xpack-ref}/license-management.html[License Management].
+{stack-ov}/license-management.html[License management].
 --
 
 . Specify 
@@ -23,7 +23,7 @@ minimum, set:
 +
 * `xpack.management.enabled: true` to enable centralized configuration
 management.
-* `xpack.management.elasticsearch.url` to specify the Elasticsearch
+* `xpack.management.elasticsearch.hosts` to specify the Elasticsearch
 instance that will store the Logstash pipeline configurations and metadata.
 * `xpack.management.pipeline.id` to register the pipelines that you want to
 centrally manage.
@@ -35,7 +35,7 @@ the `logstash_admin` role to any users who will use centralized pipeline
 management. See <<ls-security>>.
 
 NOTE: Centralized management is disabled until you configure and enable
-{security}.
+{security-features}.
 
 IMPORTANT: After you've configured Logstash to use centralized pipeline
 management, you can no longer specify local pipeline configurations. This means

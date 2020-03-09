@@ -9,15 +9,16 @@ java_import java.util.concurrent.TimeUnit
 
 module LogStash
   module LicenseChecker
+    LICENSE_TYPES = ['trial', 'basic', 'standard', 'gold', 'platinum', 'enterprise']
+
     class XPackInfo
       include LogStash::Util::Loggable
 
-      LICENSE_TYPES = :trial, :basic, :standard, :gold, :platinum
-
-      def initialize(license, features = nil, installed=true)
+      def initialize(license, features = nil, installed=true, failed = false)
         @license = license
         @installed = installed
         @features = features
+        @failed = failed
 
         freeze
       end
@@ -29,6 +30,10 @@ module LogStash
         else
           super
         end
+      end
+
+      def failed?
+        @failed
       end
 
       def installed?
@@ -86,7 +91,11 @@ module LogStash
       end
 
       def self.xpack_not_installed
-        XPackInfo.new(nil, nil,false)
+        XPackInfo.new(nil, nil, false)
+      end
+
+      def self.failed_to_fetch
+        XPackInfo.new(nil, nil, false, true)
       end
     end
   end

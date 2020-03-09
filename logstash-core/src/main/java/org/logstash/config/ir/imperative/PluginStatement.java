@@ -8,9 +8,6 @@ import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 
-/**
- * Created by andrewvc on 9/6/16.
- */
 public class PluginStatement extends Statement {
     private final PluginDefinition pluginDefinition;
 

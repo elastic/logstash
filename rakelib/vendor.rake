@@ -4,10 +4,8 @@ namespace "vendor" do
   end
 
   task "jruby" do |task, args|
-    system('./gradlew downloadAndInstallJRuby') unless File.exists?(File.join("vendor", "jruby"))
+    system('./gradlew bootstrap') unless File.exists?(File.join("vendor", "jruby"))
   end # jruby
-
-  task "all" => "jruby"
 
   namespace "force" do
     task "gems" => ["vendor:gems"]
@@ -16,7 +14,6 @@ namespace "vendor" do
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
-    Rake::Task["dependency:clamp"].invoke
     Rake::Task["dependency:bundler"].invoke
 
     puts("Invoking bundler install...")

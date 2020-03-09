@@ -77,7 +77,7 @@ public final class Queue implements Closeable {
         }
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
-        this.checkpointIO = new FileCheckpointIO(dirPath);
+        this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
         this.elementClass = settings.getElementClass();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
@@ -135,7 +135,7 @@ public final class Queue implements Closeable {
 
     /**
      * Open an existing {@link Queue} or create a new one in the configured path.
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void open() throws IOException {
         final int headPageNum;
@@ -158,7 +158,7 @@ public final class Queue implements Closeable {
 
                 logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
-                this.ensureDiskAvailable(this.maxBytes);
+                this.ensureDiskAvailable(this.maxBytes, 0);
 
                 this.seqNum = 0;
                 headPageNum = 0;
@@ -172,7 +172,7 @@ public final class Queue implements Closeable {
             // at this point we have a head checkpoint to figure queue recovery
 
             // as we load pages, compute actually disk needed substracting existing pages size to the required maxBytes
-            long diskNeeded = this.maxBytes;
+            long pqSizeBytes = 0;
 
             // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
@@ -192,7 +192,7 @@ public final class Queue implements Closeable {
                 } else {
                     pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
                     addTailPage(PageFactory.newTailPage(cp, this, pageIO));
-                    diskNeeded -= (long)pageIO.getHead();
+                    pqSizeBytes += pageIO.getCapacity();
                 }
 
                 // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
@@ -209,7 +209,8 @@ public final class Queue implements Closeable {
             PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
-            ensureDiskAvailable(diskNeeded - (long)pageIO.getHead());
+            pqSizeBytes += (long)pageIO.getHead();
+            ensureDiskAvailable(this.maxBytes, pqSizeBytes);
 
             if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
                 // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
@@ -322,7 +323,7 @@ public final class Queue implements Closeable {
      *
      * @param element the {@link Queueable} element to write
      * @return the written sequence number
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public long write(Queueable element) throws IOException {
         byte[] data = element.serialize();
@@ -397,7 +398,7 @@ public final class Queue implements Closeable {
      * mark head page as read-only (behead) and add it to the tailPages and unreadTailPages collections accordingly
      * also deactivate it if it's not next-in-line for reading
      *
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     private void behead() throws IOException {
         // beheading includes checkpoint+fsync if required
@@ -484,7 +485,7 @@ public final class Queue implements Closeable {
      * guarantee persistence up to a given sequence number.
      *
      * @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
@@ -500,7 +501,7 @@ public final class Queue implements Closeable {
      *
      * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than the requested limit if fewer elements are available
      * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
         lock.lock();
@@ -517,7 +518,7 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
      * @param timeout the maximum time to wait in milliseconds on write operations
      * @return the read {@link Batch} or null if no element upon timeout
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {
         lock.lock();
@@ -535,7 +536,7 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read.
      * @param timeout  the maximum time to wait in milliseconds on write operations.
      * @return {@link Batch} with read elements or null if nothing was read
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     private Batch readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
@@ -625,7 +626,7 @@ public final class Queue implements Closeable {
      *
      * @param firstAckSeqNum First Sequence Number to Ack
      * @param ackCount Number of Elements to Ack
-     * @throws IOException
+     * @throws IOException if an IO error occurs
      */
     public void ack(final long firstAckSeqNum, final int ackCount) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
@@ -784,9 +785,11 @@ public final class Queue implements Closeable {
         return !isHeadPage(p);
     }
 
-    private void ensureDiskAvailable(final long diskNeeded) throws IOException {
-        if (!FsUtil.hasFreeSpace(this.dirPath, diskNeeded)) {
-            throw new IOException("Not enough free disk space available to allocate persisted queue.");
+    private void ensureDiskAvailable(final long maxPqSize, long currentPqSize) throws IOException {
+        if (!FsUtil.hasFreeSpace(this.dirPath, maxPqSize - currentPqSize)) {
+            throw new IOException(
+                    String.format("Unable to allocate %d more bytes for persisted queue on top of its current usage of %d bytes",
+                            maxPqSize - currentPqSize, currentPqSize));
         }
     }
 

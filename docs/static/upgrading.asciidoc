@@ -6,6 +6,7 @@
 Before upgrading Logstash:
 
 * Consult the <<breaking-changes,breaking changes>> docs.
+* Read the <<releasenotes>>.
 * Test upgrades in a development environment before upgrading your production cluster.
 
 While upgrading Logstash:
@@ -16,16 +17,45 @@ and becomes a new node in the monitoring data.
 ===========================================
 
 If you're upgrading other products in the stack, also read the
-{stack-ref}/index.html[Elastic Stack Installation and Upgrade Guide]. Want an
-upgrade list that's tailored to your stack? Try out our
-{upgrade_guide}[Interactive Upgrade Guide].
+{stack-ref}/index.html[Elastic Stack Installation and Upgrade Guide]. 
 
 See the following topics for information about upgrading Logstash:
 
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
+* <<upgrading-minor-versions>>
+* <<upgrading-logstash-7.0>>
 * <<upgrading-logstash-pqs>>
-* <<upgrading-logstash-5.0>>
+
+[float]
+==== When to Upgrade
+
+Fresh installations can and should start with the same version across the Elastic Stack.
+
+Elasticsearch 7.0 does not require Logstash 7.0. An Elasticsearch 7.0 cluster
+will happily receive data from earlier versions of Logstash via the default
+HTTP communication layer. This provides some flexibility to decide when to
+upgrade Logstash relative to an Elasticsearch upgrade. It may or may not be
+convenient for you to upgrade them together, and it is not required to be done
+at the same time as long as Elasticsearch is upgraded first.
+
+You should upgrade in a timely manner to get the performance improvements that
+come with Logstash 7.0, but do so in the way that makes the most sense for your
+environment.
+
+[float]
+==== When Not to Upgrade
+
+If any Logstash plugin that you require is not compatible with Logstash 7.0, then you should wait until it is ready
+before upgrading.
+
+Although we make great efforts to ensure compatibility, Logstash 7.0 is not completely backwards compatible. As noted
+in the Elastic Stack upgrade guide, Logstash 7.0 should not be upgraded before Elasticsearch 7.0. This is both
+practical and because some Logstash 7.0 plugins may attempt to use features of Elasticsearch 7.0 that did not exist
+in earlier versions. For example, if you attempt to send the 7.x template to a cluster before Elasticsearch 7.0, then 
+all indexing likely fail. If you use your own custom template with Logstash,
+then this issue can be ignored.
+
 
 [[upgrading-using-package-managers]]
 === Upgrading Using Package Managers
@@ -33,12 +63,12 @@ See the following topics for information about upgrading Logstash:
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
 1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
-2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 5.x repositories
-instead of the previous version.
+2. Using the directions in the <<package-repositories>> section, update your repository
+links to point to the 7.x repositories.
 3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 5.x release.
-5. Restart your Logstash pipeline after updating your configuration file.
+some Logstash plugins have changed in the 7.x release.
+5. Restart your Logstash pipeline after you have updated your configuration file.
 
 [[upgrading-using-direct-download]]
 === Upgrading Using a Direct Download
@@ -48,12 +78,108 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 3. Unpack the installation file into your Logstash directory.
-4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 5.x release.
+4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. 
+Configuration options for
+some Logstash plugins have changed in the 7.x release.
 5. Restart your Logstash pipeline after updating your configuration file.
 
+[[upgrading-minor-versions]]
+=== Upgrading between minor versions
+
+As a general rule, you can upgrade between minor versions (for example, 7.x to
+7.y, where x < y) by simply installing the new release and restarting {ls}. 
+{ls} typically maintains backwards compatibility for configuration
+settings and exported fields. Please review the
+<<releasenotes,release notes>> for potential exceptions.
+
+Upgrading between non-consecutive major versions (5.x to 7.x, for example) is not
+supported.
+
+
+[[upgrading-logstash-7.0]]
+=== Upgrading Logstash to 7.0
+
+Before upgrading Logstash:
+
+* Read the <<releasenotes>>.
+* Read the <<breaking-changes,breaking changes>> docs. 
++
+There you can find info on these topics and more:
+
+** <<java-exec-default,Java execution engine enabled by default>>
+** <<field-ref-strict,Field parser is more strict and how that affects processing>>
+** <<beats-ecs,Beats conforms to the Elastic Common Schema (ECS) and how that impacts {ls}>>
+ 
+If you are installing Logstash with other components in the Elastic Stack, also see the
+{stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
+
+NOTE: Upgrading between non-consecutive major versions (5.x to 7.x, for example) is not
+supported. We recommend that you upgrade to 6.x, and then upgrade to 7.x.
+
+[float]
+[[upgrade-to-6.8-rec]]
+==== Upgrade to {ls} 6.8 before upgrading to 7.0
+
+If you haven't already, upgrade to version 6.8 before you upgrade to 7.0. If
+you're using other products in the {stack}, upgrade {ls} as part of the
+{stack-ref}/upgrading-elastic-stack.html[{stack} upgrade process].
+
+TIP: Upgrading to {ls} 6.8 will give you a head-start on new 7.0 features, including
+the java execution engine and the strict field reference parser, while you're still running 6.x.
+This step helps reduce risk and makes roll backs easier if you hit
+a snag.
+
+//TO DO:  Add links [[field-ref-strict]] and [[java-exec-default]] after upgrade docs are merged
+
+Upgrading to 6.8 is required because the {es} index template was modified to
+be compatible with {es} 7.0 (the `_type` setting changed from `doc` to `_doc`).
+
+
 [[upgrading-logstash-pqs]]
-=== Upgrading with Persistent Queues Enabled
+=== Upgrading with the Persistent Queue Enabled
+
+If you have the persistent queue (PQ) enabled, please read the section that applies
+for your upgrade scenario.
+
+* If you are upgrading from version 6.2.x or earlier, we recommend that you
+<<drain-pq,drain the persistent queue>> before you upgrade.
+
+* If you are upgrading from version 6.3.0 or later, see
+<<upgrading-logstash-pqs-6.3>> for information.
+
+[float]
+[[drain-pq]]
+==== Drain the Persistent Queue (version 6.2.x and earlier)
+
+The following applies only if you are upgrading from Logstash version 6.2.x or
+earlier with the persistent queue (PQ) enabled.
+
+We strive to maintain backward compatibility within a given major release. 
+Serialization issues in Logstash 6.2.x and earlier required us to break
+that compatibility in version 6.3.0 to ensure correctness of operation. For more
+technical details, please check our tracking github issue for this
+matter, https://github.com/elastic/logstash/issues/9494[#9494].
+
+We strongly recommend that you drain or delete
+the persistent queue before you upgrade from version 6.2.x and earlier.
+
+To drain the queue:
+ 
+. In the logstash.yml file, set `queue.drain: true`.
+. Restart Logstash for this setting to take effect. 
+. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
+
+When the queue is empty:
+
+. Complete the upgrade.
+. Restart Logstash.
+
+We have resolved issues with data incompatibilities for version 6.3 and later. 
+These steps won’t be required for future upgrades.
+
+[float]
+[[upgrading-logstash-pqs-6.3]]
+==== Upgrading from version 6.3 (and later) with Persistent Queues Enabled 
 
 Upgrading Logstash with persistent queues enabled is supported. The persistent
 queue directory is self-contained and can be read by a new Logstash instance
@@ -66,38 +192,3 @@ Keep in mind that only one Logstash instance can write to `path.queue`. You
 cannot have the original instance and the new instance writing to the queue at
 the same time.
 
-[[upgrading-logstash-5.0]]
-=== Upgrading Logstash to 5.0
-
-Before upgrading Logstash, remember to read the <<breaking-changes,breaking changes>>.
-
-If you are installing Logstash with other components in the Elastic Stack, also see the
-{stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
-
-==== When to Upgrade
-
-Fresh installations can and should start with the same version across the Elastic Stack.
-
-Elasticsearch 5.0 does not require Logstash 5.0. An Elasticsearch 5.0 cluster will happily receive data from a
-Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
-Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it
-is
-not required to be done at the same time as long as Elasticsearch is upgraded first.
-
-You should upgrade in a timely manner to get the performance improvements that come with Logstash 5.0, but do so in
-the way that makes the most sense for your environment.
-
-==== When Not to Upgrade
-
-If any Logstash plugin that you require is not compatible with Logstash 5.0, then you should wait until it is ready
-before upgrading.
-
-Although we make great efforts to ensure compatibility, Logstash 5.0 is not completely backwards compatible. As noted
-in the Elastic Stack upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
-practical and because some Logstash 5.0 plugins may attempt to use features of Elasticsearch 5.0 that did not exist
-in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
-will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash,
-then this issue can be ignored.
-
-Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
-this change and how it impacts operations.

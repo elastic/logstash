@@ -22,6 +22,8 @@ describe LogStash::Runner do
   before :each do
     clear_data_dir
 
+    WebMock.disable_net_connect!(allow_localhost: true)
+
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
     allow(logger).to receive(:debug?).and_return(true)
     allow(logger).to receive(:subscribe).with(any_args)
@@ -140,6 +142,14 @@ describe LogStash::Runner do
 
     context "with a bad configuration" do
       let(:pipeline_string) { "rlwekjhrewlqrkjh" }
+      it "should fail by returning a bad exit code" do
+        expect(logger).to receive(:fatal)
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+
+    context "with invalid field reference literal" do
+      let(:pipeline_string) { "input { } output { if [[f[[[oo] == [bar] { } }" }
       it "should fail by returning a bad exit code" do
         expect(logger).to receive(:fatal)
         expect(subject.run(args)).to eq(1)

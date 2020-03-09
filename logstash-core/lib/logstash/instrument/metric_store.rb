@@ -206,7 +206,7 @@ module LogStash module Instrument
 
     # This method take an array of keys and recursively search the metric store structure
     # and return a filtered hash of the structure. This method also take into consideration
-    # getting two different branchs.
+    # getting two different branches.
     #
     #
     # If one part of the `key_paths` contains a filter key with the following format.
@@ -302,7 +302,7 @@ module LogStash module Instrument
     #
     # @param [Concurrent::Map] Map to search for the key
     # @param [Array] List of path to create
-    # @param [Fixnum] Which part from the list to create
+    # @param [Integer] Which part from the list to create
     #
     def fetch_or_store_namespace_recursively(map, namespaces_path, idx = 0)
       current = namespaces_path[idx]

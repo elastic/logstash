@@ -4,32 +4,23 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
-import org.jruby.RubyString;
 import org.jruby.RubySymbol;
-import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.config.ir.RubyEnvTestCase;
-import org.logstash.execution.ExecutionContextExt;
-import org.logstash.instrument.metrics.NamespacedMetricExt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.logstash.RubyUtil.EXECUTION_CONTEXT_CLASS;
-import static org.logstash.RubyUtil.NAMESPACED_METRIC_CLASS;
 import static org.logstash.RubyUtil.RUBY;
 import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 
+@SuppressWarnings("rawtypes")
 @NotThreadSafe
-public class OutputDelegatorTest extends RubyEnvTestCase {
+public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
-    private NamespacedMetricExt metric;
-    private ExecutionContextExt executionContext;
     private RubyHash pluginArgs;
     private RubyArray events;
     private static final int EVENT_COUNT = 7;
@@ -42,23 +33,19 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
 
     @Before
     public void setup() {
+        super.setup();
         events = RUBY.newArray(EVENT_COUNT);
         for (int k = 0; k < EVENT_COUNT; k++) {
             events.add(k, new Event());
         }
-        final ThreadContext context = RUBY.getCurrentContext();
-        RubyArray namespaces = RubyArray.newArray(RUBY, 1);
-        namespaces.add(0, RubySymbol.newSymbol(RUBY, "output"));
-        IRubyObject metricWithCollector =
-                runRubyScript("require \"logstash/instrument/collector\"\n" +
-                        "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
-
-        metric = new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
-                .initialize(context, metricWithCollector, namespaces);
-        executionContext = new ExecutionContextExt(RUBY, EXECUTION_CONTEXT_CLASS);
         pluginArgs = RubyHash.newHash(RUBY);
         pluginArgs.put("id", "foo");
         pluginArgs.put("arg1", "val1");
+    }
+
+    @Override
+    protected String getBaseMetricsPath() {
+        return "output/foo";
     }
 
     @Test
@@ -182,11 +169,6 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
 
     }
 
-    private static IRubyObject runRubyScript(String script) {
-        IRubyObject m = RUBY.evalScriptlet(script);
-        return m;
-    }
-
     private OutputDelegatorExt constructOutputDelegator() {
         return new OutputDelegatorExt(RUBY, RUBY_OUTPUT_DELEGATOR_CLASS).initialize(RUBY.getCurrentContext(), new IRubyObject[]{
             FAKE_OUT_CLASS,
@@ -201,33 +183,8 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         return getMetricStore(new String[]{"output", "foo", "events"});
     }
 
-    private RubyHash getMetricStore(String[] path) {
-        RubyHash metricStore = (RubyHash) metric.collector(RUBY.getCurrentContext())
-                .callMethod(RUBY.getCurrentContext(), "snapshot_metric")
-                .callMethod(RUBY.getCurrentContext(), "metric_store")
-                .callMethod(RUBY.getCurrentContext(), "get_with_path", new IRubyObject[]{RUBY.newString("output/foo")});
-
-        RubyHash rh = metricStore;
-        for (String p : path) {
-            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(p));
-        }
-        return rh;
-    }
-
-    private String getMetricStringValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
-        RubyString value = (RubyString) counter.callMethod("value");
-        return value.asJavaString();
-    }
-
     private long getMetricLongValue(String symbolName) {
         return getMetricLongValue(getMetricStore(), symbolName);
-    }
-
-    private long getMetricLongValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
-        RubyFixnum count = (RubyFixnum) counter.callMethod("value");
-        return count.getLongValue();
     }
 
     private static class StrategyPair {

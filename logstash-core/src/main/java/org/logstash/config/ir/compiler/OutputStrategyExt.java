@@ -25,6 +25,8 @@ public final class OutputStrategyExt {
     @JRubyClass(name = "OutputDelegatorStrategyRegistry")
     public static final class OutputStrategyRegistryExt extends RubyObject {
 
+        private static final long serialVersionUID = 1L;
+
         private static OutputStrategyExt.OutputStrategyRegistryExt instance;
 
         private RubyHash map;
@@ -52,8 +54,8 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod
-        public IRubyObject classes() {
-            return map.rb_values();
+        public IRubyObject classes(final ThreadContext context) {
+            return map.values(context);
         }
 
         @JRubyMethod
@@ -76,7 +78,7 @@ public final class OutputStrategyExt {
                     String.format(
                         "Could not find output delegator strategy of type '%s'. Value strategies: %s",
                         type.asJavaString(),
-                        map.rb_values().stream().map(v -> ((IRubyObject) v).asJavaString())
+                        map.values(context).stream().map(v -> ((IRubyObject) v).asJavaString())
                             .collect(Collectors.joining(", "))
                     )
                 );
@@ -87,6 +89,8 @@ public final class OutputStrategyExt {
 
     @JRubyClass(name = "AbstractStrategy")
     public abstract static class AbstractOutputStrategyExt extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         private DynamicMethod outputMethod;
 
@@ -138,11 +142,13 @@ public final class OutputStrategyExt {
     @JRubyClass(name = "Legacy", parent = "AbstractStrategy")
     public static final class LegacyOutputStrategyExt extends OutputStrategyExt.AbstractOutputStrategyExt {
 
+        private static final long serialVersionUID = 1L;
+
         private BlockingQueue<IRubyObject> workerQueue;
 
         private IRubyObject workerCount;
 
-        private RubyArray workers;
+        private @SuppressWarnings({"rawtypes"}) RubyArray workers;
 
         public LegacyOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
@@ -211,6 +217,8 @@ public final class OutputStrategyExt {
     public abstract static class SimpleAbstractOutputStrategyExt
         extends OutputStrategyExt.AbstractOutputStrategyExt {
 
+        private static final long serialVersionUID = 1L;
+
         private IRubyObject output;
 
         protected SimpleAbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
@@ -247,6 +255,8 @@ public final class OutputStrategyExt {
     @JRubyClass(name = "Single", parent = "SimpleAbstractStrategy")
     public static final class SingleOutputStrategyExt extends SimpleAbstractOutputStrategyExt {
 
+        private static final long serialVersionUID = 1L;
+
         public SingleOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -261,6 +271,8 @@ public final class OutputStrategyExt {
 
     @JRubyClass(name = "Shared", parent = "SimpleAbstractStrategy")
     public static final class SharedOutputStrategyExt extends SimpleAbstractOutputStrategyExt {
+
+        private static final long serialVersionUID = 1L;
 
         public SharedOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);

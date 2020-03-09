@@ -1,6 +1,7 @@
 package org.logstash.ext;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -12,13 +13,16 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 @JRubyClass(name = "WrappedWriteClient")
-public final class JRubyWrappedWriteClientExt extends RubyObject {
+public final class JRubyWrappedWriteClientExt extends RubyObject implements QueueWriter {
+
+    private static final long serialVersionUID = 1L;
 
     private static final RubySymbol PUSH_DURATION_KEY =
         RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
@@ -39,7 +43,8 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     }
 
     @JRubyMethod(required = 4)
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
+    public JRubyWrappedWriteClientExt initialize(final ThreadContext context,
+        final IRubyObject[] args) {
         return initialize((JRubyAbstractQueueWriteClientExt) args[0], args[1].asJavaString(),
             (AbstractMetricExt) args[2], args[3]);
     }
@@ -130,5 +135,13 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
             res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
         }
         return RubyUtil.RUBY.newArray(res);
+    }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        final long start = System.nanoTime();
+        incrementCounters(1L);
+        writeClient.push(event);
+        incrementTimers(start);
     }
 }

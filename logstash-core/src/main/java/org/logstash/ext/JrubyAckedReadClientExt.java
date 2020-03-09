@@ -18,6 +18,8 @@ import java.io.IOException;
 @JRubyClass(name = "AckedReadClient", parent = "QueueReadClientBase")
 public final class JrubyAckedReadClientExt extends QueueReadClientBase implements QueueReadClient {
 
+    private static final long serialVersionUID = 1L;
+
     private JRubyAckedQueueExt queue;
 
     @JRubyMethod(meta = true, required = 1)

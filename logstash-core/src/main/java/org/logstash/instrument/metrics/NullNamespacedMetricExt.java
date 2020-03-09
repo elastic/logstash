@@ -15,14 +15,16 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "NamespacedNullMetric", parent = "AbstractNamespacedMetric")
 public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     private static final RubySymbol NULL = RubyUtil.RUBY.newSymbol("null");
 
-    private RubyArray namespaceName;
+    private @SuppressWarnings("rawtypes") RubyArray namespaceName;
 
     private NullMetricExt metric;
 
     public static AbstractNamespacedMetricExt create(final NullMetricExt metric,
-        final RubyArray namespaceName) {
+        final @SuppressWarnings("rawtypes") RubyArray namespaceName) {
         final NullNamespacedMetricExt res =
             new NullNamespacedMetricExt(RubyUtil.RUBY, RubyUtil.NULL_NAMESPACED_METRIC_CLASS);
         res.metric = metric;
@@ -37,7 +39,7 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     @JRubyMethod(optional = 2)
     public NullNamespacedMetricExt initialize(final ThreadContext context,
         final IRubyObject[] args) {
-        this.metric = args.length > 0 && !args[0].isNil() ? (NullMetricExt) args[0] : new NullMetricExt(context.runtime, metaClass);
+        this.metric = args.length > 0 && !args[0].isNil() && (args[0] instanceof NullMetricExt) ? (NullMetricExt) args[0] : new NullMetricExt(context.runtime, metaClass);
         final IRubyObject namespaceName = args.length == 2 ? args[1] : NULL;
         if (namespaceName instanceof RubyArray) {
             this.namespaceName = (RubyArray) namespaceName;
@@ -86,6 +88,7 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected RubyArray getNamespaceName(final ThreadContext context) {
         return namespaceName;
     }
@@ -104,6 +107,8 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     @JRubyClass(name = "NullCounter")
     public static final class NullCounter extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         public static final NullNamespacedMetricExt.NullCounter INSTANCE =
             new NullNamespacedMetricExt.NullCounter(RubyUtil.RUBY, RubyUtil.NULL_COUNTER_CLASS);

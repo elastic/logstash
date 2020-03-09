@@ -1,25 +1,20 @@
 package org.logstash.plugins.pipeline;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class for representing the state of an internal address.
+ * Represents the state of an internal address.
  */
 public class AddressState {
-    private final String address;
+
     private final Set<PipelineOutput> outputs = ConcurrentHashMap.newKeySet();
     private volatile PipelineInput input = null;
 
-    AddressState(String address) {
-        this.address = address;
-    }
-
     /**
      * Add the given output and ensure associated input's receivers are updated
-     * @param output
-     * @return
+     * @param output output to be added
+     * @return true if the output was not already added
      */
     public boolean addOutput(PipelineOutput output) {
         return outputs.add(output);
@@ -35,23 +30,22 @@ public class AddressState {
 
     /**
      * Assigns an input to listen on this address. Will return false if another input is already listening.
-     * @param newInput
+     * @param newInput input to assign as listener
      * @return true if successful, false if another input is listening
      */
     public synchronized boolean assignInputIfMissing(PipelineInput newInput) {
+        // We aren't changing anything
         if (input == null) {
             input = newInput;
             return true;
-        } else if (input == newInput) {
-            return true; // We aren't changing anything
+        } else {
+            return input == newInput;
         }
-
-        return false;
     }
 
     /**
      * Unsubscribes the given input from this address
-     * @param unsubscribingInput
+     * @param unsubscribingInput input to unsubscribe from this address
      * @return true if this input was listening, false otherwise
      */
     public synchronized boolean unassignInput(PipelineInput unsubscribingInput) {

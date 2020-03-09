@@ -10,6 +10,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 import static org.logstash.RubyUtil.RUBY;
 
+@SuppressWarnings("serial")
 @JRubyClass(name = "FakeOutClass")
 public class FakeOutClass extends RubyObject {
 

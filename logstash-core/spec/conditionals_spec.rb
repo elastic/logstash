@@ -3,7 +3,6 @@ require 'spec_helper'
 require 'support/pipeline/pipeline_helpers'
 
 module ConditionalFanciness
-  include PipelineHelpers
   def description
     return self.metadata[:description]
   end
@@ -63,6 +62,19 @@ end
 
 describe "conditionals in filter" do
   extend ConditionalFanciness
+  extend PipelineHelpers
+
+  let(:settings) do
+    # settings is used by sample_one.
+    # This was originally set directly in sample_one and
+    # pipeline.workers was also set to 1. I am preserving
+    # this setting here for the sake of minimizing change
+    # but unsure if this is actually required.
+
+    s = LogStash::SETTINGS.clone
+    s.set_value("pipeline.workers", 1)
+    s
+  end
 
   describe "simple" do
     config <<-CONFIG

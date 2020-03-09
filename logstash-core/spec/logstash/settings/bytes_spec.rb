@@ -35,8 +35,8 @@ describe LogStash::Setting::Bytes do
 
         before { subject.set(text) }
 
-        it "should coerce it to a Fixnum" do
-          expect(subject.value).to be_a(Fixnum)
+        it "should coerce it to an Integer" do
+          expect(subject.value).to be_a(::Integer)
         end
       end
 

@@ -6,10 +6,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-/**
- * Created by andrewvc on 1/5/17.
- *
- */
 public class BreadthFirst {
     public static BfsResult breadthFirst(Collection<Vertex> roots) {
         return breadthFirst(roots, false, null);

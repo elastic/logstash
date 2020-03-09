@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -57,6 +58,7 @@ public class SecretStoreFactory {
 
     /**
      * Determine if this secret store currently exists
+     * @param secureConfig The configuration to pass to the implementation
      * @return true if the secret store exists, false otherwise
      */
     public boolean exists(SecureConfig secureConfig) {
@@ -104,14 +106,14 @@ public class SecretStoreFactory {
             addSecretStoreAccess(secureConfig);
 
             if (MODE.LOAD.equals(mode)) {
-                return implementation.newInstance().load(secureConfig);
+                return implementation.getConstructor().newInstance().load(secureConfig);
             } else if (MODE.CREATE.equals(mode)) {
-                return implementation.newInstance().create(secureConfig);
+                return implementation.getConstructor().newInstance().create(secureConfig);
             } else if (MODE.DELETE.equals(mode)) {
-                implementation.newInstance().delete(secureConfig);
+                implementation.getConstructor().newInstance().delete(secureConfig);
                 return null;
             } else if (MODE.EXISTS.equals(mode)) {
-                return implementation.newInstance();
+                return implementation.getConstructor().newInstance();
             } else {
                 throw new IllegalStateException("missing mode. This is bug in Logstash.");
             }
@@ -119,6 +121,10 @@ public class SecretStoreFactory {
             throw new SecretStoreException.ImplementationNotFoundException(
                     String.format("Could not %s class %s, please validate the `keystore.classname` is configured correctly and that the class can be loaded by Logstash ", mode
                                     .name().toLowerCase(), className), e);
+        } catch (NoSuchMethodException | InvocationTargetException e) {
+            throw new SecretStoreException.ImplementationInvalidException(
+                    String.format("Could not %s class %s, please validate the `keystore.classname` is configured correctly and that the class can be loaded by Logstash ", mode
+                            .name().toLowerCase(), className), e);
         }
     }
 

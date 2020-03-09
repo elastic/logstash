@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 /**
  * Hot threads monitoring class. This class pulls information out of the JVM #
  * provided beans and lest the different consumers query it.
- * Created by purbon on 12/12/15.
  */
 public final class HotThreadsMonitor {
 
@@ -134,7 +133,7 @@ public final class HotThreadsMonitor {
                 throw new IllegalArgumentException("Invalid sort order");
         }
 
-        Integer threadInfoMaxDepth = 3;
+        Integer threadInfoMaxDepth = 50;
         if (options.containsKey(STACKTRACE_SIZE)) {
             threadInfoMaxDepth = Integer.valueOf(options.get(STACKTRACE_SIZE));
         }

@@ -15,6 +15,8 @@ import org.logstash.execution.QueueReadClientBase;
 @JRubyClass(name = "WrappedSynchronousQueue")
 public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueExt {
 
+    private static final long serialVersionUID = 1L;
+
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {

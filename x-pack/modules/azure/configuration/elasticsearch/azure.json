@@ -6,39 +6,37 @@
     "number_of_shards": 1
   },
   "mappings" : {
-    "_doc" : {
-      "dynamic_templates" : [ {
-        "message_field" : {
-          "path_match" : "message",
-          "match_mapping_type" : "string",
-          "mapping" : {
-            "type" : "text",
-            "norms" : false
+    "dynamic_templates" : [ {
+      "message_field" : {
+        "path_match" : "message",
+        "match_mapping_type" : "string",
+        "mapping" : {
+          "type" : "text",
+          "norms" : false
+        }
+      }
+    }, {
+      "string_fields" : {
+        "match" : "*",
+        "match_mapping_type" : "string",
+        "mapping" : {
+          "type" : "text", "norms" : false,
+          "fields" : {
+            "keyword" : { "type": "keyword", "ignore_above": 256 }
           }
         }
-      }, {
-        "string_fields" : {
-          "match" : "*",
-          "match_mapping_type" : "string",
-          "mapping" : {
-            "type" : "text", "norms" : false,
-            "fields" : {
-              "keyword" : { "type": "keyword", "ignore_above": 256 }
-            }
-          }
-        }
-      } ],
-      "properties" : {
-        "@timestamp": { "type": "date"},
-        "@version": { "type": "keyword"},
-        "geoip"  : {
-          "dynamic": true,
-          "properties" : {
-            "ip": { "type": "ip" },
-            "location" : { "type" : "geo_point" },
-            "latitude" : { "type" : "half_float" },
-            "longitude" : { "type" : "half_float" }
-          }
+      }
+    } ],
+    "properties" : {
+      "@timestamp": { "type": "date"},
+      "@version": { "type": "keyword"},
+      "geoip"  : {
+        "dynamic": true,
+        "properties" : {
+          "ip": { "type": "ip" },
+          "location" : { "type" : "geo_point" },
+          "latitude" : { "type" : "half_float" },
+          "longitude" : { "type" : "half_float" }
         }
       }
     }

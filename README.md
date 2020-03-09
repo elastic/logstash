@@ -28,14 +28,14 @@ These builds are created nightly and have undergone no formal QA, so they should
 | [deb-complete][]      | [deb-oss][]            |
 | [rpm-complete][]      | [rpm-oss][]            |
 
-[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.tar.gz
-[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.zip
-[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.deb
-[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.rpm
-[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.tar.gz
-[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.zip
-[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.deb
-[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.rpm
+[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.tar.gz
+[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.zip
+[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.deb
+[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.rpm
+[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.tar.gz
+[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.zip
+[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.deb
+[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.rpm
 
 ## Need Help?
 
@@ -65,8 +65,8 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
-* Install JDK version 8. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
-* Install JRuby 9.1.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+* Install JDK version 8 or 11. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* Install JRuby 9.2.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 ### RVM install (optional)
@@ -183,6 +183,14 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 3- To execute the complete test-suite including the integration tests run:
 
     ./gradlew check
+    
+4- To execute a single Ruby test run:
+
+    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests    
+
+5- To execute single spec for integration test, run:
+
+    ./gradlew integrationTests -PrubyIntegrationSpecs=specs/slowlog_spec.rb
 
 Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
 

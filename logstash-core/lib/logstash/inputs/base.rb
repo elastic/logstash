@@ -99,6 +99,13 @@ class LogStash::Inputs::Base < LogStash::Plugin
     cloned
   end
 
+  def metric=(metric)
+    super
+    # Hack to create a new metric namespace using 'plugins' as the root
+    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id))
+    metric
+  end
+
   def execution_context=(context)
     super
     # There is no easy way to propage an instance variable into the codec, because the codec
@@ -124,11 +131,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
     require "logstash/codecs/line"
     require "logstash/codecs/json"
     require "logstash/codecs/json_lines"
-    case @codec
-      when LogStash::Codecs::Plain
+
+    case @codec.class.name
+      when "LogStash::Codecs::Plain"
         @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
-      when LogStash::Codecs::JSON
+      when "LogStash::Codecs::JSON"
         @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
     end

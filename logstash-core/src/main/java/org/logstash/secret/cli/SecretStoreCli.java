@@ -43,7 +43,7 @@ public class SecretStoreCli {
 
     /**
      * Entry point to issue a command line command.
-     * @param primaryCommand The string representation of a {@link Command}, if the String does not map to a {@link Command}, then it will show the help menu.
+     * @param primaryCommand The string representation of a {@link SecretStoreCli.Command}, if the String does not map to a {@link SecretStoreCli.Command}, then it will show the help menu.
      * @param config The configuration needed to work a secret store. May be null for help.
      * @param argument This can be either the identifier for a secret, or a sub command like --help. May be null.
      */

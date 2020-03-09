@@ -20,8 +20,8 @@ java_import 'org.logstash.instrument.reports.ProcessReport'
 module LogStash module Instrument module PeriodicPoller
   class JVM < Base
     class GarbageCollectorName
-      YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation", "scavenge"])
-      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation", "global"])
+      YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation", "scavenge", "GPGC New"])
+      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation", "global", "GPGC Old"])
 
       YOUNG = :young
       OLD = :old
@@ -68,7 +68,7 @@ module LogStash module Instrument module PeriodicPoller
         logger.debug("collector name", :name => collector_name)
         name = GarbageCollectorName.get(collector_name)
         if name.nil?
-          logger.error("Unknown garbage collector name", :name => name)
+          logger.error("Unknown garbage collector name", :name => collector_name)
         else
           metric.gauge([:jvm, :gc, :collectors, name], :collection_count, collector.getCollectionCount())
           metric.gauge([:jvm, :gc, :collectors, name], :collection_time_in_millis, collector.getCollectionTime())
@@ -153,12 +153,15 @@ module LogStash module Instrument module PeriodicPoller
       old  = {}
       old = old.merge!(heap["CMS Old Gen"]) if heap.has_key?("CMS Old Gen")
       old = old.merge!(heap["PS Old Gen"])  if heap.has_key?("PS Old Gen")
+      old = old.merge!(heap["G1 Old Gen"])  if heap.has_key?("G1 Old Gen")
       young = {}
       young = young.merge!(heap["Par Eden Space"]) if heap.has_key?("Par Eden Space")
       young = young.merge!(heap["PS Eden Space"])  if heap.has_key?("PS Eden Space")
+      young = young.merge!(heap["G1 Eden Space"])  if heap.has_key?("G1 Eden Space")
       survivor = {}
       survivor = survivor.merge!(heap["Par Survivor Space"]) if heap.has_key?("Par Survivor Space")
       survivor = survivor.merge!(heap["PS Survivor Space"])  if heap.has_key?("PS Survivor Space")
+      survivor = survivor.merge!(heap["G1 Survivor Space"])  if heap.has_key?("G1 Survivor Space")
       {
         "young"    => aggregate_information_for(young),
         "old"      => aggregate_information_for(old),
