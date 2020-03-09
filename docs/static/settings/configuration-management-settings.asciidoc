@@ -17,7 +17,7 @@ SSL, you need to specify additional SSL settings.
 [source,shell]
 -----
 xpack.management.enabled: true
-xpack.management.elasticsearch.url: "http://localhost:9200/"
+xpack.management.elasticsearch.hosts: "http://localhost:9200/"
 xpack.management.elasticsearch.username: logstash_admin_user
 xpack.management.elasticsearch.password: t0p.s3cr3t
 xpack.management.logstash.poll_interval: 5s
@@ -41,7 +41,7 @@ Specify a comma-separated list of pipeline IDs to register for centralized
 pipeline management. After changing this setting, you need to restart Logstash
 to pick up changes.
 
-`xpack.management.elasticsearch.url`::
+`xpack.management.elasticsearch.hosts`::
 
 The {es} instance that will store the Logstash pipeline configurations and
 metadata. This might be the same {es} instance specified in the `outputs`
@@ -52,11 +52,11 @@ section in your Logstash configuration, or a different one. Defaults to
 
 If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
-authenticate for accessing the configuration data. The username you specify here
-should have the `logstash_admin` role, which provides access to `.logstash-*`
-indices for managing configurations. 
+authenticate for accessing the configuration data.
+The username you specify here should have the `logstash_admin` role, which
+provides access to `.logstash-*` indices for managing configurations.
 
-`xpack.management.elasticsearch.ssl.ca`::
+`xpack.management.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
 certificate authority for your {es} instance.
@@ -78,3 +78,19 @@ the client’s certificate.
 `xpack.management.elasticsearch.ssl.keystore.password`::
 
 Optional setting that provides the password to the keystore.
+
+`xpack.management.elasticsearch.cloud_id`::
+
+If you're using {es} in {ecloud}, you should specify the identifier here.
+This setting is an alternative to `xpack.management.elasticsearch.hosts`.
+If `cloud_id` is configured, `xpack.management.elasticsearch.hosts` should not be used.
+This {es} instance will store the Logstash pipeline configurations and metadata.
+
+`xpack.management.elasticsearch.cloud_auth`::
+
+If you're using {es} in {ecloud}, you can set your auth credentials here.
+This setting is an alternative to both `xpack.management.elasticsearch.username`
+and `xpack.management.elasticsearch.password`. If `cloud_auth` is configured,
+those settings should not be used.
+The credentials you specify here should be for a user with the `logstash_admin` role, which
+provides access to `.logstash-*` indices for managing configurations.

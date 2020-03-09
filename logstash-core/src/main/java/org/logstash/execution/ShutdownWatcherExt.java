@@ -20,6 +20,8 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "ShutdownWatcher")
 public final class ShutdownWatcherExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOGGER = LogManager.getLogger(ShutdownWatcherExt.class);
 
     private static final AtomicBoolean unsafeShutdown = new AtomicBoolean(false);
@@ -151,7 +153,8 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                     reports.remove(0);
                 }
                 if (cycleNumber == reportEvery - 1) {
-                    LOGGER.warn(reports.get(reports.size() - 1).anyToString().asJavaString());
+                    LOGGER.warn(reports.get(reports.size() - 1).callMethod(context, "to_s")
+                        .asJavaString());
                     if (shutdownStalled(context).isTrue()) {
                         if (stalledCount == 0) {
                             LOGGER.error(

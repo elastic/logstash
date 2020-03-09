@@ -15,6 +15,7 @@ class DummyInput < LogStash::Inputs::Base
   end
 
   def run(queue)
+    @logger.debug("check log4j fish tagging input plugin")
   end
 
   def close
@@ -73,7 +74,9 @@ class DummyFilter < LogStash::Filters::Base
 
   def register() end
 
-  def filter(event) end
+  def filter(event)
+    @logger.debug("check log4j fish tagging filter plugin")
+  end
 
   def threadsafe?() false; end
 
@@ -116,10 +119,6 @@ class DummyFlushingFilterPeriodic < DummyFlushingFilter
     # periodic flush.
     options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
   end
-end
-
-class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs, :settings
 end
 
 describe LogStash::Pipeline do
@@ -247,6 +246,7 @@ describe LogStash::Pipeline do
         before do
           expect(::LogStash::Pipeline).to receive(:logger).and_return(logger)
           allow(logger).to receive(:debug?).and_return(true)
+          allow_any_instance_of(DummyFilter).to receive(:logger).and_return(logger)
         end
 
         it "should not receive a debug message with the compiled code" do
@@ -270,7 +270,17 @@ describe LogStash::Pipeline do
           pipeline.filter_func([LogStash::Event.new])
           pipeline.close
         end
+
+        it "should log fish tagging of plugins" do
+          pipeline_settings_obj.set("config.debug", true)
+          pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
+          expect(logger).to receive(:debug).with(/filter received/, anything)
+          expect(logger).to receive(:debug).with(/[dummyfilter]/)
+          pipeline.filter_func([LogStash::Event.new])
+          pipeline.close
+        end
       end
+
 
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
@@ -1008,6 +1018,15 @@ describe LogStash::Pipeline do
       it "returns true" do
         expect(pipeline.reloadable?).to be_falsey
       end
+    end
+  end
+
+  context "event ordering" do
+    let(:pipeline) { mock_pipeline_from_string("input { } output { }", mock_settings("pipeline.ordered" => true, "pipeline.workers" => 2)) }
+
+    it "fail running when ordering is set to true and there are multiple workers" do
+      expect{pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
+      pipeline.close
     end
   end
 end

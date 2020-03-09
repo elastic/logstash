@@ -6,37 +6,42 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.AbstractWrappedQueueExt;
+import org.logstash.execution.QueueReadClientBase;
+import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 @JRubyClass(name = "WrappedAckedQueue")
-public final class JRubyWrappedAckedQueueExt extends RubyObject {
+public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
+
+    private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
     private final AtomicBoolean isClosed = new AtomicBoolean();
 
-    @JRubyMethod(name = "initialize", optional = 7)
-    public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 7, 0);
+    @JRubyMethod(optional = 8)
+    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
+        args = Arity.scanArgs(context.runtime, args, 8, 0);
         int capacity = RubyFixnum.num2int(args[1]);
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        long queueMaxBytes = RubyFixnum.num2long(args[6]);
+        boolean checkpointRetry = !((RubyBoolean)args[6]).isFalse();
+        long queueMaxBytes = RubyFixnum.num2long(args[7]);
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
-                checkpointMaxWrites, checkpointMaxAcks, queueMaxBytes);
+                checkpointMaxWrites, checkpointMaxAcks, checkpointRetry, queueMaxBytes);
         this.queue.open();
 
-        return context.nil;
+        return this;
     }
 
     public JRubyWrappedAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {
@@ -44,23 +49,13 @@ public final class JRubyWrappedAckedQueueExt extends RubyObject {
     }
 
     @JRubyMethod(name = "queue")
-    public IRubyObject rubyGetQueue(ThreadContext context) {
+    public JRubyAckedQueueExt rubyGetQueue() {
         return queue;
     }
 
     public void close() throws IOException {
         queue.close();
         isClosed.set(true);
-    }
-
-    @JRubyMethod(name = "close")
-    public IRubyObject rubyClose(ThreadContext context) {
-        try {
-            close();
-        } catch (IOException e) {
-            throw RubyUtil.newRubyIOError(context.runtime, e);
-        }
-        return context.nil;
     }
 
     @JRubyMethod(name = {"push", "<<"})
@@ -75,20 +70,29 @@ public final class JRubyWrappedAckedQueueExt extends RubyObject {
         return queue.ruby_read_batch(context, size, wait);
     }
 
-
-    @JRubyMethod(name = "write_client")
-    public IRubyObject rubyWriteClient(final ThreadContext context) {
-        return JrubyAckedWriteClientExt.create(queue, isClosed);
-    }
-
-    @JRubyMethod(name = "read_client")
-    public IRubyObject rubyReadClient(final ThreadContext context) {
-        return JrubyAckedReadClientExt.create(queue);
-    }
-
     @JRubyMethod(name = "is_empty?")
     public IRubyObject rubyIsEmpty(ThreadContext context) {
         return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
+    }
+
+    @Override
+    protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
+        return JrubyAckedWriteClientExt.create(queue, isClosed);
+    }
+
+    @Override
+    protected QueueReadClientBase getReadClient() {
+        return JrubyAckedReadClientExt.create(queue);
+    }
+
+    @Override
+    protected IRubyObject doClose(final ThreadContext context) {
+        try {
+            close();
+        } catch (IOException e) {
+            throw RubyUtil.newRubyIOError(context.runtime, e);
+        }
+        return context.nil;
     }
 
     private void checkIfClosed(String action) {

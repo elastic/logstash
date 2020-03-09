@@ -4,7 +4,6 @@ require "logstash/inputs/generator"
 require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
-require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require 'support/pipeline/pipeline_helpers'
 require "stud/try"
 require 'timeout'
@@ -123,10 +122,6 @@ class NilFlushingFilterPeriodic < DummyFlushingFilter
     @count += 1
     @count > 2 ? [::LogStash::Event.new("message" => "dummy_flush")] : nil
   end
-end
-
-class JavaTestPipeline < LogStash::JavaPipeline
-  attr_reader :outputs, :settings
 end
 
 describe LogStash::JavaPipeline do
@@ -264,6 +259,7 @@ describe LogStash::JavaPipeline do
         end
 
         it "should print the compiled code if config.debug is set to true" do
+          skip("This test does not work when using a Java Logger and should be ported to JUnit")
           pipeline_settings_obj.set("config.debug", true)
           expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = mock_java_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
@@ -404,6 +400,8 @@ describe LogStash::JavaPipeline do
 
   context "compiled flush function" do
     extend PipelineHelpers
+    let(:settings) { LogStash::SETTINGS.clone }
+
     describe "flusher thread" do
       before(:each) do
         allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
@@ -451,6 +449,131 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "batch order" do
+    extend PipelineHelpers
+
+    context "with a single worker and ordering enabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "true")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+       sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+      end
+    end
+
+    context "with a multiple workers and ordering enabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 2)
+        s.set_value("pipeline.ordered", "true")
+        s
+      end
+      let(:config) { "input { } output { }" }
+      let(:pipeline) { mock_java_pipeline_from_string(config, settings) }
+
+      it "should raise error" do
+        expect{pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
+        pipeline.close
+      end
+    end
+
+    context "with an explicit single worker ordering will auto enable" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "auto")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+       sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+      end
+    end
+
+    context "with an implicit single worker ordering will not auto enable" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.ordered", "auto")
+        s
+      end
+
+      before(:each) do
+        # this is to make sure this test will be valid by having a pipeline.workers default value > 1
+        # and not explicitly set.
+        expect(settings.get_default("pipeline.workers")).to be > 1
+        expect(settings.set?("pipeline.workers")).to be_falsey
+
+        expect(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").at_least(1).time.and_return(DummyFilter)
+        expect(LogStash::Plugin).to receive(:lookup).with(any_args).at_least(3).time.and_call_original
+      end
+
+      config <<-CONFIG
+        filter {
+          # per above dummyfilter is not threadsafe hence will set the number of workers to 1
+          dummyfilter { }
+
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+      sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+      end
+    end
+
+    context "with a single worker and ordering disabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "false")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+      sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+      end
+    end
+  end
+
+
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
@@ -492,6 +615,8 @@ describe LogStash::JavaPipeline do
   context "compiled filter functions" do
     context "new events should propagate down the filters" do
       extend PipelineHelpers
+      let(:settings) { LogStash::SETTINGS.clone }
+
       config <<-CONFIG
         filter {
           clone {

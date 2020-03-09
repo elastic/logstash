@@ -11,4 +11,5 @@ jruby-readline,1.1.1,https://github.com/jruby/jruby,EPL-1.0|GPL-2.0|LGPL-2.1
 com.fasterxml.jackson.core:jackson-core,2.7.3,https://github.com/FasterXML/jackson-core,Apache-2.0
 com.fasterxml.jackson.core:jackson-core,2.9.1,https://github.com/FasterXML/jackson-core,Apache-2.0
 control.js,,,MIT
+json-generator,,https://github.com/flori/json,Ruby
 json-parser,,https://github.com/flori/json,Ruby

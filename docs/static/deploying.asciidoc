@@ -123,8 +123,8 @@ Enterprise-grade security is available across the entire delivery chain.
 {logstash-ref}/ls-security.html[Logstash to Elasticsearch].
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
-To enable Elasticsearch security, consult the
-{xpack-ref}/xpack-security.html[X-Pack documentation].
+To enable Elasticsearch security, see 
+{ref}/secure-cluster.html[Secure a cluster].
 
 [float]
 ==== Monitoring
@@ -158,7 +158,7 @@ Logstash can expose endpoint listeners with the respective
 <<plugins-inputs-http,HTTP>> input plugins. The data sources enumerated below
 are typically ingested through one of these three protocols.
 
-NOTE: The TCP protocol does not support application-level acknowledgements, so
+NOTE: The TCP and UDP protocols do not support application-level acknowledgements, so
 connectivity issues may result in data loss.
 
 For high availability scenarios, a third-party hardware or software load
@@ -205,7 +205,7 @@ SocketAppender to send JSON to the Logstash TCP input. Alternatively, log4j2
 can also log to a file for collection with FIlebeat. Usage of the log4j1
 SocketAppender is not recommended.
 
-IoT devices like Rasberry Pis, smartphones, and connected vehicles often send
+IoT devices like Raspberry Pis, smartphones, and connected vehicles often send
 telemetry data through one of these protocols.
 
 [float]

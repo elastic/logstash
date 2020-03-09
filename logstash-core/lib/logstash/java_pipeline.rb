@@ -5,98 +5,30 @@ require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/instrument/collector"
-require "logstash/queue_factory"
 require "logstash/compiler"
-
-java_import org.logstash.common.DeadLetterQueueFactory
-java_import org.logstash.common.SourceWithMetadata
-java_import org.logstash.common.io.DeadLetterQueueWriter
-java_import org.logstash.config.ir.CompiledPipeline
-java_import org.logstash.config.ir.ConfigCompiler
-
-module LogStash; class JavaBasePipeline < LogstashPipeline
-  include LogStash::Util::Loggable
-
-  attr_reader :inputs, :filters, :outputs
-
-  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    super pipeline_config, namespaced_metric
-    @logger = self.logger
-    @dlq_writer = dlq_writer
-    @lir_execution = CompiledPipeline.new(
-        lir,
-        LogStash::Plugins::PluginFactory.new(
-            # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-            lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
-            LogStash::Plugins::ExecutionContextFactory.new(agent, self, @dlq_writer),
-            JavaFilterDelegator
-        )
-    )
-    if settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", default_logging_keys(:code => lir.get_graph.to_string))
-    end
-    @inputs = @lir_execution.inputs
-    @filters = @lir_execution.filters
-    @outputs = @lir_execution.outputs
-  end
-
-  def reloadable?
-    configured_as_reloadable? && reloadable_plugins?
-  end
-
-  def configured_as_reloadable?
-    settings.get("pipeline.reloadable")
-  end
-
-  def reloadable_plugins?
-    non_reloadable_plugins.empty?
-  end
-
-  def non_reloadable_plugins
-    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
-  end
-
-  private
-
-  def default_logging_keys(other_keys = {})
-    { :pipeline_id => pipeline_id }.merge(other_keys)
-  end
-end; end
+require "logstash/config/lir_serializer"
 
 module LogStash; class JavaPipeline < JavaBasePipeline
+  include LogStash::Util::Loggable
+
+  java_import org.apache.logging.log4j.ThreadContext
+
   attr_reader \
     :worker_threads,
     :events_consumed,
     :events_filtered,
-    :reporter,
     :started_at,
-    :thread,
-    :filter_queue_client,
-    :input_queue_client,
-    :queue
+    :thread
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    super
-    @reporter = PipelineReporter.new(@logger, self)
+    @logger = self.logger
+    super pipeline_config, namespaced_metric, @logger, agent
+    open_queue
+
     @worker_threads = []
 
-    begin
-      @queue = LogStash::QueueFactory.create(settings)
-    rescue => e
-      @logger.error("Logstash failed to create queue", default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
-      raise e
-    end
-
-    @input_queue_client = @queue.write_client
-    @filter_queue_client = @queue.read_client
-    # Note that @inflight_batches as a central mechanism for tracking inflight
-    # batches will fail if we have multiple read clients here.
-    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
-    @filter_queue_client.set_pipeline_metric(
-        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-    )
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
@@ -110,8 +42,22 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
+
+    # @finished_execution signals that the pipeline thread has finished its execution
+    # regardless of any exceptions; it will always be true when the thread completes
     @finished_execution = Concurrent::AtomicBoolean.new(false)
+
+    # @finished_run signals that the run methods called in the pipeline thread was completed
+    # without errors and it will NOT be set if the run method exits from an exception; this
+    # is by design and necessary for the wait_until_started semantic
+    @finished_run = Concurrent::AtomicBoolean.new(false)
+
+    @thread = nil
   end # def initialize
+
+  def finished_execution?
+    @finished_execution.true?
+  end
 
   def ready?
     @ready.value
@@ -120,7 +66,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def safe_pipeline_worker_count
     default = settings.get_default("pipeline.workers")
     pipeline_workers = settings.get("pipeline.workers") #override from args "-w 8" or config
-    safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
+    safe_filters, unsafe_filters = filters.partition(&:threadsafe?)
     plugins = unsafe_filters.collect { |f| f.config_name }
 
     return pipeline_workers if unsafe_filters.empty?
@@ -142,7 +88,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def filters?
-    @filters.any?
+    filters.any?
   end
 
   def start
@@ -154,15 +100,23 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @logger.debug("Starting pipeline", default_logging_keys)
 
     @finished_execution.make_false
+    @finished_run.make_false
 
     @thread = Thread.new do
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
+        ThreadContext.put("pipeline.id", pipeline_id)
         run
-        @finished_execution.make_true
+        @finished_run.make_true
       rescue => e
         close
-        logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        pipeline_log_params = default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details)
+        logger.error("Pipeline aborted due to error", pipeline_log_params)
+      ensure
+        @finished_execution.make_true
       end
     end
 
@@ -177,15 +131,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_until_started
     while true do
-      # This should be changed with an appropriate FSM
-      # It's an edge case, if we have a pipeline with
-      # a generator { count => 1 } its possible that `Thread#alive?` doesn't return true
-      # because the execution of the thread was successful and complete
-      if @finished_execution.true?
+      if @finished_run.true?
+        # it completed run without exception
         return true
       elsif thread.nil? || !thread.alive?
+        # some exception occurred and the thread is dead
         return false
       elsif running?
+        # fully initialized and running
         return true
       else
         sleep 0.01
@@ -223,12 +176,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     return 0
   end # def run
 
-  def close
-    @filter_queue_client.close
-    @queue.close
-    close_dlq_writer
-  end
-
   def transition_to_running
     @running.make_true
   end
@@ -243,10 +190,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def stopped?
     @running.false?
-  end
-
-  def system?
-    settings.get_value("pipeline.system")
   end
 
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
@@ -269,6 +212,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -281,31 +225,48 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:config_reload_automatic, settings.get("config.reload.automatic"))
       config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
-      config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      config_metric.gauge(:ephemeral_id, ephemeral_id)
+      config_metric.gauge(:hash, lir.unique_hash)
+      config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
+      config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
-
-      @logger.info("Starting pipeline", default_logging_keys(
+      pipeline_log_params = default_logging_keys(
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
-        "pipeline.max_inflight" => max_inflight))
+        "pipeline.max_inflight" => max_inflight,
+        "pipeline.sources" => pipeline_source_details)
+      @logger.info("Starting pipeline", pipeline_log_params)
+
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
 
-      @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
+      filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
-      pipeline_workers.times do |t|
+      # First launch WorkerLoop initialization in separate threads which concurrently
+      # compiles and initializes the worker pipelines
+
+      worker_loops = pipeline_workers.times
+        .map { Thread.new { init_worker_loop } }
+        .map(&:value)
+
+      fail("Some worker(s) were not correctly initialized") if worker_loops.any?{|v| v.nil?}
+
+      # Once all WorkerLoop have been initialized run them in separate threads
+
+      worker_loops.each_with_index do |worker_loop, t|
         thread = Thread.new do
-          org.logstash.execution.WorkerLoop.new(
-              @lir_execution, @filter_queue_client, @events_filtered, @events_consumed,
-              @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
+          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          ThreadContext.put("pipeline.id", pipeline_id)
+          worker_loop.run
         end
-        thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
       end
 
-      # inputs should be started last, after all workers
+      # Finally inputs should be started last, after all workers have been initialized and started
+
       begin
         start_inputs
       rescue => e
@@ -321,36 +282,52 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     end
   end
 
+  def resolve_cluster_uuids
+    outputs.each_with_object(Set.new) do |output, cluster_uuids|
+      if LogStash::PluginMetadata.exists?(output.id)
+        cluster_uuids << LogStash::PluginMetadata.for_plugin(output.id).get(:cluster_uuid)
+      end
+    end.to_a.compact
+  end
+
   def wait_inputs
-    @input_threads.each(&:join)
+    @input_threads.each do |thread|
+      thread.join # Thread or java.lang.Thread (both have #join)
+    end
   end
 
   def start_inputs
     moreinputs = []
-    @inputs.each do |input|
+    inputs.each do |input|
       if input.threadable && input.threads > 1
         (input.threads - 1).times do |i|
           moreinputs << input.clone
         end
       end
     end
-    @inputs += moreinputs
+    moreinputs.each {|i| inputs << i}
 
     # first make sure we can register all input plugins
-    register_plugins(@inputs)
+    register_plugins(inputs)
 
     # then after all input plugins are successfully registered, start them
-    @inputs.each { |input| start_input(input) }
+    inputs.each { |input| start_input(input) }
   end
 
   def start_input(plugin)
-    @input_threads << Thread.new { inputworker(plugin) }
+    if plugin.class == LogStash::JavaInputDelegator
+      @input_threads << plugin.start
+    else
+      @input_threads << Thread.new { inputworker(plugin) }
+    end
   end
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    ThreadContext.put("pipeline.id", pipeline_id)
+    ThreadContext.put("plugin.id", plugin.id)
     begin
-      plugin.run(LogStash::WrappedWriteClient.new(@input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
+      plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -369,9 +346,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
       sleep(1)
+      begin
+        plugin.do_close
+      rescue => close_exception
+        @logger.debug("Input plugin raised exception while closing, ignoring",
+                      default_logging_keys(:plugin => plugin.class.config_name, :exception => close_exception.message,
+                                           :backtrace => close_exception.backtrace))
+      end
       retry
-    ensure
-      plugin.do_close
     end
   end # def inputworker
 
@@ -390,7 +372,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     stop_inputs
 
-    # We make this call blocking, so we know for sure when the method return the shtudown is
+    # We make this call blocking, so we know for sure when the method return the shutdown is
     # stopped
     wait_for_workers
     clear_pipeline_metrics
@@ -405,7 +387,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def stop_inputs
     @logger.debug("Closing inputs", default_logging_keys)
-    @inputs.each(&:do_stop)
+    inputs.each(&:do_stop)
     @logger.debug("Closed inputs", default_logging_keys)
   end
 
@@ -420,8 +402,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       t.join
     end
 
-    @filters.each(&:do_close)
-    @outputs.each(&:do_close)
+    filters.each(&:do_close)
+    outputs.each(&:do_close)
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -454,7 +436,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def plugin_threads_info
-    input_threads = @input_threads.select {|t| t.alive? }
+    input_threads = @input_threads.select {|t| t.class == Thread && t.alive? }
     worker_threads = @worker_threads.select {|t| t.alive? }
     (input_threads + worker_threads).map {|t| Util.thread_info(t) }
   end
@@ -465,37 +447,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       .each {|t| t.delete("backtrace") }
       .each {|t| t.delete("blocked_on") }
       .each {|t| t.delete("status") }
-  end
-
-  def collect_dlq_stats
-    if dlq_enabled?
-      dlq_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
-      dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
-    end
-  end
-
-  def collect_stats
-    pipeline_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
-    pipeline_metric.gauge(:type, settings.get("queue.type"))
-    if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
-      queue = @queue.queue
-      dir_path = queue.dir_path
-      file_store = Files.get_file_store(Paths.get(dir_path))
-
-      pipeline_metric.namespace([:capacity]).tap do |n|
-        n.gauge(:page_capacity_in_bytes, queue.page_capacity)
-        n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
-        n.gauge(:max_unread_events, queue.max_unread_events)
-        n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
-      end
-      pipeline_metric.namespace([:data]).tap do |n|
-        n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-        n.gauge(:storage_type, file_store.type)
-        n.gauge(:path, dir_path)
-      end
-
-      pipeline_metric.gauge(:events, queue.unread_count)
-    end
   end
 
   def clear_pipeline_metrics
@@ -527,16 +478,52 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   private
 
+  # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
+  def init_worker_loop
+    begin
+      org.logstash.execution.WorkerLoop.new(
+        lir_execution,
+        filter_queue_client,
+        @events_filtered,
+        @events_consumed,
+        @flushRequested,
+        @flushing,
+        @shutdownRequested,
+        @drain_queue,
+        @preserve_event_order)
+    rescue => e
+      @logger.error(
+        "Worker loop initialization error",
+        default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+      nil
+    end
+  end
+
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
-      register_plugins(@outputs)
-      register_plugins(@filters)
+      register_plugins(outputs)
+      register_plugins(filters)
     end
   end
 
   def default_logging_keys(other_keys = {})
-    keys = super
+    keys = {:pipeline_id => pipeline_id}.merge other_keys
     keys[:thread] ||= thread.inspect if thread
     keys
+  end
+
+  def preserve_event_order?(pipeline_workers)
+    case settings.get("pipeline.ordered")
+    when "auto"
+      if settings.set?("pipeline.workers") && settings.get("pipeline.workers") == 1
+        @logger.warn("'pipeline.ordered' is enabled and is likely less efficient, consider disabling if preserving event order is not necessary")
+        return true
+      end
+    when "true"
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker") if pipeline_workers > 1
+      return true
+    end
+
+    false
   end
 end; end

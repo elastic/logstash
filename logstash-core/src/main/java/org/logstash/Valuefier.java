@@ -2,6 +2,7 @@ package org.logstash;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,6 +98,7 @@ public final class Valuefier {
         throw new MissingConverterException(cls);
     }
 
+    @SuppressWarnings("unchecked")
     private static Map<Class<?>, Valuefier.Converter> initConverters() {
         final Map<Class<?>, Valuefier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);
@@ -122,6 +124,8 @@ public final class Valuefier {
         );
         converters.put(Long.class, LONG_CONVERTER);
         converters.put(Integer.class, LONG_CONVERTER);
+        converters.put(Short.class, LONG_CONVERTER);
+        converters.put(Byte.class, LONG_CONVERTER);
         converters.put(Boolean.class, input -> RubyUtil.RUBY.newBoolean((Boolean) input));
         converters.put(
             Timestamp.class,
@@ -137,6 +141,11 @@ public final class Valuefier {
         converters.put(
             DateTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
                 RubyUtil.RUBY, new Timestamp((DateTime) input)
+            )
+        );
+        converters.put(
+                Date.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                RubyUtil.RUBY, new Timestamp((Date) input)
             )
         );
         converters.put(RubyHash.class, input -> ConvertedMap.newFromRubyHash((RubyHash) input));

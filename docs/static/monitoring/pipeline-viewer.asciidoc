@@ -2,141 +2,75 @@
 [[logstash-pipeline-viewer]]
 === Pipeline Viewer UI
 
-The pipeline viewer in {xpack} provides a simple way for you to visualize and
-monitor the behavior of complex Logstash pipeline configurations. Within the
-pipeline viewer, you can explore a directed acyclic graph (DAG) representation
-of the overall pipeline topology, data flow, and branching logic. The diagram
-is overlayed with important metrics, like events per second and time spent in
-milliseconds, for each plugin in the view.
 
-The diagram includes visual indicators to draw your attention to potential
-bottlenecks in the pipeline, making it easy for you to diagnose and fix
-problems.
-
-[IMPORTANT]
-==========================================================================
-When you configure the stages in your Logstash pipeline, make sure you specify
-semantic IDs. If you don't specify IDs, Logstash generates them for you.
-
-Using semantic IDs makes it easier to identify the configurations that are
-causing bottlenecks. For example, you may have several grok filters running
-in your pipeline. If you haven't specified semantic IDs, you won't be able
-to tell at a glance which filters are slow. If you specify semantic IDs,
-such as `apacheParsingGrok` and `cloudwatchGrok`, you'll know exactly which
-grok filters are causing bottlenecks.
-
-==========================================================================
-
-Before using the pipeline viewer, you need to <<setup-xpack,set up {xpack}>> and
-<<monitoring-logstash,configure Logstash monitoring>>.
-
-[float]
-==== What types of problems does the pipeline viewer show?
+The pipeline viewer UI offers additional visibility into the behavior and
+performance of complex pipeline configurations.
+Use the pipeline viewer to visualize and monitor the behavior of complex
+Logstash pipeline configurations. You can see and interact with a tree view 
+that illustrates the pipeline topology, data flow, and branching logic. 
 
 The pipeline viewer highlights CPU% and event latency in cases where the values
-are anomalous. The purpose of these highlights is to enable users to quickly
-identify processing that is disproportionately slow. This may not necessarily
-mean that anything is wrong with a given plugin, since some plugins are slower
-than others due to the nature of the work they do. For instance, you may find
-that a grok filter that uses a complicated regexp runs a lot slower than a
-mutate filter that simply adds a field. The grok filter might be highlighted in
-this case, though it may not be possible to further optimize its work.
+are anomalous. This information helps you quickly identify processing that is
+disproportionately slow.
 
-The exact formula used is a heuristic, and thus is subject to change.
+[role="screenshot"]
+image::static/monitoring/images/pipeline-tree.png[Pipeline Viewer]
 
 [float]
-==== View the pipeline diagram
+==== Prerequisites
 
-To view the pipeline diagram:
+Before using the pipeline viewer:
 
-. In Logstash, start the Logstash pipeline that you want to monitor.
-+
-Assuming that you've set up Logstash monitoring, Logstash will begin shipping
-metrics to the monitoring cluster.
+* <<monitoring-logstash,Configure Logstash monitoring>>.
+* Start the Logstash pipeline that you want to monitor.
 
-. Navigate to the Monitoring tab in Kibana.
-+
-You should see a Logstash section.
-+
-[role="screenshot"]
-image::static/monitoring/images/monitoring-ui.png[Monitoring UI]
+Logstash begins shipping metrics to the monitoring cluster.
 
-. Click the *Pipelines* link under Logstash to see all the pipelines that are
-being monitored.
-+
+[float]
+==== View the pipeline
+
+To view the pipeline:
+
+* Kibana -> Monitoring -> Logstash -> Pipelines
+
 Each pipeline is identified by a pipeline ID (`main` by default). For each
-pipeline, you'll see charts showing the pipeline's throughput and the number
+pipeline, you see the pipeline's throughput and the number
 of nodes on which the pipeline is running during the selected time range.
-+
-[role="screenshot"]
-image::static/monitoring/images/pipeline-viewer-overview.png[Pipeline Overview]
-+
-// To update the screenshot above, see pipelines/tweets_about_rain.conf
-+
 
-. Click a pipeline in the list to drill down and explore the pipeline
-diagram. The diagram shows the latest version of the pipeline. To view an 
-older version of the pipeline, select a version from the drop-down list next
-to the pipeline ID at the top of the page.
-+
-NOTE: Each time you modify a pipeline, Logstash generates a new version. Viewing
-different versions of the pipeline stats allows you see how changes to the pipeline
-over time affect throughput and other metrics. Note that Logstash stores multiple
-versions of the pipeline stats; it does not store multiple versions of the pipeline
-configurations themselves.
-+
-The diagram shows all the stages feeding data through the pipeline. It also shows
-conditional logic.
-+
-[role="screenshot"]
-image::static/monitoring/images/pipeline-diagram.png[Pipeline Diagram]
-+
-// To update the screenshot above, see pipelines/tweets_about_rain.conf
-+
-The information displayed on each vertex varies depending on the plugin type.
-+
-Here's an example of an *input* vertex:
-+
-[role="screenshot"]
-image::static/monitoring/images/pipeline-input-detail.png[Input vertex]
-+
-The *I* badge indicates that this is an input stage. The vertex shows:
-+
---
-* input type - *stdin*
-* user-supplied ID - *logfileRead*
-* throughput expressed in events per second - *0.7 e/s*
-
-Here's an example of a *filter* vertex.
+Many elements in the tree are clickable. 
+For example, you can click the plugin name to expand the detail view.
 
 [role="screenshot"]
-image::static/monitoring/images/pipeline-filter-detail.png[Filter vertex]
+image::static/monitoring/images/pipeline-input-detail.png[Pipeline Input Detail]
 
-The filter icon indicates that this is a filter stage. The vertex shows:
+Click the arrow beside a branch name to collapse or expand it.  
 
-* filter type - *sleep*
-* user-supplied ID - *caSleep*
-* worker usage expressed as the percentage of total execution time - *0%*
-* performance - the number of milliseconds spent processing each event - *20.00 ms/e*
-* throughput - the number of events sent per second - *0.0 e/s*
+[float]
+==== Notes and best practices
 
-Stats that are anomalously slow appear highlighted in the pipeline viewer.
+*Use semantic IDs.* 
+Specify semantic IDs when you configure the stages in your Logstash pipeline.
+Otherwise, Logstash generates them for you. Semantic IDs help you identify
+configurations that are causing bottlenecks. For example, you may have several
+grok filters running in your pipeline. If you have specified semantic IDs, you
+can tell at a glance which filters are slow. Semantic IDs, such as
+`apacheParsingGrok` and `cloudwatchGrok`, point you to the grok filters that are
+causing bottlenecks.
+
+*Outliers.*
+Values and stats that are anomalously slow or otherwise out of line are highlighted.
 This doesn't necessarily indicate a problem, but it highlights potential
 bottle necks so that you can find them quickly.
 
-An *output* vertex shows the same information as a vertex node, but it has an
-*O* badge to indicate that it is an output stage:
+Some plugins are slower than others due to the nature of the work they do. For
+instance, you may find that a grok filter that uses a complicated regexp runs a
+lot slower than a mutate filter that simply adds a field. The grok filter might
+be highlighted in this case, though it may not be possible to further optimize
+its work.
 
-[role="screenshot"]
-image::static/monitoring/images/pipeline-output-detail.png[Output vertex]
---
-
-. Hover over a vertex in the diagram, and you'll see only the related nodes that
-are ancestors or descendants of the current vertex.
-
-. Explore the diagram and look for performance anomalies.
-
-. Click on a vertex to see details about it.
-+
-[role="screenshot"]
-image::static/monitoring/images/pipeline-viewer-detail-drawer.png[Vertex detail]
+*Versioning.*
+Version information is available from the dropdown list beside the pipeline ID.
+Logstash generates a new version each time you modify a pipeline, and
+stores multiple versions of the pipeline stats. Use this information to see how
+changes over time affect throughput and other metrics. Logstash does not store
+multiple versions of the pipeline configurations. 

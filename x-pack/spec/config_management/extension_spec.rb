@@ -31,15 +31,25 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.enabled" => [LogStash::Setting::Boolean, false],
         "xpack.management.logstash.poll_interval" => [LogStash::Setting::TimeValue, 5000000000],
         "xpack.management.pipeline.id" => [LogStash::Setting::ArrayCoercible, ["main"]],
-        "xpack.management.elasticsearch.url" => [LogStash::Setting::ArrayCoercible, ["https://localhost:9200"]],
+        "xpack.management.elasticsearch.hosts" => [LogStash::Setting::ArrayCoercible, ["https://localhost:9200"]],
         "xpack.management.elasticsearch.username" => [LogStash::Setting::String, "logstash_system"],
         "xpack.management.elasticsearch.password" => [LogStash::Setting::String, nil],
-        "xpack.management.elasticsearch.ssl.ca" => [LogStash::Setting::NullableString, nil],
+        "xpack.management.elasticsearch.ssl.certificate_authority" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.truststore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.truststore.password" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil]
       )
+
+      it "has a cloud_id setting" do
+        name = "xpack.management.elasticsearch.cloud_id"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
+
+      it "has a cloud_auth setting" do
+        name = "xpack.management.elasticsearch.cloud_auth"
+        expect { settings.get_setting(name) }.not_to raise_error
+      end
     end
   end
 end

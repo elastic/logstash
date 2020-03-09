@@ -57,8 +57,8 @@ def elasticsearch(options = {})
 end
 
 def start_es_xpack_trial
-  if elasticsearch_client.perform_request(:get, '_xpack/license').body['license']['type'] != 'trial'
-    resp = elasticsearch_client.perform_request(:post, '_xpack/license/start_trial', "acknowledge" => true)
+  if elasticsearch_client.perform_request(:get, '_license').body['license']['type'] != 'trial'
+    resp = elasticsearch_client.perform_request(:post, '_license/start_trial', "acknowledge" => true)
     if resp.body["trial_was_started"] != true
       raise "Trial not started: #{resp.body}"
     end
@@ -95,7 +95,7 @@ def elasticsearch_client(options = { :url => "http://elastic:#{elastic_password}
 end
 
 def push_elasticsearch_config(pipeline_id, config)
-  elasticsearch_client.index :index => '.logstash', :type => "doc", id: pipeline_id, :body => { :pipeline => config }
+  elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
 end
 
 def cleanup_elasticsearch(index = MONITORING_INDEXES)
@@ -114,6 +114,10 @@ def logstash_command_append(cmd, argument, value)
 end
 
 def logstash(cmd, options = {})
+  logstash_with_empty_default(cmd, options, {"xpack.monitoring.enabled" => true})
+end
+
+def logstash_with_empty_default(cmd, options = {}, default_settings = {})
   temporary_settings = Stud::Temporary.directory
   temporary_data = Stud::Temporary.directory
 
@@ -121,7 +125,6 @@ def logstash(cmd, options = {})
   cmd = logstash_command_append(cmd, "--path.data", temporary_data)
 
   logstash_yaml = File.join(temporary_settings, "logstash.yml")
-  default_settings = {"xpack.monitoring.enabled" => true}
   IO.write(logstash_yaml, YAML::dump(default_settings.merge(options.fetch(:settings, {}))))
   FileUtils.cp(File.join(get_logstash_path, "config", "log4j2.properties"), File.join(temporary_settings, "log4j2.properties") )
 

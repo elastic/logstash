@@ -12,6 +12,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "Snapshot")
 public final class SnapshotExt extends RubyBasicObject {
 
+    private static final long serialVersionUID = 1L;
+
     private IRubyObject metricStore;
 
     private RubyTime createdAt;
@@ -26,7 +28,7 @@ public final class SnapshotExt extends RubyBasicObject {
         if (args.length == 2) {
             createdAt = (RubyTime) args[1];
         } else {
-            createdAt = (RubyTime) RubyTime.newInstance(context, context.runtime.getTime());
+            createdAt = RubyTime.newInstance(context, context.runtime.getTime());
         }
         return this;
     }

@@ -67,4 +67,24 @@ describe LogStash::Util do
       end
     end
   end
+
+  describe ".get_thread_id" do
+    it "returns native identifier" do
+      thread_id = LogStash::Util.get_thread_id(Thread.current)
+      expect( thread_id ).to be_a Integer
+      expect( thread_id ).to eq(java.lang.Thread.currentThread.getId)
+    end
+
+    context "when a (native) thread is collected" do
+      let(:dead_thread) { Thread.new { 42 }.tap { |t| sleep(0.01) while t.status } }
+
+      it "returns nil as id" do
+        thread = dead_thread
+        p thread if $VERBOSE
+        2.times { java.lang.System.gc || sleep(0.01) } # we're assuming a full-gc to clear all weak-refs
+        # NOTE: if you notice this spec failing - remote it (a java.lang.Thread weak-ref might stick around)
+        expect(LogStash::Util.get_thread_id(thread)).to be nil
+      end
+    end
+  end
 end

@@ -4,6 +4,7 @@ require "logstash/util/safe_uri"
 require "logstash/version"
 require "logstash/environment"
 require "logstash/util/plugin_version"
+require "logstash/codecs/delegator"
 require "filesize"
 
 LogStash::Environment.load_locale!
@@ -323,7 +324,7 @@ module LogStash::Config::Mixin
       if config_settings[:list]
         value = Array(value) # coerce scalars to lists
         # Empty lists are converted to nils
-        return true, nil if value.empty?
+        return true, [] if value.empty?
 
         validated_items = value.map {|v| validate_value(v, config_val)}
         is_valid = validated_items.all? {|sr| sr[0] }
@@ -410,7 +411,7 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
-              value = LogStash::Plugin.lookup("codec", value.first).new
+              value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
               return true, value
             else
               value = value.first

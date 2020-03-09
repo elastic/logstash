@@ -10,9 +10,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.logstash.config.ir.IRHelpers.*;
 
-/**
- * Created by andrewvc on 11/21/16.
- */
 @RunWith(Theories.class)
 public class BooleanEdgeTest {
     @DataPoint

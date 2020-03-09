@@ -1,8 +1,11 @@
 package org.logstash.config.ir.compiler;
 
-import org.jruby.RubyInteger;
+import co.elastic.logstash.api.Codec;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.common.SourceWithMetadata;
+
+import java.util.Map;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -18,15 +21,19 @@ public final class RubyIntegration {
      */
     public interface PluginFactory {
 
-        IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        IRubyObject buildInput(RubyString name, SourceWithMetadata source,
+                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        OutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source,
+                                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        FilterDelegatorExt buildFilter(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args,
+                                               Map<String, Object> pluginArgs);
 
-        IRubyObject buildCodec(RubyString name, IRubyObject args);
+        IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args,
+                               Map<String, Object> pluginArgs);
+
+        Codec buildDefaultCodec(String codecName);
+
     }
 }

@@ -7,9 +7,6 @@ import org.logstash.common.SourceWithMetadata;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by andrewvc on 9/6/16.
- */
 public abstract class ComposedStatement extends Statement {
     public interface IFactory {
         ComposedStatement make(SourceWithMetadata meta, List<Statement> statements) throws InvalidIRException;

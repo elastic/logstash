@@ -7,7 +7,6 @@ import java.util.Map;
 
 /**
  * System information as returned by the different JVM's MxBeans
- * Created by purbon on 13/12/15.
  */
 public class SystemMonitor {
 

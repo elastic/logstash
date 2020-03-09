@@ -20,8 +20,8 @@ module LogStash
       class RemoteConfigError < LogStash::Error; end
 
       PIPELINE_INDEX = ".logstash"
-      PIPELINE_TYPE = "doc"
-      VALID_LICENSES = %w(trial standard gold platinum)
+      # exclude basic
+      VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
       FEATURE_EXTERNAL = 'logstash'
       SUPPORTED_PIPELINE_SETTINGS = %w(
@@ -35,8 +35,17 @@ module LogStash
 
       def initialize(settings)
         super(settings)
-        if @settings.get("xpack.management.enabled") && !@settings.get_setting("xpack.management.elasticsearch.password").set?
-          raise ArgumentError.new("You must set the password using the \"xpack.management.elasticsearch.password\" in logstash.yml")
+        if @settings.get("xpack.management.enabled")
+          if @settings.get_setting("xpack.management.elasticsearch.cloud_id").set?
+            if !@settings.get_setting("xpack.management.elasticsearch.cloud_auth").set?
+              raise ArgumentError.new("You must set credentials using \"xpack.management.elasticsearch.cloud_auth\", " +
+                                      "when using \"xpack.management.elasticsearch.cloud_id\" in logstash.yml")
+            end
+          else
+            if !@settings.get_setting("xpack.management.elasticsearch.password").set?
+              raise ArgumentError.new("You must set the password using \"xpack.management.elasticsearch.password\" in logstash.yml")
+            end
+          end
         end
 
         @es_options = es_options_from_settings('management', settings)
@@ -138,11 +147,17 @@ module LogStash
       end
 
       def config_path
-        "#{PIPELINE_INDEX}/#{PIPELINE_TYPE}/_mget"
+        "#{PIPELINE_INDEX}/_mget"
       end
 
       def populate_license_state(xpack_info)
-        if !xpack_info.installed?
+        if xpack_info.failed?
+          {
+              :state => :error,
+              :log_level => :error,
+              :log_message => "Failed to fetch X-Pack information from Elasticsearch. This is likely due to failure to reach a live Elasticsearch cluster."
+          }
+        elsif !xpack_info.installed?
           {
               :state => :error,
               :log_level => :error,

@@ -1,26 +1,21 @@
 package org.logstash.config.ir;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
-import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
 import org.logstash.config.ir.graph.IfVertex;
@@ -28,9 +23,22 @@ import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.plugins.ConfigVariableExpander;
+import org.logstash.secret.store.SecretStore;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
- * <h3>Compiled Logstash Pipeline Configuration.</h3>
+ * <h2>Compiled Logstash Pipeline Configuration.</h2>
  * This class represents an executable pipeline, compiled from the configured topology that is
  * learnt from {@link PipelineIR}.
  * Each compiled pipeline consists in graph of {@link Dataset} that represent either a
@@ -53,12 +61,12 @@ public final class CompiledPipeline {
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
-    private final Map<String, FilterDelegatorExt> filters;
+    private final Map<String, AbstractFilterDelegatorExt> filters;
 
     /**
      * Configured outputs.
      */
-    private final Map<String, OutputDelegatorExt> outputs;
+    private final Map<String, AbstractOutputDelegatorExt> outputs;
 
     /**
      * Parsed pipeline configuration graph.
@@ -70,25 +78,41 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
-    public CompiledPipeline(final PipelineIR pipelineIR,
-        final RubyIntegration.PluginFactory pluginFactory) {
-        this.pipelineIR = pipelineIR;
-        this.pluginFactory = pluginFactory;
-        inputs = setupInputs();
-        filters = setupFilters();
-        outputs = setupOutputs();
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory)
+    {
+        this(pipelineIR, pluginFactory, null);
     }
 
-    public Collection<IRubyObject> outputs() {
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory,
+            final SecretStore secretStore)
+    {
+        this.pipelineIR = pipelineIR;
+        this.pluginFactory = pluginFactory;
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(
+                secretStore,
+                EnvironmentVariableProvider.defaultProvider())) {
+            inputs = setupInputs(cve);
+            filters = setupFilters(cve);
+            outputs = setupOutputs(cve);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage());
+        }
+    }
+
+    public Collection<AbstractOutputDelegatorExt> outputs() {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
-    public Collection<FilterDelegatorExt> filters() {
+    public Collection<AbstractFilterDelegatorExt> filters() {
         return Collections.unmodifiableCollection(filters.values());
     }
 
     public Collection<IRubyObject> inputs() {
-        return inputs;
+        return Collections.unmodifiableCollection(inputs);
     }
 
     /**
@@ -100,18 +124,18 @@ public final class CompiledPipeline {
         return new CompiledPipeline.CompiledExecution().toDataset();
     }
 
+
     /**
-     * Sets up all Ruby outputs learnt from {@link PipelineIR}.
+     * Sets up all outputs learned from {@link PipelineIR}.
      */
-    private Map<String, OutputDelegatorExt> setupOutputs() {
+    private Map<String, AbstractOutputDelegatorExt> setupOutputs(ConfigVariableExpander cve) {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
-        final Map<String, OutputDelegatorExt> res = new HashMap<>(outs.size());
+        final Map<String, AbstractOutputDelegatorExt> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
             res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
             ));
         });
         return res;
@@ -120,12 +144,16 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private Map<String, FilterDelegatorExt> setupFilters() {
+    private Map<String, AbstractFilterDelegatorExt> setupFilters(ConfigVariableExpander cve) {
         final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
-        final Map<String, FilterDelegatorExt> res =
-            new HashMap<>(filterPlugins.size(), 1.0F);
-        for (final PluginVertex plugin : filterPlugins) {
-            res.put(plugin.getId(), buildFilter(plugin));
+        final Map<String, AbstractFilterDelegatorExt> res = new HashMap<>(filterPlugins.size(), 1.0F);
+
+        for (final PluginVertex vertex : filterPlugins) {
+            final PluginDefinition def = vertex.getPluginDefinition();
+            final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            res.put(vertex.getId(), pluginFactory.buildFilter(
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
+            ));
         }
         return res;
     }
@@ -133,16 +161,15 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby inputs learnt from {@link PipelineIR}.
      */
-    private Collection<IRubyObject> setupInputs() {
+    private Collection<IRubyObject> setupInputs(ConfigVariableExpander cve) {
         final Collection<PluginVertex> vertices = pipelineIR.getInputPluginVertices();
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            nodes.add(pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-            ));
+            IRubyObject o = pluginFactory.buildInput(
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve));
+            nodes.add(o);
         });
         return nodes;
     }
@@ -162,9 +189,12 @@ public final class CompiledPipeline {
             final Object toput;
             if (value instanceof PluginStatement) {
                 final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
                 toput = pluginFactory.buildCodec(
                     RubyUtil.RUBY.newString(codec.getName()),
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
+                    source,
+                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                    codec.getArguments()
                 );
             } else {
                 toput = value;
@@ -175,23 +205,61 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles a {@link FilterDelegatorExt} from a given {@link PluginVertex}.
-     * @param vertex Filter {@link PluginVertex}
-     * @return Compiled {@link FilterDelegatorExt}
+     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
+     * Java types for consumption by Java plugins.
+     * @param def PluginDefinition as provided by {@link PipelineIR}
+     * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
+     * methods that create Java plugins
      */
-    private FilterDelegatorExt buildFilter(final PluginVertex vertex) {
-        final PluginDefinition def = vertex.getPluginDefinition();
-        final SourceWithMetadata source = vertex.getSourceWithMetadata();
-        return pluginFactory.buildFilter(
-            RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-            RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-        );
+    private Map<String, Object> convertJavaArgs(final PluginDefinition def, ConfigVariableExpander cve) {
+        Map<String, Object> args = expandConfigVariables(cve, def.getArguments());
+        for (final Map.Entry<String, Object> entry : args.entrySet()) {
+            final Object value = entry.getValue();
+            final String key = entry.getKey();
+            final IRubyObject toput;
+            if (value instanceof PluginStatement) {
+                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
+                Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
+                toput = pluginFactory.buildCodec(
+                    RubyUtil.RUBY.newString(codec.getName()),
+                    source,
+                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
+                    codecArgs
+                );
+                Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
+                args.put(key, javaCodec);
+            }
+        }
+        return args;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+        Map<String, Object> expandedConfig = new HashMap<>();
+        for (Map.Entry<String, Object> e : configArgs.entrySet()) {
+            if (e.getValue() instanceof List) {
+                List list = (List) e.getValue();
+                List<Object> expandedObjects = new ArrayList<>();
+                for (Object o : list) {
+                    expandedObjects.add(cve.expand(o));
+                }
+                expandedConfig.put(e.getKey(), expandedObjects);
+            } else if (e.getValue() instanceof Map) {
+                expandedConfig.put(e.getKey(), expandConfigVariables(cve, (Map<String, Object>) e.getValue()));
+            } else if (e.getValue() instanceof String) {
+                expandedConfig.put(e.getKey(), cve.expand(e.getValue()));
+            } else {
+                expandedConfig.put(e.getKey(), e.getValue());
+            }
+        }
+        return expandedConfig;
     }
 
     /**
-     * Checks if a certain {@link Vertex} represents a {@link FilterDelegatorExt}.
+     * Checks if a certain {@link Vertex} represents a {@link AbstractFilterDelegatorExt}.
      * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents a {@link FilterDelegatorExt}
+     * @return True iff {@link Vertex} represents a {@link AbstractFilterDelegatorExt}
      */
     private boolean isFilter(final Vertex vertex) {
         return filters.containsKey(vertex.getId());
@@ -216,13 +284,13 @@ public final class CompiledPipeline {
         /**
          * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
          */
-        private final Map<String, SplitDataset> iffs = new HashMap<>(5);
+        private final Map<String, SplitDataset> iffs = new HashMap<>(50);
 
         /**
          * Cached {@link Dataset} compiled from {@link PluginVertex} indexed by their ID as returned
          * by {@link Vertex#getId()} to avoid duplicate computations.
          */
-        private final Map<String, Dataset> plugins = new HashMap<>(5);
+        private final Map<String, Dataset> plugins = new HashMap<>(50);
 
         private final Dataset compiled;
 
@@ -259,14 +327,19 @@ public final class CompiledPipeline {
          * @return Filter {@link Dataset}
          */
         private Dataset filterDataset(final Vertex vertex, final Collection<Dataset> datasets) {
-            return plugins.computeIfAbsent(
-                vertex.getId(), v -> {
-                    final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.filterDataset(flatten(datasets, vertex), filters.get(v));
-                    LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
-                    return prepared.instantiate();
-                }
-            );
+            final String vertexId = vertex.getId();
+
+            if (!plugins.containsKey(vertexId)) {
+                final ComputeStepSyntaxElement<Dataset> prepared =
+                    DatasetCompiler.filterDataset(
+                        flatten(datasets, vertex),
+                        filters.get(vertexId));
+                LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
+
+                plugins.put(vertexId, prepared.instantiate());
+            }
+
+            return plugins.get(vertexId);
         }
 
         /**
@@ -277,16 +350,20 @@ public final class CompiledPipeline {
          * @return Output {@link Dataset}
          */
         private Dataset outputDataset(final Vertex vertex, final Collection<Dataset> datasets) {
-            return plugins.computeIfAbsent(
-                vertex.getId(), v -> {
-                    final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.outputDataset(
-                            flatten(datasets, vertex), outputs.get(v), outputs.size() == 1
-                        );
-                    LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
-                    return prepared.instantiate();
-                }
-            );
+            final String vertexId = vertex.getId();
+
+            if (!plugins.containsKey(vertexId)) {
+                final ComputeStepSyntaxElement<Dataset> prepared =
+                    DatasetCompiler.outputDataset(
+                        flatten(datasets, vertex),
+                        outputs.get(vertexId),
+                        outputs.size() == 1);
+                LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
+
+                plugins.put(vertexId, prepared.instantiate());
+            }
+
+            return plugins.get(vertexId);
         }
 
         /**
@@ -299,21 +376,20 @@ public final class CompiledPipeline {
          */
         private SplitDataset split(final Collection<Dataset> datasets,
             final EventCondition condition, final Vertex vertex) {
-            final String key = vertex.getId();
-            SplitDataset conditional = iffs.get(key);
+            final String vertexId = vertex.getId();
+            SplitDataset conditional = iffs.get(vertexId);
             if (conditional == null) {
                 final Collection<Dataset> dependencies = flatten(datasets, vertex);
-                conditional = iffs.get(key);
+                conditional = iffs.get(vertexId);
                 // Check that compiling the dependencies did not already instantiate the conditional
                 // by requiring its else branch.
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
                         DatasetCompiler.splitDataset(dependencies, condition);
-                    LOGGER.debug(
-                        "Compiled conditional\n {} \n into \n {}", vertex, prepared
-                    );
+                    LOGGER.debug("Compiled conditional\n {} \n into \n {}", vertex, prepared);
+
                     conditional = prepared.instantiate();
-                    iffs.put(key, conditional);
+                    iffs.put(vertexId, conditional);
                 }
 
             }

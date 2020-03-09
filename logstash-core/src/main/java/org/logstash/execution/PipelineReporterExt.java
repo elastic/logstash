@@ -1,6 +1,5 @@
 package org.logstash.execution;
 
-import java.util.Collection;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
@@ -14,10 +13,14 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.config.ir.compiler.OutputDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+
+import java.util.Collection;
 
 @JRubyClass(name = "PipelineReporter")
 public final class PipelineReporterExt extends RubyBasicObject {
+
+    private static final long serialVersionUID = 1L;
 
     private static final RubySymbol EVENTS_FILTERED_KEY =
         RubyUtil.RUBY.newSymbol("events_filtered");
@@ -101,6 +104,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         final RubyHash batchMap = (RubyHash) pipeline
             .callMethod(context, "filter_queue_client")
             .callMethod(context, "inflight_batches");
+        @SuppressWarnings("rawtypes")
         final RubyArray workerStates = workerStates(context, batchMap);
         result.op_aset(context, WORKER_STATES_KEY, workerStates);
         result.op_aset(
@@ -128,7 +132,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     private RubyArray workerStates(final ThreadContext context, final RubyHash batchMap) {
         final RubyArray result = context.runtime.newArray();
         ((Iterable<IRubyObject>) pipeline.callMethod(context, "worker_threads"))
@@ -152,7 +156,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     private RubyArray outputInfo(final ThreadContext context) {
         final RubyArray result = context.runtime.newArray();
         final IRubyObject outputs = pipeline.callMethod(context, "outputs");
@@ -163,10 +167,10 @@ public final class PipelineReporterExt extends RubyBasicObject {
             outputIterable = (Iterable<IRubyObject>) outputs.toJava(Iterable.class);
         }
         outputIterable.forEach(output -> {
-            final OutputDelegatorExt delegator = (OutputDelegatorExt) output;
+            final AbstractOutputDelegatorExt delegator = (AbstractOutputDelegatorExt) output;
             final RubyHash hash = RubyHash.newHash(context.runtime);
             hash.op_aset(context, TYPE_KEY, delegator.configName(context));
-            hash.op_aset(context, ID_KEY, delegator.id(context));
+            hash.op_aset(context, ID_KEY, delegator.getId());
             hash.op_aset(context, CONCURRENCY_KEY, delegator.concurrency(context));
             result.add(hash);
         });
@@ -188,6 +192,8 @@ public final class PipelineReporterExt extends RubyBasicObject {
      */
     @JRubyClass(name = "Snapshot")
     public static final class SnapshotExt extends RubyBasicObject {
+
+        private static final long serialVersionUID = 1L;
 
         private static final RubyString INFLIGHT_COUNT_KEY =
             RubyUtil.RUBY.newString("inflight_count").newFrozen();

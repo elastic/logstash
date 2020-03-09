@@ -12,6 +12,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "AbstractNamespacedMetric")
 public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     AbstractNamespacedMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
@@ -49,13 +51,20 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     }
 
     @JRubyMethod(name = "namespace_name")
+    @SuppressWarnings("rawtypes")
     public RubyArray namespaceName(final ThreadContext context) {
         return getNamespaceName(context);
+    }
+
+    @JRubyMethod(name = "root")
+    public AbstractMetricExt root(final ThreadContext context) {
+        return getMetric();
     }
 
     protected abstract IRubyObject getGauge(ThreadContext context, IRubyObject key,
         IRubyObject value);
 
+    @SuppressWarnings("rawtypes")
     protected abstract RubyArray getNamespaceName(ThreadContext context);
 
     protected abstract IRubyObject getCounter(ThreadContext context, IRubyObject key);
@@ -68,4 +77,6 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
+
+    public abstract AbstractMetricExt getMetric();
 }

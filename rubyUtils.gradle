@@ -1,0 +1,388 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.yaml:snakeyaml:1.23'
+        classpath "de.undercouch:gradle-download-task:3.2.0"
+        classpath "org.jruby:jruby-complete:9.2.11.0"
+    }
+}
+
+import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.Verify
+import org.yaml.snakeyaml.Yaml
+
+
+import org.jruby.Ruby
+import org.jruby.embed.PathType
+import org.jruby.embed.ScriptingContainer
+
+import java.lang.annotation.Annotation
+import java.nio.file.Files
+import java.nio.file.Paths
+
+ext {
+    bundle = this.&bundle
+    bundleWithEnv = this.&bundleWithEnv
+    gem = this.&gem
+    buildGem = this.&buildGem
+    rake = this.&rake
+    setupJruby = this.&setupJruby
+    generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
+    validatePluginJar = this.&validatePluginJar
+    versionMap = new HashMap()
+    pluginInfo = new PluginInfo()
+}
+
+
+/**
+ * Executes a bundler bin script with given parameters.
+ * @param projectDir Gradle projectDir
+ * @param buildDir Gradle buildDir
+ * @param pwd Current worker directory to execute in
+ * @param bundleBin Bundler Bin Script
+ * @param args CLI Args to Use with Bundler
+ */
+void bundle(File projectDir, File buildDir, String pwd, String bundleBin, Iterable<String> args) {
+    bundleWithEnv(projectDir, buildDir, pwd, bundleBin, args, Collections.emptyMap())
+}
+
+/**
+ * Executes a bundler bin script with given parameters.
+ * @param projectDir Gradle projectDir
+ * @param buildDir Gradle buildDir
+ * @param pwd Current worker directory to execute in
+ * @param bundleBin Bundler Bin Script
+ * @param args CLI Args to Use with Bundler
+ * @param env Environment Variables to Set
+ */
+void bundleWithEnv(File projectDir, File buildDir, String pwd, String bundleBin, Iterable<String> args, Map<String, String> env) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.environment.putAll(env)
+        jruby.currentDirectory = pwd
+        jruby.argv = args.toList().toArray()
+        jruby.runScriptlet(PathType.ABSOLUTE, bundleBin)
+    }
+}
+
+/**
+ * Installs a Gem with the given version to the given path.
+ * @param projectDir Gradle projectDir
+ * @param buildDir Gradle buildDir
+ * @param gem Gem Name
+ * @param version Version to Install
+ * @param path Path to Install to
+ */
+void gem(File projectDir, File buildDir, String gem, String version, String path) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("""
+                require 'rubygems/commands/install_command'
+                cmd = Gem::Commands::InstallCommand.new
+                cmd.handle_options ['--no-document', '${gem}', '-v', '${version}', '-i', '${path}']
+                begin
+                    cmd.execute
+                rescue Gem::SystemExitException => e
+                    raise e unless e.exit_code == 0
+                end
+                """
+        )
+    }
+}
+
+void buildGem(File projectDir, File buildDir, String gemspec) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("""
+                require 'rubygems/commands/build_command'
+                cmd = Gem::Commands::BuildCommand.new
+                cmd.handle_options ['${gemspec}']
+                begin
+                    cmd.execute
+                rescue Gem::SystemExitException => e
+                    raise e unless e.exit_code == 0
+                end
+                """
+        )
+    }
+}
+
+/**
+ * Executes RSpec for a given plugin.
+ * @param projectDir Gradle projectDir
+ * @param buildDir Gradle buildDir
+ * @param plugin Plugin to run specs for
+ * @param args CLI arguments to pass to rspec
+ */
+void rake(File projectDir, File buildDir, String task) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("require 'rake'")
+        jruby.runScriptlet("""
+                rake = Rake.application
+                rake.init
+                rake.load_rakefile
+                rake['${task}'].invoke
+                """
+        )
+    }
+}
+
+void setupJruby(File projectDir, File buildDir) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
+        jruby.runScriptlet("LogStash::Bundler.invoke!")
+    }
+}
+
+/**
+ * Executes Closure using a fresh JRuby environment, safely tearing it down afterwards.
+ * @param projectDir Gradle projectDir
+ * @param buildDir Gradle buildDir
+ * @param block Closure to run
+ */
+Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block) {
+    def jruby = new ScriptingContainer()
+    def env = jruby.environment
+    def gemDir = "${projectDir}/vendor/bundle/jruby/2.5.0".toString()
+    env.put "USE_RUBY", "1"
+    env.put "GEM_HOME", gemDir
+    env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
+    env.put "GEM_PATH", gemDir
+    try {
+        block(jruby)
+    } finally {
+        jruby.terminate()
+        Ruby.clearGlobalRuntime()
+    }
+}
+
+//===============================================================================
+// Ruby variables
+//===============================================================================
+
+def versionsPath = project.hasProperty("LOGSTASH_CORE_PATH") ? LOGSTASH_CORE_PATH + "/../versions.yml" : "${projectDir}/versions.yml"
+versionMap = (Map) (new Yaml()).load(new File("${versionsPath}").text)
+
+String jRubyURL
+String jRubyVersion
+String jRubySha1
+Boolean doChecksum
+
+if (versionMap["jruby-runtime-override"]) {
+    jRubyVersion = versionMap["jruby-runtime-override"]["version"]
+    jRubyURL = versionMap["jruby-runtime-override"]["url"]
+    doChecksum = false
+} else {
+    jRubyVersion = versionMap["jruby"]["version"]
+    jRubySha1 = versionMap["jruby"]["sha1"]
+    jRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${jRubyVersion}/jruby-dist-${jRubyVersion}-bin.tar.gz"
+    doChecksum = true
+}
+def jrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz"
+
+def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
+def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
+def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
+
+task downloadJRuby(type: Download) {
+    description "Download JRuby artifact from this specific URL: ${jRubyURL}"
+    src jRubyURL
+    onlyIfNewer true
+    inputs.file(versionsPath)
+    outputs.file(jrubyTarPath)
+    dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
+}
+
+downloadJRuby.onlyIf { customJRubyDir == "" }
+
+task verifyFile(dependsOn: downloadJRuby, type: Verify) {
+    description "Verify the SHA1 of the download JRuby artifact"
+    inputs.file(jrubyTarPath)
+    outputs.file(jrubyTarPath)
+    src new File(jrubyTarPath)
+    algorithm 'SHA-1'
+    checksum jRubySha1
+}
+
+verifyFile.onlyIf { customJRubyDir == "" }
+verifyFile.onlyIf { doChecksum }
+
+task buildCustomJRuby(type: Exec) {
+    description "Build tar.gz and .jar artifacts from JRuby source directory"
+    workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
+    commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = new ByteArrayOutputStream()
+    ext.output = {
+        standardOutput.toString() + errorOutput.toString()
+    }
+}
+
+buildCustomJRuby.onlyIf { customJRubyDir != "" }
+
+task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
+    description "Install custom built JRuby in the vendor directory"
+    inputs.file(customJRubyTar)
+    outputs.dir("${projectDir}/vendor/jruby")
+    from tarTree(customJRubyTar == "" ? jrubyTarPath : customJRubyTar)
+    eachFile { f ->
+        f.path = f.path.replaceFirst("^jruby-${customJRubyVersion}", '')
+    }
+    exclude "**/stdlib/rdoc/**"
+    includeEmptyDirs = false
+    into "${projectDir}/vendor/jruby"
+}
+
+installCustomJRuby.onlyIf { customJRubyDir != "" }
+
+
+task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: Copy) {
+    description "Install JRuby in the vendor directory"
+    inputs.file(jrubyTarPath)
+    outputs.dir("${projectDir}/vendor/jruby")
+    from tarTree(downloadJRuby.dest)
+    eachFile { f ->
+        f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
+    }
+    exclude "**/stdlib/rdoc/**"
+    exclude "**/stdlib/bundler/**"
+    exclude "**/stdlib/bundler.rb"
+    exclude "**/bundler-1.16.6/**"
+    exclude "**/bundler-1.16.6.*"
+
+    includeEmptyDirs = false
+    into "${projectDir}/vendor/jruby"
+}
+
+downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
+
+//===============================================================================
+// Ruby auto-gen utilities for Java plugins
+//===============================================================================
+
+class PluginInfo {
+    public String[] licenses
+    public String longDescription
+    public String[] authors
+    public String[] email
+    public String homepage
+    public String pluginType
+    public String pluginClass
+    public String pluginName
+
+    String pluginFullName() {
+        return "logstash-" + pluginType + "-" + pluginName
+    }
+}
+
+void generateRubySupportFilesForPlugin(String projectDescription, String projectGroup, String version) {
+    File gemFile = file("Gemfile")
+    gemFile.write("# AUTOGENERATED BY THE GRADLE SCRIPT. EDITS WILL BE OVERWRITTEN.\n")
+    gemFile.append("source 'https://rubygems.org'\n")
+    gemFile.append("\n")
+    gemFile.append("gemspec\n")
+    gemFile.append("\n")
+    gemFile.append("logstash_path = ENV[\"LOGSTASH_PATH\"] || \"../../logstash\"\n")
+    gemFile.append("use_logstash_source = ENV[\"LOGSTASH_SOURCE\"] && ENV[\"LOGSTASH_SOURCE\"].to_s == \"1\"\n")
+    gemFile.append("\n")
+    gemFile.append("if Dir.exist?(logstash_path) && use_logstash_source\n")
+    gemFile.append("  gem 'logstash-core', :path => \"#{logstash_path}/logstash-core\"\n")
+    gemFile.append("  gem 'logstash-core-plugin-api', :path => \"#{logstash_path}/logstash-core-plugin-api\"\n")
+    gemFile.append("end\n")
+
+    File gemspecFile = file(pluginInfo.pluginFullName() + ".gemspec")
+    gemspecFile.write("# AUTOGENERATED BY THE GRADLE SCRIPT. EDITS WILL BE OVERWRITTEN.\n")
+    gemspecFile.append("Gem::Specification.new do |s|\n")
+    gemspecFile.append("  s.name            = '" + pluginInfo.pluginFullName() + "'\n")
+    gemspecFile.append("  s.version         = ::File.read('VERSION').split('\\n').first\n")
+    gemspecFile.append("  s.licenses        = ['" + String.join("', '", pluginInfo.licenses) + "']\n")
+    gemspecFile.append("  s.summary         = '" + projectDescription + "'\n")
+    gemspecFile.append("  s.description     = '" + pluginInfo.longDescription + "'\n")
+    gemspecFile.append("  s.authors         = ['" + String.join("', '", pluginInfo.authors) + "']\n")
+    gemspecFile.append("  s.email           = ['" + String.join("', '", pluginInfo.email) + "']\n")
+    gemspecFile.append("  s.homepage        = '" + pluginInfo.homepage + "'\n")
+    gemspecFile.append("  s.require_paths = ['lib', 'vendor/jar-dependencies']\n")
+    gemspecFile.append("\n")
+    gemspecFile.append("  s.files = Dir[\"lib/**/*\",\"*.gemspec\",\"*.md\",\"CONTRIBUTORS\",\"Gemfile\",\"LICENSE\",\"NOTICE.TXT\", \"vendor/jar-dependencies/**/*.jar\", \"vendor/jar-dependencies/**/*.rb\", \"VERSION\", \"docs/**/*\"]\n")
+    gemspecFile.append("\n")
+    gemspecFile.append("  # Special flag to let us know this is actually a logstash plugin\n")
+    gemspecFile.append("  s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => '" + pluginInfo.pluginType + "', 'java_plugin' => 'true'}\n")
+    gemspecFile.append("\n")
+    gemspecFile.append("  # Gem dependencies\n")
+    gemspecFile.append("  s.add_runtime_dependency \"logstash-core-plugin-api\", \">= 1.60\", \"<= 2.99\"\n")
+    gemspecFile.append("  s.add_runtime_dependency 'jar-dependencies'\n")
+    gemspecFile.append("  s.add_development_dependency 'logstash-devutils'\n")
+    gemspecFile.append("end\n")
+
+    String moduleName = pluginInfo.pluginType.substring(0, 1).toUpperCase() + pluginInfo.pluginType.substring(1) + "s"
+    File pluginRb = file("lib/logstash/" + pluginInfo.pluginType + "s/" + pluginInfo.pluginName + ".rb")
+    Files.createDirectories(pluginRb.toPath().getParent())
+    pluginRb.write("# AUTOGENERATED BY THE GRADLE SCRIPT. EDITS WILL BE OVERWRITTEN.\n")
+    pluginRb.append("# encoding: utf-8\n")
+    pluginRb.append("require \"logstash/" + pluginInfo.pluginType + "s/base\"\n")
+    pluginRb.append("require \"logstash/namespace\"\n")
+    pluginRb.append("require \"" + pluginInfo.pluginFullName() + "_jars\"\n")
+    pluginRb.append("require \"java\"\n")
+    pluginRb.append("\n")
+    pluginRb.append("class LogStash::" + moduleName + "::" + pluginInfo.pluginClass + " < LogStash::" + moduleName + "::Base\n")
+    pluginRb.append("  config_name \"" + pluginInfo.pluginName + "\"\n")
+    pluginRb.append("\n")
+    pluginRb.append("  def self.javaClass() Java::" + projectGroup + "." + pluginInfo.pluginClass + ".java_class; end\n")
+    pluginRb.append("end\n")
+
+    File pluginJarsRb = file("lib/" + pluginInfo.pluginFullName() + "_jars.rb")
+    pluginJarsRb.write("# AUTOGENERATED BY THE GRADLE SCRIPT. EDITS WILL BE OVERWRITTEN.\n")
+    pluginJarsRb.append("# encoding: utf-8\n")
+    pluginJarsRb.append("\n")
+    pluginJarsRb.append("require 'jar_dependencies'\n")
+    pluginJarsRb.append("require_jar('" + projectGroup + "', '" + pluginInfo.pluginFullName() + "', '" + version +"')\n")
+}
+
+void validatePluginJar(File pluginJar, String group) {
+    List<String> validationErrors = new ArrayList<>()
+
+    if (group.equals('org.logstash') || group.startsWith('org.logstash.') || group.equals('co.elastic.logstash') || group.startsWith('co.elastic.logstash.')) {
+        validationErrors.add("The plugin should not be placed in the 'org.logstash' or 'co.elastic.logstash' packages")
+        throw new GradleScriptException("Plugin validation errors:" + System.lineSeparator() +
+                String.join(System.lineSeparator(), validationErrors), null)
+    }
+
+    URLClassLoader cl = URLClassLoader.newInstance([pluginJar.toURI().toURL()] as URL[])
+    String pluginClassName = group + "." + pluginInfo.pluginClass
+
+    Class<?> pluginClass = null
+    try {
+        pluginClass = cl.loadClass(pluginClassName)
+    } catch (ClassNotFoundException ex) {
+        validationErrors.add(String.format("Unable to locate plugin class defined in build.gradle as '%s' in jar '%s'", pluginClassName, pluginJar))
+        throw new GradleScriptException("Plugin validation errors:" + System.lineSeparator() +
+                String.join(System.lineSeparator(), validationErrors), null)
+    }
+
+    if (pluginClass != null) {
+
+        Annotation[] logstashPlugin = pluginClass.getAnnotations().findAll({ x -> x.annotationType().toString().equals("interface co.elastic.logstash.api.LogstashPlugin") })
+        if (logstashPlugin.length != 1) {
+            validationErrors.add("There must be a single @LogstashPlugin annotation on the plugin class")
+        } else {
+            String pluginAnnotation = logstashPlugin[0].name()
+
+            if (pluginAnnotation != pluginInfo.pluginName) {
+                validationErrors.add("The 'name' property on the @LogstashPlugin (which is '" + pluginAnnotation + "') must match the 'pluginName' property which is defined as '" + pluginInfo.pluginName + "' in the build.gradle file")
+            }
+
+            if (pluginAnnotation.replace("_", "").toLowerCase() != pluginInfo.pluginClass.toLowerCase()) {
+                validationErrors.add("The 'name' property on the @LogstashPlugin (which is '" + pluginAnnotation + "') must match the plugin class name '" + pluginInfo.pluginClass + "' excluding casing and underscores")
+            }
+        }
+    }
+
+    if (validationErrors.size() > 0) {
+        throw new GradleScriptException("Plugin validation errors:" + System.lineSeparator() +
+                String.join(System.lineSeparator(), validationErrors), null)
+    }
+}

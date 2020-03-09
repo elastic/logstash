@@ -68,6 +68,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
+  option ["--field-reference-parser"], "MODE",
+         I18n.t("logstash.runner.flag.field-reference-parser"),
+         :attribute_name => "config.field_reference.parser",
+         :default => LogStash::SETTINGS.get_default("config.field_reference.parser")
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
@@ -103,10 +108,20 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
-  option ["--experimental-java-execution"], :flag,
-         I18n.t("logstash.runner.flag.experimental-java-execution"),
+  option "--pipeline.ordered", "ORDERED",
+    I18n.t("logstash.runner.flag.pipeline-ordered"),
+    :attribute_name => "pipeline.ordered",
+    :default => LogStash::SETTINGS.get_default("pipeline.ordered")
+
+  option ["--java-execution"], :flag,
+         I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
+
+  option ["--plugin-classloaders"], :flag,
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
@@ -244,6 +259,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.logs", setting("path.logs"))
     java.lang.System.setProperty("ls.log.format", setting("log.format"))
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
 
@@ -326,7 +342,8 @@ class LogStash::Runner < Clamp::StrictCommand
         # TODO(ph): make it better for multiple pipeline
         if results.success?
           results.response.each do |pipeline_config|
-            LogStash::BasePipeline.new(pipeline_config)
+            pipeline_class = pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::BasePipeline
+            pipeline_class.new(pipeline_config)
           end
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
@@ -343,6 +360,8 @@ class LogStash::Runner < Clamp::StrictCommand
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
+
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
     @dispatcher.fire(:after_agent)
@@ -351,8 +370,6 @@ class LogStash::Runner < Clamp::StrictCommand
     # to properly handle a stalled agent
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
-
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
 
     @agent_task = Stud::Task.new { @agent.execute }
 
@@ -363,6 +380,8 @@ class LogStash::Runner < Clamp::StrictCommand
     agent_return = @agent_task.wait
 
     @agent.shutdown
+
+    logger.info("Logstash shut down.")
 
     # flush any outstanding log messages during shutdown
     org.apache.logging.log4j.LogManager.shutdown

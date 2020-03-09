@@ -11,6 +11,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "AbstractMetric")
 public abstract class AbstractMetricExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     public AbstractMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }

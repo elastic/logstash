@@ -52,6 +52,17 @@ end
 
 describe LogStash::Filters::NOOP do
   extend PipelineHelpers
+  let(:settings) do
+    # settings is used by sample_one.
+    # This was originally set directly in sample_one and
+    # pipeline.workers was also set to 1. I am preserving
+    # this setting here for the sake of minimizing change
+    # but unsure if this is actually required.
+
+    s = LogStash::SETTINGS.clone
+    s.set_value("pipeline.workers", 1)
+    s
+  end
 
   describe "adding multiple values to one field" do
     config <<-CONFIG
@@ -280,6 +291,41 @@ describe LogStash::Filters::NOOP do
     end
   end
 
+  describe "remove_field within @metadata" do
+    config <<-CONFIG
+    filter {
+      noop {
+        remove_field => ["[@metadata][f1]", "[@metadata][f2]", "[@metadata][f4][f5]"]
+      }
+    }
+    CONFIG
+
+    sample_one("type" => "noop", "@metadata" => {"f1" => "one", "f2" => { "f3" => "three"}, "f4" => { "f5" => "five", "f6" => "six"}, "f7" => "seven"}) do
+      expect(subject.include?("[@metadata][f1]")).to be_falsey
+      expect(subject.include?("[@metadata][f2]")).to be_falsey
+      expect(subject.include?("[@metadata][f4]")).to be_truthy
+      expect(subject.include?("[@metadata][f4][f5]")).to be_falsey
+      expect(subject.include?("[@metadata][f4][f6]")).to be_truthy
+      expect(subject.include?("[@metadata][f7]")).to be_truthy
+    end
+  end
+
+  describe "remove_field on @metadata" do
+    config <<-CONFIG
+    filter {
+      noop {
+        remove_field => ["[@metadata]"]
+      }
+    }
+    CONFIG
+
+    sample_one("type" => "noop", "@metadata" => {"f1" => "one", "f2" => { "f3" => "three"}}) do
+      expect(subject.include?("[@metadata]")).to be_truthy
+      expect(subject.include?("[@metadata][f1]")).to be_falsey
+      expect(subject.include?("[@metadata][f2]")).to be_falsey
+    end
+  end
+
  describe "remove_field on array" do
     config <<-CONFIG
     filter {
@@ -321,5 +367,19 @@ describe LogStash::Filters::NOOP do
       expect(subject.get("[tags][blackhole]")).to eq("go")
     end
 
+  end
+
+  describe "when metrics are disabled" do
+    describe "An error should not be raised, and the event should be processed" do
+      config <<-CONFIG
+        filter {
+          noop { enable_metric => false }
+        }
+      CONFIG
+
+      sample_one("type" => "noop", "tags" => {"blackhole" => "go"}) do
+        expect(subject.get("[tags][blackhole]")).to eq("go")
+      end
+    end
   end
 end

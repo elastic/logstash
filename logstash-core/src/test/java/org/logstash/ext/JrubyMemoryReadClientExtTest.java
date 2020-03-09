@@ -23,7 +23,7 @@ public final class JrubyMemoryReadClientExtTest {
             new ArrayBlockingQueue<>(10);
         final JrubyMemoryReadClientExt client =
             JrubyMemoryReadClientExt.create(queue, 5, 50);
-        final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();
+        final ThreadContext context = client.getRuntime().getCurrentContext();
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));

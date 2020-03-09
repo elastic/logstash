@@ -10,9 +10,6 @@ import static org.logstash.config.ir.IRHelpers.assertSyntaxEquals;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 import static org.logstash.config.ir.IRHelpers.randMeta;
 
-/**
- * Created by andrewvc on 9/13/16.
- */
 public class DSLTest {
     @Test
     public void testDSLOnePluginEquality() throws IncompleteSourceWithMetadataException {

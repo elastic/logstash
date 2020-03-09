@@ -59,7 +59,7 @@ public class SecretIdentifier {
         SecretIdentifier that = (SecretIdentifier) o;
 
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        return VERSION != null ? VERSION.equals(that.VERSION) : that.VERSION == null;
+        return true;
     }
 
     /**
@@ -79,7 +79,7 @@ public class SecretIdentifier {
     }
 
     /**
-     * Converts this object to a format acceptable external {@link String} format. Note - no gauruntees are made with respect to encoding or safe use. For example, the external
+     * Converts this object to a format acceptable external {@link String} format. Note - no guarantees are made with respect to encoding or safe use. For example, the external
      * format may not be URL safely encoded.
      *
      * @return the externally formatted {@link String}

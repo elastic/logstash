@@ -15,7 +15,15 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "NullMetric")
 public final class NullMetricExt extends AbstractSimpleMetricExt {
 
+    private static final long serialVersionUID = 1L;
+
     private IRubyObject collector;
+
+    public static NullMetricExt create() {
+        return new NullMetricExt(
+            RubyUtil.RUBY, RubyUtil.NULL_METRIC_CLASS
+        ).initialize(RubyUtil.RUBY.getCurrentContext(), new IRubyObject[0]);
+    }
 
     public NullMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -84,6 +92,8 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
 
     @JRubyClass(name = "NullTimedExecution")
     public static final class NullTimedExecution extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         private static final NullMetricExt.NullTimedExecution INSTANCE =
             new NullMetricExt.NullTimedExecution(RubyUtil.RUBY, RubyUtil.NULL_TIMED_EXECUTION_CLASS);

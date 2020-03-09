@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link SecureConfig}
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SecureConfigTest {
 
     private SecureConfig secureConfig;

@@ -80,12 +80,22 @@ describe LogStash::Api::Modules::NodeStats do
          "filtered" => Numeric,
          "out" => Numeric,
          "queue_push_duration_in_millis" => Numeric
-       }
+       },
+       "plugins" => {
+          "inputs" => Array,
+          "codecs" => Array,
+          "filters" => Array,
+          "outputs" => Array,
+       },
      }
    },
    "reloads" => {
      "successes" => Numeric,
      "failures" => Numeric
+   },
+   "os" => Hash,
+   "queue" => {
+      "events_count" => Numeric
    }
   }
 

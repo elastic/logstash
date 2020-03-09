@@ -85,7 +85,7 @@ public final class DatasetCompiler {
      * @return Dataset representing the filter plugin
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
-        final FilterDelegatorExt plugin) {
+        final AbstractFilterDelegatorExt plugin) {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
@@ -95,6 +95,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
+            @SuppressWarnings("rawtypes")
             final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
@@ -157,16 +158,20 @@ public final class DatasetCompiler {
      * @return Output Dataset
      */
     public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
-        final OutputDelegatorExt output, final boolean terminal) {
+        final AbstractOutputDelegatorExt output, final boolean terminal) {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
-            computeSyntax = Closure.wrap(invokeOutput(fields.add(output), BATCH_ARG));
+            computeSyntax = Closure.wrap(
+                setPluginIdForLog4j(output),
+                invokeOutput(fields.add(output), BATCH_ARG),
+                unsetPluginIdForLog4j());
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
+            @SuppressWarnings("rawtypes")
             final RubyArray buffer = RubyUtil.RUBY.newArray();
             final Closure inlineClear;
             if (terminal) {
@@ -178,7 +183,12 @@ public final class DatasetCompiler {
             }
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
             computeSyntax = withInputBuffering(
-                Closure.wrap(invokeOutput(fields.add(output), inputBuffer), inlineClear),
+                Closure.wrap(
+                    setPluginIdForLog4j(output),
+                    invokeOutput(fields.add(output), inputBuffer),
+                    inlineClear,
+                    unsetPluginIdForLog4j()
+                ),
                 parentFields, inputBuffer
             );
         }
@@ -192,14 +202,16 @@ public final class DatasetCompiler {
 
     private static Closure filterBody(final ValueSyntaxElement outputBuffer,
         final ValueSyntaxElement inputBuffer, final ClassFields fields,
-        final FilterDelegatorExt plugin) {
+        final AbstractFilterDelegatorExt plugin) {
         final ValueSyntaxElement filterField = fields.add(plugin);
         final Closure body = Closure.wrap(
+            setPluginIdForLog4j(plugin),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
         );
         if (plugin.hasFlush()) {
             body.add(callFilterFlush(fields, outputBuffer, filterField, !plugin.periodicFlush()));
         }
+        body.add(unsetPluginIdForLog4j());
         return body;
     }
 
@@ -208,15 +220,12 @@ public final class DatasetCompiler {
         final ValueSyntaxElement ifData, final ValueSyntaxElement elseData) {
         final ValueSyntaxElement eventVal = event.access();
         return Closure.wrap(
-            SyntaxFactory.forLoop(
-                event, inputBuffer,
-                Closure.wrap(
-                    SyntaxFactory.ifCondition(
-                        condition.call("fulfilled", eventVal),
-                        Closure.wrap(ifData.call("add", eventVal)),
-                        Closure.wrap(elseData.call("add", eventVal))
-                    )
-                )
+            SyntaxFactory.value("org.logstash.config.ir.compiler.Utils").call(
+                "filterEvents",
+                inputBuffer,
+                condition,
+                ifData,
+                elseData
             )
         );
     }
@@ -245,22 +254,10 @@ public final class DatasetCompiler {
      */
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
-        final VariableDefinition event =
-            new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "e");
-        final ValueSyntaxElement eventVar = event.access();
         return Closure.wrap(
-            parents.stream().map(par ->
-                SyntaxFactory.forLoop(
-                    event, computeDataset(par),
-                    Closure.wrap(
-                        SyntaxFactory.ifCondition(
-                            SyntaxFactory.not(
-                                eventVar.call("getEvent").call("isCancelled")
-                            ), Closure.wrap(inputBuffer.call("add", eventVar))
-                        )
-                    )
-                )
-            ).toArray(MethodLevelSyntaxElement[]::new)
+                parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
+                ).toArray(MethodLevelSyntaxElement[]::new)
         ).add(compute).add(clear(inputBuffer));
     }
 
@@ -278,18 +275,18 @@ public final class DatasetCompiler {
      */
     private static DatasetCompiler.ComputeAndClear withOutputBuffering(final Closure compute,
         final Closure clear, final ValueSyntaxElement outputBuffer, final ClassFields fields) {
-        final ValueSyntaxElement done = fields.add(boolean.class);
+        final SyntaxFactory.MethodCallReturnValue done = new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "isDone");
         return computeAndClear(
             Closure.wrap(
                 SyntaxFactory.ifCondition(done, Closure.wrap(SyntaxFactory.ret(outputBuffer)))
             ).add(compute)
-                .add(SyntaxFactory.assignment(done, SyntaxFactory.identifier("true")))
+                .add(new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"))
                 .add(SyntaxFactory.ret(outputBuffer)),
             Closure.wrap(
                 SyntaxFactory.ifCondition(
                     done, Closure.wrap(
                         clear.add(clear(outputBuffer)),
-                        SyntaxFactory.assignment(done, SyntaxFactory.identifier("false"))
+                        new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "clearDone")
                     )
                 )
             ), fields
@@ -314,6 +311,24 @@ public final class DatasetCompiler {
         return SyntaxFactory.ifCondition(
             condition, Closure.wrap(buffer(resultBuffer, filterPlugin.call(FLUSH, flushArgs)))
         );
+    }
+
+    private static MethodLevelSyntaxElement unsetPluginIdForLog4j() {
+        return () -> "org.apache.logging.log4j.ThreadContext.remove(\"plugin.id\")";
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt filterPlugin) {
+        final IRubyObject pluginId = filterPlugin.getId();
+        return generateLog4jContextAssignment(pluginId);
+    }
+
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt outputPlugin) {
+        final IRubyObject pluginId = outputPlugin.getId();
+        return generateLog4jContextAssignment(pluginId);
+    }
+
+    private static MethodLevelSyntaxElement generateLog4jContextAssignment(IRubyObject pluginId) {
+        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + pluginId + "\")";
     }
 
     private static MethodLevelSyntaxElement clear(final ValueSyntaxElement field) {
@@ -391,8 +406,8 @@ public final class DatasetCompiler {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
-            final boolean flush, final boolean shutdown) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(@SuppressWarnings("rawtypes") final RubyArray batch,
+                                                                  final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }

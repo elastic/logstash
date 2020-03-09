@@ -37,7 +37,13 @@ module LogStash
       end
 
       def populate_license_state(xpack_info)
-        if !xpack_info.installed?
+        if xpack_info.failed?
+          {
+              :state => :error,
+              :log_level => :error,
+              :log_message => "Failed to fetch X-Pack information from Elasticsearch. This is likely due to failure to reach a live Elasticsearch cluster."
+          }
+        elsif !xpack_info.installed?
           {
               :state => :error,
               :log_level => :error,

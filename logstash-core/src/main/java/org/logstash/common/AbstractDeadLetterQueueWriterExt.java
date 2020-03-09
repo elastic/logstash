@@ -15,6 +15,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
 @JRubyClass(name = "AbstractDeadLetterQueueWriter")
 public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     AbstractDeadLetterQueueWriterExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
@@ -67,6 +69,8 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
     public static final class DummyDeadLetterQueueWriterExt
         extends AbstractDeadLetterQueueWriterExt {
 
+        private static final long serialVersionUID = 1L;
+
         public DummyDeadLetterQueueWriterExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -113,6 +117,8 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
     public static final class PluginDeadLetterQueueWriterExt
         extends AbstractDeadLetterQueueWriterExt {
 
+        private static final long serialVersionUID = 1L;
+
         private IRubyObject writerWrapper;
 
         private DeadLetterQueueWriter innerWriter;
@@ -135,7 +141,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
             final IRubyObject pluginType) {
             writerWrapper = innerWriter;
             if (writerWrapper.getJavaClass().equals(DeadLetterQueueWriter.class)) {
-                this.innerWriter = (DeadLetterQueueWriter) writerWrapper.toJava(
+                this.innerWriter = writerWrapper.toJava(
                     DeadLetterQueueWriter.class
                 );
             }

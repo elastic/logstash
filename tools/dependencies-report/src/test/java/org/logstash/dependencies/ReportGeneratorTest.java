@@ -1,5 +1,6 @@
 package org.logstash.dependencies;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,21 +9,28 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.logstash.dependencies.Main.ACCEPTABLE_LICENSES_PATH;
 
 public class ReportGeneratorTest {
-    StringWriter csvOutput;
-    StringWriter noticeOutput;
-    ReportGenerator rg;
+    private StringWriter csvOutput;
+    private StringWriter noticeOutput;
+    private StringWriter unusedLicenseWriter;
+    private ReportGenerator rg;
 
     @Before
     public void setup() {
         csvOutput = new StringWriter();
         noticeOutput = new StringWriter();
+        unusedLicenseWriter = new StringWriter();
     }
 
     @Test
@@ -32,16 +40,18 @@ public class ReportGeneratorTest {
                 Main.getResourceAsStream("/expectedOutput.txt"));
         String expectedNoticeOutput = getStringFromStream(
                 Main.getResourceAsStream("/expectedNoticeOutput.txt"));
-        boolean result = runReportGenerator("/licenseMapping-good.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-good.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertTrue(result);
         assertEquals(normalizeEol(expectedOutput), normalizeEol(csvOutput.toString()));
         assertEquals(normalizeEol(expectedNoticeOutput), normalizeEol(noticeOutput.toString()));
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("41 license mappings were specified but unused"));
     }
 
     @Test
     public void testReportWithMissingLicenses() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-missing.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-missing.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
@@ -49,23 +59,41 @@ public class ReportGeneratorTest {
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
         assertTrue(csvOutput.toString().contains("commons-io:commons-io,2.5,,,,\r\n"));
         assertTrue(csvOutput.toString().contains("filesize,0.0.4,,,,\r\n"));
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("43 license mappings were specified but unused"));
+    }
+
+    @Test
+    public void testReportWithConflictingLicenses() throws IOException {
+        try {
+            boolean result = runReportGenerator("/licenseMapping-conflicting.csv", csvOutput, noticeOutput, unusedLicenseWriter);
+            Assert.fail("Conflicting licenses should have been detected");
+        } catch (IllegalStateException ex) {
+            assertThat(ex.getMessage(),
+                    containsString("License mapping contains duplicate dependencies 'bundler' with conflicting licenses 'LGPL-2.0-only' and 'MIT'"));
+        }
     }
 
     @Test
     public void testReportWithUnacceptableLicenses() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-unacceptable.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-unacceptable.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
         // verify that the two components in the test input with unacceptable licenses are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
-        assertThat(csvOutput.toString(), containsString("com.fasterxml.jackson.core:jackson-core,2.7.3,,,,\r\n"));
-        assertThat(csvOutput.toString(), containsString("bundler,1.16.0,,,,\r\n"));
+        String csvString = csvOutput.toString();
+        assertThat(csvString, containsString("com.fasterxml.jackson.core:jackson-core,2.7.3,,,,\r\n"));
+
+        Pattern bundlerPattern = Pattern.compile(".*bundler,1\\.16\\.[0-1],,,,.*");
+        assertThat(bundlerPattern.matcher(csvString).find(), is(true));
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("43 license mappings were specified but unused"));
     }
 
     @Test
     public void testReportWithMissingUrls() throws IOException {
-        boolean result = runReportGenerator("/licenseMapping-missingUrls.csv", csvOutput, noticeOutput);
+        boolean result = runReportGenerator("/licenseMapping-missingUrls.csv", csvOutput, noticeOutput, unusedLicenseWriter);
 
         assertFalse(result);
 
@@ -73,15 +101,18 @@ public class ReportGeneratorTest {
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
         assertTrue(csvOutput.toString().contains("org.codehaus.janino:commons-compiler,3.0.8,,,,\r\n"));
         assertTrue(csvOutput.toString().contains("json-parser,,,,,\r\n"));
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("43 license mappings were specified but unused"));
     }
 
     @Test
     public void testReportWithMissingNotices() throws IOException {
         boolean result = runReportGenerator(
-                "/licenseMapping-missingNotices.csv",
+                "/licenseMapping-good.csv",
                 new InputStream[] {Main.getResourceAsStream("/javaLicensesMissingNotice.csv")},
                 csvOutput,
-                noticeOutput
+                noticeOutput,
+                unusedLicenseWriter
         );
 
         assertFalse(result);
@@ -89,9 +120,28 @@ public class ReportGeneratorTest {
         assertThat(noticeOutput.toString(), not(containsString("noNoticeDep")));
         Optional<Dependency> found = rg.MISSING_NOTICE.stream().filter(d -> d.getName().equals("co.elastic:noNoticeDep") && d.getVersion().equals("0.0.1")).findFirst();
         assertTrue(found.isPresent());
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("45 license mappings were specified but unused"));
     }
 
-    private boolean runReportGenerator(String licenseMappingPath, StringWriter csvOutput, StringWriter noticeOutput) throws IOException {
+    @Test
+    public void testReportWithUnusedLicenses() throws IOException {
+        boolean result = runReportGenerator(
+                "/licenseMapping-missingNotices.csv",
+                csvOutput,
+                noticeOutput,
+                unusedLicenseWriter
+        );
+
+        assertTrue("Unused licenses should not fail the license checker", result);
+
+        String unusedLicenses = unusedLicenseWriter.toString();
+        assertThat(unusedLicenses, containsString("42 license mappings were specified but unused"));
+        assertThat(unusedLicenses, containsString("org.eclipse.core:org.eclipse.core.commands"));
+        assertThat(unusedLicenses, not(containsString("junit:junit")));
+    }
+
+    private boolean runReportGenerator(String licenseMappingPath, StringWriter csvOutput, StringWriter noticeOutput, StringWriter unusedLicenseWriter) throws IOException {
        return runReportGenerator(
                licenseMappingPath,
                new InputStream[]{
@@ -99,12 +149,14 @@ public class ReportGeneratorTest {
                         Main.getResourceAsStream("/javaLicenses2.csv"),
                 },
                csvOutput,
-               noticeOutput
+               noticeOutput,
+               unusedLicenseWriter
        ) ;
     }
 
-    private boolean runReportGenerator(String licenseMappingPath, InputStream[] javaLicenses, StringWriter csvOutput, StringWriter noticeOutput)
-            throws IOException {
+    private boolean runReportGenerator(
+            String licenseMappingPath, InputStream[] javaLicenses, StringWriter csvOutput,
+            StringWriter noticeOutput, StringWriter unusedLicenseWriter) throws IOException {
         rg = new ReportGenerator();
         return rg.generateReport(
                 Main.getResourceAsStream(licenseMappingPath),
@@ -112,7 +164,8 @@ public class ReportGeneratorTest {
                 Main.getResourceAsStream("/rubyDependencies.csv"),
                 javaLicenses,
                 csvOutput,
-                noticeOutput
+                noticeOutput,
+                unusedLicenseWriter
         );
     }
 

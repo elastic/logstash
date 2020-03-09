@@ -5,29 +5,45 @@
 module LogStash; module Inputs; class Metrics;
   class StatsEventFactory
     include ::LogStash::Util::Loggable
-    require 'monitoring/inputs/metrics/stats_event/pipelines_info'
+    require 'logstash/config/pipelines_info'
 
-    def initialize(global_stats, snapshot)
+    def initialize(global_stats, snapshot, cluster_uuid)
       @global_stats = global_stats
       @snapshot = snapshot
       @metric_store = @snapshot.metric_store
+      @cluster_uuid = cluster_uuid
     end
 
-    def make(agent, extended_performance_collection=true)
-      LogStash::Event.new(
+    def make(agent, extended_performance_collection=true, collection_interval=10)
+      metrics_doc = {
         "timestamp" => @snapshot.created_at,
         "logstash" => fetch_node_stats(agent, @metric_store),
         "events" => format_global_event_count(@metric_store),
         "process" => format_process_stats(@metric_store),
-        "pipelines" => StatsEvent::PipelinesInfo.format_pipelines_info(agent, @metric_store, extended_performance_collection),
+        "pipelines" => LogStash::Config::PipelinesInfo.format_pipelines_info(agent, @metric_store, extended_performance_collection),
         "reloads" => format_reloads(@metric_store),
         "jvm" => format_jvm_stats(@metric_store),
         "os" => format_os_stats(@metric_store),
         "queue" => format_queue_stats(agent, @metric_store),
-        "@metadata" => {
+      }
+
+      if (LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS))
+        event_body = {
+          "type" => "logstash_stats",
+          "logstash_stats" => metrics_doc,
+          "cluster_uuid" => @cluster_uuid,
+          "interval_ms" => collection_interval * 1000,
+          "timestamp" => DateTime.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+        }
+      else
+        event_body = metrics_doc
+      end
+
+      LogStash::Event.new(
+        {"@metadata" => {
           "document_type" => "logstash_stats",
           "timestamp" => Time.now
-        }
+        }}.merge(event_body)
       )
     end
 
@@ -48,7 +64,7 @@ module LogStash; module Inputs; class Metrics;
       result["mem"] = {
         "heap_used_in_bytes" => heap_stats[:used_in_bytes],
         "heap_used_percent" => heap_stats[:used_percent],
-          "heap_max_in_bytes" => heap_stats[:max_in_bytes],
+        "heap_max_in_bytes" => heap_stats[:max_in_bytes],
         }
 
       result["gc"] = {
@@ -93,8 +109,6 @@ module LogStash; module Inputs; class Metrics;
     end
 
     def format_queue_stats(agent, stats)
-      events = 0
-
       pipelines_stats = stats.get_shallow(:stats, :pipelines)
 
       total_queued_events = 0
@@ -103,7 +117,7 @@ module LogStash; module Inputs; class Metrics;
         pipeline = agent.get_pipeline(pipeline_id)
         # Check if pipeline is nil to avoid race condition where metrics system refers pipeline that has been stopped already
         next if pipeline.nil? || pipeline.system? || type != 'persisted'
-        total_queued_events = p_stats[:queue][:events].value
+        total_queued_events += p_stats[:queue][:events].value
       end
 
       {:events_count => total_queued_events}

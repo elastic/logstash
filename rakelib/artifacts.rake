@@ -1,7 +1,12 @@
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
-  PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
+  if VERSION_QUALIFIER
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-#{VERSION_QUALIFIER}-SNAPSHOT" : "-#{VERSION_QUALIFIER}"
+  else
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  end
 
   def package_files
     [
@@ -24,6 +29,7 @@ namespace "artifact" do
       "logstash-core/*.gemspec",
 
       "logstash-core-plugin-api/lib/**/*",
+      "logstash-core-plugin-api/versions-gem-copy.yml",
       "logstash-core-plugin-api/*.gemspec",
 
       "patterns/**/*",
@@ -85,55 +91,67 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  def source_modified_since?(time, excluder=nil)
+    skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
+    result = false
+    files(excluder).each do |file|
+      next if File.mtime(file) < time || skip_list.include?(file)
+      puts "file modified #{file}"
+      result = true
+      break
+    end
+    result
+  end
+
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar('ELASTIC-LICENSE')
   end
 
   desc "Build an OSS tar.gz of default logstash plugins with all dependencies"
-  task "tar_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder)
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip('ELASTIC-LICENSE')
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder)
   end
 
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5", :oss)
   end
 
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04", :oss)
   end
@@ -160,6 +178,24 @@ namespace "artifact" do
     build_tar('ELASTIC-LICENSE', "-all-plugins")
   end
 
+  desc "Build docker image"
+  task "docker" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker] Building docker image")
+    build_docker(false)
+  end
+
+  desc "Build OSS docker image"
+  task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+    puts("[docker_oss] Building OSS docker image")
+    build_docker(true)
+  end
+
+  desc "Generate Dockerfile for default and oss images"
+  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building Dockerfiles")
+    build_dockerfiles
+  end
+
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
@@ -171,6 +207,11 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
+    unless ENV['SKIP_DOCKER'] == "1"
+      Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:dockerfiles"].invoke
+    end
   end
 
   task "generate_build_metadata" do
@@ -252,6 +293,10 @@ namespace "artifact" do
     require "archive/tar/minitar"
     ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
+    if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
+      puts("[artifact:tar] Source code not modified. Skipping build of #{tarpath}")
+      return
+    end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
@@ -452,8 +497,8 @@ namespace "artifact" do
 
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
-    out.name = "logstash"
-    out.version = LOGSTASH_VERSION.gsub(/[.-]([[:alpha:]])/, '~\1')
+    out.name = oss ? "logstash-oss" : "logstash"
+    out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     out.architecture = "all"
     # TODO(sissel): Include the git commit hash?
     out.iteration = "1" # what revision?
@@ -492,4 +537,31 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
+
+  def build_docker(oss = false)
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+    }
+    Dir.chdir("docker") do |dir|
+      if oss
+        system(env, "make build-from-local-oss-artifacts")
+      else
+        system(env, "make build-from-local-artifacts")
+      end
+    end
+  end
+
+  def build_dockerfiles
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+    }
+    Dir.chdir("docker") do |dir|
+      system(env, "make public-dockerfiles")
+      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+    end
+  end
 end

@@ -12,8 +12,13 @@ namespace "test" do
   end
 
   desc "run the ruby unit tests"
-  task "core-ruby" do
+  task "core-ruby" => "compliance" do
     exit 1 unless system(*default_spec_command)
+  end
+
+  desc 'run the ruby compliance tests'
+  task 'compliance' do
+    exit 1 unless system('bin/rspec', '-fd', '--patern', 'spec/compliance/**/*_spec.rb')
   end
 
   desc "run all core specs"
@@ -53,17 +58,11 @@ namespace "test" do
     exit 1 unless system(*(["bin/rspec", "-fd", "--order", "rand"].concat(test_files)))
   end
 
-  desc "install core plugins and dev dependencies"
-  task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
+  desc "install dev dependencies"
+  task "install-core" => ["bootstrap", "plugin:install-development-dependencies"]
 
   desc "install default plugins and dev dependencies"
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
-
-  desc "install vendor plugins and dev dependencies"
-  task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
-
-  desc "install jar dependencies and dev dependencies"
-  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
 end
 
 task "test" => [ "test:core" ]

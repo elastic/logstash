@@ -14,12 +14,14 @@ import org.logstash.RubyUtil;
 @JRubyClass(name = "NamespacedMetric")
 public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
 
-    private RubyArray namespaceName;
+    private static final long serialVersionUID = 1L;
+
+    private @SuppressWarnings("rawtypes") RubyArray namespaceName;
 
     private MetricExt metric;
 
     public static NamespacedMetricExt create(final MetricExt metric,
-        final RubyArray namespaceName) {
+        final @SuppressWarnings("rawtypes") RubyArray namespaceName) {
         final NamespacedMetricExt res =
             new NamespacedMetricExt(RubyUtil.RUBY, RubyUtil.NAMESPACED_METRIC_CLASS);
         res.metric = metric;
@@ -32,7 +34,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @JRubyMethod(visibility = Visibility.PRIVATE)
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject metric,
+    public NamespacedMetricExt initialize(final ThreadContext context, final IRubyObject metric,
         final IRubyObject namespaceName) {
         this.metric = (MetricExt) metric;
         if (namespaceName instanceof RubyArray) {
@@ -91,6 +93,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected RubyArray getNamespaceName(final ThreadContext context) {
         return namespaceName;
     }
@@ -103,4 +106,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
             name instanceof RubyArray ? name : RubyArray.newArray(context.runtime, name)
         ));
     }
+
+    @Override
+    public AbstractMetricExt getMetric() { return this.metric; }
 }

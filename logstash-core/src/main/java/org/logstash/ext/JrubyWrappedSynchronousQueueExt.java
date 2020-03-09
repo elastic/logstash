@@ -1,19 +1,21 @@
 package org.logstash.ext;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyNumeric;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import org.logstash.execution.AbstractWrappedQueueExt;
+import org.logstash.execution.QueueReadClientBase;
 
 @JRubyClass(name = "WrappedSynchronousQueue")
-public final class JrubyWrappedSynchronousQueueExt extends RubyObject {
+public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueExt {
+
+    private static final long serialVersionUID = 1L;
 
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
@@ -21,27 +23,29 @@ public final class JrubyWrappedSynchronousQueueExt extends RubyObject {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(name = "initialize")
+    @JRubyMethod
     @SuppressWarnings("unchecked")
-    public void rubyInitialize(final ThreadContext context, IRubyObject size) {
+    public JrubyWrappedSynchronousQueueExt initialize(final ThreadContext context,
+        IRubyObject size) {
         int typedSize = ((RubyNumeric)size).getIntValue();
         this.queue = new ArrayBlockingQueue<>(typedSize);
+        return this;
     }
 
-    @JRubyMethod(name = "write_client")
-    public IRubyObject getWriteClient(final ThreadContext context) {
+    @Override
+    protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
         return JrubyMemoryWriteClientExt.create(queue);
     }
 
-    @JRubyMethod(name = "read_client")
-    public IRubyObject getReadClient(final ThreadContext context) {
+    @Override
+    protected QueueReadClientBase getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
         return JrubyMemoryReadClientExt.create(queue, 125, 50);
     }
 
-    @JRubyMethod(name = "close")
-    public IRubyObject rubyClose(final ThreadContext context) {
+    @Override
+    public IRubyObject doClose(final ThreadContext context) {
         // no op
         return this;
     }

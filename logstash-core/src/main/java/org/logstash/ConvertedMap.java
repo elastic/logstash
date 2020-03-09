@@ -61,7 +61,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     }
 
     public static ConvertedMap newFromRubyHash(final RubyHash o) {
-        return newFromRubyHash(WorkerLoop.THREAD_CONTEXT.get(), o);
+        return newFromRubyHash(RubyUtil.RUBY.getCurrentContext(), o);
     }
 
     public static ConvertedMap newFromRubyHash(final ThreadContext context, final RubyHash o) {
@@ -99,6 +99,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @return Interned String
      */
     private static String convertKey(final RubyString key) {
-        return FieldReference.from(key.getByteList()).getKey();
+        return FieldReference.from(key).getKey();
     }
 }

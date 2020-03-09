@@ -18,6 +18,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
 
     protected final String key;
 
+    @SuppressWarnings("rawtypes")
     private GaugeMetric lazyMetric;
 
     /**
@@ -60,6 +61,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
         return lazyMetric == null ? null : lazyMetric.getValue();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void set(Object value) {
         if (lazyMetric == null) {
@@ -74,6 +76,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      *
      * @param value The object used to set this value
      */
+    @SuppressWarnings("deprecation")
     private synchronized void wakeMetric(Object value) {
         if (lazyMetric == null && value != null) {
             //"quack quack"

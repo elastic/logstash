@@ -17,7 +17,7 @@ local
 test/setup/elasticsearch/elasticsearch-*
 vendor
 .sass-cache
-data
+/data
 .buildpath
 .project
 .DS_Store
@@ -44,7 +44,6 @@ Gemfile
 .idea
 logs
 .lock
-NOTICE.TXT
 qa/integration/services/installed/
 .gradle
 **/.settings

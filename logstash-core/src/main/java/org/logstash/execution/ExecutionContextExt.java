@@ -13,6 +13,8 @@ import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 @JRubyClass(name = "ExecutionContext")
 public final class ExecutionContextExt extends RubyObject {
 
+    private static final long serialVersionUID = 1L;
+
     private AbstractDeadLetterQueueWriterExt dlqWriter;
 
     private IRubyObject agent;

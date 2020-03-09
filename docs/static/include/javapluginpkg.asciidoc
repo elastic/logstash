@@ -1,0 +1,83 @@
+[float]
+=== Package and deploy
+
+Java plugins are packaged as Ruby gems for dependency management and
+interoperability with Ruby plugins. Once they are packaged as gems, they may
+be installed with the `logstash-plugin` utility just as Ruby plugins are.
+Because no knowledge of Ruby or its toolchain should be required for Java
+plugin development, the procedure for packaging Java plugins as Ruby gems
+has been automated through a custom task in the Gradle build file provided
+with the example Java plugins. The following sections describe how to
+configure and execute that packaging task as well as how to install the
+packaged Java plugin in Logstash.
+
+[float]
+==== Configuring the Gradle packaging task
+
+The following section appears near the top of the `build.gradle` file supplied
+with the example Java plugins:
+
+[source,java]
+[subs="attributes"]
+-----
+// ===========================================================================
+// plugin info
+// ===========================================================================
+group                      'org.logstashplugins' // must match the package of the main plugin class
+version                    "${file("VERSION").text.trim()}" // read from required VERSION file
+description                = "Example Java filter implementation"
+pluginInfo.licenses        = ['Apache-2.0'] // list of SPDX license IDs
+pluginInfo.longDescription = "This gem is a Logstash plugin required to be installed on top of the Logstash core pipeline using \$LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
+pluginInfo.authors         = ['Elasticsearch']
+pluginInfo.email           = ['info@elastic.co']
+pluginInfo.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
+pluginInfo.pluginType      = "filter"
+pluginInfo.pluginClass     = "JavaFilterExample"
+pluginInfo.pluginName      = "java_filter_example"
+// ===========================================================================
+-----
+
+You should configure the values above for your plugin.
+
+* The `version` value will be automatically read from the `VERSION` file in the
+root of your plugin's codebase.
+* `pluginInfo.pluginType` should be set to one of `input`, `filter`, `codec`,
+or `output`.
+* `pluginInfo.pluginName` must match the name specified on the `@LogstashPlugin`
+annotation on the main plugin class. The Gradle packaging task will validate
+that and return an error if they do not match.
+
+[float]
+==== Running the Gradle packaging task
+
+Several Ruby source files along with a `gemspec` file and a `Gemfile` are
+required to package the plugin as a Ruby gem. These Ruby files are used only
+for defining the Ruby gem structure or at Logstash startup time to register
+the Java plugin. They are not used during runtime event processing. The
+Gradle packaging task automatically generates all of these files based on
+the values configured in the section above.
+
+You run the Gradle packaging task with the following command:
+
+[source,shell]
+-----
+./gradlew gem
+-----
+
+For Windows platforms: Substitute `gradlew.bat` for `./gradlew` as appropriate in the command.
+
+That task will produce a gem file in the root directory of your
+plugin's codebase with the name `logstash-{plugintype}-<pluginName>-<version>.gem`
+
+[float]
+==== Installing the Java plugin in Logstash
+
+After you have packaged your Java plugin as a Ruby gem, you can install it in
+Logstash with this command:
+
+[source,shell]
+-----
+bin/logstash-plugin install --no-verify --local /path/to/javaPlugin.gem
+-----
+
+For Windows platforms: Substitute backslashes for forward slashes as appropriate in the command. 

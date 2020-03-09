@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for {@link RubyHashGauge}
  */
+@SuppressWarnings("deprecation")
 @RunWith(MockitoJUnitRunner.class)
 public class RubyHashGaugeTest {
 

@@ -1,26 +1,36 @@
 package org.logstash;
 
-import java.util.stream.Stream;
-import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.common.BufferedTokenizerExt;
+import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
+import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.AbstractPipelineExt;
+import org.logstash.execution.AbstractWrappedQueueExt;
+import org.logstash.execution.ConvergeResultExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.LogstashPipelineExt;
+import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
+import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -38,12 +48,16 @@ import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.SnapshotExt;
+import org.logstash.log.DeprecationLoggerExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.util.UtilExt;
+
+import java.util.stream.Stream;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -75,9 +89,13 @@ public final class RubyUtil {
 
     public static final RubyClass ACKED_READ_CLIENT_CLASS;
 
+    public static final RubyClass ABSTRACT_WRITE_CLIENT_CLASS;
+
     public static final RubyClass MEMORY_WRITE_CLIENT_CLASS;
 
     public static final RubyClass ACKED_WRITE_CLIENT_CLASS;
+
+    public static final RubyClass ABSTRACT_WRAPPED_QUEUE_CLASS;
 
     public static final RubyClass WRAPPED_SYNCHRONOUS_QUEUE_CLASS;
 
@@ -85,7 +103,17 @@ public final class RubyUtil {
 
     public static final RubyClass ACKED_QUEUE_CLASS;
 
-    public static final RubyClass OUTPUT_DELEGATOR_CLASS;
+    public static final RubyClass ABSTRACT_OUTPUT_DELEGATOR_CLASS;
+
+    public static final RubyClass ABSTRACT_FILTER_DELEGATOR_CLASS;
+
+    public static final RubyClass RUBY_OUTPUT_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_OUTPUT_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_FILTER_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_INPUT_DELEGATOR_CLASS;
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
@@ -153,6 +181,8 @@ public final class RubyUtil {
 
     public static final RubyModule LOGGABLE_MODULE;
 
+    public static final RubyClass DEPRECATION_LOGGER;
+
     public static final RubyClass SLOW_LOGGER;
 
     public static final RubyModule UTIL_MODULE;
@@ -167,11 +197,23 @@ public final class RubyUtil {
 
     public static final RubyClass SHUTDOWN_WATCHER_CLASS;
 
+    public static final RubyClass CONVERGE_RESULT_CLASS;
+
+    public static final RubyClass ACTION_RESULT_CLASS;
+
+    public static final RubyClass FAILED_ACTION_CLASS;
+
+    public static final RubyClass SUCCESSFUL_ACTION_CLASS;
+
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
+
+    public static final RubyClass QUEUE_FACTORY_CLASS;
 
     public static final RubyClass HOOKS_REGISTRY_CLASS;
 
-    public static final RubyClass LOGSTASH_PIPELINE_CLASS;
+    public static final RubyClass ABSTRACT_PIPELINE_CLASS;
+
+    public static final RubyClass JAVA_PIPELINE_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -267,6 +309,7 @@ public final class RubyUtil {
         NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
         NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
+        UTIL_MODULE.defineAnnotatedMethods(UtilExt.class);
         ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
@@ -339,6 +382,16 @@ public final class RubyUtil {
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
+        ABSTRACT_WRAPPED_QUEUE_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "AbstractWrappedQueue", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_WRAPPED_QUEUE_CLASS.defineAnnotatedMethods(AbstractWrappedQueueExt.class);
+        ABSTRACT_WRITE_CLIENT_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "AbstractQueueWriteClient", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_WRITE_CLIENT_CLASS.defineAnnotatedMethods(JRubyAbstractQueueWriteClientExt.class);
         WRAPPED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
         QUEUE_READ_CLIENT_BASE_CLASS =
@@ -347,35 +400,70 @@ public final class RubyUtil {
             setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
         ACKED_READ_CLIENT_CLASS =
             setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyAckedReadClientExt::new, JrubyAckedReadClientExt.class);
-        MEMORY_WRITE_CLIENT_CLASS =
-            setupLogstashClass(JrubyMemoryWriteClientExt::new, JrubyMemoryWriteClientExt.class);
-        ACKED_WRITE_CLIENT_CLASS =
-            setupLogstashClass(JrubyAckedWriteClientExt::new, JrubyAckedWriteClientExt.class);
-        WRAPPED_SYNCHRONOUS_QUEUE_CLASS =
-            setupLogstashClass(JrubyWrappedSynchronousQueueExt::new,
-                JrubyWrappedSynchronousQueueExt.class);
-        WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(JRubyWrappedAckedQueueExt::new,
-            JRubyWrappedAckedQueueExt.class);
+        MEMORY_WRITE_CLIENT_CLASS = setupLogstashClass(
+            ABSTRACT_WRITE_CLIENT_CLASS, JrubyMemoryWriteClientExt::new,
+            JrubyMemoryWriteClientExt.class
+        );
+        ACKED_WRITE_CLIENT_CLASS = setupLogstashClass(
+            ABSTRACT_WRITE_CLIENT_CLASS, JrubyAckedWriteClientExt::new,
+            JrubyAckedWriteClientExt.class
+        );
+        WRAPPED_SYNCHRONOUS_QUEUE_CLASS = setupLogstashClass(
+            ABSTRACT_WRAPPED_QUEUE_CLASS, JrubyWrappedSynchronousQueueExt::new,
+            JrubyWrappedSynchronousQueueExt.class
+        );
+        WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(
+            ABSTRACT_WRAPPED_QUEUE_CLASS, JRubyWrappedAckedQueueExt::new,
+            JRubyWrappedAckedQueueExt.class
+        );
         ACKED_QUEUE_CLASS = setupLogstashClass(JRubyAckedQueueExt::new, JRubyAckedQueueExt.class);
+        QUEUE_FACTORY_CLASS = setupLogstashClass(QueueFactoryExt::new, QueueFactoryExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
-        OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
-            OutputDelegatorExt::new, OutputDelegatorExt.class
+        ABSTRACT_OUTPUT_DELEGATOR_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "AbstractOutputDelegator", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_OUTPUT_DELEGATOR_CLASS.defineAnnotatedMethods(AbstractOutputDelegatorExt.class);
+        RUBY_OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
+            ABSTRACT_OUTPUT_DELEGATOR_CLASS, OutputDelegatorExt::new, OutputDelegatorExt.class
+        );
+        JAVA_OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
+            ABSTRACT_OUTPUT_DELEGATOR_CLASS, JavaOutputDelegatorExt::new,
+            JavaOutputDelegatorExt.class
+        );
+        ABSTRACT_FILTER_DELEGATOR_CLASS = LOGSTASH_MODULE.defineClassUnder(
+                "AbstractFilterDelegator", RUBY.getObject(),
+                ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_FILTER_DELEGATOR_CLASS.defineAnnotatedMethods(AbstractFilterDelegatorExt.class);
+        JAVA_FILTER_DELEGATOR_CLASS = setupLogstashClass(
+                ABSTRACT_FILTER_DELEGATOR_CLASS, JavaFilterDelegatorExt::new,
+                JavaFilterDelegatorExt.class
         );
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
-            FilterDelegatorExt::new, FilterDelegatorExt.class
+                ABSTRACT_FILTER_DELEGATOR_CLASS, FilterDelegatorExt::new,
+                FilterDelegatorExt.class
         );
+        JAVA_INPUT_DELEGATOR_CLASS = setupLogstashClass(JavaInputDelegatorExt::new, JavaInputDelegatorExt.class);
         final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
         LOGGER.defineAnnotatedMethods(LoggerExt.class);
         SLOW_LOGGER = loggingModule.defineClassUnder(
             "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+        DEPRECATION_LOGGER = loggingModule.defineClassUnder(
+            "DeprecationLogger", RUBY.getObject(), DeprecationLoggerExt::new);
+        DEPRECATION_LOGGER.defineAnnotatedMethods(DeprecationLoggerExt.class);
+
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
-        LOGSTASH_PIPELINE_CLASS =
-            setupLogstashClass(LogstashPipelineExt::new, LogstashPipelineExt.class);
+        ABSTRACT_PIPELINE_CLASS =
+            setupLogstashClass(AbstractPipelineExt::new, AbstractPipelineExt.class);
+        JAVA_PIPELINE_CLASS = setupLogstashClass(
+            ABSTRACT_PIPELINE_CLASS, JavaBasePipelineExt::new, JavaBasePipelineExt.class
+        );
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
@@ -454,6 +542,19 @@ public final class RubyUtil {
         PIPELINE_REPORTER_SNAPSHOT_CLASS.defineAnnotatedMethods(
             PipelineReporterExt.SnapshotExt.class
         );
+        CONVERGE_RESULT_CLASS = setupLogstashClass(ConvergeResultExt::new, ConvergeResultExt.class);
+        ACTION_RESULT_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+            "ActionResult", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ACTION_RESULT_CLASS.defineAnnotatedMethods(ConvergeResultExt.ActionResultExt.class);
+        SUCCESSFUL_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+            "SuccessfulAction", ACTION_RESULT_CLASS, ConvergeResultExt.SuccessfulActionExt::new
+        );
+        SUCCESSFUL_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.SuccessfulActionExt.class);
+        FAILED_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+            "FailedAction", ACTION_RESULT_CLASS, ConvergeResultExt.FailedActionExt::new
+        );
+        FAILED_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.FailedActionExt.class);
         HOOKS_REGISTRY_CLASS =
             PLUGINS_MODULE.defineClassUnder("HooksRegistry", RUBY.getObject(), HooksRegistryExt::new);
         HOOKS_REGISTRY_CLASS.defineAnnotatedMethods(HooksRegistryExt.class);
@@ -471,9 +572,10 @@ public final class RubyUtil {
      * @param e the Java exception to wrap
      * @return RaiseException the wrapped IOError
      */
+    @SuppressWarnings("deprecation")
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
-        return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
+        return new RaiseException(e, new org.jruby.NativeException(runtime, runtime.getIOError(), e));
     }
 
     /**
@@ -501,6 +603,15 @@ public final class RubyUtil {
         );
         clazz.defineAnnotatedMethods(jclass);
         return clazz;
+    }
+
+    /**
+     * Convert a Java object to a Ruby representative.
+     * @param javaObject the object to convert (might be null)
+     * @return a Ruby wrapper
+     */
+    public static IRubyObject toRubyObject(Object javaObject) {
+        return JavaUtil.convertJavaToRuby(RUBY, javaObject);
     }
 
 }

@@ -7,11 +7,11 @@ import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.JavaProxy;
-import org.jruby.javasupport.JavaObject;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
+
+    private static final long serialVersionUID = 1L;
 
     protected int batchSize = 125;
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
@@ -48,25 +50,31 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         return result;
     }
 
-    @JRubyMethod(name = "set_events_metric", required = 1)
-    public IRubyObject setEventsMetric(final ThreadContext context, IRubyObject metric) {
-        eventMetricOut = LongCounter.fromRubyBase(metric, MetricKeys.OUT_KEY);
-        eventMetricFiltered = LongCounter.fromRubyBase(metric, MetricKeys.FILTERED_KEY);
-        eventMetricTime = LongCounter.fromRubyBase(metric, MetricKeys.DURATION_IN_MILLIS_KEY);
+    @JRubyMethod(name = "set_events_metric")
+    public IRubyObject setEventsMetric(final IRubyObject metric) {
+        final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
+        synchronized(namespacedMetric.getMetric()) {
+            eventMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
+            eventMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
+            eventMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        }
         return this;
     }
 
-    @JRubyMethod(name = "set_pipeline_metric", required = 1)
-    public IRubyObject setPipelineMetric(final ThreadContext context, IRubyObject metric) {
-        pipelineMetricOut = LongCounter.fromRubyBase(metric, MetricKeys.OUT_KEY);
-        pipelineMetricFiltered = LongCounter.fromRubyBase(metric, MetricKeys.FILTERED_KEY);
-        pipelineMetricTime = LongCounter.fromRubyBase(metric, MetricKeys.DURATION_IN_MILLIS_KEY);
+    @JRubyMethod(name = "set_pipeline_metric")
+    public IRubyObject setPipelineMetric(final IRubyObject metric) {
+        final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
+        synchronized(namespacedMetric.getMetric()) {
+            pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
+            pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
+            pipelineMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+        }
         return this;
     }
 
     @JRubyMethod(name = "set_batch_dimensions")
-    public IRubyObject rubySetBatchDimensions(final ThreadContext context, IRubyObject batchSize,
-                                              IRubyObject waitForMillis) {
+    public IRubyObject rubySetBatchDimensions(final IRubyObject batchSize,
+        final IRubyObject waitForMillis) {
         setBatchDimensions(((RubyNumeric) batchSize).getIntValue(),
                 ((RubyNumeric) waitForMillis).getIntValue());
         return this;
@@ -94,7 +102,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(final ThreadContext context) throws InterruptedException {
-        return JavaObject.wrap(context.runtime, readBatch());
+        return RubyUtil.toRubyObject(readBatch());
     }
 
     @Override
@@ -113,18 +121,21 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     /**
      * Closes the specified batch. This JRuby extension method is currently used only in the
      * original pipeline and rspec tests.
+     * @param batch specified batch
+     * @throws IOException if an IO error occurs
      */
     @JRubyMethod(name = "close_batch")
-    public void rubyCloseBatch(final ThreadContext context, IRubyObject batch) throws IOException {
+    public void rubyCloseBatch(final IRubyObject batch) throws IOException {
         closeBatch(extractQueueBatch(batch));
     }
 
     /**
      * Initializes metric on the specified batch. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param batch specified batch
      */
     @JRubyMethod(name = "start_metrics")
-    public void rubyStartMetrics(final ThreadContext context, IRubyObject batch) {
+    public void rubyStartMetrics(final IRubyObject batch) {
         startMetrics(extractQueueBatch(batch));
     }
 
@@ -132,30 +143,30 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      * Extracts QueueBatch from one of two possible IRubyObject classes. Only the Ruby pipeline
      * uses JavaProxy instances, so once that is fully deprecated, this method can be simplified
      * to eliminate the type check.
+     * @param batch specified IRubyObject batch
+     * @return Extracted queue batch
      */
     private static QueueBatch extractQueueBatch(final IRubyObject batch) {
-        if (batch instanceof JavaProxy) {
-            return (QueueBatch) ((JavaObject)batch.dataGetStruct()).getValue();
-        } else {
-            return (QueueBatch)((JavaObject)batch).getValue();
-        }
+        return JavaUtil.unwrapIfJavaObject(batch);
     }
 
     /**
      * Increments the filter metrics. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param size numeric value by which to increment metric
      */
     @JRubyMethod(name = "add_filtered_metrics")
-    public void rubyAddFilteredMetrics(final ThreadContext context, IRubyObject size) {
+    public void rubyAddFilteredMetrics(final IRubyObject size) {
         addFilteredMetrics(((RubyNumeric)size).getIntValue());
     }
 
     /**
      * Increments the output metrics. This JRuby extension method is currently used
      * only in the original pipeline and rspec tests.
+     * @param size numeric value by which to increment metric
      */
     @JRubyMethod(name = "add_output_metrics")
-    public void rubyAddOutputMetrics(final ThreadContext context, IRubyObject size) {
+    public void rubyAddOutputMetrics(final IRubyObject size) {
         addOutputMetrics(((RubyNumeric)size).getIntValue());
     }
 

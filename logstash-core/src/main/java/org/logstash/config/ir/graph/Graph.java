@@ -9,15 +9,11 @@ import org.logstash.config.ir.graph.algorithms.BreadthFirst;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
 import org.logstash.config.ir.graph.algorithms.TopologicalSort;
 
-import java.security.MessageDigest;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public final class Graph implements SourceComponent, Hashable {
     private final Set<Vertex> vertices = new LinkedHashSet<>();
     private final Set<Edge> edges = new LinkedHashSet<>();

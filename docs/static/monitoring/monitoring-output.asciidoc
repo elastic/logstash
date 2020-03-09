@@ -1,3 +1,4 @@
+[float]
 [role="xpack"]
 [[logstash-monitoring-output]]
 ==== Output
@@ -15,6 +16,7 @@ collection when issues exist with the output.
 IMPORTANT: It is critical that all Logstash nodes share the same setup. 
 Otherwise, monitoring data might be routed in different ways or to different places.
 
+[float]
 [[logstash-monitoring-default]]
 ===== Default Configuration
 
@@ -23,20 +25,20 @@ the following default configuration is used:
 
 [source,yaml]
 ---------------------------------------------------
-xpack.monitoring.elasticsearch.url: [ "http://localhost:9200" ]
+xpack.monitoring.elasticsearch.hosts: [ "http://localhost:9200" ]
 ---------------------------------------------------
 
 All data produced by {monitoring} for Logstash is indexed in the monitoring 
 cluster by using the `.monitoring-logstash` template, which is managed by the
 {ref}/es-monitoring-exporters.html[exporters] within {es}. 
 
-If you are working with a cluster that has {security} enabled, extra steps are 
-necessary to properly configure Logstash. For more information, see 
+If you are working with a cluster that has {security-features} enabled, extra
+steps are necessary to properly configure Logstash. For more information, see 
 <<configuring-logstash>>. 
 
 IMPORTANT: When discussing security relative to the `elasticsearch` output, it
 is critical to remember that all users are managed on the production cluster, 
-which is identified in the `xpack.monitoring.elasticsearch.url` setting.   
+which is identified in the `xpack.monitoring.elasticsearch.hosts` setting.
 This is particularly important to remember when you move from development 
 environments to production environments, where you often have dedicated 
 monitoring clusters.

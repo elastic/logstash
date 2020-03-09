@@ -5,9 +5,6 @@ import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.common.SourceWithMetadata;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public final class QueueVertex extends Vertex {
     public QueueVertex() throws IncompleteSourceWithMetadataException {
         super(new SourceWithMetadata("internal", "queue", 0,0,"queue"));

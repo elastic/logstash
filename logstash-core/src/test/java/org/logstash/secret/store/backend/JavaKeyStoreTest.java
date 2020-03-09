@@ -2,6 +2,7 @@ package org.logstash.secret.store.backend;
 
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -632,6 +633,7 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when exceptions happen
      */
+    @Ignore("This test timed out on Windows. Issue: https://github.com/elastic/logstash/issues/9916")
     @Test
     public void testWithRealSecondJvm() throws Exception {
         Path magicFile = folder.newFolder().toPath().resolve(EXTERNAL_TEST_FILE_LOCK);

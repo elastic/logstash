@@ -29,7 +29,7 @@ describe "Read configuration from elasticsearch" do
         "xpack.management.enabled" => true,
         "xpack.management.pipeline.id" => @pipelines.keys,
         "xpack.management.logstash.poll_interval" => "1s",
-        "xpack.management.elasticsearch.url" => ["http://localhost:9200"],
+        "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
         "xpack.management.elasticsearch.username" => "elastic",
         "xpack.management.elasticsearch.password" => elastic_password,
         "xpack.monitoring.elasticsearch.username" => "elastic",
@@ -69,7 +69,7 @@ describe "Read configuration from elasticsearch" do
   end
 
   it "should immediately register a new pipeline state document when the pipeline is reloaded" do
-    wait(20).for do
+    wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(2)
 
@@ -84,7 +84,7 @@ describe "Read configuration from elasticsearch" do
       push_elasticsearch_config(pipeline_id, config)
     end
 
-    wait(20).for do
+    wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(4)
   end

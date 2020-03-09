@@ -11,6 +11,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.InstanceVariables;
 import org.logstash.RubyUtil;
 
+import static org.logstash.RubyUtil.RUBY;
+
 @JRubyModule(name = "Loggable")
 public final class LoggableExt {
 
@@ -37,24 +39,29 @@ public final class LoggableExt {
         return self.getSingletonClass().callMethod(context, "slow_logger", args);
     }
 
+    @JRubyMethod(name= "deprecation_logger")
+    public static IRubyObject deprecationLogger(final ThreadContext context, final IRubyObject self) {
+        return self.getSingletonClass().callMethod(context, "deprecation_logger");
+    }
+
     private static RubyString log4jName(final ThreadContext context, final RubyModule self) {
-        IRubyObject name = self.name19();
+        IRubyObject name = self.name(context);
         if (name.isNil()) {
             final RubyClass clazz;
-            if(self instanceof RubyClass) {
+            if (self instanceof RubyClass) {
                 clazz = ((RubyClass) self).getRealClass();
             } else {
                 clazz = self.getMetaClass();
             }
-            name = clazz.name19();
+            name = clazz.name(context);
             if (name.isNil()) {
                 name = clazz.to_s();
             }
         }
         return ((RubyString) ((RubyString) name).gsub(
-            context, RubyUtil.RUBY.newString("::"), RubyUtil.RUBY.newString("."),
+            context, RUBY.newString("::"), RUBY.newString("."),
             Block.NULL_BLOCK
-        )).downcase19(context);
+        )).downcase(context);
     }
 
     /**
@@ -100,6 +107,23 @@ public final class LoggableExt {
                     }
                 );
                 instanceVariables.setInstanceVariable("slow_logger", logger);
+            }
+            return logger;
+        }
+
+        @JRubyMethod(name = "deprecation_logger", meta = true)
+        public static IRubyObject deprecationLogger(final ThreadContext context, final IRubyObject self) {
+            final InstanceVariables instanceVariables;
+            if (self instanceof RubyClass) {
+                instanceVariables = ((RubyClass) self).getRealClass().getInstanceVariables();
+            } else {
+                instanceVariables = self.getInstanceVariables();
+            }
+            IRubyObject logger = instanceVariables.getInstanceVariable("deprecation_logger");
+            if (logger == null || logger.isNil()) {
+                logger = new DeprecationLoggerExt(context.runtime, RubyUtil.DEPRECATION_LOGGER)
+                        .initialize(context, LoggableExt.log4jName(context, (RubyModule) self));
+                instanceVariables.setInstanceVariable("deprecation_logger", logger);
             }
             return logger;
         }

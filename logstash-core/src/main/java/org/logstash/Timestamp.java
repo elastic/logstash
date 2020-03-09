@@ -68,6 +68,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
         return iso8601Formatter.print(this.time);
     }
 
+    public long toEpochMilli() {
+        return time.getMillis();
+    }
+
+    // returns the fraction of a second as microseconds, not the number of microseconds since epoch
     public long usec() {
         // JodaTime only supports milliseconds precision we can only return usec at millisec precision.
         // note that getMillis() return millis since epoch
@@ -82,6 +87,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     @Override
     public boolean equals(final Object other) {
         return other instanceof Timestamp && time.equals(((Timestamp) other).time);
+    }
+
+    @Override
+    public int hashCode() {
+        return time.hashCode();
     }
 
     @Override

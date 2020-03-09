@@ -132,8 +132,8 @@ describe LogStash::Config::Mixin do
     context "with an empty list" do
       let(:strings) { [] }
 
-      it "should return nil" do
-        expect(subject.strings).to be_nil
+      it "should return an empty list" do
+        expect(subject.strings).to be_empty
       end
     end
 
@@ -419,6 +419,7 @@ describe LogStash::Config::Mixin do
       end
 
       it "should use the value in the variable" do
+        skip("This test fails on Windows, tracked in https://github.com/elastic/logstash/issues/10454")
         expect(subject.oneString).to(be == "fancy")
         expect(subject.oneBoolean).to(be_truthy)
         expect(subject.oneArray).to(be == [ "first array value", "fancy" ])

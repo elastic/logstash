@@ -3,23 +3,19 @@
 Docker images for Logstash are available from the Elastic Docker
 registry. The base image is https://hub.docker.com/_/centos/[centos:7].
 
-A list of all published Docker images and tags can be found at
-https://www.docker.elastic.co[www.docker.elastic.co]. The source code can be
-found on https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
-
-==== Image types
+A list of all published Docker images and tags is available at
+https://www.docker.elastic.co[www.docker.elastic.co]. The source code is in
+https://github.com/elastic/logstash/tree/{branch}[GitHub].
 
 These images are free to use under the Elastic license. They contain open source 
 and free commercial features and access to paid commercial features.  
-{xpack-ref}/license-management.html[Start a 30-day trial] to try out all of the 
+{stack-ov}/license-management.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels.
 
-Alternatively, you can download `-oss` images, which contain only features that 
-are available under the Apache 2.0 license. 
-
 ==== Pulling the image
+
 Obtaining Logstash for Docker is as simple as issuing a +docker
 pull+ command against the Elastic Docker registry.
 
@@ -32,13 +28,14 @@ endif::[]
 
 ifeval::["{release-state}"!="unreleased"]
 
-Docker images can be retrieved with the following commands:
-
 ["source","sh",subs="attributes"]
 --------------------------------------------
 docker pull {docker-image}
-docker pull {docker-repo}-oss:{logstash_version}
 --------------------------------------------
+
+Alternatively, you can download other Docker images that contain only features
+available under the Apache 2.0 license. To download the images, go to 
+https://www.docker.elastic.co[www.docker.elastic.co]. 
 
 endif::[]
 
@@ -163,7 +160,7 @@ documentation>> can be configured with this technique.
 
 NOTE: Defining settings with environment variables causes `logstash.yml` to
 be modified in place. This behaviour is likely undesirable if `logstash.yml` was
-bind-mounted from the host system. Thus, it is not reccomended to
+bind-mounted from the host system. Thus, it is not recommended to
 combine the bind-mount technique with the environment variable technique. It
 is best to choose a single method for defining Logstash settings.
 
@@ -173,14 +170,10 @@ images:
 
 [horizontal]
 `http.host`:: `0.0.0.0`
-`path.config`:: `/usr/share/logstash/pipeline`
+`xpack.monitoring.elasticsearch.hosts`:: `http://elasticsearch:9200`
 
-In the `x-pack` image, the following additional defaults are also set:
-
-[horizontal]
-`xpack.monitoring.elasticsearch.url`:: `http://elasticsearch:9200`
-`xpack.monitoring.elasticsearch.username`:: `logstash_system`
-`xpack.monitoring.elasticsearch.password`:: `changeme`
+NOTE: The setting `xpack.monitoring.elasticsearch.hosts` is not
+defined in the `-oss` image.
 
 These settings are defined in the default `logstash.yml`. They can be overridden
 with a <<docker-bind-mount-settings,custom `logstash.yml`>> or via

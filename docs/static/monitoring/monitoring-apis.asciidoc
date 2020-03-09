@@ -1,0 +1,774 @@
+[float]
+[[monitoring]]
+== APIs for monitoring {ls}
+
+{ls} provides monitoring APIs for retrieving runtime metrics
+about {ls}:
+
+* <<node-info-api>>
+* <<plugins-api>>
+* <<node-stats-api>>
+* <<hot-threads-api>>
+
+
+You can use the root resource to retrieve general information about the Logstash instance, including
+the host and version.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/?pretty'
+--------------------------------------------------
+
+Example response:
+
+["source","js",subs="attributes"]
+--------------------------------------------------
+{
+   "host": "skywalker",
+   "version": "{logstash_version}",
+   "http_address": "127.0.0.1:9600"
+}
+--------------------------------------------------
+
+NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
+instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+<<command-line-flags>> for more information.
+
+[float]
+[[monitoring-common-options]]
+==== Common Options
+
+The following options can be applied to all of the Logstash monitoring APIs.
+
+[float]
+===== Pretty Results
+
+When appending `?pretty=true` to any request made, the JSON returned
+will be pretty formatted (use it for debugging only!).
+
+[float]
+===== Human-Readable Output
+
+NOTE: For Logstash {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
+only. When you specify `human=true`, the results are returned in plain text instead of
+JSON format. The default is false.
+
+Statistics are returned in a format suitable for humans
+(eg `"exists_time": "1h"` or `"size": "1kb"`) and for computers
+(eg `"exists_time_in_millis": 3600000` or `"size_in_bytes": 1024`).
+The human-readable values can be turned off by adding `?human=false`
+to the query string. This makes sense when the stats results are
+being consumed by a monitoring tool, rather than intended for human
+consumption.  The default for the `human` flag is
+`false`.
+
+
+[[node-info-api]]
+=== Node Info API
+
+The node info API retrieves information about the node.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/<types>'
+--------------------------------------------------
+
+Where `<types>` is optional and specifies the types of node info you want to return.
+
+You can limit the info that's returned by combining any of the following types in a comma-separated list:
+
+[horizontal]
+<<node-pipeline-info,`pipelines`>>::
+Gets pipeline-specific information and settings for each pipeline.
+<<node-os-info,`os`>>::
+Gets node-level info about the OS.
+<<node-jvm-info,`jvm`>>::
+Gets node-level JVM info, including info about threads.
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[float]
+[[node-pipeline-info]]
+===== Pipeline Info
+
+The following request returns a JSON document that shows pipeline info, such as the number of workers,
+batch size, and batch delay:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/pipelines?pretty'
+--------------------------------------------------
+
+If you want to view additional information about a pipeline, such as stats for each configured input, filter,
+or output stage, see the <<pipeline-stats>> section under the <<node-stats-api>>.
+
+Example response:
+
+["source","js",subs="attributes"]
+--------------------------------------------------
+{
+  "pipelines" : {
+    "test" : {
+      "workers" : 1,
+      "batch_size" : 1,
+      "batch_delay" : 5,
+      "config_reload_automatic" : false,
+      "config_reload_interval" : 3
+    },
+    "test2" : {
+      "workers" : 8,
+      "batch_size" : 125,
+      "batch_delay" : 5,
+      "config_reload_automatic" : false,
+      "config_reload_interval" : 3
+    }
+  }
+--------------------------------------------------
+
+You can see the info for a specific pipeline by including the pipeline ID. In
+the following example, the ID of the pipeline is `test`:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/pipelines/test?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+----------
+{
+  "pipelines" : {
+    "test" : {
+      "workers" : 1,
+      "batch_size" : 1,
+      "batch_delay" : 5,
+      "config_reload_automatic" : false,
+      "config_reload_interval" : 3
+    }
+  }
+----------
+
+If you specify an invalid pipeline ID, the request returns a 404 Not Found error.
+
+[float]
+[[node-os-info]]
+==== OS Info
+
+The following request returns a JSON document that shows the OS name, architecture, version, and
+available processors:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/os?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "os": {
+    "name": "Mac OS X",
+    "arch": "x86_64",
+    "version": "10.12.4",
+    "available_processors": 8
+  }
+--------------------------------------------------
+
+[float]
+[[node-jvm-info]]
+==== JVM Info
+
+The following request returns a JSON document that shows node-level JVM stats, such as the JVM process id, version,
+VM info, memory usage, and info about garbage collectors:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/jvm?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "jvm": {
+    "pid": 59616,
+    "version": "1.8.0_65",
+    "vm_name": "Java HotSpot(TM) 64-Bit Server VM",
+    "vm_version": "1.8.0_65",
+    "vm_vendor": "Oracle Corporation",
+    "start_time_in_millis": 1484251185878,
+    "mem": {
+      "heap_init_in_bytes": 268435456,
+      "heap_max_in_bytes": 1037959168,
+      "non_heap_init_in_bytes": 2555904,
+      "non_heap_max_in_bytes": 0
+    },
+    "gc_collectors": [
+      "ParNew",
+      "ConcurrentMarkSweep"
+    ]
+  }
+}
+--------------------------------------------------
+
+
+[[plugins-api]]
+=== Plugins Info API
+
+The plugins info API gets information about all Logstash plugins that are currently installed.
+This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/plugins?pretty'
+--------------------------------------------------
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+The output is a JSON document.
+
+Example response:
+
+["source","js",subs="attributes"]
+--------------------------------------------------
+{
+  "total": 93,
+  "plugins": [
+    {
+      "name": "logstash-codec-cef",
+      "version": "4.1.2"
+    },
+    {
+      "name": "logstash-codec-collectd",
+      "version": "3.0.3"
+    },
+    {
+      "name": "logstash-codec-dots",
+      "version": "3.0.2"
+    },
+    {
+      "name": "logstash-codec-edn",
+      "version": "3.0.2"
+    },
+    .
+    .
+    .
+  ]
+--------------------------------------------------
+
+
+[[node-stats-api]]
+=== Node Stats API
+
+The node stats API retrieves runtime stats about Logstash.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/<types>'
+--------------------------------------------------
+
+Where `<types>` is optional and specifies the types of stats you want to return.
+
+By default, all stats are returned. You can limit the info that's returned by combining any of the following types in a comma-separated list:
+
+[horizontal]
+<<jvm-stats,`jvm`>>::
+Gets JVM stats, including stats about threads, memory usage, garbage collectors,
+and uptime.
+<<process-stats,`process`>>::
+Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
+<<event-stats,`events`>>::
+Gets event-related statistics for the Logstash instance (regardless of how many
+pipelines were created and destroyed).
+<<pipeline-stats,`pipelines`>>::
+Gets runtime stats about each Logstash pipeline.
+<<reload-stats,`reloads`>>::
+Gets runtime stats about config reload successes and failures.
+<<os-stats,`os`>>::
+Gets runtime stats about cgroups when Logstash is running in a container.
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[float]
+[[jvm-stats]]
+==== JVM Stats
+
+The following request returns a JSON document containing JVM stats:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/jvm?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "jvm" : {
+    "threads" : {
+      "count" : 49,
+      "peak_count" : 50
+    },
+    "mem" : {
+      "heap_used_percent" : 14,
+      "heap_committed_in_bytes" : 309866496,
+      "heap_max_in_bytes" : 1037959168,
+      "heap_used_in_bytes" : 151686096,
+      "non_heap_used_in_bytes" : 122486176,
+      "non_heap_committed_in_bytes" : 133222400,
+      "pools" : {
+        "survivor" : {
+          "peak_used_in_bytes" : 8912896,
+          "used_in_bytes" : 288776,
+          "peak_max_in_bytes" : 35782656,
+          "max_in_bytes" : 35782656,
+          "committed_in_bytes" : 8912896
+        },
+        "old" : {
+          "peak_used_in_bytes" : 148656848,
+          "used_in_bytes" : 148656848,
+          "peak_max_in_bytes" : 715849728,
+          "max_in_bytes" : 715849728,
+          "committed_in_bytes" : 229322752
+        },
+        "young" : {
+          "peak_used_in_bytes" : 71630848,
+          "used_in_bytes" : 2740472,
+          "peak_max_in_bytes" : 286326784,
+          "max_in_bytes" : 286326784,
+          "committed_in_bytes" : 71630848
+        }
+      }
+    },
+    "gc" : {
+      "collectors" : {
+        "old" : {
+          "collection_time_in_millis" : 607,
+          "collection_count" : 12
+        },
+        "young" : {
+          "collection_time_in_millis" : 4904,
+          "collection_count" : 1033
+        }
+      }
+    },
+    "uptime_in_millis" : 1809643
+  }
+--------------------------------------------------
+
+[float]
+[[process-stats]]
+==== Process Stats
+
+The following request returns a JSON document containing process stats:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/process?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "process" : {
+    "open_file_descriptors" : 184,
+    "peak_open_file_descriptors" : 185,
+    "max_file_descriptors" : 10240,
+    "mem" : {
+      "total_virtual_in_bytes" : 5486125056
+    },
+    "cpu" : {
+      "total_in_millis" : 657136,
+      "percent" : 2,
+      "load_average" : {
+        "1m" : 2.38134765625
+      }
+    }
+  }
+--------------------------------------------------
+
+[float]
+[[event-stats]]
+==== Event Stats
+
+The following request returns a JSON document containing event-related statistics
+for the Logstash instance:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/events?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "events" : {
+    "in" : 293658,
+    "filtered" : 293658,
+    "out" : 293658,
+    "duration_in_millis" : 2324391,
+    "queue_push_duration_in_millis" : 343816
+  }
+--------------------------------------------------
+
+[float]
+[[pipeline-stats]]
+==== Pipeline Stats
+
+The following request returns a JSON document containing pipeline stats,
+including:
+
+* the number of events that were input, filtered, or output by each pipeline
+* stats for each configured filter or output stage
+* info about config reload successes and failures
+(when <<reloading-config,config reload>> is enabled)
+* info about the persistent queue (when
+<<persistent-queues,persistent queues>> are enabled)
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/pipelines?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "pipelines" : {
+    "test" : {
+      "events" : {
+        "duration_in_millis" : 365495,
+        "in" : 216485,
+        "filtered" : 216485,
+        "out" : 216485,
+        "queue_push_duration_in_millis" : 342466
+      },
+      "plugins" : {
+        "inputs" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-1",
+          "events" : {
+            "out" : 216485,
+            "queue_push_duration_in_millis" : 342466
+          },
+          "name" : "beats"
+        } ],
+        "filters" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-2",
+          "events" : {
+            "duration_in_millis" : 55969,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "failures" : 216485,
+          "patterns_per_field" : {
+            "message" : 1
+          },
+          "name" : "grok"
+        }, {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-3",
+          "events" : {
+            "duration_in_millis" : 3326,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "name" : "geoip"
+        } ],
+        "outputs" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-4",
+          "events" : {
+            "duration_in_millis" : 278557,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "name" : "elasticsearch"
+        } ]
+      },
+      "reloads" : {
+        "last_error" : null,
+        "successes" : 0,
+        "last_success_timestamp" : null,
+        "last_failure_timestamp" : null,
+        "failures" : 0
+      },
+      "queue" : {
+        "type" : "memory"
+      }
+    },
+    "test2" : {
+      "events" : {
+        "duration_in_millis" : 2222229,
+        "in" : 87247,
+        "filtered" : 87247,
+        "out" : 87247,
+        "queue_push_duration_in_millis" : 1532
+      },
+      "plugins" : {
+        "inputs" : [ {
+          "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-1",
+          "events" : {
+            "out" : 87247,
+            "queue_push_duration_in_millis" : 1532
+          },
+          "name" : "twitter"
+        } ],
+        "filters" : [ ],
+        "outputs" : [ {
+          "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-2",
+          "events" : {
+            "duration_in_millis" : 139545,
+            "in" : 87247,
+            "out" : 87247
+          },
+          "name" : "elasticsearch"
+        } ]
+      },
+      "reloads" : {
+        "last_error" : null,
+        "successes" : 0,
+        "last_success_timestamp" : null,
+        "last_failure_timestamp" : null,
+        "failures" : 0
+      },
+      "queue" : {
+        "type" : "memory"
+      }
+    }
+  }
+--------------------------------------------------
+
+You can see the stats for a specific pipeline by including the pipeline ID. In
+the following example, the ID of the pipeline is `test`:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/pipelines/test?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "test" : {
+      "events" : {
+        "duration_in_millis" : 365495,
+        "in" : 216485,
+        "filtered" : 216485,
+        "out" : 216485,
+        "queue_push_duration_in_millis" : 342466
+      },
+      "plugins" : {
+        "inputs" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-1",
+          "events" : {
+            "out" : 216485,
+            "queue_push_duration_in_millis" : 342466
+          },
+          "name" : "beats"
+        } ],
+        "filters" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-2",
+          "events" : {
+            "duration_in_millis" : 55969,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "failures" : 216485,
+          "patterns_per_field" : {
+            "message" : 1
+          },
+          "name" : "grok"
+        }, {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-3",
+          "events" : {
+            "duration_in_millis" : 3326,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "name" : "geoip"
+        } ],
+        "outputs" : [ {
+          "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-4",
+          "events" : {
+            "duration_in_millis" : 278557,
+            "in" : 216485,
+            "out" : 216485
+          },
+          "name" : "elasticsearch"
+        } ]
+      },
+      "reloads" : {
+        "last_error" : null,
+        "successes" : 0,
+        "last_success_timestamp" : null,
+        "last_failure_timestamp" : null,
+        "failures" : 0
+      },
+      "queue" : {
+        "type" : "memory"
+      }
+    }
+  }
+}
+--------------------------------------------------
+
+[float]
+[[reload-stats]]
+==== Reload Stats
+
+The following request returns a JSON document that shows info about config reload successes and failures.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/reloads?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "reloads": {
+    "successes": 0,
+    "failures": 0
+  }
+}
+--------------------------------------------------
+
+[float]
+[[os-stats]]
+==== OS Stats
+
+When Logstash is running in a container, the following request returns a JSON document that
+contains cgroup information to give you a more accurate view of CPU load, including whether
+the container is being throttled.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/os?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "os" : {
+    "cgroup" : {
+      "cpuacct" : {
+        "control_group" : "/elastic1",
+        "usage_nanos" : 378477588075
+                },
+      "cpu" : {
+        "control_group" : "/elastic1",
+        "cfs_period_micros" : 1000000,
+        "cfs_quota_micros" : 800000,
+        "stat" : {
+          "number_of_elapsed_periods" : 4157,
+          "number_of_times_throttled" : 460,
+          "time_throttled_nanos" : 581617440755
+        }
+      }
+    }
+  }
+--------------------------------------------------
+
+
+[[hot-threads-api]]
+=== Hot Threads API
+
+The hot threads API gets the current hot threads for Logstash. A hot thread is a
+Java thread that has high CPU usage and executes for a longer than normal period
+of time.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/hot_threads?pretty'
+--------------------------------------------------
+
+The output is a JSON document that contains a breakdown of the top hot threads for
+Logstash.
+
+Example response:
+
+["source","sh",subs="attributes"]
+--------------------------------------------------
+{
+  "hot_threads" : {
+    "time" : "2017-06-06T18:25:28-07:00",
+    "busiest_threads" : 3,
+    "threads" : [ {
+      "name" : "Ruby-0-Thread-7",
+      "percent_of_cpu_time" : 0.0,
+      "state" : "timed_waiting",
+      "path" : "/path/to/logstash-{logstash_version}/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187",
+      "traces" : [ "java.lang.Object.wait(Native Method)", "org.jruby.RubyThread.sleep(RubyThread.java:1002)", "org.jruby.RubyKernel.sleep(RubyKernel.java:803)" ]
+    }, {
+      "name" : "[test2]>worker3",
+      "percent_of_cpu_time" : 0.85,
+      "state" : "waiting",
+      "traces" : [ "sun.misc.Unsafe.park(Native Method)", "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)", "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)" ]
+    }, {
+      "name" : "[test2]>worker2",
+      "percent_of_cpu_time" : 0.85,
+      "state" : "runnable",
+      "traces" : [ "org.jruby.RubyClass.allocate(RubyClass.java:225)", "org.jruby.RubyClass.newInstance(RubyClass.java:856)", "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)" ]
+    } ]
+  }
+}
+--------------------------------------------------
+
+The parameters allowed are:
+
+[horizontal]
+`threads`:: 	        The number of hot threads to return. The default is 10.
+`stacktrace_size`::     The depth of the stack trace to report for each thread. The default is 50.
+`human`:: 	            If true, returns plain text instead of JSON format. The default is false.
+`ignore_idle_threads`:: If true, does not return idle threads. The default is true.
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+You can use the `?human` parameter to return the document in a human-readable format.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/hot_threads?human=true'
+--------------------------------------------------
+
+Example of a human-readable response:
+
+["source","js",subs="attributes"]
+--------------------------------------------------
+ ::: {}
+ Hot threads at 2017-06-06T18:31:17-07:00, busiestThreads=3:
+ ================================================================================
+ 0.0 % of cpu usage, state: timed_waiting, thread name: 'Ruby-0-Thread-7'
+ /path/to/logstash-{logstash_version}/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
+	 java.lang.Object.wait(Native Method)
+	 org.jruby.RubyThread.sleep(RubyThread.java:1002)
+	 org.jruby.RubyKernel.sleep(RubyKernel.java:803)
+ --------------------------------------------------------------------------------
+ 0.0 % of cpu usage, state: waiting, thread name: 'defaultEventExecutorGroup-5-4'
+	 sun.misc.Unsafe.park(Native Method)
+	 java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	 java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+ --------------------------------------------------------------------------------
+ 0.05 % of cpu usage, state: timed_waiting, thread name: '[test]-pipeline-manager'
+	 java.lang.Object.wait(Native Method)
+	 java.lang.Thread.join(Thread.java:1253)
+	 org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
+
+--------------------------------------------------

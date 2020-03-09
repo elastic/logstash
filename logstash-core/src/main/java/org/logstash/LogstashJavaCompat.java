@@ -21,6 +21,7 @@ public final class LogstashJavaCompat {
      * not the current JVM is a Java 9 implementation.
      * @return ByteBufferCleaner
      */
+    @SuppressWarnings("rawtypes")
     public static ByteBufferCleaner setupBytebufferCleaner() {
         final ClassBodyEvaluator se = new ClassBodyEvaluator();
         final Collection<String> imports = new ArrayList<>();

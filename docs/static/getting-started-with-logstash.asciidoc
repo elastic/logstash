@@ -15,7 +15,7 @@ This section includes the following topics:
 [[installing-logstash]]
 === Installing Logstash
 
-NOTE: Logstash requires Java 8. Java 9 is not supported. Use the
+NOTE: Logstash requires Java 8 or Java 11. Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
 distribution such as http://openjdk.java.net/[OpenJDK].
 
@@ -27,9 +27,11 @@ java -version
 On systems with Java installed, this command produces output similar to the following:
 
 [source,shell]
-java version "1.8.0_65"
-Java(TM) SE Runtime Environment (build 1.8.0_65-b17)
-Java HotSpot(TM) 64-Bit Server VM (build 25.65-b01, mixed mode)
+-----
+java version "11.0.1" 2018-10-16 LTS
+Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
+Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
+-----
 
 On some Linux systems, you may also need to have the `JAVA_HOME` environment
 exported before attempting the install, particularly if you installed Java from
@@ -43,14 +45,19 @@ error message, and Logstash will be unable to start properly.
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
-Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
+The {ls} binaries are available from 
+https://www.elastic.co/downloads/logstash[https://www.elastic.co/downloads].
+Download the Logstash installation file for your host environment--TARG.GZ, DEB,
+ZIP, or RPM. 
+
+Unpack the file. Do not install Logstash into a directory path that
+contains colon (:) characters.
 
 [NOTE]
 --
 These packages are free to use under the Elastic license. They contain open 
 source and free commercial features and access to paid commercial features.  
-{xpack-ref}/license-management.html[Start a 30-day trial] to try out all of the 
+{stack-ov}/license-management.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels. 
@@ -228,6 +235,51 @@ See the {logstash-ref}/running-logstash.html[Running Logstash] document for mana
 
 endif::[]
 
+[float]
+[[brew]]
+=== Installing {ls} on macOS with Homebrew
+
+Elastic publishes Homebrew formulae so you can install {ls} with the
+https://brew.sh/[Homebrew] package manager.
+
+To install with Homebrew, you first need to tap the Elastic Homebrew repository:
+
+[source,sh]
+-------------------------
+brew tap elastic/tap
+-------------------------
+
+After you've tapped the Elastic Homebrew repo, you can use `brew install` to
+install the default distribution of {ls}:
+
+[source,sh]
+-------------------------
+brew install elastic/tap/logstash-full
+-------------------------
+
+This installs the most recently released default distribution of {ls}.
+To install the OSS distribution, specify `elastic/tap/logstash-oss`.
+
+
+[float]
+[[brew-start]]
+==== Starting {ls} with Homebrew
+
+To have launchd start elastic/tap/logstash-full now and restart at login, run:
+
+[source,sh]
+-----
+brew services start elastic/tap/logstash-full
+-----
+
+To run {ls}, in the foreground, run:
+
+[source,sh]
+-----
+logstash
+-----
+
+
 ==== Docker
 
 Images are available for running Logstash as a Docker container. They are
@@ -260,6 +312,33 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
 NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
 to find the location of `bin\logstash` on your system.
+
+[IMPORTANT]
+.macOS Gatekeeper warnings
+====
+Apple's rollout of stricter notarization requirements affected the notarization
+of the {version} {ls} artifacts. If macOS Catalina displays a dialog when you
+first run {ls} that interrupts it, you will need to take an action to allow it
+to run.
+To prevent Gatekeeper checks on the {ls} files, run the following command on the
+downloaded `.tar.gz` archive or the directory to which was extracted:
+[source,sh]
+----
+xattr -d -r com.apple.quarantine <archive-or-directory>
+----
+For example, if the `.tar.gz` file was extracted to the default
+logstash-{version} directory, the command is:
+[source,sh,subs="attributes"]
+----
+xattr -d -r com.apple.quarantine logstash-{version}
+----
+Alternatively, you can add a security override if a Gatekeeper popup appears by
+following the instructions in the _How to open an app that hasn’t been notarized
+or is from an unidentified developer_ section of
+https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
+====
+
+
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.

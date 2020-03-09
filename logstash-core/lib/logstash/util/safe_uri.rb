@@ -26,6 +26,7 @@ class LogStash::Util::SafeURI
            else
              raise ArgumentError, "Expected a string, java.net.URI, or URI, got a #{arg.class} creating a URL"
            end
+    raise ArgumentError, "URI is not valid - host is not specified" if @uri.host.nil?
   end
 
   def to_s
@@ -44,9 +45,14 @@ class LogStash::Util::SafeURI
     make_uri(scheme, user_info, host, port, path, query, fragment)
   end
 
-  def ==(other)
+  def hash
+    @uri.hash * 11
+  end
+
+  def eql?(other)
     other.is_a?(::LogStash::Util::SafeURI) ? @uri == other.uri : false
   end
+  alias == eql?
 
   def clone
     # No need to clone the URI, in java its immutable
@@ -143,13 +149,13 @@ class LogStash::Util::SafeURI
   # Same algorithm as Ruby's URI class uses
   def normalize!
     if path && path == ''
-      path = '/'
+      update(:path, '/')
     end
     if scheme && scheme != scheme.downcase
-      scheme = self.scheme.downcase
+      update(:scheme, self.scheme.downcase)
     end
     if host && host != host.downcase
-      host = self.host.downcase
+      update(:host, self.host.downcase)
     end
   end
 
