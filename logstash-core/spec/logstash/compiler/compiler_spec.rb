@@ -32,6 +32,34 @@ describe LogStash::Compiler do
     end
   end
 
+  describe "compile with empty source" do
+    let(:sources_with_metadata) do
+      [
+        org.logstash.common.SourceWithMetadata.new("str", "in_plugin", 0, 0, "input { input_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "out_plugin", 0, 0, "output { output_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "<empty>", 0, 0, "     ")
+      ]
+    end
+
+    it "should compile only the text parts" do
+      described_class.compile_sources(sources_with_metadata, false)
+    end
+  end
+
+  describe "compile with fully commented source" do
+    let(:sources_with_metadata) do
+      [
+        org.logstash.common.SourceWithMetadata.new("str", "in_plugin", 0, 0, "input { input_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "commented_filter", 0, 0, "#filter{...}\n"),
+        org.logstash.common.SourceWithMetadata.new("str", "out_plugin", 0, 0, "output { output_0 {} } "),
+      ]
+    end
+
+    it "should compile only non commented text parts" do
+      described_class.compile_sources(sources_with_metadata, false)
+    end
+  end
+
   describe "compiling to Pipeline" do
     subject(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
@@ -250,6 +278,34 @@ describe LogStash::Compiler do
 
         it "should merge the contents of the individual directives" do
           expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
+        end
+
+        describe "a filter plugin with a repeated hash directive with duplicated keys" do
+          let(:source) { "input { } filter { #{plugin_source} } output { } " }
+          let(:plugin_source) do
+            %q[
+              grok {
+                match => { "message" => "foo" }
+                match => { "message" => "bar" }
+                break_on_match => false
+              }
+          ]
+          end
+          subject(:c_plugin) { compiled[:filter] }
+
+          let(:expected_plugin_args) do
+            {
+                "match" => {
+                    "message" => ["foo", "bar"]
+                },
+                "break_on_match" => "false"
+            }
+          end
+
+          it "should merge the values of the duplicate keys into an array" do
+            expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
+          end
+
         end
 
         describe "a filter plugin that has nested Hash directives" do

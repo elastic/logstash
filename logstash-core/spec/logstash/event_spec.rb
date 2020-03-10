@@ -76,6 +76,17 @@ describe LogStash::Event do
         expect(e.get("[foo][-1]")).to eq(list[-1])
       end
     end
+
+    context 'with illegal-syntax field reference' do
+      # NOTE: in true-legacy-mode FieldReference parsing, the input `[` caused Logstash
+      # to crash entirely with a Java ArrayIndexOutOfBounds exception; this spec ensures that
+      # we instead raise a RuntimeException that can be handled normally within the
+      # Ruby runtime.
+      it 'raises a RuntimeError' do
+        e = LogStash::Event.new
+        expect { e.get('[') }.to raise_exception(::RuntimeError)
+      end
+    end
   end
 
   context "#set" do
@@ -130,10 +141,10 @@ describe LogStash::Event do
       expect(e.get("foo")).to eq(BigDecimal.new(1))
     end
 
-    it "should set RubyBignum" do
+    it "should set RubyInteger" do
       e = LogStash::Event.new()
       e.set("[foo]", -9223372036854776000)
-      expect(e.get("foo")).to be_kind_of(Bignum)
+      expect(e.get("foo")).to be_kind_of(Integer)
       expect(e.get("foo")).to eq(-9223372036854776000)
     end
 
@@ -145,32 +156,6 @@ describe LogStash::Event do
       expect(e.get("foo").to_f).to be_within(0.1).of(time.to_f)
     end
 
-    it "should set XXJavaProxy Jackson crafted" do
-      proxy = org.logstash.RspecTestUtils.getMapFixtureJackson()
-      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
-      e = LogStash::Event.new()
-      e.set("[proxy]", proxy)
-      expect(e.get("[proxy][string]")).to eql("foo")
-      expect(e.get("[proxy][int]")).to eql(42)
-      expect(e.get("[proxy][float]")).to eql(42.42)
-      expect(e.get("[proxy][array][0]")).to eql("bar")
-      expect(e.get("[proxy][array][1]")).to eql("baz")
-      expect(e.get("[proxy][hash][string]")).to eql("quux")
-    end
-
-    it "should set XXJavaProxy hand crafted" do
-      proxy = org.logstash.RspecTestUtils.getMapFixtureHandcrafted()
-      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
-      e = LogStash::Event.new()
-      e.set("[proxy]", proxy)
-      expect(e.get("[proxy][string]")).to eql("foo")
-      expect(e.get("[proxy][int]")).to eql(42)
-      expect(e.get("[proxy][float]")).to eql(42.42)
-      expect(e.get("[proxy][array][0]")).to eql("bar")
-      expect(e.get("[proxy][array][1]")).to eql("baz")
-      expect(e.get("[proxy][hash][string]")).to eql("quux")
-    end
-
     it "should fail on non UTF-8 encoding" do
       # e = LogStash::Event.new
       # s1 = "\xE0 Montr\xE9al".force_encoding("ISO-8859-1")
@@ -180,6 +165,17 @@ describe LogStash::Event do
       # s2 = e.get("test")
       # expect(s2.encoding.name).to eq("UTF-8")
       # expect(s2.valid_encoding?).to eq(true)
+    end
+
+    context 'with illegal-syntax field reference' do
+      # NOTE: in true-legacy-mode FieldReference parsing, the input `[` caused Logstash
+      # to crash entirely with a Java ArrayIndexOutOfBounds exception; this spec ensures that
+      # we instead raise a RuntimeException that can be handled normally within the
+      # Ruby runtime.
+      it 'raises a RuntimeError' do
+        e = LogStash::Event.new
+        expect { e.set('[', 'value') }.to raise_exception(::RuntimeError)
+      end
     end
   end
 

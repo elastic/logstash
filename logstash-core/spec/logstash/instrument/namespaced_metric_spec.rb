@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/namespaced_metric"
-require "logstash/instrument/metric"
 require_relative "../../support/matchers"
 require_relative "../../support/shared_examples"
 require "spec_helper"

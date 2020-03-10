@@ -1,8 +1,6 @@
 # encoding: utf-8
 require "logstash/event"
-require "logstash/logging"
 require "logstash/plugin"
-require "logstash/namespace"
 require "logstash/config/mixin"
 require "concurrent/atomic/atomic_fixnum"
 
@@ -24,7 +22,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # when we no longer support the :legacy type
   # This is hacky, but it can only be herne
   config :workers, :type => :number, :default => 1
-  
+
   # Set or return concurrency type
   def self.concurrency(type=nil)
     if type
@@ -68,7 +66,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe
     @single_worker_mutex = Mutex.new
-    
+
     @receives_encoded = self.methods.include?(:multi_receive_encoded)
   end
 
@@ -104,11 +102,18 @@ class LogStash::Outputs::Base < LogStash::Plugin
     self.class.concurrency
   end
 
+  def metric=(metric)
+    super
+    # Hack to create a new metric namespace using 'plugins' as the root
+    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id))
+    metric
+  end
+
   def execution_context=(context)
     super
     # There is no easy way to propage an instance variable into the codec, because the codec
     # are created at the class level
-    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their 
+    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their
     #               parent plugin's
     @codec.execution_context = context
     context

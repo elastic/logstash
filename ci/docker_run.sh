@@ -14,6 +14,10 @@ else
     IMAGE_NAME=$branch_specifier"-"$(date +%s%N)
 fi
 
+if [ "$OSS" == "true" ]; then
+  DOCKER_ENV_OPTS="${DOCKER_ENV_OPTS} --env OSS=true"
+fi
+
 echo "Running Docker CI build for '$IMAGE_NAME' "
 
 # Remove old docker cid just in case
@@ -23,14 +27,19 @@ docker build -t $IMAGE_NAME .
 exit_code=$?; [[ $exit_code != 0 ]] && exit $exit_code
 
 cleanup() {
-  cat docker_cid | xargs docker rm --force -v 
+  if [ -e docker_cid ]; then
+    cat docker_cid | xargs docker rm --force -v
+  fi
 }
 trap cleanup EXIT
 
 # Run the command, skip the first argument, which is the image name
-echo "Running tests in built docker image"
-docker run --sig-proxy=true --cidfile=docker_cid --rm $IMAGE_NAME ${@:2}
+docker run $DOCKER_ENV_OPTS --cidfile=docker_cid --sig-proxy=true --rm $IMAGE_NAME ${@:2}
 exit_code=$?
+
+# Remove the container cid since we ran cleanly, no need to force rm it if we got to this point
+rm docker_cid
+
 [[ $REMOVE_IMAGE == "true" ]] && docker rmi $IMAGE_NAME
 echo "exiting with code: '$exit_code'"
 exit $exit_code #preserve the exit code from the test run

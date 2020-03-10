@@ -17,6 +17,7 @@ import joptsimple.OptionSpec;
 import joptsimple.OptionSpecBuilder;
 import org.logstash.benchmark.cli.cases.ApacheLogsComplex;
 import org.logstash.benchmark.cli.cases.Case;
+import org.logstash.benchmark.cli.cases.CustomTestCase;
 import org.logstash.benchmark.cli.cases.GeneratorToStdout;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
 import org.logstash.benchmark.cli.ui.LsVersionType;
@@ -67,6 +68,9 @@ public final class Main {
         final OptionSpec<String> testcase = parser.accepts(
             UserInput.TEST_CASE_PARAM, UserInput.TEST_CASE_HELP
         ).withRequiredArg().ofType(String.class).defaultsTo(GeneratorToStdout.IDENTIFIER).forHelp();
+        final OptionSpec<File> testcaseconfig = parser.accepts(
+                UserInput.TEST_CASE_CONFIG_PARAM, UserInput.TEST_CASE_CONFIG_HELP
+        ).withRequiredArg().ofType(File.class).forHelp();
         final OptionSpec<File> pwd = parser.accepts(
             UserInput.WORKING_DIRECTORY_PARAM, UserInput.WORKING_DIRECTORY_HELP
         ).withRequiredArg().ofType(File.class).defaultsTo(UserInput.WORKING_DIRECTORY_DEFAULT)
@@ -108,8 +112,19 @@ public final class Main {
         settings.setProperty(
             LsBenchSettings.INPUT_DATA_REPEAT, String.valueOf(options.valueOf(repeats))
         );
+
+        Path testCaseConfigPath = null;
+        if (options.valueOf(testcase).equals("custom")) {
+            if (options.has(testcaseconfig)) {
+                testCaseConfigPath = options.valueOf(testcaseconfig).toPath();
+            }
+            else {
+                throw new IllegalArgumentException("Path to Test Case Config must be provided");
+            }
+        }
+
         final BenchmarkMeta runConfig = new BenchmarkMeta(
-            options.valueOf(testcase), version, type, options.valueOf(workers),
+            options.valueOf(testcase), testCaseConfigPath, version, type, options.valueOf(workers),
             options.valueOf(batchsize)
         );
         execute(
@@ -148,6 +163,12 @@ public final class Main {
                 Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT))
             )
         );
+        if (runConfig.getTestcase().equals("custom")) {
+            output.green(
+                    String.format("Test Case Config: %s", runConfig.getConfigPath())
+            );
+        }
+
         output.printLine();
         Files.createDirectories(cwd);
         final LogstashInstallation logstash;
@@ -185,7 +206,10 @@ public final class Main {
             testcase = new GeneratorToStdout(store, logstash, settings, runConfig);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
             testcase = new ApacheLogsComplex(store, logstash, cwd, settings, output, runConfig);
-        } else {
+        } else if (CustomTestCase.IDENTIFIER.equalsIgnoreCase(test)) {
+            testcase = new CustomTestCase(store, logstash, cwd, settings, output, runConfig);
+        }
+        else {
             throw new IllegalArgumentException(String.format("Unknown test case %s", test));
         }
         return testcase;

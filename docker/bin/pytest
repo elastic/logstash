@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+# A wrapper for `pytest` to handle the appropriate Testinfra arguments.
+
+./venv/bin/pytest --verbose --connection=docker --hosts=logstash-test $@

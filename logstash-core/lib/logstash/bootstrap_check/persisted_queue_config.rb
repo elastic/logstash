@@ -1,5 +1,4 @@
 # encoding: utf-8
-require 'logstash/errors'
 
 module LogStash
   module BootstrapCheck

@@ -13,9 +13,10 @@ module LogStash
         get "/hot_threads" do
           begin
             ignore_idle_threads = params["ignore_idle_threads"] || true
-
             options = {:ignore_idle_threads => as_boolean(ignore_idle_threads)}
             options[:threads] = params["threads"].to_i if params.has_key?("threads")
+            options[:ordered_by] = params["ordered_by"] if params.has_key?("ordered_by")
+            options[:stacktrace_size] = params["stacktrace_size"] if params.has_key?("stacktrace_size")
 
             as = human? ? :string : :json
             respond_with(node.hot_threads(options), {:as => as})
@@ -28,9 +29,19 @@ module LogStash
 
         get "/pipelines/:id" do
           pipeline_id = params["id"]
-          payload = node.pipeline(pipeline_id)
+          opts = {:graph => as_boolean(params.fetch("graph", false)),
+                  :vertices => as_boolean(params.fetch("vertices", false))}
+          payload = node.pipeline(pipeline_id, opts)
           halt(404) if payload.empty?
           respond_with(:pipelines => { pipeline_id => payload } )
+        end
+
+        get "/pipelines" do
+          opts = {:graph => as_boolean(params.fetch("graph", false)),
+                  :vertices => as_boolean(params.fetch("vertices", false))}
+          payload = node.pipelines(opts)
+          halt(404) if payload.empty?
+          respond_with(:pipelines => payload )
         end
 
          get "/?:filter?" do

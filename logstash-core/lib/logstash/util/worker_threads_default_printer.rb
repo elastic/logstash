@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/util"
 
 # This class exists to format the settings for default worker threads

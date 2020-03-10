@@ -8,6 +8,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.execution.WorkerLoop;
 
 /**
  * <p>This class is an internal API and behaves very different from a standard {@link Map}.</p>
@@ -60,7 +61,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     }
 
     public static ConvertedMap newFromRubyHash(final RubyHash o) {
-        return newFromRubyHash(o.getRuntime().getCurrentContext(), o);
+        return newFromRubyHash(RubyUtil.RUBY.getCurrentContext(), o);
     }
 
     public static ConvertedMap newFromRubyHash(final ThreadContext context, final RubyHash o) {
@@ -98,6 +99,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @return Interned String
      */
     private static String convertKey(final RubyString key) {
-        return FieldReference.from(key.getByteList()).getKey();
+        return FieldReference.from(key).getKey();
     }
 }

@@ -1,8 +1,11 @@
 package org.logstash.config.ir.compiler;
 
-import org.jruby.RubyInteger;
+import co.elastic.logstash.api.Codec;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.common.SourceWithMetadata;
+
+import java.util.Map;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -14,51 +17,23 @@ public final class RubyIntegration {
     }
 
     /**
-     * A Ruby Plugin.
-     */
-    public interface Plugin {
-        void register();
-    }
-
-    /**
-     * A Ruby Filter. Currently, this interface is implemented only by the Ruby class
-     * {@code FilterDelegator}.
-     */
-    public interface Filter extends RubyIntegration.Plugin {
-
-        /**
-         * Returns the underlying {@link IRubyObject} for this filter instance.
-         * @return Underlying {@link IRubyObject}
-         */
-        IRubyObject toRuby();
-
-        /**
-         * Checks if this filter has a flush method.
-         * @return True iff this filter has a flush method
-         */
-        boolean hasFlush();
-
-        /**
-         * Checks if this filter does periodic flushing.
-         * @return True iff this filter uses periodic flushing
-         */
-        boolean periodicFlush();
-    }
-
-    /**
      * Plugin Factory that instantiates Ruby plugins and is implemented in Ruby.
      */
     public interface PluginFactory {
 
-        IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        IRubyObject buildInput(RubyString name, SourceWithMetadata source,
+                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        IRubyObject buildOutput(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source,
+                                               IRubyObject args, Map<String, Object> pluginArgs);
 
-        RubyIntegration.Filter buildFilter(RubyString name, RubyInteger line, RubyInteger column,
-            IRubyObject args);
+        AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args,
+                                               Map<String, Object> pluginArgs);
 
-        RubyIntegration.Filter buildCodec(RubyString name, IRubyObject args);
+        IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args,
+                               Map<String, Object> pluginArgs);
+
+        Codec buildDefaultCodec(String codecName);
+
     }
 }

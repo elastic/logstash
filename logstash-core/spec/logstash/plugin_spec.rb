@@ -5,8 +5,16 @@ require "logstash/outputs/base"
 require "logstash/codecs/base"
 require "logstash/inputs/base"
 require "logstash/filters/base"
-require "logstash/execution_context"
 require "support/shared_contexts"
+
+class CustomFilterDeprecable < LogStash::Filters::Base
+  config_name "simple_plugin"
+    config :host, :validate => :string
+
+    def register
+      @deprecation_logger.deprecated("Deprecated feature {}", "hydrocarbon car")
+    end
+end
 
 describe LogStash::Plugin do
   context "reloadable" do
@@ -268,6 +276,81 @@ describe LogStash::Plugin do
     end
   end
 
+  describe "#plugin_metadata" do
+    plugin_types = [
+        LogStash::Filters::Base,
+        LogStash::Codecs::Base,
+        LogStash::Outputs::Base,
+        LogStash::Inputs::Base
+    ]
+
+    before(:each) { LogStash::PluginMetadata::reset! }
+
+    plugin_types.each do |plugin_type|
+      let(:plugin) do
+        Class.new(plugin_type) do
+          config_name "simple_plugin"
+
+          config :host, :validate => :string
+          config :export, :validate => :boolean
+
+          def register; end
+        end
+      end
+
+      let(:config) do
+        {
+            "host" => "127.0.0.1",
+            "export" => true
+        }
+      end
+
+      subject(:plugin_instance) { plugin.new(config) }
+
+      context "plugin type is #{plugin_type}" do
+        {
+            'when there is not ID configured for the plugin' => {},
+            'when a user provide an ID for the plugin' => { 'id' => 'ABC' },
+        }.each do |desc, config_override|
+
+
+          context(desc) do
+            let(:config) { super.merge(config_override) }
+
+            it "has a PluginMetadata" do
+              expect(plugin_instance.plugin_metadata).to be_a_kind_of(LogStash::PluginMetadata)
+            end
+
+            it "PluginMetadata is defined" do
+              expect(defined?(plugin_instance.plugin_metadata)).to be_truthy
+            end
+
+            if config_override.include?('id')
+              it "will be shared between instance of plugins" do
+                expect(plugin_instance.plugin_metadata).to equal(plugin.new(config).plugin_metadata)
+              end
+            end
+
+            it 'stores metadata' do
+              new_value = 'foo'
+              old_value = plugin_instance.plugin_metadata.set(:foo, new_value)
+              expect(old_value).to be_nil
+              expect(plugin_instance.plugin_metadata.get(:foo)).to eq(new_value)
+            end
+
+            it 'removes metadata when the plugin is closed' do
+              new_value = 'foo'
+              plugin_instance.plugin_metadata.set(:foo, new_value)
+              expect(plugin_instance.plugin_metadata.get(:foo)).to eq(new_value)
+              plugin_instance.do_close
+              expect(plugin_instance.plugin_metadata.set?(:foo)).to be_falsey
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe "#id" do
     let(:plugin) do
       Class.new(LogStash::Filters::Base,) do
@@ -303,6 +386,22 @@ describe LogStash::Plugin do
     end
   end
 
+  describe "deprecation logger" do
+    let(:config) do
+      {
+        "host" => "127.0.0.1"
+      }
+    end
+
+    context "when a plugin is registered" do
+      subject { CustomFilterDeprecable.new(config) }
+
+      it "deprecation logger is available to be used" do
+        subject.register
+        expect(subject.deprecation_logger).not_to be_nil
+      end
+    end
+  end
 
   context "When the plugin record a metric" do
     let(:config) { {} }
@@ -319,7 +418,7 @@ describe LogStash::Plugin do
         end
       end
 
-      subject { plugin.new(config) } 
+      subject { plugin.new(config) }
 
       context "when no metric is set to the plugin" do
         context "when `enable_metric` is TRUE" do

@@ -21,7 +21,7 @@ public class LongVectorTest {
     }
 
     @Test
-    public void storesVecorAndResizes() {
+    public void storesVectorAndResizes() {
         final int count = 1000;
         final LongVector vector1 = new LongVector(count);
         for (long i = 0L; i < count; ++i) {

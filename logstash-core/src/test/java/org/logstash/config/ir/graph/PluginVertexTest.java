@@ -12,9 +12,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.logstash.config.ir.IRHelpers.*;
 
-/**
- * Created by andrewvc on 11/22/16.
- */
 public class PluginVertexTest {
     @Test
     public void testConstructionIdHandlingWhenNoExplicitId() throws InvalidIRException {

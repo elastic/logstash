@@ -1,7 +1,5 @@
 # encoding: utf-8
 require "logstash/pipeline_action/base"
-require "logstash/shutdown_watcher"
-require "logstash/converge_result"
 
 module LogStash module PipelineAction
   class Stop < Base
@@ -11,14 +9,17 @@ module LogStash module PipelineAction
       @pipeline_id = pipeline_id
     end
 
-    def execute(agent, pipelines)
-      pipeline = pipelines[pipeline_id]
-      pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
-      pipeline.thread.join
-      pipelines.delete(pipeline_id)
-      # If we reach this part of the code we have succeeded because
-      # the shutdown call will block.
-      return LogStash::ConvergeResult::SuccessfulAction.new
+    def execute(agent, pipelines_registry)
+      pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
+        pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
+        pipeline.thread.join
+      end
+
+      LogStash::ConvergeResult::SuccessfulAction.new
+    end
+
+    def to_s
+      "PipelineAction::Stop<#{pipeline_id}>"
     end
   end
 end end

@@ -6,9 +6,6 @@ import org.logstash.config.ir.InvalidIRException;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by andrewvc on 11/21/16.
- */
 public class VertexTest {
     @Test
     public void TestVertexBasics() throws InvalidIRException {

@@ -16,6 +16,8 @@ public interface Settings {
 
     int getCheckpointMaxWrites();
 
+    boolean getCheckpointRetry();
+
     interface Builder {
 
         Builder elementClass(Class<? extends Queueable> elementClass);
@@ -29,6 +31,8 @@ public interface Settings {
         Builder checkpointMaxAcks(int checkpointMaxAcks);
 
         Builder checkpointMaxWrites(int checkpointMaxWrites);
+
+        Builder checkpointRetry(boolean checkpointRetry);
 
         Settings build();
 

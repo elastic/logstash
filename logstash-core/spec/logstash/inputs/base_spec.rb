@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/execution_context"
 require "logstash/inputs/base"
 require "support/shared_contexts"
 
@@ -90,15 +89,15 @@ describe "LogStash::Inputs::Base#decorate" do
     let(:input) do
       LogStash::Inputs::NOOP.new("add_field" => {"field" => ["value1", "value2"], "field2" => "value"})
     end
-    
+
     let(:cloned) do
       input.clone
     end
-    
+
     it "should clone the codec when cloned" do
       expect(input.codec).not_to eq(cloned.codec)
-    end  
-    
+    end
+
     it "should preserve codec params" do
       expect(input.codec.params).to eq(cloned.codec.params)
     end
@@ -113,5 +112,33 @@ describe "LogStash::Inputs::Base#fix_streaming_codecs" do
     tcp = LogStash::Inputs::Tcp.new("codec" => plain, "port" => 3333)
     tcp.instance_eval { fix_streaming_codecs }
     expect(tcp.codec.charset).to eq("CP1252")
+  end
+
+  it "should switch plain codec to line" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "plain" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "plain", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::Line")
+  end
+
+  it "should switch json codec to json_lines" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "json" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "json", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::JSONLines")
   end
 end

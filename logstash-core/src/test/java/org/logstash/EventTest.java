@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public final class EventTest {
 
@@ -81,6 +82,28 @@ public final class EventTest {
         assertEquals(timestamp, er.getField("time"));
         assertEquals(list, er.getField("list"));
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
+    }
+
+    @Test
+    public void toBinaryRoundtripSubstring() throws Exception {
+        Event e = new Event();
+        e.setField(
+            "foo",
+            RubyString.newString(RubyUtil.RUBY, "--bar--").substr(RubyUtil.RUBY, 2, 3)
+        );
+        final RubyString before = (RubyString) e.getUnconvertedField("foo");
+        Event er = Event.deserialize(e.serialize());
+        assertEquals(before, er.getUnconvertedField("foo"));
+    }
+
+    @Test
+    public void toBinaryRoundtripNonAscii() throws Exception {
+        Event e = new Event();
+        e.setField("foo", "bör");
+        final RubyString before = (RubyString) e.getUnconvertedField("foo");
+        Event er = Event.deserialize(e.serialize());
+        assertEquals(before, er.getUnconvertedField("foo"));
+        assertTrue(before.op_cmp((RubyString)er.getUnconvertedField("foo")) == 0);
     }
 
     /**
@@ -399,6 +422,7 @@ public final class EventTest {
         assertThat(event.getField("timestamp"), is(timestamp));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void metadataFieldsShouldBeValuefied() {
         final Event event = new Event();
@@ -411,8 +435,9 @@ public final class EventTest {
         assertEquals(list, Arrays.asList("hello"));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
-    public void metadataRootShouldBeValueified() {
+    public void metadataRootShouldBeValuefied() {
         final Event event = new Event();
 
         final Map<String, Object> metadata = new HashMap<>();
@@ -427,5 +452,33 @@ public final class EventTest {
         assertEquals(ArrayList.class, list.getClass());
         assertEquals(list, Arrays.asList("hello"));
 
+    }
+
+    @Test
+    public void removeMetadataField() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final RubyString s = (RubyString)event.remove("[@metadata][foo]");
+        assertEquals(s.toString(), "bar");
+
+        assertFalse(event.includes("[@metadata][foo]"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void removeMetadata() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final Map<String, Object> m = (Map)(event.remove("[@metadata]"));
+        assertEquals(m.get("foo"), "bar");
+
+        assertTrue(event.getMetadata().isEmpty());
+        assertFalse(event.includes("[@metadata][foo]"));
     }
 }

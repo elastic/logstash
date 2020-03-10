@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
-/**
- * Created by andrewvc on 5/12/16.
- */
 public class ProcessMonitor {
     private static final OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
     private static final MBeanServer platformMxBean = ManagementFactory.getPlatformMBeanServer();

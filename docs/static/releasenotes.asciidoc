@@ -1,17 +1,26 @@
 [[releasenotes]]
 == Release Notes
 
+coming[8.0.0]
+
 This section summarizes the changes in the following releases:
 
-* <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
-ifdef::include-xpack[]
-See also:
+//* <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
+//* <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
-* <<release-notes-xls>>
-endif::include-xpack[]
+Logstash 8.0.0 Release Notes
 
-[[logstash-7-0-0-alpha1]]
-=== Logstash 7.0.0-alpha1 Release Notes
+coming[8.0.0]
+////
+[[logstash-8-0-0-alpha2]]
+=== Logstash 8.0.0-alpha2 Release Notes
+
+Placeholder for alpha2 release notes
+
+
+[[logstash-8-0-0-alpha1]]
+=== Logstash 8.0.0-alpha1 Release Notes
 
 Placeholder for alpha1 release notes
+////

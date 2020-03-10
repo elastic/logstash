@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/event_dispatcher"
-require "logstash/plugins/hooks_registry"
 
 describe LogStash::Plugins::HooksRegistry do
   class DummyEmitter

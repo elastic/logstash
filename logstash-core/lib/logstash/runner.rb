@@ -9,13 +9,15 @@ LogStash::XPACK_PATH = File.join(LogStash::ROOT, "x-pack")
 LogStash::OSS = ENV["OSS"] == "true" || !File.exists?(LogStash::XPACK_PATH)
 
 if !LogStash::OSS
-  $LOAD_PATH << File.join(LogStash::XPACK_PATH, "lib")
+  xpack_dir = File.join(LogStash::XPACK_PATH, "lib")
+  unless $LOAD_PATH.include?(xpack_dir)
+    $LOAD_PATH.unshift(xpack_dir)
+  end
 end
 
 require "clamp"
 require "net/http"
 
-require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"
@@ -25,15 +27,12 @@ LogStash::Environment.load_locale!
 
 require "logstash/agent"
 require "logstash/config/defaults"
-require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
-require "logstash/plugins/registry"
+require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/bad_java"
-require "logstash/bootstrap_check/bad_ruby"
 require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
 
@@ -47,8 +46,6 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::BadRuby,
-      LogStash::BootstrapCheck::BadJava,
       LogStash::BootstrapCheck::DefaultConfig,
       LogStash::BootstrapCheck::PersistedQueueConfig
   ]
@@ -70,6 +67,11 @@ class LogStash::Runner < Clamp::StrictCommand
       :default_output => LogStash::Config::Defaults.output),
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
+
+  option ["--field-reference-parser"], "MODE",
+         I18n.t("logstash.runner.flag.field-reference-parser"),
+         :attribute_name => "config.field_reference.parser",
+         :default => LogStash::SETTINGS.get_default("config.field_reference.parser")
 
   # Module settings
   option ["--modules"], "MODULES",
@@ -106,10 +108,20 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
-  option ["--experimental-java-execution"], :flag,
-         I18n.t("logstash.runner.flag.experimental-java-execution"),
+  option "--pipeline.ordered", "ORDERED",
+    I18n.t("logstash.runner.flag.pipeline-ordered"),
+    :attribute_name => "pipeline.ordered",
+    :default => LogStash::SETTINGS.get_default("pipeline.ordered")
+
+  option ["--java-execution"], :flag,
+         I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
+
+  option ["--plugin-classloaders"], :flag,
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
@@ -209,6 +221,11 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
 
+  # We configure the registry and load any plugin that can register hooks
+  # with logstash, this needs to be done before any operation.
+  SYSTEM_SETTINGS = LogStash::SETTINGS.clone
+  LogStash::PLUGIN_REGISTRY.setup!
+
   attr_reader :agent, :settings, :source_loader
   attr_accessor :bootstrap_checks
 
@@ -242,6 +259,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.logs", setting("path.logs"))
     java.lang.System.setProperty("ls.log.format", setting("log.format"))
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
 
@@ -265,10 +283,6 @@ class LogStash::Runner < Clamp::StrictCommand
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
 
-    # We configure the registry and load any plugin that can register hooks
-    # with logstash, this need to be done before any operation.
-    LogStash::PLUGIN_REGISTRY.setup!
-
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
 
@@ -277,7 +291,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    module_parser = LogStash::Modules::CLIParser.new(@modules_list, @modules_variable_list)
+    module_parser = LogStash::Modules::CLIParser.new(setting("modules_list"), setting("modules_variable_list"))
     # Now populate Setting for modules.list with our parsed array.
     @settings.set("modules.cli", module_parser.output)
 
@@ -328,7 +342,8 @@ class LogStash::Runner < Clamp::StrictCommand
         # TODO(ph): make it better for multiple pipeline
         if results.success?
           results.response.each do |pipeline_config|
-            LogStash::BasePipeline.new(pipeline_config)
+            pipeline_class = pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::BasePipeline
+            pipeline_class.new(pipeline_config)
           end
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
@@ -343,7 +358,9 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     # lock path.data before starting the agent
-    @data_path_lock = FileLockFactory.obtainLock(setting("path.data"), ".lock");
+    @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
+
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
 
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
@@ -354,8 +371,6 @@ class LogStash::Runner < Clamp::StrictCommand
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
 
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
-
     @agent_task = Stud::Task.new { @agent.execute }
 
     # no point in enabling config reloading before the agent starts
@@ -365,6 +380,8 @@ class LogStash::Runner < Clamp::StrictCommand
     agent_return = @agent_task.wait
 
     @agent.shutdown
+
+    logger.info("Logstash shut down.")
 
     # flush any outstanding log messages during shutdown
     org.apache.logging.log4j.LogManager.shutdown

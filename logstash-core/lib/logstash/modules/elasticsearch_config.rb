@@ -1,7 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
-
 require_relative "elasticsearch_resource"
 
 module LogStash module Modules class ElasticsearchConfig

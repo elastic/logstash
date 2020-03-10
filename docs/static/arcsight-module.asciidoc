@@ -7,15 +7,25 @@
 ++++
 
 NOTE: The Logstash ArcSight module is an
-https://www.elastic.co/products/x-pack[X-Pack] feature under the Basic License
+https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
 and is therefore free to use. Please contact
 mailto:arcsight@elastic.co[arcsight@elastic.co] for questions or more
 information.
 
-The Logstash ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack. 
-With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker, 
-parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards 
-to get you exploring your data immediately. 
+The Logstash ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack.
+With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker,
+parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards
+to get you exploring your data immediately.
+
+[[arcsight-prereqs]]
+==== Prerequisites
+
+These instructions assume that Logstash, Elasticsearch, and Kibana are already
+installed. The products you need are https://www.elastic.co/downloads[available
+to download] and easy to install. The Elastic Stack 5.6 (or later) and {xpack} are required for
+this module.   If you are using the Elastic Stack 6.2 and earlier, please see
+the https://www.elastic.co/guide/en/logstash/6.2/arcsight-module.html[instructions]
+for those versions.
 
 [[arcsight-architecture]]
 ==== Deployment Architecture
@@ -26,58 +36,42 @@ contains two core data collection components for data streaming:
 
 * The _Smart Connectors (SC)_ are edge log collectors that parse and normalize
 data to CEF prior to publishing to the Logstash receiver.
-* The _Event Broker (EB)_ is the central hub for incoming data and is based on
+* The _Event Broker_ is the central hub for incoming data and is based on
 open source Apache Kafka. The Logstash ArcSight module can consume directly from
-EB topics.
+Event Broker topics.
 
 [[arcsight-getting-started-smartconnector]]
-==== Getting Started With The Smart Connector
+==== Getting Started with the Smart Connector
+
+:smart_connect_host: smart_connect_host
+:smart_connect_port: smart_connect_port
 
 To get started, you can use a basic Elastic Stack setup that reads events from
 the Smart Connector directly.
 
 image::static/images/arcsight-diagram-smart-connectors.svg[ArcSight Smart Connector architecture]
 
-[[arcsight-requirements-smartconnector]]
-===== Requirements
-
-* These instructions assume you have part of the Elastic Stack (Logstash, Elasticsearch,
-Kibana) already installed. The products you need are
-https://www.elastic.co/downloads[available to download] and easy to install. The
-Elastic Stack 5.6 or higher is required for this module.
-* The Elastic Stack is running locally with default ports exposed, namely
-Elasticsearch as "localhost:9200" and Kibana as "localhost:5601". Note that you can also run 
-Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
-* Smart Connector has been configured to publish ArcSight data (to TCP port `5000`) using the CEF syslog 
+Smart Connector has been configured to publish ArcSight data (to TCP port `5000`) using the CEF syslog
 destination.
 
+NOTE: Logstash, Elasticsearch, and Kibana must run locally. Note that you can also run
+Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
+
 [[arcsight-instructions-smartconnector]]
-===== Instructions
+===== Instructions for Smart Connector
 
-. {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
-Elasticsearch.
-
-. {kibana-ref}/installing-xpack-kb.html[Install X-Pack on Kibana] and then start
-Kibana.
-
-. {logstash-ref}/installing-xpack-log.html[Install X-Pack on Logstash], which
-includes the Logstash ArcSight module.
 . Start the Logstash ArcSight module by running the following command in the
-Logstash install directory with your respective EB host and port:
+Logstash install directory with your respective Smart Connector host and port:
 +
 ["source","shell",subs="attributes"]
 -----
-bin/logstash --modules arcsight --setup
-  -M "arcsight.var.inputs=smartconnector" 
-  -M "arcsight.var.elasticsearch.username=elastic" 
-  -M "arcsight.var.elasticsearch.password={pwd}" 
-  -M "arcsight.var.kibana.username=elastic" 
-  -M "arcsight.var.kibana.password={pwd}"
+bin/logstash --modules arcsight --setup \
+  -M "arcsight.var.input.smartconnector.port={smart_connect_port}"  \
+  -M "arcsight.var.elasticsearch.hosts=localhost:9200"  \
+  -M "arcsight.var.kibana.host=localhost:5601"
 -----
 +
 --
-TIP: The command in this example is formatted for readability. Remove the line
-breaks before running this command.
 
 The `--modules arcsight` option spins up an ArcSight CEF-aware Logstash
 pipeline for ingestion. The `--setup` option creates an `arcsight-*` index
@@ -85,6 +79,8 @@ pattern in Elasticsearch and imports Kibana dashboards and visualizations. On
 subsequent module runs or when scaling out the Logstash deployment,
 the `--setup` option should be omitted to avoid overwriting the existing Kibana
 dashboards.
+
+See <<arcsight-module-config>> for more info.
 --
 
 . Explore your data with Kibana:
@@ -97,69 +93,46 @@ See <<configuring-arcsight>> if you want to specify additional options that
 control the behavior of the ArcSight module.
 
 [[arcsight-getting-started-eventbroker]]
-==== Getting Started With The Event Broker
+==== Getting Started with the Event Broker
+
+:event_broker_host: event_broker_host
+:event_broker_port: event_broker_port
 
 To get started, you can use a basic Elastic Stack setup that reads events from
-the EB event stream.
+the Event Broker event stream.
 
 image::static/images/arcsight-diagram-adp.svg[ArcSight Event Broker architecture]
 
-[[arcsight-requirements-eventbroker]]
-===== Requirements
+By default, the Logstash ArcSight module consumes from the Event Broker "eb-cef" topic.
+For additional settings, see <<arcsight-module-config>>. Consuming from a
+secured Event Broker port is possible, see <<arcsight-module-config>>.
 
-* These instructions assume you have the Elastic Stack (Logstash, Elasticsearch,
-Kibana) already installed. The products you need are
-https://www.elastic.co/downloads[available to download] and easy to install. The
-Elastic Stack 5.6 or higher is required for this module.
-* The Elastic Stack is running locally with default ports exposed, namely
-Elasticsearch as "localhost:9200" and Kibana as "localhost:5601".
-* By default, the Logstash ArcSight module consumes from the EB "eb-cef" topic.
-For additional EB settings, see <<arcsight-module-config>>. Consuming from a
-secured EB port is not currently available.
+NOTE: Logstash, Elasticsearch, and Kibana must run locally. Note that you can also run
+Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
 
 [[arcsight-instructions-eventbroker]]
-===== Instructions
-
-. {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
-Elasticsearch.
-
-. {kibana-ref}/installing-xpack-kb.html[Install X-Pack on Kibana] and then start
-Kibana.
-
-. {logstash-ref}/installing-xpack-log.html[Install X-Pack on Logstash], which
-includes the Logstash ArcSight module. Then update the Logstash
-<<plugins-inputs-kafka,Kafka input plugin>> to an EB compatible version. In the
-Logstash install directory, run:
-+
-[source,shell]
------
-bin/logstash-plugin install x-pack
-bin/logstash-plugin install --version 6.2.7 logstash-input-kafka
------
+===== Instructions for Event Broker
 
 . Start the Logstash ArcSight module by running the following command in the
-Logstash install directory with your respective EB host and port:
+Logstash install directory with your respective Event Broker host and port:
 +
 ["source","shell",subs="attributes"]
 -----
-bin/logstash --modules arcsight --setup
-  -M "arcsight.var.input.eventbroker.bootstrap_servers={eb_host}:{eb_port}" 
-  -M "arcsight.var.elasticsearch.username=elastic" 
-  -M "arcsight.var.elasticsearch.password={pwd}" 
-  -M "arcsight.var.kibana.username=elastic" 
-  -M "arcsight.var.kibana.password={pwd}"
+bin/logstash --modules arcsight --setup \
+ -M "arcsight.var.input.eventbroker.bootstrap_servers={event_broker_host}:{event_broker_port}"  \
+ -M "arcsight.var.elasticsearch.hosts=localhost:9200"  \
+ -M "arcsight.var.kibana.host=localhost:5601"
 -----
 +
 --
-TIP: The command in this example is formatted for readability. Remove the line
-breaks before running this command.
-
 The `--modules arcsight` option spins up an ArcSight CEF-aware Logstash
 pipeline for ingestion. The `--setup` option creates an `arcsight-*` index
 pattern in Elasticsearch and imports Kibana dashboards and visualizations. On
 subsequent module runs or when scaling out the Logstash deployment,
 the `--setup` option should be omitted to avoid overwriting the existing Kibana
 dashboards.
+
+See <<arcsight-module-config>> for more info.
 --
 
 . Explore your data with Kibana:
@@ -231,7 +204,7 @@ like in the getting started. For more information about configuring modules, see
 As an example, the following settings can be appended to `logstash.yml` to
 configure your module:
 
-["source","yaml",subs="attributes"] 
+["source","yaml",subs="attributes"]
 -----
 modules:
   - name: arcsight
@@ -250,7 +223,7 @@ modules:
 
 The ArcSight module provides the following settings for configuring the behavior
 of the module. These settings include ArcSight-specific options plus common
-options that are supported by all Logstash modules. 
+options that are supported by all Logstash modules.
 
 When you override a setting at the command line, remember to prefix the setting
 with the module name, for example, `arcsight.var.inputs` instead of `var.inputs`.
@@ -270,6 +243,8 @@ Set the input(s) to expose for the Logstash ArcSight module. Valid settings are
 "eventbroker", "smartconnector", or "eventbroker,smartconnector" (exposes both
 inputs concurrently).
 
+*ArcSight Module Event Broker specific Options*
+
 *`var.input.eventbroker.bootstrap_servers`*::
 +
 --
@@ -277,11 +252,11 @@ inputs concurrently).
 * Default value is "localhost:39092"
 --
 +
-A list of EB URLs to use for establishing the initial connection to the cluster.
+A list of Event Broker URLs to use for establishing the initial connection to the cluster.
 This list should be in the form of `host1:port1,host2:port2`. These URLs are
 just used for the initial connection to discover the full cluster membership
-(which may change dynamically), so this list need not contain the full set of
-servers (you may want more than one, though, in case a server is down).
+(which may change dynamically). This list need not contain the full set of
+servers. (You may want more than one in case a server is down.)
 
 *`var.input.eventbroker.topics`*::
 +
@@ -290,7 +265,139 @@ servers (you may want more than one, though, in case a server is down).
 * Default value is ["eb-cef"]
 --
 +
-A list of EB topics to subscribe to.
+A list of Event Broker topics to subscribe to.
+
+*`var.input.eventbroker.security_protocol`*::
++
+--
+* Value can be any of: `PLAINTEXT`, `SSL`, `SASL_PLAINTEXT`, `SASL_SSL`
+* Default value is `"PLAINTEXT"`
+--
++
+Security protocol to use, which can be either of PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL. If you specify anything other than PLAINTEXT then you need to also specify some of the options listed below. When specifying `SSL` or `SASL_SSL` you should supply values for the options prefixed with `ssl_`, when specifying `SASL_PLAINTEXT` or `SASL_SSL` you should supply values for `jaas_path`, `kerberos_config`, `sasl_mechanism` and `sasl_kerberos_service_name`.
+
+*`var.input.eventbroker.ssl_key_password`*::
++
+--
+* Value type is <<password,password>>
+* There is no default value for this setting.
+--
++
+The password of the private key in the key store file.
+
+*`var.input.eventbroker.ssl_keystore_location`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+If client authentication is required, this setting stores the keystore path.
+
+*`var.input.eventbroker.ssl_keystore_password`*::
++
+--
+* Value type is <<password,password>>
+* There is no default value for this setting.
+--
++
+If client authentication is required, this setting stores the keystore password.
+
+*`var.input.eventbroker.ssl_keystore_type`*::
++
+--
+* Value type is <<string,string>>
+* There is no default value for this setting.
+--
++
+The keystore type.
+
+*`var.input.eventbroker.ssl_truststore_location`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+The JKS truststore path to validate the Kafka broker's certificate.
+
+*`var.input.eventbroker.ssl_truststore_password`*::
++
+--
+* Value type is <<password,password>>
+* There is no default value for this setting.
+--
++
+The truststore password.
+
+*`var.input.eventbroker.ssl_truststore_type`*::
++
+--
+* Value type is <<string,string>>
+* There is no default value for this setting.
+--
++
+The truststore type.
+
+*`var.input.eventbroker.sasl_kerberos_service_name`*::
++
+--
+* Value type is <<string,string>>
+* There is no default value for this setting.
+--
++
+The Kerberos principal name that Kafka broker runs as.
+This can be defined either in Kafka's JAAS config or in Kafka's config.
+
+*`var.input.eventbroker.sasl_mechanism`*::
++
+--
+* Value type is <<string,string>>
+* Default value is `"GSSAPI"`
+--
++
+http://kafka.apache.org/documentation.html#security_sasl[SASL mechanism] used for client connections.
+This may be any mechanism for which a security provider is available.
+GSSAPI is the default mechanism.
+
+*`var.input.eventbroker.jaas_path`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+The Java Authentication and Authorization Service (JAAS) API supplies user authentication and authorization
+services for Kafka. This setting provides the path to the JAAS file. Sample JAAS file for Kafka client:
++
+[source,java]
+----------------------------------
+KafkaClient {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useTicketCache=true
+  renewTicket=true
+  serviceName="kafka";
+  };
+----------------------------------
++
+
+Please note that specifying `jaas_path` and `kerberos_config` here will add these
+to the global JVM system properties. This means if you have multiple Kafka inputs,
+all of them would be sharing the same `jaas_path` and `kerberos_config`.
+If this is not desirable, you would have to run separate instances of Logstash on
+different JVM instances.
+
+
+*`var.input.eventbroker.kerberos_config`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+Optional path to kerberos config file. This is krb5.conf style as detailed in https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html
+
+*ArcSight Module Smart Connector specific Options*
 
 *`var.input.smartconnector.port`*::
 +
@@ -300,5 +407,66 @@ A list of EB topics to subscribe to.
 --
 +
 The TCP port to listen on when receiving data from SCs.
+
+*`var.input.smartconnector.ssl_enable`*::
++
+--
+* Value type is <<boolean,boolean>>
+* Default value is `false`
+--
++
+Enable SSL (must be set for other `ssl_` options to take effect).
+
+*`var.input.smartconnector.ssl_cert`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+SSL certificate path.
+
+*`var.input.smartconnector.ssl_extra_chain_certs`*::
++
+--
+* Value type is <<array,array>>
+* Default value is `[]`
+--
++
+An Array of paths to extra X509 certificates to be added to the certificate chain.
+Useful when the CA chain is not necessary in the system store.
+
+*`var.input.smartconnector.ssl_key`*::
++
+--
+* Value type is <<path,path>>
+* There is no default value for this setting.
+--
++
+SSL key path
+
+*`var.input.smartconnector.ssl_key_passphrase`*::
++
+--
+* Value type is <<password,password>>
+* Default value is `nil`
+--
++
+SSL key passphrase
+
+*`var.input.smartconnector.ssl_verify`*::
++
+--
+* Value type is <<boolean,boolean>>
+* Default value is `true`
+--
++
+Verify the identity of the other end of the SSL connection against the CA.
+For input, sets the field `sslsubject` to that of the client certificate.
+
+:smart_connect_host!:
+:smart_connect_port!:
+:event_broker_host!:
+:event_broker_port!:
 
 include::shared-module-options.asciidoc[]

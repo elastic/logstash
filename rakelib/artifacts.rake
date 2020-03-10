@@ -1,11 +1,15 @@
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
-  PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
+  if VERSION_QUALIFIER
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-#{VERSION_QUALIFIER}-SNAPSHOT" : "-#{VERSION_QUALIFIER}"
+  else
+    PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+  end
 
   def package_files
     [
-      "LICENSE",
       "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
@@ -25,6 +29,7 @@ namespace "artifact" do
       "logstash-core/*.gemspec",
 
       "logstash-core-plugin-api/lib/**/*",
+      "logstash-core-plugin-api/versions-gem-copy.yml",
       "logstash-core-plugin-api/*.gemspec",
 
       "patterns/**/*",
@@ -80,63 +85,75 @@ namespace "artifact" do
 
   def files(excluder=nil)
     excluder ||= self.method(:exclude?)
-    return @files if @files
-    @files = package_files.collect do |glob|
+
+    package_files.collect do |glob|
       Rake::FileList[glob].reject(&excluder)
     end.flatten.uniq
+  end
+
+  def source_modified_since?(time, excluder=nil)
+    skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
+    result = false
+    files(excluder).each do |file|
+      next if File.mtime(file) < time || skip_list.include?(file)
+      puts "file modified #{file}"
+      result = true
+      break
+    end
+    result
   end
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
-    build_tar
+    build_tar('ELASTIC-LICENSE')
   end
 
   desc "Build an OSS tar.gz of default logstash plugins with all dependencies"
-  task "tar_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "tar_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
-    build_tar("-oss", oss_excluder)
+    build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder)
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
-    build_zip
+    build_zip('ELASTIC-LICENSE')
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "zip_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of default plugins")
-    build_zip("-oss", oss_excluder)
+    build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder)
   end
 
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "rpm_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:rpm] building rpm package")
-    package("centos", "5", "-oss", oss_excluder)
+    package("centos", "5", :oss)
   end
 
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+  task "deb_oss" => ["prepare", "generate_build_metadata"] do
     puts("[artifact:deb] building deb package")
-    package("ubuntu", "12.04", "-oss", oss_excluder)
+    package("ubuntu", "12.04", :oss)
   end
 
   desc "Generate logstash core gems"
@@ -152,13 +169,31 @@ namespace "artifact" do
   desc "Build a zip of all logstash plugins from logstash-plugins github repo"
   task "zip-all-plugins" => ["prepare-all", "generate_build_metadata"] do
     puts("[artifact:zip] Building zip of all plugins")
-    build_zip "-all-plugins"
+    build_zip('ELASTIC-LICENSE', "-all-plugins")
   end
 
   desc "Build a tar.gz of all logstash plugins from logstash-plugins github repo"
   task "tar-all-plugins" => ["prepare-all", "generate_build_metadata"] do
     puts("[artifact:tar] Building tar.gz of all plugins")
-    build_tar "-all-plugins"
+    build_tar('ELASTIC-LICENSE', "-all-plugins")
+  end
+
+  desc "Build docker image"
+  task "docker" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker] Building docker image")
+    build_docker(false)
+  end
+
+  desc "Build OSS docker image"
+  task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+    puts("[docker_oss] Building OSS docker image")
+    build_docker(true)
+  end
+
+  desc "Generate Dockerfile for default and oss images"
+  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building Dockerfiles")
+    build_dockerfiles
   end
 
   # Auxiliary tasks
@@ -172,6 +207,11 @@ namespace "artifact" do
     Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
+    unless ENV['SKIP_DOCKER'] == "1"
+      Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:dockerfiles"].invoke
+    end
   end
 
   task "generate_build_metadata" do
@@ -248,17 +288,25 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(tar_suffix = nil, excluder=nil)
+  def build_tar(license, tar_suffix = nil, excluder=nil)
     require "zlib"
     require "archive/tar/minitar"
     ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
+    if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
+      puts("[artifact:tar] Source code not modified. Skipping build of #{tarpath}")
+      return
+    end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
     files(excluder).each do |path|
       write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
     end
+
+    source_license_path = "licenses/#{license}.txt"
+    fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
+    write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
 
     # add build.rb to tar
     metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
@@ -293,7 +341,7 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(zip_suffix = "", excluder=nil)
+  def build_zip(license, zip_suffix = "", excluder=nil)
     require 'zip'
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.zip"
@@ -305,6 +353,10 @@ namespace "artifact" do
         zipfile.add(path_in_zip, path)
       end
 
+      source_license_path = "licenses/#{license}.txt"
+      fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
+      zipfile.add("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt", source_license_path)
+
       # add build.rb to zip
       metadata_file_path_in_zip = File.join("logstash-core", "lib", "logstash", "build.rb")
       path_in_zip = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_zip)
@@ -315,7 +367,9 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package(platform, version, suffix=nil, excluder=nil)
+  def package(platform, version, variant=:standard)
+    oss = variant == :oss
+
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
@@ -333,12 +387,30 @@ namespace "artifact" do
     metadata_source_file_path = BUILD_METADATA_FILE.path
     dir.input("#{metadata_source_file_path}=/usr/share/logstash/#{metadata_file_path}")
 
+
+    suffix = ""
+    excluder = nil
+    if oss
+      suffix= "-oss"
+      excluder = oss_excluder
+    end
+
     files(excluder).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
       next if path.start_with?("config/")
       dir.input("#{path}=/usr/share/logstash/#{path}")
+    end
+
+    if oss
+      # Artifacts whose sources are exclusively licensed under the Apache License and
+      # Apache-compatible licenses are distributed under the Apache License 2.0
+      dir.input("licenses/APACHE-LICENSE-2.0.txt=/usr/share/logstash/LICENSE.txt")
+    else
+      # Artifacts whose sources include Elastic Commercial Software are distributed
+      # under the Elastic License.
+      dir.input("licenses/ELASTIC-LICENSE.txt=/usr/share/logstash/LICENSE.txt")
     end
 
     # Create an empty /var/log/logstash/ directory in the package
@@ -367,6 +439,9 @@ namespace "artifact" do
     File.join(basedir, "config", "logstash.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
+    File.join(basedir, "config", "logstash-sample.conf").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
     File.join(basedir, "pkg", "pipelines.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
@@ -374,8 +449,12 @@ namespace "artifact" do
     case platform
       when "redhat", "centos"
         require "fpm/package/rpm"
+
+        # Red Hat calls 'Apache Software License' == ASL
+        license = oss ? "ASL 2.0" : "Elastic License"
+
         out = dir.convert(FPM::Package::RPM)
-        out.license = "ASL 2.0" # Red Hat calls 'Apache Software License' == ASL
+        out.license = license
         out.attributes[:rpm_use_file_permissions] = true
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
@@ -384,11 +463,15 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
       when "debian", "ubuntu"
         require "fpm/package/deb"
+
+        license = oss ? "ASL-2.0" : "Elastic-License"
+
         out = dir.convert(FPM::Package::Deb)
-        out.license = "Apache 2.0"
+        out.license = license
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
         out.attributes[:deb_suggests] = "java8-runtime-headless"
@@ -396,6 +479,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
     end
 
@@ -413,8 +497,8 @@ namespace "artifact" do
 
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
-    out.name = "logstash"
-    out.version = LOGSTASH_VERSION.gsub(/[.-]([[:alpha:]])/, '~\1')
+    out.name = oss ? "logstash-oss" : "logstash"
+    out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     out.architecture = "all"
     # TODO(sissel): Include the git commit hash?
     out.iteration = "1" # what revision?
@@ -453,4 +537,31 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
+
+  def build_docker(oss = false)
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+    }
+    Dir.chdir("docker") do |dir|
+      if oss
+        system(env, "make build-from-local-oss-artifacts")
+      else
+        system(env, "make build-from-local-artifacts")
+      end
+    end
+  end
+
+  def build_dockerfiles
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+    }
+    Dir.chdir("docker") do |dir|
+      system(env, "make public-dockerfiles")
+      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+    end
+  end
 end

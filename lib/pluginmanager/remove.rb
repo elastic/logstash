@@ -20,6 +20,11 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     # them toward the OSS-only distribution of Logstash
     LogStash::PluginManager::XPackInterceptor::Remove.intercept!(plugin)
 
+    # if the plugin is provided by an integration plugin. abort.
+    if integration_plugin = LogStash::PluginManager.which_integration_plugin_provides(plugin, gemfile)
+      signal_error("This plugin is already provided by '#{integration_plugin.name}' so it can't be removed individually")
+    end
+
     # make sure this is an installed plugin and present in Gemfile.
     # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
     signal_error("This plugin has not been previously installed") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
@@ -28,6 +33,6 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
 
     remove_unused_locally_installed_gems!
   rescue => exception
-    report_exception("Operation aborted, cannot remove plugin.", exception)
+    report_exception("Operation aborted, cannot remove plugin", exception)
   end
 end

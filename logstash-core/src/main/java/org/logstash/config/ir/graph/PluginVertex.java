@@ -1,15 +1,9 @@
 package org.logstash.config.ir.graph;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.logstash.ObjectMappers;
 import org.logstash.common.SourceWithMetadata;
-import org.logstash.common.Util;
 import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.SourceComponent;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public class PluginVertex extends Vertex {
     private final PluginDefinition pluginDefinition;
 

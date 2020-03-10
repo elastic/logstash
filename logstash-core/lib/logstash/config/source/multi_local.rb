@@ -1,10 +1,10 @@
 # encoding: utf-8
 require "logstash/config/source/local"
-require "logstash/util/loggable"
-require "logstash/pipeline_settings"
+require "logstash/settings"
 
 module LogStash module Config module Source
   class MultiLocal < Local
+    include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
 
     def initialize(settings)
@@ -14,9 +14,10 @@ module LogStash module Config module Source
     end
 
     def pipeline_configs
-      pipelines = retrieve_yaml_pipelines()
+      pipelines = deep_replace(retrieve_yaml_pipelines())
       pipelines_settings = pipelines.map do |pipeline_settings|
-        ::LogStash::PipelineSettings.from_settings(@original_settings.clone).merge(pipeline_settings)
+        clone = @original_settings.clone
+        clone.merge_pipeline_settings(pipeline_settings)
       end
       detect_duplicate_pipelines(pipelines_settings)
       pipeline_configs = pipelines_settings.map do |pipeline_settings|

@@ -1,5 +1,5 @@
-require "sinatra"
 require "rack"
+require "sinatra/base"
 require "logstash/api/modules/base"
 require "logstash/api/modules/node"
 require "logstash/api/modules/node_stats"
@@ -74,6 +74,11 @@ module LogStash
       end
 
       def self.app(logger, agent, environment)
+        # LS should avoid loading sinatra/main.rb as it does not need the full Sinatra functionality
+        # such as configuration based on ARGV (actually dangerous if there's a --name collision),
+        # pretty much the only piece needed is the DSL but even that only for the rackup part :
+        Rack::Builder.send(:include, Sinatra::Delegator) unless Rack::Builder < Sinatra::Delegator
+
         namespaces = rack_namespaces(agent)
 
         Rack::Builder.new do

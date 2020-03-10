@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/namespaced_null_metric"
-require "logstash/instrument/null_metric"
 require_relative "../../support/matchers"
 require "spec_helper"
 
@@ -16,7 +14,7 @@ describe LogStash::Instrument::NamespacedNullMetric do
   end
 
   it "returns a TimedException when we call without a block" do
-    expect(subject.time(:duration_ms)).to be(LogStash::Instrument::NullMetric::NullTimedExecution)
+    expect(subject.time(:duration_ms)).to be_kind_of(LogStash::Instrument::NullMetric::NullTimedExecution)
   end
 
   it "returns the value of the block" do

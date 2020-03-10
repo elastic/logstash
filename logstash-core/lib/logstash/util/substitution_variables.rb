@@ -1,7 +1,6 @@
 # encoding: utf-8
-require "logstash/logging"
-require "logstash/util/loggable"
-require "logstash/util/secretstore"
+
+java_import "org.logstash.secret.store.SecretStoreExt"
 
 module ::LogStash::Util::SubstitutionVariables
 
@@ -43,8 +42,8 @@ module ::LogStash::Util::SubstitutionVariables
       logger.debug("Replacing `#{placeholder}` with actual value")
 
       #check the secret store if it exists
-      secret_store = LogStash::Util::SecretStore.get_if_exists
-      replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(LogStash::Util::SecretStore.get_store_id(name))
+      secret_store = SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+      replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
       if replacement.nil?

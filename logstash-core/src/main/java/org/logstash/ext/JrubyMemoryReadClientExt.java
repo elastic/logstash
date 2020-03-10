@@ -1,5 +1,7 @@
 package org.logstash.ext;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -7,21 +9,20 @@ import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
-import org.logstash.execution.QueueReadClient;
 import org.logstash.execution.QueueReadClientBase;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
-public final class JrubyMemoryReadClientExt extends QueueReadClientBase implements QueueReadClient {
+public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
-    private BlockingQueue queue;
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("rawtypes") private BlockingQueue queue;
 
     public JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
+    @SuppressWarnings("rawtypes")
     private JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass,
                                      BlockingQueue queue, int batchSize, int waitForMillis) {
         super(runtime, metaClass);
@@ -31,6 +32,7 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase implemen
         this.waitForMillis = waitForMillis;
     }
 
+    @SuppressWarnings("rawtypes")
     public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
                                                   int waitForMillis) {
         return new JrubyMemoryReadClientExt(RubyUtil.RUBY,
@@ -53,6 +55,7 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase implemen
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public QueueBatch readBatch() throws InterruptedException {
         MemoryReadBatch batch = MemoryReadBatch.create(
                 LsQueueUtils.drain(queue, batchSize, waitForNanos));

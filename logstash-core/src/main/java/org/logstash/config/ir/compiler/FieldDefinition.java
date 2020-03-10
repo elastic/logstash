@@ -38,21 +38,6 @@ final class FieldDefinition implements SyntaxElement {
         );
     }
 
-    /**
-     * Creates an immutable field that is assigned its value inline in the class body by the given
-     * syntax element.
-     * @param index Index for naming
-     * @param type Type of the field
-     * @param initializer Initializer syntax
-     * @return Field definition
-     */
-    public static FieldDefinition withInitializer(final int index, final Class<?> type,
-        final SyntaxElement initializer) {
-        return new FieldDefinition(
-            variableDefinition(type, index), false, initializer, null
-        );
-    }
-
     private FieldDefinition(final VariableDefinition typeDef, final boolean mutable,
         final SyntaxElement initializer, final Object ctorArgument) {
         this.def = typeDef;

@@ -66,12 +66,15 @@ class PlatformConfig
 
   def filter_type(type_name, options={})
     experimental = options.fetch("experimental", false)
-    @platforms.select { |platform| platform.type == type_name && platform.experimental == experimental }
+    @platforms.select do |platform|
+      (type_name.nil? ? true : platform.type == type_name) &&
+          platform.experimental == experimental
+    end
   end
 
   def select_names_for(platform, options={})
     filter_options = { "experimental" => options.fetch("experimental", false) }
-    !platform.nil? ? filter_type(platform, filter_options).map{ |p| p.name } : ""
+    filter_type(platform, filter_options).map{ |p| p.name }
   end
 
   def types

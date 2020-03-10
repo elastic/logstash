@@ -5,7 +5,6 @@ require "stud/task"
 require "stud/trap"
 require "stud/temporary"
 require "logstash/util/java_version"
-require "logstash/logging/json"
 require "logstash/config/source_loader"
 require "logstash/config/modules_common"
 require "logstash/modules/util"
@@ -22,6 +21,8 @@ describe LogStash::Runner do
 
   before :each do
     clear_data_dir
+
+    WebMock.disable_net_connect!(allow_localhost: true)
 
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
     allow(logger).to receive(:debug?).and_return(true)
@@ -41,6 +42,10 @@ describe LogStash::Runner do
     allow(LogStash::Agent).to receive(:new).with(any_args).and_return(agent)
     allow(agent).to receive(:execute)
     allow(agent).to receive(:shutdown)
+  end
+
+  after(:each) do
+    LogStash::SETTINGS.get_value("modules_list").clear
   end
 
   describe "argument precedence" do
@@ -83,23 +88,27 @@ describe LogStash::Runner do
 
   context "--pluginpath" do
     subject { LogStash::Runner.new("") }
-    let(:single_path) { "/some/path" }
-    let(:multiple_paths) { ["/some/path1", "/some/path2"] }
+    let(:valid_directory) { Stud::Temporary.directory }
+    let(:invalid_directory) { "/a/path/that/doesnt/exist" }
+    let(:multiple_paths) { [Stud::Temporary.directory, Stud::Temporary.directory] }
+
+    it "should pass -p contents to the configure_plugin_paths method" do
+      args = ["-p", valid_directory]
+      expect(subject).to receive(:configure_plugin_paths).with([valid_directory])
+      expect { subject.run(args) }.to_not raise_error
+    end
 
     it "should add single valid dir path to the environment" do
-      expect(File).to receive(:directory?).and_return(true)
-      expect(LogStash::Environment).to receive(:add_plugin_path).with(single_path)
-      subject.configure_plugin_paths(single_path)
+      expect(LogStash::Environment).to receive(:add_plugin_path).with(valid_directory)
+      subject.configure_plugin_paths(valid_directory)
     end
 
     it "should fail with single invalid dir path" do
-      expect(File).to receive(:directory?).and_return(false)
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
-      expect{subject.configure_plugin_paths(single_path)}.to raise_error(Clamp::UsageError)
+      expect{subject.configure_plugin_paths(invalid_directory)}.to raise_error(Clamp::UsageError)
     end
 
     it "should add multiple valid dir path to the environment" do
-      expect(File).to receive(:directory?).exactly(multiple_paths.size).times.and_return(true)
       multiple_paths.each{|path| expect(LogStash::Environment).to receive(:add_plugin_path).with(path)}
       subject.configure_plugin_paths(multiple_paths)
     end
@@ -133,6 +142,14 @@ describe LogStash::Runner do
 
     context "with a bad configuration" do
       let(:pipeline_string) { "rlwekjhrewlqrkjh" }
+      it "should fail by returning a bad exit code" do
+        expect(logger).to receive(:fatal)
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+
+    context "with invalid field reference literal" do
+      let(:pipeline_string) { "input { } output { if [[f[[[oo] == [bar] { } }" }
       it "should fail by returning a bad exit code" do
         expect(logger).to receive(:fatal)
         expect(subject.run(args)).to eq(1)

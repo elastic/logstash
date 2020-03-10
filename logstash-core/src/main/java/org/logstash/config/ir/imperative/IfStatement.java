@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * Created by andrewvc on 9/6/16.
  * if 5 {
  *
  * }
@@ -83,6 +82,12 @@ public class IfStatement extends Statement {
     public Graph toGraph() throws InvalidIRException {
         Graph trueGraph = getTrueStatement().toGraph();
         Graph falseGraph = getFalseStatement().toGraph();
+
+        // If there is nothing in the true or false sections of this if statement,
+        // we can omit the if statement altogether!
+        if (trueGraph.isEmpty() && falseGraph.isEmpty()) {
+            return new Graph();
+        }
 
         Graph.GraphCombinationResult combination = Graph.combine(trueGraph, falseGraph);
         Graph newGraph = combination.graph;

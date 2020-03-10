@@ -18,14 +18,24 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ### Snapshot Builds
 
-For the daring, snapshot builds are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+For the daring, snapshot builds are available.
+These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
 
-| artifact |
-| --- |
-| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.tar.gz) |
-| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.zip) |
-| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.deb) |
-| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.rpm) |
+| Complete, with X-Pack | Apache 2.0 licensed    |
+| --------------------- | ---------------------- |
+| [tar-complete][]      | [tar-oss][]            |
+| [zip-complete][]      | [zip-oss][]            |
+| [deb-complete][]      | [deb-oss][]            |
+| [rpm-complete][]      | [rpm-oss][]            |
+
+[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.tar.gz
+[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.zip
+[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.deb
+[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.rpm
+[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.tar.gz
+[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.zip
+[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.deb
+[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.rpm
 
 ## Need Help?
 
@@ -55,8 +65,8 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
-* Install JDK version 8. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
-* Install JRuby 9.1.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+* Install JDK version 8 or 11. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* Install JRuby 9.2.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 ### RVM install (optional)
@@ -80,6 +90,12 @@ The printed version should be the same as in the `.ruby-version` file.
 
 ### Building Logstash
 
+The Logstash project includes the source code for all of Logstash, including the Elastic-Licensed X-Pack features and functions; to run Logstash from source using only the OSS-licensed code, export the `OSS` environment variable with a value of `true`:
+
+``` sh
+export OSS=true
+```
+
 * To run Logstash from the repo you must first bootstrap the environment:
 
 ```sh
@@ -92,7 +108,7 @@ rake bootstrap
 rake plugin:install-default
 ```
 
-This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinatins.
+This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinations.
 
 To verify your environment, run the following to send your first event:
 
@@ -111,11 +127,11 @@ hello world
 
 [Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem while developing Logstash. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
 
-To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
+To tell logstash to use drip, set the environment variable `` JAVACMD=`which drip` ``.
 
 Example (but see the *Testing* section below before running rspec for the first time):
 
-    USE_DRIP=1 bin/rspec
+    JAVACMD=`which drip` bin/rspec
 
 **Caveats**
 
@@ -167,6 +183,18 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 3- To execute the complete test-suite including the integration tests run:
 
     ./gradlew check
+    
+4- To execute a single Ruby test run:
+
+    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests    
+
+5- To execute single spec for integration test, run:
+
+    ./gradlew integrationTests -PrubyIntegrationSpecs=specs/slowlog_spec.rb
+
+Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
+
+If you set `LS_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"` you can connect to a running Logstash with your IDEs debugger which can be a great way of finding the issue.
 
 ### Plugins tests
 
@@ -185,6 +213,8 @@ Note that if a plugin is installed using the plugin manager `bin/logstash-plugin
 
 ## Building Artifacts
 
+Built artifacts will be placed in the `LS_HOME/build` directory, and will create the directory if it is not already present.
+
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
@@ -192,13 +222,36 @@ You can build a Logstash snapshot package as tarball or zip file
 ./gradlew assembleZipDistribution
 ```
 
-This will create the artifact `LS_HOME/build` directory
+OSS-only artifacts can similarly be built with their own gradle tasks:
+```sh
+./gradlew assembleOssTarDistribution
+./gradlew assembleOssZipDistribution
+
+```
 
 You can also build .rpm and .deb, but the [fpm](https://github.com/jordansissel/fpm) tool is required.
 
 ```sh
 rake artifact:rpm
 rake artifact:deb
+```
+
+and:
+
+```sh
+rake artifact:rpm_oss
+rake artifact:deb_oss
+```
+
+## Using a Custom JRuby Distribution
+
+If you want the build to use a custom JRuby you can do so by setting a path to a custom 
+JRuby distribution's source root via the `custom.jruby.path` Gradle property.
+
+E.g.
+
+```sh
+./gradlew clean test -Pcustom.jruby.path="/path/to/jruby"
 ```
 
 ## Project Principles

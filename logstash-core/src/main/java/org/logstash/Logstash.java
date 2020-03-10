@@ -35,19 +35,51 @@ public final class Logstash implements Runnable, AutoCloseable {
         final String lsHome = System.getenv("LS_HOME");
         if (lsHome == null) {
             throw new IllegalStateException(
-                "LS_HOME environment variable must be set. This is likely a bug that should be reported."
+                    "LS_HOME environment variable must be set. This is likely a bug that should be reported."
             );
         }
+        configureNashornDeprecationSwitchForJavaAbove11();
+
         final Path home = Paths.get(lsHome).toAbsolutePath();
         try (
-            final Logstash logstash = new Logstash(home, args, System.out, System.err, System.in)
+                final Logstash logstash = new Logstash(home, args, System.out, System.err, System.in)
         ) {
             logstash.run();
+        } catch (final IllegalStateException e) {
+            String errorMessage[] = null;
+            if (e.getMessage().contains("Could not load FFI Provider")) {
+                errorMessage = new String[]{
+                        "\nError accessing temp directory: " + System.getProperty("java.io.tmpdir"),
+                        "This often occurs because the temp directory has been mounted with NOEXEC or",
+                        "the Logstash user has insufficient permissions on the directory. Possible",
+                        "workarounds include setting the -Djava.io.tmpdir property in the jvm.options",
+                        "file to an alternate directory or correcting the Logstash user's permissions."
+                };
+            }
+            handleCriticalError(e, errorMessage);
         } catch (final Throwable t) {
-            LOGGER.error("Logstash encountered an unexpected fatal error!", t);
-            System.exit(1);
+            handleCriticalError(t, null);
         }
         System.exit(0);
+    }
+
+    private static void configureNashornDeprecationSwitchForJavaAbove11() {
+        final String javaVersion = System.getProperty("java.version");
+        // match version 1.x.y, 9.x.y and 10.x.y
+        if (!javaVersion.matches("^1\\.\\d\\..*") && !javaVersion.matches("^(9|10)\\.\\d\\..*")) {
+            // Avoid Nashorn deprecation logs in JDK >= 11
+            System.setProperty("nashorn.args", "--no-deprecation-warning");
+        }
+    }
+
+    private static void handleCriticalError(Throwable t, String[] errorMessage) {
+        LOGGER.error(t);
+        if (errorMessage != null) {
+            for (String err : errorMessage) {
+                System.err.println(err);
+            }
+        }
+        System.exit(1);
     }
 
     /**
@@ -139,6 +171,6 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     private static void uncleanShutdown(final Exception ex) {
-        throw new IllegalStateException("Logstash stopped processing because of an error:", ex);
+        throw new IllegalStateException("Logstash stopped processing because of an error: " + ex.getMessage(), ex);
     }
 }

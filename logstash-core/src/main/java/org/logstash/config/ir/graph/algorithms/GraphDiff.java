@@ -9,9 +9,6 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 
-/**
- * Created by andrewvc on 1/5/17.
- */
 public class GraphDiff {
     public static DiffResult diff(Graph left, Graph right) {
         List<Edge> removedEdges = left.edges().filter(e -> !right.hasEquivalentEdge(e)).collect(Collectors.toList());

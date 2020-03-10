@@ -1,6 +1,4 @@
 require "spec_helper"
-require "logstash/logging"
-require "logstash/errors"
 require "logstash/modules/cli_parser"
 
 describe LogStash::Modules::CLIParser do

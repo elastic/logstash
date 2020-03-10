@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
 require_relative "kibana_base"
 
 module LogStash module Modules class KibanaSettings < KibanaBase

@@ -4,9 +4,6 @@ import org.junit.Test;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
 
-/**
- * Created by andrewvc on 11/22/16.
- */
 public class PlainEdgeTest {
     @Test
     public void creationDoesNotRaiseException() throws InvalidIRException {

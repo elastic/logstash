@@ -2,9 +2,6 @@ package org.logstash;
 
 import java.util.List;
 
-/**
- * Created by ph on 15-05-22.
- */
 public class KeyNode {
 
     private KeyNode() {

@@ -9,7 +9,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.AckedReadBatch;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
-import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClient;
 import org.logstash.execution.QueueReadClientBase;
@@ -18,6 +17,8 @@ import java.io.IOException;
 
 @JRubyClass(name = "AckedReadClient", parent = "QueueReadClientBase")
 public final class JrubyAckedReadClientExt extends QueueReadClientBase implements QueueReadClient {
+
+    private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
 

@@ -9,16 +9,11 @@ import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.graph.algorithms.DepthFirst;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public abstract class Vertex implements SourceComponent, HashableWithSource {
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger();
@@ -173,7 +168,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         return this.uniqueHash();
     }
 
-    // Can be overriden in subclasses to define multiple
+    // Can be overridden in subclasses to define multiple
     // expected Edge classes this Vertex can take.
     // If any EdgeFactory instances are returned this Vertex is considered
     // a partial leaf.

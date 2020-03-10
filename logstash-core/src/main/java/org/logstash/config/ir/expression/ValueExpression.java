@@ -8,9 +8,6 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceComponent;
 
-/**
- * Created by andrewvc on 9/13/16.
- */
 public class ValueExpression extends Expression {
     protected final Object value;
 

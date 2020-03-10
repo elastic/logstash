@@ -35,9 +35,6 @@ import org.logstash.config.ir.imperative.NoopStatement;
 import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.config.ir.imperative.Statement;
 
-/**
- * Created by andrewvc on 9/15/16.
- */
 public class DSL {
     public static EventValueExpression eEventValue(SourceWithMetadata meta, String fieldName) {
         return new EventValueExpression(meta, fieldName);
@@ -303,6 +300,9 @@ public class DSL {
         return gPlugin(meta, type, pluginName, new HashMap<>());
     }
 
+    public static PluginVertex gPlugin(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
+        return gPlugin(meta, pluginDefinition.getType(), pluginDefinition.getName(), pluginDefinition.getArguments());
+    }
 
     public static IfVertex gIf(SourceWithMetadata meta, BooleanExpression expression) {
        return new IfVertex(meta, expression);

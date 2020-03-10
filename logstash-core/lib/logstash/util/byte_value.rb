@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 
 module LogStash; module Util; module ByteValue
   module_function
@@ -23,7 +22,7 @@ module LogStash; module Util; module ByteValue
 
   def multiplier(text)
     case text
-      when /(?:k|kb)$/ 
+      when /(?:k|kb)$/
         KB
       when /(?:m|mb)$/
         MB
@@ -35,7 +34,7 @@ module LogStash; module Util; module ByteValue
         PB
       when /(?:b)$/
         B
-      else 
+      else
         raise ArgumentError, "Unknown bytes value '#{text}'"
     end
   end

@@ -1,8 +1,7 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
 require "elasticsearch"
 require "elasticsearch/transport/transport/http/manticore"
+require 'logstash/util/manticore_ssl_config_helper'
 
 module LogStash class ElasticsearchClient
   include LogStash::Util::Loggable
@@ -22,21 +21,14 @@ module LogStash class ElasticsearchClient
   end
 
   class RubyClient
+    include LogStash::Util::ManticoreSSLConfigHelper
+
     def initialize(settings, logger)
       @settings = settings
       @logger = logger
       @client_args = client_args
 
-      ssl_options = {}
-
-      # boolean settings may be strings if set through the cli
-      # or booleans if set through the yaml file, so we use .to_s
-      if @settings["var.elasticsearch.ssl.enabled"].to_s == "true"
-        ssl_options[:verify] = @settings.fetch("var.elasticsearch.ssl.verification_mode", true)
-        ssl_options[:ca_file] = @settings.fetch("var.elasticsearch.ssl.certificate_authority", nil)
-        ssl_options[:client_cert] = @settings.fetch("var.elasticsearch.ssl.certificate", nil)
-        ssl_options[:client_key] = @settings.fetch("var.elasticsearch.ssl.key", nil)
-      end
+      ssl_options = manticore_ssl_options_from_config('elasticsearch', settings)
 
       @client_args[:ssl] = ssl_options
 

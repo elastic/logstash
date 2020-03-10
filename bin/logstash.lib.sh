@@ -46,6 +46,7 @@ export LOGSTASH_HOME
 export LS_HOME="${LOGSTASH_HOME}"
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
+LOGSTASH_JARS=${LOGSTASH_HOME}/logstash-core/lib/jars
 
 # iterate over the command line args and look for the argument
 # after --path.settings to see if the jvm.options file is in
@@ -73,12 +74,14 @@ parse_jvm_options() {
 
 setup_java() {
   # set the path to java into JAVACMD which will be picked up by JRuby to launch itself
-  if [ -x "$JAVA_HOME/bin/java" ]; then
-    JAVACMD="$JAVA_HOME/bin/java"
-  else
-    set +e
-    JAVACMD=`command -v java`
-    set -e
+  if [ -z "$JAVACMD" ]; then
+    if [ -x "$JAVA_HOME/bin/java" ]; then
+      JAVACMD="$JAVA_HOME/bin/java"
+    else
+      set +e
+      JAVACMD=`command -v java`
+      set -e
+    fi
   fi
 
   if [ ! -x "$JAVACMD" ]; then
@@ -136,7 +139,7 @@ setup_vendored_jruby() {
   fi
 
   if [ -z "$LS_GEM_HOME" ] ; then
-    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
+    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.5.0"
   else
     export GEM_HOME=${LS_GEM_HOME}
   fi

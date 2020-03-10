@@ -1,7 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
-
 module LogStash module Modules class KibanaImporter
   include LogStash::Util::Loggable
 

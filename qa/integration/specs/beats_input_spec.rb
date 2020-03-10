@@ -67,14 +67,14 @@ describe "Beat Input" do
     let(:filebeat_config) do
       {
         "filebeat" => {
-          "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+          "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
           "registry_file" => registry_file,
           "scan_frequency" => "1s"
         },
         "output" => {
-          "logstash" => { "hosts" => ["localhost:5044"] },
-          "logging" => { "level" => "debug" }
-        }
+          "logstash" => { "hosts" => ["localhost:5044"] }
+        },
+        "logging" => { "level" => "debug" }
       }
     end
 
@@ -92,7 +92,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
             "registry_file" => registry_file,
             "scan_frequency" => "1s"
           },
@@ -105,9 +105,9 @@ describe "Beat Input" do
               "ssl" => {
                 "certificate_authorities" => certificate_authorities
               }
-            },
-            "logging" => { "level" => "debug" }
-          }
+            }
+          },
+          "logging" => { "level" => "debug" }
         }
       end
 
@@ -119,7 +119,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
             "registry_file" => registry_file,
             "scan_frequency" => "1s"
           },
@@ -136,9 +136,9 @@ describe "Beat Input" do
                 "certificate" => certificate,
                 "key" => ssl_key
               }
-            },
-            "logging" => { "level" => "debug" }
-          }
+            }
+          },
+          "logging" => { "level" => "debug" }
         }
       end
 

@@ -1,9 +1,10 @@
 # encoding: utf-8
 require "rubygems/package"
-require "logstash/util/loggable"
 require "logstash/plugin"
-require "logstash/plugins/hooks_registry"
 require "logstash/modules/scaffold"
+require "logstash/codecs/base"
+require "logstash/filters/base"
+require "logstash/outputs/base"
 
 module LogStash module Plugins
   class Registry
@@ -97,7 +98,14 @@ module LogStash module Plugins
     attr_reader :hooks
 
     def initialize
-      @registry = {}
+      @mutex = Mutex.new
+      # We need a threadsafe class here because we may perform
+      # get/set operations concurrently despite the fact we don't use
+      # the special atomic methods. That may not be apparent from this file,
+      # but it is the case that we can call lookups from multiple threads,
+      # when multiple pipelines are in play, and that a lookup may modify the registry.
+      @registry = java.util.concurrent.ConcurrentHashMap.new
+      @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
     end
 
@@ -119,11 +127,22 @@ module LogStash module Plugins
 
     def load_xpack
       logger.info("Loading x-pack")
-      require_relative(::File.join(LogStash::ROOT, "x-pack/lib/logstash_registry"))
+      require("x-pack/logstash_registry")
     end
 
     def load_available_plugins
+      require "logstash/plugins/builtin"
+
       GemRegistry.logstash_plugins.each do |plugin_context|
+        if plugin_context.spec.metadata.key?('java_plugin')
+          jar_files = plugin_context.spec.files.select {|f| f =~ /.*\.jar/}
+          expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
+          if (jar_files.length != 1 || !jar_files[0].end_with?(expected_jar_name))
+            raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"
+          end
+          @java_plugins[plugin_context.spec.name] = [plugin_context.spec.loaded_from, jar_files[0]]
+        end
+
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
         # to register itself to the registry of available plugins.
         #
@@ -140,17 +159,21 @@ module LogStash module Plugins
     end
 
     def lookup(type, plugin_name, &block)
-      plugin = get(type, plugin_name)
-      # Assume that we have a legacy plugin
-      if plugin.nil?
-        plugin = legacy_lookup(type, plugin_name)
-      end
+      @mutex.synchronize do
+        plugin_spec = get(type, plugin_name)
+        # Assume that we have a legacy plugin
+        if plugin_spec.nil?
+          plugin_spec = legacy_lookup(type, plugin_name)
+        end
 
-      if block_given? # if provided pass a block to do validation
-        raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin.klass, plugin_name)
-      end
+        raise LoadError, "No plugin found with name '#{plugin_name}'" unless plugin_spec
 
-      return plugin.klass
+        if block_given? # if provided pass a block to do validation
+          raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin_spec.klass, plugin_name)
+        end
+
+        return plugin_spec.klass
+      end
     end
 
     # The legacy_lookup method uses the 1.5->5.0 file structure to find and match
@@ -249,11 +272,32 @@ module LogStash module Plugins
     # @param name [String] plugin name
     # @return [Boolean] true if klass is a valid plugin for name
     def is_a_plugin?(klass, name)
-      klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name
+      (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
+      (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
+      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name)
     end
 
     def add_plugin(type, name, klass)
-      if !exists?(type, name)
+      if klass.respond_to?("javaClass", true)
+        if LogStash::SETTINGS.get_value('pipeline.plugin_classloaders')
+          full_name = 'logstash-' + key_for(type, name)
+          if @java_plugins.key?(full_name)
+            plugin_paths = @java_plugins[full_name]
+          else
+            raise LoadError,  "Could not find metadata for Java plugin: #{full_name}"
+          end
+
+          java_import org.logstash.plugins.PluginClassLoader
+          java_import org.logstash.Logstash
+
+          classloader = PluginClassLoader.create(plugin_paths[0], plugin_paths[1], Logstash.java_class.class_loader)
+          klazz = classloader.load_class(klass.javaClass.name)
+
+          @registry[key_for(type, name)] = PluginSpecification.new(type, name, klazz.ruby_class.java_class)
+        else
+          @registry[key_for(type, name)] = PluginSpecification.new(type, name, klass.javaClass)
+        end
+      elsif !exists?(type, name)
         specification_klass = type == :universal ? UniversalPluginSpecification : PluginSpecification
         @registry[key_for(type, name)] = specification_klass.new(type, name, klass)
       else

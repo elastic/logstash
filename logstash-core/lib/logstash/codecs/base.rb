@@ -1,8 +1,6 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/event"
 require "logstash/plugin"
-require "logstash/logging"
 
 # This is the base class for logstash codecs.
 module LogStash::Codecs; class Base < LogStash::Plugin
@@ -41,12 +39,12 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   # over the current API for shared plugins
   # It is best if the codec implements this directly
   def multi_encode(events)
-    if @has_encode_sync              
+    if @has_encode_sync
       events.map {|event| [event, self.encode_sync(event)]}
     else
       batch = Thread.current[:logstash_output_codec_batch] ||= []
       batch.clear
-      
+
       events.each {|event| self.encode(event) }
       batch
     end

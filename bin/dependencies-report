@@ -29,4 +29,5 @@ fi
 . "$(cd `dirname ${SOURCEPATH}`/..; pwd)/bin/logstash.lib.sh"
 setup
 
+mkdir -p build
 ruby_exec "logstash-core/lib/logstash/dependency_report_runner.rb" "$@"

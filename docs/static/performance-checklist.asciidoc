@@ -2,10 +2,10 @@
 == Performance Tuning
 
 This section includes the following information about tuning Logstash
-performance: 
+performance:
 
 * <<performance-troubleshooting>>
-* <<tuning-logstash>> 
+* <<tuning-logstash>>
 
 [[performance-troubleshooting]]
 === Performance Troubleshooting Guide
@@ -27,15 +27,15 @@ You may be tempted to jump ahead and change settings like `pipeline.workers` (`-
 ** Note whether the CPU is being heavily used. On Linux/Unix, you can run `top -H` to see process statistics broken out by thread, as well as total CPU statistics.
 ** If CPU usage is high, skip forward to the section about checking the JVM heap and then read the section about tuning Logstash worker settings.
 * Memory
-** Be aware of the fact that Logstash runs on the Java VM. This means that Logstash will always use the maximum amount of memory you allocate to it. 
+** Be aware of the fact that Logstash runs on the Java VM. This means that Logstash will always use the maximum amount of memory you allocate to it.
 ** Look for other applications that use large amounts of memory and may be causing Logstash to swap to disk. This can happen if the total memory used by applications exceeds physical memory.
 * I/O Utilization
-** Monitor disk I/O to check for disk saturation. 
-*** Disk saturation can happen if you’re using Logstash plugins (such as the file output) that may saturate your storage. 
+** Monitor disk I/O to check for disk saturation.
+*** Disk saturation can happen if you’re using Logstash plugins (such as the file output) that may saturate your storage.
 *** Disk saturation can also happen if you're encountering a lot of errors that force Logstash to generate large error logs.
 *** On Linux, you can use iostat, dstat, or something similar to monitor disk I/O.
 ** Monitor network I/O for network saturation.
-*** Network saturation can happen if you’re using inputs/outputs that perform a lot of network operations. 
+*** Network saturation can happen if you’re using inputs/outputs that perform a lot of network operations.
 *** On Linux, you can use a tool like dstat or iftop to monitor your network.
 
 . *Check the JVM heap:*
@@ -62,7 +62,7 @@ Make sure you've read the <<performance-troubleshooting>> before modifying these
 
 * The `pipeline.workers` setting determines how many threads to run for filter and output processing. If you find that events are backing up, or that the CPU is not saturated, consider increasing the value of this parameter to make better use of available processing power. Good results can even be found increasing this number past the number of available processors as these threads may spend significant time in an I/O wait state when writing to external systems. Legal values for this parameter are positive integers.
 
-* The `pipeline.batch.size` setting defines the maximum number of events an individual worker thread collects before attempting to execute filters and outputs. Larger batch sizes are generally more efficient, but increase memory overhead. Some hardware configurations require you to increase JVM heap size by setting the `LS_HEAP_SIZE` variable to avoid performance degradation with this option. Values of this parameter in excess of the optimum range cause performance degradation due to frequent garbage collection or JVM crashes related to out-of-memory exceptions. Output plugins can process each batch as a logical unit. The Elasticsearch output, for example, issues https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html[bulk requests] for each batch received. Tuning the `pipeline.batch.size` setting adjusts the size of bulk requests sent to Elasticsearch.
+* The `pipeline.batch.size` setting defines the maximum number of events an individual worker thread collects before attempting to execute filters and outputs. Larger batch sizes are generally more efficient, but increase memory overhead. Some hardware configurations require you to increase JVM heap space in the `jvm.options` config file to avoid performance degradation. (See <<config-setting-files>> for more info.) Values in excess of the optimum range cause performance degradation due to frequent garbage collection or JVM crashes related to out-of-memory exceptions. Output plugins can process each batch as a logical unit. The Elasticsearch output, for example, issues https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html[bulk requests] for each batch received. Tuning the `pipeline.batch.size` setting adjusts the size of bulk requests sent to Elasticsearch.
 
 * The `pipeline.batch.delay` setting rarely needs to be tuned. This setting adjusts the latency of the Logstash pipeline. Pipeline batch delay is the maximum amount of time in milliseconds that Logstash waits for new messages after receiving an event in the current pipeline worker thread. After this time elapses, Logstash begins to execute filters and outputs.The maximum time that Logstash waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and  `pipeline.batch.size` settings.
 
@@ -72,7 +72,7 @@ Make sure you've read the <<performance-troubleshooting>> before modifying these
 If you plan to modify the default pipeline settings, take into account the
 following suggestions:
 
-* The total number of inflight events is determined by the product of the  `pipeline.workers` and `pipeline.batch.size` settings. This product is referred to as the _inflight count_.  Keep the value of the inflight count in mind as you adjust the `pipeline.workers` and `pipeline.batch.size` settings. Pipelines that intermittently receive large events at irregular intervals require sufficient memory to handle these spikes. Configure the `LS_HEAP_SIZE` variable accordingly.
+* The total number of inflight events is determined by the product of the  `pipeline.workers` and `pipeline.batch.size` settings. This product is referred to as the _inflight count_.  Keep the value of the inflight count in mind as you adjust the `pipeline.workers` and `pipeline.batch.size` settings. Pipelines that intermittently receive large events at irregular intervals require sufficient memory to handle these spikes. Set the JVM heap space accordingly in the `jvm.options` config file. (See <<config-setting-files>> for more info.)
 
 * Measure each change to make sure it increases, rather than decreases, performance.
 
@@ -99,5 +99,5 @@ In the first example we see that the CPU isn’t being used very efficiently. In
 Examining the in-depth GC statistics with a tool similar to the excellent https://visualvm.github.io/plugins.html[VisualGC] plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
 
 NOTE: As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum.
-This document is not a comprehensive guide to JVM GC tuning. Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic. We also recommend reading http://www.semicomplete.com/blog/geekery/debugging-java-performance.html[Debugging Java Performance].
+This document is not a comprehensive guide to JVM GC tuning. Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic. We also recommend reading https://www.semicomplete.com/blog/geekery/debugging-java-performance/[Debugging Java Performance].
 

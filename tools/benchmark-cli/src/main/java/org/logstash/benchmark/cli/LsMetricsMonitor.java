@@ -40,6 +40,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         long count = 0L;
         final ListStatistics counts = new ListStatistics();
         final ListStatistics cpu = new ListStatistics();
+        final ListStatistics mem = new ListStatistics();
         long start = System.nanoTime();
         while (running) {
             try {
@@ -59,6 +60,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 count = newcount;
                 counts.addValue((double) count);
                 cpu.addValue(newcounts[1]);
+                mem.addValue(newcounts[2]);
             } catch (final InterruptedException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -67,6 +69,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         result.put(LsMetricStats.THROUGHPUT, stats);
         result.put(LsMetricStats.COUNT, counts);
         result.put(LsMetricStats.CPU_USAGE, cpu);
+        result.put(LsMetricStats.HEAP_USAGE, mem);
         store.store(result);
         return result;
     }
@@ -100,7 +103,13 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             } else {
                 cpu = readNestedLong(data, "process", "cpu", "percent");
             }
-            return new long[]{count, cpu};
+            final long heapUsed;
+            if(count == -1L) {
+                heapUsed = -1L;
+            } else {
+                heapUsed = readNestedLong(data, "jvm", "mem", "heap_used_percent");
+            }
+            return new long[]{count, cpu, heapUsed};
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }

@@ -1,13 +1,13 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
+import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyHash;
-import org.jruby.runtime.ThreadContext;
 import org.logstash.Event;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class AckedBatch {
-    private static final long serialVersionUID = -3118949118637372130L;
     private Batch batch;
 
     public static AckedBatch create(Batch batch) {
@@ -16,11 +16,12 @@ public final class AckedBatch {
         return ackedBatch;
     }
 
-    public RubyHash toRubyHash(ThreadContext context) {
-        final RubyHash result = RubyHash.newHash(context.runtime);
-        this.batch.getElements().forEach(e -> result.put(
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime, (Event) e),
-            context.tru
+    public RubyHash toRubyHash(final Ruby runtime) {
+        final RubyBoolean trueValue = runtime.getTrue();
+        final RubyHash result = RubyHash.newHash(runtime);
+        this.batch.getElements().forEach(e -> result.fastASet(
+            JrubyEventExtLibrary.RubyEvent.newRubyEvent(runtime, (Event) e),
+            trueValue
             )
         );
         return result;

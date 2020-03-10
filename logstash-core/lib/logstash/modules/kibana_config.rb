@@ -1,7 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
-
 require_relative "file_reader"
 require_relative "kibana_settings"
 require_relative "kibana_dashboards"
@@ -11,7 +8,7 @@ module LogStash module Modules class KibanaConfig
   include LogStash::Util::Loggable
 
   ALLOWED_DIRECTORIES = ["search", "visualization"]
-  attr_reader :index_name # not used when importing via kibana but for BWC with ElastsearchConfig
+  attr_reader :index_name # not used when importing via kibana but for BWC with ElasticsearchConfig
 
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)

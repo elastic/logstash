@@ -1,6 +1,5 @@
 # encoding: utf-8
 require 'logstash/api/commands/base'
-require "logstash/util/duration_formatter"
 require 'logstash/build'
 
 module LogStash

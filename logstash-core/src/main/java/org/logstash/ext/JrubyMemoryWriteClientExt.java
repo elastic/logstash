@@ -1,19 +1,20 @@
 package org.logstash.ext;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
-import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 
 @JRubyClass(name = "MemoryWriteClient")
-public final class JrubyMemoryWriteClientExt extends RubyObject {
+public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClientExt {
+
+    private static final long serialVersionUID = 1L;
 
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
@@ -22,31 +23,38 @@ public final class JrubyMemoryWriteClientExt extends RubyObject {
     }
 
     private JrubyMemoryWriteClientExt(final Ruby runtime, final RubyClass metaClass,
-                                     BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
         super(runtime, metaClass);
         this.queue = queue;
     }
 
     public static JrubyMemoryWriteClientExt create(
-            BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
         return new JrubyMemoryWriteClientExt(RubyUtil.RUBY,
-                RubyUtil.MEMORY_WRITE_CLIENT_CLASS, queue);
+            RubyUtil.MEMORY_WRITE_CLIENT_CLASS, queue);
     }
 
-    @JRubyMethod(name = {"push", "<<"}, required = 1)
-    public IRubyObject rubyPush(final ThreadContext context, IRubyObject event)
-            throws InterruptedException {
-        queue.put((JrubyEventExtLibrary.RubyEvent) event);
+    @Override
+    protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
+        final JrubyEventExtLibrary.RubyEvent event)
+        throws InterruptedException {
+        queue.put(event);
         return this;
     }
 
-    @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch)
-            throws InterruptedException {
-        Collection<JrubyEventExtLibrary.RubyEvent> typedBatch =
-                (Collection<JrubyEventExtLibrary.RubyEvent>)batch;
-        LsQueueUtils.addAll(queue, typedBatch);
+    @Override
+    public JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
+        final Collection<JrubyEventExtLibrary.RubyEvent> batch) throws InterruptedException {
+        LsQueueUtils.addAll(queue, batch);
         return this;
     }
 
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.put(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event(event)));
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

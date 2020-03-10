@@ -6,10 +6,9 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaObject;
-import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
@@ -18,7 +17,6 @@ import org.logstash.ackedqueue.AckedBatch;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ext.JrubyEventExtLibrary;
 
 @JRubyClass(name = "AckedQueue")
 public final class JRubyAckedQueueExt extends RubyObject {
@@ -35,26 +33,16 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
-    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                            int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
-        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, maxBytes);
+        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, checkpointRetry,
+                maxBytes);
         return queueExt;
     }
 
-    @JRubyMethod(name = "initialize", optional = 7)
-    public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
-        args = Arity.scanArgs(context.runtime, args, 7, 0);
-        int capacity = RubyFixnum.num2int(args[1]);
-        int maxUnread = RubyFixnum.num2int(args[2]);
-        int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
-        int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
-        long queueMaxBytes = RubyFixnum.num2long(args[6]);
-        initializeQueue(args[0].asJavaString(), capacity, maxUnread, checkpointMaxWrites, checkpointMaxAcks, queueMaxBytes);
-
-        return context.nil;
-    }
-
-    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites,
+                                 int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
         this.queue = new Queue(
             SettingsImpl.fileSettingsBuilder(path)
                 .capacity(capacity)
@@ -62,6 +50,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
                 .queueMaxBytes(maxBytes)
                 .checkpointMaxAcks(checkpointMaxAcks)
                 .checkpointMaxWrites(checkpointMaxWrites)
+                .checkpointRetry(checkpointRetry)
                 .elementClass(Event.class)
                 .build()
         );
@@ -83,7 +72,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
     }
 
     @JRubyMethod(name = "dir_path")
-    public IRubyObject ruby_dir_path(ThreadContext context) {
+    public RubyString ruby_dir_path(ThreadContext context) {
         return context.runtime.newString(queue.getDirPath());
     }
 
@@ -107,46 +96,31 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return context.runtime.newFixnum(queue.getUnreadCount());
     }
 
-    @JRubyMethod(name = "open")
-    public IRubyObject ruby_open(ThreadContext context) {
-        try {
-            open();
-        } catch (IOException e) {
-            throw RubyUtil.newRubyIOError(context.runtime, e);
-        }
-        return context.nil;
-    }
-
     public void open() throws IOException {
         queue.open();
     }
 
-    @JRubyMethod(name = {"write", "<<"}, required = 1)
-    public IRubyObject ruby_write(ThreadContext context, IRubyObject event) {
-        if (!(event instanceof JrubyEventExtLibrary.RubyEvent)) {
-            throw context.runtime.newTypeError(
-                "wrong argument type " + event.getMetaClass() + " (expected LogStash::Event)");
-        }
-        long seqNum;
+    public void rubyWrite(ThreadContext context, Event event) {
         try {
-            seqNum = this.queue.write(((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+            this.queue.write(event);
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
-        return context.runtime.newFixnum(seqNum);
+    }
+
+    public void write(Event event) throws IOException {
+        this.queue.write(event);
     }
 
     @JRubyMethod(name = "read_batch", required = 2)
-    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit,
-        IRubyObject timeout) {
+    public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit, IRubyObject timeout) {
         AckedBatch b;
         try {
             b = readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
-        // TODO: return proper Batch object
-        return (b == null) ? context.nil : JavaObject.wrap(context.runtime, b);
+        return RubyUtil.toRubyObject(b);
     }
 
     public AckedBatch readBatch(int limit, long timeout) throws IOException {
@@ -159,23 +133,8 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return RubyBoolean.newBoolean(context.runtime, this.queue.isFullyAcked());
     }
 
-    @JRubyMethod(name = "is_empty?")
-    public IRubyObject ruby_is_empty(ThreadContext context) {
-        return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
-    }
-
     public boolean isEmpty() {
         return queue.isEmpty();
-    }
-
-    @JRubyMethod(name = "close")
-    public IRubyObject ruby_close(ThreadContext context) {
-        try {
-            close();
-        } catch (IOException e) {
-            throw RubyUtil.newRubyIOError(context.runtime, e);
-        }
-        return context.nil;
     }
 
     public void close() throws IOException {

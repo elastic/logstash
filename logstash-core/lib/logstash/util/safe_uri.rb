@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/util"
 require "forwardable"
 
@@ -8,14 +7,14 @@ require "forwardable"
 class LogStash::Util::SafeURI
   PASS_PLACEHOLDER = "xxxxxx".freeze
   HOSTNAME_PORT_REGEX=/\A(?<hostname>([A-Za-z0-9\.\-]+)|\[[0-9A-Fa-f\:]+\])(:(?<port>\d+))?\Z/
-  
+
   extend Forwardable
-  
-  
+
+
   attr_reader :uri
 
   public
-  def initialize(arg)    
+  def initialize(arg)
     @uri = case arg
            when String
              arg = "//#{arg}" if HOSTNAME_PORT_REGEX.match(arg)
@@ -27,6 +26,7 @@ class LogStash::Util::SafeURI
            else
              raise ArgumentError, "Expected a string, java.net.URI, or URI, got a #{arg.class} creating a URL"
            end
+    raise ArgumentError, "URI is not valid - host is not specified" if @uri.host.nil?
   end
 
   def to_s
@@ -39,15 +39,20 @@ class LogStash::Util::SafeURI
 
   def sanitized
     return uri unless password # nothing to sanitize here!
-    
+
     user_info = user ? "#{user}:#{PASS_PLACEHOLDER}" : nil
 
     make_uri(scheme, user_info, host, port, path, query, fragment)
   end
 
-  def ==(other)
+  def hash
+    @uri.hash * 11
+  end
+
+  def eql?(other)
     other.is_a?(::LogStash::Util::SafeURI) ? @uri == other.uri : false
   end
+  alias == eql?
 
   def clone
     # No need to clone the URI, in java its immutable
@@ -64,7 +69,7 @@ class LogStash::Util::SafeURI
     new_query = query
     new_fragment = fragment
 
-    case field 
+    case field
     when :scheme
       new_scheme = value
     when :user
@@ -124,7 +129,7 @@ class LogStash::Util::SafeURI
     # In java this is an int
     uri.port < 1 ? nil : uri.port
   end
- 
+
   def port=(new_port)
     update(:port, new_port)
   end
@@ -144,13 +149,13 @@ class LogStash::Util::SafeURI
   # Same algorithm as Ruby's URI class uses
   def normalize!
     if path && path == ''
-      path = '/'
+      update(:path, '/')
     end
     if scheme && scheme != scheme.downcase
-      scheme = self.scheme.downcase
+      update(:scheme, self.scheme.downcase)
     end
     if host && host != host.downcase
-      host = self.host.downcase
+      update(:host, self.host.downcase)
     end
   end
 

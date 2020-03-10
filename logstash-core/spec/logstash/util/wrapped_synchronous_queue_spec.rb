@@ -84,8 +84,8 @@ describe LogStash::WrappedSynchronousQueue do
 
       context "when writing to the queue" do
         before :each do
-          read_client.set_events_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
-          read_client.set_pipeline_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
+          read_client.set_events_metric(LogStash::Instrument::NamespacedNullMetric.new(nil, :null))
+          read_client.set_pipeline_metric(LogStash::Instrument::NamespacedNullMetric.new(nil, :null))
         end
 
         it "appends batches to the queue" do
@@ -116,6 +116,16 @@ describe LogStash::WrappedSynchronousQueue do
           end
           (0..2).each {|i| expect(received).to include("value-#{i}")}
           (3..4).each {|i| expect(received).to include("generated-#{i}")}
+        end
+
+        it "handles Java proxied read-batch object" do
+          batch = []
+          3.times { |i| batch.push(LogStash::Event.new({"message" => "value-#{i}"})) }
+          write_client.push_batch(batch)
+
+          read_batch = read_client.read_batch
+          expect { read_client.close_batch(read_batch) }.to_not raise_error
+          expect { read_client.close_batch(read_batch.to_java) }.to_not raise_error
         end
       end
     end

@@ -17,7 +17,6 @@
 ################################################################
 
 ## GC configuration
--XX:+UseParNewGC
 -XX:+UseConcMarkSweepGC
 -XX:CMSInitiatingOccupancyFraction=75
 -XX:+UseCMSInitiatingOccupancyOnly
@@ -50,6 +49,8 @@
 -Djruby.compile.invokedynamic=true
 # Force Compilation
 -Djruby.jit.threshold=0
+# Make sure joni regexp interruptability is enabled
+-Djruby.regexp.interruptible=true
 
 ## heap dumps
 
@@ -75,3 +76,6 @@
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom
+
+# Copy the logging context from parent threads to children
+-Dlog4j2.isThreadContextMapInheritable=true

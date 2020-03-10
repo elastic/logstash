@@ -2,11 +2,10 @@ $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__) + "/../../logstash-core/
 require_relative "../bootstrap/environment"
 LogStash::Bundler.setup!({:without => [:build, :development]})
 
-require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/util/settings_helper"
-require "logstash/util/secretstore"
 
+java_import "org.logstash.secret.store.SecretStoreExt"
 java_import "org.logstash.secret.store.SecretStoreFactory"
 java_import "org.logstash.secret.SecretIdentifier"
 java_import "org.logstash.secret.store.SecureConfig"
@@ -31,7 +30,7 @@ class LogStash::SecretStoreCli
     LogStash::Util::SettingsHelper.pre_process
     LogStash::Util::SettingsHelper.from_yaml(["--path.settings", path_settings_value])
     LogStash::Util::SettingsHelper.post_process
-    secure_config = LogStash::Util::SecretStore.get_config
+    secure_config = SecretStoreExt.getConfig(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
     cli = SecretStoreCli.new(Terminal.new)
     cli.command(ARGV[0], secure_config, ARGV[1])
     exit 0

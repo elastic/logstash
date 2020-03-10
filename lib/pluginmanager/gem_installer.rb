@@ -10,7 +10,7 @@ module LogStash module PluginManager
   # - Generate the specifications
   # - Copy the data in the right folders
   class GemInstaller
-    GEM_HOME = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "2.3.0"))
+    GEM_HOME = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "2.5.0"))
     SPECIFICATIONS_DIR = "specifications"
     GEMS_DIR = "gems"
     CACHE_DIR = "cache"
@@ -38,7 +38,13 @@ module LogStash module PluginManager
 
     private
     def spec
-      @gem.spec
+      gem_spec = @gem.spec
+      def gem_spec.for_cache
+        spec = dup
+        spec.test_files = nil
+        spec
+      end
+      gem_spec
     end
 
     def spec_dir

@@ -4,10 +4,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.secret.EnvironmentUtil;
+import org.logstash.secret.store.SecretStoreFactory;
 import org.logstash.secret.store.SecureConfig;
 
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,14 +29,17 @@ public class SecretStoreCliTest {
     @Before
     public void _setup() throws Exception {
         terminal = new TestTerminal();
-        cli = new SecretStoreCli(terminal);
+
+        final Map<String,String> environment = environmentWithout(ENVIRONMENT_PASS_KEY);
+        final SecretStoreFactory secretStoreFactory = SecretStoreFactory.withEnvironment(environment);
+
+        cli = new SecretStoreCli(terminal, secretStoreFactory);
         existingStoreConfig = new SecureConfig();
         existingStoreConfig.add("keystore.file",
                 Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore.with.default.pass").toURI()).toString().toCharArray());
         char[] keyStorePath = folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray();
         newStoreConfig = new SecureConfig();
         newStoreConfig.add("keystore.file", keyStorePath.clone());
-        EnvironmentUtil.remove(ENVIRONMENT_PASS_KEY);
     }
 
     @Test
@@ -205,6 +211,13 @@ public class SecretStoreCliTest {
                 containsIgnoringCase("list").
                 containsIgnoringCase("add").
                 containsIgnoringCase("remove");
+    }
+
+    private Map<String,String> environmentWithout(final String key) {
+        final Map<String,String> mutableEnvironment = new HashMap<>(System.getenv());
+        mutableEnvironment.remove(key);
+
+        return Collections.unmodifiableMap(mutableEnvironment);
     }
 
 

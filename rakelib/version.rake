@@ -2,7 +2,7 @@ require 'yaml'
 
 VERSION_FILE = "versions.yml"
 README_FILE = "README.md"
-INDEX_SHARED1_FILE = "docs/index-shared1.asciidoc"
+INDEX_SHARED1_FILE = "docs/index.asciidoc"
 
 def get_versions
   yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))
@@ -33,7 +33,7 @@ end
 
 def update_readme(old_version, new_version)
   readme = IO.read(README_FILE)
-  readme.gsub!(/(logstash\-)#{old_version['logstash']}/) { "#{$1}#{new_version['logstash']}" }
+  readme.gsub!(/(logstash\-(oss\-)?)#{old_version['logstash']}/) { "#{$1}#{new_version['logstash']}" }
   IO.write(README_FILE, readme)
 end
 

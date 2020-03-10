@@ -1,9 +1,12 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.17'
+        classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 }
 
@@ -12,12 +15,11 @@ plugins {
 }
 
 apply plugin: 'de.undercouch.download'
+apply from: "rubyUtils.gradle"
+
 
 import de.undercouch.gradle.tasks.download.Download
-import de.undercouch.gradle.tasks.download.Verify
-import org.logstash.gradle.ExecLogOutputStream
-import org.logstash.gradle.RubyGradleUtils
-import org.yaml.snakeyaml.Yaml
+import groovy.json.JsonSlurper
 
 allprojects {
   group = 'org.logstash'
@@ -29,12 +31,15 @@ allprojects {
   project.targetCompatibility = JavaVersion.VERSION_1_8
 
   tasks.withType(JavaCompile).all {
-      def env = System.getenv()
-      boolean ci = env['CI']
+      options.compilerArgs.add("-Xlint:all")
+      options.compilerArgs.add("-Xlint:-processing")
+      options.compilerArgs.add("-Werror")
+  }
 
-      //don't lint when running CI builds
-      if(!ci){
-          options.compilerArgs.add("-Xlint:all")
+  tasks.withType(Javadoc) {
+      options.addStringOption("Xwerror", "-quiet")
+      if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
+          options.addBooleanOption("html5", true)
       }
   }
 
@@ -51,6 +56,7 @@ allprojects {
       exceptionFormat "full"
       showCauses true
       showStackTraces true
+      enableAssertions false
 
       // set options for log level DEBUG and INFO
       debug {
@@ -72,25 +78,33 @@ allprojects {
   }
 }
 
-// fetch version from Logstash's master versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
-version = versionMap['logstash-core']
+subprojects {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        compile "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
+    }
 
-String jRubyURL
-String jRubyVersion
-String jRubySha1
-Boolean doChecksum
+    apply plugin: 'com.github.jk1.dependency-license-report'
 
-if (versionMap["jruby-runtime-override"]) {
-    jRubyVersion = versionMap["jruby-runtime-override"]["version"]
-    jRubyURL = versionMap["jruby-runtime-override"]["url"]
-    doChecksum = false
-} else {
-    jRubyVersion = versionMap["jruby"]["version"]
-    jRubySha1 = versionMap["jruby"]["sha1"]
-    jRubyURL = "http://jruby.org.s3.amazonaws.com/downloads/${jRubyVersion}/jruby-bin-${jRubyVersion}.tar.gz"
-    doChecksum = true
+    licenseReport {
+        renderer = new com.github.jk1.license.render.CsvReportRenderer()
+        configurations = ['compile', 'runtime']
+    }
 }
+
+// fetch version from Logstash's master versions.yml file
+version = versionMap['logstash-core']
+def versionQualifier = System.getenv('VERSION_QUALIFIER')
+if (versionQualifier) {
+    version = "$version-$versionQualifier"
+}
+// a release build will try to download the exact version artifact and not append -SNAPSHOT to it see
+// the downloadEs task below
+def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
 
 // Tasks
 
@@ -98,127 +112,116 @@ clean {
   delete "${projectDir}/Gemfile"
   delete "${projectDir}/Gemfile.lock"
   delete "${projectDir}/vendor"
-  delete "${projectDir}/NOTICE.TXT"
   delete "${projectDir}/.bundle"
   delete "${projectDir}/qa/integration/Gemfile.lock"
   delete "${projectDir}/qa/integration/.bundle"
+  delete "${projectDir}/build/licenseReportFolders.txt"
+  delete "${projectDir}/build/rubyDependencies.csv"
 }
 
-task bootstrap {}
+def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
+  it.tasks.findByName("assemble")
+}
 
-RubyGradleUtils rubyGradleUtils = new RubyGradleUtils(buildDir, projectDir)
+task installBundler(dependsOn: assemblyDeps) {
+  outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
+  doLast {
+      gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
+  }
+}
+
+task bootstrap(dependsOn: installBundler) {
+  doLast {
+      setupJruby(projectDir, buildDir)
+  }
+}
+
+
+task installDefaultGems(dependsOn: bootstrap) {
+  doLast {
+      rake(projectDir, buildDir, 'plugin:install-default')
+  }
+}
+
+task installTestGems(dependsOn: bootstrap) {
+  doLast {
+      rake(projectDir, buildDir, 'plugin:install-development-dependencies')
+  }
+}
+
+task compileGrammar(dependsOn: bootstrap) {
+    doLast {
+        rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
+task assembleTarDistribution(dependsOn: bootstrap) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  inputs.files fileTree("${projectDir}/x-pack")
+  outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:tar')
+  }
+}
+
+task assembleOssTarDistribution(dependsOn: bootstrap) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:tar_oss')
+  }
+}
+
+task assembleZipDistribution(dependsOn: bootstrap) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  inputs.files fileTree("${projectDir}/x-pack")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:zip')
+  }
+}
+
+task assembleOssZipDistribution(dependsOn: bootstrap) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:zip_oss')
+
+  }
+}
 
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
-      dependsOn bootstrap
+      dependsOn installTestGems
     }
-  }
-}
-
-def jrubyTarPath = "${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz"
-
-task downloadJRuby(type: Download) {
-    description "Download JRuby artifact from this specific URL: ${jRubyURL}"
-    src jRubyURL
-    onlyIfNewer true
-    inputs.file("${projectDir}/versions.yml")
-    outputs.file(jrubyTarPath)
-    dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
-}
-
-task verifyFile(dependsOn: downloadJRuby, type: Verify) {
-    description "Verify the SHA1 of the download JRuby artifact"
-    inputs.file(jrubyTarPath)
-    outputs.file(jrubyTarPath)
-    src new File(jrubyTarPath)
-    algorithm 'SHA-1'
-    checksum jRubySha1
-}
-
-task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
-    description "Install JRuby in the vendor directory"
-    inputs.file(jrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby")
-    from tarTree(downloadJRuby.dest)
-    eachFile { f ->
-      f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
-    }
-    exclude "**/stdlib/rdoc/**"
-    includeEmptyDirs = false
-    into "${projectDir}/vendor/jruby"
-}
-
-task installTestGems(dependsOn: downloadAndInstallJRuby) {
-  inputs.files file("${projectDir}/Gemfile.template")
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files file("${projectDir}/versions.yml")
-  outputs.file("${projectDir}/Gemfile")
-  outputs.file("${projectDir}/Gemfile.lock")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
-  doLast {
-    rubyGradleUtils.rake('test:install-core')
-  }
-}
-
-task assembleTarDistribution(dependsOn: downloadAndInstallJRuby) {
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
-  doLast {
-    rubyGradleUtils.rake('artifact:tar')
-  }
-}
-
-task assembleOssTarDistribution() {
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  doLast {
-    rubyGradleUtils.rake('artifact:tar_oss')
-  }
-}
-
-task assembleZipDistribution(dependsOn: downloadAndInstallJRuby) {
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-    rubyGradleUtils.rake('artifact:zip')
-  }
-}
-
-task assembleOssZipDistribution(dependsOn: downloadAndInstallJRuby) {
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-    rubyGradleUtils.rake('artifact:zip_oss')
   }
 }
 
@@ -233,19 +236,17 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
 }
 
 def qaVendorPath = "${buildDir}/qa/integration/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0"
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
-task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
-  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // directly invoke bin/gem to install bundlers and force install dir "-i" into qaBundledGemPath
-  commandLine "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0", "-i", qaBundledGemPath
+task installIntegrationTestBundler(dependsOn: unpackTarDistribution) {
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.17.3")
+  doLast {
+      gem(projectDir, buildDir, "bundler", "1.17.3", qaBundledGemPath)
+  }
 }
 
-task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
-  workingDir "${projectDir}/qa/integration"
+task installIntegrationTestGems(dependsOn: installIntegrationTestBundler) {
   inputs.files file("${projectDir}/qa/integration/Gemfile")
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
@@ -253,49 +254,149 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
   outputs.files fileTree("${qaVendorPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // directly invoke bin/bundler and force install gem path to qaVendorPath
-  // note that bundler appends jruby/2.3.0 to the install path
-  commandLine qaBundleBin, "install", "--path", qaVendorPath
+  doLast {
+      bundleWithEnv(
+        projectDir, buildDir,
+        "${projectDir}/qa/integration", qaBundleBin, ['install', '--path', qaVendorPath],
+        [LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath]
+      )
+  }
 }
 
-def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
-def rubyBin = "${projectDir}" +
-  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
+def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/).join(",") : "specs/**/*_spec.rb"
+def integrationTestPwd = "${projectDir}/qa/integration"
 
-task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
-  workingDir "${projectDir}/qa/integration"
-  environment "LS_GEM_PATH", qaBundledGemPath
-  environment "LS_GEM_HOME", qaBundledGemPath
-  // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
-  environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // indirect launching of bin/bundle via bin/ruby so that the bundle exec command inherit
-  // the correct gem path environment which is not settable by command line
-  commandLine([rubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+project(":logstash-integration-tests") {
+    tasks.getByPath(":logstash-integration-tests:integrationTests").configure {
+      systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
+      environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
+      workingDir integrationTestPwd
+      dependsOn installIntegrationTestGems
+  }
 }
 
-// If you are running a JRuby snapshot we will skip the integrity check.
-verifyFile.onlyIf { doChecksum }
-bootstrap.dependsOn installTestGems
+task runIntegrationTests(dependsOn: [tasks.getByPath(":logstash-integration-tests:integrationTests")]) {}
+
+task generateLicenseReport(type: JavaExec) {
+    dependsOn("generateLicenseReportInputs")
+    dependsOn(":dependencies-report:assemble")
+
+    def jarFile = project('dependencies-report').getBuildDir().toString() + "/libs/dependencies-report.jar"
+
+    String licenseReportInputCSV = project.hasProperty("licenseReportInputCSV") ? project.property("licenseReportInputCSV") : "build/dependencies.csv.ruby"
+    String licenseReportOutputCSV = project.hasProperty("licenseReportOutputCSV") ? project.property("licenseReportOutputCSV") : "build/dependencies.csv"
+    String noticePath = "NOTICE.txt"
+
+    classpath = project.files([jarFile])
+    main = "org.logstash.dependencies.Main"
+    args licenseReportInputCSV,
+      project.getBuildDir().toString() + "/licenseReportFolders.txt",
+      licenseReportOutputCSV, noticePath
+}
+
+task generateLicenseReportInputs() {
+    dependsOn subprojects.generateLicenseReport
+
+    // write location of all license reports for subprojects containing artifacts that are distributed to single file
+    StringBuilder licenseReportFolders = new StringBuilder()
+    subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true'}.each { s ->
+        s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
+            licenseReportFolders.append(t3.outputs.files.asPath + "\n")
+        }
+    }
+
+    if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
+        def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
+        def licenseReportFolder = new File(licenseReportPath)
+        licenseReportFolder.delete()
+        licenseReportFolder = new File(licenseReportPath)
+        licenseReportFolder.createNewFile()
+        if (licenseReportFolder.canWrite()) {
+            licenseReportFolder.text = licenseReportFolders.toString()
+        }
+    }
+}
+
+task generatePluginsVersion(dependsOn: installDefaultGems) {
+  doLast {
+      rake(projectDir, buildDir, 'generate_plugins_version')
+  }
+}
+
+bootstrap.dependsOn assemblyDeps
 
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-String elasticsearchSnapshotURL = "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
-String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
+String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
 
 task downloadEs(type: Download) {
     description "Download ES Snapshot for current branch version: ${version}"
-    src elasticsearchSnapshotURL
+
+    doFirst {
+        if (!project.ext.versionFound) {
+            throw new GradleException("could not find the current artifact from the artifact-api ${artifactsVersionApi} for " + (isReleaseBuild ? "release" : "snapshot") + " version: ${version}")
+        }
+    }
+
+    String apiResponse = artifactsVersionApi.toURL().text
+    def dlVersions = new JsonSlurper().parseText(apiResponse)
+    // the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
+    // in the normal PR type builds it is plain '7.0.0'
+    // in the build invoked by the release manager it is '7.0.0-alpha1' etc.
+    // the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
+    
+    String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
+
+    if (qualifiedVersion == null) {
+        // the version is not found in the versions API, for now just set dummy values so the
+        // task parameters like src and dest below sees these dummy values but also set
+        // versionFound to false so that we can fail the task in the doFirst closure.
+        // this is somewhat convoluted and there is certainly a better way to do this but
+        // it seems to be an acceptable solution for now.
+        project.ext.set("versionFound", false)
+        project.ext.set("elasticsearchSnapshotURL", "http://elastic.co/invalid")
+        project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/invalid")
+    } else {
+        project.ext.set("versionFound", true)
+
+        String arch = "x86_64"
+        String osName = System.properties['os.name']
+
+        if (osName ==~ /Mac OS X/) {
+            osName = "darwin"
+        } else {
+            osName = "linux"
+        }
+
+        String architecture = "${osName}-${arch}"
+
+        String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}-${architecture}"
+        project.ext.set("unpackedElasticsearchName", "elasticsearch-${qualifiedVersion}")
+
+        // find latest reference to last build
+        String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
+        apiResponse = buildsListApi.toURL().text
+        def dlBuilds = new JsonSlurper().parseText(apiResponse)
+        String build = dlBuilds["builds"][0]
+
+        // find url of build artifact
+        String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+        apiResponse = artifactApiUrl.toURL().text
+        def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+        project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
+        project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+    }
+
+    src project.ext.elasticsearchSnapshotURL
     onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
-    outputs.file(elasticsearchDownloadLocation)
-    dest new File(elasticsearchDownloadLocation)
+    outputs.file(project.ext.elasticsearchDownloadLocation)
+    dest new File(project.ext.elasticsearchDownloadLocation)
+
     doLast {
-        System.out.println "Downloaded to ${elasticsearchDownloadLocation}"
+        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
@@ -304,27 +405,29 @@ task deleteLocalEs(type: Delete) {
 }
 
 task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
-    from tarTree(resources.gzip(elasticsearchDownloadLocation))
+    from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
+
     doLast {
-        file("./build/elasticsearch-${version}-SNAPSHOT").renameTo('./build/elasticsearch')
+        file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
+        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
     }
 }
 
 Boolean oss = System.getenv('OSS').equals('true')
 
 if (!oss) {
-  task runXPackIntegrationTests(type: Exec, dependsOn: [installTestGems, copyEs]) {
-      workingDir "${projectDir}/x-pack"
-      standardOutput = new ExecLogOutputStream(System.out)
-      errorOutput = new ExecLogOutputStream(System.err)
-      commandLine(['../bin/rspec', '-fd', 'qa/integration'])
+  project(":logstash-xpack") {
+    ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
+      tasks.getByPath(":logstash-xpack:" + tsk).configure {
+        dependsOn installTestGems
+      }
+    }
+    tasks.getByPath(":logstash-xpack:rubyIntegrationTests").configure {
+      dependsOn copyEs
+    }
   }
 
-  task runXPackUnitTests(type: Exec, dependsOn: installTestGems) {
-      workingDir "${projectDir}/x-pack"
-      standardOutput = new ExecLogOutputStream(System.out)
-      errorOutput = new ExecLogOutputStream(System.err)
-      commandLine(['../bin/rspec', 'spec', '-fd'])
-  }
+  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
+  task runXPackIntegrationTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyIntegrationTests")]) {}
 }

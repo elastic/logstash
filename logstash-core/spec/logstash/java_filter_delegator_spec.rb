@@ -1,12 +1,12 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/java_filter_delegator"
-require "logstash/instrument/null_metric"
+require "logstash/filter_delegator"
 require "logstash/event"
-require "logstash/execution_context"
 require "support/shared_contexts"
 
-describe LogStash::JavaFilterDelegator do
+java_import org.logstash.RubyUtil
+
+describe LogStash::FilterDelegator do
 
   class MockGauge
     def increment(_)
@@ -15,23 +15,34 @@ describe LogStash::JavaFilterDelegator do
 
   include_context "execution_context"
 
-  let(:filter_id) { "my-filter" }
+  let(:filter_id) { "my_filter" }
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:collector) { [] }
-  let(:counter_in) { MockGauge.new }
-  let(:counter_out) { MockGauge.new }
-  let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
+  let(:metric) {
+    LogStash::Instrument::NamespacedMetric.new(
+        LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
+    )
+  }
+  let(:counter_in) {
+    counter = metric.counter(:in)
+    counter.increment(0)
+    counter
+  }
+  let(:counter_out) {
+    counter = metric.counter(:out)
+    counter.increment(0)
+    counter
+  }
+  let(:counter_time) {
+    counter = metric.counter(:duration_in_millis)
+    counter.increment(0)
+    counter
+  }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   before :each do
     allow(pipeline).to receive(:id).and_return(pipeline_id)
-    allow(metric).to receive(:namespace).with(anything).and_return(metric)
-    allow(metric).to receive(:counter).with(:in).and_return(counter_in)
-    allow(metric).to receive(:counter).with(:out).and_return(counter_out)
-    allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
   end
 
   let(:plugin_klass) do
@@ -42,12 +53,11 @@ describe LogStash::JavaFilterDelegator do
     end
   end
 
-  subject { described_class.new(plugin_klass, metric, execution_context, config) }
-
-  it "create a plugin with the passed options" do
-    expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(plugin_klass, metric, execution_context, config)
-  end
+  subject {
+    LogStash::Plugins::PluginFactory.filter_delegator(
+        described_class, plugin_klass, config, metric, execution_context
+    )
+  }
 
   context "when the plugin support flush" do
     let(:plugin_klass) do
@@ -65,37 +75,47 @@ describe LogStash::JavaFilterDelegator do
     end
 
     it "defines a flush method" do
-      expect(subject.respond_to?(:flush)).to be_truthy
+      expect(subject.to_java.hasFlush).to be_truthy
     end
 
     context "when the flush return events" do
       it "increments the out" do
-        subject.multi_filter([LogStash::Event.new])
-        expect(counter_out).to receive(:increment).with(1)
-        subject.flush({})
+        subject.to_java.multiFilter([LogStash::Event.new])
+        event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
+            "filter/my_filter"
+        )[:filter][:my_filter][:events]
+        expect(event_metrics[:out].value).to eq(0)
+        subject.to_java.flush({})
+        expect(event_metrics[:out].value).to eq(1)
       end
     end
 
     context "when the flush doesn't return anything" do
       it "doesnt increment the out" do
-        expect(metric).not_to receive(:increment)
-        subject.flush({})
+        subject.to_java.flush({})
+        expect(
+            metric.collector.snapshot_metric.metric_store.
+                get_with_path("filter/my_filter")[:filter][:my_filter][:events][:duration_in_millis].value
+        ).to eq(0)
       end
     end
 
     context "when the filter buffer events" do
-      before do
-        allow(metric).to receive(:increment).with(anything, anything)
-      end
 
       it "has incremented :in" do
-        expect(counter_in).to receive(:increment).with(events.size)
-        subject.multi_filter(events)
+        subject.to_java.multiFilter(events)
+        expect(
+            metric.collector.snapshot_metric.metric_store.
+                get_with_path("filter/my_filter")[:filter][:my_filter][:events][:in].value
+        ).to eq(events.size)
       end
 
       it "has not incremented :out" do
-        expect(counter_out).not_to receive(:increment).with(anything)
-        subject.multi_filter(events)
+        subject.to_java.multiFilter(events)
+        expect(
+            metric.collector.snapshot_metric.metric_store.
+                get_with_path("filter/my_filter")[:filter][:my_filter][:events][:out].value
+        ).to eq(0)
       end
     end
 
@@ -115,15 +135,13 @@ describe LogStash::JavaFilterDelegator do
         end
       end
 
-      before do
-        allow(metric).to receive(:increment).with(anything, anything)
-      end
-
       it "increments the in/out of the metric" do
-        expect(counter_in).to receive(:increment).with(events.size)
-        expect(counter_out).to receive(:increment).with(events.size * 2)
-
-        subject.multi_filter(events)
+        subject.to_java.multiFilter(events)
+        event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
+            "filter/my_filter"
+        )[:filter][:my_filter][:events]
+        expect(event_metrics[:in].value).to eq(events.size)
+        expect(event_metrics[:out].value).to eq(events.size * 2)
       end
     end
   end
@@ -145,14 +163,16 @@ describe LogStash::JavaFilterDelegator do
     end
 
     it "doesnt define a flush method" do
-      expect(subject.has_flush).to be_falsey
+      expect(subject.to_java.hasFlush).to be_falsey
     end
 
     it "increments the in/out of the metric" do
-      expect(counter_in).to receive(:increment).with(events.size)
-      expect(counter_out).to receive(:increment).with(events.size)
-
-      subject.multi_filter(events)
+      subject.to_java.multiFilter(events)
+      event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
+          "filter/my_filter"
+      )[:filter][:my_filter][:events]
+      expect(event_metrics[:in].value).to eq(events.size)
+      expect(event_metrics[:out].value).to eq(events.size)
     end
   end
 
@@ -162,14 +182,4 @@ describe LogStash::JavaFilterDelegator do
     end
   end
 
-  context "delegate methods to the original plugin" do
-    # I am not testing the behavior of these methods
-    # this is done in the plugin tests. I just want to make sure
-    # the proxy delegates the methods.
-    LogStash::JavaFilterDelegator::DELEGATED_METHODS.each do |method|
-      it "delegate method: `#{method}` to the filter" do
-        expect(subject.respond_to?(method))
-      end
-    end
-  end
 end

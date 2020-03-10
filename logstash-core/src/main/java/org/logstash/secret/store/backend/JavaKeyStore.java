@@ -41,7 +41,7 @@ public final class JavaKeyStore implements SecretStore {
     private static final String KEYSTORE_TYPE = "pkcs12";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String PATH_KEY = "keystore.file";
-    private static final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
+    private final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
     private KeyStore keyStore;
     private char[] keyStorePass;
     private Path keyStorePath;
@@ -138,6 +138,9 @@ public final class JavaKeyStore implements SecretStore {
         return new File(new String(path)).exists();
     }
 
+    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
+    // since this project still supports Java 8, suppress the warning.
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable {
         SecretStoreUtil.clearChars(keyStorePass);
@@ -372,10 +375,10 @@ public final class JavaKeyStore implements SecretStore {
      * Saves the keystore with some extra meta data if needed. Note - need two output streams here to allow checking the with the append flag, and the other without an append.
      */
     private void saveKeyStore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+        FileLock fileLock = null;
         try (final FileOutputStream appendOs = new FileOutputStream(keyStorePath.toFile(), true)) {
-            FileLock fileLock = null;
             // The keystore.store method on Windows checks for the file lock and does not allow _any_ interaction with the keystore if it is locked.
-            if(!IS_WINDOWS){
+            if (!IS_WINDOWS) {
                 fileLock = appendOs.getChannel().tryLock();
                 if (fileLock == null) {
                     throw new IllegalStateException("Can not save Logstash keystore. Some other process has locked on the file: " + keyStorePath.toAbsolutePath());
@@ -383,16 +386,16 @@ public final class JavaKeyStore implements SecretStore {
             }
             try (final OutputStream os = Files.newOutputStream(keyStorePath, StandardOpenOption.WRITE)) {
                 keyStore.store(os, keyStorePass);
-                if (useDefaultPass) {
-                    byte[] obfuscatedPass = SecretStoreUtil.asciiCharToBytes(SecretStoreUtil.obfuscate(keyStorePass.clone()));
-                    DataOutputStream dataOutputStream = new DataOutputStream(os);
-                    os.write(obfuscatedPass);
-                    dataOutputStream.write(obfuscatedPass.length); // 1 byte integer
-                }
-            } finally {
-                if (fileLock != null) {
-                    fileLock.release();
-                }
+            }
+            if (useDefaultPass) {
+                byte[] obfuscatedPass = SecretStoreUtil.asciiCharToBytes(SecretStoreUtil.obfuscate(keyStorePass.clone()));
+                DataOutputStream dataOutputStream = new DataOutputStream(appendOs);
+                appendOs.write(obfuscatedPass);
+                dataOutputStream.write(obfuscatedPass.length); // 1 byte integer
+            }
+        } finally {
+            if (fileLock != null && fileLock.isValid()) {
+                fileLock.release();
             }
         }
     }

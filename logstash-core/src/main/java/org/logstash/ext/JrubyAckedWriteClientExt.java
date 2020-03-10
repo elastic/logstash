@@ -1,39 +1,43 @@
 package org.logstash.ext;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 
 @JRubyClass(name = "AckedWriteClient")
-public final class JrubyAckedWriteClientExt extends RubyObject {
+public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClientExt {
+
+    private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
 
     private AtomicBoolean closed = new AtomicBoolean();
 
     @JRubyMethod(meta = true, required = 2)
-    public static IRubyObject create(final ThreadContext context, IRubyObject recv,
+    public static JrubyAckedWriteClientExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
             context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
-            (JRubyAckedQueueExt) queue.toJava(
+            queue.toJava(
                 JRubyAckedQueueExt.class
             ),
-            (AtomicBoolean) closed.toJava(AtomicBoolean.class)
+            closed.toJava(AtomicBoolean.class)
         );
     }
 
-    public static JrubyAckedWriteClientExt create(JRubyAckedQueueExt queue, AtomicBoolean closed) {
+    public static JrubyAckedWriteClientExt create(final JRubyAckedQueueExt queue, final AtomicBoolean closed) {
         return new JrubyAckedWriteClientExt(
-                RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue, closed);
+            RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue, closed);
     }
 
     public JrubyAckedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -47,18 +51,20 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
         this.closed = closed;
     }
 
-    @JRubyMethod(name = {"push", "<<"}, required = 1)
-    public IRubyObject rubyPush(final ThreadContext context, IRubyObject event) {
+    @Override
+    protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
+        final JrubyEventExtLibrary.RubyEvent event) {
         ensureOpen();
-        queue.ruby_write(context, event);
+        queue.rubyWrite(context, event.getEvent());
         return this;
     }
 
-    @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch) {
+    @Override
+    protected JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
+        final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         ensureOpen();
-        for (final IRubyObject event : (Collection<JrubyEventExtLibrary.RubyEvent>) batch) {
-            queue.ruby_write(context, event);
+        for (final IRubyObject event : batch) {
+            queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         }
         return this;
     }
@@ -68,4 +74,14 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
             throw new IllegalStateException("Tried to write to a closed queue.");
         }
     }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.write(new Event(event));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }

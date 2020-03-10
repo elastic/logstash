@@ -1,9 +1,11 @@
 [[ls-to-ls]]
-=== Configuring Logstash-to-Logstash Communication
+=== Logstash-to-Logstash Communication
 
 You can set up communication between two Logstash machines by connecting the Lumberjack output to the Beats input. You may need this configuration if the data path crosses network or firewall boundaries, for example. If you don't have a compelling need for Logstash-to-Logstash communication, then don't implement it.
 
-[[ls-to-ls-overview]]
+If you are looking for information on connecting multiple pipelines within one
+Logstash instance, see <<pipeline-to-pipeline>>.
+
 ==== Configuration overview
 
 Use the Lumberjack protocol to connect two Logstash machines.

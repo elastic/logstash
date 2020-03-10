@@ -28,7 +28,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{Logstash plugin API}
   gem.summary       = %q{Define the plugin API that the plugin need to follow.}
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
-  gem.license       = "Apache License (2.0)"
+  gem.license       = "Apache-2.0"
 
   gem.files         = Dir.glob(["logstash-core-plugin-api.gemspec", "lib/**/*.rb", "spec/**/*.rb"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})

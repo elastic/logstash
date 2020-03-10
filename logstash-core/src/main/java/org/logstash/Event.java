@@ -1,14 +1,6 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -18,10 +10,20 @@ import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
-public final class Event implements Cloneable, Queueable {
+public final class Event implements Cloneable, Queueable, co.elastic.logstash.api.Event {
 
     private boolean cancelled;
     private ConvertedMap data;
@@ -65,6 +67,7 @@ public final class Event implements Cloneable, Queueable {
      * makes to its underlying data will be propagated to it.
      * @param data Converted Map
      */
+    @SuppressWarnings("unchecked")
     public Event(ConvertedMap data) {
         this.data = data;
         if (!this.data.containsKey(VERSION)) {
@@ -90,34 +93,52 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public ConvertedMap getData() {
         return this.data;
     }
 
+    @Override
     public ConvertedMap getMetadata() {
         return this.metadata;
     }
 
+    @Override
     public void cancel() {
         this.cancelled = true;
     }
 
+    @Override
     public void uncancel() {
         this.cancelled = false;
     }
 
+    @Override
     public boolean isCancelled() {
         return this.cancelled;
     }
 
-    public Timestamp getTimestamp() throws IOException {
+    @Override
+    public Instant getEventTimestamp() {
+        Timestamp t = getTimestamp();
+        return (t != null)
+                ? Instant.ofEpochMilli(t.toEpochMilli())
+                : null;
+    }
+
+    @Override
+    public void setEventTimestamp(Instant timestamp) {
+        setTimestamp(timestamp != null
+                ? new Timestamp(timestamp.toEpochMilli())
+                : new Timestamp(Instant.now().toEpochMilli()));
+    }
+
+    public Timestamp getTimestamp() {
         final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
             (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
-        if (timestamp != null) {
-            return timestamp.getTimestamp();
-        } else {
-            throw new IOException("fails");
-        }
+        return (timestamp != null)
+                ? timestamp.getTimestamp()
+                : null;
     }
 
     public void setTimestamp(Timestamp t) {
@@ -126,11 +147,13 @@ public final class Event implements Cloneable, Queueable {
         );
     }
 
+    @Override
     public Object getField(final String reference) {
         final Object unconverted = getUnconvertedField(FieldReference.from(reference));
         return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
+    @Override
     public Object getUnconvertedField(final String reference) {
         return getUnconvertedField(FieldReference.from(reference));
     }
@@ -146,10 +169,12 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public void setField(final String reference, final Object value) {
         setField(FieldReference.from(reference), value);
     }
 
+    @SuppressWarnings("unchecked")
     public void setField(final FieldReference field, final Object value) {
         switch (field.type()) {
             case FieldReference.META_PARENT:
@@ -164,6 +189,7 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
+    @Override
     public boolean includes(final String field) {
         return includes(FieldReference.from(field));
     }
@@ -201,6 +227,7 @@ public final class Event implements Cloneable, Queueable {
         return JSON_MAPPER.writeValueAsString(this.data);
     }
 
+    @SuppressWarnings("unchecked")
     public static Event[] fromJson(String json)
             throws IOException
     {
@@ -228,19 +255,32 @@ public final class Event implements Cloneable, Queueable {
         return result;
     }
 
+    @Override
     public Map<String, Object> toMap() {
         return Cloner.deep(this.data);
+    }
+
+    @Override
+    public co.elastic.logstash.api.Event overwrite(co.elastic.logstash.api.Event e) {
+        if (e instanceof Event) {
+            return overwrite((Event)e);
+        }
+        return e;
+    }
+
+    @Override
+    public co.elastic.logstash.api.Event append(co.elastic.logstash.api.Event e) {
+        if (e instanceof Event) {
+            return append((Event)e);
+        }
+        return e;
     }
 
     public Event overwrite(Event e) {
         this.data = e.data;
         this.cancelled = e.cancelled;
-        try {
-            e.getTimestamp();
-        } catch (IOException exception) {
-            setTimestamp(new Timestamp());
-        }
-
+        Timestamp t = e.getTimestamp();
+        setTimestamp(t == null ? new Timestamp() : t);
         return this;
     }
 
@@ -250,14 +290,26 @@ public final class Event implements Cloneable, Queueable {
         return this;
     }
 
+    @Override
     public Object remove(final String path) {
         return remove(FieldReference.from(path));
     }
 
     public Object remove(final FieldReference field) {
-        return Accessors.del(data, field);
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                // removal of metadata is actually emptying metadata.
+                final ConvertedMap old_value =  ConvertedMap.newFromMap(this.metadata);
+                this.metadata = new ConvertedMap();
+                return Javafier.deep(old_value);
+            case FieldReference.META_CHILD:
+                return Accessors.del(metadata, field);
+            default:
+                return Accessors.del(data, field);
+        }
     }
 
+    @Override
     public String sprintf(String s) throws IOException {
         return StringInterpolation.evaluate(this, s);
     }
@@ -270,17 +322,16 @@ public final class Event implements Cloneable, Queueable {
         return new Event(map);
     }
 
+    @Override
     public String toString() {
         Object hostField = this.getField("host");
         Object messageField = this.getField("message");
         String hostMessageString = (hostField != null ? hostField.toString() : "%{host}") + " " + (messageField != null ? messageField.toString() : "%{message}");
 
-        try {
-            // getTimestamp throws an IOException if there is no @timestamp field, see #7613
-            return getTimestamp().toString() + " " + hostMessageString;
-        } catch (IOException e) {
-            return hostMessageString;
-        }
+        Timestamp t = getTimestamp();
+        return t != null
+                ? t.toString() + " " + hostMessageString
+                : hostMessageString;
     }
 
     private static Timestamp initTimestamp(Object o) {
@@ -323,6 +374,7 @@ public final class Event implements Cloneable, Queueable {
         return null;
     }
 
+    @Override
     public void tag(final String tag) {
         final Object tags = Accessors.get(data, TAGS_FIELD);
         // short circuit the null case where we know we won't need deduplication step below at the end
@@ -348,6 +400,7 @@ public final class Event implements Cloneable, Queueable {
      * @param tags Existing Tag(s)
      * @param tag Tag to add
      */
+    @SuppressWarnings("unchecked")
     private void existingTag(final Object tags, final String tag) {
         if (tags instanceof List) {
             appendTag((List<String>) tags, tag);

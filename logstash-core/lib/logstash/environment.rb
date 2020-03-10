@@ -1,7 +1,5 @@
 # encoding: utf-8
 require "logstash-core/logstash-core"
-require "logstash/errors"
-require "logstash/java_integration"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "logstash/util/cloud_setting_id"
@@ -26,6 +24,8 @@ module LogStash
     Setting::NullableString.new("config.string", nil, false),
            Setting::Modules.new("modules.cli", LogStash::Util::ModulesSettingArray, []),
            Setting::Modules.new("modules", LogStash::Util::ModulesSettingArray, []),
+                    Setting.new("modules_list", Array, []),
+                    Setting.new("modules_variable_list", Array, []),
            Setting::Modules.new("cloud.id", LogStash::Util::CloudSettingId),
            Setting::Modules.new("cloud.auth",LogStash::Util::CloudSettingAuth),
            Setting::Boolean.new("modules_setup", false),
@@ -33,16 +33,19 @@ module LogStash
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
            Setting::Boolean.new("config.support_escapes", false),
+            Setting::String.new("config.field_reference.parser", "STRICT", true, %w(STRICT)),
            Setting::Boolean.new("metric.collect", true),
             Setting::String.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
-   Setting::PositiveInteger.new("pipeline.output.workers", 1),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
            Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
+           Setting::Boolean.new("pipeline.plugin_classloaders", false),
+           Setting::Boolean.new("pipeline.separate_logs", false),
+   Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
@@ -61,6 +64,7 @@ module LogStash
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
+            Setting::Boolean.new("queue.checkpoint.retry", false),
             Setting::Boolean.new("dead_letter_queue.enable", false),
             Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
@@ -68,7 +72,8 @@ module LogStash
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
             Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
-            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false) # will be populated on
+            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
+            Setting::NullableString.new("monitoring.cluster_uuid")
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
@@ -162,11 +167,15 @@ module LogStash
     end
 
     def windows?
-      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+      host_os =~ WINDOW_OS_RE
     end
 
     def linux?
-      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
+      host_os =~ LINUX_OS_RE
+    end
+
+    def host_os
+      RbConfig::CONFIG['host_os']
     end
 
     def locales_path(path)

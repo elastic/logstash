@@ -48,6 +48,10 @@ public final class JrubyEventExtLibrary {
             super(runtime, klass);
         }
 
+        public static RubyEvent newRubyEvent(Ruby runtime) {
+            return newRubyEvent(runtime, new Event());
+        }
+
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
             final RubyEvent ruby =
                 new RubyEvent(runtime, RubyUtil.RUBY_EVENT_CLASS);
@@ -67,6 +71,8 @@ public final class JrubyEventExtLibrary {
                 this.event = new Event(
                     ConvertedMap.newFromRubyHash(context, (RubyHash) data)
                 );
+            } else if (data != null && data.getJavaClass().equals(Event.class)) {
+                this.event = data.toJava(Event.class);
             } else {
                 initializeFallback(context, data);
             }
@@ -78,21 +84,21 @@ public final class JrubyEventExtLibrary {
         {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.getUnconvertedField(FieldReference.from(reference.getByteList()))
+                this.event.getUnconvertedField(extractFieldReference(reference))
             );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            final FieldReference r = FieldReference.from(reference.getByteList());
+            final FieldReference r = extractFieldReference(reference);
             if (r.equals(FieldReference.TIMESTAMP_REFERENCE)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
                 this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             } else {
-                this.event.setField(r, Valuefier.convert(value));
+                this.event.setField(r, safeValueifierConvert(value));
             }
             return value;
         }
@@ -120,7 +126,7 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
+                context.runtime, this.event.includes(extractFieldReference(reference))
             );
         }
 
@@ -128,14 +134,19 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.remove(FieldReference.from(reference.getByteList()))
+                this.event.remove(extractFieldReference(reference))
             );
         }
 
         @JRubyMethod(name = "clone")
-        public IRubyObject ruby_clone(ThreadContext context)
+        public IRubyObject rubyClone(ThreadContext context)
         {
-            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
+            return rubyClone(context.runtime);
+        }
+
+        public RubyEvent rubyClone(Ruby runtime)
+        {
+            return RubyEvent.newRubyEvent(runtime, this.event.clone());
         }
 
         @JRubyMethod(name = "overwrite", required = 1)
@@ -165,7 +176,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", true);
+                throw RaiseException.from(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing");
             }
         }
 
@@ -203,7 +214,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage());
             }
         }
 
@@ -217,9 +228,10 @@ public final class JrubyEventExtLibrary {
             try {
                 events = Event.fromJson(value.asJavaString());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
             }
 
+            @SuppressWarnings("rawtypes")
             RubyArray result = RubyArray.newArray(context.runtime, events.length);
 
             if (events.length == 1) {
@@ -283,6 +295,7 @@ public final class JrubyEventExtLibrary {
          * @param data Either {@code null}, {@link org.jruby.RubyNil} or an instance of
          * {@link MapJavaProxy}
          */
+        @SuppressWarnings("unchecked")
         private void initializeFallback(final ThreadContext context, final IRubyObject data) {
             if (data == null || data.isNil()) {
                 this.event = new Event();
@@ -294,6 +307,39 @@ public final class JrubyEventExtLibrary {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
         }
+
+        /**
+         * Shared logic to wrap {@link FieldReference.IllegalSyntaxException}s that are raised by
+         * {@link FieldReference#from(RubyString)} when encountering illegal syntax in a ruby-exception
+         * that can be easily handled within the ruby plugins
+         *
+         * @param reference a {@link RubyString} representing the path to a field
+         * @return the corresponding {@link FieldReference} (see: {@link FieldReference#from(RubyString)})
+         */
+        private static FieldReference extractFieldReference(final RubyString reference) {
+            try {
+                return FieldReference.from(reference);
+            } catch (FieldReference.IllegalSyntaxException ise) {
+                throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
+            }
+        }
+
+        /**
+         * Shared logic to wrap {@link FieldReference.IllegalSyntaxException}s that are raised by
+         * {@link Valuefier#convert(Object)} when encountering illegal syntax in a ruby-exception
+         * that can be easily handled within the ruby plugins
+         *
+         * @param value a {@link Object} to be passed to {@link Valuefier#convert(Object)}
+         * @return the resulting {@link Object} (see: {@link Valuefier#convert(Object)})
+         */
+        private static Object safeValueifierConvert(final Object value) {
+            try {
+                return Valuefier.convert(value);
+            } catch (FieldReference.IllegalSyntaxException ise) {
+                throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
+            }
+        }
+
 
         private void setEvent(Event event) {
             this.event = event;

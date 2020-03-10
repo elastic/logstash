@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/queue_factory"
 require "logstash/settings"
 require "stud/temporary"
 
@@ -15,6 +14,7 @@ describe LogStash::QueueFactory do
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
+      LogStash::Setting::Boolean.new("queue.checkpoint.retry", false),
       LogStash::Setting::String.new("pipeline.id", pipeline_id),
       LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
       LogStash::Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
@@ -47,7 +47,7 @@ describe LogStash::QueueFactory do
       let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
 
       after :each do
-        FileUtils.rmdir(queue_path)
+        FileUtils.rm_rf(queue_path)
       end
 
       it "creates a queue directory based on the pipeline id" do

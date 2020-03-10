@@ -1,11 +1,9 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
 require "logstash/config/mixin"
-require "logstash/instrument/null_metric"
-require "logstash/util/dead_letter_queue_manager"
 require "concurrent"
 require "securerandom"
+
+require_relative 'plugin_metadata'
 
 class LogStash::Plugin
   include LogStash::Util::Loggable
@@ -21,9 +19,9 @@ class LogStash::Plugin
   # for a specific plugin.
   config :enable_metric, :validate => :boolean, :default => true
 
-  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one. 
-  # It is strongly recommended to set this ID in your configuration. This is particularly useful 
-  # when you have two or more plugins of the same type, for example, if you have 2 grok filters. 
+  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+  # It is strongly recommended to set this ID in your configuration. This is particularly useful
+  # when you have two or more plugins of the same type, for example, if you have 2 grok filters.
   # Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
   #
   # [source,ruby]
@@ -48,6 +46,7 @@ class LogStash::Plugin
 
   def initialize(params=nil)
     @logger = self.logger
+    @deprecation_logger = self.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
     @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),
@@ -74,7 +73,11 @@ class LogStash::Plugin
   # main task terminates
   def do_close
     @logger.debug("Closing", :plugin => self.class.name)
-    close
+    begin
+      close
+    ensure
+      LogStash::PluginMetadata.delete_for_plugin(self.id)
+    end
   end
 
   # Subclasses should implement this close method if you need to perform any
@@ -137,6 +140,25 @@ class LogStash::Plugin
   # Should I remove this now and make sure the pipeline invoke the Registry or I should wait for 6.0
   # Its not really part of the public api but its used by the tests a lot to mock the plugins.
   def self.lookup(type, name)
+    require "logstash/plugins/registry"
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
+  end
+
+  ##
+  # Returns this plugin's metadata key/value store.
+  #
+  # @see LogStash::PluginMetadata for restrictions and caveats.
+  # @since 7.1
+  #
+  # @usage:
+  # ~~~
+  # if defined?(plugin_metadata)
+  #   plugin_metadata.set(:foo, 'value')
+  # end
+  # ~~~
+  #
+  # @return [LogStash::PluginMetadata]
+  def plugin_metadata
+    LogStash::PluginMetadata.for_plugin(self.id)
   end
 end # class LogStash::Plugin

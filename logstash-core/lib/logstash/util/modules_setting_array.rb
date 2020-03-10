@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "logstash/namespace"
+require "forwardable"
 require "logstash/util/password"
 
 module LogStash module Util class ModulesSettingArray

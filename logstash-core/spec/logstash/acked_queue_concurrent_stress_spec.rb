@@ -14,7 +14,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue) do
-      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
+      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, false, queue_capacity)
     end
 
     let(:writer_threads) do
@@ -70,7 +70,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
       it "writes, reads, closes and reopens" do
         Thread.abort_on_exception = true
 
-        # force lazy initialization to avoid concurency issues within threads
+        # force lazy initialization to avoid concurrency issues within threads
         counts
         queue
 
@@ -105,13 +105,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
           output_strings.concat files
         end
 
-        begin
-          queue.queue.open
-        rescue Exception => e
-          output_strings << e.message
-        end
-
-        queue.queue.close
+        queue.close
 
         if output_strings.any?
           output_strings << __memoized.reject{|k,v| reject_memo_keys.include?(k)}.inspect

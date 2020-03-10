@@ -17,7 +17,7 @@ require "logstash/settings"
 require 'rack/test'
 require 'rspec'
 require "json"
-
+require 'logstash/runner'
 
 class JSONIOThingy < IO
   def initialize; end
@@ -37,29 +37,20 @@ RSpec.configure do |c|
   c.include LogStashHelper
   c.extend LogStashHelper
 
-  c.before(:each) do
-    # TODO: commented out on post-merged in master - the logger has moved to log4j
-    #
-    #
-    # Force Cabin to always have a JSON subscriber.  The main purpose of this
-    # is to catch crashes in json serialization for our logs. JSONIOThingy
-    # exists to validate taht what LogStash::Logging::JSON emits is always
-    # valid JSON.
-    # jsonvalidator = JSONIOThingy.new
-    # allow(Cabin::Channel).to receive(:new).and_wrap_original do |m, *args|
-    #   logger = m.call(*args)
-    #   logger.level = :debug
-    #   logger.subscribe(LogStash::Logging::JSON.new(jsonvalidator))
-    #
-    #   logger
-    # end
+  # Some tests mess with LogStash::SETTINGS, and data on the filesystem can leak state
+  # from one spec to another; run each spec with its own temporary data directory for `path.data`
+  c.around(:each) do |example|
+    Dir.mktmpdir do |temp_directory|
+      # Some tests mess with the settings. This ensures one test cannot pollute another
+      LogStash::SETTINGS.reset
 
-    # Some tests mess with the settings. This ensures one test cannot pollute another
-    LogStash::SETTINGS.reset
+      LogStash::SETTINGS.set("queue.type", "memory")
+      LogStash::SETTINGS.set("path.data", temp_directory)
 
-    LogStash::SETTINGS.set("queue.type", "persisted")
-    LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)
-    LogStash::SETTINGS.set("queue.max_events", 250)
+      LogStash::Util.set_thread_name("RSPEC Example #{example.full_description} (from: `#{example.location}`)") do
+        example.run
+      end
+    end
   end
 end
 

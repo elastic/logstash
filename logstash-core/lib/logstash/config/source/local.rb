@@ -1,8 +1,6 @@
 # encoding: utf-8
 require "logstash/config/source/base"
 require "logstash/config/pipeline_config"
-require "logstash/util/loggable"
-require "logstash/errors"
 require "uri"
 
 module LogStash module Config module Source
@@ -72,7 +70,7 @@ module LogStash module Config module Source
 
           config_string = ::File.read(file)
           config_string.force_encoding("UTF-8")
-          
+
           if config_string.valid_encoding?
             part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
             config_parts << part

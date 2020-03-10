@@ -2,7 +2,6 @@
 require "logstash/config/source/local"
 require "logstash/config/source/modules"
 require "logstash/config/source/multi_local"
-require "logstash/errors"
 require "thread"
 require "set"
 
@@ -53,7 +52,7 @@ module LogStash module Config
         # This shouldn't happen with the settings object or with any external plugins.
         # but lets add a guard so we fail fast.
         @sources_lock.synchronize do
-          @logger.error "No source loaders matched! This shouldn't happen", :sources => @sources
+          logger.error "No source loaders matched! This shouldn't happen", :sources => @sources
         end
         raise LogStash::InvalidSourceLoaderSettingError, "Can't find an appropriate config loader with current settings"
       else

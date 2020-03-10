@@ -1,0 +1,27 @@
+[role="xpack"]
+[[configuring-logstash]]
+== Monitoring {ls} with {xpack}
+
+Use the {stack} {monitor-features} to gain insight into the health of
+{ls} instances running in your environment.
+
+For an introduction to monitoring your Elastic stack, see
+{ref}/monitor-elasticsearch-cluster.html[Monitoring a cluster].
+
+
+[float]
+[[configuring-logstash-xpack]]
+=== Configuring {xpack} monitoring for {ls}
+
+Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
+these methods to collect {ls} metrics:
+
+* <<monitoring-with-metricbeat, {metricbeat} collection>>
+* <<monitoring-internal-collection,Internal collection>>
+
+
+include::monitoring-mb.asciidoc[]
+include::monitoring-internal.asciidoc[]
+include::monitoring-ui.asciidoc[]
+include::pipeline-viewer.asciidoc[]
+include::troubleshooting.asciidoc[]

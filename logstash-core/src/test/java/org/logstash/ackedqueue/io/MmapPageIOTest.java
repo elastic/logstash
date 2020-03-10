@@ -1,11 +1,10 @@
 package org.logstash.ackedqueue.io;
 
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIO;
 
 import java.io.IOException;
 
@@ -18,11 +17,11 @@ public class MmapPageIOTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private String dir;
+    private Path dir;
 
     @Before
     public void setUp() throws Exception {
-        dir = temporaryFolder.newFolder().getPath();
+        dir = temporaryFolder.newFolder().toPath();
     }
 
     @Test
@@ -31,11 +30,11 @@ public class MmapPageIOTest {
         final int NEW_CAPACITY = 2048;
         final int PAGE_NUM = 0;
 
-        try (PageIO io1 = new MmapPageIO(PAGE_NUM, ORIGINAL_CAPACITY, dir)) {
+        try (PageIO io1 = new MmapPageIOV2(PAGE_NUM, ORIGINAL_CAPACITY, dir)) {
             io1.create();
         }
 
-        try (PageIO io2 = new MmapPageIO(PAGE_NUM, NEW_CAPACITY, dir)) {
+        try (PageIO io2 = new MmapPageIOV2(PAGE_NUM, NEW_CAPACITY, dir)) {
             io2.open(0, PAGE_NUM);
             assertThat(io2.getCapacity(), is(equalTo(ORIGINAL_CAPACITY)));
         }

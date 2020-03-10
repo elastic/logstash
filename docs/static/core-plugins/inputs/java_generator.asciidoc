@@ -1,0 +1,117 @@
+:plugin: java_generator
+:type: input
+:default_codec: plain
+
+///////////////////////////////////////////
+REPLACES GENERATED VARIABLES
+///////////////////////////////////////////
+:include_path: ../../../../../logstash/docs/include
+///////////////////////////////////////////
+END - REPLACES GENERATED VARIABLES
+///////////////////////////////////////////
+
+[id="plugins-{type}s-{plugin}"]
+
+=== Java_generator input plugin
+
+include::{include_path}/plugin_header-core.asciidoc[]
+
+==== Description
+
+Generate synthetic log events.
+
+This plugin generates a stream of synthetic events that can be used to test the correctness or performance of a
+Logstash pipeline.
+
+
+[id="plugins-{type}s-{plugin}-options"]
+==== Java_generator Input Configuration Options
+
+This plugin supports the following configuration options plus the <<plugins-{type}s-{plugin}-common-options>> described later.
+
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<plugins-{type}s-{plugin}-count>> |<<number,number>>|No
+| <<plugins-{type}s-{plugin}-eps>> |<<number,number>>|No
+| <<plugins-{type}s-{plugin}-lines>> |<<array,array>>|No
+| <<plugins-{type}s-{plugin}-message>> |<<string,string>>|No
+| <<plugins-{type}s-{plugin}-threads>> |<<number,number>>|No
+|=======================================================================
+
+Also see <<plugins-{type}s-{plugin}-common-options>> for a list of options supported by all
+input plugins.
+
+&nbsp;
+
+[id="plugins-{type}s-{plugin}-count"]
+===== `count`
+
+  * Value type is <<number,number>>
+  * Default value is `0`
+
+Sets the number of events that should be generated.
+
+The default, `0`, means generate an unlimited number of events.
+
+[id="plugins-{type}s-{plugin}-eps"]
+===== `eps`
+
+  * Value type is <<number,number>>
+  * Default value is `0`
+
+Sets the rate at which events should be generated. Fractional values may be specified. For
+example, a rate of `0.25` means that one event will be generated every four seconds.
+
+The default, `0`, means generate events as fast as possible.
+
+[id="plugins-{type}s-{plugin}-lines"]
+===== `lines`
+
+  * Value type is <<array,array>>
+  * There is no default value for this setting.
+
+The lines to emit, in order. This option overrides the 'message' setting if it has also been specified.
+
+Example:
+[source,ruby]
+    input {
+      java_generator {
+        lines => [
+          "line 1",
+          "line 2",
+          "line 3"
+        ]
+        # Emit all lines 2 times.
+        count => 2
+      }
+    }
+
+The above will emit a series of three events `line 1` then `line 2` then `line 3` two times for a total of 6 events.
+
+[id="plugins-{type}s-{plugin}-message"]
+===== `message`
+
+  * Value type is <<string,string>>
+  * Default value is `"Hello world!"`
+
+The message string to use in the event.
+
+[id="plugins-{type}s-{plugin}-threads"]
+===== `threads`
+
+  * Value type is <<number,number>>
+  * Default value is `1`
+
+Increasing the number of generator threads up to about the number of CPU cores generally increases overall event
+throughput. The `count`, `eps`, and `lines` settings all apply on a per-thread basis. In other words, each thread
+will emit the number of events specified in the `count` setting for a total of `threads * count` events. Each thread
+will emit events at the `eps` rate for a total rate of `threads * eps`, and each thread will emit each line specified
+in the `lines` option.
+
+
+
+[id="plugins-{type}s-{plugin}-common-options"]
+include::{include_path}/{type}.asciidoc[]
+
+:default_codec!:

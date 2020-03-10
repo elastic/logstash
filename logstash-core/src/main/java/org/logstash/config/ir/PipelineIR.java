@@ -9,9 +9,6 @@ import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.QueueVertex;
 import org.logstash.config.ir.graph.Vertex;
 
-/**
- * Created by andrewvc on 9/20/16.
- */
 public final class PipelineIR implements Hashable {
 
     private final String uniqueHash;

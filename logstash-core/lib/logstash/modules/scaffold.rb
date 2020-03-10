@@ -1,7 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
-require "logstash/logging"
-require "logstash/util/loggable"
 require "erb"
 
 require_relative "elasticsearch_config"
@@ -18,7 +15,7 @@ module LogStash module Modules class Scaffold
     @module_name = name
     @directory = directory  # this is the 'configuration folder in the GEM root.'
     @kibana_version_parts = "6.0.0".split('.') # this is backup in case kibana client fails to connect
-    logger.info("Initializing module", :module_name => name, :directory => directory)
+    logger.debug("Found module", :module_name => name, :directory => directory)
   end
 
   def add_kibana_version(version_parts)
@@ -48,5 +45,11 @@ module LogStash module Modules class Scaffold
     return nil if @logstash_configuration.nil?
     @logstash_configuration.config_string
   end
+
+  # subclass may override
+  def is_enabled?(settings)
+    true
+  end
+
 end end end # class LogStash::Modules::Scaffold
 

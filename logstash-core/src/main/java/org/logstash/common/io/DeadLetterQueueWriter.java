@@ -58,7 +58,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
 
     public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
-        this.lock = FileLockFactory.obtainLock(queuePath.toString(), LOCK_FILE);
+        this.lock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;
@@ -131,7 +131,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
-            logger.error("cannot write event to DLQ: reached maxQueueSize of " + maxQueueSize);
+            logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             currentWriter.close();

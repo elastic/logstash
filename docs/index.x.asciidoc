@@ -1,10 +1,1 @@
-[[logstash-reference]]
-= Logstash Reference
-
-:include-xpack:     true
-:lang:              en
-:xls-repo-dir:      {docdir}/../../logstash-extra/x-pack-logstash/docs/{lang}
-:log-repo-dir:      {docdir}
-:plugins-repo-dir:  {docdir}/../../logstash-docs/docs
-
-include::{xls-repo-dir}/index.asciidoc[]
+include::index.asciidoc[]

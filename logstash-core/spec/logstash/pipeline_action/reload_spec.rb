@@ -2,16 +2,16 @@
 require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
+require "logstash/pipelines_registry"
 require "logstash/pipeline_action/reload"
-require "logstash/instrument/null_metric"
 
 describe LogStash::PipelineAction::Reload do
   let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
   let(:pipeline_id) { :main }
-  let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => true}) }
-  let(:pipeline_config) { "input { generator {} } output { null {} }" }
+  let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { dummyblockinginput { id => 'new' } } output { null {} }", { "pipeline.reloadable" => true}) }
+  let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
   let(:pipeline) { mock_pipeline_from_string(pipeline_config, mock_settings("pipeline.reloadable" => true)) }
-  let(:pipelines) { { pipeline_id => pipeline } }
+  let(:pipelines) { r = LogStash::PipelinesRegistry.new; r.create_pipeline(pipeline_id, pipeline) { true }; r }
   let(:agent) { double("agent") }
 
   subject { described_class.new(new_pipeline_config, metric) }
@@ -22,7 +22,7 @@ describe LogStash::PipelineAction::Reload do
   end
 
   after do
-    pipelines.each do |_, pipeline| 
+    pipelines.running_pipelines do |_, pipeline|
       pipeline.shutdown
       pipeline.thread.join
     end
@@ -39,12 +39,12 @@ describe LogStash::PipelineAction::Reload do
 
     it "start the new pipeline" do
       subject.execute(agent, pipelines)
-      expect(pipelines[pipeline_id].running?).to be_truthy
+      expect(pipelines.get_pipeline(pipeline_id).running?).to be_truthy
     end
 
     it "run the new pipeline code" do
       subject.execute(agent, pipelines)
-      expect(pipelines[pipeline_id].config_hash).to eq(new_pipeline_config.config_hash)
+      expect(pipelines.get_pipeline(pipeline_id).config_hash).to eq(new_pipeline_config.config_hash)
     end
   end
 
@@ -59,7 +59,7 @@ describe LogStash::PipelineAction::Reload do
   end
 
   context "when the new pipeline is not reloadable" do
-    let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
+    let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { dummyblockinginput { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
       expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
@@ -67,7 +67,7 @@ describe LogStash::PipelineAction::Reload do
   end
 
   context "when the new pipeline has syntax errors" do
-    let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
+    let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input dummyblockinginput { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
       expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
@@ -76,7 +76,7 @@ describe LogStash::PipelineAction::Reload do
 
   context "when there is an error in the register" do
     before do
-      allow_any_instance_of(LogStash::Inputs::Generator).to receive(:register).and_raise("Bad value")
+      allow_any_instance_of(LogStash::Inputs::DummyBlockingInput).to receive(:register).and_raise("Bad value")
     end
 
     it "cannot successfully execute the action" do

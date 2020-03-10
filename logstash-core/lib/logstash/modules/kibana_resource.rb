@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require_relative "resource_base"
 
 module LogStash module Modules class KibanaResource

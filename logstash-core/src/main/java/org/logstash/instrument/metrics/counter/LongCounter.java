@@ -6,6 +6,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricType;
 
 /**
@@ -16,7 +17,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     /**
      * Dummy counter used by some functionality as a placeholder when metrics are disabled.
      */
-    private static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
+    public static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
 
     private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;
@@ -29,13 +30,14 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
      * @return either the backing LongCounter or {@link #DUMMY_COUNTER} in case the input
      * {@code metric} was a Ruby {@code LogStash::Instrument::NullMetric}
      */
-    public static LongCounter fromRubyBase(final IRubyObject metric, final RubySymbol key) {
+    public static LongCounter fromRubyBase(final AbstractNamespacedMetricExt metric,
+        final RubySymbol key) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject counter = metric.callMethod(context, "counter", key);
+        final IRubyObject counter = metric.counter(context, key);
         counter.callMethod(context, "increment", context.runtime.newFixnum(0));
         final LongCounter javaCounter;
         if (LongCounter.class.isAssignableFrom(counter.getJavaClass())) {
-            javaCounter = (LongCounter) counter.toJava(LongCounter.class);
+            javaCounter = counter.toJava(LongCounter.class);
         } else {
             javaCounter = DUMMY_COUNTER;
         }

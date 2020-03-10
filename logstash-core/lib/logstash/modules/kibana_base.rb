@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/json"
 
 module LogStash module Modules class KibanaBase

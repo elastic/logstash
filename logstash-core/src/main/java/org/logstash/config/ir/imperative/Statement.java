@@ -5,9 +5,6 @@ import org.logstash.config.ir.BaseSourceComponent;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 
-/**
- * Created by andrewvc on 9/6/16.
- */
 public abstract class Statement extends BaseSourceComponent {
     public Statement(SourceWithMetadata meta) {
         super(meta);

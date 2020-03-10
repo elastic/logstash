@@ -20,13 +20,11 @@ def wait_for_port(port, retry_attempts)
 end
 
 def is_port_open?(port)
-  begin
-    s = TCPSocket.open("localhost", port)
-    s.close
+  TCPSocket.open("localhost", port) do
     return true
-  rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-    return false
   end
+rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+  return false
 end
 
 def send_data(port, data)

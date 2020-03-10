@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/errors"
-require "logstash/logging"
 
 module LogStash module BootstrapCheck
   class DefaultConfig

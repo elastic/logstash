@@ -15,18 +15,6 @@ final class ClassFields {
     private final Collection<Closure> afterInit = new ArrayList<>();
 
     /**
-     * Add a field of given type that is initialized by the given {@link SyntaxElement} that will
-     * be executed in the class body.
-     * Renders as e.g. {@code private final Ruby field5 = RubyUtil.RUBY}.
-     * @param type Type of the field
-     * @param initializer Syntax to initialize it in-line.
-     * @return The field's syntax element that can be used in method bodies
-     */
-    public ValueSyntaxElement add(final Class<?> type, final SyntaxElement initializer) {
-        return addField(FieldDefinition.withInitializer(definitions.size(), type, initializer));
-    }
-
-    /**
      * Adds a field holding the given {@link Object}.
      * @param obj Object to add field for
      * @return The field's syntax element that can be used in method bodies
