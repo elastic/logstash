@@ -1,10 +1,6 @@
-# encoding: utf-8
-
 # Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
-
-# require "logstash/devutils/rspec/spec_helper"
 
 require 'x-pack/logstash_registry'
 require 'logstash-core'
