@@ -18,11 +18,8 @@
 require_relative "base"
 require_relative "config_from_mixin"
 
-# encoding: utf-8
-#
 # This is a new test plugins
 # with multiple line.
-
 class LogStash::Inputs::Dummy < LogStash::Inputs::Base
   config_name "dummy"
 

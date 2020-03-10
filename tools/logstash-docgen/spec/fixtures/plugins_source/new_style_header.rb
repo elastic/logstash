@@ -17,11 +17,8 @@
 
 require_relative "base"
 
-# encoding: utf-8
-#
 # This is a new test plugins
 # with multiple line.
-
 module LogStash module Inputs class Dummy < LogStash::Inputs::Base
   config_name "dummy"
 
