@@ -165,10 +165,10 @@ slowlog.threshold.trace: 100ms
 
 In this example:
 
-* If the log level is set to `warn`, the log shows events that took longer than 2 seconds to process.
+* If the log level is set to `warn`, the log shows events that took longer than 2s to process.
 * If the log level is set to `info`, the log shows events that took longer than 1s to process.
-* If the log level is set to `trace`, the log shows events that took longer than 100ms to process.
 * If the log level is set to `debug`, the log shows events that took longer than 500ms to process.
+* If the log level is set to `trace`, the log shows events that took longer than 100ms to process.
 
 The logs include the full event and filter configuration that are responsible
 for the slowness.
