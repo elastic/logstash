@@ -7,6 +7,8 @@ To build a self-contained archive of the benchmark tool simply run:
 ```bash
 gradle clean assemble
 ```
+If the build fails, install an earlier gradle version, like gradle 4.8.
+
 
 which will create the output jar under `build/libs/benchmark-cli.jar`.
 
