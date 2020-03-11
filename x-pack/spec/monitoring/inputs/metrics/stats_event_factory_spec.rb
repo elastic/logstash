@@ -33,6 +33,15 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
     # way to make sure no metrics are missing without forcing a hard sleep but this is what is
     # easily observable, feel free to refactor with a better "timing" test here.
     wait(60).for { collector.snapshot_metric.metric_store.size }.to be >= 72
+
+    # Wait http server is up
+    wait(120).for {
+      begin
+        collector.snapshot_metric.metric_store.get_shallow(:http_address)
+      rescue LogStash::Instrument::MetricStore::MetricNotFound => e
+        nil
+      end
+    }.not_to be_nil
   end
 
   after :each do
