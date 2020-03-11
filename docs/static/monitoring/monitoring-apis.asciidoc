@@ -70,7 +70,7 @@ The node info API retrieves information about the node.
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/<types>'
+curl -XGET 'localhost:9600/_nodes/<types>'
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of node info you want to return.
@@ -97,7 +97,7 @@ batch size, and batch delay:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/pipelines?pretty'
+curl -XGET 'localhost:9600/_nodes/pipelines?pretty'
 --------------------------------------------------
 
 If you want to view additional information about a pipeline, such as stats for each configured input, filter,
@@ -131,7 +131,7 @@ the following example, the ID of the pipeline is `test`:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/pipelines/test?pretty'
+curl -XGET 'localhost:9600/_nodes/pipelines/test?pretty'
 --------------------------------------------------
 
 Example response:
@@ -161,7 +161,7 @@ available processors:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/os?pretty'
+curl -XGET 'localhost:9600/_nodes/os?pretty'
 --------------------------------------------------
 
 Example response:
@@ -186,7 +186,7 @@ VM info, memory usage, and info about garbage collectors:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/jvm?pretty'
+curl -XGET 'localhost:9600/_nodes/jvm?pretty'
 --------------------------------------------------
 
 Example response:
@@ -224,7 +224,7 @@ This API basically returns the output of running the `bin/logstash-plugin list -
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/plugins?pretty'
+curl -XGET 'localhost:9600/_nodes/plugins?pretty'
 --------------------------------------------------
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
@@ -269,7 +269,7 @@ The node stats API retrieves runtime stats about Logstash.
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/<types>'
+curl -XGET 'localhost:9600/_nodes/stats/<types>'
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of stats you want to return.
@@ -303,7 +303,7 @@ The following request returns a JSON document containing JVM stats:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/jvm?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/jvm?pretty'
 --------------------------------------------------
 
 Example response:
@@ -371,7 +371,7 @@ The following request returns a JSON document containing process stats:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/process?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/process?pretty'
 --------------------------------------------------
 
 Example response:
@@ -405,7 +405,7 @@ for the Logstash instance:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/events?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/events?pretty'
 --------------------------------------------------
 
 Example response:
@@ -438,7 +438,7 @@ including:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/pipelines?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/pipelines?pretty'
 --------------------------------------------------
 
 Example response:
@@ -553,7 +553,7 @@ the following example, the ID of the pipeline is `test`:
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/pipelines/test?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/pipelines/test?pretty'
 --------------------------------------------------
 
 Example response:
@@ -632,7 +632,7 @@ The following request returns a JSON document that shows info about config reloa
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/reloads?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/reloads?pretty'
 --------------------------------------------------
 
 Example response:
@@ -657,7 +657,7 @@ the container is being throttled.
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/os?pretty'
+curl -XGET 'localhost:9600/_nodes/stats/os?pretty'
 --------------------------------------------------
 
 Example response:
@@ -695,7 +695,7 @@ of time.
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/hot_threads?pretty'
+curl -XGET 'localhost:9600/_nodes/hot_threads?pretty'
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
@@ -745,7 +745,7 @@ You can use the `?human` parameter to return the document in a human-readable fo
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/hot_threads?human=true'
+curl -XGET 'localhost:9600/_nodes/hot_threads?human=true'
 --------------------------------------------------
 
 Example of a human-readable response:
