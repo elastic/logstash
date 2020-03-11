@@ -105,7 +105,6 @@ ifndef::blockinput[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 require "stud/interval"
@@ -157,7 +156,6 @@ ifndef::blockcodec[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/codecs/line"
 
@@ -216,7 +214,6 @@ ifndef::blockfilter[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 
@@ -270,7 +267,6 @@ ifdef::multi_receive_method[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 
@@ -311,19 +307,6 @@ endif::multi_receive_method[]
 ==== Coding {plugintype} plugins
 
 Now let's take a line-by-line look at the example plugin.
-
-===== `encoding`
-
-It seems like a small thing, but remember to specify the encoding at the
-beginning of your plugin code:
-
-[source,sh]
-----------------------------------
-# encoding: utf-8
-----------------------------------
-
-Logstash depends on things being in UTF-8, so we put this here to tell the Ruby
-interpreter that we’re going to be using the UTF-8 encoding.
 
 ===== `require` Statements
 
