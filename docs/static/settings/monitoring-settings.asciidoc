@@ -81,6 +81,11 @@ the client’s certificate.
 
 Optional settings that provide the password to the keystore.
 
+`xpack.monitoring.elasticsearch.ssl.verification_mode`::
+
+Option to validate the server’s certificate. Defaults to `certificate`. To
+disable, set to `none`. Disabling this severely compromises security.
+
 [[monitoring-additional-settings]]
 ===== Additional settings
 

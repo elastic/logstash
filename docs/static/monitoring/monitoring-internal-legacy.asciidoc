@@ -5,7 +5,7 @@
 <titleabbrev>Legacy internal collection (deprecated)</titleabbrev>
 ++++
 
-Using internal collectors for {ls} {monitoring} these components:
+Monitoring {ls} with legacy internal collection uses these components:
 
 * <<logstash-monitoring-collectors,Collectors>>
 * <<logstash-monitoring-output,Output>>
@@ -55,12 +55,11 @@ monitoring cluster will show the Logstash metrics under the _monitoring_ cluster
 production cluster. If that setting is `false`, the collection of monitoring data
 is disabled in {es} and data is ignored from all other sources.
 
-. 
-Configure your Logstash nodes to send metrics by setting the
+. Configure your Logstash nodes to send metrics by setting the
 `xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security-features}
 are enabled, you also need to specify the credentials for the
 {ref}/built-in-users.html[built-in `logstash_system` user]. For more information
-about these settings, see <<monitoring-settings>>.
+about these settings, see <<monitoring-settings-legacy>>.
 +
 --
 [source,yaml]

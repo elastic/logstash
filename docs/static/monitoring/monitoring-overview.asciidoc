@@ -17,8 +17,8 @@ Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
 * <<monitoring-with-metricbeat, {metricbeat} collection>>. Metricbeat collects
-monitoring data from your Filebeat instance and sends it directly to your
-monitoring cluster.
+monitoring data from your {ls} instance and sends it directly to your monitoring
+cluster.
 
 * <<monitoring-internal-collection,Internal collection>>. Internal collectors send
 monitoring data directly to your monitoring cluster.

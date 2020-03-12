@@ -37,7 +37,7 @@ in its isolated monitoring pipeline. The Logstash output then sends the data.
 
 The collection interval can be configured dynamically and you can also disable 
 data collection. For more information about the configuration options for the 
-collectors, see <<monitoring-settings>>.
+collectors, see <<monitoring-settings-legacy>>.
 
 WARNING: Unlike {monitoring} for {es} and {kib}, there is no 
 `xpack.monitoring.collection.enabled` setting on Logstash. You must use the 

@@ -44,4 +44,4 @@ environments to production environments, where you often have dedicated
 monitoring clusters.
 
 For more information about the configuration options for the output, see 
-<<monitoring-settings>>.
+<<monitoring-settings-legacy>>.

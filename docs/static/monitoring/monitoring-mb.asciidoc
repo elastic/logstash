@@ -6,9 +6,9 @@
 <titleabbrev>{metricbeat} collection</titleabbrev>
 ++++
 
-In 7.3 and later, you can use {metricbeat} to collect data about {ls} 
-and ship it to the monitoring cluster, rather than routing it through the 
-production cluster as described in <<monitoring-internal-collection>>.
+You can use {metricbeat} to collect data about {ls} and ship it to the
+monitoring cluster. The benefit of Metricbeat collection is that the monitoring
+agent remains active even if the {ls}} instance does not.
 
 //NOTE: The tagged regions are re-used in the Stack Overview.
 

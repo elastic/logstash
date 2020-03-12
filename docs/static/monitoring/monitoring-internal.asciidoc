@@ -5,16 +5,10 @@
 <titleabbrev>Internal collection</titleabbrev>
 ++++
 
-KEEP THIS AT THE END?
-include::../settings/monitoring-settings.asciidoc[]
-
-
-
-
 Use internal collectors to send {ls} monitoring data directly to your
 monitoring cluster.
 
-As an alternative to internal collection, use
+As an alternative to internal collection, you can use
 <<monitoring-with-metricbeat>>. When you use internal collection
 instead of {metricbeat}, you have fewer pieces of software to install
 and maintain.
