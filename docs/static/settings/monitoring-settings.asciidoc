@@ -81,6 +81,11 @@ the client’s certificate.
 
 Optional settings that provide the password to the keystore.
 
+`xpack.monitoring.elasticsearch.ssl.verification_mode`::
+
+Option to validate the server’s certificate. Defaults to `certificate`. To
+disable, set to `none`. Disabling this severely compromises security.
+
 [[monitoring-additional-settings]]
 ===== Additional settings
 
@@ -99,3 +104,5 @@ If you're using {es} in {ecloud}, you can set your auth credentials here.
 This setting is an alternative to both `xpack.monitoring.elasticsearch.username`
 and `xpack.monitoring.elasticsearch.password`. If `cloud_auth` is configured,
 those settings should not be used.
+
+

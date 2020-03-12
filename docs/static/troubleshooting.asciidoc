@@ -8,8 +8,6 @@ have something to add, please:
 https://github.com/elastic/logstash/issues, or
 * create a pull request with your proposed changes at https://github.com/elastic/logstash.
 
-// After merge, update PR link to link directly to this topic in GH
-
 Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
 forum].
 
@@ -139,9 +137,37 @@ For general performance tuning tips and guidelines, see <<performance-tuning>>.
 
 
 
+[float] 
+[[ts-pipeline]] 
+== Troubleshooting a pipeline
+
+Pipelines, by definition, are unique. Here are some guidelines to help you get
+started.
+
+* Identify the offending pipeline.
+* Start small. Create a minimum pipeline that manifests the problem.
 
 
+For basic pipelines, this configuration could be enough to make the problem show itself.
 
+[source,ruby]
+-----
+input {stdin{}} output {stdout{}}
+-----
+
+{ls} can separate logs by pipeline. This feature can help you identify the offending pipeline. 
+Set `pipeline.separate_logs: true` in your `logstash.yml` to enable the log per pipeline feature.
+
+For more complex pipelines, the problem could be caused by a series of plugins in
+a specific order. Troubleshooting these pipelines usually requires trial and error.
+Start by systematically removing input and output plugins until you're left with
+the minimum set that manifest the issue.
+
+We want to expand this section to make it more helpful. If you have
+troubleshooting tips to share, please:
+
+* create an issue at https://github.com/elastic/logstash/issues, or
+* create a pull request with your proposed changes at https://github.com/elastic/logstash.
 
 [float] 
 [[ts-kafka]] 

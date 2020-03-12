@@ -43,4 +43,7 @@ During automatic config reloading, the JVM is not restarted. The creating and sw
 pipelines all happens within the same process. 
 
 Changes to <<plugins-filters-grok,grok>> pattern files are also reloaded, but only when
-a change in the config file triggers a reload (or the pipeline is restarted).  
+a change in the config file triggers a reload (or the pipeline is restarted).
+
+In general, Logstash is not watching or monitoring any configuration files used or referenced by inputs,
+filters or outputs.

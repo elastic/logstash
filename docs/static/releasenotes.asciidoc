@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-6-1,Logstash 7.6.1>>
 * <<logstash-7-6-0,Logstash 7.6.0>>
 * <<logstash-7-5-2,Logstash 7.5.2>>
 * <<logstash-7-5-1,Logstash 7.5.1>>
@@ -24,6 +25,52 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-6-1]]
+=== Logstash 7.6.1 Release Notes
+
+* [DOC] Rework ls netflow module deprecation notice https://github.com/elastic/logstash/pull/11600[#11600]
+* [DOC] Clarify internal collectors deprecation status for 7.6 https://github.com/elastic/logstash/pull/11607[#11607]
+* [DOC] Fix setting name for monitoring https://github.com/elastic/logstash/pull/11597[#11597]
+* [DOC] Add Apple notarization info https://github.com/elastic/logstash/pull/11588[#11588]
+
+==== Plugins
+
+*Dns Filter*
+
+* Replaced Timeout::timeout block with `Resolv::DNS::timeouts=` https://github.com/logstash-plugins/logstash-filter-dns/pull/62[#62]
+* Added restriction for ruby version > 2.0, effectively making Logstash 6.x+ a requirement https://github.com/logstash-plugins/logstash-filter-dns/pull/62[#62]
+
+*Memcached Filter*
+
+* Fixed issue with ttl not being set https://github.com/logstash-plugins/logstash-filter-memcached/pull/13[#13]
+
+*Split Filter*
+
+* Fixed issue where @target optimization would stop event.remove(@field) from being called, which can be expensive with large split fields. https://github.com/logstash-plugins/logstash-filter-split/pull/40[#40]
+
+*Beats Input*
+
+* Fixed issue where an SslContext was unnecessarily being created for each connection https://github.com/logstash-plugins/logstash-input-beats/pull/383[#383]
+* Fixed issue where `end` was not being called when an Inflater was closed https://github.com/logstash-plugins/logstash-input-beats/pull/383[#383]
+* Downgraded netty to 4.1.34 due to an issue in IdleStateHandler https://github.com/logstash-plugins/logstash-input-beats/pull/380[#380]
+
+*File Input*
+
+* Added configuration setting exit_after_read to read to EOF and terminate the input https://github.com/logstash-plugins/logstash-input-file/pull/240[#240]
+* Fixed bug in conversion of sincedb_clean_after setting https://github.com/logstash-plugins/logstash-input-file/pull/257[#257]
+* Fixed bug in delete of multiple watched files https://github.com/logstash-plugins/logstash-input-file/pull/254[#254]
+* Fixed sinceDB to work spaces filename https://github.com/logstash-plugins/logstash-input-file/pull/249[#249]
+
+*Jdbc Integration*
+
+* Fixed tracking_column regression with Postgresql Numeric types https://github.com/logstash-plugins/logstash-integration-jdbc/pull/17[#17]
+* Fixed driver loading when file not accessible https://github.com/logstash-plugins/logstash-integration-jdbc/pull/15[#15]
+
+*Elasticsearch Output*
+
+* Fix: handle proxy => '' as if none was set https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/912[#912]
+
 
 [[logstash-7-6-0]]
 === Logstash 7.6.0 Release Notes

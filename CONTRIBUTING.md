@@ -53,12 +53,17 @@ users and developers first. You can reach us via [GitHub](https://github.com/ela
 Please note that Pull Requests without tests and documentation may not be merged. If you would like to contribute but do not have
 experience with writing tests, please ping us on the forum or create a PR and ask for our help.
 
-If you would like to contribute to Logstash, but don't know where to start, you can use the GitHub labels "adoptme"
-and "low hanging fruit". Issues marked with these labels are relatively easy, and provides a good starting
-point to contribute to Logstash.
+If you would like to contribute to Logstash, but don't know where to start, you
+can use the GitHub labels "adoptme", "low hanging fruit" and "good first issue".
+Issues marked with these labels are relatively easy, and provide a good
+starting point to contribute to Logstash.
 
-See: https://github.com/elastic/logstash/labels/adoptme
-https://github.com/elastic/logstash/labels/low%20hanging%20fruit
+See the following links:
+ * https://github.com/elastic/logstash/labels/adoptme
+ * https://github.com/elastic/logstash/labels/low%20hanging%20fruit
+ * https://github.com/elastic/logstash/labels/good%20first%20issue
+
+Or go directly here for an exhaustive list: https://github.com/elastic/logstash/contribute
 
 Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
 
