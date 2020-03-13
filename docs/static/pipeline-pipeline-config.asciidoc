@@ -152,6 +152,8 @@ Here is an example of this scenario using the output isolator pattern.
 
 In this architecture, each stage has its own queue with its own tuning and settings. Note that this approach uses up to three times as much disk space and incurs three times as much serialization/deserialization cost as a single pipeline.
 
+If one or both persistent queues of the downstream pipelines (in the example above, `buffered-es` and `buffered-http`) are full, then the upstream pipeline (in the example above, `intake`) will receive backpressure. Once the persistent queue of the upstream pipeline becomes full, both outputs will stop.
+
 [[forked-path-pattern]]
 ===== The forked path pattern
 
