@@ -131,7 +131,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Attribute < Node
     def expr
-      [name.text_value, value.expr]
+      [name.is_a?(AST::String) ? name.text_value[1...-1] : name.text_value, value.expr]
     end
   end
 
