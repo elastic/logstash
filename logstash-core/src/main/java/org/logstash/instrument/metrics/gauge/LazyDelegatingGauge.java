@@ -111,7 +111,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
             } else if (value instanceof RubyTimestamp) {
                 lazyMetric = new RubyTimeStampGauge(key, (RubyTimestamp) value);
             } else {
-                LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}. This may result in invalid serialization.  It is recommended to " +
+                LOGGER.warn("A gauge metric of an unknown type ({}) has been created for key: {}. This may result in invalid serialization.  It is recommended to " +
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key);
                 lazyMetric = new UnknownGauge(key, value);
             }
