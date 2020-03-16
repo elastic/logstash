@@ -226,6 +226,21 @@ describe LogStash::Compiler do
         end
       end
 
+      describe "a plugin with quoted parameter keys" do
+        let(:plugin_source) { "generator { notquoted => 1 'singlequoted' => 2 \"doublequoted\" => 3}" }
+        let(:expected_plugin_args) do
+          {
+            "notquoted" => 1,
+            "singlequoted" => 2,
+            "doublequoted" => 3,
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
       describe "a plugin with multiple array parameter types" do
         let(:plugin_source) { "generator { aarg => [1] aarg => [2] aarg => [3]}" }
         let(:expected_plugin_args) do
