@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-7-0,Logstash 7.7.0>>
 * <<logstash-7-6-1,Logstash 7.6.1>>
 * <<logstash-7-6-0,Logstash 7.6.0>>
 * <<logstash-7-5-2,Logstash 7.5.2>>
@@ -25,6 +26,556 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-7-0]]
+=== Logstash 7.7.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.7.0
+
+* [DOCS] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
+* Version-independent license check https://github.com/elastic/logstash/pull/11073[#11073]
+* Added plugin.name to fish tag log lines https://github.com/elastic/logstash/pull/11078[#11078]
+* Conditionally add monitoring structure to top-level of output in API https://github.com/elastic/logstash/pull/11106[#11106]
+* [Doc] Force reload doesn't work in WinOS https://github.com/elastic/logstash/pull/11520[#11520]
+* Updated README to document how to run single Ruby specs https://github.com/elastic/logstash/pull/11536[#11536]
+* [7.7 clean backport of #11524] add support for pipeline.ordered setting for java execution https://github.com/elastic/logstash/pull/11552[#11552]
+* [7.7 backport of #11564] revert #11482 and fix redundant code generation #11574 https://github.com/elastic/logstash/pull/11576[#11576]
+* Adding plugin.id to docker images https://github.com/elastic/logstash/pull/11593[#11593]
+* Fix/permit commented out config sources https://github.com/elastic/logstash/pull/11615[#11615]
+* [DOCS] Fixes out-dated monitoring links https://github.com/elastic/logstash/pull/11629[#11629]
+* Backport of #11312 [put document_type for /_monitoring] https://github.com/elastic/logstash/pull/11640[#11640]
+* Backport of PR #11541 to 7.7 https://github.com/elastic/logstash/pull/11641[#11641]
+* Fixes JDK13's javadoc build failure https://github.com/elastic/logstash/pull/11642[#11642]
+
+=== Logstash Commits between 7.x and 7.6.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.6.1..7.x"
+
+ae3002d7d - (HEAD -> 7.x, origin/7.x) minor, used the correct placeholder (2 hours ago) <andsel>
+81a96546d - Fixed typo in guage metric of unknown type log. (9 hours ago) <Mark Ramotowski>
+ff471bbb9 - Add `sudo` into the rpm import of GPG-KEY (11 hours ago) <j-yama>
+89aaebb61 - Revert "Adaptations to internal collector to send data directly to monitoring cluster Close 11573 (#11641)" (#11687) (3 days ago) <Andres Rodriguez>
+7116d39b9 - Adaptations to internal collector to send data directly to monitoring cluster Close 11573 (#11641) (3 days ago) <Andrea Selva>
+d90616fde - Added clarification that configuration force reload doesn't work on WinOS (3 days ago) <andsel>
+c731596c7 - Change default threads for azure module (4 days ago) <Karen Metts>
+b19db959a - ensure mavencentral is always used before plugins.gradle.org (4 days ago) <Joao Duarte>
+d90161637 - Adaptations to internal collector to send data directly to monitoring cluster Close 11573 Added check on HTTP server before asking for monitoring data in unit test Fixes #11541 (4 days ago) <andsel>
+8c11a95f9 - Update troubleshooting.asciidoc (5 days ago) <Karen Metts>
+0a88578ef - Removed errored CLI flag description (5 days ago) <andsel>
+d057e8bae - Minor, added suggestion to switch on the log per pipeline (5 days ago) <andsel>
+7549824fc - Add tips for troubleshooting a pipeline (5 days ago) <Karen Metts>
+1fc169b7f - Add apache and elastic license headers to source code files (#11673) (5 days ago) <João Duarte>
+4412073ad - Update to include verification mode switch (6 days ago) <Kris Reberger>
+9ef44b4c1 - Wording tweak for more emphasis (6 days ago) <Karen Metts>
+f06b66db8 - Update logging.asciidoc (6 days ago) <Ryan Earle>
+a2ebac33c - Update offline-plugins.asciidoc (6 days ago) <meshkov>
+d02e95771 - Fix grammar in enable_metric filter option (6 days ago) <Jonathan Bride>
+14a504f7b - Update logging.asciidoc (6 days ago) <0xflotus>
+16e5f6280 - Clarify reload of configuration files (7 days ago) <Luca Belluccini>
+e64c6f312 - Backport changes from 11544 (#11665) (10 days ago) <Karen Metts>
+ce4493653 - Changed: .ruby-version back to 9.1.12.0 (10 days ago) <Karol Bucek>
+229487c38 - [DOCS] Updates security API examples (#10752) (#11660) (11 days ago) <Lisa Cawley>
+b7a5f7685 - Updated: JRuby to 9.2.11.0 (11 days ago) <Karol Bucek>
+d3d765a45 - Fix: use l/w match-ing (which does not depend on frames) (12 days ago) <Karol Bucek>
+7706866fb - Fix: broken --help due sinatra 2.x upgrade (13 days ago) <Karol Bucek>
+593235c16 - Update rack dependency on docgen project (13 days ago) <João Duarte>
+c00362868 - Update release notes for 7.6.1 (13 days ago) <Joao Duarte>
+1ce7e6915 - Fixes JDK13's javadoc build failure (13 days ago) <andsel>
+b3c85356b - Changed the xpack metrics pipeline to use a customized ES output plugin to put document_type for /_monitoring, closes #11312 Backport commit to 7.x Fixes #11321 (2 weeks ago) <andsel>
+de95de3ae - remove TODO from CONTRIBUTING notes (3 weeks ago) <Karol Bucek>
+43213410f - Fixes #11598 enabling the users to use completely commented config files (3 weeks ago) <andsel>
+17c11508d - Remove deprecation notices (3 weeks ago) <Karen Metts>
+5587c9d7a - Make capitalization consistent (3 weeks ago) <Karen Metts>
+239e9b0c3 - Fixes out-dated monitoring links (3 weeks ago) <lcawl>
+9361638b2 - Add shared attribute for cloud trial (3 weeks ago) <Karen Metts>
+ca635975c - Update contributing guidelines to clarify changelog formatting (4 weeks ago) <Karen Metts>
+496f81c8c - Changed PluginFactory to resolve id field with environment variables docs: plugin ids variable expansion cannot use secret store (4 weeks ago) <andsel>
+91e96b1f2 - Rework ls netflow module deprecation notice (4 weeks ago) <Karen Metts>
+55410efcc - Fix setting name for monitoring (5 weeks ago) <Karen Metts>
+9d6fa3215 - Release notes for 7.6.0 (5 weeks ago) <Rob Bavey>
+f86bf3691 - Review: more places for RUBY.getCurrentContext() (5 weeks ago) <Karol Bucek>
+2511347df - Review: more consistent getCurrentContext() (5 weeks ago) <Karol Bucek>
+8461a590a - Refactor: do not keep around JRuby context reference (5 weeks ago) <Karol Bucek>
+e070af8e4 - Adding plugin.id to docker images (5 weeks ago) <andsel>
+72b5f295c - revert #11482 and fix redundant code generation (#11576) (5 weeks ago) <Colin Surprenant>
+4ff6378c0 - Clarify wording and add to another page (6 weeks ago) <Karen Metts>
+e8ffadc02 - Add Apple notarization info (6 weeks ago) <Karen Metts>
+07c4d9d52 - Remove module-only disclaimer for cloud id (6 weeks ago) <Karen Metts>
+52327f80f - Updating the log4j2.properties file that the Docker container image uses to also log the pipeline.id. (6 weeks ago) <Spencer Niemi>
+98990384a - add missing NOTICE.txt (6 weeks ago) <Joao Duarte>
+03ec79230 - update licenses for 7.x (backport of #11549) (6 weeks ago) <João Duarte>
+cb4369b2a - Ignore versions in dependency license checker (6 weeks ago) <Dan Hermann>
+f12eb2f28 - fail license report job on missing licenses (6 weeks ago) <Joao Duarte>
+80cd89673 - Fix missing " on glob pattern (7 weeks ago) <tbotalla>
+52f794695 - Add deprecation notice to internal collectors for monitoring (7 weeks ago) <Karen Metts>
+f94f72a79 - Add details about pipeline.workers (7 weeks ago) <Karen Metts>
+6a8bebffe - add support for pipeline.ordered setting for java execution (#11552) (7 weeks ago) <Colin Surprenant>
+5cbc9eeb4 - Add info about deprecation logger support mixin (7 weeks ago) <Karen Metts>
+6a412f7af - Added precation notice when internal monitoring collector is used. Closes #11346 (7 weeks ago) <andsel>
+a2044fb5f - ensure lock template is in docker tasks (7 weeks ago) <Joao Duarte>
+23c7f48aa - Updated README to document how to run single Ruby specs (7 weeks ago) <andsel>
+ca89cfee7 - Added section for monitoring.cluster_uuid (7 weeks ago) <andsel>
+d2a094629 - Add cluster_uuid setting to default config file, displaying it in Node stats HTTP API (7 weeks ago) <Mike Place>
+7a2222046 - Added plugin.id to fish tag log lines related to plugins (8 weeks ago) <andsel>
+8c3ae7e15 - Updated release notes after code review comments (8 weeks ago) <Rob Bavey>
+5a14aa850 - Release notes for 7.5.2 (8 weeks ago) <Rob Bavey>
+6f5101d60 - pin google-java-format back to 1.1 for licensing reasons (8 weeks ago) <Joao Duarte>
+994ebf81e - Bump to 7.7.0 (#11505) (9 weeks ago) <Rob Bavey>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.6.1..7.x *.release"
+Changed plugin versions:
+logstash-core-plugin-api: 2.1.16 -> 2.1.16
+logstash-codec-avro: 3.2.3 -> 3.2.3
+logstash-codec-cef: 6.1.0 -> 6.1.0
+logstash-codec-collectd: 3.0.8 -> 3.0.8
+logstash-codec-dots: 3.0.6 -> 3.0.6
+logstash-codec-edn: 3.0.6 -> 3.0.6
+logstash-codec-edn_lines: 3.0.6 -> 3.0.6
+logstash-codec-es_bulk: 3.0.8 -> 3.0.8
+logstash-codec-fluent: 3.3.0 -> 3.3.0
+logstash-codec-graphite: 3.0.5 -> 3.0.5
+logstash-codec-json: 3.0.5 -> 3.0.5
+logstash-codec-json_lines: 3.0.6 -> 3.0.6
+logstash-codec-line: 3.0.8 -> 3.0.8
+logstash-codec-msgpack: 3.0.7 -> 3.0.7
+logstash-codec-multiline: 3.0.10 -> 3.0.10
+logstash-codec-netflow: 4.2.1 -> 4.2.1
+logstash-codec-plain: 3.0.6 -> 3.0.6
+logstash-codec-rubydebug: 3.0.6 -> 3.0.6
+logstash-filter-aggregate: 2.9.1 -> 2.9.1
+logstash-filter-anonymize: 3.0.6 -> 3.0.6
+logstash-filter-cidr: 3.1.3 -> 3.1.3
+logstash-filter-clone: 4.0.0 -> 4.0.0
+logstash-filter-csv: 3.0.10 -> 3.0.10
+logstash-filter-date: 3.1.9 -> 3.1.9
+logstash-filter-de_dot: 1.0.4 -> 1.0.4
+logstash-filter-dissect: 1.2.0 -> 1.2.0
+logstash-filter-dns: 3.1.4 -> 3.1.4
+logstash-filter-drop: 3.0.5 -> 3.0.5
+logstash-filter-elasticsearch: 3.7.0 -> 3.7.0
+logstash-filter-fingerprint: 3.2.1 -> 3.2.1
+logstash-filter-geoip: 6.0.3 -> 6.0.3
+logstash-filter-grok: 4.2.0 -> 4.2.0
+logstash-filter-http: 1.0.2 -> 1.0.2
+logstash-filter-json: 3.1.0 -> 3.1.0
+logstash-filter-kv: 4.4.0 -> 4.4.0
+logstash-filter-memcached: 1.0.2 -> 1.0.2
+logstash-filter-metrics: 4.0.6 -> 4.0.6
+logstash-filter-mutate: 3.5.0 -> 3.5.0
+logstash-filter-prune: 3.0.4 -> 3.0.4
+logstash-filter-ruby: 3.1.5 -> 3.1.5
+logstash-filter-sleep: 3.0.6 -> 3.0.6
+logstash-filter-split: 3.1.8 -> 3.1.8
+logstash-filter-syslog_pri: 3.0.5 -> 3.0.5
+logstash-filter-throttle: 4.0.4 -> 4.0.4
+logstash-filter-translate: 3.2.3 -> 3.2.3
+logstash-filter-truncate: 1.0.4 -> 1.0.4
+logstash-filter-urldecode: 3.0.6 -> 3.0.6
+logstash-filter-useragent: 3.2.4 -> 3.2.4
+logstash-filter-uuid: 3.0.5 -> 3.0.5
+logstash-filter-xml: 4.0.7 -> 4.0.7
+logstash-input-azure_event_hubs: 1.1.2 -> 1.1.2
+logstash-input-beats: 6.0.8 -> 6.0.8
+logstash-input-couchdb_changes: 3.1.6 -> 3.1.6
+logstash-input-dead_letter_queue: 1.1.5 -> 1.1.5
+logstash-input-elasticsearch: 4.5.0 -> 4.5.0
+logstash-input-exec: 3.3.3 -> 3.3.3
+logstash-input-file: 4.1.16 -> 4.1.16
+logstash-input-ganglia: 3.1.4 -> 3.1.4
+logstash-input-gelf: 3.3.0 -> 3.3.0
+logstash-input-generator: 3.0.6 -> 3.0.6
+logstash-input-graphite: 3.0.6 -> 3.0.6
+logstash-input-heartbeat: 3.0.7 -> 3.0.7
+logstash-input-http: 3.3.3 -> 3.3.3
+logstash-input-http_poller: 5.0.1 -> 5.0.1
+logstash-input-imap: 3.0.7 -> 3.0.7
+logstash-input-jms: 3.1.2 -> 3.1.2
+logstash-input-pipe: 3.0.7 -> 3.0.7
+logstash-input-redis: 3.5.0 -> 3.5.0
+logstash-input-s3: 3.4.1 -> 3.4.1
+logstash-input-snmp: 1.2.1 -> 1.2.1
+logstash-input-snmptrap: 3.0.6 -> 3.0.6
+logstash-input-sqs: 3.1.2 -> 3.1.2
+logstash-input-stdin: 3.2.6 -> 3.2.6
+logstash-input-syslog: 3.4.1 -> 3.4.1
+logstash-input-tcp: 6.0.3 -> 6.0.3
+logstash-input-twitter: 4.0.1 -> 4.0.1
+logstash-input-udp: 3.3.4 -> 3.3.4
+logstash-input-unix: 3.0.7 -> 3.0.7
+logstash-integration-jdbc: 5.0.1 -> 5.0.1
+logstash-integration-kafka: 10.0.0 -> 10.0.0
+logstash-integration-rabbitmq: 7.0.2 -> 7.0.2
+logstash-mixin-aws: 4.3.0 -> 4.3.0
+logstash-mixin-http_client: 7.0.0 -> 7.0.0
+logstash-output-cloudwatch: 3.0.8 -> 3.0.8
+logstash-output-csv: 3.0.8 -> 3.0.8
+logstash-output-elastic_app_search: 1.0.0 -> 1.0.0
+logstash-output-elasticsearch: 10.3.1 -> 10.3.1
+logstash-output-email: 4.1.1 -> 4.1.1
+logstash-output-file: 4.2.6 -> 4.2.6
+logstash-output-graphite: 3.1.6 -> 3.1.6
+logstash-output-http: 5.2.4 -> 5.2.4
+logstash-output-lumberjack: 3.1.7 -> 3.1.7
+logstash-output-nagios: 3.0.6 -> 3.0.6
+logstash-output-null: 3.0.5 -> 3.0.5
+logstash-output-pipe: 3.0.6 -> 3.0.6
+logstash-output-redis: 5.0.0 -> 5.0.0
+logstash-output-s3: 4.2.0 -> 4.2.0
+logstash-output-sns: 4.0.7 -> 4.0.7
+logstash-output-sqs: 6.0.0 -> 6.0.0
+logstash-output-stdout: 3.1.4 -> 3.1.4
+logstash-output-tcp: 6.0.0 -> 6.0.0
+logstash-output-udp: 3.1.0 -> 3.1.0
+logstash-output-webhdfs: 3.0.6 -> 3.0.6
+logstash-patterns-core: 4.1.2 -> 4.1.2
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Plugin Core*
+
+404: Not Found
+
+*Avro Codec*
+
+*Cef Codec*
+
+* Fixed CEF short to long name translation for ahost/agentHostName field, according to documentation [#75](https://github.com/logstash-plugins/logstash-codec-cef/pull/75)
+
+* Fixed support for deep dot notation [#73](https://github.com/logstash-plugins/logstash-codec-cef/pull/73)
+
+* Removed obsolete `sev` and `deprecated_v1_fields` fields
+
+* Fixed minor doc inconsistencies (added reverse_mapping to options table, moved it to alpha order in option descriptions, fixed typo)
+  [#60](https://github.com/logstash-plugins/logstash-codec-cef/pull/60)
+
+* Added reverse_mapping option, which can be used to make encoder compliant to spec [#51](https://github.com/logstash-plugins/logstash-codec-cef/pull/51)
+
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) ([#56](https://github.com/logstash-plugins/logstash-codec-cef/issues/56))
+
+* Fix bug in parsing headers where certain legal escape sequences could cause non-escaped pipe characters to be ignored.
+* Fix bug in parsing extension values where a legal unescaped space in a field's value could be interpreted as a field separator (#54)
+* Add explicit handling for extension key names that use array-like syntax that isn't legal with the strict-mode field-reference parser (e.g., `fieldname[0]` becomes `[fieldname][0]`).
+
+* Fix handling of higher-plane UTF-8 characters in message body
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* move `sev` and `deprecated_v1_fields` fields from deprecated to obsolete
+
+* added mapping for outcome = eventOutcome from CEF whitepaper (ref:p26/39)
+
+* changed rt from receiptTime to deviceReceiptTime (ref:p27/39)
+* changed tokenizer to include additional fields (ad.fieldname)
+
+* Add `delimiter` setting. This allows the decoder to be used with inputs like the TCP input where event delimiters are used.
+
+* Implements the dictionary translation for abbreviated CEF field names from chapter Chapter 2: ArcSight Extension Dictionary page 3 of 39 [CEF specification](https://protect724.hp.com/docs/DOC-1072).
+* add `_cefparsefailure` tag on failed decode
+
+* breaking: Updated plugin to use new Java Event APIs
+
+* Switch in-place sub! to sub when extracting `cef_version`. new Logstash Java Event does not support in-place String changes.
+
+* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* New dependency requirements for logstash-core for the 5.0 release
+
+* Implements `encode` with escaping according to the [CEF specification](https://protect724.hp.com/docs/DOC-1072).
+* Config option `sev` is deprecated, use `severity` instead.
+
+* Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* Dependency on logstash-core update to 2.0
+
+*Collectd Codec*
+
+*Dots Codec*
+
+*Edn Codec*
+
+*Edn_lines Codec*
+
+*Es_bulk Codec*
+
+*Fluent Codec*
+
+*Graphite Codec*
+
+*Json Codec*
+
+*Json_lines Codec*
+
+*Line Codec*
+
+*Msgpack Codec*
+
+*Multiline Codec*
+
+*Netflow Codec*
+
+*Plain Codec*
+
+*Rubydebug Codec*
+
+*Aggregate Filter*
+
+*Anonymize Filter*
+
+*Cidr Filter*
+
+*Clone Filter*
+
+*Csv Filter*
+
+*Date Filter*
+
+*De_dot Filter*
+
+*Dissect Filter*
+
+*Dns Filter*
+
+*Drop Filter*
+
+*Elasticsearch Filter*
+
+*Fingerprint Filter*
+
+*Geoip Filter*
+
+*Grok Filter*
+
+*Http Filter*
+
+* Fixed minor documentation issues [#9](https://github.com/logstash-plugins/logstash-filter-http/pull/9)
+
+* Minor documentation fixes
+
+* Beta version of HTTP filter plugin based on @lucashenning's [REST filter](https://github.com/lucashenning/logstash-filter-rest).
+
+*Json Filter*
+
+*Kv Filter*
+
+*Memcached Filter*
+
+*Metrics Filter*
+
+*Mutate Filter*
+
+* Added ability to directly convert from integer and float to boolean [#127](https://github.com/logstash-plugins/logstash-filter-mutate/pull/127)
+
+* Changed documentation to clarify execution order and to provide workaround 
+ [#128](https://github.com/logstash-plugins/logstash-filter-mutate/pull/128)
+
+* Changed documentation to clarify use of `replace` config option [#125](https://github.com/logstash-plugins/logstash-filter-mutate/pull/125)
+
+* Fix: when converting to `float` and `float_eu`, explicitly support same range of inputs as their integer counterparts; eliminates a regression introduced in 3.3.1 in which support for non-string inputs was inadvertently removed.
+
+* Fix: Number strings using a **decimal comma** (e.g. 1,23), added convert support to specify integer_eu and float_eu.
+
+* feature: Added capitalize feature.
+
+* Support boolean to integer conversion https://github.com/logstash-plugins/logstash-filter-mutate/issues/107[#107]
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* feature: Allow to copy fields.
+
+* Don't create empty fields when lower/uppercasing a non-existant field
+
+* bugfix: split method was not working, https://github.com/logstash-plugins/logstash-filter-mutate/issues/78[#78]
+
+* Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
+
+* breaking,config: Remove deprecated config `remove`. Please use generic `remove_field` instead.
+
+* internal: Republish all the gems under jruby.
+
+* internal,deps: Update the plugin to the version 2.0 of the plugin api, this change is required for Logstash 5.0 compatibility. See https://github.com/elastic/logstash/issues/5141
+
+* internal,test: Temp fix for patterns path in tests
+
+* internal,deps: Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* internal,deps: New dependency requirements for logstash-core for the 5.0 release
+
+* internal,cleanup: Code cleanups and fix field assignments
+
+* internal: Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* internal,deps: Dependency on logstash-core update to 2.0
+
+* bugfix: Fix for uppercase and lowercase fail when value is already desired case
+* internal,test: Modify tests to prove bug and verify fix.
+
+* bugfix: Fix for uppercase and lowercase malfunction
+* internal,test: Specific test to prove bug and fix.
+
+*Prune Filter*
+
+# 3.0.4
+* Fixed regex to prevent Exception in sprintf call [#25](https://github.com/logstash-plugins/logstash-filter-prune/pull/25)
+* Changed testing to docker [#27](https://github.com/logstash-plugins/logstash-filter-prune/pull/27)
+* Added clarification in docs around whitelist_values
+* Changed tests from insist to expect
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* internal: Bumped up logstash-core-plugin-api dependency to allow installation with Logstash 5.
+* doc: Clarify that pruning of subfields is unsupported.
+
+* doc: Documentation improvements.
+
+* doc: Documentation improvements.
+
+* internal,deps: Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* internal,deps: New dependency requirements for logstash-core for the 5.0 release
+
+* internal: Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* internal,deps: Dependency on logstash-core update to 2.0
+
+*Ruby Filter*
+
+*Sleep Filter*
+
+*Split Filter*
+
+*Syslog_pri Filter*
+
+*Throttle Filter*
+
+*Translate Filter*
+
+*Truncate Filter*
+
+*Urldecode Filter*
+
+*Useragent Filter*
+
+*Uuid Filter*
+
+*Xml Filter*
+
+*Azure_event_hubs Input*
+
+*Beats Input*
+
+*Couchdb_changes Input*
+
+*Dead_letter_queue Input*
+
+*Elasticsearch Input*
+
+*Exec Input*
+
+*File Input*
+
+*Ganglia Input*
+
+*Gelf Input*
+
+*Generator Input*
+
+*Graphite Input*
+
+*Heartbeat Input*
+
+*Http Input*
+
+*Http_poller Input*
+
+*Imap Input*
+
+*Jms Input*
+
+*Pipe Input*
+
+*Redis Input*
+
+*S3 Input*
+
+*Snmp Input*
+
+*Snmptrap Input*
+
+*Sqs Input*
+
+*Stdin Input*
+
+*Syslog Input*
+
+*Tcp Input*
+
+*Twitter Input*
+
+*Udp Input*
+
+*Unix Input*
+
+*Jdbc Integration*
+
+*Kafka Integration*
+
+*Rabbitmq Integration*
+
+*Aws Mixin*
+
+*Http_client Mixin*
+
+*Cloudwatch Output*
+
+*Csv Output*
+
+*Elastic_app_search Output*
+
+*Elasticsearch Output*
+
+*Email Output*
+
+*File Output*
+
+*Graphite Output*
+
+*Http Output*
+
+*Lumberjack Output*
+
+*Nagios Output*
+
+*Null Output*
+
+*Pipe Output*
+
+*Redis Output*
+
+*S3 Output*
+
+*Sns Output*
+
+*Sqs Output*
+
+*Stdout Output*
+
+*Tcp Output*
+
+*Udp Output*
+
+*Webhdfs Output*
+
+*Core Patterns*
+
 
 [[logstash-7-6-1]]
 === Logstash 7.6.1 Release Notes
