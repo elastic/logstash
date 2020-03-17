@@ -75,9 +75,9 @@ test {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'benchmark-cli'
-  classifier = null
-  version = null
+  archiveBaseName = 'benchmark-cli'
+  archiveClassifier = null
+  archiveVersion = null
 }
 
 assemble.dependsOn shadowJar

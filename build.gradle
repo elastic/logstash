@@ -30,7 +30,7 @@ buildscript {
 }
 
 plugins {
-    id "de.undercouch.download" version "3.2.0"
+    id "de.undercouch.download" version "4.0.2"
 }
 
 apply plugin: 'de.undercouch.download'

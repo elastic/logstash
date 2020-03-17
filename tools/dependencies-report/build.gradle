@@ -64,9 +64,9 @@ test {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'dependencies-report'
-  classifier = null
-  version = null
+  archiveBaseName = 'dependencies-report'
+  archiveClassifier = null
+  archiveVersion = null
 }
 
 assemble.dependsOn shadowJar

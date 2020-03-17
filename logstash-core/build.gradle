@@ -45,14 +45,14 @@ buildscript {
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
-    classifier 'sources'
-    extension 'jar'
+    archiveClassifier = 'sources'
+    archiveExtension = 'jar'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
-    classifier 'javadoc'
-    extension 'jar'
+    archiveClassifier = 'javadoc'
+    archiveExtension = 'jar'
 }
 
 task copyRuntimeLibs(type: Copy) {
