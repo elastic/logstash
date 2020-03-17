@@ -328,7 +328,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.3-java)
+    logstash-input-http (3.3.4-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -372,7 +372,7 @@ GEM
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       stud (~> 0.0.18)
-    logstash-input-snmp (1.2.1)
+    logstash-input-snmp (1.2.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
