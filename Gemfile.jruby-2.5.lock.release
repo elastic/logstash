@@ -288,7 +288,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.0.8-java)
+    logstash-input-beats (6.0.9-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -343,7 +343,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.3-java)
+    logstash-input-http (3.3.4-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -369,7 +369,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-redis (3.5.0)
+    logstash-input-redis (3.5.1)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
@@ -377,7 +377,7 @@ GEM
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       stud (~> 0.0.18)
-    logstash-input-snmp (1.2.1)
+    logstash-input-snmp (1.2.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
@@ -402,7 +402,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (6.0.3-java)
+    logstash-input-tcp (6.0.4-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -431,13 +431,13 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (10.0.0-java)
+    logstash-integration-kafka (10.0.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-integration-rabbitmq (7.0.2-java)
+    logstash-integration-rabbitmq (7.0.3-java)
       back_pressure (~> 1.0)
       logstash-codec-json
       logstash-core (>= 6.5.0)
@@ -465,7 +465,7 @@ GEM
     logstash-output-elastic_app_search (1.0.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.3.1-java)
+    logstash-output-elasticsearch (10.3.3-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
