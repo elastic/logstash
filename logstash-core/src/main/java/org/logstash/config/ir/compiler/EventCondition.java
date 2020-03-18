@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import org.jruby.Ruby;
+import org.jruby.RubyRegexp;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
@@ -466,22 +468,30 @@ public interface EventCondition {
                     !Boolean.toString(false).equals(other);
         }
 
+        private static RubyRegexp newRegexp(String pattern) {
+            final Ruby runtime = RubyUtil.RUBY;
+            return RubyRegexp.newRegexpFromStr(runtime, runtime.newString(pattern), 0);
+        }
+
+        private static boolean matches(RubyString str, RubyRegexp regexp) {
+            return regexp.match_p(RubyUtil.RUBY.getCurrentContext(), str).isTrue(); // match? returns true/false
+        }
+
         private static final class FieldMatches implements EventCondition {
 
             private final FieldReference field;
 
-            private final RubyString regex;
+            private final RubyRegexp regexp;
 
-            private FieldMatches(final String field, final String regex) {
+            private FieldMatches(final String field, final String pattern) {
                 this.field = FieldReference.from(field);
-                this.regex = RubyUtil.RUBY.newString(regex);
+                this.regexp = newRegexp(pattern);
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                final Object tomatch = event.getEvent().getUnconvertedField(field);
-                return tomatch instanceof RubyString &&
-                    !((RubyString) tomatch).match(WorkerLoop.THREAD_CONTEXT.get(), regex).isNil();
+                final Object toMatch = event.getEvent().getUnconvertedField(field);
+                return toMatch instanceof RubyString && matches((RubyString) toMatch, regexp);
             }
         }
 
@@ -489,11 +499,9 @@ public interface EventCondition {
 
             private final boolean matches;
 
-            private ConstantMatches(final Object constant, final String regex) {
+            private ConstantMatches(final Object constant, final String pattern) {
                 this.matches = constant instanceof String &&
-                        !(RubyUtil.RUBY.newString((String) constant).match(
-                                WorkerLoop.THREAD_CONTEXT.get(),
-                                RubyUtil.RUBY.newString(regex)).isNil());
+                        matches(RubyUtil.RUBY.newString((String) constant), newRegexp(pattern));
             }
 
             @Override
