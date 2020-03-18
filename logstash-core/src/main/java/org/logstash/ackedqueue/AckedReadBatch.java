@@ -42,25 +42,35 @@ public final class AckedReadBatch implements QueueBatch {
 
     private RubyHash generated;
 
-    public static AckedReadBatch create(final JRubyAckedQueueExt queue, final int size,
-                                        final long timeout) {
-        return new AckedReadBatch(queue, size, timeout);
-    }
+    public static AckedReadBatch create(
+            final JRubyAckedQueueExt queue,
+            final int size,
+            final long timeout)
+    {
+        if (size == 0) { return new AckedReadBatch(); }
 
-    private AckedReadBatch(final JRubyAckedQueueExt queue, final int size, final long timeout) {
         AckedBatch batch;
         try {
             batch = queue.readBatch(size, timeout);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        if (batch == null) {
-            originals = RubyHash.newHash(RUBY);
-            ackedBatch = null;
-        } else {
-            ackedBatch = batch;
-            originals = ackedBatch.toRubyHash(RUBY);
-        }
+        return ((batch == null) ? new AckedReadBatch() : new AckedReadBatch(batch));
+     }
+
+    public static AckedReadBatch create() {
+        return new AckedReadBatch();
+    }
+
+    private AckedReadBatch() {
+        ackedBatch = null;
+        originals = RubyHash.newHash(RUBY);
+        generated = RubyHash.newHash(RUBY);
+    }
+
+    private AckedReadBatch(AckedBatch batch) {
+        ackedBatch = batch;
+        originals = ackedBatch.toRubyHash(RUBY);
         generated = RubyHash.newHash(RUBY);
     }
 

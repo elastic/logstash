@@ -81,17 +81,20 @@ public final class WorkerLoop implements Runnable {
             do {
                 isShutdown = isShutdown || shutdownRequested.get();
                 final QueueBatch batch = readClient.readBatch();
-                consumedCounter.add(batch.filteredSize());
-                final boolean isFlush = flushRequested.compareAndSet(true, false);
-                readClient.startMetrics(batch);
-                compute(batch, isFlush, false);
-                int filteredCount = batch.filteredSize();
-                filteredCounter.add(filteredCount);
-                readClient.addOutputMetrics(filteredCount);
-                readClient.addFilteredMetrics(filteredCount);
-                readClient.closeBatch(batch);
-                if (isFlush) {
-                    flushing.set(false);
+                final int readCount = batch.filteredSize();
+                if (readCount > 0) {
+                    consumedCounter.add(readCount);
+                    final boolean isFlush = flushRequested.compareAndSet(true, false);
+                    readClient.startMetrics(batch);
+                    compute(batch, isFlush, false);
+                    int filteredCount = batch.filteredSize();
+                    filteredCounter.add(filteredCount);
+                    readClient.addOutputMetrics(filteredCount);
+                    readClient.addFilteredMetrics(filteredCount);
+                    readClient.closeBatch(batch);
+                    if (isFlush) {
+                        flushing.set(false);
+                    }
                 }
             } while (!isShutdown || isDraining());
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
