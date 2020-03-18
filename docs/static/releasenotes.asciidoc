@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-8,Logstash 6.8.8>>
 * <<logstash-6-8-7,Logstash 6.8.7>>
 * <<logstash-6-8-6,Logstash 6.8.6>>
 * <<logstash-6-8-5,Logstash 6.8.5>>
@@ -38,6 +39,29 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-8]]
+=== Logstash 6.8.8 Release Notes
+
+* [Doc] Add tips for troubleshooting a pipeline. https://github.com/elastic/logstash/pull/11545[#11545]
+* [Doc] Update to include verification mode switch. https://github.com/elastic/logstash/pull/11284[#11284]
+* [Doc] Update offline-plugins.asciidoc to use correct command syntax. https://github.com/elastic/logstash/pull/10912[#10912]
+* [Doc] Update logging.asciidoc to emphasize that logging to console is included in out-of-the-box settings. https://github.com/elastic/logstash/pull/10717[#10717]
+
+==== Plugins
+
+*Memcached Filter*
+
+* Docs: Fixed link formatting issues in doc https://github.com/logstash-plugins/logstash-filter-memcached/pull/16[#16]
+
+*Http Input*
+
+* Refactor: scope (and avoid unused) java imports https://github.com/logstash-plugins/logstash-input-http/pull/124[#124]
+
+*Snmp Input*
+
+*  Refactor: scope and review java_imports https://github.com/logstash-plugins/logstash-input-snmp/pull/72[#72]
+
 
 [[logstash-6-8-7]]
 === Logstash 6.8.7 Release Notes
