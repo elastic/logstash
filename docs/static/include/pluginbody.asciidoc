@@ -43,7 +43,7 @@ Alternatively, you can use the examples repo we host on github.com
 *** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash`+-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
 ** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
-. **Clone the {inputtype} plugin example and copy it to your plugin branch.**
+. **Clone the {plugintype} plugin example and copy it to your plugin branch.**
 +
 You don't want to include the example .git directory or its contents, so delete
 it before you copy the example.
