@@ -40,7 +40,6 @@ around plugin configuration keys would stop the pipeline from starting. https://
 * [Doc] Backport more references to contributing issues guidelines. https://github.com/elastic/logstash/pull/11666[#11666]
 * [Doc] Add tips for troubleshooting a pipeline. https://github.com/elastic/logstash/pull/11545[#11545]
 * [Doc] Update to include verification mode switch. https://github.com/elastic/logstash/pull/11284[#11284]
-* [Doc] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
 * [Doc] Update logging.asciidoc to emphasize that logging to console is included in out-of-the-box settings. https://github.com/elastic/logstash/pull/10717[#10717]
 * [Doc] Update offline-plugins.asciidoc to use correct command syntax. https://github.com/elastic/logstash/pull/10912[#10912]
 *  Bump puma to 4.3.3. https://github.com/elastic/logstash/pull/11651[#11651]
