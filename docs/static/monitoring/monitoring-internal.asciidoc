@@ -101,5 +101,4 @@ TBD for more information about SSL settings.
 
 . {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}]. 
 
-TODO: This is from Beats.  What's appropriate for Logstash?
-//include::shared-monitor-config.asciidoc[]
+include::../settings/monitoring-settings.asciidoc[]

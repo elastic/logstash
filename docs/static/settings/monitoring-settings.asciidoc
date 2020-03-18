@@ -5,7 +5,7 @@
 <titleabbrev>Monitoring Settings</titleabbrev>
 ++++
 
-You can set the following `xpack.monitoring` settings in `logstash.yml` to
+You can set the following `monitoring` settings in `logstash.yml` to
 control how monitoring data is collected from your Logstash nodes. However, the
 defaults work best in most circumstances. For more information about configuring
 Logstash, see <<logstash-settings-file>>.
@@ -14,11 +14,16 @@ Logstash, see <<logstash-settings-file>>.
 [[monitoring-general-settings]]
 ===== General monitoring settings
 
-`xpack.monitoring.enabled`::
+`monitoring.enabled`::
 
-Monitoring is disabled by default. Set to `true` to enable {xpack} monitoring.
+Monitoring is disabled by default. Set to `true` to enable monitoring.
 
-`xpack.monitoring.elasticsearch.hosts`::
+`monitoring.cluster_uuid`::
+
+The universally unique identifier (UUID) for the monitoring cluster.
+Defaults to `elasticsearch_cluster_uuid`.
+
+`monitoring.elasticsearch.hosts`::
 
 The {es} instances that you want to ship your Logstash metrics to. This might be
 the same {es} instance specified in the `outputs` section in your Logstash
@@ -32,9 +37,9 @@ NOTE: If your Elasticsearch cluster is configured with dedicated master-eliglble
 nodes, Logstash metrics should _not_ be routed to these nodes, as doing so can
 create resource contention and impact the stability of the Elasticsearch
 cluster. Therefore, do not include such nodes in
-`xpack.monitoring.elasticsearch.hosts`.
+`monitoring.elasticsearch.hosts`.
 
-`xpack.monitoring.elasticsearch.username` and `xpack.monitoring.elasticsearch.password`::
+`monitoring.elasticsearch.username` and `monitoring.elasticsearch.password`::
 
 If your {es} is protected with basic authentication, these settings provide the
 username and password that the Logstash instance uses to authenticate for
@@ -44,63 +49,76 @@ shipping monitoring data.
 [[monitoring-collection-settings]]
 ===== Monitoring collection settings
 
-`xpack.monitoring.collection.interval`::
+`monitoring.collection.pipeline.details.enabled`::
+
+ToDo: Add description
+
+Defaults to `true`.
+
+`monitoring.collection.interval`::
 
 Controls how often data samples are collected and shipped on the Logstash side.
-Defaults to `10s`. If you modify the collection interval, set the 
-`xpack.monitoring.min_interval_seconds` option in `kibana.yml` to the same value.
-
+Defaults to `10s`. If you modify the collection interval, add the
+`monitoring.min_interval_seconds` option to `kibana.yml`, and set it to the same
+value.
 
 [[monitoring-ssl-settings]]
-===== {monitoring} TLS/SSL settings
+===== Monitoring TLS/SSL settings
 
 You can configure the following Transport Layer Security (TLS) or
 Secure Sockets Layer (SSL) settings. For more information, see 
 <<ls-monitoring-user>>.
 
-`xpack.monitoring.elasticsearch.ssl.certificate_authority`::
+`monitoring.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
 certificate authority for your {es} instance.
 
-`xpack.monitoring.elasticsearch.ssl.truststore.path`::
+`monitoring.elasticsearch.ssl.truststore.path`::
 
 Optional settings that provide the paths to the Java keystore (JKS) to validate
 the server’s certificate.
 
-`xpack.monitoring.elasticsearch.ssl.truststore.password`::
+`monitoring.elasticsearch.ssl.truststore.password`::
 
 Optional settings that provide the password to the truststore.
 
-`xpack.monitoring.elasticsearch.ssl.keystore.path`::
+`monitoring.elasticsearch.ssl.keystore.path`::
 
 Optional settings that provide the paths to the Java keystore (JKS) to validate
 the client’s certificate.
 
-`xpack.monitoring.elasticsearch.ssl.keystore.password`::
+`monitoring.elasticsearch.ssl.keystore.password`::
 
 Optional settings that provide the password to the keystore.
 
-`xpack.monitoring.elasticsearch.ssl.verification_mode`::
+`monitoring.elasticsearch.ssl.verification_mode`::
 
 Option to validate the server’s certificate. Defaults to `certificate`. To
 disable, set to `none`. Disabling this severely compromises security.
 
+`monitoring.elasticsearch.sniffing`::
+
+ToDo: Add description 
+
+Defaults to `false`.
+
+
 [[monitoring-additional-settings]]
 ===== Additional settings
 
-`xpack.monitoring.elasticsearch.cloud_id`::
+`monitoring.elasticsearch.cloud_id`::
 
 If you're using {es} in {ecloud}, you should specify the identifier here.
-This setting is an alternative to `xpack.monitoring.elasticsearch.hosts`.
-If `cloud_id` is configured, `xpack.monitoring.elasticsearch.hosts` should not be used.
+This setting is an alternative to `monitoring.elasticsearch.hosts`.
+If `cloud_id` is configured, `monitoring.elasticsearch.hosts` should not be used.
 The {es} instances that you want to ship your Logstash metrics to. This might be
 the same {es} instance specified in the `outputs` section in your Logstash
 configuration, or a different one.
 
-`xpack.monitoring.elasticsearch.cloud_auth`::
+`monitoring.elasticsearch.cloud_auth`::
 
 If you're using {es} in {ecloud}, you can set your auth credentials here.
-This setting is an alternative to both `xpack.monitoring.elasticsearch.username`
-and `xpack.monitoring.elasticsearch.password`. If `cloud_auth` is configured,
+This setting is an alternative to both `monitoring.elasticsearch.username`
+and `monitoring.elasticsearch.password`. If `cloud_auth` is configured,
 those settings should not be used.
