@@ -1,0 +1,28 @@
+# This file is used as part of a matrix build in Jenkins where the
+# values below are included as an axis of the matrix.
+
+# This axis of the build matrix represents the Linux distributions on
+# which Logstash will be tested.
+
+#os:
+#  - amazon
+#  - centos-6&&immutable
+#  - centos-7&&immutable
+#  - debian-8&&immutable
+#  - debian-9&&immutable
+#  - debian-10&&immutable
+#  - fedora-29&&immutable
+#  - opensuse-15-1&&immutable
+#  - oraclelinux-6&&immutable
+#  - oraclelinux-7&&immutable
+#  - ubuntu-18.04&&immutable
+#  - ubuntu-20.04&&immutable
+
+os:
+  - amazon
+  - centos&&immutable
+  - debian&&immutable
+  - fedora-29&&immutable
+  - opensuse-15-1&&immutable
+  - oraclelinux&&immutable
+  - ubuntu&&immutable
