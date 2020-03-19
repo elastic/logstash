@@ -6,7 +6,7 @@ set -x
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
-export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
+export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 export OSS=true
 
 SELECTED_TEST_SUITE=$1

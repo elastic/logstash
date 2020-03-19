@@ -5,11 +5,15 @@
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
-export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
+export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 export OSS=true
+
+if [ -n "$BUILD_JAVA_HOME" ]; then
+  GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+fi
 
 if [[ $1 = "setup" ]]; then
  echo "Setup only, no tests will be run"

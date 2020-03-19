@@ -6,6 +6,7 @@ set -x # We want verbosity here, this mostly runs on CI and we want to easily de
 #Note - ensure that the -e flag is NOT set, and explicitly check the $? status to allow for clean up
 
 REMOVE_IMAGE=false
+DOCKER_EXTERNAL_JDK=""
 if [ -z "$branch_specifier" ]; then
     # manual
     REMOVE_IMAGE=true
@@ -33,8 +34,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [ -n "$JDK" ]; then
+  echo "JDK to use $JDK"
+  DOCKER_EXTERNAL_JDK="--mount type=bind,source=$JDK,target=$JDK,readonly --env BUILD_JAVA_HOME=$JDK"
+fi
+
 # Run the command, skip the first argument, which is the image name
-docker run $DOCKER_ENV_OPTS --cidfile=docker_cid --sig-proxy=true --rm $IMAGE_NAME ${@:2}
+docker run $DOCKER_ENV_OPTS --cidfile=docker_cid --sig-proxy=true $DOCKER_EXTERNAL_JDK --rm $IMAGE_NAME ${@:2}
 exit_code=$?
 
 # Remove the container cid since we ran cleanly, no need to force rm it if we got to this point
