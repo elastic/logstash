@@ -29,7 +29,7 @@ commented out:
 
 [source,yaml]
 ----------------------------------
-xpack.monitoring.enabled: false
+monitoring.enabled: false
 ----------------------------------
 
 Remove the `#` at the beginning of the line to enable the setting.

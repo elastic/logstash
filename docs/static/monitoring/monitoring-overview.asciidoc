@@ -22,6 +22,7 @@ these methods to collect {ls} metrics:
 
 include::monitoring-mb.asciidoc[]
 include::monitoring-internal.asciidoc[]
+include::monitoring-internal-legacy.asciidoc[]
 include::monitoring-ui.asciidoc[]
 include::pipeline-viewer.asciidoc[]
 include::troubleshooting.asciidoc[]
