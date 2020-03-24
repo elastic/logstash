@@ -1,0 +1,29 @@
+[[heap-size]]
+=== Setting the heap size
+
+NOTE: Heap size should be no less than 4GB and no more than 8GB.
+
+Here are some additional tips for adjusting the JVM heap size:
+
+* CPU utilization can increase unnecessarily if the heap size is too low,
+resulting in the JVM constantly garbage collecting. You can check for this issue
+by doubling the heap size to see if performance improves. 
+
+* Do not increase the heap size past the amount of physical
+memory. Leave at least 1GB free for the OS and other processes.
+
+* Set the minimum (Xms) and maximum (Xmx) heap allocation size to the same
+value to prevent the heap from resizing at runtime, which is a very costly
+process.
+
+* You can make more accurate measurements of the JVM heap by using either the
+`jmap` command line utility distributed with Java or by using VisualVM. For more
+info, see <<profiling-the-heap>>.
+
+
+
+
+
+
+
+
