@@ -187,14 +187,13 @@ include::static/deploying.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/performance-checklist.asciidoc
 include::static/performance-checklist.asciidoc[]
 
-// Monitoring 
-:edit_url!:
-include::static/monitoring/monitoring.asciidoc[]
-
 // X-Pack Monitoring 
 :edit_url!:
 include::static/monitoring/monitoring-overview.asciidoc[]
 
+// Monitoring 
+:edit_url!:
+include::static/monitoring/monitoring.asciidoc[]
 
 // Working with Plugins
 

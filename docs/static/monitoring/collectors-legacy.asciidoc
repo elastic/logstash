@@ -1,6 +1,6 @@
 [float]
 [role="xpack"]
-[[logstash-monitoring-collectors]]
+[[logstash-monitoring-collectors-legacy]]
 ===== Collectors
 
 Collectors, as their name implies, collect things. In monitoring for Logstash, 
@@ -37,11 +37,11 @@ in its isolated monitoring pipeline. The Logstash output then sends the data.
 
 The collection interval can be configured dynamically and you can also disable 
 data collection. For more information about the configuration options for the 
-collectors, see <<monitoring-settings>>.
+collectors, see <<monitoring-settings-legacy>>.
 
-WARNING: Unlike for {es} and {kib} monitoring, there is no 
-`pack.monitoring.collection.enabled` setting on Logstash. You must use the
-`monitoring.enabled` setting to enable and disable data collection.
+WARNING: Unlike {es} and {kib} monitoring, there is no 
+`xpack.monitoring.collection.enabled` setting on Logstash. You must use the 
+`xpack.monitoring.enabled` setting to enable and disable data collection. 
 
 If gaps exist in the monitoring charts in {kib}, it is typically because either 
 a collector failed or the monitoring cluster did not receive the data (for 
