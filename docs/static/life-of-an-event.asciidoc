@@ -96,3 +96,4 @@ By default, Logstash uses in-memory bounded queues between pipeline stages
 unsafely, any events that are stored in memory will be lost. To help prevent data
 loss, you can enable Logstash to persist in-flight events to disk. See
 <<persistent-queues>> for more information.
+

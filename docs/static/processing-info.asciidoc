@@ -1,0 +1,18 @@
+[[processing]]
+=== Processing Details
+
+Understanding how {ls} works and how components interrelate can help you make better
+decisions when you are setting up or adjusting your {ls} environment. This
+section is designed to elevate concepts to assist with that level of
+knowledge.
+
+NOTE: This is a new section. We're still working on it.
+
+[float] 
+[[event-ordering]] 
+==== Event ordering 
+
+Event ordering info goes here. 
+
+//todo: Document event ordering guaranties or lack thereof with multiple worker versus single worker
+
