@@ -64,39 +64,36 @@ d2a094629 - Add cluster_uuid setting to default config file, displaying it in No
 
 
 
-Logging - added plugin name to log statements
-* Added plugin.name to fish tag log lines https://github.com/elastic/logstash/pull/11078[#11078]
-* Adding plugin.id to docker images https://github.com/elastic/logstash/pull/11593[#11593]
-52327f80f - Updating the log4j2.properties file that the Docker container image uses to also log the pipeline.id. (7 weeks ago) <Spencer Niemi>
-
-
-
-Monitoring - added support for sending monitoring to dedicated monitoring cluster
+Monitoring - Additional option to send monitoring data directly to a dedicated monitoring cluster, rather than via the production cluster
+  TODO: Flesh this out
 * Conditionally add monitoring structure to top-level of output in API https://github.com/elastic/logstash/pull/11106[#11106]
 * Backport of #11312 [put document_type for /_monitoring] https://github.com/elastic/logstash/pull/11640[#11640]
 * Adjustments to send monitoring data directly to ES Backport of PR #11541 to 7.7 https://github.com/elastic/logstash/pull/11641[#11641]
 
 
-Major bugfixes
+Logging Improvements
+
+* Added plugin.name to fish tag log lines https://github.com/elastic/logstash/pull/11078[#11078]
+* Added plugin.id to docker images https://github.com/elastic/logstash/pull/11593[#11593]
+* Added pipeline.id to docker images https://github.com/elastic/logstash/pull/11567[#11567]
 
 
-Fix of ordered pipeline for java execution - this might need a blog note, extra release notes to explain
+
+Bugfixes
+
+Add support for a `pipeline.ordered` setting for java execution to enable events to be processed in the order they arrive.
+TODO: More details, including warning of reduced performance due to events being processed one event at a time.
 * [7.7 clean backport of #11524] add support for pipeline.ordered setting for java execution https://github.com/elastic/logstash/pull/11552[#11552]
 
-Fix Multiple pipeline performance regression
-* [7.7 backport of #11564] revert #11482 and fix redundant code generation #11574 https://github.com/elastic/logstash/pull/11576[#11576]
 
 Smaller Bugfixes
 
-Add `sudo` into the rpm import of GPG-KEY #11684
-
-* Regular expression fix.
-d3d765a45 - Fix: use l/w match-ing (which does not depend on frames) (3 weeks ago) <Karol Bucek>
-
-* Fixes Monitoring API corrupts output when id contains environment variable reference
-496f81c8c - Changed PluginFactory to resolve id field with environment variables docs: plugin ids variable expansion cannot use secret store (5 weeks ago) <andsel>
+* Add `sudo` into the rpm import of GPG-KEY https://github.com/elastic/logstash/pull/11684[#11684]
+* Fix: use l/w match-ing (which does not depend on frames)
+* Fixes issue where monitoring API does not properly resolve ids including environment variable expansion https://github.com/elastic/logstash/pull/11592[#11592]
 
 Misc
+
 593235c16 - Update rack dependency on docgen project (3 weeks ago) <João Duarte>
 Refactor: do not keep around JRuby context reference #11587
 
