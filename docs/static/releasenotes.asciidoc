@@ -31,7 +31,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
 
-
 Documentation changes
 * [DOCS] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
 * [Doc] Force reload doesn't work in WinOS https://github.com/elastic/logstash/pull/11520[#11520]
@@ -44,11 +43,7 @@ Documentation changes
 8c11a95f9 - Update troubleshooting.asciidoc (2 weeks ago) <Karen Metts>
 0a88578ef - Removed errored CLI flag description (2 weeks ago) <andsel>
 d057e8bae - Minor, added suggestion to switch on the log per pipeline (2 weeks ago) <andsel>
-(7.6.2) 7549824fc - Add tips for troubleshooting a pipeline (2 weeks ago) <Karen Metts>
-(7.6.2) 4412073ad - Update to include verification mode switch (2 weeks ago) <Kris Reberger>
 9ef44b4c1 - Wording tweak for more emphasis (2 weeks ago) <Karen Metts>
-(7.6.2) f06b66db8 - Update logging.asciidoc (2 weeks ago) <Ryan Earle>
-(7.6.2) a2ebac33c - Update offline-plugins.asciidoc (2 weeks ago) <meshkov>
 d02e95771 - Fix grammar in enable_metric filter option (2 weeks ago) <Jonathan Bride>
 14a504f7b - Update logging.asciidoc (2 weeks ago) <0xflotus>
 16e5f6280 - Clarify reload of configuration files (2 weeks ago) <Luca Belluccini>
@@ -59,16 +54,7 @@ de95de3ae - remove TODO from CONTRIBUTING notes (4 weeks ago) <Karol Bucek>
 5587c9d7a - Make capitalization consistent (4 weeks ago) <Karen Metts>
 239e9b0c3 - Fixes out-dated monitoring links (4 weeks ago) <lcawl>
 9361638b2 - Add shared attribute for cloud trial (4 weeks ago) <Karen Metts>
-(7.6.2)ca635975c - Update contributing guidelines to clarify changelog formatting (5 weeks ago) <Karen Metts>
-
-(7.6.1) 91e96b1f2 - Rework ls netflow module deprecation notice (5 weeks ago) <Karen Metts>
-(7.6.1) 55410efcc - Fix setting name for monitoring (6 weeks ago) <Karen Metts>
-(7.6.1) 4ff6378c0 - Clarify wording and add to another page (7 weeks ago) <Karen Metts>
-(7.6.1) e8ffadc02 - Add Apple notarization info (7 weeks ago) <Karen Metts>
-(7.6.0) 07c4d9d52 - Remove module-only disclaimer for cloud id (7 weeks ago) <Karen Metts>
 80cd89673 - Fix missing " on glob pattern (8 weeks ago) <tbotalla>
-(7.6.0) 52f794695 - Add deprecation notice to internal collectors for monitoring (8 weeks ago) <Karen Metts>
-(7.6.0) f94f72a79 - Add details about pipeline.workers (8 weeks ago) <Karen Metts>
 5cbc9eeb4 - Add info about deprecation logger support mixin (8 weeks ago) <Karen Metts>
 6a412f7af - Added precation notice when internal monitoring collector is used. Closes #11346 (8 weeks ago) <andsel>
 23c7f48aa - Updated README to document how to run single Ruby specs (8 weeks ago) <andsel>
@@ -93,12 +79,6 @@ Monitoring - added support for sending monitoring to dedicated monitoring cluste
 
 Major bugfixes
 
-(7.6.2)Fixed regression where a completely commented out configuration files would cause pipeline not to be able to start
-* Fix/permit commented out config sources https://github.com/elastic/logstash/pull/11615[#11615]
-
-(7.6.2) Fixed regression where quoted configuration keys would cause pipeline to not be able to start
-* [7.7 clean backport of #11688] support quoted plugin option key https://github.com/elastic/logstash/pull/11693[#11693]
-* 758bc5c62 - support quoted plugin option key (#11693) (9 days ago) <Colin Surprenant>
 
 Fix of ordered pipeline for java execution - this might need a blog note, extra release notes to explain
 * [7.7 clean backport of #11524] add support for pipeline.ordered setting for java execution https://github.com/elastic/logstash/pull/11552[#11552]
@@ -108,15 +88,12 @@ Fix Multiple pipeline performance regression
 
 Smaller Bugfixes
 
-(7.6.2) 81a96546d - Fixed typo in guage metric of unknown type log. (9 days ago) <Mark Ramotowski> #11689
 Add `sudo` into the rpm import of GPG-KEY #11684
 
-Regular expression fix.
+* Regular expression fix.
 d3d765a45 - Fix: use l/w match-ing (which does not depend on frames) (3 weeks ago) <Karol Bucek>
 
-(7.6.2) 7706866fb - Fix: broken --help due sinatra 2.x upgrade (3 weeks ago) <Karol Bucek>
-
-Fixes Monitoring API corrupts output when id contains environment variable reference
+* Fixes Monitoring API corrupts output when id contains environment variable reference
 496f81c8c - Changed PluginFactory to resolve id field with environment variables docs: plugin ids variable expansion cannot use secret store (5 weeks ago) <andsel>
 
 Misc
@@ -136,8 +113,6 @@ f12eb2f28 - fail license report job on missing licenses (8 weeks ago) <Joao Duar
 
 Build
 * b19db959a - ensure mavencentral is always used before plugins.gradle.org (13 days ago) <Joao Duarte>
-* ce4493653 - Changed: .ruby-version back to 9.1.12.0 (3 weeks ago) <Karol Bucek>
-b7a5f7685 - Updated: JRuby to 9.2.11.0 (3 weeks ago) <Karol Bucek>
 a2044fb5f - ensure lock template is in docker tasks (8 weeks ago) <Joao Duarte>
 
 Path to improve JDK support
@@ -145,17 +120,11 @@ Path to improve JDK support
 * Fixes JDK13's javadoc build failure https://github.com/elastic/logstash/pull/11642[#11642]
 
 
-=== Logstash Commits between 7.7 and 7.6.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.6.1..7.7"
-
-
-
 ==== Plugins
 
 *Grok Filter*
 
-*  Added: added target support https://github.com/logstash-plugins/logstash-filter-grok/pull/156[#156]
+* Added: added target support https://github.com/logstash-plugins/logstash-filter-grok/pull/156[#156]
 
 *Xml Filter*
 
@@ -164,61 +133,20 @@ Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit -
 *Azure_event_hubs Input*
 
 * Refactor: scope and review global java_imports https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/57[#57]
-
 * [DOC] Changed documentation to update the default number of threads https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/55[#55]
-
 * Changed the default number of threads from `4` to `16` to match the default number from the Azure-Sdk EventProcessorHost https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/54[#54]
-
 * Fixed missing configuration of the `max_batch_size`setting https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/52[#52]
-
 * [DOC] Added clarification for threads parameter https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/50[#50]
-
-*Beats Input*
-
-(7.6.2) * Fixed issue where calling `java_import` on `org.logstash.netty.SslContextBuilder` was causing the TCP input to pick up the wrong SslContextBuilder class
-   potentially causing pipeline creation to fail https://github.com/logstash-plugins/logstash-input-beats/pull/388[#388]
 
 *Elasticsearch Input*
 
 * Feat: added option to specify proxy for ES https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
-
-*Http Input*
-
-(7.6.2) * Refactor: scope (and avoid unused) java imports https://github.com/logstash-plugins/logstash-input-http/pull/124[#124]
-
-*Redis Input*
-
-(7.6.2) * [DOC] Reordered config option to alpha order https://github.com/logstash-plugins/logstash-input-redis/issues/79[#79]
 
 *S3 Input*
 
 * Added support for including objects restored from Glacier or Glacier Deep https://github.com/logstash-plugins/logstash-input-s3/issues/199[#199]
 * Added `gzip_pattern` option, enabling more flexible determination of whether a file is gzipped https://github.com/logstash-plugins/logstash-input-s3/issues/165[#165]
 * Refactor: log exception: class + unify logging messages a bit https://github.com/logstash-plugins/logstash-input-s3/pull/201[#201]
-
-*Snmp Input*
-
-(7.6.2)*  Refactor: scope and review java_imports https://github.com/logstash-plugins/logstash-input-snmp/pull/72[#72]
-
-*Tcp Input*
-
-(7.6.2) * Refactor: scope java_import to avoid polluting https://github.com/logstash-plugins/logstash-input-tcp/pull/152[#152]
-
-*Kafka Integration*
-
-(7.6.2) * Fix links in changelog pointing to stand-alone plugin changelogs.
-(7.6.2) * Refactor: scope java_import to plugin class
-
-*Rabbitmq Integration*
-
-(7.6.2) * Refactor: scope (and remove unused) java imports https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/29[#29]
-
-*Elasticsearch Output*
-
-(7.6.2)* [DOC] Replaced link to Elastic Cloud trial with attribute, and fixed a comma splice https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/926[#926]
-(7.6.2)* [DOC] Replaced setting name with correct value https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/919[#919]
-(7.6.2)* Fixed integration tests for Elasticsearch 7.6+ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/922[#922]
-(7.6.2)* Fixed integration tests for Elasticsearch API `7.5.0` https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/923[#923]
 
 *S3 Output*
 
