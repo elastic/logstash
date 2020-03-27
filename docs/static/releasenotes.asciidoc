@@ -31,38 +31,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
 
-Documentation changes
-* [DOCS] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
-* [Doc] Force reload doesn't work in WinOS https://github.com/elastic/logstash/pull/11520[#11520]
-* Updated README to document how to run single Ruby specs https://github.com/elastic/logstash/pull/11536[#11536]
-* [DOCS] Fixes out-dated monitoring links https://github.com/elastic/logstash/pull/11629[#11629]
-* 1c964a27a - Expand section on force reloading config (7 days ago) <Karen Metts>  #11699
-*  ae3002d7d - minor, used the correct placeholder (9 days ago) <andsel> #11691
-*  d90616fde - Added clarification that configuration force reload doesn't work on WinOS (12 days ago) <andsel> #11520
-*  c731596c7 - Change default threads for azure module (13 days ago) <Karen Metts>
-8c11a95f9 - Update troubleshooting.asciidoc (2 weeks ago) <Karen Metts>
-0a88578ef - Removed errored CLI flag description (2 weeks ago) <andsel>
-d057e8bae - Minor, added suggestion to switch on the log per pipeline (2 weeks ago) <andsel>
-9ef44b4c1 - Wording tweak for more emphasis (2 weeks ago) <Karen Metts>
-d02e95771 - Fix grammar in enable_metric filter option (2 weeks ago) <Jonathan Bride>
-14a504f7b - Update logging.asciidoc (2 weeks ago) <0xflotus>
-16e5f6280 - Clarify reload of configuration files (2 weeks ago) <Luca Belluccini>
-e64c6f312 - Backport changes from 11544 (#11665) (3 weeks ago) <Karen Metts>Add more references to contributing issues #11544
-229487c38 - [DOCS] Updates security API examples (#10752) (#11660) (3 weeks ago) <Lisa Cawley>
-de95de3ae - remove TODO from CONTRIBUTING notes (4 weeks ago) <Karol Bucek>
-17c11508d - Remove deprecation notices (4 weeks ago) <Karen Metts>
-5587c9d7a - Make capitalization consistent (4 weeks ago) <Karen Metts>
-239e9b0c3 - Fixes out-dated monitoring links (4 weeks ago) <lcawl>
-9361638b2 - Add shared attribute for cloud trial (4 weeks ago) <Karen Metts>
-80cd89673 - Fix missing " on glob pattern (8 weeks ago) <tbotalla>
-5cbc9eeb4 - Add info about deprecation logger support mixin (8 weeks ago) <Karen Metts>
-6a412f7af - Added precation notice when internal monitoring collector is used. Closes #11346 (8 weeks ago) <andsel>
-23c7f48aa - Updated README to document how to run single Ruby specs (8 weeks ago) <andsel>
-ca89cfee7 - Added section for monitoring.cluster_uuid (8 weeks ago) <andsel>
-d2a094629 - Add cluster_uuid setting to default config file, displaying it in Node stats HTTP API (8 weeks ago) <Mike Place>
-
-
-
 
 Monitoring - Additional option to send monitoring data directly to a dedicated monitoring cluster, rather than via the production cluster
   TODO: Flesh this out
