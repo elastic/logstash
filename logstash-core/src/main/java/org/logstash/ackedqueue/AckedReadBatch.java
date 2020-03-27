@@ -22,12 +22,10 @@ package org.logstash.ackedqueue;
 
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -42,12 +40,19 @@ public final class AckedReadBatch implements QueueBatch {
 
     private RubyHash generated;
 
-    public static AckedReadBatch create(final JRubyAckedQueueExt queue, final int size,
-                                        final long timeout) {
+    public static AckedReadBatch create(
+        final JRubyAckedQueueExt queue,
+        final int size,
+        final long timeout)
+    {
         return new AckedReadBatch(queue, size, timeout);
     }
 
-    private AckedReadBatch(final JRubyAckedQueueExt queue, final int size, final long timeout) {
+    private AckedReadBatch(
+        final JRubyAckedQueueExt queue,
+        final int size,
+        final long timeout)
+    {
         AckedBatch batch;
         try {
             batch = queue.readBatch(size, timeout);
@@ -65,7 +70,7 @@ public final class AckedReadBatch implements QueueBatch {
     }
 
     @Override
-    public void merge(final IRubyObject event) {
+    public void merge(final RubyEvent event) {
         if (!event.isNil() && !originals.containsKey(event)) {
             generated.put(event, RUBY.getTrue());
         }
@@ -75,19 +80,28 @@ public final class AckedReadBatch implements QueueBatch {
     @Override
     public RubyArray to_a() {
         final RubyArray result = RUBY.newArray(filteredSize());
-        for (final JrubyEventExtLibrary.RubyEvent event
-                : (Collection<JrubyEventExtLibrary.RubyEvent>) originals.keys()) {
+        for (final RubyEvent event : (Collection<RubyEvent>) originals.keys()) {
             if (!MemoryReadBatch.isCancelled(event)) {
                 result.append(event);
             }
         }
-        for (final JrubyEventExtLibrary.RubyEvent event
-                : (Collection<JrubyEventExtLibrary.RubyEvent>) generated.keys()) {
+        for (final RubyEvent event : (Collection<RubyEvent>) generated.keys()) {
             if (!MemoryReadBatch.isCancelled(event)) {
                 result.append(event);
             }
         }
         return result;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    @Override
+    public Collection<RubyEvent> collection() {
+        // This only returns the originals and does not filter cancelled one
+        // because it is  only used in the WorkerLoop where only originals
+        // non-cancelled exists. We should revisit this AckedReadBatch
+        // implementation and get rid of this dual original/generated idea.
+        // The MemoryReadBatch does not use such a strategy.
+        return originals.directKeySet();
     }
 
     public void close() throws IOException {
