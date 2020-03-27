@@ -17,30 +17,27 @@
  * under the License.
  */
 
-
 package org.logstash.execution;
 
 import org.jruby.RubyArray;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.ext.JrubyEventExtLibrary;
-
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+import java.util.Collection;
 import java.util.LinkedHashSet;
-
 import static org.logstash.RubyUtil.RUBY;
 
 public final class MemoryReadBatch implements QueueBatch {
 
-    private final LinkedHashSet<IRubyObject> events;
+    private final LinkedHashSet<RubyEvent> events;
 
-    public MemoryReadBatch(final LinkedHashSet<IRubyObject> events) {
+    public MemoryReadBatch(final LinkedHashSet<RubyEvent> events) {
         this.events = events;
     }
 
-    public static boolean isCancelled(final IRubyObject event) {
-        return ((JrubyEventExtLibrary.RubyEvent) event).getEvent().isCancelled();
+    public static boolean isCancelled(final RubyEvent event) {
+        return event.getEvent().isCancelled();
     }
 
-    public static MemoryReadBatch create(LinkedHashSet<IRubyObject> events) {
+    public static MemoryReadBatch create(LinkedHashSet<RubyEvent> events) {
         return new MemoryReadBatch(events);
     }
 
@@ -52,7 +49,7 @@ public final class MemoryReadBatch implements QueueBatch {
     @SuppressWarnings({"rawtypes"})
     public RubyArray to_a() {
         final RubyArray result = RUBY.newArray(events.size());
-        for (final IRubyObject event : events) {
+        for (final RubyEvent event : events) {
             if (!isCancelled(event)) {
                 result.append(event);
             }
@@ -61,7 +58,15 @@ public final class MemoryReadBatch implements QueueBatch {
     }
 
     @Override
-    public void merge(final IRubyObject event) {
+    public Collection<RubyEvent> collection() {
+        // This does not filter cancelled events because it is
+        // only used in the WorkerLoop where there are no cancelled
+        // events yet.
+        return events;
+    }
+
+    @Override
+    public void merge(final RubyEvent event) {
         events.add(event);
     }
 

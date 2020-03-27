@@ -53,8 +53,10 @@ public final class DatasetCompiler {
         // Utility Class
     }
 
-    public static ComputeStepSyntaxElement<SplitDataset> splitDataset(final Collection<Dataset> parents,
-        final EventCondition condition) {
+    public static ComputeStepSyntaxElement<SplitDataset> splitDataset(
+        final Collection<Dataset> parents,
+        final EventCondition condition)
+    {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement ifData = fields.add(new ArrayList<>());
         final ValueSyntaxElement elseData = fields.add(new ArrayList<>());
@@ -104,8 +106,10 @@ public final class DatasetCompiler {
      * @param plugin Filter Plugin
      * @return Dataset representing the filter plugin
      */
-    public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
-        final AbstractFilterDelegatorExt plugin) {
+    public static ComputeStepSyntaxElement<Dataset> filterDataset(
+        final Collection<Dataset> parents,
+        final AbstractFilterDelegatorExt plugin)
+    {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
@@ -113,10 +117,12 @@ public final class DatasetCompiler {
         if (parents.isEmpty()) {
             compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
         } else {
-            final Collection<ValueSyntaxElement> parentFields =
-                parents.stream().map(fields::add).collect(Collectors.toList());
-            @SuppressWarnings("rawtypes")
-            final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+            final Collection<ValueSyntaxElement> parentFields = parents
+                .stream()
+                .map(fields::add)
+                .collect(Collectors.toList()
+            );
+            @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
             compute = withInputBuffering(
@@ -128,7 +134,49 @@ public final class DatasetCompiler {
     }
 
     /**
-     * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
+     * <p>Builds a terminal {@link Dataset} for the filters from the given parent {@link Dataset}s.</p>
+     * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
+     * trivial dataset that does not invoke any computation whatsoever.</p>
+     * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
+     * {@link Collections#emptyList()}.
+     * @param parents Parent {@link Dataset} to sum
+     * @return Dataset representing the sum of given parent {@link Dataset}
+     */
+    public static Dataset terminalFilterDataset(final Collection<Dataset> parents) {
+        if (parents.isEmpty()) {
+            return Dataset.IDENTITY;
+        }
+
+        final int count = parents.size();
+        if (count == 1) {
+            // No need for a terminal dataset here, if there is only a single parent node we can
+            // call it directly.
+            return parents.iterator().next();
+        }
+
+        final ClassFields fields = new ClassFields();
+        final Collection<ValueSyntaxElement> parentFields = parents
+            .stream()
+            .map(fields::add)
+            .collect(Collectors.toList());
+        @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+        final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
+        final ValueSyntaxElement outputBufferField = fields.add(new ArrayList<>());
+        final Closure clear = Closure.wrap().add(clearSyntax(parentFields));
+        final Closure compute = withInputBuffering(
+            Closure.wrap(
+                // pass thru filter
+                buffer(outputBufferField, inputBufferField)
+            ),
+            parentFields,
+            inputBufferField
+        );
+
+        return prepare(withOutputBuffering(compute, clear, outputBufferField, fields)).instantiate();
+    }
+
+    /**
+     * <p>Builds a terminal {@link Dataset} for the outputs from the given parent {@link Dataset}s.</p>
      * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
      * trivial dataset that does not invoke any computation whatsoever.</p>
      * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
@@ -136,29 +184,32 @@ public final class DatasetCompiler {
      * @param parents Parent {@link Dataset} to sum and terminate
      * @return Dataset representing the sum of given parent {@link Dataset}
      */
-    public static Dataset terminalDataset(final Collection<Dataset> parents) {
-        final int count = parents.size();
-        final Dataset result;
-        if (count > 1) {
-            final ClassFields fields = new ClassFields();
-            final Collection<ValueSyntaxElement> parentFields =
-                parents.stream().map(fields::add).collect(Collectors.toList());
-            result = compileOutput(
-                Closure.wrap(
-                    parentFields.stream().map(DatasetCompiler::computeDataset)
-                        .toArray(MethodLevelSyntaxElement[]::new)
-                ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
-            ).instantiate();
-        } else if (count == 1) {
-            // No need for a terminal dataset here, if there is only a single parent node we can
-            // call it directly.
-            result = parents.iterator().next();
-        } else {
+    public static Dataset terminalOutputDataset(final Collection<Dataset> parents) {
+        if (parents.isEmpty()) {
             throw new IllegalArgumentException(
-                "Cannot create Terminal Dataset for an empty number of parent datasets"
+                "Cannot create terminal output dataset for an empty number of parent datasets"
             );
         }
-        return result;
+
+        final int count = parents.size();
+        if (count == 1) {
+            // No need for a terminal dataset here, if there is only a single parent node we can
+            // call it directly.
+            return parents.iterator().next();
+        }
+
+        final ClassFields fields = new ClassFields();
+        final Collection<ValueSyntaxElement> parentFields = parents
+            .stream()
+            .map(fields::add)
+            .collect(Collectors.toList());
+        final Closure compute =  Closure.wrap(parentFields
+                .stream()
+                .map(DatasetCompiler::computeDataset)
+                .toArray(MethodLevelSyntaxElement[]::new)
+        ).add(clearSyntax(parentFields));
+
+        return compileOutput(compute, Closure.EMPTY, fields).instantiate();
     }
 
     /**
@@ -177,8 +228,11 @@ public final class DatasetCompiler {
      * @param terminal Set to true if this output is the only output in the pipeline
      * @return Output Dataset
      */
-    public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
-        final AbstractOutputDelegatorExt output, final boolean terminal) {
+    public static ComputeStepSyntaxElement<Dataset> outputDataset(
+        final Collection<Dataset> parents,
+        final AbstractOutputDelegatorExt output,
+        final boolean terminal)
+    {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
@@ -215,14 +269,19 @@ public final class DatasetCompiler {
         return compileOutput(computeSyntax, clearSyntax, fields);
     }
 
-    private static ValueSyntaxElement invokeOutput(final ValueSyntaxElement output,
-        final MethodLevelSyntaxElement events) {
+    private static ValueSyntaxElement invokeOutput(
+        final ValueSyntaxElement output,
+        final MethodLevelSyntaxElement events)
+    {
         return output.call("multiReceive", events);
     }
 
-    private static Closure filterBody(final ValueSyntaxElement outputBuffer,
-        final ValueSyntaxElement inputBuffer, final ClassFields fields,
-        final AbstractFilterDelegatorExt plugin) {
+    private static Closure filterBody(
+        final ValueSyntaxElement outputBuffer,
+        final ValueSyntaxElement inputBuffer,
+        final ClassFields fields,
+        final AbstractFilterDelegatorExt plugin)
+    {
         final ValueSyntaxElement filterField = fields.add(plugin);
         final Closure body = Closure.wrap(
             setPluginIdForLog4j(plugin),
@@ -372,8 +431,10 @@ public final class DatasetCompiler {
         );
     }
 
-    private static MethodLevelSyntaxElement buffer(final ValueSyntaxElement resultBuffer,
-        final ValueSyntaxElement argument) {
+    private static MethodLevelSyntaxElement buffer(
+        final ValueSyntaxElement resultBuffer,
+        final ValueSyntaxElement argument)
+    {
         return resultBuffer.call("addAll", argument);
     }
 

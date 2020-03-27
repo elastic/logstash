@@ -17,24 +17,19 @@
  * under the License.
  */
 
-
 package org.logstash.execution;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.RubyArray;
-import org.jruby.runtime.ThreadContext;
-import org.logstash.RubyUtil;
 import org.logstash.config.ir.CompiledPipeline;
-import org.logstash.config.ir.compiler.Dataset;
 
 public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
 
-    private final Dataset execution;
+    private final CompiledPipeline.CompiledExecution execution;
 
     private final QueueReadClient readClient;
 
@@ -65,7 +60,7 @@ public final class WorkerLoop implements Runnable {
     {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
-        this.execution = pipeline.buildExecution();
+        this.execution = pipeline.buildExecution(preserveEventOrder);
         this.drainQueue = drainQueue;
         this.readClient = readClient;
         this.flushRequested = flushRequested;
@@ -84,7 +79,7 @@ public final class WorkerLoop implements Runnable {
                 consumedCounter.add(batch.filteredSize());
                 final boolean isFlush = flushRequested.compareAndSet(true, false);
                 readClient.startMetrics(batch);
-                compute(batch, isFlush, false);
+                execution.compute(batch, isFlush, false);
                 int filteredCount = batch.filteredSize();
                 filteredCounter.add(filteredCount);
                 readClient.addOutputMetrics(filteredCount);
@@ -98,7 +93,7 @@ public final class WorkerLoop implements Runnable {
             //for this we need to create a new empty batch to contain the final flushed events
             final QueueBatch batch = readClient.newBatch();
             readClient.startMetrics(batch);
-            compute(batch, true, true);
+            execution.compute(batch, true, true);
             readClient.closeBatch(batch);
         } catch (final Exception ex) {
             LOGGER.error(
@@ -106,20 +101,6 @@ public final class WorkerLoop implements Runnable {
                 ex
             );
             throw new IllegalStateException(ex);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-        if (preserveEventOrder) {
-            // send batch events one-by-one as single-element batches
-            @SuppressWarnings({"rawtypes"}) final RubyArray singleElementBatch = RubyUtil.RUBY.newArray(1);
-            batch.to_a().forEach((e) -> {
-                singleElementBatch.set(0, e);
-                execution.compute(singleElementBatch, flush, shutdown);
-            });
-        } else {
-            execution.compute(batch.to_a(), flush, shutdown);
         }
     }
 
