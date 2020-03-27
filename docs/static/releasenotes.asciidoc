@@ -40,10 +40,7 @@ Monitoring - Additional option to send monitoring data directly to a dedicated m
 
 
 Logging Improvements
-
-* Added plugin.name to fish tag log lines https://github.com/elastic/logstash/pull/11078[#11078]
-* Added plugin.id to docker images https://github.com/elastic/logstash/pull/11593[#11593]
-* Added pipeline.id to docker images https://github.com/elastic/logstash/pull/11567[#11567]
+This release continues with the logging improvements we have been making recently. This release adds the plugin name to log entries and includes the previous changes made to add plugin and pipeline identifiers to the docker image: https://github.com/elastic/logstash/pull/11078[#11078], https://github.com/elastic/logstash/pull/11593[#11593], https://github.com/elastic/logstash/pull/11567[#11567]
 
 
 
