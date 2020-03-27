@@ -22,7 +22,7 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
 import org.jruby.RubyArray;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 /**
  * <p>A data structure backed by a {@link RubyArray} that represents one step of execution flow of a
@@ -44,8 +44,11 @@ public interface Dataset {
     Dataset IDENTITY = new Dataset() {
         @SuppressWarnings("unchecked")
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final @SuppressWarnings("rawtypes") RubyArray batch,
-                                                                  final boolean flush, final boolean shutdown) {
+        public Collection<RubyEvent> compute(
+                final RubyArray<RubyEvent> batch,
+                final boolean flush,
+                final boolean shutdown)
+        {
             return batch;
         }
 
@@ -64,7 +67,7 @@ public interface Dataset {
      * the pipeline it belongs to is shut down
      * @return Computed {@link RubyArray} of {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}
      */
-    Collection<JrubyEventExtLibrary.RubyEvent> compute(@SuppressWarnings({"rawtypes"}) RubyArray batch,
+    Collection<RubyEvent> compute(RubyArray<RubyEvent> batch,
         boolean flush, boolean shutdown);
 
     /**

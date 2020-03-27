@@ -23,13 +23,15 @@ import org.jruby.RubyArray;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Set;
+
 import static org.logstash.RubyUtil.RUBY;
 
 public final class MemoryReadBatch implements QueueBatch {
 
-    private final LinkedHashSet<RubyEvent> events;
+    private final Set<RubyEvent> events;
 
-    public MemoryReadBatch(final LinkedHashSet<RubyEvent> events) {
+    public MemoryReadBatch(final Set<RubyEvent> events) {
         this.events = events;
     }
 
@@ -37,7 +39,7 @@ public final class MemoryReadBatch implements QueueBatch {
         return event.getEvent().isCancelled();
     }
 
-    public static MemoryReadBatch create(LinkedHashSet<RubyEvent> events) {
+    public static MemoryReadBatch create(Set<RubyEvent> events) {
         return new MemoryReadBatch(events);
     }
 
@@ -46,9 +48,8 @@ public final class MemoryReadBatch implements QueueBatch {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes"})
-    public RubyArray to_a() {
-        final RubyArray result = RUBY.newArray(events.size());
+    public RubyArray<RubyEvent> to_a() {
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.<RubyEvent>newArray(events.size());
         for (final RubyEvent event : events) {
             if (!isCancelled(event)) {
                 result.append(event);

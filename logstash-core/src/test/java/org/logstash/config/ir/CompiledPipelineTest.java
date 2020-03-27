@@ -115,6 +115,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         EVENT_SINKS.remove(runId);
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void buildsTrivialPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -134,6 +135,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void buildsStraightPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -155,6 +157,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void buildsForkedPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(IRHelpers.toSourceWithMetadata(
@@ -280,6 +283,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         verifyRegex("!~", 0);
     }
 
+    @SuppressWarnings({"unchecked"})
     private void verifyRegex(String operator, int expectedEvents)
             throws IncompleteSourceWithMetadataException {
         final Event event = new Event();
@@ -307,6 +311,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         outputEvents.clear();
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void equalityCheckOnCompositeField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -338,6 +343,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void conditionalWithNullField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -362,6 +368,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.is("bar"));
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void conditionalNestedMetaFieldPipeline() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -387,6 +394,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void moreThan255Parents() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -440,6 +448,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         verifyComparison(expected, String.format("[brr] %s [baz]", op), event);
     }
 
+    @SuppressWarnings({"unchecked"})
     private void verifyComparison(final boolean expected, final String conditional,
         final Event event) throws IncompleteSourceWithMetadataException {
         final JrubyEventExtLibrary.RubyEvent testEvent =

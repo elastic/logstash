@@ -27,7 +27,7 @@ import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
 import org.logstash.config.ir.PipelineTestUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -38,6 +38,7 @@ public final class DatasetCompilerTest {
     /**
      * Smoke test ensuring that output {@link Dataset} is compiled correctly.
      */
+    @SuppressWarnings({"unchecked"})
     @Test
     public void compilesOutputDataset() {
         assertThat(
@@ -58,12 +59,11 @@ public final class DatasetCompilerTest {
         ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
-        final JrubyEventExtLibrary.RubyEvent falseEvent =
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final RubyEvent falseEvent = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         final Dataset right = left.right();
-        @SuppressWarnings("rawtypes")
-        final RubyArray batch = RubyUtil.RUBY.newArray(
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent), falseEvent
+        @SuppressWarnings("unchecked")
+        final RubyArray<RubyEvent> batch = RubyUtil.RUBY.newArray(
+            RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent), falseEvent
         );
         assertThat(left.compute(batch, false, false).size(), is(1));
         assertThat(right.compute(batch, false, false).size(), is(1));

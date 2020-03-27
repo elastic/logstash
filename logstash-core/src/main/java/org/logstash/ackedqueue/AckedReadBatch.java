@@ -21,14 +21,15 @@
 package org.logstash.ackedqueue;
 
 import org.jruby.RubyArray;
-import org.jruby.RubyHash;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
-
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static org.logstash.RubyUtil.RUBY;
 
@@ -36,9 +37,7 @@ public final class AckedReadBatch implements QueueBatch {
 
     private AckedBatch ackedBatch;
 
-    private RubyHash originals;
-
-    private RubyHash generated;
+    private Set<RubyEvent> events;
 
     public static AckedReadBatch create(
         final JRubyAckedQueueExt queue,
@@ -59,41 +58,26 @@ public final class AckedReadBatch implements QueueBatch {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        if (batch == null) {
-            originals = RubyHash.newHash(RUBY);
-            ackedBatch = null;
-        } else {
-            ackedBatch = batch;
-            originals = ackedBatch.toRubyHash(RUBY);
-        }
-        generated = RubyHash.newHash(RUBY);
+        events = (batch == null) ? new LinkedHashSet<>() : ackedBatch.toSet();
+        ackedBatch = batch;
     }
 
     @Override
     public void merge(final RubyEvent event) {
-        if (!event.isNil() && !originals.containsKey(event)) {
-            generated.put(event, RUBY.getTrue());
-        }
+        events.add(event);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public RubyArray to_a() {
-        final RubyArray result = RUBY.newArray(filteredSize());
-        for (final RubyEvent event : (Collection<RubyEvent>) originals.keys()) {
+    public RubyArray<RubyEvent> to_a() {
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        for (final RubyEvent event : events) {
             if (!MemoryReadBatch.isCancelled(event)) {
                 result.append(event);
             }
         }
-        for (final RubyEvent event : (Collection<RubyEvent>) generated.keys()) {
-            if (!MemoryReadBatch.isCancelled(event)) {
-                result.append(event);
-            }
-        }
-        return result;
+       return result;
     }
 
-    @SuppressWarnings({"unchecked"})
     @Override
     public Collection<RubyEvent> collection() {
         // This only returns the originals and does not filter cancelled one
@@ -101,7 +85,7 @@ public final class AckedReadBatch implements QueueBatch {
         // non-cancelled exists. We should revisit this AckedReadBatch
         // implementation and get rid of this dual original/generated idea.
         // The MemoryReadBatch does not use such a strategy.
-        return originals.directKeySet();
+        return events;
     }
 
     public void close() throws IOException {
@@ -112,6 +96,6 @@ public final class AckedReadBatch implements QueueBatch {
 
     @Override
     public int filteredSize() {
-        return originals.size() + generated.size();
+        return events.size();
     }
 }

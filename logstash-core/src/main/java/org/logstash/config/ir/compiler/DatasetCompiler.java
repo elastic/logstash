@@ -31,7 +31,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 /**
  * Compiler that can compile implementations of {@link Dataset} at runtime.
@@ -62,7 +62,7 @@ public final class DatasetCompiler {
         final ValueSyntaxElement elseData = fields.add(new ArrayList<>());
         final ValueSyntaxElement right = fields.add(DatasetCompiler.Complement.class);
         final VariableDefinition event =
-            new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
+            new VariableDefinition(RubyEvent.class, "event");
         fields.addAfterInit(
             Closure.wrap(
                 SyntaxFactory.assignment(
@@ -465,30 +465,33 @@ public final class DatasetCompiler {
          * mutated when calling its {@code compute} method. This class does not directly compute
          * it.
          */
-        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+        private final Collection<RubyEvent> data;
 
         private boolean done;
 
         public static Dataset from(final Dataset parent,
-            final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+            final Collection<RubyEvent> complement) {
             return new DatasetCompiler.Complement(parent, complement);
         }
 
         /**
          * Ctor.
          * @param left Positive Branch {@link SplitDataset}
-         * @param complement Collection of {@link JrubyEventExtLibrary.RubyEvent}s that did
+         * @param complement Collection of {@link RubyEvent}s that did
          * not match {@code left}
          */
         private Complement(
-            final Dataset left, final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+            final Dataset left, final Collection<RubyEvent> complement) {
             this.parent = left;
             data = complement;
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(@SuppressWarnings("rawtypes") final RubyArray batch,
-                                                                  final boolean flush, final boolean shutdown) {
+        public Collection<RubyEvent> compute(
+                final RubyArray<RubyEvent> batch,
+                final boolean flush,
+                final boolean shutdown)
+        {
             if (done) {
                 return data;
             }
