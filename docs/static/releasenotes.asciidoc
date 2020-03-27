@@ -112,7 +112,7 @@ Path to improve JDK support
 
 *S3 Output*
 
-*  [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219]and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
+*  [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219] and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
 *  Feat: Added retry_count and retry_delay config https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
 
 
