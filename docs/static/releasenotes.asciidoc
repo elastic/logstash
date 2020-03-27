@@ -32,35 +32,19 @@ This section summarizes the changes in the following releases:
 === Logstash 7.7.0 Release Notes
 
 
-Monitoring - Additional option to send monitoring data directly to a dedicated monitoring cluster, rather than via the production cluster
+* Feature: Monitoring - Additional option to send monitoring data directly to a dedicated monitoring cluster, rather than via the production cluster
   TODO: Flesh this out
 * Conditionally add monitoring structure to top-level of output in API https://github.com/elastic/logstash/pull/11106[#11106]
 * Backport of #11312 [put document_type for /_monitoring] https://github.com/elastic/logstash/pull/11640[#11640]
 * Adjustments to send monitoring data directly to ES Backport of PR #11541 to 7.7 https://github.com/elastic/logstash/pull/11641[#11641]
 
+* Feature: Logging Improvements
+** This release continues with the logging improvements we have been making recently. This release adds the plugin name to log entries and includes the previous changes made to add plugin and pipeline identifiers to the docker image: https://github.com/elastic/logstash/pull/11078[#11078], https://github.com/elastic/logstash/pull/11593[#11593], https://github.com/elastic/logstash/pull/11567[#11567]
 
-Logging Improvements
-This release continues with the logging improvements we have been making recently. This release adds the plugin name to log entries and includes the previous changes made to add plugin and pipeline identifiers to the docker image: https://github.com/elastic/logstash/pull/11078[#11078], https://github.com/elastic/logstash/pull/11593[#11593], https://github.com/elastic/logstash/pull/11567[#11567]
-
-
-
-Bugfixes
-
-Add support for a `pipeline.ordered` setting for java execution to enable events to be processed in the order they arrive.
-TODO: More details, including warning of reduced performance due to events being processed one event at a time.
-* [7.7 clean backport of #11524] add support for pipeline.ordered setting for java execution https://github.com/elastic/logstash/pull/11552[#11552]
-
-
-Smaller Bugfixes
-
-* Add `sudo` into the rpm import of GPG-KEY https://github.com/elastic/logstash/pull/11684[#11684]
-* Fix: use l/w match-ing (which does not depend on frames)
-* Fixes issue where monitoring API does not properly resolve ids including environment variable expansion https://github.com/elastic/logstash/pull/11592[#11592]
-
-Misc
-
-593235c16 - Update rack dependency on docgen project (3 weeks ago) <João Duarte>
-Refactor: do not keep around JRuby context reference #11587
+Fixed: Add `sudo` into the rpm import of GPG-KEY https://github.com/elastic/logstash/pull/11684[#11684]
+Fixed: Use lightweight regex matching (which does not depend on frames) https://github.com/elastic/logstash/pull/11653[#11653]
+Fixed: Issue where monitoring API does not properly resolve ids including environment variable expansion https://github.com/elastic/logstash/pull/11592[#11592]
+Fixed: Change Javadoc to conform to updated requirements for JDK13 https://github.com/elastic/logstash/pull/11642[#11642]
 
 
 License compliance
@@ -72,14 +56,10 @@ cb4369b2a - Ignore versions in dependency license checker (8 weeks ago) <Dan Her
 f12eb2f28 - fail license report job on missing licenses (8 weeks ago) <Joao Duarte>
 6f5101d60 - pin google-java-format back to 1.1 for licensing reasons (10 weeks ago) <Joao Duarte>
 
-
 Build
 * b19db959a - ensure mavencentral is always used before plugins.gradle.org (13 days ago) <Joao Duarte>
 a2044fb5f - ensure lock template is in docker tasks (8 weeks ago) <Joao Duarte>
 
-Path to improve JDK support
-
-* Fixes JDK13's javadoc build failure https://github.com/elastic/logstash/pull/11642[#11642]
 
 ==== Plugins
 
@@ -111,8 +91,8 @@ Path to improve JDK support
 
 *S3 Output*
 
-*  Feature: Added retry_count and retry_delay config. This allows opting out from infinite upload retries under error conditions. https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
-*  [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219]and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
+* Feature: Added retry_count and retry_delay config. This allows opting out from infinite upload retries under error conditions. https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
+* [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219]and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
 
 
 
