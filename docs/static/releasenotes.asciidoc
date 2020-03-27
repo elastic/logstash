@@ -81,39 +81,38 @@ Path to improve JDK support
 
 * Fixes JDK13's javadoc build failure https://github.com/elastic/logstash/pull/11642[#11642]
 
-
 ==== Plugins
 
 *Grok Filter*
 
-* Added: added target support https://github.com/logstash-plugins/logstash-filter-grok/pull/156[#156]
+* Feature: Added support for placing matches into a target namespace https://github.com/logstash-plugins/logstash-filter-grok/pull/156[#156]
 
 *Xml Filter*
 
-* Feat: added parser_options for more control over XML parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/68[#68]
+* Feature: added parser_options to allow for more control of the parsing process. Includes the option of `strict` parsing to force the XML parser to fail early when parsing invalid XML.  https://github.com/logstash-plugins/logstash-filter-xml/pull/68[#68]
 
 *Azure_event_hubs Input*
 
+* Fixed: Now honors `max_batch_size` setting - previously this was ignored https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/52[#52]
+* Changed: The default number of threads is now `16` instead of `4`to match the default number from the Azure-Sdk EventProcessorHost https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/54[#54]
 * Refactor: scope and review global java_imports https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/57[#57]
 * [DOC] Changed documentation to update the default number of threads https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/55[#55]
-* Changed the default number of threads from `4` to `16` to match the default number from the Azure-Sdk EventProcessorHost https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/54[#54]
-* Fixed missing configuration of the `max_batch_size`setting https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/52[#52]
 * [DOC] Added clarification for threads parameter https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/50[#50]
 
 *Elasticsearch Input*
 
-* Feat: added option to specify proxy for ES https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
+* Feature : Added option to specify proxy for Elasticsearch https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
 
 *S3 Input*
 
-* Added support for including objects restored from Glacier or Glacier Deep https://github.com/logstash-plugins/logstash-input-s3/issues/199[#199]
-* Added `gzip_pattern` option, enabling more flexible determination of whether a file is gzipped https://github.com/logstash-plugins/logstash-input-s3/issues/165[#165]
+* Feature: Added support for including objects restored from Glacier or Glacier Deep https://github.com/logstash-plugins/logstash-input-s3/issues/199[#199]
+* Feature: `gzip_pattern` option, enabling more flexible determination of whether a file is gzipped https://github.com/logstash-plugins/logstash-input-s3/issues/165[#165]
 * Refactor: log exception: class + unify logging messages a bit https://github.com/logstash-plugins/logstash-input-s3/pull/201[#201]
 
 *S3 Output*
 
-*  [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219] and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
-*  Feat: Added retry_count and retry_delay config https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
+*  Feature: Added retry_count and retry_delay config. This allows opting out from infinite upload retries under error conditions. https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
+*  [DOC] Updated setting descriptions for clarity https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219]and https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
 
 
 
