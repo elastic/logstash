@@ -58,7 +58,7 @@ public final class AckedReadBatch implements QueueBatch {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        events = (batch == null) ? new LinkedHashSet<>() : ackedBatch.toSet();
+        events = (batch == null) ? new LinkedHashSet<>() : batch.toSet();
         ackedBatch = batch;
     }
 
