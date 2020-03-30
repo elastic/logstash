@@ -432,7 +432,7 @@ public final class Graph implements SourceComponent, Hashable {
 
     public String uniqueHash() {
         return Util.digest(this.vertices().
-                filter(v -> !(v instanceof QueueVertex)). // has no metadata
+                filter(v -> !(v instanceof QueueVertex) && !(v instanceof SeparatorVertex)). // has no metadata
                 map(Vertex::getSourceWithMetadata).
                 map(SourceWithMetadata::uniqueHash).
                 sorted().
