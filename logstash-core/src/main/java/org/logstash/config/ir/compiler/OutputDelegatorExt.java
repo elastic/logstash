@@ -99,7 +99,7 @@ OutputDelegatorExt extends AbstractOutputDelegatorExt {
         try {
             final IRubyObject pluginId = this.getId();
             org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
-            strategy.multiReceive(RUBY.getCurrentContext(), (IRubyObject) batch);
+            strategy.multiReceive(RUBY.getCurrentContext(), batch);
         } catch (final InterruptedException ex) {
             throw new IllegalStateException(ex);
         } finally {

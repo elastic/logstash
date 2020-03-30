@@ -31,6 +31,10 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
+import org.logstash.ext.JrubyEventExtLibrary;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -42,7 +46,7 @@ import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
     private RubyHash pluginArgs;
-    private RubyArray events;
+    private Collection<JrubyEventExtLibrary.RubyEvent> events;
     private static final int EVENT_COUNT = 7;
     public static final RubyClass FAKE_OUT_CLASS;
 
@@ -51,12 +55,13 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         FAKE_OUT_CLASS.defineAnnotatedMethods(FakeOutClass.class);
     }
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setup() {
         super.setup();
-        events = RUBY.newArray(EVENT_COUNT);
+        events = new ArrayList<>(EVENT_COUNT);
         for (int k = 0; k < EVENT_COUNT; k++) {
-            events.add(k, new Event());
+            events.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RUBY));
         }
         pluginArgs = RubyHash.newHash(RUBY);
         pluginArgs.put("id", "foo");
@@ -82,6 +87,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         assertEquals(FakeOutClass.configName(RUBY.getCurrentContext(), null).asJavaString(), pluginName);
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void multiReceivePassesBatch() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
@@ -90,6 +96,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         assertEquals(EVENT_COUNT, ((RubyArray) FakeOutClass.latestInstance.getMultiReceiveArgs()).size());
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void multiReceiveIncrementsEventCount() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
@@ -99,6 +106,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         assertEquals(EVENT_COUNT, getMetricLongValue("out"));
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void multiReceiveRecordsDurationInMillis() {
         final int delay = 100;
@@ -164,6 +172,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void outputStrategyMethodDelegationTests() {
         RubySymbol[] outputStrategies = new RubySymbol[]{
@@ -183,7 +192,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
             outputDelegator.doClose(RUBY.getCurrentContext());
             assertEquals(1, instance.getCloseCallCount());
 
-            outputDelegator.multiReceive(RUBY.newArray(0));
+            outputDelegator.multiReceive(new ArrayList<>(0));
             assertEquals(1, instance.getMultiReceiveCallCount());
         }
 

@@ -143,6 +143,23 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         return result;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public RubyArray multiFilter(final Collection<JrubyEventExtLibrary.RubyEvent> input) {
+        eventMetricIn.increment((long) input.size());
+        final long start = System.nanoTime();
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> rubyArray = RubyArray.newArray(RubyUtil.RUBY, input);
+        final RubyArray result = doMultiFilter(rubyArray);
+        eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        int count = 0;
+        for (final JrubyEventExtLibrary.RubyEvent event : (Collection<JrubyEventExtLibrary.RubyEvent>) result) {
+            if (!event.getEvent().isCancelled()) {
+                ++count;
+            }
+        }
+        eventMetricOut.increment((long) count);
+        return result;
+    }
+
     @SuppressWarnings({"rawtypes"})
     protected abstract RubyArray doMultiFilter(final RubyArray batch);
 

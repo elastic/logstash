@@ -20,6 +20,8 @@
 
 package org.logstash.config.ir.compiler;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class OutputStrategyExt {
 
@@ -138,21 +141,47 @@ public final class OutputStrategyExt {
             return output(context, events);
         }
 
+        public final IRubyObject multiReceive(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events)
+                throws InterruptedException {
+            return output(context, events);
+        }
+
         protected final void initOutputCallsite(final RubyClass outputClass) {
             outputMethod = outputClass.searchMethod(AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME);
             this.outputClass = outputClass;
         }
 
-        protected final void invokeOutput(final ThreadContext context, final IRubyObject batch,
-            final IRubyObject pluginInstance) {
+        protected final void invokeOutput(
+            final ThreadContext context,
+            final IRubyObject batch,
+            final IRubyObject pluginInstance)
+        {
             outputMethod.call(
                 context, pluginInstance, outputClass, AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
                 batch
             );
         }
 
+        protected final void invokeOutput(
+                final ThreadContext context,
+                final Collection<JrubyEventExtLibrary.RubyEvent> batch,
+                final IRubyObject pluginInstance)
+        {
+            @SuppressWarnings("rawtypes") final RubyArray rubyArray = RubyArray.newArray(RubyUtil.RUBY, batch);
+            outputMethod.call(
+                context,
+                pluginInstance,
+                outputClass,
+                AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
+                rubyArray
+            );
+        }
+
         protected abstract IRubyObject output(ThreadContext context, IRubyObject events)
             throws InterruptedException;
+
+        protected abstract IRubyObject output(ThreadContext context, Collection<JrubyEventExtLibrary.RubyEvent> events)
+                throws InterruptedException;
 
         protected abstract IRubyObject close(ThreadContext context);
 
@@ -219,6 +248,17 @@ public final class OutputStrategyExt {
         }
 
         @Override
+        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) throws InterruptedException {
+            final IRubyObject worker = workerQueue.take();
+            try {
+                invokeOutput(context, events, worker);
+                return context.nil;
+            } finally {
+                workerQueue.put(worker);
+            }
+        }
+
+        @Override
         @SuppressWarnings("unchecked")
         protected IRubyObject close(final ThreadContext context) {
             workers.forEach(worker -> ((IRubyObject) worker).callMethod(context, "do_close"));
@@ -266,6 +306,11 @@ public final class OutputStrategyExt {
             return output.callMethod(context, "register");
         }
 
+        protected final IRubyObject doOutput(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+            invokeOutput(context, events, output);
+            return context.nil;
+        }
+
         protected final IRubyObject doOutput(final ThreadContext context, final IRubyObject events) {
             invokeOutput(context, events, output);
             return context.nil;
@@ -287,6 +332,13 @@ public final class OutputStrategyExt {
                 return doOutput(context, events);
             }
         }
+
+        @Override
+        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+            synchronized (this) {
+                return doOutput(context, events);
+            }
+        }
     }
 
     @JRubyClass(name = "Shared", parent = "SimpleAbstractStrategy")
@@ -300,6 +352,10 @@ public final class OutputStrategyExt {
 
         @Override
         protected IRubyObject output(final ThreadContext context, final IRubyObject events) {
+            return doOutput(context, events);
+        }
+
+        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
             return doOutput(context, events);
         }
     }

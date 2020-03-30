@@ -329,7 +329,8 @@ public final class CompiledPipeline {
             // send batch one-by-one as single-element batches down the filters
             final ArrayList<RubyEvent> filterBatch = new ArrayList<>(1);
             for (final RubyEvent e : batch) {
-                filterBatch.set(0, e);
+                filterBatch.clear();
+                filterBatch.add(e);
                 final Collection<RubyEvent> result = compiledFilters.compute(filterBatch, flush, shutdown);
                 copyNonCancelledEvents(result, outputBatch);
                 compiledFilters.clear();

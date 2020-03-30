@@ -124,6 +124,16 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         return this;
     }
 
+    public IRubyObject multiReceive(final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+        final int count = events.size();
+        eventMetricIn.increment((long) count);
+        final long start = System.nanoTime();
+        doOutput(events);
+        eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        eventMetricOut.increment((long) count);
+        return this;
+    }
+
     protected void initMetrics(final String id, final AbstractMetricExt metric) {
         this.metric = metric;
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
