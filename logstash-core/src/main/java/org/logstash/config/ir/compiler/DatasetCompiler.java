@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
-import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
@@ -122,7 +121,7 @@ public final class DatasetCompiler {
                 .map(fields::add)
                 .collect(Collectors.toList()
             );
-            @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+            final ArrayList<RubyEvent> inputBuffer = new ArrayList<>();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
             compute = withInputBuffering(
@@ -137,7 +136,7 @@ public final class DatasetCompiler {
      * <p>Builds a terminal {@link Dataset} for the filters from the given parent {@link Dataset}s.</p>
      * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
      * trivial dataset that does not invoke any computation whatsoever.</p>
-     * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
+     * {@link Dataset#compute(Collection, boolean, boolean)} is always
      * {@link Collections#emptyList()}.
      * @param parents Parent {@link Dataset} to sum
      * @return Dataset representing the sum of given parent {@link Dataset}
@@ -159,7 +158,7 @@ public final class DatasetCompiler {
             .stream()
             .map(fields::add)
             .collect(Collectors.toList());
-        @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+        final ArrayList<RubyEvent> inputBuffer = new ArrayList<>();
         final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
         final ValueSyntaxElement outputBufferField = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap().add(clearSyntax(parentFields));
@@ -179,7 +178,7 @@ public final class DatasetCompiler {
      * <p>Builds a terminal {@link Dataset} for the outputs from the given parent {@link Dataset}s.</p>
      * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
      * trivial dataset that does not invoke any computation whatsoever.</p>
-     * {@link Dataset#compute(RubyArray, boolean, boolean)} is always
+     * {@link Dataset#compute(Collection, boolean, boolean)} is always
      * {@link Collections#emptyList()}.
      * @param parents Parent {@link Dataset} to sum and terminate
      * @return Dataset representing the sum of given parent {@link Dataset}
@@ -245,8 +244,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
-            @SuppressWarnings("rawtypes")
-            final RubyArray buffer = RubyUtil.RUBY.newArray();
+            final ArrayList<RubyEvent> buffer = new ArrayList<>();
             final Closure inlineClear;
             if (terminal) {
                 clearSyntax = Closure.EMPTY;
@@ -294,9 +292,13 @@ public final class DatasetCompiler {
         return body;
     }
 
-    private static Closure conditionalLoop(final VariableDefinition event,
-        final MethodLevelSyntaxElement inputBuffer, final ValueSyntaxElement condition,
-        final ValueSyntaxElement ifData, final ValueSyntaxElement elseData) {
+    private static Closure conditionalLoop(
+        final VariableDefinition event,
+        final MethodLevelSyntaxElement inputBuffer,
+        final ValueSyntaxElement condition,
+        final ValueSyntaxElement ifData,
+        final ValueSyntaxElement elseData)
+    {
         final ValueSyntaxElement eventVal = event.access();
         return Closure.wrap(
             SyntaxFactory.value("org.logstash.config.ir.compiler.Utils").call(
@@ -488,7 +490,7 @@ public final class DatasetCompiler {
 
         @Override
         public Collection<RubyEvent> compute(
-                final RubyArray<RubyEvent> batch,
+                final Collection<RubyEvent> batch,
                 final boolean flush,
                 final boolean shutdown)
         {

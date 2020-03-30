@@ -22,7 +22,6 @@ package org.logstash.config.ir;
 import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -318,16 +317,17 @@ public final class CompiledPipeline {
            compute(batch.collection(), flush, shutdown);
         }
 
-        @SuppressWarnings({"unchecked"})
-        @Override
-        public void compute(final RubyArray<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            compute((Collection<RubyEvent>) batch, flush, shutdown);
-        }
+//        @SuppressWarnings({"unchecked"})
+//        @Override
+//        public void compute(final RubyArray<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+//            compute((Collection<RubyEvent>) batch, flush, shutdown);
+//        }
 
-        private void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+        @Override
+        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            final ArrayList<RubyEvent> outputBatch = new ArrayList<>();
             // send batch one-by-one as single-element batches down the filters
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
+            final ArrayList<RubyEvent> filterBatch = new ArrayList<>(1);
             for (final RubyEvent e : batch) {
                 filterBatch.set(0, e);
                 final Collection<RubyEvent> result = compiledFilters.compute(filterBatch, flush, shutdown);
@@ -342,12 +342,12 @@ public final class CompiledPipeline {
 
         @Override
         public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-            compute(batch.to_a(), flush, shutdown);
+            compute(batch.collection(), flush, shutdown);
         }
 
         @Override
-        public void compute(final RubyArray<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            @SuppressWarnings({"unchecked"}) final ArrayList<RubyEvent> outputBatch = new ArrayList<>();
             final Collection<RubyEvent> result = compiledFilters.compute(batch, flush, shutdown);
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
@@ -383,7 +383,7 @@ public final class CompiledPipeline {
 
         public abstract void compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
 
-        public abstract void compute(final RubyArray<RubyEvent> batch, final boolean flush, final boolean shutdown);
+        public abstract void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
 
         /**
          * Instantiates the graph of compiled filter section {@link Dataset}.

@@ -63,7 +63,7 @@ interface MethodSyntaxElement extends SyntaxElement {
     static MethodSyntaxElement compute(final Closure body) {
         return new MethodSyntaxElement.MethodSyntaxElementImpl(
             Collection.class, "compute", body,
-            new VariableDefinition(RubyArray.class, DatasetCompiler.BATCH_ARG),
+            new VariableDefinition(Collection.class, DatasetCompiler.BATCH_ARG),
             new VariableDefinition(boolean.class, DatasetCompiler.FLUSH_ARG),
             new VariableDefinition(boolean.class, DatasetCompiler.SHUTDOWN_ARG)
         );

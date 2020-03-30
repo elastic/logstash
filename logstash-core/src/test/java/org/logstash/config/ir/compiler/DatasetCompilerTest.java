@@ -20,6 +20,7 @@
 
 package org.logstash.config.ir.compiler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import org.jruby.RubyArray;
 import org.junit.Test;
@@ -61,10 +62,10 @@ public final class DatasetCompilerTest {
         trueEvent.setField(key, "val");
         final RubyEvent falseEvent = RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         final Dataset right = left.right();
-        @SuppressWarnings("unchecked")
-        final RubyArray<RubyEvent> batch = RubyUtil.RUBY.newArray(
-            RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent), falseEvent
-        );
+        final ArrayList<RubyEvent> batch = new ArrayList<>();
+        batch.add(RubyEvent.newRubyEvent(RubyUtil.RUBY, trueEvent));
+        batch.add(falseEvent);
+
         assertThat(left.compute(batch, false, false).size(), is(1));
         assertThat(right.compute(batch, false, false).size(), is(1));
     }

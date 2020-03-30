@@ -26,6 +26,7 @@ import org.logstash.RubyUtil;
 import org.logstash.StringInterpolation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -116,7 +117,7 @@ class CommonActions {
                         ((List) val).add(valueToSet);
                         evt.setField(keyToSet, val);
                     } else {
-                        @SuppressWarnings("rawtypes") RubyArray list = RubyArray.newArray(RubyUtil.RUBY, 2);
+                        ArrayList<Object> list = new ArrayList<>(2);
                         list.add(val);
                         list.add(valueToSet);
                         evt.setField(keyToSet, list);
