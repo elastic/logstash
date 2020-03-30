@@ -17,17 +17,17 @@
  * under the License.
  */
 
-
 package org.logstash.execution;
 
 import org.jruby.RubyArray;
-import org.jruby.runtime.builtin.IRubyObject;
-
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.io.IOException;
+import java.util.Collection;
 
 public interface QueueBatch {
     int filteredSize();
     @SuppressWarnings({"rawtypes"}) RubyArray to_a();
-    void merge(IRubyObject event);
+    Collection<RubyEvent> collection();
+    void merge(RubyEvent event);
     void close() throws IOException;
 }

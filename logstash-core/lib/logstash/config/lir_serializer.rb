@@ -63,6 +63,8 @@ module LogStash;
                            if_vertex(v)
                          when :queue
                            queue_vertex(v)
+                         when :separator
+                           separator_vertex(v)
                          end
 
       decorate_vertex(v, hashified_vertex)
@@ -75,6 +77,8 @@ module LogStash;
         :if
       elsif v.java_kind_of?(org.logstash.config.ir.graph.QueueVertex)
         :queue
+      elsif v.java_kind_of?(org.logstash.config.ir.graph.SeparatorVertex)
+        :separator
       else
         raise "Unexpected vertex type! #{v}"
       end
@@ -106,6 +110,10 @@ module LogStash;
       {}
     end
     
+    def separator_vertex(v)
+      {}
+    end
+
     def edge(e)
       e_json = {
         "from" => e.from.id,
