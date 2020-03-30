@@ -41,6 +41,9 @@ This section summarizes the changes in the following releases:
 * Feature: Logging Improvements
 ** This release continues with the logging improvements we have been making recently. This release adds the plugin name to log entries and includes the previous changes made to add plugin and pipeline identifiers to the docker image: https://github.com/elastic/logstash/pull/11078[#11078], https://github.com/elastic/logstash/pull/11593[#11593], https://github.com/elastic/logstash/pull/11567[#11567]
 
+Feature: https://github.com/elastic/logstash/issues/10938[Previously], using the Java execution engine, there was no way to guarantee that ordering of event is preserved through a Logstash pipeline, even when setting `pipeline.workers` to  1 in logstash.yml, as is required by filters that require ordering to work correctly, such as the aggregation filter.
+This release adds a `pipeline.ordered` setting, which gives users the option to preserve event order when `pipeline.workers` is set to `1`. See *ADD_LINK_HERE* for more details. https://github.com/elastic/logstash/pull/11552[#11552], https://github.com/elastic/logstash/pull/11710[#11710]
+
 * Fixed: Add `sudo` into the rpm import of GPG-KEY https://github.com/elastic/logstash/pull/11684[#11684]
 * Fixed: Use lightweight regex matching (which does not depend on frames) https://github.com/elastic/logstash/pull/11653[#11653]
 * Fixed: Issue where monitoring API does not properly resolve ids including environment variable expansion https://github.com/elastic/logstash/pull/11592[#11592]
