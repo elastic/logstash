@@ -411,8 +411,10 @@ module LogStash; class Pipeline < BasePipeline
     batch.collection.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-      output_func(event).each do |output|
-        output_events_map[output].push(event)
+      unless event.cancelled?
+        output_func(event).each do |output|
+          output_events_map[output].push(event)
+        end
       end
     end
     # Now that we have our output to event mapping we can just invoke each output

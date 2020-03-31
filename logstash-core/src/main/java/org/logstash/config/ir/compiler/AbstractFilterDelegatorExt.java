@@ -36,7 +36,9 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.concurrent.TimeUnit;
 
 @JRubyClass(name = "AbstractFilterDelegator")
@@ -125,21 +127,33 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         return id;
     }
 
+    private final Collection<RubyEvent> COL = new LinkedHashSet<>(0);
+
     @JRubyMethod(name = "multi_filter")
     @SuppressWarnings({"unchecked", "rawtypes"})
     public RubyArray multiFilter(final IRubyObject input) {
-        RubyArray batch = (RubyArray) input;
+        final RubyArray batch;
+        if (input instanceof RubyArray) {
+            batch = (RubyArray<RubyEvent>) input;
+        } else {
+            batch = RubyArray.newArray(RubyUtil.RUBY, input.toJava(COL.getClass()));
+        }
+        batch.removeIf(e -> ((RubyEvent)e).getEvent().isCancelled());
+
         eventMetricIn.increment((long) batch.size());
         final long start = System.nanoTime();
-        final RubyArray result = doMultiFilter(batch);
+        final RubyArray<RubyEvent> result = doMultiFilter(batch);
         eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
-        int count = 0;
-        for (final RubyEvent event : (Collection<RubyEvent>) result) {
-            if (!event.getEvent().isCancelled()) {
-                ++count;
-            }
-        }
-        eventMetricOut.increment((long) count);
+//        int count = 0;
+
+        result.removeIf(e -> ((RubyEvent)e).getEvent().isCancelled());
+
+//        for (final RubyEvent event : (Collection<RubyEvent>) result) {
+//            if (!event.getEvent().isCancelled()) {
+//                ++count;
+//            }
+//        }
+        eventMetricOut.increment(result.size());
         return result;
     }
 
@@ -147,21 +161,25 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     public RubyArray multiFilter(final Collection<RubyEvent> input) {
         eventMetricIn.increment((long) input.size());
         final long start = System.nanoTime();
-        final RubyArray<RubyEvent> rubyArray;
+        final RubyArray<RubyEvent> batch;
         if (input instanceof RubyArray) {
-            rubyArray = (RubyArray<RubyEvent>) input;
+            batch = (RubyArray<RubyEvent>) input;
         } else {
-            rubyArray = RubyArray.newArray(RubyUtil.RUBY, input);
+            batch = RubyArray.newArray(RubyUtil.RUBY, input);
         }
-        final RubyArray result = doMultiFilter(rubyArray);
+        batch.removeIf(e -> ((RubyEvent)e).getEvent().isCancelled());
+        final RubyArray result = doMultiFilter(batch);
         eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
-        int count = 0;
-        for (final RubyEvent event : (Collection<RubyEvent>) result) {
-            if (!event.getEvent().isCancelled()) {
-                ++count;
-            }
-        }
-        eventMetricOut.increment((long) count);
+//        int count = 0;
+//        for (final RubyEvent event : (Collection<RubyEvent>) result) {
+//            if (!event.getEvent().isCancelled()) {
+//                ++count;
+//            }
+//        }
+//        eventMetricOut.increment((long) count);
+
+        result.removeIf(e -> ((RubyEvent)e).getEvent().isCancelled());
+        eventMetricOut.increment(result.size());
         return result;
     }
 

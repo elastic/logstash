@@ -21,6 +21,7 @@
 package org.logstash.ackedqueue;
 
 import org.jruby.RubyArray;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
@@ -65,6 +66,33 @@ public final class AckedReadBatch implements QueueBatch {
     @Override
     public void merge(final RubyEvent event) {
         events.add(event);
+    }
+
+
+
+//    IRubyObject[] rubyEvents = new IRubyObject[events.length];
+//            for (int i = 0; i < events.length; i++) {
+//        rubyEvents[i] = RubyEvent.newRubyEvent(context.runtime, events[i]);
+//    }
+//            return result;
+//            return context.runtime.newArrayNoCopy(rubyEvents);
+
+
+    @SuppressWarnings({"unchecked"})
+    @Override
+    public RubyArray<RubyEvent> to_a() {
+//        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+
+        IRubyObject[] result = new IRubyObject[events.size()];
+
+        int i = 0;
+        for (final RubyEvent event : events) {
+            if (!MemoryReadBatch.isCancelled(event)) {
+                result[i++] = event;
+            }
+        }
+        return RUBY.newArrayNoCopy(result);
+//       return result;
     }
 
     @Override

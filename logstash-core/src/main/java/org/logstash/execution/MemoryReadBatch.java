@@ -20,6 +20,7 @@
 package org.logstash.execution;
 
 import org.jruby.RubyArray;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -45,6 +46,34 @@ public final class MemoryReadBatch implements QueueBatch {
 
     public static MemoryReadBatch create() {
         return create(new LinkedHashSet<>());
+    }
+
+//    @Override
+//    public RubyArray<RubyEvent> to_a() {
+//        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.<RubyEvent>newArray(events.size());
+//        for (final RubyEvent event : events) {
+//            if (!isCancelled(event)) {
+//                result.append(event);
+//            }
+//        }
+//        return result;
+//    }
+
+    @SuppressWarnings({"unchecked"})
+    @Override
+    public RubyArray<RubyEvent> to_a() {
+//        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+
+        IRubyObject[] result = new IRubyObject[events.size()];
+
+        int i = 0;
+        for (final RubyEvent event : events) {
+            if (!MemoryReadBatch.isCancelled(event)) {
+                result[i++] = event;
+            }
+        }
+        return RUBY.newArrayNoCopy(result);
+//       return result;
     }
 
     @Override
