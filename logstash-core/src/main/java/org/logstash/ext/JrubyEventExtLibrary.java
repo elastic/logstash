@@ -127,14 +127,14 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_cancel(ThreadContext context)
         {
             this.event.cancel();
-            return context.runtime.getTrue();
+            return context.tru;
         }
 
         @JRubyMethod(name = "uncancel")
         public IRubyObject ruby_uncancel(ThreadContext context)
         {
             this.event.uncancel();
-            return context.runtime.getFalse();
+            return context.fals;
         }
 
         @JRubyMethod(name = "cancelled?")
@@ -251,18 +251,16 @@ public final class JrubyEventExtLibrary {
                 throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
             }
 
-            @SuppressWarnings("rawtypes")
-            RubyArray result = RubyArray.newArray(context.runtime, events.length);
-
             if (events.length == 1) {
                 // micro optimization for the 1 event more common use-case.
-                result.set(0, RubyEvent.newRubyEvent(context.runtime, events[0]));
-            } else {
-                for (int i = 0; i < events.length; i++) {
-                    result.set(i, RubyEvent.newRubyEvent(context.runtime, events[i]));
-                }
+                return context.runtime.newArray(RubyEvent.newRubyEvent(context.runtime, events[0]));
             }
-            return result;
+
+            IRubyObject[] rubyEvents = new IRubyObject[events.length];
+            for (int i = 0; i < events.length; i++) {
+                rubyEvents[i] = RubyEvent.newRubyEvent(context.runtime, events[i]);
+            }
+            return context.runtime.newArrayNoCopy(rubyEvents);
         }
 
         @JRubyMethod(name = "validate_value", required = 1, meta = true)

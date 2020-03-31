@@ -247,13 +247,15 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return JSON_MAPPER.writeValueAsString(this.data);
     }
 
+    private static final Event[] NULL_ARRAY = new Event[0];
+
     @SuppressWarnings("unchecked")
     public static Event[] fromJson(String json)
             throws IOException
     {
         // empty/blank json string does not generate an event
         if (json == null || json.trim().isEmpty()) {
-            return new Event[]{ };
+            return NULL_ARRAY;
         }
 
         Event[] result;
