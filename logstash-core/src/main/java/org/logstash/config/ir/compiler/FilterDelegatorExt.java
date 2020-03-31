@@ -32,6 +32,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -119,13 +120,17 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes"})
-    protected RubyArray doMultiFilter(final RubyArray batch) {
+    @SuppressWarnings({"unchecked"})
+    protected RubyArray<RubyEvent> doMultiFilter(final RubyArray<RubyEvent> batch) {
         final IRubyObject pluginId = this.getId();
         org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
         try {
-            return (RubyArray) filterMethod.call(
-                    RUBY.getCurrentContext(), filter, filterClass, FILTER_METHOD_NAME, batch);
+            return (RubyArray<RubyEvent>) filterMethod.call(
+                    RUBY.getCurrentContext(),
+                    filter,
+                    filterClass,
+                    FILTER_METHOD_NAME,
+                    batch);
         } finally {
             org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }

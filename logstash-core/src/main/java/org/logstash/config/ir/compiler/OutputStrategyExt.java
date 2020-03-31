@@ -21,7 +21,6 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -37,7 +36,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 public final class OutputStrategyExt {
 
@@ -141,7 +140,7 @@ public final class OutputStrategyExt {
             return output(context, events);
         }
 
-        public final IRubyObject multiReceive(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events)
+        public final IRubyObject multiReceive(final ThreadContext context, final Collection<RubyEvent> events)
                 throws InterruptedException {
             return output(context, events);
         }
@@ -157,14 +156,17 @@ public final class OutputStrategyExt {
             final IRubyObject pluginInstance)
         {
             outputMethod.call(
-                context, pluginInstance, outputClass, AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
+                context,
+                pluginInstance,
+                outputClass,
+                AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
                 batch
             );
         }
 
         protected final void invokeOutput(
                 final ThreadContext context,
-                final Collection<JrubyEventExtLibrary.RubyEvent> batch,
+                final Collection<RubyEvent> batch,
                 final IRubyObject pluginInstance)
         {
             @SuppressWarnings("rawtypes") final RubyArray rubyArray = RubyArray.newArray(RubyUtil.RUBY, batch);
@@ -180,8 +182,8 @@ public final class OutputStrategyExt {
         protected abstract IRubyObject output(ThreadContext context, IRubyObject events)
             throws InterruptedException;
 
-        protected abstract IRubyObject output(ThreadContext context, Collection<JrubyEventExtLibrary.RubyEvent> events)
-                throws InterruptedException;
+        protected abstract IRubyObject output(ThreadContext context, Collection<RubyEvent> events)
+            throws InterruptedException;
 
         protected abstract IRubyObject close(ThreadContext context);
 
@@ -237,7 +239,11 @@ public final class OutputStrategyExt {
         }
 
         @Override
-        protected IRubyObject output(final ThreadContext context, final IRubyObject events) throws InterruptedException {
+        protected IRubyObject output(
+            final ThreadContext context,
+            final IRubyObject events)
+            throws InterruptedException
+        {
             final IRubyObject worker = workerQueue.take();
             try {
                 invokeOutput(context, events, worker);
@@ -248,7 +254,11 @@ public final class OutputStrategyExt {
         }
 
         @Override
-        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) throws InterruptedException {
+        protected IRubyObject output(
+            final ThreadContext context,
+            final Collection<RubyEvent> events)
+            throws InterruptedException
+        {
             final IRubyObject worker = workerQueue.take();
             try {
                 invokeOutput(context, events, worker);
@@ -306,7 +316,7 @@ public final class OutputStrategyExt {
             return output.callMethod(context, "register");
         }
 
-        protected final IRubyObject doOutput(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+        protected final IRubyObject doOutput(final ThreadContext context, final Collection<RubyEvent> events) {
             invokeOutput(context, events, output);
             return context.nil;
         }
@@ -334,7 +344,7 @@ public final class OutputStrategyExt {
         }
 
         @Override
-        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+        protected IRubyObject output(final ThreadContext context, final Collection<RubyEvent> events) {
             synchronized (this) {
                 return doOutput(context, events);
             }
@@ -355,7 +365,7 @@ public final class OutputStrategyExt {
             return doOutput(context, events);
         }
 
-        protected IRubyObject output(final ThreadContext context, final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+        protected IRubyObject output(final ThreadContext context, final Collection<RubyEvent> events) {
             return doOutput(context, events);
         }
     }

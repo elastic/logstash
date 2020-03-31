@@ -348,7 +348,7 @@ public final class CompiledPipeline {
 
         @Override
         public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            @SuppressWarnings({"unchecked"}) final ArrayList<RubyEvent> outputBatch = new ArrayList<>();
+            final ArrayList<RubyEvent> outputBatch = new ArrayList<>();
             final Collection<RubyEvent> result = compiledFilters.compute(batch, flush, shutdown);
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();

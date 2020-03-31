@@ -32,7 +32,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -113,8 +113,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
     @SuppressWarnings("unchecked")
     @JRubyMethod(name = OUTPUT_METHOD_NAME)
     public IRubyObject multiReceive(final IRubyObject events) {
-        @SuppressWarnings("rawtypes")
-        final RubyArray batch = (RubyArray) events;
+        final RubyArray<RubyEvent> batch = (RubyArray<RubyEvent>) events;
         final int count = batch.size();
         eventMetricIn.increment((long) count);
         final long start = System.nanoTime();
@@ -124,7 +123,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         return this;
     }
 
-    public IRubyObject multiReceive(final Collection<JrubyEventExtLibrary.RubyEvent> events) {
+    public IRubyObject multiReceive(final Collection<RubyEvent> events) {
         final int count = events.size();
         eventMetricIn.increment((long) count);
         final long start = System.nanoTime();
@@ -152,7 +151,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
     protected abstract IRubyObject getConcurrency(ThreadContext context);
 
-    protected abstract void doOutput(Collection<JrubyEventExtLibrary.RubyEvent> batch);
+    protected abstract void doOutput(Collection<RubyEvent> batch);
 
     protected abstract void close(ThreadContext context);
 

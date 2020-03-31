@@ -31,7 +31,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -134,7 +134,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         final RubyArray result = doMultiFilter(batch);
         eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
         int count = 0;
-        for (final JrubyEventExtLibrary.RubyEvent event : (Collection<JrubyEventExtLibrary.RubyEvent>) result) {
+        for (final RubyEvent event : (Collection<RubyEvent>) result) {
             if (!event.getEvent().isCancelled()) {
                 ++count;
             }
@@ -144,14 +144,19 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public RubyArray multiFilter(final Collection<JrubyEventExtLibrary.RubyEvent> input) {
+    public RubyArray multiFilter(final Collection<RubyEvent> input) {
         eventMetricIn.increment((long) input.size());
         final long start = System.nanoTime();
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> rubyArray = RubyArray.newArray(RubyUtil.RUBY, input);
+        final RubyArray<RubyEvent> rubyArray;
+        if (input instanceof RubyArray) {
+            rubyArray = (RubyArray<RubyEvent>) input;
+        } else {
+            rubyArray = RubyArray.newArray(RubyUtil.RUBY, input);
+        }
         final RubyArray result = doMultiFilter(rubyArray);
         eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
         int count = 0;
-        for (final JrubyEventExtLibrary.RubyEvent event : (Collection<JrubyEventExtLibrary.RubyEvent>) result) {
+        for (final RubyEvent event : (Collection<RubyEvent>) result) {
             if (!event.getEvent().isCancelled()) {
                 ++count;
             }
@@ -160,8 +165,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         return result;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    protected abstract RubyArray doMultiFilter(final RubyArray batch);
+    protected abstract RubyArray<RubyEvent> doMultiFilter(final RubyArray<RubyEvent> batch);
 
     @JRubyMethod(name = "flush")
     @SuppressWarnings("rawtypes")

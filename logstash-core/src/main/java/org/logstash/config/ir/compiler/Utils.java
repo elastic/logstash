@@ -20,30 +20,30 @@
 
 package org.logstash.config.ir.compiler;
 
-import org.logstash.ext.JrubyEventExtLibrary;
-
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Static utility methods that replace common blocks of generated code in the Java execution.
  */
 public class Utils {
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     // has field1.compute(batchArg, flushArg, shutdownArg) passed as input
-    public static void copyNonCancelledEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, List output) {
-        for (JrubyEventExtLibrary.RubyEvent e : input) {
+    public static void copyNonCancelledEvents(Collection<RubyEvent> input, Collection<RubyEvent> output) {
+        for (RubyEvent e : input) {
             if (!(e.getEvent().isCancelled())) {
                 output.add(e);
             }
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void filterEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
-                                    List fulfilled, List unfulfilled) {
-        for (JrubyEventExtLibrary.RubyEvent e : input) {
+    public static void filterEvents(
+        Collection<RubyEvent> input,
+        EventCondition filter,
+        Collection<RubyEvent> fulfilled,
+        Collection<RubyEvent> unfulfilled)
+    {
+        for (RubyEvent e : input) {
             if (filter.fulfilled(e)) {
                 fulfilled.add(e);
             } else {
@@ -51,5 +51,4 @@ public class Utils {
             }
         }
     }
-
 }

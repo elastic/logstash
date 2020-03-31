@@ -48,17 +48,6 @@ public final class MemoryReadBatch implements QueueBatch {
     }
 
     @Override
-    public RubyArray<RubyEvent> to_a() {
-        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.<RubyEvent>newArray(events.size());
-        for (final RubyEvent event : events) {
-            if (!isCancelled(event)) {
-                result.append(event);
-            }
-        }
-        return result;
-    }
-
-    @Override
     public Collection<RubyEvent> collection() {
         // This does not filter cancelled events because it is
         // only used in the WorkerLoop where there are no cancelled

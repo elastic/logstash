@@ -386,7 +386,7 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filter_batch(batch)
-    filter_func(batch.to_a).each do |e|
+    filter_func(batch.collection).each do |e|
       #these are both original and generated events
       batch.merge(e) unless e.cancelled?
     end
@@ -408,7 +408,7 @@ module LogStash; class Pipeline < BasePipeline
   # Take an array of events and send them to the correct output
   def output_batch(batch, output_events_map)
     # Build a mapping of { output_plugin => [events...]}
-    batch.to_a.each do |event|
+    batch.collection.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
       output_func(event).each do |output|

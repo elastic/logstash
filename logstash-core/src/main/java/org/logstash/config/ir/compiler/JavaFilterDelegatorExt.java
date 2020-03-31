@@ -33,7 +33,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 
 import java.util.ArrayList;
@@ -76,14 +76,14 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @SuppressWarnings({"unchecked","rawtypes"})
     @Override
-    protected RubyArray doMultiFilter(final RubyArray batch) {
+    protected RubyArray<RubyEvent> doMultiFilter(final RubyArray<RubyEvent> batch) {
         List<Event> inputEvents = (List<Event>) batch.stream()
-                .map(x -> ((JrubyEventExtLibrary.RubyEvent) x).getEvent())
+                .map(x -> ((RubyEvent) x).getEvent())
                 .collect(Collectors.toList());
         Collection<Event> outputEvents = filter.filter(inputEvents, filterMatchListener);
         RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
         for (Event outputEvent : outputEvents) {
-            newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
+            newBatch.add(RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
         }
         return newBatch;
     }
@@ -99,7 +99,7 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
             final Ruby runtime = context.runtime;
             @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(runtime, outputEvents.size());
             for (Event outputEvent : outputEvents) {
-                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(runtime, (org.logstash.Event)outputEvent));
+                newBatch.add(RubyEvent.newRubyEvent(runtime, (org.logstash.Event)outputEvent));
             }
             return newBatch;
         }

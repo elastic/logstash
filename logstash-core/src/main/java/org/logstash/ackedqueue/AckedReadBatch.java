@@ -68,17 +68,6 @@ public final class AckedReadBatch implements QueueBatch {
     }
 
     @Override
-    public RubyArray<RubyEvent> to_a() {
-        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
-        for (final RubyEvent event : events) {
-            if (!MemoryReadBatch.isCancelled(event)) {
-                result.append(event);
-            }
-        }
-       return result;
-    }
-
-    @Override
     public Collection<RubyEvent> collection() {
         // This only returns the originals and does not filter cancelled one
         // because it is  only used in the WorkerLoop where only originals
