@@ -119,19 +119,16 @@ describe LogStash::WrappedSynchronousQueue do
             message = data.get("message")
             expect(messages).to include(message)
             messages.delete(message)
-            # read_batch.cancel("value-#{i}") if i > 2     # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
             if message.match /value-[3-4]/
               data.cancel
-              read_batch.merge(LogStash::Event.new({ "message" => message.gsub(/value/, 'generated') }))
             end
           end
-          # expect(read_batch.cancelled_size).to eq(2) # disabled for https://github.com/elastic/logstash/issues/6055
           received = []
           read_batch.to_a.each do |data|
             received << data.get("message")
           end
+          expect(received.size).to eq(3)
           (0..2).each {|i| expect(received).to include("value-#{i}")}
-          (3..4).each {|i| expect(received).to include("generated-#{i}")}
         end
 
         it "handles Java proxied read-batch object" do

@@ -80,10 +80,13 @@ describe LogStash::Pipeline do
     EOS
   end
 
-   let(:pipeline_settings) { { "queue.type" => queue_type, "pipeline.workers" => worker_thread_count, "pipeline.id" => pipeline_id} }
+  let(:pipeline_settings) {{
+    "queue.type" => queue_type,
+    "pipeline.workers" => worker_thread_count,
+    "pipeline.id" => pipeline_id
+  }}
 
   let(:pipeline_config) { mock_pipeline_config(pipeline_id, config, pipeline_settings_obj) }
-  subject { described_class.new(pipeline_config, metric) }
 
   let(:counting_output) { PipelinePqFileOutput.new({ "id" => output_id }) }
   let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
@@ -95,7 +98,6 @@ describe LogStash::Pipeline do
   let(:number_of_events) { 100_000 }
   let(:page_capacity) { 1 * 1024 * 512 } # 1 128
   let(:max_bytes) { 1024 * 1024 * 1024 } # 1 gb
-  let(:queue_type) { "persisted" } #  "memory" "memory_acked"
   let(:times) { [] }
 
   let(:pipeline_thread) do
@@ -104,6 +106,8 @@ describe LogStash::Pipeline do
     s = subject
     Thread.new { s.run }
   end
+
+  let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
   before :each do
     FileUtils.mkdir_p(this_queue_folder)
@@ -139,19 +143,43 @@ describe LogStash::Pipeline do
     # Dir.rm_rf(this_queue_folder)
   end
 
-  let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
+  shared_examples "a well behaved pipeline" do
+    it "populates the core metrics" do
+      _metric = collected_metric[:stats][:pipelines][:main][:events]
+      expect(_metric[:duration_in_millis].value).not_to be_nil
+      expect(_metric[:in].value).to eq(number_of_events)
+      expect(_metric[:filtered].value).to eq(number_of_events)
+      expect(_metric[:out].value).to eq(number_of_events)
+      STDOUT.puts "  pipeline: #{subject.class}"
+      STDOUT.puts "  queue.type: #{pipeline_settings_obj.get("queue.type")}"
+      STDOUT.puts "  queue.page_capacity: #{pipeline_settings_obj.get("queue.page_capacity") / 1024}KB"
+      STDOUT.puts "  queue.max_bytes: #{pipeline_settings_obj.get("queue.max_bytes") / 1024}KB"
+      STDOUT.puts "  workers: #{worker_thread_count}"
+      STDOUT.puts "  events: #{number_of_events}"
+      STDOUT.puts "  took: #{times.first}s"
+    end
+  end
 
-  it "populates the pipelines core metrics" do
-    _metric = collected_metric[:stats][:pipelines][:main][:events]
-    expect(_metric[:duration_in_millis].value).not_to be_nil
-    expect(_metric[:in].value).to eq(number_of_events)
-    expect(_metric[:filtered].value).to eq(number_of_events)
-    expect(_metric[:out].value).to eq(number_of_events)
-    STDOUT.puts "  queue.type: #{pipeline_settings_obj.get("queue.type")}"
-    STDOUT.puts "  queue.page_capacity: #{pipeline_settings_obj.get("queue.page_capacity") / 1024}KB"
-    STDOUT.puts "  queue.max_bytes: #{pipeline_settings_obj.get("queue.max_bytes") / 1024}KB"
-    STDOUT.puts "  workers: #{worker_thread_count}"
-    STDOUT.puts "  events: #{number_of_events}"
-    STDOUT.puts "  took: #{times.first}s"
+  context "using PQ" do
+    let(:queue_type) { "persisted" } #  "memory", "persisted"
+    context "with Ruby execution" do
+      subject { LogStash::Pipeline.new(pipeline_config, metric) }
+      it_behaves_like "a well behaved pipeline"
+    end
+    context "with Java execution" do
+      subject { LogStash::JavaPipeline.new(pipeline_config, metric) }
+      it_behaves_like "a well behaved pipeline"
+    end
+  end
+  context "using MQ" do
+    let(:queue_type) { "memory" } #  "memory", "persisted"
+    context "with Ruby execution" do
+      subject { LogStash::Pipeline.new(pipeline_config, metric) }
+      it_behaves_like "a well behaved pipeline"
+    end
+    context "with Java execution" do
+      subject { LogStash::JavaPipeline.new(pipeline_config, metric) }
+      it_behaves_like "a well behaved pipeline"
+    end
   end
 end
