@@ -77,8 +77,7 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
     @Override
     @SuppressWarnings("unchecked")
     public QueueBatch readBatch() throws InterruptedException {
-        MemoryReadBatch batch = MemoryReadBatch.create(
-                LsQueueUtils.drain(queue, batchSize, waitForNanos));
+        final MemoryReadBatch batch = MemoryReadBatch.create(LsQueueUtils.drain(queue, batchSize, waitForNanos));
         startMetrics(batch);
         return batch;
     }
