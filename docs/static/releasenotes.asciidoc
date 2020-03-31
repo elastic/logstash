@@ -31,18 +31,56 @@ This section summarizes the changes in the following releases:
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
 
+* Feature:  New Logstash monitoring option. +
+We added a new option for using internal collectors to send monitoring data
+directly to the monitoring cluster rather than the production cluster.
+https://github.com/elastic/logstash/pull/11106[#11106],  
+https://github.com/elastic/logstash/pull/11640[#11640],
+https://github.com/elastic/logstash/pull/11641[#11641] 
++
+Past implementations of internal collection sent monitoring data through a
+production Elasticsearch cluster which forwarded the data to a dedicated
+monitoring cluster. Now the internal collector can send monitoring data directly
+to the monitoring cluster. 
++
+Migrating from legacy internal collection to new
+<<monitoring-internal-collection,Internal collection>> is straightforward. 
 
-* Feature: Monitoring - Additional option to send monitoring data directly to a dedicated monitoring cluster, rather than via the production cluster
-  TODO: Flesh this out
-** Conditionally add monitoring structure to top-level of output in API https://github.com/elastic/logstash/pull/11106[#11106]
-** Backport of #11312 [put document_type for /_monitoring] https://github.com/elastic/logstash/pull/11640[#11640]
-** Adjustments to send monitoring data directly to ES Backport of PR #11541 to 7.7 https://github.com/elastic/logstash/pull/11641[#11641]
+** Drop the `xpack.` prefix from your configuration settings. 
+For example, `xpack.monitoring.enabled` is now `monitoring.enabled`. See
+<<monitoring-settings, Monitoring Settings>> for the full list.
+** Change the hosts setting to point to monitoring cluster instead of production
+** If you don’t have an Elasticsearch output plugin configured in the pipelines,
+add the setting monitoring.cluster_uuid to your logstash.yml.
 
-* Feature: Logging Improvements
-** This release continues with the logging improvements we have been making recently. This release adds the plugin name to log entries and includes the previous changes made to add plugin and pipeline identifiers to the docker image: https://github.com/elastic/logstash/pull/11078[#11078], https://github.com/elastic/logstash/pull/11593[#11593], https://github.com/elastic/logstash/pull/11567[#11567]
++
+See <<configuring-logstash, Monitoring Logstash>> for more information
+about this and other monitoring options.
 
-Feature: https://github.com/elastic/logstash/issues/10938[Previously], using the Java execution engine, there was no way to guarantee that ordering of event is preserved through a Logstash pipeline, even when setting `pipeline.workers` to  1 in logstash.yml, as is required by filters that require ordering to work correctly, such as the aggregation filter.
-This release adds a `pipeline.ordered` setting, which gives users the option to preserve event order when `pipeline.workers` is set to `1`. See *ADD_LINK_HERE* for more details. https://github.com/elastic/logstash/pull/11552[#11552], https://github.com/elastic/logstash/pull/11710[#11710]
+* Feature: Logging Improvements. +
+This release continues with the logging improvements we have been making
+recently. This release adds the plugin name to log entries and includes the
+previous changes made to add plugin and pipeline identifiers to the docker
+image:
+https://github.com/elastic/logstash/pull/11078[#11078],
+https://github.com/elastic/logstash/pull/11593[#11593],
+https://github.com/elastic/logstash/pull/11567[#11567]
+
+* Bugfix/Feature: The new `pipeline.ordered` setting gives users more control over
+event ordering for single worker pipelines. 
++
+Historically, {ls} events ordering between an input plugin and output plugin
+were preserved when a single worker executed a pipeline. This behaviour was
+never officially documented, but it was a feature that many users relied upon.
++
+When the Java Execution engine was introduced, it broke the single worker
+ordering preservation. This bug was fixed with the introduction of the
+pipeline.ordered setting. 
+https://github.com/elastic/logstash/pull/11552[#11552], 
+https://github.com/elastic/logstash/pull/11710[#11710]
++
+The `pipeline.ordered` setting is in <<logstash-settings-file,`logstash.yml`>>.
+Valid options are `auto`, `true`, or `false`.
 
 * Fixed: Add `sudo` into the rpm import of GPG-KEY https://github.com/elastic/logstash/pull/11684[#11684]
 * Fixed: Use lightweight regex matching (which does not depend on frames) https://github.com/elastic/logstash/pull/11653[#11653]
@@ -69,7 +107,7 @@ This release adds a `pipeline.ordered` setting, which gives users the option to 
 
 *Elasticsearch Input*
 
-* Feature : Added option to specify proxy for Elasticsearch https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
+* Feature: Added option to specify proxy for Elasticsearch https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
 
 *S3 Input*
 
