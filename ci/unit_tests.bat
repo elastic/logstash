@@ -40,6 +40,9 @@ echo Using drive !use_drive! for %WORKSPACE%
 !use_drive!
 
 echo Running core tests..
+if "%BUILD_JAVA_HOME%" == "" (
+  GRADLE_OPTS="%GRADLE_OPTS% -Dorg.gradle.java.home=%BUILD_JAVA_HOME%"
+)
 call .\gradlew.bat test --console=plain --no-daemon --info
 
 if errorlevel 1 (
