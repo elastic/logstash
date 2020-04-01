@@ -1,7 +1,11 @@
 [[heap-size]]
 === Setting the heap size
 
-NOTE: Heap size should be no less than 4GB and no more than 8GB.
+Set the jvm heap size in the `jvm.options` <<config-setting-files,configuration
+file>>.
+
+NOTE: The recommended heap size for typical ingestion scenarios should be no
+less than 4GB and no more than 8GB.
 
 Here are some additional tips for adjusting the JVM heap size:
 
@@ -19,6 +23,8 @@ process.
 * You can make more accurate measurements of the JVM heap by using either the
 `jmap` command line utility distributed with Java or by using VisualVM. For more
 info, see <<profiling-the-heap>>.
+
+
 
 
 
