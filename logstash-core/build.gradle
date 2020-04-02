@@ -165,9 +165,9 @@ dependencies {
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     if (customJRubyDir == "") {
-        implementation "org.jruby:jruby-complete:${jrubyVersion}"
+        api "org.jruby:jruby-complete:${jrubyVersion}"
     } else {
-        implementation files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
+        api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
     }
     implementation group: 'com.google.guava', name: 'guava', version: '22.0'
     // WARNING: DO NOT UPGRADE "google-java-format"
