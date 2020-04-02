@@ -24,7 +24,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.yaml:snakeyaml:1.23'
-        classpath "de.undercouch:gradle-download-task:3.2.0"
+        classpath "de.undercouch:gradle-download-task:4.0.4"
         classpath "org.jruby:jruby-complete:9.2.11.1"
     }
 }
@@ -41,6 +41,7 @@ import org.jruby.embed.ScriptingContainer
 import java.lang.annotation.Annotation
 import java.nio.file.Files
 import java.nio.file.Paths
+
 
 ext {
     bundle = this.&bundle
