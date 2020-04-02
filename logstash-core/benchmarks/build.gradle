@@ -60,7 +60,7 @@ dependencies {
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
   compile 'com.google.guava:guava:21.0'
   compile 'commons-io:commons-io:2.5'
-  runtime 'joda-time:joda-time:2.8.2'
+  runtimeOnly 'joda-time:joda-time:2.8.2'
   compile "org.jruby:jruby-core:$jrubyVersion"
 }
 
