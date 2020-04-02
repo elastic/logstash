@@ -54,9 +54,9 @@ javadoc {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'ingest-converter'
-  classifier = null
-  version = null
+  archiveBaseName = 'ingest-converter'
+  archiveClassifier = null
+  archiveVersion = null
 }
 
 assemble.dependsOn shadowJar

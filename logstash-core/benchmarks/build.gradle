@@ -71,9 +71,9 @@ javadoc {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'logstash-core-benchmarks-all'
-  classifier = null
-  version = null
+  archiveBaseName = 'logstash-core-benchmarks-all'
+  archiveClassifier = null
+  archiveVersion = null
 }
 
 task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {

@@ -45,19 +45,19 @@ buildscript {
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
-    classifier 'sources'
-    extension 'jar'
+    archiveClassifier = 'sources'
+    archiveExtension = 'jar'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
-    classifier 'javadoc'
-    extension 'jar'
+    archiveClassifier = 'javadoc'
+    archiveExtension = 'jar'
 }
 
 task copyRuntimeLibs(type: Copy) {
     into project.file('lib/jars/')
-    from configurations.compile, configurations.runtime
+    from configurations.compileClasspath, configurations.runtimeClasspath
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
