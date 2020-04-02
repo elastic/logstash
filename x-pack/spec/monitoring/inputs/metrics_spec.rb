@@ -2,11 +2,11 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+require 'spec_helper'
 require "logstash-core"
 require "logstash/agent"
 require "monitoring/inputs/metrics"
 require "rspec/wait"
-require 'spec_helper'
 require "json"
 require "json-schema"
 require 'monitoring/monitoring'

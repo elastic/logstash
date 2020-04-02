@@ -21,13 +21,12 @@
 package org.logstash.ackedqueue;
 
 import org.jruby.RubyArray;
-import org.jruby.RubyHash;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.logstash.RubyUtil.RUBY;
@@ -36,74 +35,55 @@ public final class AckedReadBatch implements QueueBatch {
 
     private AckedBatch ackedBatch;
 
-    private RubyHash originals;
-
-    private RubyHash generated;
+    private Collection<RubyEvent> events;
 
     public static AckedReadBatch create(
         final JRubyAckedQueueExt queue,
         final int size,
         final long timeout)
     {
-        return new AckedReadBatch(queue, size, timeout);
-    }
-
-    private AckedReadBatch(
-        final JRubyAckedQueueExt queue,
-        final int size,
-        final long timeout)
-    {
-        AckedBatch batch;
         try {
-            batch = queue.readBatch(size, timeout);
+            final AckedBatch batch = queue.readBatch(size, timeout);
+            return (batch == null) ? new AckedReadBatch() : new AckedReadBatch(batch);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        if (batch == null) {
-            originals = RubyHash.newHash(RUBY);
-            ackedBatch = null;
-        } else {
-            ackedBatch = batch;
-            originals = ackedBatch.toRubyHash(RUBY);
-        }
-        generated = RubyHash.newHash(RUBY);
+    }
+
+    public static AckedReadBatch create() {
+        return new AckedReadBatch();
+    }
+
+    private AckedReadBatch() {
+        ackedBatch = null;
+        events = new ArrayList<>();
+    }
+
+    private AckedReadBatch(AckedBatch batch) {
+        ackedBatch = batch;
+        events = batch.events();
     }
 
     @Override
-    public void merge(final RubyEvent event) {
-        if (!event.isNil() && !originals.containsKey(event)) {
-            generated.put(event, RUBY.getTrue());
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public RubyArray to_a() {
-        final RubyArray result = RUBY.newArray(filteredSize());
-        for (final RubyEvent event : (Collection<RubyEvent>) originals.keys()) {
-            if (!MemoryReadBatch.isCancelled(event)) {
-                result.append(event);
-            }
-        }
-        for (final RubyEvent event : (Collection<RubyEvent>) generated.keys()) {
-            if (!MemoryReadBatch.isCancelled(event)) {
-                result.append(event);
+    public RubyArray<RubyEvent> to_a() {
+        @SuppressWarnings({"unchecked"})  final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        for (final RubyEvent e : events) {
+            if (!MemoryReadBatch.isCancelled(e)) {
+                result.append(e);
             }
         }
         return result;
     }
 
-    @SuppressWarnings({"unchecked"})
     @Override
-    public Collection<RubyEvent> collection() {
-        // This only returns the originals and does not filter cancelled one
-        // because it is  only used in the WorkerLoop where only originals
-        // non-cancelled exists. We should revisit this AckedReadBatch
-        // implementation and get rid of this dual original/generated idea.
-        // The MemoryReadBatch does not use such a strategy.
-        return originals.directKeySet();
+    public Collection<RubyEvent> events() {
+        // This does not filter cancelled events because it is
+        // only used in the WorkerLoop where there are no cancelled
+        // events yet.
+        return events;
     }
 
+    @Override
     public void close() throws IOException {
         if (ackedBatch != null) {
             ackedBatch.close();
@@ -112,6 +92,6 @@ public final class AckedReadBatch implements QueueBatch {
 
     @Override
     public int filteredSize() {
-        return originals.size() + generated.size();
+        return events.size();
     }
 }
