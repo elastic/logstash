@@ -26,8 +26,7 @@ import java.util.Collection;
 
 public interface QueueBatch {
     int filteredSize();
-    @SuppressWarnings({"rawtypes"}) RubyArray to_a();
-    Collection<RubyEvent> collection();
-    void merge(RubyEvent event);
+    RubyArray<RubyEvent> to_a();
+    Collection<RubyEvent> events();
     void close() throws IOException;
 }
