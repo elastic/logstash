@@ -58,6 +58,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 task copyRuntimeLibs(type: Copy) {
     into project.file('lib/jars/')
     from configurations.compile, configurations.runtime
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 // copy jar file into the gem lib dir but without the version number in filename
@@ -65,6 +66,7 @@ task copyGemjar(type: Copy, dependsOn: [sourcesJar, copyRuntimeLibs]) {
     from project.jar
     into project.file('lib/jars/')
     rename(/(.+)-${project.version}.jar/, '$1.jar')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 task cleanGemjar {

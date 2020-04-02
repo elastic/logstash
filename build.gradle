@@ -105,7 +105,7 @@ subprojects {
         }
     }
     dependencies {
-        compile "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
+        implementation "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 
     apply plugin: 'com.github.jk1.dependency-license-report'
