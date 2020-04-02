@@ -152,31 +152,31 @@ def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.ge
 dependencies {
     implementation 'org.apache.logging.log4j:log4j-api:2.12.1'
     annotationProcessor 'org.apache.logging.log4j:log4j-core:2.12.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.12.1'
+    api 'org.apache.logging.log4j:log4j-core:2.12.1'
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
-    compile('org.reflections:reflections:0.9.11') {
+    implementation('org.reflections:reflections:0.9.11') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile 'commons-codec:commons-codec:1.13'
+    implementation 'commons-codec:commons-codec:1.13'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
-    compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
-    compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile 'org.codehaus.janino:janino:3.1.0'
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    implementation 'org.codehaus.janino:janino:3.1.0'
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     if (customJRubyDir == "") {
-        compile "org.jruby:jruby-complete:${jrubyVersion}"
+        implementation "org.jruby:jruby-complete:${jrubyVersion}"
     } else {
-        compile files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
+        implementation files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
     }
-    compile group: 'com.google.guava', name: 'guava', version: '22.0'
+    implementation group: 'com.google.guava', name: 'guava', version: '22.0'
     // WARNING: DO NOT UPGRADE "google-java-format"
     // later versions require GPL licensed code in javac-shaded that is
     // Apache2 incompatible
-    compile('com.google.googlejavaformat:google-java-format:1.1') {
+    implementation('com.google.googlejavaformat:google-java-format:1.1') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile 'org.javassist:javassist:3.26.0-GA'
+    implementation 'org.javassist:javassist:3.26.0-GA'
     testImplementation 'org.apache.logging.log4j:log4j-core:2.12.1:tests'
     testImplementation 'junit:junit:4.12'
     testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'

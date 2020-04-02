@@ -55,13 +55,13 @@ ext {
 }
 
 dependencies {
-  compile project(':logstash-core')
-  compile "org.openjdk.jmh:jmh-core:$jmh"
+  implementation project(':logstash-core')
+  implementation "org.openjdk.jmh:jmh-core:$jmh"
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-  compile 'com.google.guava:guava:21.0'
-  compile 'commons-io:commons-io:2.5'
+  implementation 'com.google.guava:guava:21.0'
+  implementation 'commons-io:commons-io:2.5'
   runtimeOnly 'joda-time:joda-time:2.8.2'
-  compile "org.jruby:jruby-core:$jrubyVersion"
+  implementation "org.jruby:jruby-core:$jrubyVersion"
 }
 
 javadoc {
