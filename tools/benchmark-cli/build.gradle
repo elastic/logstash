@@ -56,8 +56,8 @@ dependencies {
   compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
   compile group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
   compile "org.openjdk.jmh:jmh-core:$jmh"
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
-  testCompile "junit:junit:4.12"
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
+  testImplementation "junit:junit:4.12"
 }
 
 javadoc {
