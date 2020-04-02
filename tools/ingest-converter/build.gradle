@@ -56,7 +56,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 shadowJar {
   archiveBaseName = 'ingest-converter'
   archiveClassifier = null
-  archiveVersion = null
+  archiveVersion = ''
 }
 
 assemble.dependsOn shadowJar
