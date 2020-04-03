@@ -24,13 +24,11 @@ buildscript {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
-    }
 }
 
 plugins {
     id "de.undercouch.download" version "4.0.4"
+    id 'com.github.jk1.dependency-license-report' version '1.13' apply false
 }
 
 apply plugin: 'de.undercouch.download'
@@ -105,15 +103,12 @@ subprojects {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        implementation "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
-    }
+
 
     apply plugin: 'com.github.jk1.dependency-license-report'
 
     licenseReport {
         renderer = new com.github.jk1.license.render.CsvReportRenderer()
-        configurations = ['compile', 'runtime']
     }
 }
 
