@@ -264,9 +264,13 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # First launch WorkerLoop initialization in separate threads which concurrently
       # compiles and initializes the worker pipelines
 
-      worker_loops = pipeline_workers.times
+      # initialize a first worker to warm the compilation caches
+      warming_worker = init_worker_loop
+      # initialize the rest of the workers concurrently
+      worker_loops = (pipeline_workers - 1).times
         .map { Thread.new { init_worker_loop } }
         .map(&:value)
+      worker_loops.unshift(warming_worker)
 
       fail("Some worker(s) were not correctly initialized") if worker_loops.any?{|v| v.nil?}
 
