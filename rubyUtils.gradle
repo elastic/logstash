@@ -255,6 +255,7 @@ task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
     exclude "**/stdlib/rdoc/**"
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 installCustomJRuby.onlyIf { customJRubyDir != "" }
@@ -276,6 +277,7 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }

@@ -254,6 +254,7 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
   outputs.files fileTree(logstashBuildDir)
   from tarTree(tar)
   into {buildDir}
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 def qaVendorPath = "${buildDir}/qa/integration/vendor"
@@ -428,7 +429,7 @@ task deleteLocalEs(type: Delete) {
 task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
     from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
-
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     doLast {
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
