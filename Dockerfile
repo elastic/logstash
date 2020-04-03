@@ -22,7 +22,7 @@ LABEL retention="keep"
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
-RUN /opt/logstash/gradlew wrapper
+RUN /opt/logstash/gradlew wrapper --warning-mode all
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE.txt /opt/logstash/LICENSE.txt
