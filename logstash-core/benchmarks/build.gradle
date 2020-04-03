@@ -61,7 +61,7 @@ dependencies {
   implementation 'com.google.guava:guava:21.0'
   implementation 'commons-io:commons-io:2.5'
   runtimeOnly 'joda-time:joda-time:2.8.2'
-  implementation "org.jruby:jruby-core:$jrubyVersion"
+  api "org.jruby:jruby-core:$jrubyVersion"
 }
 
 javadoc {
@@ -73,7 +73,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 shadowJar {
   archiveBaseName = 'logstash-core-benchmarks-all'
   archiveClassifier = null
-  archiveVersion = null
+  archiveVersion = ''
 }
 
 task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {
