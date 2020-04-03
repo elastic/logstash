@@ -22,7 +22,6 @@ LABEL retention="keep"
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
-RUN /opt/logstash/gradlew wrapper --warning-mode all
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE.txt /opt/logstash/LICENSE.txt
@@ -47,6 +46,8 @@ ADD modules /opt/logstash/modules
 ADD x-pack /opt/logstash/x-pack
 ADD ci /opt/logstash/ci
 ADD settings.gradle /opt/logstash/settings.gradle
+
+RUN /opt/logstash/gradlew wrapper --warning-mode all
 
 USER root
 RUN rm -rf build && \
