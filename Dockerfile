@@ -47,8 +47,6 @@ ADD x-pack /opt/logstash/x-pack
 ADD ci /opt/logstash/ci
 ADD settings.gradle /opt/logstash/settings.gradle
 
-RUN /opt/logstash/gradlew wrapper --warning-mode all
-
 USER root
 RUN rm -rf build && \
     mkdir -p build && \
@@ -57,4 +55,4 @@ USER logstash
 WORKDIR /opt/logstash
 
 LABEL retention="prune"
-
+RUN ./gradlew wrapper --warning-mode all
