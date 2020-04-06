@@ -12,7 +12,24 @@ NOTE: This is a new section. We're still working on it.
 [[event-ordering]] 
 ==== Event ordering 
 
-Event ordering info goes here. 
+The `pipeline.ordered` setting in <<logstash-settings-file,logstash.yml>>
+gives you more control over event ordering for single worker pipelines.
 
-//todo: Document event ordering guaranties or lack thereof with multiple worker versus single worker
+`auto` automatically enables ordering if the `pipeline.workers` setting is also
+set to `1`. `true` will enforce ordering on the pipeline and prevent logstash
+from starting if there are multiple workers. `false` will disable the processing
+required to preserve order. Ordering will not be guaranteed, but you save the
+processing cost required to preserve order.
+
+[float] 
+[[pipeline-init-time]] 
+==== Java pipeline initialization time
+
+The Java pipeline initialization time appears in the startup logs at INFO level.
+Initialization time is the time it takes to compile the pipeline config and
+instantiate the compiled execution for all workers.
+
+If you notice a slowdown, ...
+
+
 
