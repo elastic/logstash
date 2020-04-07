@@ -50,13 +50,13 @@ allprojects {
   project.sourceCompatibility = JavaVersion.VERSION_1_8
   project.targetCompatibility = JavaVersion.VERSION_1_8
 
-  tasks.withType(JavaCompile).all {
+  tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
       options.compilerArgs.add("-Xlint:-processing")
       options.compilerArgs.add("-Werror")
   }
 
-  tasks.withType(Javadoc) {
+  tasks.withType(Javadoc).configureEach {
       options.addStringOption("Xwerror", "-quiet")
       if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
           options.addBooleanOption("html5", true)
