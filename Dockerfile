@@ -20,9 +20,15 @@ WORKDIR /home/logstash
 # used by the purge policy
 LABEL retention="keep"
 
-ADD gradlew /opt/logstash/gradlew
-ADD gradle/wrapper /opt/logstash/gradle/wrapper
-RUN /opt/logstash/gradlew wrapper
+# Setup gradle wrapper. When running any `gradle` command, a `settings.gradle` is expected (and will soon be required).
+# This section adds the gradle wrapper, `settings.gradle` and sets the permissions (setting the user to root for `chown`
+# and working directory to allow this and then reverts back to the previous working directory and user.
+COPY --chown=logstash:logstash gradlew /opt/logstash/gradlew
+COPY --chown=logstash:logstash gradle/wrapper /opt/logstash/gradle/wrapper
+COPY --chown=logstash:logstash settings.gradle /opt/logstash/settings.gradle
+WORKDIR /opt/logstash
+RUN ./gradlew wrapper --warning-mode all
+WORKDIR /home/logstash
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE.txt /opt/logstash/LICENSE.txt
@@ -46,7 +52,6 @@ ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
 ADD x-pack /opt/logstash/x-pack
 ADD ci /opt/logstash/ci
-ADD settings.gradle /opt/logstash/settings.gradle
 
 USER root
 RUN rm -rf build && \
@@ -56,4 +61,3 @@ USER logstash
 WORKDIR /opt/logstash
 
 LABEL retention="prune"
-
