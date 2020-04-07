@@ -23,12 +23,9 @@ LABEL retention="keep"
 # Setup gradle wrapper. When running any `gradle` command, a `settings.gradle` is expected (and will soon be required).
 # This section adds the gradle wrapper, `settings.gradle` and sets the permissions (setting the user to root for `chown`
 # and working directory to allow this and then reverts back to the previous working directory and user.
-ADD gradlew /opt/logstash/gradlew
-ADD gradle/wrapper /opt/logstash/gradle/wrapper
-ADD settings.gradle /opt/logstash/settings.gradle
-USER root
-RUN chown -R logstash:logstash /opt/logstash
-USER logstash
+COPY --chown=logstash:logstash gradlew /opt/logstash/gradlew
+COPY --chown=logstash:logstash gradle/wrapper /opt/logstash/gradle/wrapper
+COPY --chown=logstash:logstash settings.gradle /opt/logstash/settings.gradle
 WORKDIR /opt/logstash
 RUN ./gradlew wrapper --warning-mode all
 WORKDIR /home/logstash
