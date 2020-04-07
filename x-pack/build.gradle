@@ -17,9 +17,9 @@ buildscript {
 }
 
 dependencies {
-  testCompile project(':logstash-core')
-  testCompile 'org.assertj:assertj-core:3.8.0'
-  testCompile 'junit:junit:4.12'
+  testImplementation project(':logstash-core')
+  testImplementation 'org.assertj:assertj-core:3.8.0'
+  testImplementation 'junit:junit:4.12'
 }
 
 test {

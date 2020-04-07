@@ -42,9 +42,9 @@ buildscript {
 }
 
 dependencies {
-  compile 'net.sf.jopt-simple:jopt-simple:4.6'
-  testCompile "junit:junit:4.12"
-  testCompile 'commons-io:commons-io:2.5'
+  implementation 'net.sf.jopt-simple:jopt-simple:4.6'
+  testImplementation "junit:junit:4.12"
+  testImplementation 'commons-io:commons-io:2.5'
 }
 
 javadoc {
@@ -54,9 +54,9 @@ javadoc {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'ingest-converter'
-  classifier = null
-  version = null
+  archiveBaseName = 'ingest-converter'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 assemble.dependsOn shadowJar
