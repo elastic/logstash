@@ -138,7 +138,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   This setting
   will work only when also using a single worker for the pipeline.
   Note that when enabled, it may impact the performance of the filters
-  and ouput processing.
+  and output processing.
   The `auto` option will automatically enable ordering if the
   `pipeline.workers` setting is set to `1`.
   Use `true` to enable ordering on the pipeline and prevent logstash
