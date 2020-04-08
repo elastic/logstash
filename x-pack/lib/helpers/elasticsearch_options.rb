@@ -15,6 +15,7 @@ module LogStash module Helpers
         password
         cloud_id
         cloud_auth
+        proxy
       )
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
@@ -47,6 +48,10 @@ module LogStash module Helpers
         opts['user'] = settings.get("#{prefix}#{feature}.elasticsearch.username")
         opts['password'] = settings.get("#{prefix}#{feature}.elasticsearch.password")
       end
+      if proxysetting = settings.get("#{prefix}#{feature}.elasticsearch.proxy")
+        opts['proxy'] = proxysetting
+      end
+
       opts['sniffing'] = settings.get("#{prefix}#{feature}.elasticsearch.sniffing")
       opts['ssl_certificate_verification'] = settings.get("#{prefix}#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
 

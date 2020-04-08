@@ -25,6 +25,9 @@ output {
     document_type => "%{[@metadata][document_type]}"
     index => "<%= monitoring_index %>"
     sniffing => <%= sniffing %>
+  <% if proxy? %>
+    proxy => "<%= proxy %>"
+  <% end %>
   <% if auth? && !cloud_auth? %>
     user => "<%= user %>"
     password => "<%= password %>"
