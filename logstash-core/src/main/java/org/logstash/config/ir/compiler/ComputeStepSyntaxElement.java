@@ -157,7 +157,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                         StreamSupport.stream(methods.spliterator(), false)
                             .toArray(SyntaxElement[]::new)
                     )
-                )).replaceAll("\n");
+                ));
     }
 
     private static Path debugDir() {
