@@ -32,6 +32,7 @@ module LogStash
         @password = es_settings['password']
         @cloud_id = es_settings['cloud_id']
         @cloud_auth = es_settings['cloud_auth']
+        @proxy = es_settings['proxy']
         @ca_path = es_settings['cacert']
         @truststore_path = es_settings['truststore']
         @truststore_password = es_settings['truststore_password']
@@ -41,7 +42,7 @@ module LogStash
         @ssl_certificate_verification = (es_settings['verification_mode'] == 'certificate')
       end
 
-      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth
+      attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth, :proxy
       attr_accessor :ca_path, :truststore_path, :truststore_password
       attr_accessor :keystore_path, :keystore_password, :sniffing, :ssl_certificate_verification
 
@@ -59,6 +60,10 @@ module LogStash
 
       def cloud_auth?
         !!cloud_auth && cloud_id?
+      end
+
+      def proxy?
+        proxy
       end
 
       def auth?
@@ -250,6 +255,7 @@ module LogStash
       settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.password"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.proxy"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.cloud_id"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.cloud_auth"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate_authority"))
