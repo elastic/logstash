@@ -24,6 +24,8 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.ym
 
 description = """Logstash End to End Benchmarking Utility"""
 version = versionMap['logstash-core']
+String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
@@ -52,8 +54,8 @@ dependencies {
   implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.14'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
   implementation group: 'commons-io', name: 'commons-io', version: '2.5'
-  implementation 'com.fasterxml.jackson.core:jackson-core:2.7.4'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   implementation group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
   implementation "org.openjdk.jmh:jmh-core:$jmh"
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
