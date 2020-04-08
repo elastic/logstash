@@ -38,7 +38,7 @@ buildscript {
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.17'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
   }
 }
 
@@ -51,19 +51,17 @@ jar {
 }
 
 ext {
-  jmh = 1.18
+  jmh = 1.22
 }
 
 dependencies {
-  compile project(':logstash-core')
-  compile "org.openjdk.jmh:jmh-core:$jmh"
-  compile "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-  compile "org.openjdk.jmh:jmh-core-benchmarks:$jmh"
-  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
-  compile 'com.google.guava:guava:21.0'
-  compile 'commons-io:commons-io:2.5'
-  runtime 'joda-time:joda-time:2.8.2'
-  compile "org.jruby:jruby-core:$jrubyVersion"
+  implementation project(':logstash-core')
+  implementation "org.openjdk.jmh:jmh-core:$jmh"
+  annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
+  implementation 'com.google.guava:guava:21.0'
+  implementation 'commons-io:commons-io:2.5'
+  runtimeOnly 'joda-time:joda-time:2.8.2'
+  api "org.jruby:jruby-core:$jrubyVersion"
 }
 
 javadoc {
@@ -73,9 +71,9 @@ javadoc {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'logstash-core-benchmarks-all'
-  classifier = null
-  version = null
+  archiveBaseName = 'logstash-core-benchmarks-all'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {
@@ -87,7 +85,7 @@ task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logsta
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+UseParNewGC", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+            "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
             "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
             "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
             shadowJar.archivePath,

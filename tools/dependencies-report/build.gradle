@@ -38,17 +38,17 @@ buildscript {
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.17'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
   }
 }
 
 dependencies {
-  compile 'commons-io:commons-io:2.6'
-  compile 'org.apache.commons:commons-csv:1.5'
-  compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-  compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-  compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-  testCompile 'junit:junit:4.12'
+  implementation 'commons-io:commons-io:2.6'
+  implementation 'org.apache.commons:commons-csv:1.5'
+  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+  implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+  testImplementation 'junit:junit:4.12'
 }
 
 javadoc {
@@ -64,9 +64,9 @@ test {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'dependencies-report'
-  classifier = null
-  version = null
+  archiveBaseName = 'dependencies-report'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 assemble.dependsOn shadowJar
