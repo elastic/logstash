@@ -20,8 +20,6 @@
 
 package org.logstash.config.ir.compiler;
 
-import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -57,12 +55,6 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
      */
     private static final Map<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
         = new HashMap<>(5000);
-
-    /**
-     * Pattern to remove redundant {@code ;} from formatted code since {@link Formatter} does not
-     * remove those.
-     */
-    private static final Pattern REDUNDANT_SEMICOLON = Pattern.compile("\n[ ]*;\n");
 
     private static final String CLASS_NAME_PLACEHOLDER = "CLASS_NAME_PLACEHOLDER";
 
@@ -155,24 +147,17 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     private String generateCode(final String name) {
-        try {
-            return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
-                String.format(
-                    "package org.logstash.generated;\npublic final class %s extends org.logstash.config.ir.compiler.BaseDataset implements %s { %s }",
-                    name,
-                    type.getName(),
-                    SyntaxFactory.join(
-                        fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
-                        combine(
-                            StreamSupport.stream(methods.spliterator(), false)
-                                .toArray(SyntaxElement[]::new)
-                        )
+        return String.format(
+                "package org.logstash.generated;\npublic final class %s extends org.logstash.config.ir.compiler.BaseDataset implements %s { %s }",
+                name,
+                type.getName(),
+                SyntaxFactory.join(
+                    fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
+                    combine(
+                        StreamSupport.stream(methods.spliterator(), false)
+                            .toArray(SyntaxElement[]::new)
                     )
-                )
-            )).replaceAll("\n");
-        } catch (final FormatterException ex) {
-            throw new IllegalStateException(ex);
-        }
+                )).replaceAll("\n");
     }
 
     private static Path debugDir() {

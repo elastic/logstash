@@ -168,12 +168,6 @@ dependencies {
         api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
     }
     implementation group: 'com.google.guava', name: 'guava', version: '22.0'
-    // WARNING: DO NOT UPGRADE "google-java-format"
-    // later versions require GPL licensed code in javac-shaded that is
-    // Apache2 incompatible
-    implementation('com.google.googlejavaformat:google-java-format:1.1') {
-        exclude group: 'com.google.guava', module: 'guava'
-    }
     implementation 'org.javassist:javassist:3.26.0-GA'
     testImplementation 'org.apache.logging.log4j:log4j-core:2.12.1:tests'
     testImplementation 'junit:junit:4.12'
