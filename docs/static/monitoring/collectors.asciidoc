@@ -39,8 +39,8 @@ The collection interval can be configured dynamically and you can also disable
 data collection. For more information about the configuration options for the 
 collectors, see <<monitoring-settings>>.
 
-WARNING: Unlike for {es} and {kib} monitoring, there is no 
-`pack.monitoring.collection.enabled` setting on Logstash. You must use the
+WARNING: Unlike for {es} and {kib} monitoring, there is no
+`monitoring.collection.enabled` setting on Logstash. You must use the
 `monitoring.enabled` setting to enable and disable data collection.
 
 If gaps exist in the monitoring charts in {kib}, it is typically because either 

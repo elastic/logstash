@@ -48,11 +48,12 @@ Controls how often data samples are collected and shipped on the Logstash side.
 Defaults to `10s`. If you modify the collection interval, set the 
 `monitoring.min_interval_seconds` option in `kibana.yml` to the same value.
 
+[[monitoring-cluster-uuid]]
 `monitoring.cluster_uuid`::
 
 The universally unique identifier (UUID) for the monitoring cluster. 
-By default, {ls} identifies and uses the `cluster uuid` from the first
-`output-elasticsearch` plugin defined in the pipelines, and ignores this
+By default, {ls} identifies and uses the `cluster uuid` value from each 
+elasticsearch output defined in the pipelines, and ignores this
 setting.
 +
 If no `cluster_uuid` is discovered in elasticsearch outputs, then {ls}
@@ -88,7 +89,7 @@ the client’s certificate.
 
 Optional settings that provide the password to the keystore.
 
-`xpack.monitoring.elasticsearch.ssl.verification_mode`::
+`monitoring.elasticsearch.ssl.verification_mode`::
 
 Option to validate the server’s certificate. Defaults to `certificate`. To
 disable, set to `none`. Disabling this severely compromises security.
@@ -96,7 +97,6 @@ disable, set to `none`. Disabling this severely compromises security.
 `monitoring.elasticsearch.sniffing`::
 
 Finds all {es} cluster nodes and adds them to the hosts list.
-
 Defaults to `false`.
 
 [[monitoring-additional-settings]]
