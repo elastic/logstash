@@ -249,6 +249,7 @@ Changes to Logstash Core are plugin agnostic.
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
   Previously, users had to convert this to a millisecond time value themselves.
+  Note that the unit qualifier (`s`) is required.
 
 [float]
 ===== RPM/Deb package changes
