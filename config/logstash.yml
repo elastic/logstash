@@ -77,6 +77,9 @@
 # config.reload.automatic: false
 #
 # How often to check if the pipeline configuration has changed (in seconds)
+# Note that the unit value (s) is required. Values without a qualifier (e.g. 60) 
+# are treated as nanoseconds.
+# Setting the interval this way is not recommended and might change in later versions.
 #
 # config.reload.interval: 3s
 #
