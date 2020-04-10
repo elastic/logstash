@@ -53,6 +53,7 @@ import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
+import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -178,7 +179,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
-        lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+        try {
+            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
+        }
         return this;
     }
 
