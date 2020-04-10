@@ -275,18 +275,18 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @Test
-    public void correctlyCompilesRegexMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+    public void correctlyCompilesRegexMatchesWithConstant() throws InvalidIRException {
         verifyRegex("=~", 1);
     }
 
     @Test
-    public void correctlyCompilesRegexNoMatchesWithConstant() throws IncompleteSourceWithMetadataException {
+    public void correctlyCompilesRegexNoMatchesWithConstant() throws InvalidIRException {
         verifyRegex("!~", 0);
     }
 
     @SuppressWarnings({"unchecked"})
     private void verifyRegex(String operator, int expectedEvents)
-            throws IncompleteSourceWithMetadataException {
+            throws InvalidIRException {
         final Event event = new Event();
 
         final JrubyEventExtLibrary.RubyEvent testEvent =
@@ -450,8 +450,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void verifyComparison(final boolean expected, final String conditional,
-        final Event event) throws IncompleteSourceWithMetadataException {
+    private void verifyComparison(final boolean expected, final String conditional, final Event event)
+            throws InvalidIRException {
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event);
 
