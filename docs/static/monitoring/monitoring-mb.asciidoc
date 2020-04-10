@@ -6,7 +6,7 @@
 <titleabbrev>{metricbeat} collection</titleabbrev>
 ++++
 
-In 7.3 and later, you can use {metricbeat} to collect data about {ls} 
+You can use {metricbeat} to collect data about {ls} 
 and ship it to the monitoring cluster, rather than routing it through the 
 production cluster as described in <<monitoring-internal-collection>>.
 
@@ -15,6 +15,7 @@ production cluster as described in <<monitoring-internal-collection>>.
 To collect and ship monitoring data:
 
 . <<disable-default,Disable default collection of monitoring metrics>>
+. <<define-cluster__uuid,Specify optionally the target `cluster_uuid`>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
 [float]
@@ -28,7 +29,7 @@ commented out:
 
 [source,yaml]
 ----------------------------------
-monitoring.enabled: false
+xpack.monitoring.enabled: false
 ----------------------------------
 
 Remove the `#` at the beginning of the line to enable the setting.
@@ -36,6 +37,16 @@ Remove the `#` at the beginning of the line to enable the setting.
 
 --
 
+[float]
+[[define-cluster__uuid]]
+==== Define `cluster_uuid` (Optional)
+To bind the metrics of {ls} to a specific cluster, optionally define the `monitoring.cluster_uuid`
+in the configuration file (logstash.yml):
+
+[source,yaml]
+----------------------------------
+monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
+----------------------------------
 
 [float]
 [[configure-metricbeat]]

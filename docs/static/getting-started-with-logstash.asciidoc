@@ -179,7 +179,7 @@ Download and install the public signing key:
 
 [source,sh]
 --------------------------------------------------
-rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 --------------------------------------------------
 
 Add the following in your `/etc/yum.repos.d/` directory
@@ -312,6 +312,33 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
 NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
 to find the location of `bin\logstash` on your system.
+
+[IMPORTANT]
+.macOS Gatekeeper warnings
+====
+Apple's rollout of stricter notarization requirements affected the notarization
+of the {version} {ls} artifacts. If macOS Catalina displays a dialog when you
+first run {ls} that interrupts it, you will need to take an action to allow it
+to run.
+To prevent Gatekeeper checks on the {ls} files, run the following command on the
+downloaded `.tar.gz` archive or the directory to which was extracted:
+[source,sh]
+----
+xattr -d -r com.apple.quarantine <archive-or-directory>
+----
+For example, if the `.tar.gz` file was extracted to the default
+logstash-{version} directory, the command is:
+[source,sh,subs="attributes"]
+----
+xattr -d -r com.apple.quarantine logstash-{version}
+----
+Alternatively, you can add a security override if a Gatekeeper popup appears by
+following the instructions in the _How to open an app that hasn’t been notarized
+or is from an unidentified developer_ section of
+https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
+====
+
+
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.

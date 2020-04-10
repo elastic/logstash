@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "thread"
 require "concurrent"
 require "logstash/filters/base"
@@ -212,6 +228,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -244,18 +261,28 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
       filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
-      pipeline_workers.times do |t|
+      # First launch WorkerLoop initialization in separate threads which concurrently
+      # compiles and initializes the worker pipelines
+
+      worker_loops = pipeline_workers.times
+        .map { Thread.new { init_worker_loop } }
+        .map(&:value)
+
+      fail("Some worker(s) were not correctly initialized") if worker_loops.any?{|v| v.nil?}
+
+      # Once all WorkerLoop have been initialized run them in separate threads
+
+      worker_loops.each_with_index do |worker_loop, t|
         thread = Thread.new do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           ThreadContext.put("pipeline.id", pipeline_id)
-          org.logstash.execution.WorkerLoop.new(
-              lir_execution, filter_queue_client, @events_filtered, @events_consumed,
-              @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
+          worker_loop.run
         end
         @worker_threads << thread
       end
 
-      # inputs should be started last, after all workers
+      # Finally inputs should be started last, after all workers have been initialized and started
+
       begin
         start_inputs
       rescue => e
@@ -314,6 +341,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     ThreadContext.put("pipeline.id", pipeline_id)
+    ThreadContext.put("plugin.id", plugin.id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
@@ -466,6 +494,27 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   private
 
+  # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
+  def init_worker_loop
+    begin
+      org.logstash.execution.WorkerLoop.new(
+        lir_execution,
+        filter_queue_client,
+        @events_filtered,
+        @events_consumed,
+        @flushRequested,
+        @flushing,
+        @shutdownRequested,
+        @drain_queue,
+        @preserve_event_order)
+    rescue => e
+      @logger.error(
+        "Worker loop initialization error",
+        default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+      nil
+    end
+  end
+
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
       register_plugins(outputs)
@@ -477,5 +526,20 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     keys = {:pipeline_id => pipeline_id}.merge other_keys
     keys[:thread] ||= thread.inspect if thread
     keys
+  end
+
+  def preserve_event_order?(pipeline_workers)
+    case settings.get("pipeline.ordered")
+    when "auto"
+      if settings.set?("pipeline.workers") && settings.get("pipeline.workers") == 1
+        @logger.warn("'pipeline.ordered' is enabled and is likely less efficient, consider disabling if preserving event order is not necessary")
+        return true
+      end
+    when "true"
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker") if pipeline_workers > 1
+      return true
+    end
+
+    false
   end
 end; end

@@ -114,6 +114,10 @@ def logstash_command_append(cmd, argument, value)
 end
 
 def logstash(cmd, options = {})
+  logstash_with_empty_default(cmd, options, {"xpack.monitoring.enabled" => true})
+end
+
+def logstash_with_empty_default(cmd, options = {}, default_settings = {})
   temporary_settings = Stud::Temporary.directory
   temporary_data = Stud::Temporary.directory
 
@@ -121,7 +125,6 @@ def logstash(cmd, options = {})
   cmd = logstash_command_append(cmd, "--path.data", temporary_data)
 
   logstash_yaml = File.join(temporary_settings, "logstash.yml")
-  default_settings = {"xpack.monitoring.enabled" => true}
   IO.write(logstash_yaml, YAML::dump(default_settings.merge(options.fetch(:settings, {}))))
   FileUtils.cp(File.join(get_logstash_path, "config", "log4j2.properties"), File.join(temporary_settings, "log4j2.properties") )
 

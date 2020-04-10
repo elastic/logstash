@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +36,9 @@ import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
-import org.logstash.plugins.PluginFactoryExt;
+import org.logstash.plugins.factory.ExecutionContextFactoryExt;
+import org.logstash.plugins.factory.PluginMetricsFactoryExt;
+import org.logstash.plugins.factory.PluginFactoryExt;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -47,12 +69,12 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         initialize(context, args[0], args[1], args[2]);
         lirExecution = new CompiledPipeline(
             lir,
-            new PluginFactoryExt.Plugins(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
+            new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
                 lir,
-                new PluginFactoryExt.Metrics(
-                    context.runtime, RubyUtil.PLUGIN_METRIC_FACTORY_CLASS
+                new PluginMetricsFactoryExt(
+                    context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
                 ).initialize(context, pipelineId(), metric()),
-                new PluginFactoryExt.ExecutionContext(
+                new ExecutionContextFactoryExt(
                     context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
                 ).initialize(context, args[3], this, dlqWriter(context)),
                 RubyUtil.FILTER_DELEGATOR_CLASS

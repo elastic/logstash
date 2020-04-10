@@ -1,3 +1,22 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's master versions.yml file
@@ -5,6 +24,8 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.ym
 
 description = """Logstash End to End Benchmarking Utility"""
 version = versionMap['logstash-core']
+String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
@@ -23,22 +44,22 @@ buildscript {
 }
 
 ext {
-  jmh = '1.18'
-  elasticsearch = '5.5.0'
+  jmh = '1.23'
+  elasticsearch = '5.5.3'
 }
 
 dependencies {
-  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
-  compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
-  compile group: 'org.apache.commons', name: 'commons-compress', version: '1.14'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
-  compile group: 'commons-io', name: 'commons-io', version: '2.5'
-  compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
-  compile group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
-  compile "org.openjdk.jmh:jmh-core:$jmh"
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
-  testCompile "junit:junit:4.12"
+  implementation 'net.sf.jopt-simple:jopt-simple:5.0.3'
+  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
+  implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+  implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+  implementation group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
+  implementation "org.openjdk.jmh:jmh-core:$jmh"
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
+  testImplementation "junit:junit:4.12"
 }
 
 javadoc {
@@ -56,9 +77,9 @@ test {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'benchmark-cli'
-  classifier = null
-  version = null
+  archiveBaseName = 'benchmark-cli'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 assemble.dependsOn shadowJar

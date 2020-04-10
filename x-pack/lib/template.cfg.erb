@@ -12,13 +12,20 @@ input {
 }
 output {
   elasticsearch_monitoring {
+  <% if cloud_id? %>
+    cloud_id => "<%= cloud_id %>"
+    <% if cloud_auth %>
+    cloud_auth => "<%= cloud_auth %>"
+    <% end %>
+  <% else %>
     hosts => <%= es_hosts %>
-    bulk_path => "/_monitoring/bulk?system_id=logstash&system_api_version=<%= system_api_version %>&interval=1s"
+  <% end %>
+    bulk_path => "<%= monitoring_endpoint %>"
     manage_template => false
     document_type => "%{[@metadata][document_type]}"
-    index => ""
+    index => "<%= monitoring_index %>"
     sniffing => <%= sniffing %>
-  <% if auth? %>
+  <% if auth? && !cloud_auth? %>
     user => "<%= user %>"
     password => "<%= password %>"
   <% end %>

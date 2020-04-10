@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.config.ir.compiler;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -54,8 +74,8 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod
-        public IRubyObject classes() {
-            return map.rb_values();
+        public IRubyObject classes(final ThreadContext context) {
+            return map.values(context);
         }
 
         @JRubyMethod
@@ -78,7 +98,7 @@ public final class OutputStrategyExt {
                     String.format(
                         "Could not find output delegator strategy of type '%s'. Value strategies: %s",
                         type.asJavaString(),
-                        map.rb_values().stream().map(v -> ((IRubyObject) v).asJavaString())
+                        map.values(context).stream().map(v -> ((IRubyObject) v).asJavaString())
                             .collect(Collectors.joining(", "))
                     )
                 );

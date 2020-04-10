@@ -1,3 +1,22 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's master versions.yml file
@@ -36,13 +55,13 @@ ext {
 }
 
 dependencies {
-  compile project(':logstash-core')
-  compile "org.openjdk.jmh:jmh-core:$jmh"
+  implementation project(':logstash-core')
+  implementation "org.openjdk.jmh:jmh-core:$jmh"
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-  compile 'com.google.guava:guava:21.0'
-  compile 'commons-io:commons-io:2.5'
-  runtime 'joda-time:joda-time:2.8.2'
-  compile "org.jruby:jruby-core:$jrubyVersion"
+  implementation 'com.google.guava:guava:21.0'
+  implementation 'commons-io:commons-io:2.5'
+  runtimeOnly 'joda-time:joda-time:2.8.2'
+  api "org.jruby:jruby-core:$jrubyVersion"
 }
 
 javadoc {
@@ -52,9 +71,9 @@ javadoc {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'logstash-core-benchmarks-all'
-  classifier = null
-  version = null
+  archiveBaseName = 'logstash-core-benchmarks-all'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {

@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/agent"
 require "logstash/java_pipeline"
 require "logstash/event"
@@ -8,7 +25,6 @@ require "thread"
 java_import org.logstash.common.SourceWithMetadata
 
 module PipelineHelpers
-
   class SpecSamplerInput < LogStash::Inputs::Base
     config_name "spec_sampler_input"
 
@@ -58,9 +74,7 @@ module PipelineHelpers
 
     describe "\"#{name}\"" do
       let(:pipeline) do
-        settings = ::LogStash::SETTINGS.clone
         settings.set_value("queue.drain", true)
-        settings.set_value("pipeline.workers", 1)
         LogStash::JavaPipeline.new(
           LogStash::Config::PipelineConfig.new(
             LogStash::Config::Source::Local, :main,
@@ -73,9 +87,9 @@ module PipelineHelpers
       end
       let(:event) do
         sample_event = [sample_event] unless sample_event.is_a?(Array)
-        next sample_event.collect do |e|
+        sample_event.map do |e|
           e = { "message" => e } if e.is_a?(String)
-          next LogStash::Event.new(e)
+          LogStash::Event.new(e)
         end
       end
 

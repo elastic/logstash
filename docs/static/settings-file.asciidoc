@@ -85,10 +85,14 @@ The `logstash.yml` file includes the following settings.
 | Use the Java execution engine.
 | true
 
-| `pipeline.workers`
-| The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
-  If you find that events are backing up, or that the
-  CPU is not saturated, consider increasing this number to better utilize machine processing power.
+| `pipeline.workers` 
+| The number of workers that will, in parallel, execute the filter and output
+stages of the pipeline. This setting uses the
+https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html#availableProcessors()[`java.lang.Runtime.getRuntime.availableProcessors`]
+value as a default if not overridden by `pipeline.workers` in `pipelines.yml` or
+`pipeline.workers` from `logstash.yml`.  If you have modified this setting and
+see that events are backing up, or that the CPU is not saturated, consider
+increasing this number to better utilize machine processing power. 
 | Number of the host's CPU cores
 
 | `pipeline.batch.size`
@@ -113,6 +117,22 @@ The `logstash.yml` file includes the following settings.
 | `pipeline.plugin_classloaders`
 | (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
 | `false`
+
+| `pipeline.ordered`
+a|
+Set the pipeline event ordering.Valid options are:
+
+* `auto`
+* `true`
+* `false`
+
+`auto` will  automatically enable ordering if the `pipeline.workers` setting is also set to `1`.
+`true` will enforce ordering on the pipeline and prevent logstash from starting
+if there are multiple workers.
+`false` will disable the processing required to preserve order. Ordering will not be
+guaranteed, but you save the processing cost of preserving order.
+
+| `auto`
 
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,

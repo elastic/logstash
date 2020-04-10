@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "thread"
 require "stud/interval"
 require "concurrent"
@@ -30,7 +46,7 @@ module LogStash; class BasePipeline < AbstractPipeline
 
     @plugin_factory = LogStash::Plugins::PluginFactory.new(
       # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-      lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
+      lir, LogStash::Plugins::PluginMetricsFactory.new(pipeline_id, metric),
       LogStash::Plugins::ExecutionContextFactory.new(@agent, self, dlq_writer),
       FilterDelegator
     )
@@ -54,6 +70,10 @@ module LogStash; class BasePipeline < AbstractPipeline
     end
   end
 
+  def line_to_source(line, column)
+    pipeline_config.lookup_source(line, column)
+  end
+
   def reloadable?
     configured_as_reloadable? && reloadable_plugins?
   end
@@ -69,8 +89,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   private
 
 
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
+  def plugin(plugin_type, name, source, *args)
+    @plugin_factory.plugin(plugin_type, name, source, *args)
   end
 
   def default_logging_keys(other_keys = {})
@@ -289,6 +309,7 @@ module LogStash; class Pipeline < BasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
+      verify_event_ordering!(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
 
@@ -342,13 +363,17 @@ module LogStash; class Pipeline < BasePipeline
 
       batch = filter_queue_client.read_batch.to_java # metrics are started in read_batch
       batch_size = batch.filteredSize
+      events = batch.to_a
       if batch_size > 0
         @events_consumed.add(batch_size)
-        filter_batch(batch)
+        events = filter_batch(events)
       end
-      flush_filters_to_batch(batch, :final => false) if signal.flush?
-      if batch.filteredSize > 0
-        output_batch(batch, output_events_map)
+
+      if signal.flush?
+        events = flush_filters_to_batch(events, :final => false)
+      end
+      if events.size > 0
+        output_batch(events, output_events_map)
         filter_queue_client.close_batch(batch)
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -359,18 +384,17 @@ module LogStash; class Pipeline < BasePipeline
     # for this we need to create a new empty batch to contain the final flushed events
     batch = filter_queue_client.to_java.newBatch
     filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
-    flush_filters_to_batch(batch, :final => true)
-    output_batch(batch, output_events_map)
+    events = batch.to_a
+    events = flush_filters_to_batch(events, :final => true)
+    output_batch(events, output_events_map)
     filter_queue_client.close_batch(batch)
   end
 
-  def filter_batch(batch)
-    filter_func(batch.to_a).each do |e|
-      #these are both original and generated events
-      batch.merge(e) unless e.cancelled?
-    end
-    filter_queue_client.add_filtered_metrics(batch.filtered_size)
-    @events_filtered.add(batch.filteredSize)
+  def filter_batch(events)
+    result = filter_func(events)
+    filter_queue_client.add_filtered_metrics(result.size)
+    @events_filtered.add(result.size)
+    result
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered
@@ -385,13 +409,15 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   # Take an array of events and send them to the correct output
-  def output_batch(batch, output_events_map)
+  def output_batch(events, output_events_map)
     # Build a mapping of { output_plugin => [events...]}
-    batch.to_a.each do |event|
-      # We ask the AST to tell us which outputs to send each event to
-      # Then, we stick it in the correct bin
-      output_func(event).each do |output|
-        output_events_map[output].push(event)
+    events.each do |event|
+      unless event.cancelled?
+        # We ask the AST to tell us which outputs to send each event to
+        # Then, we stick it in the correct bin
+        output_func(event).each do |output|
+          output_events_map[output].push(event)
+        end
       end
     end
     # Now that we have our output to event mapping we can just invoke each output
@@ -401,7 +427,7 @@ module LogStash; class Pipeline < BasePipeline
       events.clear
     end
 
-    filter_queue_client.add_output_metrics(batch.filtered_size)
+    filter_queue_client.add_output_metrics(events.size)
   end
 
   def resolve_cluster_uuids
@@ -441,6 +467,7 @@ module LogStash; class Pipeline < BasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     ThreadContext.put("pipeline.id", pipeline_id)
+    ThreadContext.put("plugin.id", plugin.id)
     begin
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
@@ -578,15 +605,16 @@ module LogStash; class Pipeline < BasePipeline
   #
   # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
-  def flush_filters_to_batch(batch, options = {})
+  def flush_filters_to_batch(events, options = {})
+    result = events
     flush_filters(options) do |event|
       unless event.cancelled?
         @logger.debug? and @logger.debug("Pushing flushed events", default_logging_keys(:event => event))
-        batch.merge(event)
+        result << event
       end
     end
-
     @flushing.set(false)
+    result
   end # flush_filters_to_batch
 
   def plugin_threads_info
@@ -648,4 +676,12 @@ module LogStash; class Pipeline < BasePipeline
   def draining_queue?
     @drain_queue ? !filter_queue_client.empty? : false
   end
+
+  def verify_event_ordering!(pipeline_workers)
+    # the Ruby execution keep event order by design but when using a single worker only
+    if settings.get("pipeline.ordered") == "true" && pipeline_workers > 1
+      fail("enabling the 'pipeline.ordered' setting requires the use of a single pipeline worker")
+    end
+  end
+
 end; end

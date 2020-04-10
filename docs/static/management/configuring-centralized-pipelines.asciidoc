@@ -35,7 +35,7 @@ the `logstash_admin` role to any users who will use centralized pipeline
 management. See <<ls-security>>.
 
 NOTE: Centralized management is disabled until you configure and enable
-{security}.
+{security-features}.
 
 IMPORTANT: After you've configured Logstash to use centralized pipeline
 management, you can no longer specify local pipeline configurations. This means

@@ -214,6 +214,9 @@ include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 :edit_url!:
 include::static/best-practice.asciidoc[]
 
+:edit_url!: 
+include::static/config-details.asciidoc[]
+
 :edit_url!:
 include::static/troubleshooting.asciidoc[]
 

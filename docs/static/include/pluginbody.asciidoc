@@ -43,7 +43,7 @@ Alternatively, you can use the examples repo we host on github.com
 *** alternately, via ssh: `git clone git@github.com:GITUSERNAME/logstash`+-pass:attributes[{plugintype}]-MYPLUGINNAME.git+
 ** +cd logstash-pass:attributes[{plugintype}]-MYPLUGINNAME+
 
-. **Clone the {inputtype} plugin example and copy it to your plugin branch.**
+. **Clone the {plugintype} plugin example and copy it to your plugin branch.**
 +
 You don't want to include the example .git directory or its contents, so delete
 it before you copy the example.
@@ -105,7 +105,6 @@ ifndef::blockinput[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 require "stud/interval"
@@ -157,7 +156,6 @@ ifndef::blockcodec[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/codecs/line"
 
@@ -216,7 +214,6 @@ ifndef::blockfilter[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 
@@ -270,7 +267,6 @@ ifdef::multi_receive_method[]
 [source,ruby]
 [subs="attributes"]
 ----------------------------------
-# encoding: utf-8
 require "logstash/{plugintype}s/base"
 require "logstash/namespace"
 
@@ -311,19 +307,6 @@ endif::multi_receive_method[]
 ==== Coding {plugintype} plugins
 
 Now let's take a line-by-line look at the example plugin.
-
-===== `encoding`
-
-It seems like a small thing, but remember to specify the encoding at the
-beginning of your plugin code:
-
-[source,sh]
-----------------------------------
-# encoding: utf-8
-----------------------------------
-
-Logstash depends on things being in UTF-8, so we put this here to tell the Ruby
-interpreter that we’re going to be using the UTF-8 encoding.
 
 ===== `require` Statements
 
@@ -778,6 +761,24 @@ will be discussed further in the testing section of this document.
 
 Another kind of external dependency is on jar files.  This will be described
 in the "Add a `gemspec` file" section.
+
+===== Deprecated features
+
+As a plugin evolves, an option or feature may no longer serve the
+intended purpose, and the developer may want to _deprecate_ its usage.
+Deprecation warns users about the option's status, so they aren't caught by
+surprise when it is removed in a later release.
+
+{ls} 7.6 introduced a _deprecation logger_ to make handling those situations
+easier. You can use the
+https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support[adapter]
+to ensure that your plugin can use the deprecation logger while still supporting
+older versions of {ls}. See the
+https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support/blob/master/README.md[readme]
+for more information and for instructions on using the adapter.
+
+Deprecations are noted in the `logstash-deprecation.log` file in the
+`log` directory.
 
 ===== Add a Gemfile
 

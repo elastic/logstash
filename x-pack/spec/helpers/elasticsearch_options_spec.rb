@@ -15,7 +15,6 @@ shared_examples "elasticsearch options hash is populated without security" do
                                                                                                    "user" => expected_username,
                                                                                                    "password" => expected_password
                                                                                                )
-
   end
 end
 
@@ -109,6 +108,57 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
     it_behaves_like 'elasticsearch options hash is populated without security'
     it_behaves_like 'elasticsearch options hash is populated with secure options'
+
+    context 'when cloud id and auth are set' do
+      let(:cloud_name) { 'thebigone'}
+      let(:cloud_domain) { 'elastic.co'}
+      let(:cloud_id) { "monitoring:#{Base64.urlsafe_encode64("#{cloud_domain}$#{cloud_name}$ignored")}" }
+      let(:cloud_username) { 'elastic' }
+      let(:cloud_password) { 'passw0rd'}
+      let(:cloud_auth) { "#{cloud_username}:#{cloud_password}" }
+      let(:expected_url) { ["https://#{cloud_name}.#{cloud_domain}:443"] }
+      let(:settings) do
+        {
+            "xpack.monitoring.enabled" => true,
+            "xpack.monitoring.elasticsearch.cloud_id" => cloud_id,
+            "xpack.monitoring.elasticsearch.cloud_auth" => cloud_auth,
+        }
+      end
+
+      it "creates the elasticsearch output options hash" do
+        es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+        expect(es_options).to include("cloud_id" => cloud_id, "cloud_auth" => cloud_auth)
+        expect(es_options.keys).to_not include("hosts")
+        expect(es_options.keys).to_not include("username")
+        expect(es_options.keys).to_not include("password")
+      end
+
+      context 'hosts also set' do
+        let(:settings) do
+          super.merge(
+              "xpack.monitoring.elasticsearch.hosts" => 'https://localhost:9200'
+          )
+        end
+
+        it "raises due invalid configuration" do
+          expect { test_class.es_options_from_settings_or_modules('monitoring', system_settings) }.
+              to raise_error(ArgumentError, /Both.*?cloud_id.*?and.*?hosts.*?specified/)
+        end
+      end
+
+      context 'username also set' do
+        let(:settings) do
+          super.merge(
+              "xpack.monitoring.elasticsearch.username" => 'elastic'
+          )
+        end
+
+        it "raises due invalid configuration" do
+          expect { test_class.es_options_from_settings_or_modules('monitoring', system_settings) }.
+              to raise_error(ArgumentError, /Both.*?cloud_auth.*?and.*?username.*?specified/)
+        end
+      end
+    end
   end
 
   describe 'es_options_from_settings_or_modules' do

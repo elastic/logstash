@@ -220,32 +220,59 @@ https://portal.azure.com[Azure Portal]`-> Blob Storage account -> Access keys`.
 Here are some guidelines to help you achieve a successful deployment, and avoid
 data conflicts that can cause lost events.
 
-* **Create a {ls} consumer group.** 
+* <<azure-bp-group>>
+* <<azure-bp-multihub>> 
+* <<azure-bp-threads>> 
+
+[[azure-bp-group]]
+====== Create a {ls} consumer group
+
 Create a new consumer group specifically for {ls}. Do not use the $default or
 any other consumer group that might already be in use. Reusing consumer groups
 among non-related consumers can cause unexpected behavior and possibly lost
 events. All {ls} instances should use the same consumer group so that they can
 work together for processing events.
-* **Avoid overwriting offset with multiple Event Hubs.** 
+
+[[azure-bp-multihub]]
+====== Avoid overwriting offset with multiple Event Hubs
+
 The offsets (position) of the Event Hubs are stored in the configured Azure Blob
 store. The Azure Blob store uses paths like a file system to store the offsets.
 If the paths between multiple Event Hubs overlap, then the offsets may be stored
 incorrectly. 
+
 To avoid duplicate file paths, use the advanced configuration model and make
 sure that at least one of these options is different per Event Hub:
-** storage_connection
-** storage_container (defaults to Event Hub name if not defined)
-** consumer_group
-* **Set number of threads correctly.** 
-The number of threads should equal the number of Event Hubs plus one (or more).
-Each Event Hub needs at least one thread. An additional thread is needed to help
-coordinate the other threads. The number of threads should not exceed the number of Event Hubs multiplied by the
-number of partitions per Event Hub plus one. Threads are
-currently  available only as a global setting.
-** Sample: Event Hubs = 4. Partitions on each Event Hub = 3.
+
+* storage_connection
+* storage_container (defaults to Event Hub name if not defined)
+* consumer_group
+
+[[azure-bp-threads]]
+====== Set number of threads correctly
+
+By default, the number of threads used to service all event hubs is `16`. And
+while this may be sufficient for most use cases, throughput may be improved by
+refining this number. When servicing a large number of partitions across one or
+more event hubs, setting a higher value may result in improved performance. The
+maximum number of threads is not strictly bound by the total number of
+partitions being serviced, but setting the value much higher than that may mean
+that some threads are idle.
+
+NOTE: The number of threads *must* be greater than or equal to the number of Event
+hubs plus one.
+
+NOTE: Threads are currently available only as a global setting across all event hubs
+in a single `azure_event_hubs` input definition. However if your configuration
+includes multiple `azure_event_hubs` inputs, the threads setting applies
+independently to each.
+
+**Sample scenarios:**
+
+*  Event Hubs = 4. Partitions on each Event Hub = 3.
 Minimum threads is 5 (4 Event Hubs plus one). Maximum threads is 13 (4 Event
 Hubs times 3 partitions plus one). 
-** If you're collecting activity logs from only one specified event hub instance,
+* If you're collecting activity logs from only one specified event hub instance,
 then only 2 threads (1 Event Hub plus one) are required.
 
 [[azure-module-setup]]
@@ -427,7 +454,7 @@ containers.
 ===== `threads`
 * Value type is <<number,number>>
 * Minimum value is `2`
-* Default value is `4`
+* Default value is `16`
   
 Total number of threads used to process events. The value you set here applies
 to all Event Hubs. Even with advanced configuration, this value is a global

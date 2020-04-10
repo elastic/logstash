@@ -3,7 +3,7 @@
 === Configuring Security in Logstash
 [subs="attributes"]
 ++++
-<titleabbrev>{security}</titleabbrev>
+<titleabbrev>Configuring Security</titleabbrev>
 ++++
 
 The Logstash {es} plugins ({logstash-ref}/plugins-outputs-elasticsearch.html[output],
@@ -203,24 +203,15 @@ If you plan to ship Logstash {logstash-ref}/monitoring-logstash.html[monitoring]
 data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
-{security} comes preconfigured with a
+The {security-features} come preconfigured with a
 {ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
 monitoring function, and _should not_ be used for any other purpose - it is
 specifically _not intended_ for use within a Logstash pipeline.
 
 By default, the `logstash_system` user does not have a password. The user will
-not be enabled until you set a password. Set the password through the change
-password API:
-
-[source,js]
----------------------------------------------------------------------
-PUT _security/user/logstash_system/_password
-{
-  "password": "t0p.s3cr3t"
-}
----------------------------------------------------------------------
-// CONSOLE
+not be enabled until you set a password. See
+{ref}/built-in-users.html#set-built-in-user-passwords[Setting built-in user passwords].
 
 Then configure the user and password in the `logstash.yml` configuration file:
 
@@ -230,7 +221,7 @@ xpack.monitoring.elasticsearch.username: logstash_system
 xpack.monitoring.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
 
-If you initially installed an older version of {xpack}, and then upgraded, the
+If you initially installed an older version of {xpack} and then upgraded, the
 `logstash_system` user may have defaulted to `disabled` for security reasons.
 You can enable the user through the `user` API:
 

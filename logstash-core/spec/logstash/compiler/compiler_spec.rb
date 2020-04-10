@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/compiler"
 require "support/helpers"
@@ -29,6 +46,34 @@ describe LogStash::Compiler do
 
     it "should set the id to the source id" do
       expect(component.source_with_metadata.id).to eq(source_id)
+    end
+  end
+
+  describe "compile with empty source" do
+    let(:sources_with_metadata) do
+      [
+        org.logstash.common.SourceWithMetadata.new("str", "in_plugin", 0, 0, "input { input_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "out_plugin", 0, 0, "output { output_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "<empty>", 0, 0, "     ")
+      ]
+    end
+
+    it "should compile only the text parts" do
+      described_class.compile_sources(sources_with_metadata, false)
+    end
+  end
+
+  describe "compile with fully commented source" do
+    let(:sources_with_metadata) do
+      [
+        org.logstash.common.SourceWithMetadata.new("str", "in_plugin", 0, 0, "input { input_0 {} } "),
+        org.logstash.common.SourceWithMetadata.new("str", "commented_filter", 0, 0, "#filter{...}\n"),
+        org.logstash.common.SourceWithMetadata.new("str", "out_plugin", 0, 0, "output { output_0 {} } "),
+      ]
+    end
+
+    it "should compile only non commented text parts" do
+      described_class.compile_sources(sources_with_metadata, false)
     end
   end
 
@@ -190,6 +235,21 @@ describe LogStash::Compiler do
             "iarg" => 123,
             "farg" => 123.123,
             "sarg" => 'hello'
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a plugin with quoted parameter keys" do
+        let(:plugin_source) { "generator { notquoted => 1 'singlequoted' => 2 \"doublequoted\" => 3}" }
+        let(:expected_plugin_args) do
+          {
+            "notquoted" => 1,
+            "singlequoted" => 2,
+            "doublequoted" => 3,
           }
         end
 

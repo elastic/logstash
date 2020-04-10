@@ -1,3 +1,22 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 buildscript {
     repositories {
         mavenCentral()
@@ -11,7 +30,7 @@ buildscript {
 }
 
 plugins {
-    id "de.undercouch.download" version "3.2.0"
+    id "de.undercouch.download" version "4.0.4"
 }
 
 apply plugin: 'de.undercouch.download'
@@ -26,21 +45,26 @@ allprojects {
 
   apply plugin: 'java'
   apply plugin: 'idea'
+  apply plugin: 'java-library'
 
   project.sourceCompatibility = JavaVersion.VERSION_1_8
   project.targetCompatibility = JavaVersion.VERSION_1_8
 
-  tasks.withType(JavaCompile).all {
+  tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
       options.compilerArgs.add("-Xlint:-processing")
       options.compilerArgs.add("-Werror")
   }
 
-  tasks.withType(Javadoc) {
+  tasks.withType(Javadoc).configureEach {
       options.addStringOption("Xwerror", "-quiet")
       if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
           options.addBooleanOption("html5", true)
       }
+  }
+
+  tasks.withType(Copy).configureEach {
+      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   }
 
   clean {
@@ -80,12 +104,13 @@ allprojects {
 
 subprojects {
     repositories {
+        mavenCentral()
         maven {
             url 'https://plugins.gradle.org/m2/'
         }
     }
     dependencies {
-        compile "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
+        implementation "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 
     apply plugin: 'com.github.jk1.dependency-license-report'
@@ -407,7 +432,6 @@ task deleteLocalEs(type: Delete) {
 task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
     from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
-
     doLast {
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"

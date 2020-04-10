@@ -2,11 +2,11 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+require 'spec_helper'
 require "logstash-core"
 require "logstash/agent"
 require "monitoring/inputs/metrics"
 require "rspec/wait"
-require 'spec_helper'
 require "json"
 require "json-schema"
 require 'monitoring/monitoring'
@@ -175,7 +175,7 @@ describe LogStash::Inputs::Metrics do
       describe "normal pipelines" do
         before(:each) do
           allow(pipeline).to receive(:system?).and_return(false)
-          allow(metrics_input).to receive(:state_event_for).with(pipeline).and_return(state_event)
+          allow(metrics_input).to receive(:state_event_for).with(pipeline).and_return([state_event])
           allow(metrics_input).to receive(:emit_event)
 
           metrics_input.update_pipeline_state(pipeline)

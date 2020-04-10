@@ -3,7 +3,7 @@ require "logstash/compiler/lscl.rb"
 
 grammar LogStashCompilerLSCLGrammar
   rule config
-    _ plugin_section _ (_ plugin_section)* _ <LogStash::Compiler::LSCL::AST::Config>
+    (_ plugin_section)* _ <LogStash::Compiler::LSCL::AST::Config>
   end
 
   rule comment

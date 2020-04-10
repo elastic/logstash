@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/compiler/lscl/helpers"
 require "treetop"
 
@@ -233,12 +249,12 @@ module LogStash; module Config; module AST
       # If any parent is a Plugin, this must be a codec.
 
       if attributes.elements.nil?
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, line_to_source(#{source_meta.line}, #{source_meta.column}))" << (plugin_type == "codec" ? "" : "\n")
       else
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
 
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, line_to_source(#{source_meta.line}, #{source_meta.column}), #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
       end
     end
 
@@ -255,7 +271,7 @@ module LogStash; module Config; module AST
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, line_to_source(#{source_meta.line}, #{source_meta.column}), #{attributes_code})"
       end
     end
 

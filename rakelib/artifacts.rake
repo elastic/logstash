@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
@@ -181,22 +198,16 @@ namespace "artifact" do
   desc "Build docker image"
   task "docker" => ["prepare", "generate_build_metadata", "tar"] do
     puts("[docker] Building docker image")
-    build_docker
+    build_docker(false)
   end
 
   desc "Build OSS docker image"
   task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
     puts("[docker_oss] Building OSS docker image")
-    build_docker('oss')
+    build_docker(true)
   end
 
-  desc "Build UBI7 docker image"
-  task "docker_ubi7" => ["prepare", "generate_build_metadata", "tar"] do
-    puts("[docker_ubi7] Building UBI docker image")
-    build_docker('ubi7')
-  end
-
-  desc "Generate Dockerfile for default, ubi7 and oss images"
+  desc "Generate Dockerfile for default and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
     build_dockerfiles
@@ -216,7 +227,6 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_oss"].invoke
-      Rake::Task["artifact:docker_ubi7"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
   end
@@ -545,15 +555,18 @@ namespace "artifact" do
     end
   end # def package
 
-  def build_docker(image = nil)
+  def build_docker(oss = false)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      make_job = image.nil? ?  "make build-from-local-artifacts"  : "make build-from-local-#{image}-artifacts"
-      system(env, make_job)
+      if oss
+        system(env, "make build-from-local-oss-artifacts")
+      else
+        system(env, "make build-from-local-artifacts")
+      end
     end
   end
 

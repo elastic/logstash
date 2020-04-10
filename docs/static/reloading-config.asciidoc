@@ -1,8 +1,7 @@
 [[reloading-config]]
 === Reloading the Config File
 
-Starting with Logstash 2.3, you can set Logstash to detect and reload configuration
-changes automatically.
+You can set Logstash to detect and reload configuration changes automatically.
 
 To enable automatic config reloading, start Logstash with the `--config.reload.automatic` (or `-r`)
 command-line option specified. For example:
@@ -19,9 +18,13 @@ By default, Logstash checks for configuration changes every 3 seconds. To change
 use the `--config.reload.interval <interval>` option,  where `interval` specifies how often Logstash
 checks the config files for changes (in seconds).
 
-If Logstash is already running without auto-reload enabled, you can force Logstash to
-reload the config file and restart the pipeline by sending a SIGHUP (signal hangup) to the
-process running Logstash. For example:
+[[force-reload]]
+==== Force reloading the config file
+
+If Logstash is already running without auto-reload enabled, you can force
+Logstash to reload the config file and restart the pipeline. Do this by sending
+a SIGHUP (signal hangup) to the process running Logstash. 
+For example:
 
 [source,shell]
 ----------------------------------
@@ -30,7 +33,9 @@ kill -SIGHUP 14175
 
 Where 14175 is the ID of the process running Logstash.
 
-==== How Automatic Config Reloading Works
+NOTE: This functionality is not supported on Windows OS.
+
+==== How automatic config reloading works
 
 When Logstash detects a change in a config file, it stops the current pipeline by stopping
 all inputs, and it attempts to create a new pipeline that uses the updated configuration.
@@ -43,4 +48,7 @@ During automatic config reloading, the JVM is not restarted. The creating and sw
 pipelines all happens within the same process. 
 
 Changes to <<plugins-filters-grok,grok>> pattern files are also reloaded, but only when
-a change in the config file triggers a reload (or the pipeline is restarted).  
+a change in the config file triggers a reload (or the pipeline is restarted).
+
+In general, Logstash is not watching or monitoring any configuration files used or referenced by inputs,
+filters or outputs.
