@@ -121,7 +121,11 @@ module LogStash;
       edges.each do |e|
         if vertex_type(e.to) == :separator
           e.to.getOutgoingEdges.each do |outgoing|
-            edges_with_separators_removed << edge(org.logstash.config.ir.graph.PlainEdge.new(e.from, outgoing.to))
+            if e.java_kind_of?(org.logstash.config.ir.graph.BooleanEdge)
+              edges_with_separators_removed << edge(org.logstash.config.ir.graph.BooleanEdge.new(e.edgeType, e.from, outgoing.to))
+            else
+              edges_with_separators_removed << edge(org.logstash.config.ir.graph.PlainEdge.factory.make(e.from, outgoing.to))
+            end
           end
         elsif vertex_type(e.from) == :separator
           # Skip the edges coming from the 'from' separator
