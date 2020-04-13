@@ -3,6 +3,7 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require_relative "../spec_helper"
+require 'securerandom'
 
 describe "Direct shipping" do
 
@@ -13,7 +14,7 @@ describe "Direct shipping" do
 
     config = "input { generator { count => 100 } tcp { port => 6000 } } output { null {} }"
 
-    @logstash_service = logstash_with_empty_default("bin/logstash -e '#{config}' -w 1", {
+    @logstash_service = logstash_with_empty_default("bin/logstash -e '#{config}' -w 1  --pipeline.id #{SecureRandom.hex(8)}", {
       :settings => {
         "monitoring.enabled" => true,
         "monitoring.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:9200"],
