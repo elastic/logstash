@@ -26,7 +26,7 @@ module LogStash;
     def self.serialize(lir_pipeline)
       self.new(lir_pipeline).serialize
     end
-    
+
     def initialize(lir_pipeline)
       @lir_pipeline = lir_pipeline
     end
@@ -44,11 +44,11 @@ module LogStash;
     end
     
     def vertices
-      graph.getVertices.map {|v| vertex(v) }
+      graph.getVertices.map {|v| vertex(v) }.compact
     end
     
     def edges
-      graph.getEdges.map {|e| edge(e) }
+      remove_separators_from_edges(graph.getEdges)
     end
     
     def graph
@@ -64,10 +64,10 @@ module LogStash;
                          when :queue
                            queue_vertex(v)
                          when :separator
-                           separator_vertex(v)
+                           nil
                          end
 
-      decorate_vertex(v, hashified_vertex)
+      decorate_vertex(v, hashified_vertex) unless hashified_vertex.nil?
     end
     
     def vertex_type(v)
@@ -112,6 +112,24 @@ module LogStash;
     
     def separator_vertex(v)
       {}
+    end
+
+    # For separators, create new edges going between the incoming and all of the outgoing edges, and remove
+    # the separator vertices from the serialized output.
+    def remove_separators_from_edges(edges)
+      edges_with_separators_removed = []
+      edges.each do |e|
+        if vertex_type(e.to) == :separator
+          e.to.getOutgoingEdges.each do |outgoing|
+            edges_with_separators_removed << edge(org.logstash.config.ir.graph.PlainEdge.new(e.from, outgoing.to))
+          end
+        elsif vertex_type(e.from) == :separator
+          # Skip the edges coming from the 'from' separator
+        else
+          edges_with_separators_removed << edge(e)
+        end
+      end
+      edges_with_separators_removed
     end
 
     def edge(e)
