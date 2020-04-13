@@ -14,7 +14,7 @@ module LogStash module Inputs
         if exception.is_a?(Concurrent::TimeoutError)
           logger.debug("metric shipper took too much time to complete", :exception => exception.class, :message => exception.message)
         else
-          logger.error("metric shipper exception", :exception => exception.class, :message => exception.message)
+          logger.error("metric shipper exception", :exception => exception.class, :message => exception.message, :backtrace => exception.backtrace)
         end
       end
     end
