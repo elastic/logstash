@@ -157,7 +157,7 @@ guaranteed, but you save the processing cost of preserving order.
 | `false`
 
 | `config.reload.interval`
-| How often in seconds Logstash checks the config files for changes.
+| How often in seconds Logstash checks the config files for changes. Note that the unit qualifier (`s`) is required.
 | `3s`
 
 | `config.debug`
