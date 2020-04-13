@@ -211,18 +211,12 @@ module LogStash module Inputs
     end
 
     def extract_cluster_uuids(stats)
-      cluster_uuids = []
-      agent.running_pipelines.each do |pipeline_id, _|
-        unless pipeline_id.to_sym == :".monitoring-logstash"
-          path = [:stats, :pipelines, pipeline_id.to_sym, :config]
-          found_cluster_uuids = stats.extract_metrics(path, :cluster_uuids)
-          if found_cluster_uuids && !found_cluster_uuids[:cluster_uuids].empty?
-            cluster_uuids |= found_cluster_uuids[:cluster_uuids]
-          end
-        end
-      end
+      cluster_uuids = agent.running_pipelines.flat_map do |_, pipeline|
+        next if pipeline.system?
+        pipeline.resolve_cluster_uuids
+      end.compact.uniq
 
-      unless cluster_uuids.empty?
+      if cluster_uuids.any?
         @logger.info("Found cluster_uuids from elasticsearch output plugins", :cluster_uuids => cluster_uuids)
         if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
           @logger.warn("Found monitoring.cluster_uuid setting configured in logstash.yml while using the ones discovered from elasticsearch output plugins, ignoring setting monitoring.cluster_uuid")
