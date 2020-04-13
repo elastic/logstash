@@ -1,4 +1,4 @@
-:plugin: java_sink
+:plugin: sink
 :type: output
 :default_codec!:
 
