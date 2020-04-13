@@ -10,7 +10,7 @@ describe ::LogStash::Config::LIRSerializer do
     <<-EOC
       input { fake_input {} }
       filter { 
-        if ([foo] > 2) {
+        if ([foo] < 2) {
           fake_filter {} 
         }
       }
