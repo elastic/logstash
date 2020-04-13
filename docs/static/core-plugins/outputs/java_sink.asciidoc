@@ -12,7 +12,7 @@ END - REPLACES GENERATED VARIABLES
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Java_sink output plugin
+=== Sink output plugin
 
 include::{include_path}/plugin_header-core.asciidoc[]
 
@@ -22,7 +22,7 @@ An event sink that discards any events received. Generally useful for testing th
 and filters.
 
 [id="plugins-{type}s-{plugin}-options"]
-==== Java_sink Output Configuration Options
+==== Sink Output Configuration Options
 
 There are no special configuration options for this plugin,
 but it does support the <<plugins-{type}s-{plugin}-common-options>>.
