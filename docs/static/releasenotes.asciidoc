@@ -60,7 +60,7 @@ Migrating from legacy internal collection to new
 For example, `xpack.monitoring.enabled` is now `monitoring.enabled`. See
 <<monitoring-settings, Monitoring Settings>> for the full list.
 ** Change the hosts settings and configuration options to point to monitoring
-cluster instead of production
+cluster instead of production.
 ** If you don’t have an Elasticsearch output plugin configured in the pipelines,
 add the setting monitoring.cluster_uuid to your logstash.yml.
 
