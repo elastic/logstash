@@ -11,7 +11,7 @@ Before upgrading Logstash:
 
 While upgrading Logstash:
 
-* If you use {monitoring}, you must re-use the data directory when you
+* If you use monitoring, you must re-use the data directory when you
 upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID
 and becomes a new node in the monitoring data.
 ===========================================

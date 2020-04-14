@@ -6,16 +6,19 @@
 <titleabbrev>{metricbeat} collection</titleabbrev>
 ++++
 
-You can use {metricbeat} to collect data about {ls} 
-and ship it to the monitoring cluster, rather than routing it through the 
-production cluster as described in <<monitoring-internal-collection>>.
+You can use {metricbeat} to collect data about {ls} and ship it to the
+monitoring cluster. The benefit of Metricbeat collection is that the monitoring
+agent remains active even if the {ls} instance does not. 
+
+<<monitoring-internal-collection,Internal collection>> is available as an
+alternative.
 
 //NOTE: The tagged regions are re-used in the Stack Overview.
 
 To collect and ship monitoring data:
 
 . <<disable-default,Disable default collection of monitoring metrics>>
-. <<define-cluster__uuid,Specify optionally the target `cluster_uuid`>>
+. <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
 [float]
@@ -29,7 +32,7 @@ commented out:
 
 [source,yaml]
 ----------------------------------
-xpack.monitoring.enabled: false
+monitoring.enabled: false
 ----------------------------------
 
 Remove the `#` at the beginning of the line to enable the setting.
