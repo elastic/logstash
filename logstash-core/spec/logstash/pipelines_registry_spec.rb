@@ -20,9 +20,9 @@ require "logstash/pipelines_registry"
 
 describe LogStash::PipelinesRegistry do
 
-  let(:pipeline_id) { "test" }
+  let(:pipeline_id) { "test".to_sym }
   let(:pipeline) { double("Pipeline") }
-  let (:logger) { double("Logger") }
+  let(:logger) { double("Logger") }
 
   context "at object creation" do
     it "should be empty" do

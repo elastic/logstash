@@ -29,7 +29,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     def to_s

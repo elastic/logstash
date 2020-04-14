@@ -41,7 +41,7 @@ module LogStash
         end
       end
 
-      configured_pipelines = pipeline_configs.collect(&:pipeline_id)
+      configured_pipelines = pipeline_configs.map { |config| config.pipeline_id.to_sym }
 
       # If one of the running pipeline is not in the pipeline_configs, we assume that we need to
       # stop it.

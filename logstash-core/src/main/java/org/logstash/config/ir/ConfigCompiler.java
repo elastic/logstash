@@ -53,9 +53,9 @@ public final class ConfigCompiler {
      * @throws InvalidIRException if the the configuration contains errors
      */
     @SuppressWarnings("unchecked")
-    public static PipelineIR configToPipelineIR(final @SuppressWarnings("rawtypes") RubyArray sourcesWithMetadata,
+    public static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
                                                 final boolean supportEscapes) throws InvalidIRException {
-        return compileSources((List<SourceWithMetadata>) sourcesWithMetadata, supportEscapes);
+        return compileSources(sourcesWithMetadata, supportEscapes);
     }
 
     public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, boolean supportEscapes) throws InvalidIRException {

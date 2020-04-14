@@ -4,7 +4,6 @@
 
 require "logstash/agent"
 require "monitoring/internal_pipeline_source"
-require "logstash/config/pipeline_config"
 require 'helpers/elasticsearch_options'
 
 module LogStash
@@ -175,7 +174,7 @@ module LogStash
         logger.debug("compiled metrics pipeline config: ", :config => config)
 
         config_part = org.logstash.common.SourceWithMetadata.new("x-pack-metrics", "internal_pipeline_source", config)
-        LogStash::Config::PipelineConfig.new(self, PIPELINE_ID.to_sym, config_part, settings)
+        Java::OrgLogstashConfigIr::PipelineConfig.new(self.class, PIPELINE_ID.to_sym, [config_part], settings)
       end
 
       def generate_pipeline_config(settings)

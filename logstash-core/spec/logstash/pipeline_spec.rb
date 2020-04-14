@@ -22,6 +22,7 @@ require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require "stud/try"
 require 'timeout'
+require 'logstash/config/pipeline_config'
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
