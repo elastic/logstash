@@ -272,6 +272,8 @@ include::static/breaking-changes.asciidoc[]
 
 // Release Notes
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/releasenotes.asciidoc
+:edit_url!:
 include::static/releasenotes.asciidoc[]
 
+:edit_url:
+include::static/redirects.asciidoc[]
