@@ -34,7 +34,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     # Make sure we execution system pipeline like the monitoring

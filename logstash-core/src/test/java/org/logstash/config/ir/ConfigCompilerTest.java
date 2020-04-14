@@ -30,11 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.jruby.javasupport.JavaUtil;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
-import org.logstash.RubyUtil;
-import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -47,10 +43,9 @@ public class ConfigCompilerTest extends RubyEnvTestCase {
 
     @Test
     public void testConfigToPipelineIR() throws Exception {
-        IRubyObject swm = JavaUtil.convertJavaToRuby(
-                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, "input {stdin{}} output{stdout{}}"));
+        SourceWithMetadata swm = new SourceWithMetadata("proto", "path", 1, 1, "input {stdin{}} output{stdout{}}");
         final PipelineIR pipelineIR =
-                ConfigCompiler.configToPipelineIR(RubyUtil.RUBY.newArray(swm), false);
+                ConfigCompiler.configToPipelineIR(Collections.singletonList(swm), false);
         assertThat(pipelineIR.getOutputPluginVertices().size(), is(1));
         assertThat(pipelineIR.getFilterPluginVertices().size(), is(0));
     }
@@ -99,9 +94,8 @@ public class ConfigCompilerTest extends RubyEnvTestCase {
     }
 
     private static String graphHash(final String config) throws InvalidIRException {
-        IRubyObject swm = JavaUtil.convertJavaToRuby(
-                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config));
-        return ConfigCompiler.configToPipelineIR(RubyUtil.RUBY.newArray(swm), false).uniqueHash();
+        SourceWithMetadata swm = new SourceWithMetadata("proto", "path", 1, 1, config);
+        return ConfigCompiler.configToPipelineIR(Collections.singletonList(swm), false).uniqueHash();
     }
 
     @Test

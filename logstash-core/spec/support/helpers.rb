@@ -86,7 +86,7 @@ def mock_pipeline_config(pipeline_id, config_string = nil, settings = {})
 
   config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", 0, 0, config_string)
 
-  LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, pipeline_id, config_part, settings)
+  org.logstash.config.ir.PipelineConfig.new(LogStash::Config::Source::Local, pipeline_id.to_sym, [config_part], settings)
 end
 
 def start_agent(agent)

@@ -63,7 +63,6 @@ module LogStash module Config
       sources do |source|
         sources_loaders << source if source.match?
       end
-
       if sources_loaders.empty?
         # This shouldn't happen with the settings object or with any external plugins.
         # but lets add a guard so we fail fast.

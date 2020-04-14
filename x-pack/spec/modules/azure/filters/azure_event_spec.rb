@@ -6,9 +6,11 @@ require 'x-pack/logstash_registry'
 require 'logstash/devutils/rspec/spec_helper'
 require 'logstash/json'
 require 'filters/azure_event'
+require 'logstash/config/pipeline_config'
 
 
 describe LogStash::Filters::AzureEvent do
+
   describe "Parses the admin activity log" do
     let(:config) do
       <<-CONFIG

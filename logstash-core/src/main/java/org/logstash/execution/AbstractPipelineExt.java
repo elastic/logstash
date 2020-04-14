@@ -50,10 +50,10 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
-import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -115,7 +115,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private RubyString configString;
 
     @SuppressWarnings("rawtypes")
-    private RubyArray configParts;
+    private List<SourceWithMetadata> configParts;
 
     private RubyString configHash;
 
@@ -151,7 +151,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         );
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
-        configParts = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
+        configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
         configHash = context.runtime.newString(
             Hex.encodeHexString(
                 MessageDigest.getInstance("SHA1").digest(configString.getBytes())
@@ -397,10 +397,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
     @SuppressWarnings("rawtypes")
     public RubyArray getPipelineSourceDetails(final ThreadContext context) {
-        RubyArray res = configParts;
-        List<RubyString> pipelineSources = new ArrayList<>(res.size());
-        for (IRubyObject part : res.toJavaArray()) {
-            SourceWithMetadata sourceWithMetadata = part.toJava(SourceWithMetadata.class);
+        List<RubyString> pipelineSources = new ArrayList<>(configParts.size());
+        for (SourceWithMetadata sourceWithMetadata : configParts) {
             String protocol = sourceWithMetadata.getProtocol();
             switch (protocol) {
                 case "string":

@@ -2,7 +2,6 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "logstash/config/pipeline_config"
 require "logstash/config/source/base"
 require "logstash/config/source_loader"
 require "logstash/outputs/elasticsearch"
@@ -112,7 +111,7 @@ module LogStash
           end
         end
 
-        LogStash::Config::PipelineConfig.new(self.class.name, pipeline_id.to_sym, config_part, settings)
+        Java::OrgLogstashConfigIr::PipelineConfig.new(self.class, pipeline_id.to_sym, [config_part], settings)
       end
 
       # This is a bit of a hack until we refactor the ElasticSearch plugins
