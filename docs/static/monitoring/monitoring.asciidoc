@@ -19,7 +19,7 @@ requiring any extra configuration.
 Alternatively, you can <<configuring-logstash,configure {monitoring}>> to send
 data to a monitoring cluster.
 
-NOTE: {monitoring} is a feature under the Basic License and is therefore
+NOTE: Monitoring is a feature under the Basic License and is therefore
 *free to use*.
 
 
