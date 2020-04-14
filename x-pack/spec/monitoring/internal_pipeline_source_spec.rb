@@ -6,7 +6,6 @@ require "logstash-core"
 require "logstash/agent"
 require "logstash/runner"
 require "monitoring/inputs/metrics"
-require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
 require 'license_checker/x_pack_info'
 require "rspec/wait"
@@ -53,7 +52,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
 
     let(:unordered_config_parts) { ordered_config_parts.shuffle }
 
-    let(:pipeline_config) { LogStash::Config::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
+    let(:pipeline_config) { Java::OrgLogstashConfigIr::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
 
     let(:es_options) do
       {

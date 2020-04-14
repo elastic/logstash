@@ -142,7 +142,7 @@ module LogStash
     # @param pipeline_id [String, Symbol] the pipeline id
     # @return [Pipeline] the pipeline object or nil if none for pipeline_id
     def get_pipeline(pipeline_id)
-      state = @states.get(pipeline_id)
+      state = @states.get(pipeline_id.to_sym)
       state.nil? ? nil : state.pipeline
     end
 

@@ -212,7 +212,7 @@ module LogStash module Config module Source
 
       return [] if config_parts.empty?
 
-      [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
+      [org.logstash.config.ir.PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
     def automatic_reload_with_config_string?

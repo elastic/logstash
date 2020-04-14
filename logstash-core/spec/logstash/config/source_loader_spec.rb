@@ -21,7 +21,7 @@ require_relative "../../support/helpers"
 
 def temporary_pipeline_config(id, source, reader = "random_reader")
   config_part = org.logstash.common.SourceWithMetadata.new("local", "...", 0, 0, "input {} output {}")
-  LogStash::Config::PipelineConfig.new(source, id, [config_part], LogStash::SETTINGS)
+  org.logstash.config.ir.PipelineConfig.new(source, id.to_sym, [config_part], LogStash::SETTINGS)
 end
 
 class DummySource < LogStash::Config::Source::Base
