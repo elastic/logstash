@@ -42,7 +42,8 @@ public final class Cloner {
         } else if (input instanceof List<?>) {
             return (T) deepList((List<?>) input);
         } else if (input instanceof RubyString) {
-            return (T) ((RubyString) input).doClone();
+            // new instance but sharing ByteList (until either String is modified)
+            return (T) ((RubyString) input).dup();
         } else if (input instanceof Collection<?>) {
             throw new ClassCastException("unexpected Collection type " + input.getClass());
         }
