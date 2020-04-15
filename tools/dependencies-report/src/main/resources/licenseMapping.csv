@@ -149,7 +149,7 @@ dependency,dependencyUrl,licenseOverride
 "polyglot:0.3.5",http://github.com/cjheath/polyglot,MIT
 "poseidon:0.0.5",https://github.com/bpot/poseidon,MIT
 "prototype.js:",http://prototypejs.org,MIT  TODO: Another jruby dependency that is not shipped with it
-"pry:0.13.0",http://pryrepl.org,MIT
+"pry:0.13.1",http://pryrepl.org,MIT
 "psych:2.2.4",https://github.com/ruby/psych,MIT
 "public_suffix:3.1.1",https://simonecarletti.com/code/publicsuffix-ruby,MIT
 "puma:4.3.3",http://puma.io,BSD-3-Clause
