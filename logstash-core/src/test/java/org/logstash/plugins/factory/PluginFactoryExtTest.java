@@ -30,6 +30,7 @@ import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
+import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.RubyEnvTestCase;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
@@ -83,7 +84,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
     }
 
     @Test
-    public void testPluginIdResolvedWithEnvironmentVariables() throws IncompleteSourceWithMetadataException {
+    public void testPluginIdResolvedWithEnvironmentVariables() throws InvalidIRException {
         PluginFactoryExt.PluginResolver mockPluginResolver = wrapWithSearchable(MockInputPlugin.class);
 
         SourceWithMetadata sourceWithMetadata = new SourceWithMetadata("proto", "path", 1, 8, "input {mockinput{ id => \"${CUSTOM}\"}} output{mockoutput{}}");
@@ -109,7 +110,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
     }
 
     @SuppressWarnings("rawtypes")
-    private static PipelineIR compilePipeline(SourceWithMetadata sourceWithMetadata) {
+    private static PipelineIR compilePipeline(SourceWithMetadata sourceWithMetadata) throws InvalidIRException {
         RubyArray sourcesWithMetadata = RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
                 RubyUtil.RUBY, sourceWithMetadata));
 
