@@ -40,7 +40,7 @@ describe LogStash::ConfigManagement::BootstrapCheck do
 
     it "sets the `config.reload.interval`" do
       expect { subject.check(settings) }
-        .to change { settings.get_value("config.reload.interval") }.to(interval * 1_000_000_000)
+        .to change { settings.get_value("config.reload.interval").to_nanos }.to(interval * 1_000_000_000)
     end
 
 
