@@ -191,7 +191,7 @@ describe LogStash::Agent do
           end
 
           it "it will keep trying to converge" do
-            sleep(agent_settings.get("config.reload.interval") / 1_000_000_000.0 * 20) # let the interval reload a few times
+            sleep(agent_settings.get("config.reload.interval").to_seconds * 20) # let the interval reload a few times
             expect(subject.pipelines_count).to eq(0)
             expect(source_loader.fetch_count).to be > 1
           end
