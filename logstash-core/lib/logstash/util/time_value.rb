@@ -24,9 +24,10 @@ module LogStash
       end
 
       def self.from_value(value)
-        if value.is_a?(TimeValue)
-          TimeValue.new(value.duration, value.time_unit)
-        elsif value.is_a?(::String)
+        case value
+        when TimeValue
+          return value # immutable
+        when ::String
           normalized = value.downcase.strip
           if normalized.end_with?("nanos")
             TimeValue.new(parse(normalized, 5), :nanosecond)
@@ -71,8 +72,12 @@ module LogStash
         end
       end
 
+      def to_seconds
+        self.to_nanos / 1_000_000_000.0
+      end
+
       def ==(other)
-        self.duration == other.duration and self.time_unit == other.time_unit
+        (self.duration == other.duration && self.time_unit == other.time_unit) || self.to_nanos == other.to_nanos
       end
 
       def self.parse(value, suffix)

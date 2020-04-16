@@ -65,10 +65,10 @@ class LogStash::Plugin
     @deprecation_logger = self.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
-    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),
-                                    settings.get("slowlog.threshold.info"),
-                                    settings.get("slowlog.threshold.debug"),
-                                    settings.get("slowlog.threshold.trace"))
+    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn").to_nanos,
+                                    settings.get("slowlog.threshold.info").to_nanos,
+                                    settings.get("slowlog.threshold.debug").to_nanos,
+                                    settings.get("slowlog.threshold.trace").to_nanos)
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
