@@ -29,17 +29,16 @@ monitoring.elasticsearch.hosts: [ "http://localhost:9200" ]
 ---------------------------------------------------
 
 All data produced by Logstash monitoring is indexed in the monitoring 
-cluster by using the `.monitoring-logstash` template, which is managed by the
-{ref}/es-monitoring-exporters.html[exporters] within {es}. 
+cluster using the `.monitoring-logstash` template. 
 
 If you are working with a cluster that has {security-features} enabled, extra
 steps are necessary to properly configure Logstash. For more information, see 
 <<configuring-logstash>>. 
 
-IMPORTANT: When discussing security relative to the `elasticsearch` output,
-remember that all users are managed on the production cluster, which is
-identified in the `monitoring.elasticsearch.hosts` setting. This is particularly
-important when you move from development environments to production
+IMPORTANT: When discussing security relative to the `monitoring.elasticsearch`
+settings, remember that all users are managed on the monitoring cluster, which
+is identified in the `monitoring.elasticsearch.hosts` setting. This is
+particularly important when you move from development environments to production
 environments, where you often have dedicated monitoring clusters.
 
 For more information about the configuration options for the output, see 
