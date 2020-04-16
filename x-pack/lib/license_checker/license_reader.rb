@@ -4,8 +4,6 @@
 
 require 'logstash/logging/logger'
 require 'logstash/outputs/elasticsearch'
-require 'logstash/json'
-require 'json'
 
 module LogStash
   module LicenseChecker
@@ -17,8 +15,7 @@ module LogStash
       def initialize(settings, feature, options)
         @namespace = "xpack.#{feature}"
         @settings = settings
-        @es_options = options
-        @es_options.merge!("resurrect_delay" => 30)
+        @es_options = options.merge('resurrect_delay' => 30)
       end
 
       ##
@@ -62,8 +59,10 @@ module LogStash
       # # log originate from the `ElasticsearchSource`
       def build_client
         es = LogStash::Outputs::ElasticSearch.new(@es_options)
-        new_logger = logger
-        es.instance_eval { @logger = new_logger }
+        es.instance_variable_set :@logger, logger
+        es.fill_hosts_from_cloud_id
+        es.fill_user_password_from_cloud_auth
+        es.setup_hosts
         es.build_client
       end
 
