@@ -16,7 +16,7 @@ By design and by default, {ls} does not guarantee event order. Reordering can
 occur in two places:
 
 * Events within a batch can be reordered during filter processing.
-* In-flight batches can be reordered when one or more batches process faster than
+* In-flight batches can be reordered when one or more batches are processed faster than
 others. 
 
 When maintaining event order is important, use a single worker. 
