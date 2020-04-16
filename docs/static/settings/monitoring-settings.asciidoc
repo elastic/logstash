@@ -26,10 +26,10 @@ Logstash configuration, or a dedicated monitoring cluster.  You can specify a
 single host as a string, or specify multiple hosts as an array. Defaults to
 `http://localhost:9200`.
 
-NOTE: If your Elasticsearch cluster is configured with dedicated master-eligible
-nodes, Logstash metrics should _not_ be routed to these nodes, as doing so can
-create resource contention and impact the stability of the Elasticsearch
-cluster. Therefore, do not include such nodes in
+NOTE: If your Elasticsearch monitoring cluster is configured with dedicated
+master-eligible nodes, Logstash metrics should _not_ be routed to these nodes.
+Doing so can create resource contention and impact the stability of the
+Elasticsearch cluster. Therefore, do not include such nodes in
 `monitoring.elasticsearch.hosts`.
 
 `monitoring.elasticsearch.username` and `monitoring.elasticsearch.password`::
