@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-7-0,Logstash 7.7.0>>
 * <<logstash-7-6-2,Logstash 7.6.2>>
 * <<logstash-7-6-1,Logstash 7.6.1>>
 * <<logstash-7-6-0,Logstash 7.6.0>>
@@ -26,6 +27,152 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-7-0]]
+=== Logstash 7.7.0 Release Notes
+
+==== New features and improvements
+
+===== Improving Stack communication - Monitoring
+
+As the {stack} continues to evolve, improvements across stack components become
+necessary to improve performance, internal communication or usability of our
+products. {ls} is no different, as we continuously strive to improve its
+interaction with the rest of the stack. As such, this release brings
+improvements to how Logstash sends monitoring data (from its Internal
+Collection) to {es}.
+
+Previous versions of {es} received monitoring data in a Production cluster to
+then forward it (internally) to the dedicated Monitoring cluster. Newer versions
+improved the process by allowing the data to be sent directly to the Monitoring
+cluster instead, in a different data format. Following those changes, Logstash
+has now added support to send the monitoring data directly to the Monitoring
+cluster, with the caveat that the Production cluster only has to retrieve the
+`cluster_uuid`.
+https://github.com/elastic/logstash/pull/11106[#11106],  
+https://github.com/elastic/logstash/pull/11640[#11640],
+https://github.com/elastic/logstash/pull/11641[#11641]  
+
+Migrating from legacy internal collection to new
+<<monitoring-internal-collection,Internal collection>> is straightforward. 
+
+** Drop the `xpack.` prefix from your configuration settings. 
+For example, `xpack.monitoring.enabled` is now `monitoring.enabled`. See
+<<monitoring-settings, Monitoring Settings>> for the full list.
+** Change the hosts settings and configuration options to point to monitoring
+cluster instead of production.
+** If you don’t have an Elasticsearch output plugin configured in the pipelines,
+add the setting monitoring.cluster_uuid to your logstash.yml.
+
+See <<configuring-logstash, Monitoring Logstash>> for more information
+about this and other monitoring options.
+
+
+===== Improving Logging
+
+Continuing with the Logging improvements made in the past couple of releases,
+log messages have been expanded to more accurately display information about
+plugins. These changes allow users to better identify log messages with plugins
+or pipelines. 
+https://github.com/elastic/logstash/pull/11078[#11078],
+https://github.com/elastic/logstash/pull/11593[#11593],
+https://github.com/elastic/logstash/pull/11567[#11567]
+
+Changes include: 
+
+* Added `plugin.name` to all log entries.
+* Added `plugin.id` and `pipeline.id` to docker images.
+
+===== Improving the Java (Pipeline) Execution Engine
+
+The improvements available in {ls} 7.7 give users more control over event
+ordering for single worker pipelines.
+
+Historically, Logstash event ordering between an input plugin and output plugin
+were preserved when a single worker executed a pipeline. This behaviour was
+never officially documented, but it was a feature that many users relied upon.
+
+When the Java Execution engine was introduced, it broke the single worker
+ordering preservation. This has now been fixed with the introduction of the
+`pipeline.ordered` setting.
+https://github.com/elastic/logstash/pull/11552[#11552], 
+https://github.com/elastic/logstash/pull/11710[#11710]
+
+The `pipeline.ordered` setting allows three modes:
+
+* `auto (default)` - to automatically enable ordering if there’s only one pipeline
+worker.
+* `true` - enforces ordering while preventing logstash from starting if there are
+multiple workers.
+* `false` - ordering will not be guaranteed.
+
+==== Notable issues fixed
+
+* Fixed: Add `sudo` into the rpm import of GPG-KEY
+https://github.com/elastic/logstash/pull/11684[#11684]
+
+* Fixed: Use lightweight regex matching (which does not depend on frames)
+https://github.com/elastic/logstash/pull/11653[#11653]
+
+* Fixed: Issue where monitoring API does not properly resolve ids including
+environment variable expansion
+https://github.com/elastic/logstash/pull/11592[#11592]
+
+* Fixed: Change Javadoc to conform to updated requirements for JDK13
+https://github.com/elastic/logstash/pull/11642[#11642]
+
+==== Logstash Plugin changes
+
+*Grok Filter*
+
+* Feature: Added support for placing matches into a target namespace
+https://github.com/logstash-plugins/logstash-filter-grok/pull/156[#156]
+
+*Xml Filter*
+
+* Feature: Added parser_options to allow for more control of the parsing process.
+Includes the option of `strict` parsing to force the XML parser to fail early
+when parsing invalid XML.
+https://github.com/logstash-plugins/logstash-filter-xml/pull/68[#68]
+
+*Azure_event_hubs Input*
+
+* Fixed: Now honors `max_batch_size` setting - previously this was ignored
+https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/52[#52]
+* Changed: The default number of threads is now `16` instead of `4`to match the
+default number from the Azure-Sdk EventProcessorHost
+https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/54[#54]
+* Refactor: scope and review global java_imports
+https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/57[#57]
+* [DOC] Changed documentation to update the default number of threads
+https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/55[#55]
+* [DOC] Added clarification for threads parameter
+https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/50[#50]
+
+*Elasticsearch Input*
+
+* Feature: Added option to specify proxy for Elasticsearch
+https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/114[#114]
+
+*S3 Input*
+
+* Feature: Added support for including objects restored from Glacier or Glacier
+Deep https://github.com/logstash-plugins/logstash-input-s3/issues/199[#199]
+* Feature: `gzip_pattern` option, enabling more flexible determination of whether
+a file is gzipped
+https://github.com/logstash-plugins/logstash-input-s3/issues/165[#165]
+* Refactor: log exception: class + unify logging messages a bit
+https://github.com/logstash-plugins/logstash-input-s3/pull/201[#201]
+
+*S3 Output*
+
+* Feature: Added retry_count and retry_delay config. This allows opting out from
+infinite upload retries under error conditions.
+https://github.com/logstash-plugins/logstash-output-s3/pull/218[#218]
+
+* [DOC] Updated setting descriptions for clarity
+https://github.com/logstash-plugins/logstash-output-s3/pull/219[#219] and
+https://github.com/logstash-plugins/logstash-output-s3/pull/220[#220]
 
 
 [[logstash-7-6-2]]
