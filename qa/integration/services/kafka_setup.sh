@@ -10,7 +10,7 @@ if [ -n "${KAFKA_VERSION+1}" ]; then
     echo "KAFKA_VERSION is $KAFKA_VERSION"
     version=$KAFKA_VERSION
 else
-    version=2.1.1
+    version=2.4.1
 fi
 
 KAFKA_HOME=$INSTALL_DIR/kafka
