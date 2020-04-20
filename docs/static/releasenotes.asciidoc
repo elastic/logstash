@@ -31,42 +31,17 @@ This section summarizes the changes in the following releases:
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
 
+[float]
+[[known-issue-7.7.0]]
+==== Known issue
+
+* Monitoring settings. The `xpack.` prefix for monitoring settings was removed
+from the template and `logstash.yml` as part of an experimental feature. Please
+continue to use the <<monitoring-settings-legacy,monitoring settings>> prefixed
+with `xpack.monitoring`. 
+https://github.com/elastic/logstash/issues/11815[#11815]
+
 ==== New features and improvements
-
-===== Improving Stack communication - Monitoring
-
-As the {stack} continues to evolve, improvements across stack components become
-necessary to improve performance, internal communication or usability of our
-products. {ls} is no different, as we continuously strive to improve its
-interaction with the rest of the stack. As such, this release brings
-improvements to how Logstash sends monitoring data (from its Internal
-Collection) to {es}.
-
-Previous versions of {es} received monitoring data in a Production cluster to
-then forward it (internally) to the dedicated Monitoring cluster. Newer versions
-improved the process by allowing the data to be sent directly to the Monitoring
-cluster instead, in a different data format. Following those changes, Logstash
-has now added support to send the monitoring data directly to the Monitoring
-cluster, with the caveat that the Production cluster only has to retrieve the
-`cluster_uuid`.
-https://github.com/elastic/logstash/pull/11106[#11106],  
-https://github.com/elastic/logstash/pull/11640[#11640],
-https://github.com/elastic/logstash/pull/11641[#11641]  
-
-Migrating from legacy internal collection to new
-<<monitoring-internal-collection,Internal collection>> is straightforward. 
-
-** Drop the `xpack.` prefix from your configuration settings. 
-For example, `xpack.monitoring.enabled` is now `monitoring.enabled`. See
-<<monitoring-settings, Monitoring Settings>> for the full list.
-** Change the hosts settings and configuration options to point to monitoring
-cluster instead of production.
-** If you don’t have an Elasticsearch output plugin configured in the pipelines,
-add the setting monitoring.cluster_uuid to your logstash.yml.
-
-See <<configuring-logstash, Monitoring Logstash>> for more information
-about this and other monitoring options.
-
 
 ===== Improving Logging
 
