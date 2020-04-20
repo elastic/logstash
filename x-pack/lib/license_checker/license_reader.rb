@@ -60,9 +60,6 @@ module LogStash
       def build_client
         es = LogStash::Outputs::ElasticSearch.new(@es_options)
         es.instance_variable_set :@logger, logger
-        es.fill_hosts_from_cloud_id
-        es.fill_user_password_from_cloud_auth
-        es.setup_hosts
         es.build_client
       end
 
