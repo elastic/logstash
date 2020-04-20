@@ -1,14 +1,12 @@
 [role="xpack"]
 [[monitoring-internal-collection]]
-=== Use internal collectors to send monitoring data
+=== Use internal collectors to send monitoring data (Experimental)
+experimental[]
 ++++
-<titleabbrev>Internal collection</titleabbrev>
+<titleabbrev>Internal collection (Experimental)</titleabbrev>
 ++++
 
 Internal collectors send {ls} monitoring data directly to your _monitoring_ cluster.
-The benefit of internal collection is that you have fewer pieces of software to
-install and maintain. 
-
 <<monitoring-with-metricbeat, {metricbeat} collection>> is available as an alternative. 
 
 IMPORTANT: All Logstash nodes must share the same setup. 
@@ -16,6 +14,7 @@ Otherwise, monitoring data might be routed in different ways or to different pla
 
 [[configure-internal-collectors]]
 ==== Configure {ls} monitoring with internal collectors
+experimental[]
 ++++
 <titleabbrev>Configure internal collection</titleabbrev>
 ++++

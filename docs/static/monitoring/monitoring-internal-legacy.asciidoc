@@ -5,25 +5,6 @@
 <titleabbrev>Legacy internal collection</titleabbrev>
 ++++
 
-IMPORTANT: Use <<monitoring-internal-collection,internal collection>> or
-<<monitoring-with-metricbeat, {metricbeat} collection>> instead of legacy
-internal collection. If you are currently using legacy internal collection, you
-should migrate to either Metricbeat collection or internal collection.
-
-==== Migrating from legacy internal collection to new internal collection
-
-Migrating from legacy internal collection to new
-<<monitoring-internal-collection,Internal collection>> is straightforward. 
-
-** Drop the `xpack.` prefix from your configuration settings. 
-For example, `xpack.monitoring.enabled` is now `monitoring.enabled`. See
-<<monitoring-settings, Monitoring Settings>> for the full list.
-** Change the hosts settings and configuration options to point to the monitoring
-cluster instead of the production cluster.
-** If you don’t have an Elasticsearch output plugin configured in the pipelines,
-add the <<monitoring-cluster-uuid,`monitoring.cluster_uuid`>> setting to your 
-logstash.yml.
-
 ==== Components for legacy internal collection
 
 Monitoring {ls} with legacy internal collection uses these components:
