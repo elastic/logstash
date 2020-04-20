@@ -52,6 +52,12 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 	call :concat "%%i"
 )
 
+IF defined LS_EXTERNAL_CP (
+  for %%i in (%LS_EXTERNAL_CP%) do (
+    call :concat "%%i"
+  )
+)
+
 %JAVA% %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
 
 goto :end
