@@ -35,9 +35,9 @@ This section summarizes the changes in the following releases:
 [[known-issue-7.7.0]]
 ==== Known issue
 
-* Monitoring settings. The `xpack.` prefix for monitoring settings was removed
-from the template and `logstash.yml` as part of an experimental feature. Please
-continue to use the <<monitoring-settings-legacy,monitoring settings>> prefixed
+* Monitoring settings. The `xpack.` prefixed monitoring settings were removed
+from the `logstash.yml` config template as part of an experimental feature. 
+Please continue to use the <<monitoring-settings-legacy,monitoring settings>> prefixed
 with `xpack.monitoring`. 
 https://github.com/elastic/logstash/issues/11815[#11815]
 
