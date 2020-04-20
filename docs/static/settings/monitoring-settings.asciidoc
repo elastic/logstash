@@ -1,6 +1,7 @@
 [role="xpack"]
 [[monitoring-settings]]
 ==== Monitoring settings for internal collection
+experimental[]
 ++++
 <titleabbrev>Monitoring Settings</titleabbrev>
 ++++
