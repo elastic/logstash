@@ -1,6 +1,6 @@
 [role="xpack"]
 [[monitoring-settings-legacy]]
-==== Monitoring settings for legacy internal collection
+==== Monitoring settings for internal collection
 ++++
 <titleabbrev>Monitoring Settings</titleabbrev>
 ++++
