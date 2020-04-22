@@ -1,13 +1,13 @@
 [role="xpack"]
 [[monitoring-internal-collection-legacy]]
-=== Collect {ls} monitoring data using legacy internal collectors
+=== Collect {ls} monitoring data using internal collectors
 ++++
-<titleabbrev>Legacy internal collection</titleabbrev>
+<titleabbrev>Internal collection</titleabbrev>
 ++++
 
-==== Components for legacy internal collection
+==== Components for internal collection
 
-Monitoring {ls} with legacy internal collection uses these components:
+Monitoring {ls} with internal collection uses these components:
 
 * <<logstash-monitoring-collectors-legacy,Collectors>>
 * <<logstash-monitoring-output-legacy,Output>>
