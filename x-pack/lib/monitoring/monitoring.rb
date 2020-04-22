@@ -186,7 +186,6 @@ module LogStash
           opt = retrieve_collection_settings(settings)
         else
           opt = retrieve_collection_settings(settings, "xpack.")
-          deprecation_logger.deprecated("xpack.monitoring.* settings are deprecated use the new monitoring.*. Please see https://www.elastic.co/guide/en/logstash/current/monitoring-internal-collection.html")
         end
         es_settings = es_options_from_settings_or_modules('monitoring', settings)
         data = TemplateData.new(LogStash::SETTINGS.get("node.uuid"), API_VERSION,
@@ -230,9 +229,8 @@ module LogStash
 
     def additionals_settings(settings)
       logger.trace("registering additionals_settings")
-      # Deprecated settings from 7.7
       register_monitoring_settings(settings, "xpack.")
-      # Direct shipping settings
+      # (Experimental) Direct shipping settings
       register_monitoring_settings(settings)
 
       # These Settings were renamed and deprecated in 6.x timeframe and removed for 7.0; provide guidance to ease transition.
