@@ -31,16 +31,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
 
-[float]
-[[known-issue-7.7.0]]
-==== Known issue
-
-* Monitoring settings. The `xpack.` prefixed monitoring settings were removed
-from the `logstash.yml` config template as part of an experimental feature. 
-Please continue to use the <<monitoring-settings-legacy,monitoring settings>> prefixed
-with `xpack.monitoring`. 
-https://github.com/elastic/logstash/issues/11815[#11815]
-
 ==== New features and improvements
 
 ===== Improving Logging
