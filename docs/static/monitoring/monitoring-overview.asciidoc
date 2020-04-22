@@ -26,10 +26,6 @@ Internal collectors send monitoring data directly to your monitoring cluster.
 
 * <<monitoring-internal-collection-legacy,Legacy internal collection>>. Legacy
 internal collectors send monitoring data to your production cluster.
-This is no longer a preferred approach. Use
-<<monitoring-internal-collection,internal collection>> or
-<<monitoring-with-metricbeat, {metricbeat} collection>> instead.
-
 
 include::monitoring-mb.asciidoc[]
 include::monitoring-internal.asciidoc[]
