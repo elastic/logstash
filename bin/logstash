@@ -10,7 +10,7 @@
 #
 # Supported environment variables:
 #   LS_JAVA_OPTS="xxx" to append extra options to the JVM options provided by logstash
-#   LS_EXTERNAL_CP="xxx yyyy" to append extra entries xxx and yyy to Logstash's classpath
+#   LS_CLASSPATH="xxx:yyyy" to append extra entries xxx and yyy to Logstash's classpath
 #
 # Development environment variables:
 #   DEBUG=1 to output debugging information
@@ -59,14 +59,9 @@ if [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
   fi
   echo "logstash $LOGSTASH_VERSION"
 else
-  unset CLASSPATH
   for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
-    CLASSPATH=${CLASSPATH}${CLASSPATH:+:}${LOGSTASH_JARS}/${J}
+    LS_CLASSPATH=${LOGSTASH_JARS}/${J}${LS_CLASSPATH:+:}${LS_CLASSPATH}
   done
   
-  for CP_ENTRY in ${LS_EXTERNAL_CP}; do 
-    CLASSPATH=${CLASSPATH}:${CP_ENTRY}
-  done
-  
-  exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.Logstash "$@"
+  exec "${JAVACMD}" ${JAVA_OPTS} -cp "${LS_CLASSPATH}" org.logstash.Logstash "$@"
 fi
