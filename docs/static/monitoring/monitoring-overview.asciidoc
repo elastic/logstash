@@ -21,19 +21,10 @@ monitoring data from your {ls} instance and sends it directly to your monitoring
 cluster. The benefit of Metricbeat collection is that the monitoring
 agent remains active even if the {ls} instance does not.
 
-* <<monitoring-internal-collection,Internal collection>>. Internal collectors send
-monitoring data directly to your monitoring cluster. The benefit of internal
-collection is that you have fewer pieces of software to install and maintain.
-
-* <<monitoring-internal-collection-legacy,Legacy internal collection>>. Legacy
-internal collectors send monitoring data to your production cluster.
-This is no longer a preferred approach. Use
-<<monitoring-internal-collection,internal collection>> or
-<<monitoring-with-metricbeat, {metricbeat} collection>> instead.
-
+* <<monitoring-internal-collection-legacy,Internal collection>>. 
+Internal collectors send monitoring data to your production cluster.
 
 include::monitoring-mb.asciidoc[]
-include::monitoring-internal.asciidoc[]
 include::monitoring-internal-legacy.asciidoc[]
 include::monitoring-ui.asciidoc[]
 include::pipeline-viewer.asciidoc[]
