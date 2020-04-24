@@ -97,7 +97,7 @@ public final class LogstashJavaCompat {
      * @return True if running on Java whose major version is greater than or equal to the
      *         specified version.
      */
-    public static boolean isJavaAtLeast(int version){
+    public static boolean isJavaAtLeast(int version) {
         final String value = System.getProperty("java.specification.version");
         final int actualVersion;
         // Java specification version prior to Java 9 were of the format `1.X`, and after the format `X`

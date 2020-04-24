@@ -28,12 +28,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.Logstash;
 import org.logstash.LogstashJavaCompat;
 
 public class ProcessMonitor {
 
     private static final OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
     private static final Method CPU_LOAD_METHOD = getCpuLoadMethod();
+    private static final Logger LOGGER = LogManager.getLogger(ProcessMonitor.class);
 
     public static class Report {
         private long memTotalVirtualInBytes = -1;
@@ -97,7 +101,7 @@ public class ProcessMonitor {
         // The method `getSystemCpuLoad` is deprecated in favour of `getCpuLoad` since JDK14
         // This method uses reflection to use the correct method depending on the version of
         // the JDK being used.
-        private short getSystemCpuLoad(){
+        private short getSystemCpuLoad() {
             if (CPU_LOAD_METHOD == null){
                 return -1;
             }
@@ -118,6 +122,7 @@ public class ProcessMonitor {
             String methodName = (LogstashJavaCompat.isJavaAtLeast(14)) ? "getCpuLoad" : "getSystemCpuLoad";
             return Class.forName("com.sun.management.OperatingSystemMXBean").getMethod(methodName);
         } catch (ReflectiveOperationException e){
+            LOGGER.warn("OperatingSystemMXBean CPU load method not available, CPU load will not be measured", e);
             return null;
         }
     }
