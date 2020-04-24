@@ -4,6 +4,7 @@
 
 require 'spec_helper'
 require "logstash-core"
+require "logstash/runner"
 require "logstash/agent"
 require "monitoring/inputs/metrics"
 require "rspec/wait"
