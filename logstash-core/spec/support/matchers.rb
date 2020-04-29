@@ -17,7 +17,6 @@
 
 require "rspec"
 require "rspec/expectations"
-require "logstash/config/pipeline_config"
 require "stud/try"
 
 RSpec::Matchers.define :be_a_metric_event do |namespace, type, *args|

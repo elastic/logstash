@@ -261,7 +261,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           pipeline_config = subject.pipeline_configs
 
           expect(pipeline_config.first.config_string).to match(config)
-          expect(pipeline_config.first.pipeline_id).to eq(pipeline_id.to_sym)
+          expect(pipeline_config.first.pipeline_id.to_sym).to eq(pipeline_id.to_sym)
         end
 
         it "ignores non-whitelisted and invalid settings" do
@@ -288,7 +288,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           pipeline_config = subject.pipeline_configs
 
           expect(pipeline_config.first.config_string).to match(config)
-          expect(pipeline_config.first.pipeline_id).to eq(pipeline_id.to_sym)
+          expect(pipeline_config.first.pipeline_id.to_sym).to eq(pipeline_id.to_sym)
         end
       end
 
@@ -389,7 +389,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             pipeline_config = subject.pipeline_configs
 
             expect(pipeline_config.first.config_string).to match(config)
-            expect(pipeline_config.first.pipeline_id).to eq(pipeline_id.to_sym)
+            expect(pipeline_config.first.pipeline_id.to_sym).to eq(pipeline_id.to_sym)
           end
         end
       end
@@ -425,7 +425,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           pipeline_config = subject.pipeline_configs
 
           expect(pipeline_config.collect(&:config_string)).to include(*pipelines.values)
-          expect(pipeline_config.collect(&:pipeline_id)).to include(*pipelines.keys.collect(&:to_sym))
+          expect(pipeline_config.map(&:pipeline_id).collect(&:to_sym)).to include(*pipelines.keys.collect(&:to_sym))
         end
       end
     end

@@ -3,6 +3,7 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "monitoring/inputs/metrics/stats_event_factory"
+require "logstash/config/pipeline_config"
 require 'json'
 
 describe LogStash::Inputs::Metrics::StatsEventFactory do
