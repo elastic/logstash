@@ -187,10 +187,10 @@ public final class OutputStrategyExt {
             for (int i = 0; i < count; ++i) {
                 final RubyClass outputClass = (RubyClass) args[0];
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-                final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
-                initOutputCallsite(outputClass);
+                final RubyClass outputClassWithContext = (RubyClass) args[0].callMethod(context, "with_execution_context", args[2]);
+                final IRubyObject output = outputClassWithContext.callMethod(context, "new", pluginArgs);
+                initOutputCallsite(outputClassWithContext);
                 output.callMethod(context, "metric=", args[1]);
-                output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);
                 workerQueue.add(output);
             }
@@ -249,10 +249,10 @@ public final class OutputStrategyExt {
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
-            initOutputCallsite(outputClass);
+            final RubyClass outputClassWithContext = (RubyClass) outputClass.callMethod(context, "with_execution_context", args[2]);
+            output = outputClassWithContext.callMethod(context, "new", args[3]);
+            initOutputCallsite(outputClassWithContext);
             output.callMethod(context, "metric=", args[1]);
-            output.callMethod(context, "execution_context=", args[2]);
             return this;
         }
 
