@@ -381,7 +381,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
-    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION)
+    logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
 
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
