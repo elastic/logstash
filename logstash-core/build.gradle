@@ -155,6 +155,10 @@ dependencies {
     annotationProcessor 'org.apache.logging.log4j:log4j-core:2.13.3'
     api 'org.apache.logging.log4j:log4j-core:2.13.3'
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
+    // concerns libraries such as manticore's http-client 4.5 (using commons-logging)
+    runtimeOnly 'org.apache.logging.log4j:log4j-jcl:2.13.3'
+    // for the log4j-jcl bridge to work commons-logging needs to be on the same class-path
+    runtimeOnly 'commons-logging:commons-logging:1.2'
     implementation('org.reflections:reflections:0.9.11') {
         exclude group: 'com.google.guava', module: 'guava'
     }
