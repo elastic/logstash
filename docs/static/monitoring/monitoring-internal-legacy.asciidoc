@@ -1,13 +1,13 @@
 [role="xpack"]
 [[monitoring-internal-collection-legacy]]
-=== Collect {ls} monitoring data using internal collectors
+=== Collect {ls} monitoring data using legacy collectors
 ++++
-<titleabbrev>Internal collection</titleabbrev>
+<titleabbrev>Legacy collection</titleabbrev>
 ++++
 
-==== Components for internal collection
+==== Components for legacy collection
 
-Monitoring {ls} with internal collection uses these components:
+Monitoring {ls} with legacy collection uses these components:
 
 * <<logstash-monitoring-collectors-legacy,Collectors>>
 * <<logstash-monitoring-output-legacy,Output>>
@@ -37,9 +37,9 @@ include::monitoring-output-legacy.asciidoc[]
 
 
 [[configure-internal-collectors-legacy]]
-==== Configure {ls} monitoring with internal collectors
+==== Configure {ls} monitoring with legacy collectors
 ++++
-<titleabbrev>Configure internal collection</titleabbrev>
+<titleabbrev>Configure legacy collection</titleabbrev>
 ++++
 
 To monitor Logstash nodes:
