@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package co.elastic.logstash.api;
 
 import java.lang.annotation.ElementType;
@@ -6,11 +26,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Logstash plugin annotation for finding plugins on the classpath and setting their name as used
- * in the configuration syntax.
+ * Annotates a Logstash Java plugin. The value returned from {@link #name()} defines the name of the plugin as
+ * used in the Logstash pipeline configuration.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface LogstashPlugin {
+
+    /**
+     * @return Name of the plugin as used in the Logstash pipeline configuration.
+     */
     String name();
 }

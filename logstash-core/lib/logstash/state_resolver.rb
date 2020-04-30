@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 module LogStash
   # In the beginning I was using this code as a method in the Agent class directly
   # But with the plugins system I think we should be able to swap what kind of action would be run.
@@ -10,11 +26,11 @@ module LogStash
       @metric = metric
     end
 
-    def resolve(pipelines, pipeline_configs)
+    def resolve(pipelines_registry, pipeline_configs)
       actions = []
 
       pipeline_configs.each do |pipeline_config|
-        pipeline = pipelines[pipeline_config.pipeline_id]
+        pipeline = pipelines_registry.get_pipeline(pipeline_config.pipeline_id)
 
         if pipeline.nil?
           actions << LogStash::PipelineAction::Create.new(pipeline_config, @metric)
@@ -25,12 +41,12 @@ module LogStash
         end
       end
 
-      running_pipelines = pipeline_configs.collect(&:pipeline_id)
+      configured_pipelines = pipeline_configs.map { |config| config.pipeline_id.to_sym }
 
       # If one of the running pipeline is not in the pipeline_configs, we assume that we need to
       # stop it.
-      pipelines.keys
-        .select { |pipeline_id| !running_pipelines.include?(pipeline_id) }
+      pipelines_registry.running_pipelines.keys
+        .select { |pipeline_id| !configured_pipelines.include?(pipeline_id) }
         .each { |pipeline_id| actions << LogStash::PipelineAction::Stop.new(pipeline_id) }
 
       actions.sort # See logstash/pipeline_action.rb

@@ -103,7 +103,6 @@ output {
   }
 }
 --------------------------------------------------------------------------------
-
 <1> The path to the top-level directory containing the dead letter queue. This
 directory contains a separate folder for each pipeline that writes to the dead
 letter queue. To find the path to this directory, look at the `logstash.yml`
@@ -145,7 +144,7 @@ processing events based on the timestamp of when they entered the queue:
 input {
   dead_letter_queue {
     path => "/path/to/data/dead_letter_queue" 
-    start_timestamp => 2017-06-06T23:40:37
+    start_timestamp => "2017-06-06T23:40:37"
     pipeline_id => "main"
   }
 }
@@ -212,7 +211,6 @@ output {
   } 
 }
 --------------------------------------------------------------------------------
-
 <1> The <<plugins-inputs-dead_letter_queue,`dead_letter_queue` input>> reads from the dead letter queue.
 <2> The `mutate` filter removes the problem field called `location`.
 <3> The clean event is sent to Elasticsearch, where it can be indexed because

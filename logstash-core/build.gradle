@@ -1,3 +1,22 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
@@ -9,6 +28,7 @@ description = """Logstash Core Java"""
 version = versionMap['logstash-core']
 String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
     mavenCentral()
@@ -25,19 +45,19 @@ buildscript {
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
-    classifier 'sources'
-    extension 'jar'
+    archiveClassifier = 'sources'
+    archiveExtension = 'jar'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
-    classifier 'javadoc'
-    extension 'jar'
+    archiveClassifier = 'javadoc'
+    archiveExtension = 'jar'
 }
 
 task copyRuntimeLibs(type: Copy) {
     into project.file('lib/jars/')
-    from configurations.compile, configurations.runtime
+    from configurations.compileClasspath, configurations.runtimeClasspath
 }
 
 // copy jar file into the gem lib dir but without the version number in filename
@@ -68,7 +88,13 @@ task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
+    exclude '/org/logstash/config/ir/EventConditionTest.class'
+    exclude '/org/logstash/config/ir/PipelineConfigTest.class'
     exclude '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    exclude '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    exclude '/org/logstash/plugins/CounterMetricImplTest.class'
+    exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -78,7 +104,13 @@ task rubyTests(type: Test) {
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
+    include '/org/logstash/config/ir/EventConditionTest.class'
+    include '/org/logstash/config/ir/PipelineConfigTest.class'
     include '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    include '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    include '/org/logstash/plugins/CounterMetricImplTest.class'
+    include '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
 }
 
 test {
@@ -118,32 +150,36 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:2.11.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.11.1'
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.1'
-    compile 'commons-codec:commons-codec:1.11'
-    // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
-    compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile 'org.codehaus.janino:janino:3.0.11'
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
-    if (customJRubyDir == "") {
-        compile "org.jruby:jruby-complete:${jrubyVersion}"
-    } else {
-        compile files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
-    }
-    compile group: 'com.google.guava', name: 'guava', version: '22.0'
-    // Do not upgrade this, later versions require GPL licensed code in javac-shaded that is
-    // Apache2 incompatible
-    compile('com.google.googlejavaformat:google-java-format:1.1') {
+    implementation 'org.apache.logging.log4j:log4j-api:2.12.1'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.12.1'
+    api 'org.apache.logging.log4j:log4j-core:2.12.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
+    implementation('org.reflections:reflections:0.9.11') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile 'org.javassist:javassist:3.24.0-GA'
-    compile 'com.google.guava:guava:20.0'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.11.1:tests'
-    testCompile 'junit:junit:4.12'
-    testCompile 'net.javacrumbs.json-unit:json-unit:2.3.0'
-    testCompile 'org.elasticsearch:securemock:1.2'
-    testCompile 'org.assertj:assertj-core:3.11.1'
+    implementation 'commons-codec:commons-codec:1.13'
+    // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+    api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    implementation 'org.codehaus.janino:janino:3.1.0'
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
+    if (customJRubyDir == "") {
+        api "org.jruby:jruby-complete:${jrubyVersion}"
+    } else {
+        api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
+    }
+    implementation group: 'com.google.guava', name: 'guava', version: '24.1.1-jre'
+    // WARNING: DO NOT UPGRADE "google-java-format"
+    // later versions require GPL licensed code in javac-shaded that is
+    // Apache2 incompatible
+    implementation('com.google.googlejavaformat:google-java-format:1.1') {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    implementation 'org.javassist:javassist:3.26.0-GA'
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.12.1:tests'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'
+    testImplementation 'org.elasticsearch:securemock:1.2'
+    testImplementation 'org.assertj:assertj-core:3.11.1'
 }

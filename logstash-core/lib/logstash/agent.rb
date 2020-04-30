@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/environment"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
@@ -6,8 +22,10 @@ require "logstash/instrument/periodic_pollers"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/config/source_loader"
+require "logstash/config/pipeline_config"
 require "logstash/pipeline_action"
 require "logstash/state_resolver"
+require "logstash/pipelines_registry"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -19,7 +37,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id, :pipelines, :pipeline_bus
+  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -35,12 +53,14 @@ class LogStash::Agent
 
     # Mutex to synchonize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
-    @exclusive_lock = Mutex.new
+    @webserver_control_lock = Mutex.new
+
+    @convergence_lock = Mutex.new
 
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
 
-    @pipelines = java.util.concurrent.ConcurrentHashMap.new();
+    @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
     @http_host = setting("http.host")
@@ -64,7 +84,7 @@ class LogStash::Agent
     end
 
     # Normalize time interval to seconds
-    @reload_interval = setting("config.reload.interval") / 1_000_000_000.0
+    @reload_interval = setting("config.reload.interval").to_seconds
 
     @collect_metric = setting("metric.collect")
 
@@ -84,19 +104,16 @@ class LogStash::Agent
     @running = Concurrent::AtomicBoolean.new(false)
   end
 
-  def exclusive(&block)
-    @exclusive_lock.synchronize { block.call }
-  end
-
   def execute
     @thread = Thread.current # this var is implicitly used by Stud.stop?
+    LogStash::Util.set_thread_name("Agent thread")
     logger.debug("Starting agent")
 
     transition_to_running
 
     converge_state_and_update
 
-    start_webserver
+    start_webserver_if_enabled
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -114,14 +131,17 @@ class LogStash::Agent
         converge_state_and_update unless stopped?
       end
     else
-      return 1 if clean_state?
+      # exit with error status if the initial converge_state_and_update did not create any pipeline
+      return 1 if @pipelines_registry.empty?
 
       while !Stud.stop?
-        if clean_state? || running_user_defined_pipelines?
-          sleep(0.5)
-        else
-          break
-        end
+        # exit if all pipelines are terminated and none are reloading
+        break if no_pipeline?
+
+        # exit if there are no user defined pipelines (not system pipeline) and none are reloading
+        break if !running_user_defined_pipelines?
+
+        sleep(0.5)
       end
     end
 
@@ -135,11 +155,11 @@ class LogStash::Agent
   end
 
   def running?
-    @running.value
+    @running.true?
   end
 
   def stopped?
-    !@running.value
+    @running.false?
   end
 
   def converge_state_and_update
@@ -154,12 +174,7 @@ class LogStash::Agent
       end
     end
 
-    # We Lock any access on the pipelines, since the actions will modify the
-    # content of it.
-    converge_result = nil
-
-    pipeline_actions = resolve_actions(results.response)
-    converge_result = converge_state(pipeline_actions)
+    converge_result = resolve_actions_and_converge_state(results.response)
     update_metrics(converge_result)
 
     logger.info(
@@ -178,7 +193,7 @@ class LogStash::Agent
 
   # Calculate the Logstash uptime in milliseconds
   #
-  # @return [Fixnum] Uptime in milliseconds
+  # @return [Integer] Uptime in milliseconds
   def uptime
     ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end
@@ -189,9 +204,9 @@ class LogStash::Agent
     pipeline_bus.setBlockOnUnlisten(true)
 
     stop_collecting_metrics
-    stop_webserver
     transition_to_stopped
     converge_result = shutdown_pipelines
+    stop_webserver
     converge_result
   end
 
@@ -233,49 +248,63 @@ class LogStash::Agent
     @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
+  #
+  # Backward compatibility proxies to the PipelineRegistry
+  #
+
   def get_pipeline(pipeline_id)
-    pipelines.get(pipeline_id)
+    @pipelines_registry.get_pipeline(pipeline_id)
   end
 
   def pipelines_count
-    pipelines.size
+    @pipelines_registry.size
   end
 
   def running_pipelines
-    pipelines.select {|id,pipeline| running_pipeline?(id) }
-  end
+    @pipelines_registry.running_pipelines
+   end
 
   def non_running_pipelines
-    pipelines.select {|id,pipeline| !running_pipeline?(id) }
+    @pipelines_registry.non_running_pipelines
   end
 
   def running_pipelines?
-    running_pipelines_count > 0
+    @pipelines_registry.running_pipelines.any?
   end
 
   def running_pipelines_count
-    running_pipelines.size
+    @pipelines_registry.running_pipelines.size
   end
 
   def running_user_defined_pipelines?
-    !running_user_defined_pipelines.empty?
+    @pipelines_registry.running_user_defined_pipelines.any?
   end
 
   def running_user_defined_pipelines
-    pipelines.select {|id, pipeline| running_pipeline?(id) && !pipeline.system? }
+    @pipelines_registry.running_user_defined_pipelines
   end
 
-  def with_running_user_defined_pipelines
-    yield running_user_defined_pipelines
+  def no_pipeline?
+    @pipelines_registry.running_pipelines.empty?
   end
 
   private
+
   def transition_to_stopped
     @running.make_false
   end
 
   def transition_to_running
     @running.make_true
+  end
+
+  # @param pipeline_configs [Array<Config::PipelineConfig>]
+  # @return [ConvergeResult]
+  def resolve_actions_and_converge_state(pipeline_configs)
+    @convergence_lock.synchronize do
+      pipeline_actions = resolve_actions(pipeline_configs)
+      converge_state(pipeline_actions)
+    end
   end
 
   # We depends on a series of task derived from the internal state and what
@@ -290,12 +319,13 @@ class LogStash::Agent
   #
   def converge_state(pipeline_actions)
     logger.debug("Converging pipelines state", :actions_count => pipeline_actions.size)
+    fail("Illegal access to `LogStash::Agent#converge_state()` without exclusive lock at #{caller[1]}") unless @convergence_lock.owned?
 
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
 
     pipeline_actions.map do |action|
-      Thread.new do
-        java.lang.Thread.currentThread().setName("Converge #{action}");
+      Thread.new(action, converge_result) do |action, converge_result|
+        LogStash::Util.set_thread_name("Converge #{action}")
         # We execute every task we need to converge the current state of pipelines
         # for every task we will record the action result, that will help us
         # the results of all the task will determine if the converge was successful or not
@@ -310,34 +340,36 @@ class LogStash::Agent
         # that we currently have.
         begin
           logger.debug("Executing action", :action => action)
-          action_result = action.execute(self, pipelines)
+          action_result = action.execute(self, @pipelines_registry)
           converge_result.add(action, action_result)
 
           unless action_result.successful?
-            logger.error("Failed to execute action", :id => action.pipeline_id,
-                         :action_type => action_result.class, :message => action_result.message,
-                         :backtrace => action_result.backtrace)
+            logger.error("Failed to execute action",
+              :id => action.pipeline_id,
+              :action_type => action_result.class,
+              :message => action_result.message,
+              :backtrace => action_result.backtrace
+            )
           end
-        rescue SystemExit => e
-          converge_result.add(action, e)
-        rescue Exception => e
+        rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
           converge_result.add(action, e)
         end
       end
     end.each(&:join)
 
-    if logger.trace?
-      logger.trace("Converge results", :success => converge_result.success?,
-                   :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
-                   :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" })
-    end
+    logger.trace? && logger.trace("Converge results",
+      :success => converge_result.success?,
+      :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
+      :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" }
+    )
 
     converge_result
   end
 
   def resolve_actions(pipeline_configs)
-    @state_resolver.resolve(@pipelines, pipeline_configs)
+    fail("Illegal access to `LogStash::Agent#resolve_actions()` without exclusive lock at #{caller[1]}") unless @convergence_lock.owned?
+    @state_resolver.resolve(@pipelines_registry, pipeline_configs)
   end
 
   def dispatch_events(converge_results)
@@ -353,21 +385,33 @@ class LogStash::Agent
     end
   end
 
+  def start_webserver_if_enabled
+    if @settings.get_value("http.enabled")
+      start_webserver
+    else
+      @logger.info("HTTP API is disabled (`http.enabled=false`); webserver will not be started.")
+    end
+  end
+
   def start_webserver
-    options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
-    @webserver = LogStash::WebServer.new(@logger, self, options)
-    @webserver_thread = Thread.new(@webserver) do |webserver|
-      LogStash::Util.set_thread_name("Api Webserver")
-      webserver.run
+    @webserver_control_lock.synchronize do
+      options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
+      @webserver = LogStash::WebServer.new(@logger, self, options)
+      @webserver_thread = Thread.new(@webserver) do |webserver|
+        LogStash::Util.set_thread_name("Api Webserver")
+        webserver.run
+      end
     end
   end
 
   def stop_webserver
-    if @webserver
-      @webserver.stop
-      if @webserver_thread.join(5).nil?
-        @webserver_thread.kill
-        @webserver_thread.join
+    @webserver_control_lock.synchronize do
+      if @webserver
+        @webserver.stop
+        if @webserver_thread.join(5).nil?
+          @webserver_thread.kill
+          @webserver_thread.join
+        end
       end
     end
   end
@@ -395,25 +439,14 @@ class LogStash::Agent
   end
 
   def shutdown_pipelines
-    logger.debug("Shutting down all pipelines", :pipelines_count => pipelines_count)
+    logger.debug("Shutting down all pipelines", :pipelines_count => running_pipelines_count)
 
     # In this context I could just call shutdown, but I've decided to
     # use the stop action implementation for that so we have the same code.
     # This also give us some context into why a shutdown is failing
-    pipeline_actions = resolve_actions([]) # We stop all the pipeline, so we converge to a empty state
-    converge_state(pipeline_actions)
+    resolve_actions_and_converge_state([]) # We stop all the pipeline, so we converge to a empty state
   end
 
-  def running_pipeline?(pipeline_id)
-    pipeline = get_pipeline(pipeline_id)
-    return false unless pipeline
-    thread = pipeline.thread
-    thread.is_a?(Thread) && thread.alive?
-  end
-
-  def clean_state?
-    pipelines.empty?
-  end
 
   def setting(key)
     @settings.get(key)

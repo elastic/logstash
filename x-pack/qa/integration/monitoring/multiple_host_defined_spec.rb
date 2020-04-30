@@ -14,7 +14,7 @@ describe "Multiple hosts defined" do
 
     @logstash_service = logstash("bin/logstash -e '#{config}' -w 1", {
       :settings => {
-        "xpack.monitoring.elasticsearch.url" => ["http://localhost:9200", "http://localhost:9200"],
+        "xpack.monitoring.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:9200"],
         "xpack.monitoring.collection.interval" => "1s",
         "xpack.monitoring.elasticsearch.username" => "elastic",
         "xpack.monitoring.elasticsearch.password" => elastic_password

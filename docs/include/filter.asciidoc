@@ -118,8 +118,8 @@ endif::[]
   * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
   * Default value is `true`
 
-Disable or enable metric logging for this specific plugin instance
-by default we record all the metrics we can, but you can disable metrics collection
+Disable or enable metric logging for this specific plugin instance.
+By default we record all the metrics we can, but you can disable metrics collection
 for a specific plugin.
 
 ifeval::["{versioned_docs}"!="true"]
@@ -146,6 +146,8 @@ Adding a named ID in this case will help in monitoring Logstash when using the m
       }
     }
 
+NOTE: Variable substitution in the `id` field only supports environment variables
+      and does not support the use of values from the secret store.
 
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-periodic_flush"]

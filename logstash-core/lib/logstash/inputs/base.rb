@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/event"
 require "logstash/plugin"
 require "logstash/config/mixin"
@@ -99,6 +115,13 @@ class LogStash::Inputs::Base < LogStash::Plugin
     cloned
   end
 
+  def metric=(metric)
+    super
+    # Hack to create a new metric namespace using 'plugins' as the root
+    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id))
+    metric
+  end
+
   def execution_context=(context)
     super
     # There is no easy way to propage an instance variable into the codec, because the codec
@@ -124,11 +147,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
     require "logstash/codecs/line"
     require "logstash/codecs/json"
     require "logstash/codecs/json_lines"
-    case @codec
-      when LogStash::Codecs::Plain
+
+    case @codec.class.name
+      when "LogStash::Codecs::Plain"
         @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
-      when LogStash::Codecs::JSON
+      when "LogStash::Codecs::JSON"
         @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
     end

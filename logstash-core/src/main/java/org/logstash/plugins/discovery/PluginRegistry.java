@@ -1,13 +1,34 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.plugins.discovery;
 
 import org.logstash.plugins.PluginLookup;
-import co.elastic.logstash.api.v0.Codec;
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Filter;
-import co.elastic.logstash.api.v0.Input;
+import co.elastic.logstash.api.Filter;
+import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.v0.Output;
+import co.elastic.logstash.api.Output;
+import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -33,7 +54,7 @@ public final class PluginRegistry {
 
     @SuppressWarnings("unchecked")
     private static void discoverPlugins() {
-        Reflections reflections = new Reflections("");
+        Reflections reflections = new Reflections("org.logstash.plugins");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
         for (final Class<?> cls : annotated) {
             for (final Annotation annotation : cls.getAnnotations()) {

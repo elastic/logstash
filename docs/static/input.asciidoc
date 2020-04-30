@@ -7,6 +7,6 @@
 
 :getstarted: Let's step through creating an {plugintype} plugin using the https://github.com/logstash-plugins/logstash-input-example/[example {plugintype} plugin].
 
-:methodheader: Logstash inputs must implement two main methods: `register` and `run`.
+:methodheader: pass:m[Logstash inputs must implement two main methods: `register` and `run`.]
 
 include::include/pluginbody.asciidoc[]

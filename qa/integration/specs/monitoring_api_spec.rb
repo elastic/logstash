@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
@@ -126,13 +143,16 @@ describe "Test Monitoring API" do
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
 
+      #deprecation package loggers
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+
       result = logstash_service.monitoring_api.logging_get
       result["loggers"].each do | k, v |
         #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
-        if k.eql?("logstash.agent") || k.start_with?("org.logstash")
-          expect(v).to eq("INFO")
-        else
+        if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
           expect(v).to eq("ERROR")
+        else
+          expect(v).to eq("INFO")
         end
       end
 

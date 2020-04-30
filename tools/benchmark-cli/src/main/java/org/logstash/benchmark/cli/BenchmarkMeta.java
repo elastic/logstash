@@ -1,7 +1,28 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.benchmark.cli;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +33,8 @@ public final class BenchmarkMeta {
 
     private final String testcase;
 
+    private final Path configpath;
+
     private final String version;
 
     private final LsVersionType vtype;
@@ -20,14 +43,16 @@ public final class BenchmarkMeta {
 
     private final int batchsize;
 
-    BenchmarkMeta(final String testcase, final String version, final LsVersionType vtype,
-        final int workers, final int batchsize) {
+    BenchmarkMeta(final String testcase, final Path configpath, final String version, final LsVersionType vtype,
+                  final int workers, final int batchsize) {
         this.testcase = testcase;
+        this.configpath = configpath;
         this.version = version;
         this.vtype = vtype;
         this.workers = workers;
         this.batchsize = batchsize;
     }
+
 
     public String getVersion() {
         return version;
@@ -36,6 +61,8 @@ public final class BenchmarkMeta {
     public String getTestcase() {
         return testcase;
     }
+
+    public Path getConfigPath() { return configpath; }
 
     public LsVersionType getVtype() {
         return vtype;
@@ -52,6 +79,7 @@ public final class BenchmarkMeta {
     public Map<String, Object> asMap() {
         final Map<String, Object> result = new HashMap<>();
         result.put("test_name", testcase);
+        result.put("test_config_path", configpath);
         result.put("os_name", SystemUtils.OS_NAME);
         result.put("os_version", SystemUtils.OS_VERSION);
         try {

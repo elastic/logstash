@@ -90,7 +90,6 @@ sources.
 
 . Rspec Example
 [source,ruby]
- 1 # encoding: utf-8
  2 require "logstash/devutils/rspec/spec_helper"
  3 require "logstash/plugin"
  4
@@ -252,11 +251,10 @@ https://howistart.org/posts/ruby/1[environment]. The `chruby` tool manages Ruby 
 +
 NOTE: Line 21 of `util/zeromq.rb` reads `@logger.info("0mq: #{server? ? 'connected' : 'bound'}", :address => address)`
 
-. In the text editor, set the file encoding and require `zeromq.rb` for the file `zeromq_spec.rb` by adding the following 
+. In the text editor, require `zeromq.rb` for the file `zeromq_spec.rb` by adding the following 
 lines:
 +
 [source,ruby]
-# encoding: utf-8
 require "logstash/outputs/zeromq"
 require "logstash/devutils/rspec/spec_helper"
 
@@ -303,7 +301,6 @@ At the end of the modifications, the relevant code section reads:
 
 [source,ruby]
 --------
-# encoding: utf-8
 require "logstash/outputs/zeromq"
 require "logstash/devutils/rspec/spec_helper"
 

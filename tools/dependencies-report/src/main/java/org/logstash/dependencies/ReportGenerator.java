@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.dependencies;
 
 import org.apache.commons.csv.CSVFormat;
@@ -31,7 +51,6 @@ public class ReportGenerator {
     final Collection<Dependency> UNKNOWN_LICENSES = new ArrayList<>();
     final String[] CSV_HEADERS = {"name", "version", "revision", "url", "license", "copyright"};
     final Collection<Dependency> MISSING_NOTICE = new ArrayList<>();
-    final HashMap<Dependency, Boolean> UNUSED_DEPENDENCIES = new HashMap<>();
 
     boolean generateReport(
             InputStream licenseMappingStream,
@@ -159,9 +178,8 @@ public class ReportGenerator {
     }
 
     private void checkDependencyLicense(Map<String, LicenseUrlPair> licenseMapping, List<String> acceptableLicenses, Dependency dependency) {
-        String nameAndVersion = dependency.name + ":" + dependency.version;
-        if (licenseMapping.containsKey(nameAndVersion)) {
-            LicenseUrlPair pair = licenseMapping.get(nameAndVersion);
+        if (licenseMapping.containsKey(dependency.name)) {
+            LicenseUrlPair pair = licenseMapping.get(dependency.name);
 
             String[] dependencyLicenses = pair.license.split("\\|");
             boolean hasAcceptableLicense = false;
@@ -204,8 +222,28 @@ public class ReportGenerator {
         for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
             String dependencyNameAndVersion = record.get(0);
             if (dependencyNameAndVersion != null && !dependencyNameAndVersion.equals("")) {
-                licenseMapping.put(dependencyNameAndVersion, new LicenseUrlPair(record.get(2), record.get(1)));
+                int lastIndex = dependencyNameAndVersion.lastIndexOf(':');
+                String depName = lastIndex < 0
+                        ? dependencyNameAndVersion
+                        : dependencyNameAndVersion.substring(0,  lastIndex);
+                validateAndAdd(licenseMapping, depName, new LicenseUrlPair(record.get(2), record.get(1)));
             }
+        }
+    }
+
+    private static void validateAndAdd(Map<String, LicenseUrlPair> licenses, String depName, LicenseUrlPair lup) {
+        if (licenses.containsKey(depName)) {
+            LicenseUrlPair existingLicense = licenses.get(depName);
+
+            // Because dependency versions are not treated independently, if dependencies with different versions
+            // have different licenses, we cannot distinguish between them
+            if (!existingLicense.license.equals(lup.license)) {
+                String err = String.format("License mapping contains duplicate dependencies '%s' with conflicting " +
+                        "licenses '%s' and '%s'", depName, existingLicense.license, lup.license);
+                throw new IllegalStateException(err);
+            }
+        } else {
+            licenses.put(depName, lup);
         }
     }
 

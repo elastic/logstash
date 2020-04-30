@@ -24,7 +24,7 @@ access the Internet.
 +
 [source, shell]
 -------------------------------------------------------------------------------
-bin/logstash-plugin prepare-offline-pack --output OUTPUT [PLUGINS] --overwrite
+bin/logstash-plugin prepare-offline-pack --output OUTPUT --overwrite [PLUGINS]
 -------------------------------------------------------------------------------
 +
 where:

@@ -1,12 +1,33 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash;
 
-import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
@@ -16,6 +37,7 @@ import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.JavaFilterDelegatorExt;
+import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
 import org.logstash.config.ir.compiler.JavaOutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -46,12 +68,16 @@ import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.SnapshotExt;
+import org.logstash.log.DeprecationLoggerExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
-import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.util.UtilExt;
+import org.logstash.plugins.factory.ExecutionContextFactoryExt;
+import org.logstash.plugins.factory.PluginMetricsFactoryExt;
+import org.logstash.plugins.factory.PluginFactoryExt;
 
 import java.util.stream.Stream;
 
@@ -108,6 +134,8 @@ public final class RubyUtil {
     public static final RubyClass JAVA_OUTPUT_DELEGATOR_CLASS;
 
     public static final RubyClass JAVA_FILTER_DELEGATOR_CLASS;
+
+    public static final RubyClass JAVA_INPUT_DELEGATOR_CLASS;
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
@@ -167,13 +195,15 @@ public final class RubyUtil {
 
     public static final RubyClass EXECUTION_CONTEXT_FACTORY_CLASS;
 
-    public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
+    public static final RubyClass PLUGIN_METRICS_FACTORY_CLASS;
 
     public static final RubyClass PLUGIN_FACTORY_CLASS;
 
     public static final RubyClass LOGGER;
 
     public static final RubyModule LOGGABLE_MODULE;
+
+    public static final RubyClass DEPRECATION_LOGGER;
 
     public static final RubyClass SLOW_LOGGER;
 
@@ -207,8 +237,6 @@ public final class RubyUtil {
 
     public static final RubyClass JAVA_PIPELINE_CLASS;
 
-    public static final RubyClass JAVA_INPUT_WRAPPER_CLASS;
-
     /**
      * Logstash Ruby Module.
      */
@@ -233,16 +261,16 @@ public final class RubyUtil {
         METRIC_SNAPSHOT_CLASS.defineAnnotatedMethods(SnapshotExt.class);
         EXECUTION_CONTEXT_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
             "ExecutionContextFactory", RUBY.getObject(),
-            PluginFactoryExt.ExecutionContext::new
+            ExecutionContextFactoryExt::new
         );
-        PLUGIN_METRIC_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
-            "PluginMetricFactory", RUBY.getObject(), PluginFactoryExt.Metrics::new
+        PLUGIN_METRICS_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "PluginMetricsFactory", RUBY.getObject(), PluginMetricsFactoryExt::new
         );
         SHUTDOWN_WATCHER_CLASS =
             setupLogstashClass(ShutdownWatcherExt::new, ShutdownWatcherExt.class);
-        PLUGIN_METRIC_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Metrics.class);
+        PLUGIN_METRICS_FACTORY_CLASS.defineAnnotatedMethods(PluginMetricsFactoryExt.class);
         EXECUTION_CONTEXT_FACTORY_CLASS.defineAnnotatedMethods(
-            PluginFactoryExt.ExecutionContext.class
+            ExecutionContextFactoryExt.class
         );
         METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
             "MetricException", RUBY.getException(), MetricExt.MetricException::new
@@ -303,6 +331,7 @@ public final class RubyUtil {
         NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
         NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
+        UTIL_MODULE.defineAnnotatedMethods(UtilExt.class);
         ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
@@ -439,12 +468,17 @@ public final class RubyUtil {
                 ABSTRACT_FILTER_DELEGATOR_CLASS, FilterDelegatorExt::new,
                 FilterDelegatorExt.class
         );
+        JAVA_INPUT_DELEGATOR_CLASS = setupLogstashClass(JavaInputDelegatorExt::new, JavaInputDelegatorExt.class);
         final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
         LOGGER.defineAnnotatedMethods(LoggerExt.class);
         SLOW_LOGGER = loggingModule.defineClassUnder(
             "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+        DEPRECATION_LOGGER = loggingModule.defineClassUnder(
+            "DeprecationLogger", RUBY.getObject(), DeprecationLoggerExt::new);
+        DEPRECATION_LOGGER.defineAnnotatedMethods(DeprecationLoggerExt.class);
+
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         ABSTRACT_PIPELINE_CLASS =
@@ -452,8 +486,6 @@ public final class RubyUtil {
         JAVA_PIPELINE_CLASS = setupLogstashClass(
             ABSTRACT_PIPELINE_CLASS, JavaBasePipelineExt::new, JavaBasePipelineExt.class
         );
-        JAVA_INPUT_WRAPPER_CLASS = setupLogstashClass(PluginFactoryExt.JavaInputWrapperExt::new,
-                PluginFactoryExt.JavaInputWrapperExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
@@ -516,9 +548,9 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
         PLUGIN_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
-            "PluginFactory", RUBY.getObject(), PluginFactoryExt.Plugins::new
+            "PluginFactory", RUBY.getObject(), PluginFactoryExt::new
         );
-        PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Plugins.class);
+        PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.class);
         UNIVERSAL_PLUGIN_CLASS =
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         EVENT_DISPATCHER_CLASS =
@@ -562,9 +594,10 @@ public final class RubyUtil {
      * @param e the Java exception to wrap
      * @return RaiseException the wrapped IOError
      */
+    @SuppressWarnings("deprecation")
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
-        return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
+        return new RaiseException(e, new org.jruby.NativeException(runtime, runtime.getIOError(), e));
     }
 
     /**
@@ -592,6 +625,15 @@ public final class RubyUtil {
         );
         clazz.defineAnnotatedMethods(jclass);
         return clazz;
+    }
+
+    /**
+     * Convert a Java object to a Ruby representative.
+     * @param javaObject the object to convert (might be null)
+     * @return a Ruby wrapper
+     */
+    public static IRubyObject toRubyObject(Object javaObject) {
+        return JavaUtil.convertJavaToRuby(RUBY, javaObject);
     }
 
 }

@@ -1,12 +1,32 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 java_import "org.logstash.secret.store.SecretStoreExt"
+
+require_relative 'lazy_singleton'
 
 module ::LogStash::Util::SubstitutionVariables
 
   include LogStash::Util::Loggable
 
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
+
+  SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
+  private_constant :SECRET_STORE
 
   # Recursive method to replace substitution variable references in parameters
   def deep_replace(value)
@@ -30,6 +50,10 @@ module ::LogStash::Util::SubstitutionVariables
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
   def replace_placeholders(value)
+    if value.kind_of?(::LogStash::Util::Password)
+      interpolated = replace_placeholders(value.value)
+      return ::LogStash::Util::Password.new(interpolated)
+    end
     return value unless value.is_a?(String)
 
     value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
@@ -42,7 +66,7 @@ module ::LogStash::Util::SubstitutionVariables
       logger.debug("Replacing `#{placeholder}` with actual value")
 
       #check the secret store if it exists
-      secret_store = SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+      secret_store = SECRET_STORE.instance
       replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
@@ -54,4 +78,20 @@ module ::LogStash::Util::SubstitutionVariables
     end
   end # def replace_placeholders
 
+  class << self
+    private
+
+    # loads a secret_store from disk if available, or returns nil
+    #
+    # @api private
+    # @return [SecretStoreExt,nil]
+    def load_secret_store
+      SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+    end
+
+    # @api test
+    def reset_secret_store
+      SECRET_STORE.reset!
+    end
+  end
 end

@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.benchmark.cli;
 
 import java.io.File;
@@ -95,6 +115,18 @@ public final class MainTest {
             String.format("--%s=apache", UserInput.TEST_CASE_PARAM),
             String.format("--workdir=%s", pwd.getAbsolutePath()),
             String.format("--%s=%d", UserInput.REPEAT_PARAM, 2)
+        );
+    }
+
+    /**
+     * @throws Exception On Failure
+     */
+    @Test
+    public void runsCustomAgainstLocal() throws Exception {
+        Main.main(
+                String.format("--%s=custom", UserInput.TEST_CASE_PARAM),
+                String.format("--%s=%s", UserInput.TEST_CASE_CONFIG_PARAM, System.getProperty("logstash.benchmark.test.config.path") ),
+                String.format("--%s=%s", UserInput.LOCAL_VERSION_PARAM, System.getProperty("logstash.benchmark.test.local.path"))
         );
     }
 }

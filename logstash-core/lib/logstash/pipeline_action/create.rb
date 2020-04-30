@@ -1,7 +1,24 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/pipeline_action/base"
 require "logstash/pipeline"
 require "logstash/java_pipeline"
+
 
 module LogStash module PipelineAction
   class Create < Base
@@ -17,7 +34,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     # Make sure we execution system pipeline like the monitoring
@@ -30,33 +47,14 @@ module LogStash module PipelineAction
 
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
-    def execute(agent, pipelines)
-      new_pipeline =
-        if @pipeline_config.settings.get_value("pipeline.java_execution")
-          LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
-        else
-          agent.exclusive do
-            # The Ruby pipeline initialization is not thread safe because of the module level
-            # shared state in LogsStash::Config::AST. When using multiple pipelines this gets
-            # executed simultaneously in different threads and we need to synchronize this initialization.
-            LogStash::Pipeline.new(@pipeline_config, @metric, agent)
-          end
-        end
-
-      result = nil
-      pipelines.compute(pipeline_id) do |_, current_pipeline|
-        if current_pipeline
-          result = LogStash::ConvergeResult::FailedAction.new("Attempted to create a pipeline that already exists")
-          current_pipeline
-        else
-          result = new_pipeline.start # block until the pipeline is correctly started or crashed
-          result ? new_pipeline : nil
-        end
+    def execute(agent, pipelines_registry)
+      pipeline_class = @pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::Pipeline
+      new_pipeline = pipeline_class.new(@pipeline_config, @metric, agent)
+      success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
+        new_pipeline.start # block until the pipeline is correctly started or crashed
       end
-
-      LogStash::ConvergeResult::ActionResult.create(self, result)
+      LogStash::ConvergeResult::ActionResult.create(self, success)
     end
-
 
     def to_s
       "PipelineAction::Create<#{pipeline_id}>"

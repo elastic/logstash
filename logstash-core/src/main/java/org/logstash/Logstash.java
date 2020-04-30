@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash;
 
 import java.io.IOException;
@@ -38,6 +58,8 @@ public final class Logstash implements Runnable, AutoCloseable {
                     "LS_HOME environment variable must be set. This is likely a bug that should be reported."
             );
         }
+        configureNashornDeprecationSwitchForJavaAbove11();
+
         final Path home = Paths.get(lsHome).toAbsolutePath();
         try (
                 final Logstash logstash = new Logstash(home, args, System.out, System.err, System.in)
@@ -59,6 +81,15 @@ public final class Logstash implements Runnable, AutoCloseable {
             handleCriticalError(t, null);
         }
         System.exit(0);
+    }
+
+    private static void configureNashornDeprecationSwitchForJavaAbove11() {
+        final String javaVersion = System.getProperty("java.version");
+        // match version 1.x.y, 9.x.y and 10.x.y
+        if (!javaVersion.matches("^1\\.\\d\\..*") && !javaVersion.matches("^(9|10)\\.\\d\\..*")) {
+            // Avoid Nashorn deprecation logs in JDK >= 11
+            System.setProperty("nashorn.args", "--no-deprecation-warning");
+        }
     }
 
     private static void handleCriticalError(Throwable t, String[] errorMessage) {

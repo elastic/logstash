@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require "stud/temporary"
@@ -67,14 +84,14 @@ describe "Beat Input" do
     let(:filebeat_config) do
       {
         "filebeat" => {
-          "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+          "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
           "registry_file" => registry_file,
           "scan_frequency" => "1s"
         },
         "output" => {
-          "logstash" => { "hosts" => ["localhost:5044"] },
-          "logging" => { "level" => "debug" }
-        }
+          "logstash" => { "hosts" => ["localhost:5044"] }
+        },
+        "logging" => { "level" => "debug" }
       }
     end
 
@@ -92,7 +109,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
             "registry_file" => registry_file,
             "scan_frequency" => "1s"
           },
@@ -105,9 +122,9 @@ describe "Beat Input" do
               "ssl" => {
                 "certificate_authorities" => certificate_authorities
               }
-            },
-            "logging" => { "level" => "debug" }
-          }
+            }
+          },
+          "logging" => { "level" => "debug" }
         }
       end
 
@@ -119,7 +136,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "prospectors" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
             "registry_file" => registry_file,
             "scan_frequency" => "1s"
           },
@@ -136,9 +153,9 @@ describe "Beat Input" do
                 "certificate" => certificate,
                 "key" => ssl_key
               }
-            },
-            "logging" => { "level" => "debug" }
-          }
+            }
+          },
+          "logging" => { "level" => "debug" }
         }
       end
 

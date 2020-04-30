@@ -1,6 +1,7 @@
 [id="{type}-{plugin}-index"]
 
 == Versioned {plugin} {type} plugin docs
+[subs="attributes"]
 ++++
 <titleabbrev>{plugin}</titleabbrev>
 ++++

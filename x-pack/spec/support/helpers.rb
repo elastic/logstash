@@ -2,6 +2,8 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+require "stud/task"
+
 # Settings' TimeValue is using nanos seconds as the default unit
 def time_value(time)
   LogStash::Util::TimeValue.from_value(time).to_nanos
@@ -21,7 +23,6 @@ def define_settings(settings_options)
   end
 end
 
-
 def apply_settings(settings_values, settings = nil)
   settings = settings.nil? ? LogStash::SETTINGS.clone : settings
 
@@ -30,4 +31,36 @@ def apply_settings(settings_values, settings = nil)
   end
 
   settings
+end
+
+def start_agent(agent)
+  agent_task = Stud::Task.new do
+    begin
+      agent.execute
+    rescue => e
+      raise "Start Agent exception: #{e}"
+    end
+  end
+
+  wait(30).for { agent.running? }.to be(true)
+  agent_task
+end
+
+module LogStash
+  module Inputs
+    class DummyBlockingInput < LogStash::Inputs::Base
+      config_name "dummyblockinginput"
+      milestone 2
+
+      def register
+      end
+
+      def run(_)
+        sleep(1) while !stop?
+      end
+
+      def stop
+      end
+    end
+  end
 end

@@ -1,14 +1,39 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ext;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.hamcrest.CoreMatchers;
+import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.exceptions.RuntimeError;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
@@ -53,6 +78,38 @@ public final class JrubyEventExtLibraryTest {
         event.ruby_set_field(context, key, value);
         Assertions.assertThat(event.ruby_to_json(context, new IRubyObject[0]).asJavaString())
             .contains("\"テストフィールド\":\"someValue\"");
+    }
+
+    @Test
+    public void correctlyRaiseRubyRuntimeErrorWhenGivenInvalidFieldReferences() {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final JrubyEventExtLibrary.RubyEvent event =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime);
+        final RubyString key = rubyString("il[[]]]legal");
+        final RubyString value = rubyString("foo");
+        try {
+            event.ruby_set_field(context, key, value);
+        } catch (RuntimeError rubyRuntimeError) {
+            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
+            return;
+        }
+        Assert.fail("expected ruby RuntimeError was not thrown.");
+    }
+
+    @Test
+    public void correctlyRaiseRubyRuntimeErrorWhenGivenInvalidFieldReferencesInMap() {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final JrubyEventExtLibrary.RubyEvent event =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime);
+        final RubyString key = rubyString("foo");
+        final RubyHash value = RubyHash.newHash(context.runtime, Collections.singletonMap(rubyString("il[[]]]legal"), rubyString("okay")), context.nil);
+        try {
+            event.ruby_set_field(context, key, value);
+        } catch (RuntimeError rubyRuntimeError) {
+            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
+            return;
+        }
+        Assert.fail("expected ruby RuntimeError was not thrown.");
     }
 
     private static RubyString rubyString(final String java) {

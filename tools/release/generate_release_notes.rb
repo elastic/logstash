@@ -1,8 +1,24 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 # Example:
 # ruby generate_release_notes.rb 6.4 6.4.1
-# 
+#
 # This:
 # * compares the lock file of two commits
 # * for each plugin version bumped show CHANGELOG.md of the bumped version
@@ -71,7 +87,7 @@ report << "==== Plugins\n"
 
 plugin_changes.each do |plugin, versions|
   _, type, name = plugin.split("-")
-  header = "*#{name.capitalize} #{type.capitalize}*"
+  header = "*#{name.capitalize} #{type.capitalize} - #{versions.last}*"
   start_changelog_file = Tempfile.new(plugin + 'start')
   end_changelog_file = Tempfile.new(plugin + 'end')
   changelog = `curl https://raw.githubusercontent.com/logstash-plugins/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")
@@ -81,6 +97,7 @@ plugin_changes.each do |plugin, versions|
     next if line.match(/^##/)
     line.gsub!(/^\+/, "")
     line.gsub!(/ #(?<number>\d+)\s*$/, " https://github.com/logstash-plugins/#{plugin}/issues/\\k<number>[#\\k<number>]")
+    line.gsub!(/\[#(?<number>\d+)\]\((?<url>[^)]*)\)/, "\\k<url>[#\\k<number>]")
     line.gsub!(/^\s+-/, "*")
     report << line
   end

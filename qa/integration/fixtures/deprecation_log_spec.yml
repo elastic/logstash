@@ -1,0 +1,17 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    generator {
+      count => 4
+    }
+ }
+ filter {
+  ruby {
+    code => '@deprecation_logger.deprecated "Teleport"'
+  }
+ }
+ output {
+   null {}
+ }

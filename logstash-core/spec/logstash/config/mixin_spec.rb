@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/config/mixin"
 
@@ -165,36 +181,58 @@ describe LogStash::Config::Mixin do
   end
 
   context "when validating :password" do
-    let(:klass) do
-      Class.new(LogStash::Filters::Base)  do
-        config_name "fake"
-        config :password, :validate => :password
+    shared_examples 'protected password' do
+      let(:secret) { 'fancy pants' }
+      let(:plugin_class) do
+        Class.new(LogStash::Filters::Base)  do
+          config_name "fake"
+          config :password, :validate => :password
+        end
+      end
+      subject(:plugin_instance) { plugin_class.new(instance_params) }
+
+      it "should be a Password object" do
+        expect(plugin_instance.password).to(be_a(LogStash::Util::Password))
+      end
+
+      it "should make password values hidden" do
+        expect(plugin_instance.password.to_s).to(be == "<password>")
+        expect(plugin_instance.password.inspect).to(be == "<password>")
+      end
+
+      it "should show password values via #value" do
+        expect(plugin_instance.password.value).to(be == secret)
+      end
+
+      it "should correctly copy password types" do
+        clone = plugin_instance.class.new(plugin_instance.params)
+        expect(clone.password.value).to(be == secret)
+      end
+
+      it "should obfuscate original_params" do
+        expect(plugin_instance.original_params['password']).to(be_a(LogStash::Util::Password))
       end
     end
 
-    let(:secret) { "fancy pants" }
-    subject { klass.new("password" => secret) }
-
-    it "should be a Password object" do
-      expect(subject.password).to(be_a(LogStash::Util::Password))
+    context 'when instantiated with a string literal password' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => secret } }
+      end
     end
 
-    it "should make password values hidden" do
-      expect(subject.password.to_s).to(be == "<password>")
-      expect(subject.password.inspect).to(be == "<password>")
-    end
+    context 'when instantiated with an environment variable placeholder' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => '${PLACEHOLDER}'} }
+        before(:each) { ENV.store('PLACEHOLDER', secret) }
+        after(:each) { ENV.delete('PLACEHOLDER')}
 
-    it "should show password values via #value" do
-      expect(subject.password.value).to(be == secret)
-    end
-
-    it "should correctly copy password types" do
-      clone = subject.class.new(subject.params)
-      expect(clone.password.value).to(be == secret)
-    end
-
-    it "should obfuscate original_params" do
-      expect(subject.original_params['password']).to(be_a(LogStash::Util::Password))
+        before(:each) do
+          # Ensure the shared examples are actually running with an
+          # environment variable placeholder.
+          # If this assertion fails, setup for the spec is invalid.
+          expect(instance_params['password']).to eq('${PLACEHOLDER}')
+        end
+      end
     end
   end
 
@@ -419,6 +457,7 @@ describe LogStash::Config::Mixin do
       end
 
       it "should use the value in the variable" do
+        skip("This test fails on Windows, tracked in https://github.com/elastic/logstash/issues/10454")
         expect(subject.oneString).to(be == "fancy")
         expect(subject.oneBoolean).to(be_truthy)
         expect(subject.oneArray).to(be == [ "first array value", "fancy" ])

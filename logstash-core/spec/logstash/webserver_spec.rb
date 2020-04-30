@@ -1,5 +1,20 @@
-# encoding: utf-8
-# require "logstash/json"
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/webserver"
 require_relative "../support/helpers"
 require "socket"
@@ -12,7 +27,7 @@ def block_ports(range)
 
   range.each do |port|
     begin
-      server = TCPServer.new("localhost", port)
+      server = TCPServer.new("127.0.0.1", port)
       servers << server
     rescue => e
       # The port can already be taken
@@ -45,7 +60,7 @@ describe LogStash::WebServer do
 
   subject { LogStash::WebServer.new(logger,
                                     agent,
-                                    { :http_host => "localhost", :http_ports => port_range })}
+                                    { :http_host => "127.0.0.1", :http_ports => port_range })}
 
   let(:port_range) { 10000..10010 }
 
@@ -89,8 +104,9 @@ describe LogStash::WebServer do
     after(:each) { free_ports(@servers) }
 
     context "when we have available ports" do
+      let(:blocked_range) { 10000..10005 }
       before(:each) do
-        @servers = block_ports(10000..10005)
+        @servers = block_ports(blocked_range)
       end
 
       it "successfully find an available port" do
@@ -99,10 +115,13 @@ describe LogStash::WebServer do
         end
 
         sleep(1)
+        address = subject.address
+        port = address.split(":").last.to_i
+        expect(port_range).to cover(port)
+        expect(blocked_range).to_not cover(port)
 
-        response = open("http://localhost:10006").read
+        response = open("http://#{address}").read
         expect { LogStash::Json.load(response) }.not_to raise_error
-        expect(subject.address).to eq("localhost:10006")
 
         subject.stop
         t.join

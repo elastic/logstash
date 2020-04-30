@@ -6,7 +6,6 @@ require "logstash-core"
 require "logstash/agent"
 require "logstash/agent"
 require "monitoring/inputs/metrics"
-require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
 require 'license_checker/x_pack_info'
 require "rspec/wait"
@@ -47,11 +46,11 @@ describe LogStash::Monitoring::InternalPipelineSource do
 
     let(:unordered_config_parts) { ordered_config_parts.shuffle }
 
-    let(:pipeline_config) { LogStash::Config::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
+    let(:pipeline_config) { Java::OrgLogstashConfigIr::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
 
     let(:es_options) do
       {
-          'url' => elasticsearch_url,
+          'hosts' => elasticsearch_url,
           'user' => elasticsearch_username,
           'password' => elasticsearch_password
       }
@@ -63,7 +62,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
     let(:settings) do
       {
         "xpack.monitoring.enabled" => true,
-        "xpack.monitoring.elasticsearch.url" => elasticsearch_url,
+        "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
         "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
         "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
       }
@@ -101,7 +100,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
         end
       end
 
-      %w(basic standard trial gold platinum).each  do |license_type|
+      LogStash::LicenseChecker::LICENSE_TYPES.each  do |license_type|
         context "With a valid #{license_type} license" do
           let(:license_type) { license_type }
           let(:license) do

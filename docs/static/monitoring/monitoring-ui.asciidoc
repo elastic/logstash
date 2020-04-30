@@ -2,11 +2,10 @@
 [[logstash-monitoring-ui]]
 === Monitoring UI
 
-When running Logstash 5.2 or greater, you can use the
-https://www.elastic.co/products/x-pack/monitoring[monitoring feature in X-Pack]
-to gain deep visibility into metrics about your Logstash deployment. In the
-overview dashboard, you can see all events received and sent by Logstash, plus
-info about memory usage and uptime:
+Use the https://www.elastic.co/products/x-pack/monitoring[monitoring feature in
+X-Pack] to view metrics and gain insight into how your Logstash deployment is
+running. In the overview dashboard, you can see all events received and sent by
+Logstash, plus info about memory usage and uptime:
 
 image::static/monitoring/images/overviewstats.png[Logstash monitoring overview dashboard in Kibana]
 

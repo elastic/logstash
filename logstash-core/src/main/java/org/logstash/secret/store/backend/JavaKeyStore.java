@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.secret.store.backend;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,7 +61,7 @@ public final class JavaKeyStore implements SecretStore {
     private static final String KEYSTORE_TYPE = "pkcs12";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String PATH_KEY = "keystore.file";
-    private static final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
+    private final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
     private KeyStore keyStore;
     private char[] keyStorePass;
     private Path keyStorePath;
@@ -138,6 +158,9 @@ public final class JavaKeyStore implements SecretStore {
         return new File(new String(path)).exists();
     }
 
+    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
+    // since this project still supports Java 8, suppress the warning.
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable {
         SecretStoreUtil.clearChars(keyStorePass);
@@ -405,4 +428,3 @@ public final class JavaKeyStore implements SecretStore {
         return !(chars == null || chars.length == 0);
     }
 }
-

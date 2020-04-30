@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ext;
 
 import java.io.IOException;
@@ -71,6 +91,8 @@ public final class JrubyEventExtLibrary {
                 this.event = new Event(
                     ConvertedMap.newFromRubyHash(context, (RubyHash) data)
                 );
+            } else if (data != null && data.getJavaClass().equals(Event.class)) {
+                this.event = data.toJava(Event.class);
             } else {
                 initializeFallback(context, data);
             }
@@ -96,7 +118,7 @@ public final class JrubyEventExtLibrary {
                 }
                 this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             } else {
-                this.event.setField(r, Valuefier.convert(value));
+                this.event.setField(r, safeValueifierConvert(value));
             }
             return value;
         }
@@ -105,14 +127,14 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_cancel(ThreadContext context)
         {
             this.event.cancel();
-            return context.runtime.getTrue();
+            return context.tru;
         }
 
         @JRubyMethod(name = "uncancel")
         public IRubyObject ruby_uncancel(ThreadContext context)
         {
             this.event.uncancel();
-            return context.runtime.getFalse();
+            return context.fals;
         }
 
         @JRubyMethod(name = "cancelled?")
@@ -174,7 +196,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw new RaiseException(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", true);
+                throw RaiseException.from(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing");
             }
         }
 
@@ -212,7 +234,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage());
             }
         }
 
@@ -226,20 +248,19 @@ public final class JrubyEventExtLibrary {
             try {
                 events = Event.fromJson(value.asJavaString());
             } catch (Exception e) {
-                throw new RaiseException(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage(), true);
+                throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
             }
-
-            RubyArray result = RubyArray.newArray(context.runtime, events.length);
 
             if (events.length == 1) {
                 // micro optimization for the 1 event more common use-case.
-                result.set(0, RubyEvent.newRubyEvent(context.runtime, events[0]));
-            } else {
-                for (int i = 0; i < events.length; i++) {
-                    result.set(i, RubyEvent.newRubyEvent(context.runtime, events[i]));
-                }
+                return context.runtime.newArray(RubyEvent.newRubyEvent(context.runtime, events[0]));
             }
-            return result;
+
+            IRubyObject[] rubyEvents = new IRubyObject[events.length];
+            for (int i = 0; i < events.length; i++) {
+                rubyEvents[i] = RubyEvent.newRubyEvent(context.runtime, events[i]);
+            }
+            return context.runtime.newArrayNoCopy(rubyEvents);
         }
 
         @JRubyMethod(name = "validate_value", required = 1, meta = true)
@@ -316,6 +337,22 @@ public final class JrubyEventExtLibrary {
         private static FieldReference extractFieldReference(final RubyString reference) {
             try {
                 return FieldReference.from(reference);
+            } catch (FieldReference.IllegalSyntaxException ise) {
+                throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
+            }
+        }
+
+        /**
+         * Shared logic to wrap {@link FieldReference.IllegalSyntaxException}s that are raised by
+         * {@link Valuefier#convert(Object)} when encountering illegal syntax in a ruby-exception
+         * that can be easily handled within the ruby plugins
+         *
+         * @param value a {@link Object} to be passed to {@link Valuefier#convert(Object)}
+         * @return the resulting {@link Object} (see: {@link Valuefier#convert(Object)})
+         */
+        private static Object safeValueifierConvert(final Object value) {
+            try {
+                return Valuefier.convert(value);
             } catch (FieldReference.IllegalSyntaxException ise) {
                 throw RubyUtil.RUBY.newRuntimeError(ise.getMessage());
             }

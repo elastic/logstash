@@ -1,9 +1,11 @@
 ifeval::["{versioned_docs}"!="true"]
+[subs="attributes"]
 ++++
 <titleabbrev>{plugin}</titleabbrev>
 ++++
 endif::[]
 ifeval::["{versioned_docs}"=="true"]
+[subs="attributes"]
 ++++
 <titleabbrev>{version}</titleabbrev>
 ++++
@@ -28,12 +30,14 @@ To learn more about Logstash, see the {logstash-ref}/index.html[Logstash Referen
 
 endif::[]
 
-ifeval::[("{default_plugin}"=="0") and ("{versioned_docs}"!="true")]
+ifeval::["{default_plugin}"=="0"]
+ifeval::["{versioned_docs}"!="true"]
 
 ==== Installation
 
 For plugins not bundled by default, it is easy to install by running +bin/logstash-plugin install logstash-{type}-{plugin}+. See {logstash-ref}/working-with-plugins.html[Working with plugins] for more details.
 
+endif::[]
 endif::[]
 
 ==== Getting Help

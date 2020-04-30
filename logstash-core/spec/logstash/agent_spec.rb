@@ -1,8 +1,23 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
-require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
 require_relative "../support/mocks_classes"
 require "fileutils"
@@ -69,7 +84,7 @@ describe LogStash::Agent do
 
       it "should delegate settings to new pipeline" do
         expect(LogStash::JavaPipeline).to receive(:new) do |arg1, arg2|
-          expect(arg1).to eq(config_string)
+          expect(arg1.to_s).to eq(config_string)
           expect(arg2.to_hash).to include(agent_args)
         end
         subject.converge_state_and_update
@@ -119,7 +134,7 @@ describe LogStash::Agent do
         context "if state is clean" do
           before :each do
             allow(subject).to receive(:running_user_defined_pipelines?).and_return(true)
-            allow(subject).to receive(:clean_state?).and_return(false)
+            allow(subject).to receive(:no_pipeline?).and_return(false)
           end
 
           it "should not converge state more than once" do
@@ -142,7 +157,7 @@ describe LogStash::Agent do
             it "does not upgrade the new config" do
               t = Thread.new { subject.execute }
               wait(timeout)
-                  .for { subject.running_pipelines? && subject.pipelines.values.first.ready? }
+                  .for { subject.running_pipelines? && subject.running_pipelines.values.first.ready? }
                   .to eq(true)
               expect(subject.converge_state_and_update).not_to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -162,7 +177,7 @@ describe LogStash::Agent do
             it "does upgrade the new config" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.pipelines_count > 0 && subject.pipelines.values.first.ready?
+                sleep(0.1) until subject.running_pipelines_count > 0 && subject.running_pipelines.values.first.ready?
               end
 
               expect(subject.converge_state_and_update).to be_a_successful_converge
@@ -186,7 +201,7 @@ describe LogStash::Agent do
             it "does not try to reload the pipeline" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.running?
+                sleep(0.1) until subject.running_pipelines? && subject.running_pipelines.values.first.running?
               end
               expect(subject.converge_state_and_update).not_to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -206,7 +221,7 @@ describe LogStash::Agent do
             it "tries to reload the pipeline" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
-                sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.running?
+                sleep(0.1) until subject.running_pipelines? && subject.running_pipelines.values.first.running?
               end
 
               expect(subject.converge_state_and_update).to be_a_successful_converge

@@ -2,8 +2,10 @@
 === Logstash Netflow Module
 
 ++++
-<titleabbrev>Netflow Module</titleabbrev>
+<titleabbrev>Netflow Module (deprecated)</titleabbrev>
 ++++
+
+deprecated[7.4.0, Replaced by the {filebeat-ref}/filebeat-module-netflow.html[{Filebeat} Netflow Module] which is compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]]
 
 The Logstash Netflow module simplifies the collection, normalization, and
 visualization of network flow data. With a single command, the module parses
@@ -11,6 +13,7 @@ network flow data, indexes the events into Elasticsearch, and installs a suite
 of Kibana dashboards to get you exploring your data immediately.
 
 Logstash modules support Netflow Version 5 and 9.
+
 
 ==== What is Flow Data?
 
@@ -33,6 +36,10 @@ install.
 
 [[netflow-getting-started]]
 ==== Getting Started
+
+NOTE: The {ls} Netflow Module has been deprecated and replaced by the
+{filebeat-ref}/filebeat-module-netflow.html[{Filebeat} Netflow Module], which is
+compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)].
 
 . Start the Logstash Netflow module by running the following command in the
 Logstash installation directory:

@@ -1,9 +1,30 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.secret.store;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -105,14 +126,14 @@ public class SecretStoreFactory {
             addSecretStoreAccess(secureConfig);
 
             if (MODE.LOAD.equals(mode)) {
-                return implementation.newInstance().load(secureConfig);
+                return implementation.getConstructor().newInstance().load(secureConfig);
             } else if (MODE.CREATE.equals(mode)) {
-                return implementation.newInstance().create(secureConfig);
+                return implementation.getConstructor().newInstance().create(secureConfig);
             } else if (MODE.DELETE.equals(mode)) {
-                implementation.newInstance().delete(secureConfig);
+                implementation.getConstructor().newInstance().delete(secureConfig);
                 return null;
             } else if (MODE.EXISTS.equals(mode)) {
-                return implementation.newInstance();
+                return implementation.getConstructor().newInstance();
             } else {
                 throw new IllegalStateException("missing mode. This is bug in Logstash.");
             }
@@ -120,6 +141,10 @@ public class SecretStoreFactory {
             throw new SecretStoreException.ImplementationNotFoundException(
                     String.format("Could not %s class %s, please validate the `keystore.classname` is configured correctly and that the class can be loaded by Logstash ", mode
                                     .name().toLowerCase(), className), e);
+        } catch (NoSuchMethodException | InvocationTargetException e) {
+            throw new SecretStoreException.ImplementationInvalidException(
+                    String.format("Could not %s class %s, please validate the `keystore.classname` is configured correctly and that the class can be loaded by Logstash ", mode
+                            .name().toLowerCase(), className), e);
         }
     }
 

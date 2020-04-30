@@ -23,7 +23,7 @@ Then, run logstash and specify the configuration file with the `-f` flag.
 bin/logstash -f logstash-simple.conf
 ----------------------------------
 
-Et voilà! Logstash reads  the specified configuration file and outputs to both Elasticsearch and stdout. Before we
+Et voilà! Logstash reads  the specified configuration file and outputs to both Elasticsearch and stdout. Note that if you see a message in stdout that reads "Elasticsearch Unreachable" that you will need to make sure Elasticsearch is installed and up and reachable on port 9200. Before we
 move on to some <<config-examples,more complex examples>>, let's take a closer look at what's in a config file.
 
 [[configuration-file-structure]]

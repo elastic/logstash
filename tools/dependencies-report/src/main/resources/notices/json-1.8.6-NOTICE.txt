@@ -1,3 +1,0 @@
-source: https://github.com/flori/json/blob/v1.8.6/README.md#license
-
-Ruby License, see https://www.ruby-lang.org/en/about/license.txt.

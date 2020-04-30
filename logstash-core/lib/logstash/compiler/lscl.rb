@@ -1,8 +1,25 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 require "logstash/compiler/lscl/helpers"
 require "logstash/config/string_escape"
+require "logstash/util"
 
 java_import org.logstash.config.ir.DSL
 java_import org.logstash.common.SourceWithMetadata
@@ -111,11 +128,11 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
           # hash value; e.g., `{"match" => {"baz" => "bar"}, "match" => {"foo" => "bulb"}}` is
           # interpreted as `{"match" => {"baz" => "bar", "foo" => "blub"}}`.
           # (NOTE: this bypasses `AST::Hash`'s ability to detect duplicate keys)
-          hash[k] = existing.merge(v)
+          hash[k] = ::LogStash::Util.hash_merge_many(existing, v)
         elsif existing.kind_of?(::Array)
           hash[k] = existing.push(*v)
         else
-          hash[k] = existing + v
+          hash[k] = [existing, v] unless v == existing
         end
         hash
       end
@@ -130,7 +147,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Attribute < Node
     def expr
-      [name.text_value, value.expr]
+      [name.is_a?(AST::String) ? name.text_value[1...-1] : name.text_value, value.expr]
     end
   end
 
@@ -164,8 +181,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class Number < Value
     def expr
       jdsl.eValue(source_meta, text_value.include?(".") ?
-        text_value.to_f :
-        text_value.to_i)
+                                   Float(text_value) :
+                                   Integer(text_value))
     end
   end
 
@@ -317,10 +334,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def precedence(op)
       #  Believe this is right for logstash?
-      case op
-      when AND_METHOD
+      if op == AND_METHOD
         2
-      when OR_METHOD
+      elsif op == OR_METHOD
         1
       else
         raise ArgumentError, "Unexpected operator #{op}"

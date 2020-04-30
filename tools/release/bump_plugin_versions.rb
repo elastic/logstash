@@ -1,5 +1,21 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'net/http'
 require 'uri'
 require 'fileutils'
@@ -31,7 +47,7 @@ end
 puts "Computing #{allow_bump_for} plugin dependency bump from #{base_logstash_version}.."
 
 puts "Fetching lock file for #{base_logstash_version}.."
-uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.3.lock.release")
+uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
 result = Net::HTTP.get(uri)
 if result.match(/404/)
   puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
@@ -53,14 +69,16 @@ puts "Generating new Gemfile.template file with computed dependencies"
 gemfile = IO.read("Gemfile.template")
 base_plugin_versions.each do |plugin, version|
   dependency = compute_dependecy(version, allow_bump_for)
-  gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"")
+  if gemfile.gsub!(/"#{plugin}".*$/, "\"#{plugin}\", \"#{dependency}\"").nil?
+    gemfile << "gem \"#{plugin}\", \"#{dependency}\"\n"
+  end
 end
 
 IO.write("Gemfile.template", gemfile)
 
 puts "Cleaning up before running 'rake artifact:tar'"
 FileUtils.rm_f("Gemfile")
-FileUtils.rm_f("Gemfile.jruby-2.3.lock.release")
+FileUtils.rm_f("Gemfile.jruby-2.5.lock.release")
 FileUtils.rm_rf("vendor")
 
 # compute new lock file
@@ -78,23 +96,23 @@ IO.write("Gemfile.lock", new_lock.join("\n"))
 
 # rename file
 puts "Finishing up.."
-FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.3.lock.release")
+FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.5.lock.release")
 
 `git checkout -- Gemfile.template`
 
-puts `git diff Gemfile.jruby-2.3.lock.release`
+puts `git diff Gemfile.jruby-2.5.lock.release`
 
 puts "Creating commit.."
 
 branch_name = "update_lock_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
-`git commit Gemfile.jruby-2.3.lock.release -m "Update #{allow_bump_for} plugin versions in gemfile lock"`
+`git commit Gemfile.jruby-2.5.lock.release -m "Update #{allow_bump_for} plugin versions in gemfile lock"`
 
 puts "Pushing commit.."
 `git remote add upstream git@github.com:elastic/logstash.git`
 `git push upstream #{branch_name}`
 
-current_release = YAML.parse(IO.read("versions.yml"))["logstash"]
+current_release = YAML.safe_load(IO.read("versions.yml"))["logstash"]
 puts "Creating Pull Request"
 pr_title = "bump lock file for #{current_release}"
 

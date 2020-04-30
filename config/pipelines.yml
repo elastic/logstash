@@ -35,9 +35,6 @@
 #   # before dispatching an undersized batch to filters+outputs
 #   pipeline.batch.delay: 50
 #
-#   # How many workers should be used per output plugin instance
-#   pipeline.output.workers: 1
-#
 #   # Internal queuing model, "memory" for legacy in-memory based queuing and
 #   # "persisted" for disk-based acked queueing. Defaults is memory
 #   queue.type: memory

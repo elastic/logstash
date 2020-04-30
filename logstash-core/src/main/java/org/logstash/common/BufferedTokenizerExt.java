@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.common;
 
 import org.jruby.Ruby;
@@ -18,7 +38,7 @@ public class BufferedTokenizerExt extends RubyObject {
 
     private static final IRubyObject MINUS_ONE = RubyUtil.RUBY.newFixnum(-1);
 
-    private RubyArray input = RubyUtil.RUBY.newArray();
+    private @SuppressWarnings("rawtypes") RubyArray input = RubyUtil.RUBY.newArray();
     private IRubyObject delimiter = RubyUtil.RUBY.newString("\n");
     private int sizeLimit;
     private boolean hasSizeLimit;
@@ -53,6 +73,7 @@ public class BufferedTokenizerExt extends RubyObject {
      * @return Extracted tokens
      */
     @JRubyMethod
+    @SuppressWarnings("rawtypes")
     public RubyArray extract(final ThreadContext context, IRubyObject data) {
         final RubyArray entities = ((RubyString) data).split(context, delimiter, MINUS_ONE);
         if (hasSizeLimit) {

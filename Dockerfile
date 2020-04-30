@@ -1,20 +1,44 @@
-FROM container-registry-test.elastic.co/logstash-test/logstash-base:latest
+FROM ubuntu:bionic
 
-RUN ln -s /tmp/vendor /opt/logstash/vendor
+RUN apt-get update && \
+    apt-get install -y zlib1g-dev build-essential vim rake git curl libssl-dev libreadline-dev libyaml-dev  \
+      libxml2-dev libxslt-dev openjdk-11-jdk-headless curl iputils-ping netcat && \
+    apt-get clean
 
-ADD gradlew /opt/logstash/gradlew
-ADD gradle/wrapper /opt/logstash/gradle/wrapper
-ADD buildSrc /opt/logstash/buildSrc
-RUN /opt/logstash/gradlew wrapper
+WORKDIR /root
+
+RUN adduser --disabled-password --gecos "" --home /home/logstash logstash && \
+    mkdir -p /usr/local/share/ruby-build && \
+    mkdir -p /opt/logstash && \
+    mkdir -p /opt/logstash/data && \
+    mkdir -p /mnt/host && \
+    chown logstash:logstash /opt/logstash
+
+USER logstash
+WORKDIR /home/logstash
+
+# used by the purge policy
+LABEL retention="keep"
+
+# Setup gradle wrapper. When running any `gradle` command, a `settings.gradle` is expected (and will soon be required).
+# This section adds the gradle wrapper, `settings.gradle` and sets the permissions (setting the user to root for `chown`
+# and working directory to allow this and then reverts back to the previous working directory and user.
+COPY --chown=logstash:logstash gradlew /opt/logstash/gradlew
+COPY --chown=logstash:logstash gradle/wrapper /opt/logstash/gradle/wrapper
+COPY --chown=logstash:logstash settings.gradle /opt/logstash/settings.gradle
+WORKDIR /opt/logstash
+RUN ./gradlew wrapper --warning-mode all
+WORKDIR /home/logstash
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE.txt /opt/logstash/LICENSE.txt
 ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
 ADD licenses /opt/logstash/licenses
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
-ADD Gemfile.template /opt/logstash/Gemfile.template
+ADD Gemfile.template Gemfile.jruby-2.5.lock.* /opt/logstash/
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
+ADD rubyUtils.gradle /opt/logstash/rubyUtils.gradle
 ADD rakelib /opt/logstash/rakelib
 ADD config /opt/logstash/config
 ADD spec /opt/logstash/spec
@@ -28,7 +52,6 @@ ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
 ADD x-pack /opt/logstash/x-pack
 ADD ci /opt/logstash/ci
-ADD settings.gradle /opt/logstash/settings.gradle
 
 USER root
 RUN rm -rf build && \
@@ -38,4 +61,3 @@ USER logstash
 WORKDIR /opt/logstash
 
 LABEL retention="prune"
-

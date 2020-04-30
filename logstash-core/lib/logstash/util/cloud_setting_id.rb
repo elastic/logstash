@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "base64"
 
 module LogStash module Util class CloudSettingId
@@ -57,7 +73,7 @@ module LogStash module Util class CloudSettingId
 
     @elasticsearch_host, @kibana_host, *@other_identifiers = segments
     @elasticsearch_host, @elasticsearch_port = @elasticsearch_host.split(":")
-    @kibana_host, @kibana_port = @kibana_host.split(":")
+    @kibana_host, @kibana_port = @kibana_host.split(":") if @kibana_host
     @elasticsearch_port ||= cloud_port
     @kibana_port ||= cloud_port
     @other_identifiers ||= []
@@ -72,7 +88,9 @@ module LogStash module Util class CloudSettingId
     if @kibana_host == "undefined"
       raise ArgumentError.new("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.")
     end
+
     @kibana_scheme = "https"
+    @kibana_host ||= String.new # non-sense really to have '.my-host:443' but we're mirroring others
     @kibana_host.concat(cloud_host)
     @kibana_host.concat(":#{@kibana_port}")
   end

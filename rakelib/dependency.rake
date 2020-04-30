@@ -1,39 +1,22 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 namespace "dependency" do
   task "bundler" do
-    Rake::Task["gem:require"].invoke("bundler", "~> 1.9.4")
+    Rake::Task["gem:require"].invoke("bundler", "~> 1.17.3")
   end
-
-  task "clamp" do
-    Rake::Task["gem:require"].invoke("clamp", "~> 0.6.5")
-  end
-
-  task "rbx-stdlib" do
-    Rake::Task["gem:require"].invoke("rubysl", ">= 0")
-  end # task rbx-stdlib
-
-  task "archive-tar-minitar" do
-    Rake::Task["gem:require"].invoke("minitar", "0.6.1")
-  end # task archive-minitar
-
-  task "stud" do
-    Rake::Task["gem:require"].invoke("stud", ">= 0")
-  end # task stud
-
-  task "fpm" do
-    Rake::Task["gem:require"].invoke("fpm", ">= 0")
-  end # task stud
-
-  task "rubyzip" do
-    Rake::Task["gem:require"].invoke("rubyzip", ">= 0")
-  end # task stud
-
-  task "octokit" do
-    Rake::Task["gem:require"].invoke("octokit", ">= 0")
-  end # task octokit
-
-  task "gems" do
-    Rake::Task["gem:require"].invoke("gems", ">= 0")
-  end # task gems
-
 end # namespace dependency

@@ -29,7 +29,7 @@ describe "Read configuration from elasticsearch" do
         "xpack.management.enabled" => true,
         "xpack.management.pipeline.id" => @pipelines.keys,
         "xpack.management.logstash.poll_interval" => "1s",
-        "xpack.management.elasticsearch.url" => ["http://localhost:9200"],
+        "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
         "xpack.management.elasticsearch.username" => "elastic",
         "xpack.management.elasticsearch.password" => elastic_password,
         "xpack.monitoring.elasticsearch.username" => "elastic",

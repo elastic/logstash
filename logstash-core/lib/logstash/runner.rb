@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
@@ -108,10 +124,20 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
+  option "--pipeline.ordered", "ORDERED",
+    I18n.t("logstash.runner.flag.pipeline-ordered"),
+    :attribute_name => "pipeline.ordered",
+    :default => LogStash::SETTINGS.get_default("pipeline.ordered")
+
   option ["--java-execution"], :flag,
          I18n.t("logstash.runner.flag.java-execution"),
          :attribute_name => "pipeline.java_execution",
          :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
+
+  option ["--plugin-classloaders"], :flag,
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
@@ -177,6 +203,11 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.reload_interval"),
     :attribute_name => "config.reload.interval",
     :default => LogStash::SETTINGS.get_default("config.reload.interval")
+
+  option ["--http.enabled"], "ENABLED",
+         I18n.t("logstash.runner.flag.http_enabled"),
+         :attribute_name => 'http.enabled',
+         :default => LogStash::SETTINGS.get_default('http.enabled')
 
   option ["--http.host"], "HTTP_HOST",
     I18n.t("logstash.runner.flag.http_host"),
@@ -249,6 +280,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.logs", setting("path.logs"))
     java.lang.System.setProperty("ls.log.format", setting("log.format"))
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
 
@@ -331,7 +363,8 @@ class LogStash::Runner < Clamp::StrictCommand
         # TODO(ph): make it better for multiple pipeline
         if results.success?
           results.response.each do |pipeline_config|
-            LogStash::BasePipeline.new(pipeline_config)
+            pipeline_class = pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::BasePipeline
+            pipeline_class.new(pipeline_config)
           end
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
@@ -368,6 +401,8 @@ class LogStash::Runner < Clamp::StrictCommand
     agent_return = @agent_task.wait
 
     @agent.shutdown
+
+    logger.info("Logstash shut down.")
 
     # flush any outstanding log messages during shutdown
     org.apache.logging.log4j.LogManager.shutdown

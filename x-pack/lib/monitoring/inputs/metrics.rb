@@ -44,6 +44,7 @@ module LogStash module Inputs
     def register
       @global_stats = fetch_global_stats
       @agent = nil
+      @cluster_uuids = nil
       @settings = LogStash::SETTINGS.clone
       @last_updated_pipeline_hashes = []
       @agent = execution_context.agent if execution_context
@@ -65,18 +66,28 @@ module LogStash module Inputs
       @timer_task.add_observer(TimerTaskLogger.new)
     end
 
-      def run(arg_queue)
-        @logger.debug("Metric: input started")
-        @queue = arg_queue
+    def run(arg_queue)
+      @logger.debug("Metric: input started")
+      @queue = arg_queue
 
-        configure_snapshot_poller
+      configure_snapshot_poller
 
-        # This must be invoked here because we need a queue to store the data
-        LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
+      # This hook registration was originally set here to act on pipeline_started dispatcher event
+      # from the Agent using the pipeline_started method here which sends events to the pipeline queue
+      # which is only available here in the run method.
+      #
+      # There are 2 things to know with this strategy:
+      # - The initial pipeline creation preceding this plugin invocation will not be catched by our
+      #   hook here because it is added after the initial pipeline creations.
+      #
+      # - The below remove_hooks was added because not removing it was causing problems in tests where
+      #   multiple instances of this plugin would be created and added in the global static PLUGIN_REGISTRY
+      #   leading to calling the pipeline_started method multiple times leading to weird problems.
+      LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
 
-        exec_timer_task
-        sleep_till_stop
-      end
+      exec_timer_task
+      sleep_till_stop
+    end
 
     def exec_timer_task
       @timer_task.execute
@@ -90,19 +101,33 @@ module LogStash module Inputs
 
     def stop
       @logger.debug("Metrics input: stopped")
+      LogStash::PLUGIN_REGISTRY.hooks.remove_hooks(LogStash::Agent, self)
       @timer_task.shutdown if @timer_task
     end
 
     def update(snapshot)
+      if LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
+        @cluster_uuids ||= extract_cluster_uuids(snapshot.metric_store)
+      end
       update_stats(snapshot)
       update_states
     end
 
     def update_stats(snapshot)
       @logger.debug("Metrics input: received a new snapshot", :created_at => snapshot.created_at, :snapshot => snapshot) if @logger.debug?
+      if @cluster_uuids.nil? || @cluster_uuids.empty?
+        fire_stats_event(snapshot, nil)
+      else
+        @cluster_uuids.each do |cluster_uuid|
+          fire_stats_event(snapshot, cluster_uuid)
+        end
+      end
+    end
 
+    private
+    def fire_stats_event(snapshot, cluster_uuid)
       begin
-        event = StatsEventFactory.new(@global_stats, snapshot).make(agent, @extended_performance_collection)
+        event = StatsEventFactory.new(@global_stats, snapshot, cluster_uuid).make(agent, @extended_performance_collection, @collection_interval)
       rescue => e
         if @logger.debug?
           @logger.error("Failed to create monitoring event", :message => e.message, :error => e.class.name, :backtrace => e.backtrace)
@@ -121,6 +146,7 @@ module LogStash module Inputs
       emit_event(event)
     end
 
+    public
     def update_states
       return unless @agent
 
@@ -128,7 +154,7 @@ module LogStash module Inputs
       time_for_update = @last_states_update.nil? || @last_states_update < (Time.now - 60*10)
 
       pipeline_hashes = []
-      agent.pipelines.each do |pipeline_id, pipeline|
+      agent.running_pipelines.each do |pipeline_id, pipeline|
         if time_for_update || !@last_updated_pipeline_hashes.include?(pipeline.hash)
           update_pipeline_state(pipeline)
         end
@@ -142,12 +168,19 @@ module LogStash module Inputs
     def update_pipeline_state(pipeline)
       return if pipeline.system?
       if @config_collection
-        emit_event(state_event_for(pipeline))
+        events = state_event_for(pipeline)
+        events.each { |event| emit_event(event) }
       end
     end
 
     def state_event_for(pipeline)
-      StateEventFactory.new(pipeline).make()
+      if @cluster_uuids.nil? || @cluster_uuids.empty?
+        [StateEventFactory.new(pipeline, nil, @collection_interval).make()]
+      else
+        @cluster_uuids.map do |cluster_uuid|
+          StateEventFactory.new(pipeline, cluster_uuid, @collection_interval).make()
+        end
+      end
     end
 
     def emit_event(event)
@@ -175,6 +208,28 @@ module LogStash module Inputs
           "batch_size" => LogStash::SETTINGS.get("pipeline.batch.size"),
         }
       }
+    end
+
+    def extract_cluster_uuids(stats)
+      cluster_uuids = agent.running_pipelines.flat_map do |_, pipeline|
+        next if pipeline.system?
+        pipeline.resolve_cluster_uuids
+      end.compact.uniq
+
+      if cluster_uuids.any?
+        @logger.info("Found cluster_uuids from elasticsearch output plugins", :cluster_uuids => cluster_uuids)
+        if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
+          @logger.warn("Found monitoring.cluster_uuid setting configured in logstash.yml while using the ones discovered from elasticsearch output plugins, ignoring setting monitoring.cluster_uuid")
+        end
+        cluster_uuids
+      else
+        if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
+          [LogStash::SETTINGS.get("monitoring.cluster_uuid")]
+        else
+          @logger.warn("Can't find any cluster_uuid from elasticsearch output plugins nor monitoring.cluster_uuid in logstash.yml is defined")
+          [""]
+        end
+      end
     end
   end
 end; end

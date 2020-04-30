@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash;
 
 import java.io.IOException;
@@ -452,5 +472,33 @@ public final class EventTest {
         assertEquals(ArrayList.class, list.getClass());
         assertEquals(list, Arrays.asList("hello"));
 
+    }
+
+    @Test
+    public void removeMetadataField() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final RubyString s = (RubyString)event.remove("[@metadata][foo]");
+        assertEquals(s.toString(), "bar");
+
+        assertFalse(event.includes("[@metadata][foo]"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void removeMetadata() {
+        final Event event = new Event();
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", "bar");
+        event.setField("@metadata", metadata);
+
+        final Map<String, Object> m = (Map)(event.remove("[@metadata]"));
+        assertEquals(m.get("foo"), "bar");
+
+        assertTrue(event.getMetadata().isEmpty());
+        assertFalse(event.includes("[@metadata][foo]"));
     }
 }

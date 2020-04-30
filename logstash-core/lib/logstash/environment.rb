@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash-core/logstash-core"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
@@ -38,12 +54,14 @@ module LogStash
             Setting::String.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
-   Setting::PositiveInteger.new("pipeline.output.workers", 1),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
            Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
+           Setting::Boolean.new("pipeline.plugin_classloaders", false),
+           Setting::Boolean.new("pipeline.separate_logs", false),
+   Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
@@ -51,8 +69,9 @@ module LogStash
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
+           Setting::Boolean.new("http.enabled", true),
             Setting::String.new("http.host", "127.0.0.1"),
-            Setting::PortRange.new("http.port", 9600..9700),
+         Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
             Setting::Boolean.new("queue.drain", false),
@@ -70,7 +89,8 @@ module LogStash
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
             Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
-            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false) # will be populated on
+            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
+            Setting::NullableString.new("monitoring.cluster_uuid")
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
@@ -164,11 +184,15 @@ module LogStash
     end
 
     def windows?
-      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+      host_os =~ WINDOW_OS_RE
     end
 
     def linux?
-      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
+      host_os =~ LINUX_OS_RE
+    end
+
+    def host_os
+      RbConfig::CONFIG['host_os']
     end
 
     def locales_path(path)

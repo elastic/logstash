@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import java.io.IOException;
@@ -6,7 +26,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -28,8 +50,10 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
-import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
+import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -37,6 +61,8 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreExt;
 
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
@@ -45,10 +71,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
-    private static final RubyArray CAPACITY_NAMESPACE =
+    private static final @SuppressWarnings("rawtypes") RubyArray CAPACITY_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("capacity"));
 
-    private static final RubyArray DATA_NAMESPACE =
+    private static final @SuppressWarnings("rawtypes") RubyArray DATA_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("data"));
 
     private static final RubySymbol PAGE_CAPACITY_IN_BYTES =
@@ -76,7 +102,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
-    private static final RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
+    private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
     );
 
@@ -87,6 +113,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private AbstractNamespacedMetricExt dlqMetric;
 
     private RubyString configString;
+
+    @SuppressWarnings("rawtypes")
+    private List<SourceWithMetadata> configParts;
 
     private RubyString configHash;
 
@@ -116,12 +145,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
-        throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
+        throws NoSuchAlgorithmException {
         reporter = new PipelineReporterExt(
             context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
+        configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
         configHash = context.runtime.newString(
             Hex.encodeHexString(
                 MessageDigest.getInstance("SHA1").digest(configString.getBytes())
@@ -148,10 +178,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
-            getSetting(context, "config.support_escapes").isTrue()
-        );
+        boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+        try {
+            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
+        }
         return this;
     }
 
@@ -182,7 +214,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     context.runtime,
                     new IRubyObject[]{
                         MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
-                        pipelineId.convertToString().intern19(), MetricKeys.EVENTS_KEY
+                        pipelineId.convertToString().intern(), MetricKeys.EVENTS_KEY
                     }
                 )
             )
@@ -362,8 +394,51 @@ public class AbstractPipelineExt extends RubyBasicObject {
             .initialize(inputQueueClient, pipelineId.asJavaString(), metric, pluginId);
     }
 
+    @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
+    @SuppressWarnings("rawtypes")
+    public RubyArray getPipelineSourceDetails(final ThreadContext context) {
+        List<RubyString> pipelineSources = new ArrayList<>(configParts.size());
+        for (SourceWithMetadata sourceWithMetadata : configParts) {
+            String protocol = sourceWithMetadata.getProtocol();
+            switch (protocol) {
+                case "string":
+                    pipelineSources.add(RubyString.newString(context.runtime, "config string"));
+                    break;
+                case "file":
+                    pipelineSources.add(RubyString.newString(context.runtime, sourceWithMetadata.getId()));
+                    break;
+                case "x-pack-metrics":
+                    pipelineSources.add(RubyString.newString(context.runtime, "monitoring pipeline"));
+                    break;
+                case "x-pack-config-management":
+                    pipelineSources.add(RubyString.newString(context.runtime, "central pipeline management"));
+                    break;
+                case "module":
+                    pipelineSources.add(RubyString.newString(context.runtime, "module"));
+                    break;
+            }
+        }
+        return RubyArray.newArray(context.runtime, pipelineSources);
+    }
+
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
+    }
+
+    protected final boolean hasSetting(final ThreadContext context, final String name) {
+        return settings.callMethod(context, "registered?", context.runtime.newString(name)) == context.tru;
+    }
+
+    protected SecretStore getSecretStore(final ThreadContext context) {
+        String keystoreFile = hasSetting(context, "keystore.file")
+                ? getSetting(context, "keystore.file").asJavaString()
+                : null;
+        String keystoreClassname = hasSetting(context, "keystore.classname")
+                ? getSetting(context, "keystore.classname").asJavaString()
+                : null;
+        return (keystoreFile != null && keystoreClassname != null)
+                ? SecretStoreExt.getIfExists(keystoreFile, keystoreClassname)
+                : null;
     }
 
     private AbstractNamespacedMetricExt getDlqMetric(final ThreadContext context) {

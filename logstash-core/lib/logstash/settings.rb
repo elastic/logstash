@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "fileutils"
 require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
@@ -9,6 +25,40 @@ module LogStash
 
     include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
+
+    # there are settings that the pipeline uses and can be changed per pipeline instance
+    PIPELINE_SETTINGS_WHITE_LIST = [
+      "config.debug",
+      "config.support_escapes",
+      "config.reload.automatic",
+      "config.reload.interval",
+      "config.string",
+      "dead_letter_queue.enable",
+      "dead_letter_queue.max_bytes",
+      "metric.collect",
+      "pipeline.java_execution",
+      "pipeline.plugin_classloaders",
+      "path.config",
+      "path.dead_letter_queue",
+      "path.queue",
+      "pipeline.batch.delay",
+      "pipeline.batch.size",
+      "pipeline.id",
+      "pipeline.reloadable",
+      "pipeline.system",
+      "pipeline.workers",
+      "pipeline.ordered",
+      "queue.checkpoint.acks",
+      "queue.checkpoint.interval",
+      "queue.checkpoint.writes",
+      "queue.checkpoint.retry",
+      "queue.drain",
+      "queue.max_bytes",
+      "queue.max_events",
+      "queue.page_capacity",
+      "queue.type",
+    ]
+
 
     def initialize
       @settings = {}
@@ -87,6 +137,15 @@ module LogStash
     def merge(hash, graceful = false)
       hash.each {|key, value| set_value(key, value, graceful) }
       self
+    end
+
+    def merge_pipeline_settings(hash, graceful = false)
+      hash.each do |key, _|
+        unless PIPELINE_SETTINGS_WHITE_LIST.include?(key)
+          raise ArgumentError.new("Only pipeline related settings are expected. Received \"#{key}\". Allowed settings: #{PIPELINE_SETTINGS_WHITE_LIST}")
+        end
+      end
+      merge(hash, graceful)
     end
 
     def format_settings
@@ -368,7 +427,7 @@ module LogStash
         case value
         when ::Range
           value
-        when ::Fixnum
+        when ::Integer
           value..value
         when ::String
           first, last = value.split(PORT_SEPARATOR)
@@ -419,6 +478,28 @@ module LogStash
       def validate(value)
         return if value.nil?
         super(value)
+      end
+    end
+
+    # The CoercibleString allows user to enter any value which coerces to a String.
+    # For example for true/false booleans; if the possible_strings are ["foo", "true", "false"]
+    # then these options in the config file or command line will be all valid: "foo", true, false, "true", "false"
+    #
+    class CoercibleString < Coercible
+      def initialize(name, default=nil, strict=true, possible_strings=[], &validator_proc)
+        @possible_strings = possible_strings
+        super(name, Object, default, strict, &validator_proc)
+      end
+
+      def coerce(value)
+        value.to_s
+      end
+
+      def validate(value)
+        super(value)
+        unless @possible_strings.empty? || @possible_strings.include?(value)
+          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+        end
       end
     end
 
@@ -481,11 +562,11 @@ module LogStash
 
     class Bytes < Coercible
       def initialize(name, default=nil, strict=true)
-        super(name, ::Fixnum, default, strict=true) { |value| valid?(value) }
+        super(name, ::Integer, default, strict=true) { |value| valid?(value) }
       end
 
       def valid?(value)
-        value.is_a?(Fixnum) && value >= 0
+        value.is_a?(::Integer) && value >= 0
       end
 
       def coerce(value)
@@ -507,13 +588,22 @@ module LogStash
     end
 
     class TimeValue < Coercible
+      include LogStash::Util::Loggable
+
       def initialize(name, default, strict=true, &validator_proc)
-        super(name, ::Fixnum, default, strict, &validator_proc)
+        super(name, Util::TimeValue, default, strict, &validator_proc)
       end
 
       def coerce(value)
-        return value if value.is_a?(::Fixnum)
-        Util::TimeValue.from_value(value).to_nanos
+        if value.is_a?(::Integer)
+          deprecation_logger.deprecated("Integer value for `#{name}` does not have a time unit and will be interpreted in nanoseconds. " +
+                                        "Time units will be required in a future release of Logstash. " +
+                                        "Acceptable unit suffixes are: `d`, `h`, `m`, `s`, `ms`, `micros`, and `nanos`.")
+
+          return Util::TimeValue.new(value, :nanosecond)
+        end
+
+        Util::TimeValue.from_value(value)
       end
     end
 

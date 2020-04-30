@@ -1,29 +1,11 @@
 
 ==========
-Notice for: bundler-1.16.0
-----------
-
-TEST
-==========
 Notice for: bundler-1.16.1
 ----------
 
-TEST-bundler-1.16.1
-
+TEST
 ==========
 Notice for: com.fasterxml.jackson.core:jackson-core-2.7.3
-----------
-
-TEST
-
-==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.9.1
-----------
-
-TEST
-
-==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.9.4
 ----------
 
 TEST
@@ -59,25 +41,7 @@ Notice for: gradle.plugin.com.github.jk1:gradle-license-report-0.7.1
 TEST
 
 ==========
-Notice for: jar-dependencies-0.3.10
-----------
-
-TEST
-
-==========
-Notice for: jar-dependencies-0.3.11
-----------
-
-TEST
-
-==========
 Notice for: jar-dependencies-0.3.12
-----------
-
-TEST
-
-==========
-Notice for: jruby-openssl-0.9.20
 ----------
 
 TEST
@@ -93,6 +57,12 @@ Notice for: jruby-readline-1.1.1
 ----------
 
 TEST
+
+==========
+Notice for: json-generator-
+----------
+
+json-generator notice
 
 ==========
 Notice for: json-parser-

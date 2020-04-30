@@ -1,0 +1,52 @@
+To develop a new Java {plugintype} for Logstash, you write a new Java class that
+conforms to the Logstash Java {pluginclass} API, package it, and install it with the
+logstash-plugin utility. We'll go through each of those steps.
+
+[float]
+=== Set up your environment
+
+[float]
+==== Copy the example repo
+
+Start by copying the {pluginrepo}. The plugin API is currently part of the
+Logstash codebase so you must have a local copy of that available. You can
+obtain a copy of the Logstash codebase with the following `git` command:
+
+[source,shell]
+-----
+git clone --branch <branch_name> --single-branch https://github.com/elastic/logstash.git <target_folder>
+-----
+
+The `branch_name` should correspond to the version of Logstash containing the
+preferred revision of the Java plugin API. 
+
+NOTE: The GA version of the Java plugin API is available in the `7.2`
+and later branches of the Logstash codebase.
+
+Specify the `target_folder` for your local copy of the Logstash codebase. If you
+do not specify `target_folder`, it defaults to a new folder called `logstash`
+under your current folder.
+
+[float]
+==== Generate the .jar file
+
+After you have obtained a copy of the appropriate revision of the Logstash
+codebase, you need to compile it to generate the .jar file containing the Java
+plugin API. From the root directory of your Logstash codebase ($LS_HOME), you
+can compile it with `./gradlew assemble` (or `gradlew.bat assemble` if you're
+running on Windows). This should produce the
+`$LS_HOME/logstash-core/build/libs/logstash-core-x.y.z.jar` where `x`, `y`, and
+`z` refer to the version of Logstash.
+
+After you have successfully compiled Logstash, you need to tell your Java plugin
+where to find the `logstash-core-x.y.z.jar` file. Create a new file named
+`gradle.properties` in the root folder of your plugin project. That file should
+have a single line:
+
+[source,txt]
+-----
+LOGSTASH_CORE_PATH=<target_folder>/logstash-core
+-----
+
+where `target_folder` is the root folder of your local copy of the Logstash codebase.
+

@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/instrument/periodic_poller/base"
 require "logstash/instrument/periodic_poller/load_average"
 require "logstash/environment"
@@ -153,12 +169,15 @@ module LogStash module Instrument module PeriodicPoller
       old  = {}
       old = old.merge!(heap["CMS Old Gen"]) if heap.has_key?("CMS Old Gen")
       old = old.merge!(heap["PS Old Gen"])  if heap.has_key?("PS Old Gen")
+      old = old.merge!(heap["G1 Old Gen"])  if heap.has_key?("G1 Old Gen")
       young = {}
       young = young.merge!(heap["Par Eden Space"]) if heap.has_key?("Par Eden Space")
       young = young.merge!(heap["PS Eden Space"])  if heap.has_key?("PS Eden Space")
+      young = young.merge!(heap["G1 Eden Space"])  if heap.has_key?("G1 Eden Space")
       survivor = {}
       survivor = survivor.merge!(heap["Par Survivor Space"]) if heap.has_key?("Par Survivor Space")
       survivor = survivor.merge!(heap["PS Survivor Space"])  if heap.has_key?("PS Survivor Space")
+      survivor = survivor.merge!(heap["G1 Survivor Space"])  if heap.has_key?("G1 Survivor Space")
       {
         "young"    => aggregate_information_for(young),
         "old"      => aggregate_information_for(old),

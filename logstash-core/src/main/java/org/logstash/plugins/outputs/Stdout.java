@@ -1,52 +1,79 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.plugins.outputs;
 
-import co.elastic.logstash.api.v0.Codec;
-import org.logstash.Event;
-import co.elastic.logstash.api.LogstashPlugin;
+import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.v0.Output;
+import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.LogstashPlugin;
+import co.elastic.logstash.api.Output;
 import co.elastic.logstash.api.PluginConfigSpec;
-import org.logstash.plugins.discovery.PluginRegistry;
+import co.elastic.logstash.api.PluginHelper;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
-@LogstashPlugin(name = "java-stdout")
+@LogstashPlugin(name = "java_stdout")
 public class Stdout implements Output {
 
-    public static final PluginConfigSpec<String> CODEC_CONFIG =
-            Configuration.stringSetting("codec", "java-line");
+    public static final PluginConfigSpec<Codec> CODEC_CONFIG =
+            PluginConfigSpec.codecSetting("codec", "java_line");
 
     private Codec codec;
     private OutputStream outputStream;
     private final CountDownLatch done = new CountDownLatch(1);
+    private String id;
 
     /**
-     * Required Constructor Signature only taking a {@link Configuration}.
+     * Required constructor.
      *
+     * @param id            Plugin id
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
-    public Stdout(final Configuration configuration, final Context context) {
-        this(configuration, context, System.out);
+    public Stdout(final String id, final Configuration configuration, final Context context) {
+        this(id, configuration, context, System.out);
     }
 
-    Stdout(final Configuration configuration, final Context context, OutputStream targetStream) {
+    Stdout(final String id, final Configuration configuration, final Context context, OutputStream targetStream) {
+        this.id = id;
         this.outputStream = targetStream;
-        String codecName = configuration.get(CODEC_CONFIG);
-        codec = PluginRegistry.getCodec(codecName, configuration, context);
+        codec = configuration.get(CODEC_CONFIG);
         if (codec == null) {
-            throw new IllegalStateException(String.format("Unable to obtain codec '%a'", codecName));
+            throw new IllegalStateException("Unable to obtain codec");
         }
     }
 
     @Override
     public void output(final Collection<Event> events) {
-        for (Event e : events) {
-            codec.encode(e, outputStream);
+        try {
+            for (Event e : events) {
+                codec.encode(e, outputStream);
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
 
@@ -62,6 +89,11 @@ public class Stdout implements Output {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        return Collections.singletonList(CODEC_CONFIG);
+        return PluginHelper.commonOutputSettings(Collections.singletonList(CODEC_CONFIG));
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 }

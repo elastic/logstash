@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/environment"
 
 module LogStash::Util
@@ -9,10 +25,10 @@ module LogStash::Util
 
   PR_SET_NAME = 15
   def self.set_thread_name(name)
-    if RUBY_ENGINE == "jruby"
-      # Keep java and ruby thread names in sync.
-      Java::java.lang.Thread.currentThread.setName(name)
-    end
+    previous_name = Java::java.lang.Thread.currentThread.getName() if block_given?
+
+    # Keep java and ruby thread names in sync.
+    Java::java.lang.Thread.currentThread.setName(name)
     Thread.current[:name] = name
 
     if UNAME == "linux"
@@ -21,24 +37,24 @@ module LogStash::Util
       # since MRI 1.9, JRuby, and Rubinius use system threads for this.
       LibC.prctl(PR_SET_NAME, name[0..16], 0, 0, 0)
     end
+
+    if block_given?
+      begin
+        yield
+      ensure
+        set_thread_name(previous_name)
+      end
+    end
   end # def set_thread_name
 
   def self.set_thread_plugin(plugin)
     Thread.current[:plugin] = plugin
   end
 
-  def self.get_thread_id(thread)
-    if RUBY_ENGINE == "jruby"
-      JRuby.reference(thread).native_thread.id
-    else
-      raise Exception.new("Native thread IDs aren't supported outside of JRuby")
-    end
-  end
-
   def self.thread_info(thread)
     # When the `thread` is dead, `Thread#backtrace` returns `nil`; fall back to an empty array.
     backtrace = (thread.backtrace || []).map do |line|
-      line.gsub(LogStash::Environment::LOGSTASH_HOME, "[...]")
+      line.sub(LogStash::Environment::LOGSTASH_HOME, "[...]")
     end
 
     blocked_on = case backtrace.first
@@ -48,7 +64,7 @@ module LogStash::Util
                  end
 
     {
-      "thread_id" => get_thread_id(thread),
+      "thread_id" => get_thread_id(thread), # might be nil for dead threads
       "name" => thread[:name],
       "plugin" => (thread[:plugin] ? thread[:plugin].debug_info : nil),
       "backtrace" => backtrace,
@@ -191,7 +207,7 @@ module LogStash::Util
       o.inject({}) {|h, (k,v)| h[k] = deep_clone(v); h }
     when Array
       o.map {|v| deep_clone(v) }
-    when Fixnum, Symbol, IO, TrueClass, FalseClass, NilClass
+    when Integer, Symbol, IO, TrueClass, FalseClass, NilClass
       o
     when LogStash::Codecs::Base
       o.clone

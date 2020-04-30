@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.benchmark.cli;
 
 import java.io.ByteArrayOutputStream;
@@ -40,6 +60,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         long count = 0L;
         final ListStatistics counts = new ListStatistics();
         final ListStatistics cpu = new ListStatistics();
+        final ListStatistics mem = new ListStatistics();
         long start = System.nanoTime();
         while (running) {
             try {
@@ -59,6 +80,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 count = newcount;
                 counts.addValue((double) count);
                 cpu.addValue(newcounts[1]);
+                mem.addValue(newcounts[2]);
             } catch (final InterruptedException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -67,6 +89,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         result.put(LsMetricStats.THROUGHPUT, stats);
         result.put(LsMetricStats.COUNT, counts);
         result.put(LsMetricStats.CPU_USAGE, cpu);
+        result.put(LsMetricStats.HEAP_USAGE, mem);
         store.store(result);
         return result;
     }
@@ -100,7 +123,13 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             } else {
                 cpu = readNestedLong(data, "process", "cpu", "percent");
             }
-            return new long[]{count, cpu};
+            final long heapUsed;
+            if(count == -1L) {
+                heapUsed = -1L;
+            } else {
+                heapUsed = readNestedLong(data, "jvm", "mem", "heap_used_percent");
+            }
+            return new long[]{count, cpu, heapUsed};
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }

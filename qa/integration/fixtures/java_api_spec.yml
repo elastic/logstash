@@ -1,0 +1,20 @@
+---
+services:
+- logstash
+config: |-
+  input {
+    java_generator {
+      count => 1
+    }
+  }
+  filter {
+    java_uuid {
+      target => "uuid"
+    }
+    sleep {
+      time => 10
+    }
+  }
+  output {
+    java_stdout { }
+  }

@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import org.jruby.Ruby;
@@ -7,8 +27,7 @@ import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.JavaProxy;
-import org.jruby.javasupport.JavaObject;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -103,7 +122,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(final ThreadContext context) throws InterruptedException {
-        return JavaObject.wrap(context.runtime, readBatch());
+        return RubyUtil.toRubyObject(readBatch());
     }
 
     @Override
@@ -148,11 +167,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      * @return Extracted queue batch
      */
     private static QueueBatch extractQueueBatch(final IRubyObject batch) {
-        if (batch instanceof JavaProxy) {
-            return (QueueBatch) ((JavaObject)batch.dataGetStruct()).getValue();
-        } else {
-            return (QueueBatch)((JavaObject)batch).getValue();
-        }
+        return JavaUtil.unwrapIfJavaObject(batch);
     }
 
     /**

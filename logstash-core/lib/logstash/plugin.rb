@@ -1,7 +1,25 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/config/mixin"
 require "concurrent"
 require "securerandom"
+
+require_relative 'plugin_metadata'
 
 class LogStash::Plugin
   include LogStash::Util::Loggable
@@ -44,12 +62,13 @@ class LogStash::Plugin
 
   def initialize(params=nil)
     @logger = self.logger
+    @deprecation_logger = self.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
-    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),
-                                    settings.get("slowlog.threshold.info"),
-                                    settings.get("slowlog.threshold.debug"),
-                                    settings.get("slowlog.threshold.trace"))
+    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn").to_nanos,
+                                    settings.get("slowlog.threshold.info").to_nanos,
+                                    settings.get("slowlog.threshold.debug").to_nanos,
+                                    settings.get("slowlog.threshold.trace").to_nanos)
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
@@ -70,7 +89,11 @@ class LogStash::Plugin
   # main task terminates
   def do_close
     @logger.debug("Closing", :plugin => self.class.name)
-    close
+    begin
+      close
+    ensure
+      LogStash::PluginMetadata.delete_for_plugin(self.id)
+    end
   end
 
   # Subclasses should implement this close method if you need to perform any
@@ -135,5 +158,23 @@ class LogStash::Plugin
   def self.lookup(type, name)
     require "logstash/plugins/registry"
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
+  end
+
+  ##
+  # Returns this plugin's metadata key/value store.
+  #
+  # @see LogStash::PluginMetadata for restrictions and caveats.
+  # @since 7.1
+  #
+  # @usage:
+  # ~~~
+  # if defined?(plugin_metadata)
+  #   plugin_metadata.set(:foo, 'value')
+  # end
+  # ~~~
+  #
+  # @return [LogStash::PluginMetadata]
+  def plugin_metadata
+    LogStash::PluginMetadata.for_plugin(self.id)
   end
 end # class LogStash::Plugin

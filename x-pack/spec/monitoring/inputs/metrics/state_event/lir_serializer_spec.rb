@@ -5,12 +5,12 @@
 require "spec_helper"
 require "logstash/environment"
 
-describe ::LogStash::Inputs::Metrics::StateEvent::LIRSerializer do
+describe ::LogStash::Config::LIRSerializer do
   let(:config) do
     <<-EOC
       input { fake_input {} }
       filter { 
-        if ([foo] > 2) {
+        if ([foo] < 2) {
           fake_filter {} 
         }
       }
@@ -22,7 +22,9 @@ describe ::LogStash::Inputs::Metrics::StateEvent::LIRSerializer do
   end
 
   let(:lir_pipeline) do
-    ::LogStash::Compiler.compile_sources(config_source_with_metadata, LogStash::SETTINGS)
+#     ::LogStash::Compiler.compile_sources(config_source_with_metadata, true)
+    java_import org.logstash.config.ir.ConfigCompiler
+    ConfigCompiler.compileSources(config_source_with_metadata, true)
   end
 
   describe "#serialize" do

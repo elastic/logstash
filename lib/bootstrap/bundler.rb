@@ -1,4 +1,19 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 require "fileutils"
 
@@ -10,15 +25,20 @@ module LogStash
       # Patch to prevent Bundler to save a .bundle/config file in the root
       # of the application
       ::Bundler::Settings.module_exec do
-        def set_key(key, value, hash, file)
-          key = key_for(key)
+        def set_local(key, value)
+          set_key(key, value, @local_config, nil)
+        end
+      end
 
-          unless hash[key] == value
-            hash[key] = value
-            hash.delete(key) if value.nil?
-          end
-
-          value
+      # In recent versions (currently 1.17.3) Bundler calls reset_paths! early during
+      # Bundler::CLI.start (https://github.com/bundler/bundler/blob/v1.17.3/lib/bundler/cli.rb#L39)
+      # This breaks our setting up of gemfile and bundle paths, the without group setting etc
+      # We need to tone down this very aggressive resetter (https://github.com/bundler/bundler/blob/v1.17.3/lib/bundler.rb#L487-L500)
+      # So we reimplement it here to only nullify the definition object, so that it can be computed
+      # again if necessary with all the configuration in place.
+      ::Bundler.module_exec do
+        def self.reset_paths!
+          @definition = nil
         end
       end
 
@@ -47,11 +67,11 @@ module LogStash
       require "bundler"
       LogStash::Bundler.patch!
 
-      ::Bundler.settings[:path] = Environment::BUNDLE_DIR
-      ::Bundler.settings[:without] = options[:without].join(":")
+      ::Bundler.settings.set_local(:path, Environment::BUNDLE_DIR)
+      ::Bundler.settings.set_local(:without, options[:without])
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
-      ::Bundler.settings[:gemfile] = Environment::GEMFILE_PATH
+      ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
 
       ::Bundler.reset!
       ::Bundler.setup
@@ -93,7 +113,7 @@ module LogStash
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
-      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-2.3.lock.release")
+      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-2.5.lock.release")
       if ::File.exists?(lock_template) && !::File.exists?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
@@ -103,10 +123,10 @@ module LogStash
       # force Rubygems sources to our Gemfile sources
       ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
 
-      ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
-      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
-      ::Bundler.settings[:without] = options[:without].join(":")
-      ::Bundler.settings[:force] = options[:force]
+      ::Bundler.settings.set_local(:path, LogStash::Environment::BUNDLE_DIR)
+      ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
+      ::Bundler.settings.set_local(:without, options[:without])
+      ::Bundler.settings.set_local(:force, options[:force])
 
       if !debug?
         # Will deal with transient network errors
