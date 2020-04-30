@@ -198,13 +198,25 @@ namespace "artifact" do
   desc "Build docker image"
   task "docker" => ["prepare", "generate_build_metadata", "tar"] do
     puts("[docker] Building docker image")
-    build_docker(false)
+    build_docker(false, 'amd64')
+  end
+
+  desc "Build docker image"
+  task "docker_aarch64" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker_aarch64] Building aarch64 docker image")
+    build_docker(false, 'aarch64')
   end
 
   desc "Build OSS docker image"
   task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
     puts("[docker_oss] Building OSS docker image")
-    build_docker(true)
+    build_docker(true, 'amd64')
+  end
+
+  desc "Build OSS docker image"
+  task "docker_aarch64_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+    puts("[docker_aarch64_oss] Building aarch64 OSS docker image")
+    build_docker(true, 'aarch64')
   end
 
   desc "Generate Dockerfile for default and oss images"
@@ -226,7 +238,9 @@ namespace "artifact" do
     Rake::Task["artifact:tar_oss"].invoke
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_aarch64"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_aarch64_oss"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
   end
@@ -555,18 +569,15 @@ namespace "artifact" do
     end
   end # def package
 
-  def build_docker(oss = false)
+  def build_docker(oss = false, architecture = 'amd64')
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
+      "FLAVOR" => "#{architecture == 'aarch64' ? 'aarch64-' :  '' }#{oss ? 'oss' : 'full'}",
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      if oss
-        system(env, "make build-from-local-oss-artifacts")
-      else
-        system(env, "make build-from-local-artifacts")
-      end
+      system(env, "make build-from-local-artifacts")
     end
   end
 

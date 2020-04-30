@@ -5,6 +5,12 @@
 {%   set url_root = 'http://localhost:8000' -%}
 {% endif -%}
 
+{% if architecture == 'aarch64' -%}
+{%   set base_image = 'arm64v8/centos:7'  -%}
+{% else -%}
+{%   set base_image = 'centos:7'-%}
+{% endif -%}
+
 {% if image_flavor == 'oss' -%}
   {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
 {% else -%}
@@ -12,7 +18,7 @@
 {% endif -%}
 
 
-FROM centos:7
+FROM {{ base_image }}
 
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
