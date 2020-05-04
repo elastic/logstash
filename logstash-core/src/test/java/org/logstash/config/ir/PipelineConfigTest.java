@@ -19,6 +19,8 @@
 
 package org.logstash.config.ir;
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.jruby.*;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
@@ -34,6 +36,25 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 public class PipelineConfigTest extends RubyEnvTestCase {
+
+    private static class IsBeforeOrSameMatcher extends TypeSafeMatcher<LocalDateTime> {
+
+        private LocalDateTime after;
+
+        IsBeforeOrSameMatcher(LocalDateTime after) {
+            this.after = after;
+        }
+
+        @Override
+        protected boolean matchesSafely(LocalDateTime item) {
+            return item.isBefore(after) || item.isEqual(after);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText(" is before " + after);
+        }
+    }
 
     public static final String PIPELINE_ID = "main";
     private RubyClass source;
@@ -87,7 +108,11 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         assertEquals("returns the pipeline id", PIPELINE_ID, sut.getPipelineId());
         assertNotNull("returns the config_hash", sut.configHash());
         assertEquals("returns the merged `ConfigPart#config_string`", configMerged, sut.configString());
-        assertTrue("records when the config was read", sut.getReadAt().isBefore(LocalDateTime.now()));
+        assertThat("records when the config was read", sut.getReadAt(), isBeforeOrSame(LocalDateTime.now()));
+    }
+
+    private static IsBeforeOrSameMatcher isBeforeOrSame(LocalDateTime after) {
+        return new IsBeforeOrSameMatcher(after);
     }
 
     @SuppressWarnings("rawtypes")
