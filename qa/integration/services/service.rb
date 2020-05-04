@@ -44,7 +44,7 @@ class Service
     puts "Tearing down #{@name} service"
     if File.exists?(@teardown_script)
       `#{@teardown_script}`
-      puts "#{@teardown_scipt} FAILED with exit status #{$?}" unless $?.success?
+      raise "#{@teardown_script} FAILED with exit status #{$?}" unless $?.success?
     else
       puts "Teardown script not found for #{@name}"
     end
