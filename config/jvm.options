@@ -51,6 +51,8 @@
 -Djruby.jit.threshold=0
 # Make sure joni regexp interruptability is enabled
 -Djruby.regexp.interruptible=true
+# Export runtime MBean for convenience
+-Djruby.management.enabled=true
 
 ## heap dumps
 
