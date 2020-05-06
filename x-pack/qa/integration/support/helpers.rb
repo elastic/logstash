@@ -32,7 +32,7 @@ def elasticsearch(options = {})
   temporary_path_data = Stud::Temporary.directory
   default_settings = {
     "path.data" => temporary_path_data,
-    "xpack.monitoring.enabled" => true,
+
     "xpack.monitoring.collection.enabled" => true,
     "xpack.security.enabled" => true
   }
