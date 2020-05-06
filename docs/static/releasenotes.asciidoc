@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-8-0,Logstash 7.8.0>>
 * <<logstash-7-7-0,Logstash 7.7.0>>
 * <<logstash-7-6-2,Logstash 7.6.2>>
 * <<logstash-7-6-1,Logstash 7.6.1>>
@@ -27,6 +28,205 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-8-0]]
+=== Logstash 7.8.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.8.0
+
+* performance: share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
+* [7.8 clean backport of #11710] separate filter & output execution, rebatch after filter when ordered https://github.com/elastic/logstash/pull/11726[#11726]
+* Refactor: avoid array in case of single event https://github.com/elastic/logstash/pull/11732[#11732]
+* [7.x clean backport or #11737] simplify batch classes, do not compute JE empty batches, refactor RE worker loop https://github.com/elastic/logstash/pull/11746[#11746]
+* [Doc]Doc updates for internal collectors https://github.com/elastic/logstash/pull/11789[#11789]
+* add proxy support (central management & monitoring) https://github.com/elastic/logstash/pull/11799[#11799]
+* RUNNER: print RUBY_DESCRIPTION at startup to facilitate debugging https://github.com/elastic/logstash/pull/11852[#11852]
+
+=== Logstash Commits between 7.8 and 7.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative 7.7..7.8"
+
+7319a5dc9 - (HEAD -> 7.8, origin/7.8) Update minor plugin versions in gemfile lock for 7.8.0 (#11870) (13 minutes ago) <João Duarte>
+8c7fdd8bf - create 7.8 branch from 7.x and add lockfile (51 minutes ago) <Joao Duarte>
+2217e3478 - Doc:Rename internal collection to legacy collection (16 hours ago) <Karen Metts>
+18f144431 - RUNNER: print RUBY_DESCRIPTION at startup to facilitate debugging (18 hours ago) <Joao Duarte>
+4b8797bd9 - [doc] missing role for config management integration (#10341) (#11856) (6 days ago) <Karen Metts>
+8f142fc8b - Update JrJackson and Jackson Databind versions (7 days ago) <Rob Bavey>
+ba78c05e0 - [7.x] Backport JDK Unit Testing Matrices (#11839) (8 days ago) <Rob Bavey>
+51431af40 - Added warning message if OperatingSystemMXBean not available (12 days ago) <Rob Bavey>
+caa40036b - Avoid using deprecated `getSystemCpuLoad` method with JDK14 (12 days ago) <Rob Bavey>
+62154e0ad - depend on the elasticsearch output plugin >= 10.4.2 (13 days ago) <Colin Surprenant>
+770d9b271 - remove plugin internal validation call (13 days ago) <Colin Surprenant>
+c73544f1e - reinstate x-pack.monitoring settings in logstash.yml (13 days ago) <Joao Duarte>
+65bca0ca6 - Review comments (2 weeks ago) <Karen Metts>
+cbc6209b7 - Remove new internal collection (2 weeks ago) <Karen Metts>
+5dbe95bfa - Incorporate review comments (2 weeks ago) <Karen Metts>
+cf890d0df - Add experimental tags for internal collection (2 weeks ago) <Karen Metts>
+beec172e2 - Remove known issue (2 weeks ago) <Karen Metts>
+252b71118 - API: avoid starting webserver when `http.enabled=false` (2 weeks ago) <Ry Biesemeyer>
+3fbe846b8 - [Doc]Release notes: Add known issue for monitoring settings (#11816) (#11821) (2 weeks ago) <Karen Metts>
+c0db7f435 - dont use qualifier or snapshot in logstash core version (2 weeks ago) <Joao Duarte>
+3962b05ac - Update benchmark.bat (2 weeks ago) <André Letterer>
+5a0e10b2a - Update pqrepair.bat (2 weeks ago) <André Letterer>
+9198afd36 - Update pqcheck.bat (2 weeks ago) <André Letterer>
+6bbf54ab4 - Update benchmark.bat (2 weeks ago) <André Letterer>
+ba89b217e - tools convert to batch files (#11753) (2 weeks ago) <André Letterer>
+e06d2195d - settings: deprecate unit-less TimeValue values (2 weeks ago) <Ry Biesemeyer>
+59e4ac8b8 - add proxy support (central management & monitoring) (2 weeks ago) <Laurent Huet>
+33efbf387 - Update kafka version for integration tests. (3 weeks ago) <Rob Bavey>
+8b223093c - Release Notes for 7.7 (continued) (#11762) (#11805) (3 weeks ago) <Karen Metts>
+da7de67ed - More review comments (3 weeks ago) <Karen Metts>
+7b68aee7f - Incorporate review comments (3 weeks ago) <Karen Metts>
+b67ffceb5 - Doc updates for internal collectors (3 weeks ago) <Karen Metts>
+ee2d819d4 - Fix: cloud_id not propagating from monitoring config (3 weeks ago) <Karol Bucek>
+21b1ef531 - add rootProject.name (3 weeks ago) <Joao Duarte>
+54f5ac14f - update guava and httpclient dependencies (3 weeks ago) <Joao Duarte>
+28ae8fa21 - Add redirects page (3 weeks ago) <Karen Metts>
+6eebf24d5 - Fix typo in pipeline ordered description (3 weeks ago) <Karen Metts>
+dfe5cc5ee - Restructure monitoring docs to support new and legacy internal collectors (#11714) (3 weeks ago) <Karen Metts>
+ba7fd0ced - Handle Boolean Edges (3 weeks ago) <Rob Bavey>
+2e545c75e - Remove separator vertices and associated edges from serialized output (3 weeks ago) <Rob Bavey>
+a8fca3c07 - Change plugin name from java_sink to sink (3 weeks ago) <Andres Rodriguez>
+73a8808b1 - Update description in logstash.yml (3 weeks ago) <Karen Metts>
+3b4dd6c5a - Note that unit qualifier is required for config.reload.interval (3 weeks ago) <Karen Metts>
+c00c3da95 - Incorporate review comments (3 weeks ago) <Rob Bavey>
+d33195750 - Fix hard coded constraint on pipeline name for metrics (3 weeks ago) <Rob Bavey>
+a6c92efef - remove :cluster_uuids gauge (3 weeks ago) <Joao Duarte>
+f2701dc70 - performance: share a single secret store (4 weeks ago) <Ry Biesemeyer>
+085868595 - release notes script add version in plugin entries (4 weeks ago) <Joao Duarte>
+deeede982 - update benchmark cli dependencies (#11766) (4 weeks ago) <João Duarte>
+0eb2f54de - Update gradle version to 6.3 (#11742) (#11761) (4 weeks ago) <Rob Bavey>
+9b732a2cb - Incorporate review comments (5 weeks ago) <Karen Metts>
+0a4aa8b49 - Add guidelines for setting jvm heap size (5 weeks ago) <Karen Metts>
+f4b934914 - simplify batch classes, do not compute JE empty batches, refactor RE worker loop (#11746) (5 weeks ago) <Colin Surprenant>
+bd7d5b9b0 - Better wording thanks to Andrea Selva (5 weeks ago) <Luca Belluccini>
+9d789292f - Clarify behavior in case of PQ full & isolator pattern (5 weeks ago) <Luca Belluccini>
+d56a0739d - Refactor: avoid array in case of single event (5 weeks ago) <Karol Bucek>
+85f0f87a3 - Update to release notes based on review (5 weeks ago) <Rob Bavey>
+448c9c653 - 7.6.2 Release notes (5 weeks ago) <Rob Bavey>
+0aae62ace - separate filter & output execution, rebatch after filter when ordered (#11726) (5 weeks ago) <Colin Surprenant>
+baf60a984 - Updated: JRuby to 9.2.11.1 (6 weeks ago) <Karol Bucek>
+e77a2985c - Start dev cycle for 7.8.0 (6 weeks ago) <andsel>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff 7.7..7.8 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.1.0 -> 6.1.1
+logstash-filter-elasticsearch: 3.7.0 -> 3.7.1
+logstash-input-file: 4.1.16 -> 4.1.18
+logstash-input-syslog: 3.4.1 -> 3.4.2
+logstash-input-tcp: 6.0.4 -> 6.0.5
+logstash-integration-kafka: 10.0.1 -> 10.2.0
+logstash-output-elasticsearch: 10.3.3 -> 10.5.1
+logstash-output-file: 4.2.6 -> 4.3.0
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.1.1*
+
+* Improved encoding performance, especially when encoding many extension fields [#81](https://github.com/logstash-plugins/logstash-codec-cef/pull/81)
+* Fixed CEF short to long name translation for ahost/agentHostName field, according to documentation [#75](https://github.com/logstash-plugins/logstash-codec-cef/pull/75)
+
+* Fixed support for deep dot notation [#73](https://github.com/logstash-plugins/logstash-codec-cef/pull/73)
+
+* Removed obsolete `sev` and `deprecated_v1_fields` fields
+
+* Fixed minor doc inconsistencies (added reverse_mapping to options table, moved it to alpha order in option descriptions, fixed typo)
+  [#60](https://github.com/logstash-plugins/logstash-codec-cef/pull/60)
+
+* Added reverse_mapping option, which can be used to make encoder compliant to spec [#51](https://github.com/logstash-plugins/logstash-codec-cef/pull/51)
+
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) ([#56](https://github.com/logstash-plugins/logstash-codec-cef/issues/56))
+
+* Fix bug in parsing headers where certain legal escape sequences could cause non-escaped pipe characters to be ignored.
+* Fix bug in parsing extension values where a legal unescaped space in a field's value could be interpreted as a field separator (#54)
+* Add explicit handling for extension key names that use array-like syntax that isn't legal with the strict-mode field-reference parser (e.g., `fieldname[0]` becomes `[fieldname][0]`).
+
+* Fix handling of higher-plane UTF-8 characters in message body
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* move `sev` and `deprecated_v1_fields` fields from deprecated to obsolete
+
+* added mapping for outcome = eventOutcome from CEF whitepaper (ref:p26/39)
+
+* changed rt from receiptTime to deviceReceiptTime (ref:p27/39)
+* changed tokenizer to include additional fields (ad.fieldname)
+
+* Add `delimiter` setting. This allows the decoder to be used with inputs like the TCP input where event delimiters are used.
+
+* Implements the dictionary translation for abbreviated CEF field names from chapter Chapter 2: ArcSight Extension Dictionary page 3 of 39 [CEF specification](https://protect724.hp.com/docs/DOC-1072).
+* add `_cefparsefailure` tag on failed decode
+
+* breaking: Updated plugin to use new Java Event APIs
+
+* Switch in-place sub! to sub when extracting `cef_version`. new Logstash Java Event does not support in-place String changes.
+
+* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* New dependency requirements for logstash-core for the 5.0 release
+
+* Implements `encode` with escaping according to the [CEF specification](https://protect724.hp.com/docs/DOC-1072).
+* Config option `sev` is deprecated, use `severity` instead.
+
+* Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* Dependency on logstash-core update to 2.0
+
+*Elasticsearch Filter - 3.7.1*
+
+* Fix: solves an issue where non-ascii unicode values in a template were not handled correctly [#128](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/128)
+
+*File Input - 4.1.18*
+
+* Fix: release watched files on completion (in read-mode) [#271](https://github.com/logstash-plugins/logstash-input-file/pull/271)
+
+* Added configuration setting `check_archive_validity` settings to enable
+  gzipped files verification, issue
+  [#261](https://github.com/logstash-plugins/logstash-input-file/issues/261)
+* [DOC] Added clarification for settings available with `read` mode [#235](https://github.com/logstash-plugins/logstash-input-file/pull/235)
+* [DOC] Rearranged text and fixed formatting for `mode` setting [266](https://github.com/logstash-plugins/logstash-input-file/pull/266)  
+
+*Syslog Input - 3.4.2*
+
+* Remove (deprecated) dependency on thread_safe gem.
+* CI: upgrade testing [#58](https://github.com/logstash-plugins/logstash-input-syslog/pull/58)
+* [DOC] Correct example for `timezone` option [#53](https://github.com/logstash-plugins/logstash-input-syslog/pull/53)
+
+*Tcp Input - 6.0.5*
+
+* Fix potential startup crash that could occur when multiple instances of this plugin were started simultaneously [#155](https://github.com/logstash-plugins/logstash-input-tcp/pull/155)
+
+*Kafka Integration - 10.2.0*
+
+* Changed: config defaults to be aligned with Kafka client defaults [#30](https://github.com/logstash-plugins/logstash-integration-kafka/pull/30)
+
+* updated kafka client (and its dependencies) to version 2.4.1 ([#16](https://github.com/logstash-plugins/logstash-integration-kafka/pull/16))
+* added the input `client_rack` parameter to enable support for follower fetching
+* added the output `partitioner` parameter for tuning partitioning strategy
+* Refactor: normalized error logging a bit - make sure exception type is logged
+* Fix: properly handle empty ssl_endpoint_identification_algorithm [#8](https://github.com/logstash-plugins/logstash-integration-kafka/pull/8)
+* Refactor : made `partition_assignment_strategy` option easier to configure by accepting simple values from an enumerated set instead of requiring lengthy class paths ([#25](https://github.com/logstash-plugins/logstash-integration-kafka/pull/25))
+
+*Elasticsearch Output - 10.5.1*
+
+* [DOC] Removed outdated compatibility notices, reworked cloud notice, and fixed formatting for `hosts` examples [#938](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/938)
+
+* Added api_key support [#934](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/934)
+
+* [DOC] Added note about `_type` setting change from `doc` to `_doc` [#884](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/884)
+
+* Fixed default index value [#927](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/927)
+
+*File Output - 4.3.0*
+
+* Made `stale_cleanup_interval` configurable [#84](https://github.com/logstash-plugins/logstash-output-file/pull/84)
+* CI: upgrade testing [#83](https://github.com/logstash-plugins/logstash-output-file/pull/83)
+
 
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
