@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/config/mixin"
-require "logstash/plugin_factory"
 require "concurrent"
 require "securerandom"
 
@@ -173,6 +172,7 @@ class LogStash::Plugin
   end
 
   def plugin_factory
+    require "logstash/plugin_factory"
     @plugin_factory ||= LogStash::PluginFactory.new(execution_context)
   end
 
