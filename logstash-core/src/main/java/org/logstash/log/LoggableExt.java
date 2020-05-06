@@ -22,16 +22,16 @@ package org.logstash.log;
 
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
-import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.InstanceVariables;
 import org.logstash.RubyUtil;
 
-import static org.logstash.RubyUtil.RUBY;
+import java.util.Locale;
+
+import static org.logstash.log.SlowLoggerExt.toLong;
 
 @JRubyModule(name = "Loggable")
 public final class LoggableExt {
@@ -64,24 +64,18 @@ public final class LoggableExt {
         return self.getSingletonClass().callMethod(context, "deprecation_logger");
     }
 
-    private static RubyString log4jName(final ThreadContext context, final RubyModule self) {
-        IRubyObject name = self.name(context);
-        if (name.isNil()) {
-            final RubyClass clazz;
+    private static String log4jName(final RubyModule self) {
+        String name;
+        if (self.getBaseName() == null) { // anonymous module/class
+            RubyModule real = self;
             if (self instanceof RubyClass) {
-                clazz = ((RubyClass) self).getRealClass();
-            } else {
-                clazz = self.getMetaClass();
+                real = ((RubyClass) self).getRealClass();
             }
-            name = clazz.name(context);
-            if (name.isNil()) {
-                name = clazz.to_s();
-            }
+            name = real.getName(); // for anonymous: "#<Class:0xcafebabe>"
+        } else {
+            name = self.getName();
         }
-        return ((RubyString) ((RubyString) name).gsub(
-            context, RUBY.newString("::"), RUBY.newString("."),
-            Block.NULL_BLOCK
-        )).downcase(context);
+        return name.replace("::", ".").toLowerCase(Locale.ENGLISH);
     }
 
     /**
@@ -105,9 +99,8 @@ public final class LoggableExt {
             }
             IRubyObject logger = instanceVariables.getInstanceVariable("logger");
             if (logger == null || logger.isNil()) {
-                logger = RubyUtil.LOGGER.callMethod(context, "new",
-                    LoggableExt.log4jName(context, (RubyModule) self)
-                );
+                final String loggerName = log4jName((RubyModule) self);
+                logger = RubyUtil.LOGGER.callMethod(context, "new", context.runtime.newString(loggerName));
                 instanceVariables.setInstanceVariable("logger", logger);
             }
             return logger;
@@ -117,18 +110,15 @@ public final class LoggableExt {
         public static SlowLoggerExt slowLogger(final ThreadContext context,
             final IRubyObject self, final IRubyObject[] args) {
             final InstanceVariables instanceVariables = self.getInstanceVariables();
-            SlowLoggerExt logger =
-                (SlowLoggerExt) instanceVariables.getInstanceVariable("slow_logger");
+            IRubyObject logger = instanceVariables.getInstanceVariable("slow_logger");
             if (logger == null || logger.isNil()) {
-                logger = new SlowLoggerExt(context.runtime, RubyUtil.SLOW_LOGGER).initialize(
-                    context, new IRubyObject[]{
-                        LoggableExt.log4jName(context, (RubyModule) self), args[0], args[1],
-                        args[2], args[3]
-                    }
+                final String loggerName = log4jName((RubyModule) self);
+                logger = new SlowLoggerExt(context.runtime, RubyUtil.SLOW_LOGGER, loggerName,
+                        toLong(args[0]), toLong(args[1]), toLong(args[2]), toLong(args[3])
                 );
                 instanceVariables.setInstanceVariable("slow_logger", logger);
             }
-            return logger;
+            return (SlowLoggerExt) logger;
         }
 
         @JRubyMethod(name = "deprecation_logger", meta = true)
@@ -141,8 +131,8 @@ public final class LoggableExt {
             }
             IRubyObject logger = instanceVariables.getInstanceVariable("deprecation_logger");
             if (logger == null || logger.isNil()) {
-                logger = new DeprecationLoggerExt(context.runtime, RubyUtil.DEPRECATION_LOGGER)
-                        .initialize(context, LoggableExt.log4jName(context, (RubyModule) self));
+                final String loggerName = log4jName((RubyModule) self);
+                logger = new DeprecationLoggerExt(context.runtime, RubyUtil.DEPRECATION_LOGGER, loggerName);
                 instanceVariables.setInstanceVariable("deprecation_logger", logger);
             }
             return logger;
