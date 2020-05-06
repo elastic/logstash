@@ -110,14 +110,21 @@ setup_java() {
   # Set the initial JVM options from the jvm.options file.  Look in
   # /etc/logstash first, and break if that file is found readable there.
   if [ -z "$LS_JVM_OPTS" ]; then
-      for jvm_options in /etc/logstash/jvm.options \
-                        "$LOGSTASH_HOME"/config/jvm.options;
-                         do
-          if [ -r "$jvm_options" ]; then
-              LS_JVM_OPTS=$jvm_options
-              break
-          fi
-      done
+    jvm_opts_global=0
+    jvm_opts=/etc/logstash/jvm.options
+    if [ -r "$jvm_opts" ]; then
+      LS_JVM_OPTS=$jvm_opts
+      jvm_opts_global=1
+    fi
+    jvm_opts="$LOGSTASH_HOME"/config/jvm.options
+    if [ -r "$jvm_opts" ]; then
+      if [ $jvm_opts_global -eq 1 ]; then
+        # for backwards compatibility global wins, but at least warn
+        echo "warning: ignoring $jvm_opts due existing $LS_JVM_OPTS"
+      else
+        LS_JVM_OPTS=$jvm_opts
+      fi
+    fi
   fi
   # then override with anything provided
   LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
