@@ -41,7 +41,8 @@ echo Using drive !use_drive! for %WORKSPACE%
 
 echo Running core tests..
 if defined BUILD_JAVA_HOME (
-  GRADLE_OPTS="%GRADLE_OPTS% -Dorg.gradle.java.home=%BUILD_JAVA_HOME%"
+  set GRADLE_OPTS="%GRADLE_OPTS% -Dorg.gradle.java.home=%BUILD_JAVA_HOME%"
+  echo GRADLE_OPTS is: %GRADLE_OPTS%, BUILD_JAVA_HOME: %BUILD_JAVA_HOME%
 )
 call .\gradlew.bat test --console=plain --no-daemon --info
 
