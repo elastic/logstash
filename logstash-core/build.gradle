@@ -76,6 +76,14 @@ tasks.register("cleanGemjar") {
     }
 }
 
+//task cleanGemjar {
+//    doLast {
+//        delete fileTree(project.file('lib/jars/')) {
+//            include '*.jar'
+//        }
+//    }
+//}
+
 clean.dependsOn(cleanGemjar)
 jar.finalizedBy(copyGemjar)
 assemble.dependsOn(copyGemjar)
