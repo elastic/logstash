@@ -44,26 +44,8 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-9]]
 === Logstash 6.8.9 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.9
+* Performance: share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
 
-* performance: share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
-
-=== Logstash Commits between 6.8 and 6.8.8
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.8..6.8"
-
-aadf1edad - (HEAD -> 6.8, origin/6.8) [Doc][Backport] Unit qualifier is required 6.8 (#11780) (2 weeks ago) <Karen Metts>
-bf3282cfa - performance: share a single secret store (3 weeks ago) <Ry Biesemeyer>
-00f6f3b34 - Version bump to 6.8.9 (#11734) (4 weeks ago) <Rob Bavey>
-30031c8c5 - Release Notes for 6.8.8 (#11704) (5 weeks ago) <Rob Bavey>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.8..6.8 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
 
 [[logstash-6-8-8]]
 === Logstash 6.8.8 Release Notes
