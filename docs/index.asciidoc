@@ -100,6 +100,9 @@ include::static/configuration.asciidoc[]
 :edit_url!:
 include::static/security/logstash.asciidoc[]
 
+:edit_url!:
+include::static/ls-to-cloud.asciidoc[]
+
 // Advanced Logstash Configurion
 
 :edit_url!:
