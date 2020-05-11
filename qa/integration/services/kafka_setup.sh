@@ -22,7 +22,7 @@ setup_kafka() {
     local version=$1
     if [ ! -d $KAFKA_HOME ]; then
         echo "Downloading Kafka version $version"
-        curl -s -o $INSTALL_DIR/kafka.tgz "http://ftp.wayne.edu/apache/kafka/$version/kafka_2.11-$version.tgz"
+        curl -s -o $INSTALL_DIR/kafka.tgz "https://mirrors.ocf.berkeley.edu/apache/kafka/$version/kafka_2.11-$version.tgz"
         mkdir $KAFKA_HOME && tar xzf $INSTALL_DIR/kafka.tgz -C $KAFKA_HOME --strip-components 1
         rm $INSTALL_DIR/kafka.tgz
     fi
