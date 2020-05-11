@@ -74,7 +74,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 final long newstrt = System.nanoTime();
                 stats.addValue(
                     (double) (newcount - count) /
-                        (double) TimeUnit.SECONDS.convert(newstrt - start, TimeUnit.NANOSECONDS)
+                        (double) TimeUnit.SECONDS.convert(Math.max(newstrt - start, 1_000_000_000), TimeUnit.NANOSECONDS)
                 );
                 start = newstrt;
                 count = newcount;
