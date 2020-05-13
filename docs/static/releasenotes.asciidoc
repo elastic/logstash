@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-9,Logstash 6.8.9>>
 * <<logstash-6-8-8,Logstash 6.8.8>>
 * <<logstash-6-8-7,Logstash 6.8.7>>
 * <<logstash-6-8-6,Logstash 6.8.6>>
@@ -39,6 +40,14 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-9]]
+=== Logstash 6.8.9 Release Notes
+
+* Performance: improved startup- and reload-time for pipelines with many variable subsitutions when a secret store is present.
+We no longer incur the cost of rebuilding the keystore for each substitution.
+https://github.com/elastic/logstash/pull/10794[#10794]
+
 
 [[logstash-6-8-8]]
 === Logstash 6.8.8 Release Notes
