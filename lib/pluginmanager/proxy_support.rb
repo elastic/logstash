@@ -51,9 +51,8 @@ end
 
 # Apply HTTP_PROXY and HTTPS_PROXY to the current environment
 # this will be used by any JRUBY calls
-def apply_env_proxy_settings(settings)
-  $stderr.puts("Using proxy #{settings}") if ENV["DEBUG"]
-  scheme = settings[:protocol].downcase
+def apply_env_proxy_settings(scheme, settings)
+  $stderr.puts("Using proxy #{settings} for #{scheme}") if ENV["DEBUG"]
   java.lang.System.setProperty("#{scheme}.proxyHost", settings[:host])
   java.lang.System.setProperty("#{scheme}.proxyPort", settings[:port].to_s)
   java.lang.System.setProperty("#{scheme}.proxyUsername", settings[:username].to_s)
