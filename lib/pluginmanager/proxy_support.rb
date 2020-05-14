@@ -92,8 +92,7 @@ def configure_proxy
   if proxy_string_exists?(proxy)
     proxy_uri = parse_proxy_string(proxy)
     proxy_settings = extract_proxy_values_from_uri(proxy_uri)
-    proxy_settings[:protocol] = "http"
-    apply_env_proxy_settings(proxy_settings)
+    apply_env_proxy_settings("http", proxy_settings)
     proxies << proxy_settings
   end
 
@@ -101,8 +100,7 @@ def configure_proxy
   if proxy_string_exists?(proxy)
     proxy_uri = parse_proxy_string(proxy)
     proxy_settings = extract_proxy_values_from_uri(proxy_uri)
-    proxy_settings[:protocol] = "https"
-    apply_env_proxy_settings(proxy_settings)
+    apply_env_proxy_settings("https", proxy_settings)
     proxies << proxy_settings
   end
 
