@@ -6,13 +6,7 @@
 # or 'openjdk' followed by the major release number.
 
 LS_RUNTIME_JAVA:
-#  - java8
-#  - zulu8
-#  - adoptopenjdk8
-#  - java11
   - openjdk11
   - adoptopenjdk11
-  - zulu11
   - openjdk14
   - adoptopenjdk14
-  - zulu14
