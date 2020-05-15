@@ -17,11 +17,16 @@
 
 java_import "org.logstash.secret.store.SecretStoreExt"
 
+require_relative 'lazy_singleton'
+
 module ::LogStash::Util::SubstitutionVariables
 
   include LogStash::Util::Loggable
 
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
+
+  SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
+  private_constant :SECRET_STORE
 
   # Recursive method to replace substitution variable references in parameters
   def deep_replace(value)
@@ -57,7 +62,7 @@ module ::LogStash::Util::SubstitutionVariables
       logger.debug("Replacing `#{placeholder}` with actual value")
 
       #check the secret store if it exists
-      secret_store = SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+      secret_store = SECRET_STORE.instance
       replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
@@ -69,4 +74,20 @@ module ::LogStash::Util::SubstitutionVariables
     end
   end # def replace_placeholders
 
+  class << self
+    private
+
+    # loads a secret_store from disk if available, or returns nil
+    #
+    # @api private
+    # @return [SecretStoreExt,nil]
+    def load_secret_store
+      SecretStoreExt.getIfExists(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
+    end
+
+    # @api test
+    def reset_secret_store
+      SECRET_STORE.reset!
+    end
+  end
 end
