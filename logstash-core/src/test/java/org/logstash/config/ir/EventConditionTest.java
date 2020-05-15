@@ -72,7 +72,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void testInclusionWithFieldInField() throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
@@ -154,6 +154,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
         testConditionWithConstantValue("\"\"", 0);
     }
 
+    @SuppressWarnings({"unchecked"})
     private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +

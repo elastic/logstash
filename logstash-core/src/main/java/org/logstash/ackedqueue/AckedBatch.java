@@ -21,11 +21,12 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
-import org.jruby.Ruby;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyHash;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.logstash.Event;
-import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+
+import static org.logstash.RubyUtil.RUBY;
 
 public final class AckedBatch {
     private Batch batch;
@@ -36,14 +37,11 @@ public final class AckedBatch {
         return ackedBatch;
     }
 
-    public RubyHash toRubyHash(final Ruby runtime) {
-        final RubyBoolean trueValue = runtime.getTrue();
-        final RubyHash result = RubyHash.newHash(runtime);
-        this.batch.getElements().forEach(e -> result.fastASet(
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(runtime, (Event) e),
-            trueValue
-            )
-        );
+    public Collection<RubyEvent> events() {
+        final ArrayList<RubyEvent> result = new ArrayList<>(this.batch.size());
+        for (final Queueable e : batch.getElements()) {
+            result.add(RubyEvent.newRubyEvent(RUBY, (Event) e));
+        }
         return result;
     }
 

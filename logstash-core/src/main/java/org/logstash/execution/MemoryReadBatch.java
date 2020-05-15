@@ -21,53 +21,48 @@ package org.logstash.execution;
 
 import org.jruby.RubyArray;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+
 import static org.logstash.RubyUtil.RUBY;
 
 public final class MemoryReadBatch implements QueueBatch {
 
-    private final LinkedHashSet<RubyEvent> events;
-
-    public MemoryReadBatch(final LinkedHashSet<RubyEvent> events) {
-        this.events = events;
-    }
+    private final Collection<RubyEvent> events;
 
     public static boolean isCancelled(final RubyEvent event) {
         return event.getEvent().isCancelled();
     }
 
-    public static MemoryReadBatch create(LinkedHashSet<RubyEvent> events) {
+    public static MemoryReadBatch create(Collection<RubyEvent> events) {
         return new MemoryReadBatch(events);
     }
 
     public static MemoryReadBatch create() {
-        return create(new LinkedHashSet<>());
+        return new MemoryReadBatch(new ArrayList<>());
+    }
+
+    private MemoryReadBatch(final Collection<RubyEvent> events) {
+        this.events = events;
     }
 
     @Override
-    @SuppressWarnings({"rawtypes"})
-    public RubyArray to_a() {
-        final RubyArray result = RUBY.newArray(events.size());
-        for (final RubyEvent event : events) {
-            if (!isCancelled(event)) {
-                result.append(event);
+    public RubyArray<RubyEvent> to_a() {
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        for (final RubyEvent e : events) {
+            if (!isCancelled(e)) {
+                result.append(e);
             }
         }
         return result;
     }
 
     @Override
-    public Collection<RubyEvent> collection() {
+    public Collection<RubyEvent> events() {
         // This does not filter cancelled events because it is
         // only used in the WorkerLoop where there are no cancelled
         // events yet.
         return events;
-    }
-
-    @Override
-    public void merge(final RubyEvent event) {
-        events.add(event);
     }
 
     @Override

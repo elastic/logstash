@@ -76,13 +76,12 @@ public final class JrubyAckedReadClientExt extends QueueReadClientBase implement
 
     @Override
     public QueueBatch newBatch() {
-        return AckedReadBatch.create(queue, 0, 0);
+        return AckedReadBatch.create();
     }
 
     @Override
     public QueueBatch readBatch() {
-        AckedReadBatch batch =
-            AckedReadBatch.create(queue, batchSize, waitForMillis);
+        final AckedReadBatch batch = AckedReadBatch.create(queue, batchSize, waitForMillis);
         startMetrics(batch);
         return batch;
     }
