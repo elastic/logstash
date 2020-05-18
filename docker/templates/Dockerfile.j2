@@ -46,7 +46,9 @@ ADD config/pipelines.yml config/pipelines.yml
 ADD config/logstash-{{ image_flavor }}.yml config/logstash.yml
 ADD config/log4j2.properties config/
 ADD pipeline/default.conf pipeline/logstash.conf
-RUN chown --recursive logstash:root config/ pipeline/
+# set permissions and comment out Xmx and Xms options to use container limits
+RUN chown --recursive logstash:root config/ pipeline/  && \
+  sed -i -e 's/^-Xm\([xs]\)/#-Xm\1/' config/jvm.options
 
 # Ensure Logstash gets a UTF-8 locale by default.
 ENV LANG='en_US.UTF-8' LC_ALL='en_US.UTF-8'
