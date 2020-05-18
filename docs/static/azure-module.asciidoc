@@ -3,6 +3,12 @@
 === Azure Module 
 experimental[]
 
+++++
+<titleabbrev>Azure Module (deprecated)</titleabbrev>
+++++
+
+deprecated[7.8.0, "We recommend using the Azure modules in {filebeat-ref}/filebeat-module-azure.html[{Filebeat}] and {metricbeat-ref}/metricbeat-module-azure.html[{metricbeat}], which are compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]"]
+
 The https://azure.microsoft.com/en-us/overview/what-is-azure/[Microsoft Azure]
 module in Logstash helps you easily integrate your Azure activity logs and SQL
 diagnostic logs with the Elastic Stack. 
@@ -18,12 +24,6 @@ and decreasing overall time to resolution. The Azure module helps you:
 * Identify suspicious behaviors and potential malicious actors
 * Perform root-cause analysis by investigating user activity
 * Monitor and optimize your SQL DB deployments.
-
-NOTE: The Logstash Azure module is an
-https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
-and is therefore free to use. Please contact
-mailto:monitor-azure@elastic.co[monitor-azure@elastic.co] for questions or more
-information.
 
 The Azure module uses the
 {logstash-ref}/plugins-inputs-azure_event_hubs.html[Logstash Azure Event Hubs
