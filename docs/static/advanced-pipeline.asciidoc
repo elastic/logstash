@@ -414,10 +414,7 @@ Notice that the event now contains geographic location information:
 Now that the web logs are broken down into specific fields, you're ready to get
 your data into Elasticsearch. 
 
-TIP: You can run Elasticsearch on your own hardware, or use our
-https://www.elastic.co/cloud/elasticsearch-service[hosted {es} Service] on
-Elastic Cloud. The Elasticsearch Service is available on both AWS and GCP.
-{ess-trial}[Try the {es} Service for free].
+TIP: {ess-leadin}
 
 The Logstash pipeline can index the data into an
 Elasticsearch cluster. Edit the `first-pipeline.conf` file and replace the entire `output` section with the following
