@@ -20,6 +20,7 @@ require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
+require 'pp'
 
 describe "Test Monitoring API" do
   before(:all) {
@@ -36,6 +37,7 @@ describe "Test Monitoring API" do
   
   let(:number_of_events) { 5 }
   let(:max_retry) { 120 }
+  let(:temp_dir) { Stud::Temporary.directory("logstash-pipelinelog-test") }
 
   it "can retrieve event stats" do
     logstash_service = @fixture.get_service("logstash")
@@ -97,9 +99,13 @@ describe "Test Monitoring API" do
       # and trigger the retry block
       queue_stats = result.fetch("pipelines").fetch("main").fetch("queue")
       expect(queue_stats).not_to be_nil
+      puts "DNADBG >> feature_flag #{logstash_service.settings.feature_flag}"
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(queue_stats["type"]).to eq "persisted"
+        puts "DNADBG >> queue_stats: #{queue_stats} class: #{queue_stats.class} #{queue_stats.class}\n settings: #{logstash_service.settings}"
+        pp queue_stats
         queue_data_stats = queue_stats.fetch("data")
+        puts "DNADBG >> queue_data_stats: #{queue_data_stats}"
         expect(queue_data_stats["free_space_in_bytes"]).not_to be_nil
         expect(queue_data_stats["storage_type"]).not_to be_nil
         expect(queue_data_stats["path"]).not_to be_nil
