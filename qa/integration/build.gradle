@@ -39,7 +39,7 @@ test {
   exclude '/**'
 }
 
-task integrationTests(type: Test) {
+tasks.register("integrationTests", Test) {
   inputs.files fileTree("${projectDir}/services")
   inputs.files fileTree("${projectDir}/framework")
   inputs.files fileTree("${projectDir}/fixtures")
