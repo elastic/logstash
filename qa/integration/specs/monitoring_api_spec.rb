@@ -100,7 +100,7 @@ describe "Test Monitoring API" do
       queue_stats = result.fetch("pipelines").fetch("main").fetch("queue")
       expect(queue_stats).not_to be_nil
       puts "DNADBG >> feature_flag #{logstash_service.settings.feature_flag}"
-      if logstash_service.settings.feature_flag == "persistent_queues"
+      #if logstash_service.settings.feature_flag == "persistent_queues"
         expect(queue_stats["type"]).to eq "persisted"
         puts "DNADBG >> queue_stats: #{queue_stats} class: #{queue_stats.class} #{queue_stats.class}\n settings: #{logstash_service.settings}"
         pp queue_stats
@@ -114,9 +114,9 @@ describe "Test Monitoring API" do
         expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
         expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
         expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
-      else
-        expect(queue_stats["type"]).to eq("memory")
-      end
+      #else
+      #  expect(queue_stats["type"]).to eq("memory")
+      #end
     end
   end
 
