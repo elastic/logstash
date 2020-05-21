@@ -30,10 +30,10 @@ elif [[ $1 == "split" ]]; then
     cd ../..
     if [[ $2 == 0 ]]; then
        echo "Running the first half of integration specs: $specs0"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0" --console=plain
+       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0" --console=plain --parallel
     elif [[ $2 == 1 ]]; then
        echo "Running the second half of integration specs: $specs1"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1" --console=plain
+       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1" --console=plain --parallel
     else
        echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
        exit 1
