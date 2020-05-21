@@ -207,7 +207,9 @@ module LogStash
 
     private
     def read_yaml(path)
-      YAML.safe_load(IO.read(path)) || {}
+      yml_content  = IO.read(path)
+      logger.info("DBGDNA >> logstash.yml used #{yml_content}")
+      YAML.safe_load(yml_content) || {}
     end
 
     def flatten_hash(h,f="",g={})
