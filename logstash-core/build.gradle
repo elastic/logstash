@@ -43,31 +43,34 @@ buildscript {
     }
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
+tasks.register("sourcesJar", Jar) {
+    dependsOn classes
     from sourceSets.main.allSource
     archiveClassifier = 'sources'
     archiveExtension = 'jar'
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+tasks.register("javadocJar", Jar) {
+    dependsOn javadoc
     from javadoc.destinationDir
     archiveClassifier = 'javadoc'
     archiveExtension = 'jar'
 }
 
-task copyRuntimeLibs(type: Copy) {
+tasks.register("copyRuntimeLibs", Copy) {
     into project.file('lib/jars/')
     from configurations.compileClasspath, configurations.runtimeClasspath
 }
 
 // copy jar file into the gem lib dir but without the version number in filename
-task copyGemjar(type: Copy, dependsOn: [sourcesJar, copyRuntimeLibs]) {
+tasks.register("copyGemjar", Copy) {
+    dependsOn=[sourcesJar, copyRuntimeLibs]
     from project.jar
     into project.file('lib/jars/')
     rename(/(.+)-${project.version}.jar/, '$1.jar')
 }
 
-task cleanGemjar {
+tasks.register("cleanGemjar") {
     delete fileTree(project.file('lib/jars/')) {
         include '*.jar'
     }
@@ -84,7 +87,7 @@ configurations.archives {
     extendsFrom configurations.javadoc
 }
 
-task javaTests(type: Test) {
+tasks.register("javaTests", Test) {
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
@@ -97,7 +100,7 @@ task javaTests(type: Test) {
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
 }
 
-task rubyTests(type: Test) {
+tasks.register("rubyTests", Test) {
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.core.root.dir', projectDir.absolutePath
