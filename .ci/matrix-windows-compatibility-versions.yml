@@ -1,0 +1,10 @@
+# This file is used as part of a matrix build in Jenkins where the
+# values below are included as an axis of the matrix.
+
+# This axis of the build matrix represents the Linux distributions on
+# which Logstash will be tested.
+
+nodes:
+  - "windows-2012-r2"
+  - "windows-2016"
+  - "windows-2019"
