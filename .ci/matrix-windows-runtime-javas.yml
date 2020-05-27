@@ -9,4 +9,5 @@ LS_RUNTIME_JAVA:
 #  - zulu8
 #  - adoptopenjdk8
   - zulu11
+  - zulu14
 #  - adoptopenjdk11
