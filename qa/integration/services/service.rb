@@ -25,8 +25,8 @@ class Service
   def initialize(name, settings)
     @name = name
     @settings = settings
-    @setup_script = File.expand_path("../#{name}_setup.sh", __FILE__)
-    @teardown_script = File.expand_path("../#{name}_teardown.sh", __FILE__)
+    @setup_script = Shellwords.escape(File.expand_path("../#{name}_setup.sh", __FILE__))
+    @teardown_script = Shellwords.escape(File.expand_path("../#{name}_teardown.sh", __FILE__))
   end
 
   def setup
