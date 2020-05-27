@@ -18,7 +18,7 @@
 #  - ubuntu-18.04&&immutable
 #  - ubuntu-20.04&&immutable
 
-os:
+label:
   - amazon
   - centos&&immutable
   - debian&&immutable

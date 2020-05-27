@@ -4,6 +4,6 @@
 # This axis of the build matrix represents the Linux distributions on
 # which Logstash will be tested.
 
-os:
+label:
   - centos-7&&immutable
   - ubuntu-18.04&&immutable
