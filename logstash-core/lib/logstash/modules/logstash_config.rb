@@ -19,6 +19,7 @@ require_relative "file_reader"
 require "logstash/settings"
 
 module LogStash module Modules class LogStashConfig
+  include LogStash::Util::Loggable
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
     @directory = ::File.join(modul.directory, "logstash")
