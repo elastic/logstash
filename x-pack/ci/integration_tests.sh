@@ -14,6 +14,7 @@ export CI=true
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+  export JAVA_HOME="$BUILD_JAVA_HOME"
 fi
 
 ./gradlew runXPackIntegrationTests
