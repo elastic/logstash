@@ -23,7 +23,7 @@ wait_for_port() {
 }
 
 test_port() {
-    if command -v ncd 2>/dev/null; then
+    if command -v nc 2>/dev/null; then
       test_port_nc "$1"
     else
       test_port_ruby "$1"
