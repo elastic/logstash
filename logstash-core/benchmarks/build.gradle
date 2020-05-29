@@ -76,7 +76,9 @@ shadowJar {
   archiveVersion = ''
 }
 
-task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {
+tasks.register("jmh", JavaExec) {
+
+ dependsOn=[':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']
 
   main = "-jar"
 

@@ -148,39 +148,45 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-task installBundler(dependsOn: assemblyDeps) {
-  outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
-  doLast {
+tasks.register("installBundler") {
+    dependsOn assemblyDeps
+    outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
+    doLast {
       gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
   }
 }
 
-task bootstrap(dependsOn: installBundler) {
-  doLast {
+tasks.register("bootstrap"){
+    dependsOn installBundler
+    doLast {
       setupJruby(projectDir, buildDir)
   }
 }
 
 
-task installDefaultGems(dependsOn: bootstrap) {
+tasks.register("installDefaultGems") {
+    dependsOn bootstrap
   doLast {
       rake(projectDir, buildDir, 'plugin:install-default')
   }
 }
 
-task installTestGems(dependsOn: bootstrap) {
-  doLast {
+tasks.register("installTestGems") {
+    dependsOn bootstrap
+    doLast {
       rake(projectDir, buildDir, 'plugin:install-development-dependencies')
   }
 }
 
-task compileGrammar(dependsOn: bootstrap) {
+tasks.register("compileGrammar") {
+    dependsOn bootstrap
     doLast {
         rake(projectDir, buildDir, 'compile:grammar')
     }
 }
 
-task assembleTarDistribution(dependsOn: bootstrap) {
+tasks.register("assembleTarDistribution") {
+  dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -196,7 +202,8 @@ task assembleTarDistribution(dependsOn: bootstrap) {
   }
 }
 
-task assembleOssTarDistribution(dependsOn: bootstrap) {
+tasks.register("assembleOssTarDistribution") {
+  dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -210,7 +217,8 @@ task assembleOssTarDistribution(dependsOn: bootstrap) {
   }
 }
 
-task assembleZipDistribution(dependsOn: bootstrap) {
+tasks.register("assembleZipDistribution") {
+  dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -226,7 +234,8 @@ task assembleZipDistribution(dependsOn: bootstrap) {
   }
 }
 
-task assembleOssZipDistribution(dependsOn: bootstrap) {
+tasks.register("assembleOssZipDistribution") {
+  dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -252,7 +261,8 @@ project(":logstash-core") {
 
 def logstashBuildDir = "${buildDir}/logstash-${project.version}-SNAPSHOT"
 
-task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
+tasks.register("unpackTarDistribution", Copy) {
+  dependsOn assembleTarDistribution
   def tar = file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   inputs.files tar
   outputs.files fileTree(logstashBuildDir)
@@ -264,14 +274,16 @@ def qaVendorPath = "${buildDir}/qa/integration/vendor"
 def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0"
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
-task installIntegrationTestBundler(dependsOn: unpackTarDistribution) {
-  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.17.3")
+tasks.register("installIntegrationTestBundler"){
+    dependsOn unpackTarDistribution
+    outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.17.3")
   doLast {
       gem(projectDir, buildDir, "bundler", "1.17.3", qaBundledGemPath)
   }
 }
 
-task installIntegrationTestGems(dependsOn: installIntegrationTestBundler) {
+tasks.register("installIntegrationTestGems") {
+  dependsOn installIntegrationTestBundler
   inputs.files file("${projectDir}/qa/integration/Gemfile")
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
@@ -300,11 +312,13 @@ project(":logstash-integration-tests") {
   }
 }
 
-task runIntegrationTests(dependsOn: [tasks.getByPath(":logstash-integration-tests:integrationTests")]) {}
+tasks.register("runIntegrationTests"){
+    dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
+}
 
-task generateLicenseReport(type: JavaExec) {
-    dependsOn("generateLicenseReportInputs")
-    dependsOn(":dependencies-report:assemble")
+tasks.register("generateLicenseReport", JavaExec) {
+    dependsOn generateLicenseReportInputs
+    dependsOn ":dependencies-report:assemble"
 
     def jarFile = project('dependencies-report').getBuildDir().toString() + "/libs/dependencies-report.jar"
 
@@ -319,7 +333,7 @@ task generateLicenseReport(type: JavaExec) {
       licenseReportOutputCSV, noticePath
 }
 
-task generateLicenseReportInputs() {
+tasks.register("generateLicenseReportInputs") {
     dependsOn subprojects.generateLicenseReport
 
     // write location of all license reports for subprojects containing artifacts that are distributed to single file
@@ -342,7 +356,8 @@ task generateLicenseReportInputs() {
     }
 }
 
-task generatePluginsVersion(dependsOn: installDefaultGems) {
+tasks.register("generatePluginsVersion") {
+  dependsOn installDefaultGems
   doLast {
       rake(projectDir, buildDir, 'generate_plugins_version')
   }
@@ -355,7 +370,7 @@ check.dependsOn runIntegrationTests
 
 String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
 
-task downloadEs(type: Download) {
+tasks.register("downloadEs", Download) {
     description "Download ES Snapshot for current branch version: ${version}"
 
     doFirst {
@@ -425,11 +440,12 @@ task downloadEs(type: Download) {
     }
 }
 
-task deleteLocalEs(type: Delete) {
+tasks.register("deleteLocalEs", Delete) {
     delete ('./build/elasticsearch')
 }
 
-task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
+tasks.register("copyEs", Copy){
+    dependsOn = [downloadEs, deleteLocalEs]
     from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
     doLast {

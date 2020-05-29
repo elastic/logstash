@@ -26,7 +26,7 @@ test {
   exclude '/**'
 }
 
-task rubyTests(type: Test) {
+tasks.register("rubyTests", Test) {
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
@@ -34,7 +34,7 @@ task rubyTests(type: Test) {
   include '/org/logstash/xpack/test/RSpecTests.class'
 }
 
-task rubyIntegrationTests(type: Test) {
+tasks.register("rubyIntegrationTests", Test) {
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
