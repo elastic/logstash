@@ -148,10 +148,10 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-tasks.register("installBundler"){
-dependsOn assemblyDeps
+tasks.register("installBundler") {
+    dependsOn assemblyDeps
     outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
-  doLast {
+    doLast {
       gem(projectDir, buildDir, "bundler", "1.17.3", "${projectDir}/vendor/bundle/jruby/2.5.0")
   }
 }
@@ -445,7 +445,7 @@ tasks.register("deleteLocalEs", Delete) {
 }
 
 tasks.register("copyEs", Copy){
-    dependsOn=[downloadEs, deleteLocalEs]
+    dependsOn = [downloadEs, deleteLocalEs]
     from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
     doLast {
