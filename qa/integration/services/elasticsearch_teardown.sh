@@ -4,7 +4,7 @@ current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"
 
-ES_HOME=$INSTALL_DIR/elasticsearch
+ES_HOME="$current_dir/../../../build/elasticsearch"
 
 stop_es() {
     pid=$(cat $ES_HOME/elasticsearch.pid)
