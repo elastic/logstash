@@ -381,22 +381,74 @@ tasks.register("copyFilebeat", Copy){
     }
 }
 
+tasks.register("downloadEs", Download) {
+    dependsOn  configureArtifactInfo
+    description "Download ES Snapshot for current branch version: ${version}"
+
+    String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}"
+    project.ext.set("unpackedElasticsearchName", "elasticsearch-${project.ext.get("stackArtifactSuffixNoArch")}")
+
+    // find url of build artifact
+    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+    String apiResponse = artifactApiUrl.toURL().text
+    def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+    project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
+    project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+
+    src project.ext.elasticsearchSnapshotURL
+    onlyIfNewer true
+    retries 3
+    inputs.file("${projectDir}/versions.yml")
+    outputs.file(project.ext.elasticsearchDownloadLocation)
+    dest new File(project.ext.elasticsearchDownloadLocation)
+
+    doLast {
+        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
+    }
+}
+
+
+tasks.register("deleteLocalEs", Delete) {
+    delete ('./build/elasticsearch')
+}
+
+tasks.register("copyEs", Copy){
+    dependsOn = [downloadEs, deleteLocalEs]
+    from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
+    into "./build/"
+    doLast {
+        file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
+        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
+        System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
+        delete(project.ext.elasticsearchDownloadLocation)
+    }
+}
+
+
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/).join(",") : "specs/**/*_spec.rb"
 def integrationTestPwd = "${projectDir}/qa/integration"
 
 project(":logstash-integration-tests") {
     tasks.getByPath(":logstash-integration-tests:integrationTests").configure {
-        systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
-        environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
-        workingDir integrationTestPwd
-        dependsOn installIntegrationTestGems
-    }
+      systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
+      environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
+      workingDir integrationTestPwd
+      dependsOn installIntegrationTestGems
+  }
 }
 
 tasks.register("runIntegrationTests"){
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
+    dependsOn copyEs
     dependsOn copyFilebeat
 }
+
+bootstrap.dependsOn assemblyDeps
+
+runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
+check.dependsOn runIntegrationTests
+
 
 tasks.register("generateLicenseReport", JavaExec) {
     dependsOn generateLicenseReportInputs
@@ -450,50 +502,6 @@ bootstrap.dependsOn assemblyDeps
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-
-tasks.register("downloadEs", Download) {
-    dependsOn  configureArtifactInfo
-    description "Download ES Snapshot for current branch version: ${version}"
-    
-    String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}"
-    project.ext.set("unpackedElasticsearchName", "elasticsearch-${project.ext.get("stackArtifactSuffixNoArch")}")
-
-    // find url of build artifact
-    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-    String apiResponse = artifactApiUrl.toURL().text
-    def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-    project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
-    project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-
-    src project.ext.elasticsearchSnapshotURL
-    onlyIfNewer true
-    retries 3
-    inputs.file("${projectDir}/versions.yml")
-    outputs.file(project.ext.elasticsearchDownloadLocation)
-    dest new File(project.ext.elasticsearchDownloadLocation)
-
-    doLast {
-        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
-    }
-}
-
-
-tasks.register("deleteLocalEs", Delete) {
-    delete ('./build/elasticsearch')
-}
-
-tasks.register("copyEs", Copy){
-    dependsOn = [downloadEs, deleteLocalEs]
-    from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
-    into "./build/"
-    doLast {
-        file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
-        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
-        delete(project.ext.elasticsearchDownloadLocation)
-    }
-}
 
 Boolean oss = System.getenv('OSS').equals('true')
 

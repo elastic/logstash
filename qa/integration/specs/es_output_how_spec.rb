@@ -18,6 +18,7 @@
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
+require_relative 'spec_helper.rb'
 
 describe "Test Elasticsearch output" do
 
@@ -39,11 +40,11 @@ describe "Test Elasticsearch output" do
     # now we test if all data was indexed by ES, but first refresh manually
     es_client.indices.refresh
     result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-    expect(result["hits"]["total"]).to eq(37)
+    expect(result).to have_hits(37)
     
     # randomly checked for results and structured fields
     result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
-    expect(result["hits"]["total"]).to eq(1)
+    expect(result).to have_hits(1)
     s = result["hits"]["hits"][0]["_source"]
     expect(s["bytes"]).to eq(18848)
     expect(s["response"]).to eq(200)

@@ -19,6 +19,8 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
+require_relative 'spec_helper.rb'
+
 require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Dead Letter Queue" do
@@ -66,12 +68,11 @@ describe "Test Dead Letter Queue" do
       try(60) do
         begin
           result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-          hits = result["hits"]["total"]
         rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
           puts "Elasticsearch unavailable #{e.inspect}"
           hits = 0
         end
-        expect(hits).to eq(1000)
+        expect(result).to have_hits(1000)
       end
 
       result = es_client.search(index: 'logstash-*', size: 1, q: '*')
