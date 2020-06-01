@@ -4,25 +4,7 @@ current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"
 
-if [ -n "${ES_VERSION+1}" ]; then
-  echo "Elasticsearch version is $ES_VERSION"
-  version=$ES_VERSION
-else
-   version=6.5.4
-fi
-
-ES_HOME=$INSTALL_DIR/elasticsearch
-
-setup_es() {
-  if [ ! -d $ES_HOME ]; then
-      local version=$1
-      download_url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$version.tar.gz
-      curl -sL $download_url > $INSTALL_DIR/elasticsearch.tar.gz
-      mkdir $ES_HOME
-      tar -xzf $INSTALL_DIR/elasticsearch.tar.gz --strip-components=1 -C $ES_HOME/.
-      rm $INSTALL_DIR/elasticsearch.tar.gz
-  fi
-}
+ES_HOME="$current_dir/../../../build/elasticsearch"
 
 start_es() {
   es_args=$@
@@ -38,7 +20,5 @@ start_es() {
   return 0
 }
 
-setup_install_dir
-setup_es $version
 export ES_JAVA_OPTS="-Xms512m -Xmx512m"
 start_es

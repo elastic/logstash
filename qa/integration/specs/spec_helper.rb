@@ -22,3 +22,10 @@ RSpec.configure do |config|
 
   config.filter_run_excluding exclude_tags
 end
+
+RSpec::Matchers.define :have_hits do |expected|
+  match do |actual|
+    # For Elasticsearch versions 7+, the result is in a value field, just in total for > 6
+    expected == actual['hits']['total'].is_a?(Hash) ? actual['hits']['total']['value'] : actual['hits']['total']
+  end
+end
