@@ -29,6 +29,7 @@ import org.jruby.RubySymbol;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.Event;
 
@@ -99,6 +100,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         assertEquals(EVENT_COUNT, getMetricLongValue("out"));
     }
 
+    @Ignore("Test failing intermittently for some time. See https://github.com/elastic/logstash/issues/11956")
     @Test
     public void multiReceiveRecordsDurationInMillis() {
         final int delay = 100;
