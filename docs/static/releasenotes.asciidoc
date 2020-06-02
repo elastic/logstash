@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-7-1,Logstash 7.7.1>>
 * <<logstash-7-7-0,Logstash 7.7.0>>
 * <<logstash-7-6-2,Logstash 7.6.2>>
 * <<logstash-7-6-1,Logstash 7.6.1>>
@@ -27,6 +28,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-7-1]]
+=== Logstash 7.7.1 Release Notes
+
+==== Notable issues fixed
+
+* Fixed: empty batches no longer incur processing overhead in the Java Execution Engine
+https://github.com/elastic/logstash/pull/11747[#11747]
+
+* Fixed: when the Keystore is enabled, pipelines with many variable substitutions now load significantly faster
+https://github.com/elastic/logstash/pull/11772[#11772]
+
+* Fixed: when x-pack Monitoring is configured with `cloud_id`, the monitoring pipeline now correctly resolves the hosts.
+https://github.com/elastic/logstash/pull/11800[#11800]
+
+==== Plugins
+
+*Elasticsearch Output - 10.4.2*
+
+* Internal: changed cloud id, credential and host setup to happen in `build_client`, enabling Logstash's x-pack monitoring to use these features without caring about this plugin's internals https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/939[#939]
+
+* [DOC] Added note about `_type` setting change from `doc` to `_doc` https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/884[#884]
+
+* Fixed default index value to use calendar year instead of the year corresponding to the ISO week year https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/927[#927]
+
 
 [[logstash-7-7-0]]
 === Logstash 7.7.0 Release Notes
