@@ -196,10 +196,11 @@ output {
     Authority's certificate.
 
 [float]
+[role="xpack"]
 [[ls-monitoring-user]]
 ==== Configuring Credentials for Logstash Monitoring
 
-If you plan to ship Logstash {logstash-ref}/monitoring-logstash.html[monitoring]
+If you plan to ship Logstash {logstash-ref}/configuring-logstash.html[monitoring]
 data to a secure cluster, you need to configure the username and password that
 Logstash uses to authenticate for shipping monitoring data.
 
@@ -232,6 +233,7 @@ PUT _security/user/logstash_system/_enable
 // CONSOLE
 
 [float]
+[role="xpack"]
 [[ls-pipeline-management-user]]
 ==== Configuring Credentials for Centralized Pipeline Management
 
