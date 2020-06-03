@@ -122,6 +122,8 @@ subprojects {
 }
 
 // fetch version from Logstash's master versions.yml file
+String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
+
 version = versionMap['logstash-core']
 def versionQualifier = System.getenv('VERSION_QUALIFIER')
 if (versionQualifier) {
@@ -130,6 +132,35 @@ if (versionQualifier) {
 // a release build will try to download the exact version artifact and not append -SNAPSHOT to it see
 // the downloadEs task below
 def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
+
+String apiResponse = artifactsVersionApi.toURL().text
+
+def dlVersions = new JsonSlurper().parseText(apiResponse)
+def String arch = "x86_64"
+def String osName = System.properties['os.name']
+
+if (osName ==~ /Mac OS X/) {
+    osName = "darwin"
+} else {
+    osName = "linux"
+}
+
+
+String architecture = "${osName}-${arch}"
+String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
+// find latest reference to last build
+String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
+apiResponse = buildsListApi.toURL().text
+def dlBuilds = new JsonSlurper().parseText(apiResponse)
+def String build = dlBuilds["builds"][0]
+
+
+// the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
+// in the normal PR type builds it is plain '7.0.0'
+// in the build invoked by the release manager it is '7.0.0-alpha1' etc.
+// the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
+
+
 
 // Tasks
 
@@ -301,7 +332,6 @@ tasks.register("installIntegrationTestGems") {
 }
 
 
-String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
 
 tasks.register("downloadFilebeat", Download) {
     description "Download Filebeat Snapshot for current branch version: ${version}"
@@ -311,16 +341,7 @@ tasks.register("downloadFilebeat", Download) {
             throw new GradleException("could not find the current artifact from the artifact-api ${artifactsVersionApi} for " + (isReleaseBuild ? "release" : "snapshot") + " version: ${version}")
         }
     }
-
-    String apiResponse = artifactsVersionApi.toURL().text
-    def dlVersions = new JsonSlurper().parseText(apiResponse)
-    // the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
-    // in the normal PR type builds it is plain '7.0.0'
-    // in the build invoked by the release manager it is '7.0.0-alpha1' etc.
-    // the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
-
-    String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
-
+    
     if (qualifiedVersion == null) {
         // the version is not found in the versions API, for now just set dummy values so the
         // task parameters like src and dest below sees these dummy values but also set
@@ -333,32 +354,15 @@ tasks.register("downloadFilebeat", Download) {
     } else {
         project.ext.set("versionFound", true)
 
-        String arch = "x86_64"
-        String osName = System.properties['os.name']
-
-        if (osName ==~ /Mac OS X/) {
-            osName = "darwin"
-        } else {
-            osName = "linux"
-        }
-
-        String architecture = "${osName}-${arch}"
         String downloadedFilebeatName = "filebeat-${qualifiedVersion}-${architecture}"
         project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
-        // find latest reference to last build
-        String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
-        apiResponse = buildsListApi.toURL().text
-        def dlBuilds = new JsonSlurper().parseText(apiResponse)
-        String build = dlBuilds["builds"][0]
-
         // find url of build artifact
         String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
-//        String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
         apiResponse = artifactApiUrl.toURL().text
         def buildUrls = new JsonSlurper().parseText(apiResponse)
 
-        project.ext.set("filebeatSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
+        project.ext.set("filebeatSnapshotURL", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
         project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
     }
 
@@ -467,15 +471,6 @@ tasks.register("downloadEs", Download) {
         }
     }
 
-    String apiResponse = artifactsVersionApi.toURL().text
-    def dlVersions = new JsonSlurper().parseText(apiResponse)
-    // the version string can be either '7.0.0' or '7.0.0-alpha1', i.e. with the qualifier.
-    // in the normal PR type builds it is plain '7.0.0'
-    // in the build invoked by the release manager it is '7.0.0-alpha1' etc.
-    // the artifacts-api will return JSON like this: `{"versions":["5.6.13-SNAPSHOT","6.4.3-SNAPSHOT","6.5.0-SNAPSHOT","6.6.0-SNAPSHOT","7.0.0-alpha1-SNAPSHOT"]}`
-    
-    String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
-
     if (qualifiedVersion == null) {
         // the version is not found in the versions API, for now just set dummy values so the
         // task parameters like src and dest below sees these dummy values but also set
@@ -488,25 +483,27 @@ tasks.register("downloadEs", Download) {
     } else {
         project.ext.set("versionFound", true)
 
-        String arch = "x86_64"
-        String osName = System.properties['os.name']
+//        String arch = "x86_64"
+//        String osName = System.properties['os.name']
+//
+//        if (osName ==~ /Mac OS X/) {
+//            osName = "darwin"
+//        } else {
+//            osName = "linux"
+//        }
+//
+//
+//        String architecture = "${osName}-${arch}"
+//
+//        // find latest reference to last build
+//        String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
+//        apiResponse = buildsListApi.toURL().text
+//        def dlBuilds = new JsonSlurper().parseText(apiResponse)
+//        String build = dlBuilds["builds"][0]
 
-        if (osName ==~ /Mac OS X/) {
-            osName = "darwin"
-        } else {
-            osName = "linux"
-        }
-
-        String architecture = "${osName}-${arch}"
 
         String downloadedElasticsearchName = "elasticsearch-${qualifiedVersion}-${architecture}"
         project.ext.set("unpackedElasticsearchName", "elasticsearch-${qualifiedVersion}")
-
-        // find latest reference to last build
-        String buildsListApi = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/"
-        apiResponse = buildsListApi.toURL().text
-        def dlBuilds = new JsonSlurper().parseText(apiResponse)
-        String build = dlBuilds["builds"][0]
 
         // find url of build artifact
         String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${qualifiedVersion}/builds/${build}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
