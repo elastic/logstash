@@ -13,10 +13,10 @@ module LogStash module Monitoring
     include LogStash::Util::Loggable
     FEATURE = 'monitoring'
 
-    def initialize(pipeline_config, agent)
+    def initialize(pipeline_config, agent, settings)
       super(pipeline_config.settings)
       @pipeline_config = pipeline_config
-      @settings = LogStash::SETTINGS.clone
+      @settings = settings
       @agent = agent
       @es_options = es_options_from_settings_or_modules(FEATURE, @settings)
       setup_license_checker(FEATURE)

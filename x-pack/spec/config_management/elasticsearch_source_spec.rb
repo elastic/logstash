@@ -4,6 +4,7 @@
 
 require "spec_helper"
 require "logstash/json"
+require "logstash/runner"
 require "config_management/elasticsearch_source"
 require "config_management/extension"
 require "license_checker/license_manager"
@@ -164,9 +165,12 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
 
     let(:pipeline_id) { "foobar" }
-    let(:settings) { { "xpack.management.pipeline.id" => pipeline_id,
-                       "xpack.management.elasticsearch.password" => "testpassword"
-          } }
+    let(:settings) do
+      {
+        "xpack.management.pipeline.id" => pipeline_id,
+        "xpack.management.elasticsearch.password" => "testpassword"
+      }
+    end
 
     it "generates the path to get the configuration" do
       expect(subject.config_path).to eq("#{described_class::PIPELINE_INDEX}/_mget")
@@ -182,10 +186,13 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
 
     context "when enabled" do
-      let(:settings) { {
-        "xpack.management.enabled" => true,
-        "xpack.management.elasticsearch.password" => "testpassword"
-      } }
+      let(:settings) do
+        {
+          "xpack.management.enabled" => true,
+          "xpack.management.elasticsearch.username" => "testuser",
+          "xpack.management.elasticsearch.password" => "testpassword"
+        }
+      end
 
       it "returns true" do
         expect(subject.match?).to be_truthy
@@ -357,7 +364,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         context 'when security is enabled in Elasticsearch' do
           let(:security_enabled) { true }
           it 'should not raise an error' do
-            expect { subject.pipeline_configs }.not_to raise_error(LogStash::LicenseChecker::LicenseError)
+            expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
+            expect { subject.pipeline_configs }.not_to raise_error
           end
         end
       end

@@ -7,6 +7,7 @@ require 'support/helpers'
 require "license_checker/license_reader"
 require "helpers/elasticsearch_options"
 require "monitoring/monitoring"
+require "logstash/runner"
 
 describe LogStash::LicenseChecker::LicenseReader do
   let(:elasticsearch_url) { "https://localhost:9898" }
@@ -23,7 +24,7 @@ describe LogStash::LicenseChecker::LicenseReader do
   let(:settings) do
     {
       "xpack.monitoring.enabled" => true,
-      "xpack.monitoring.elasticsearch.hosts" => [ elasticsearch_url ],
+      "xpack.monitoring.elasticsearch.hosts" => [ elasticsearch_url],
       "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
       "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
     }
@@ -126,6 +127,21 @@ describe LogStash::LicenseChecker::LicenseReader do
       expect( subject.client.options[:hosts].size ).to eql 1
       expect( subject.client.options[:hosts][0].to_s ).to eql 'https://e1e631201fb64d55a75f431eb6349589.westeurope.azure.elastic-cloud.com:9243'
       expect( subject.client.options ).to include(:user => 'elastic', :password => 'LnWMLeK3EQPTf3G3F1IBdFvO')
+    end
+  end
+
+  context 'with api_key' do
+    let(:api_key) { "foo:bar" }
+    let(:settings) do
+      {
+        "xpack.monitoring.enabled" => true,
+        "xpack.monitoring.elasticsearch.hosts" => [elasticsearch_url],
+        "xpack.monitoring.elasticsearch.api_key" => api_key,
+      }
+    end
+
+    it "builds ES client" do
+      expect( subject.client.options[:client_settings][:headers] ).to include("Authorization" => "ApiKey Zm9vOmJhcg==")
     end
   end
 end
