@@ -2,6 +2,7 @@
 set -e
 current_dir="$(dirname "$0")"
 
+BIN_DIR=$current_dir/../../../bin
 INSTALL_DIR=$current_dir/installed
 PORT_WAIT_COUNT=20
 
@@ -23,11 +24,11 @@ wait_for_port() {
 }
 
 test_port() {
-    if command -v nc 2>/dev/null; then
-      test_port_nc "$1"
-    else
+#    if command -v nc 2>/dev/null; then
+#      test_port_nc "$1"
+#    else
       test_port_ruby "$1"
-    fi
+#    fi
 }
 
 test_port_nc() {
@@ -35,7 +36,7 @@ test_port_nc() {
 }
 
 test_port_ruby() {
-  ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
+  $BIN_DIR/ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
 }
 
 clean_install_dir() {
