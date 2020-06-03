@@ -28,14 +28,14 @@ These builds are created nightly and have undergone no formal QA, so they should
 | [deb-complete][]      | [deb-oss][]            |
 | [rpm-complete][]      | [rpm-oss][]            |
 
-[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.1.tar.gz
-[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.1.zip
-[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.1.deb
-[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.1.rpm
-[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.1.tar.gz
-[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.1.zip
-[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.1.deb
-[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.1.rpm
+[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.2.tar.gz
+[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.2.zip
+[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.2.deb
+[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.7.2.rpm
+[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.2.tar.gz
+[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.2.zip
+[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.2.deb
+[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.7.2.rpm
 
 ## Need Help?
 
