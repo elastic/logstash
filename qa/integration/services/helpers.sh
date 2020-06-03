@@ -24,11 +24,11 @@ wait_for_port() {
 }
 
 test_port() {
-#    if command -v nc 2>/dev/null; then
-#      test_port_nc "$1"
-#    else
+    if command -v nc 2>/dev/null; then
+      test_port_nc "$1"
+    else
       test_port_ruby "$1"
-#    fi
+    fi
 }
 
 test_port_nc() {
