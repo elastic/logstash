@@ -12,13 +12,20 @@ input {
 }
 output {
   elasticsearch_monitoring {
+  <% if auth? %>
+    user => "<%= user %>"
+    password => "<%= password %>"
+  <% end %>
+  <% if api_key? %>
+    api_key => "<%= api_key %>"
+  <% end %>
   <% if cloud_id? %>
     cloud_id => "<%= cloud_id %>"
-    <% if cloud_auth %>
-    cloud_auth => "<%= cloud_auth %>"
-    <% end %>
   <% else %>
     hosts => <%= es_hosts %>
+  <% end %>
+  <% if cloud_auth %>
+    cloud_auth => "<%= cloud_auth %>"
   <% end %>
     bulk_path => "<%= monitoring_endpoint %>"
     manage_template => false
@@ -27,10 +34,6 @@ output {
     sniffing => <%= sniffing %>
   <% if proxy? %>
     proxy => "<%= proxy %>"
-  <% end %>
-  <% if auth? && !cloud_auth? %>
-    user => "<%= user %>"
-    password => "<%= password %>"
   <% end %>
   <% if ssl? %>
     ssl => true

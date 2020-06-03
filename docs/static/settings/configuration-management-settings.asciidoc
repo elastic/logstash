@@ -99,3 +99,10 @@ and `xpack.management.elasticsearch.password`. If `cloud_auth` is configured,
 those settings should not be used.
 The credentials you specify here should be for a user with the `logstash_admin` role, which
 provides access to `.logstash-*` indices for managing configurations.
+
+`xpack.management.elasticsearch.api_key`::
+
+Authenticate using an Elasticsearch API key. Note that this option also requires using SSL.
+
+The API key Format is `id:api_key` where `id` and `api_key` are as returned by the Elasticsearch
+https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html[Create API key API].
