@@ -452,7 +452,9 @@ output {
 }
 ----------------------------------
 
-You can use the `in` operator to test whether a field contains a specific string, key, or (for lists) element:
+You can use the `in` operator to test whether a field contains a specific string, key, or list element.
+Note that the semantic meaning of `in` can vary, based on the target type. For example, when applied to
+a string. `in` means "is a substring of". When applied to a collection type, `in` means "collection contains the exact value".
 
 [source,js]
 ----------------------------------
