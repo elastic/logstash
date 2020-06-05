@@ -209,7 +209,7 @@ describe LogStash::Pipeline do
       Thread.abort_on_exception = true
 
       pipeline = mock_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
+      pipeline.start
       Timeout.timeout(timeout) do
         sleep(0.1) until pipeline.ready?
       end
@@ -224,7 +224,6 @@ describe LogStash::Pipeline do
       expect(output.events[0].get("tags")).to eq(["notdropped"])
       expect(output.events[1].get("tags")).to eq(["notdropped"])
       pipeline.shutdown
-      t.join
 
       Thread.abort_on_exception = abort_on_exception_state
     end
@@ -304,7 +303,7 @@ describe LogStash::Pipeline do
           pipeline = mock_pipeline_from_string(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             hash_including({:count_was=>worker_thread_count, :filters=>["dummyfilter"]}))
-          pipeline.run
+          pipeline.start
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
           pipeline.shutdown
         end
@@ -317,7 +316,7 @@ describe LogStash::Pipeline do
                 " not work with multiple worker threads"
           pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
           expect(pipeline.logger).to receive(:warn).with(msg, hash_including({:worker_threads=> override_thread_count, :filters=>["dummyfilter"]}))
-          pipeline.run
+          pipeline.start
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
           pipeline.shutdown
         end
@@ -344,7 +343,7 @@ describe LogStash::Pipeline do
       it "starts multiple filter threads" do
         skip("This test has been failing periodically since November 2016. Tracked as https://github.com/elastic/logstash/issues/6245")
         pipeline = mock_pipeline_from_string(test_config_with_filters)
-        pipeline.run
+        pipeline.start
         expect(pipeline.worker_threads.size).to eq(worker_thread_count)
         pipeline.shutdown
       end
@@ -398,7 +397,7 @@ describe LogStash::Pipeline do
       end
 
       it "should call close of output without output-workers" do
-        pipeline.run
+        pipeline.start
 
         expect(output).to have_received(:do_close).once
       end
@@ -445,7 +444,7 @@ describe LogStash::Pipeline do
         expect(pipeline).to receive(:transition_to_running).ordered.and_call_original
         expect(pipeline).to receive(:start_flusher).ordered.and_call_original
 
-        pipeline.run
+        pipeline.start
         pipeline.shutdown
       end
     end
@@ -492,13 +491,11 @@ describe LogStash::Pipeline do
 
       # pipeline must be first called outside the thread context because it lazily initialize and will create a
       # race condition if called in the thread
-      p = pipeline
-      t = Thread.new { p.run }
+      pipeline.start
       Timeout.timeout(timeout) do
         sleep(0.1) until pipeline.ready?
       end
       pipeline.shutdown
-      t.join
     end
 
     it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
@@ -693,7 +690,7 @@ describe LogStash::Pipeline do
     it "flush periodically" do
       Thread.abort_on_exception = true
       pipeline = mock_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
+      pipeline.start
       Timeout.timeout(timeout) do
         sleep(0.1) until pipeline.ready?
       end
@@ -707,8 +704,6 @@ describe LogStash::Pipeline do
       expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
 
       pipeline.shutdown
-
-      t.join
     end
   end
 
@@ -771,7 +766,7 @@ describe LogStash::Pipeline do
     end
 
     it "return when the pipeline started working" do
-      subject.run
+      subject.start
       expect(subject.started_at).to be < Time.now
       subject.shutdown
     end
@@ -799,9 +794,7 @@ describe LogStash::Pipeline do
 
     context "when the pipeline is started" do
       it "return the duration in milliseconds" do
-        # subject must be first call outside the thread context because of lazy initialization
-        s = subject
-        t = Thread.new { s.run }
+        subject.start
         Timeout.timeout(timeout) do
           sleep(0.1) until subject.ready?
         end
@@ -810,7 +803,6 @@ describe LogStash::Pipeline do
         end
         expect(subject.uptime).to be > 0
         subject.shutdown
-        t.join
       end
     end
   end
@@ -852,12 +844,6 @@ describe LogStash::Pipeline do
     end
     let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new({ "id" => dummy_output_id }) }
     let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
-    let(:pipeline_thread) do
-      # subject has to be called for the first time outside the thread because it will create a race condition
-      # with the subject.ready? call since subject is lazily initialized
-      s = subject
-      Thread.new { s.run }
-    end
 
     before :each do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
@@ -866,7 +852,7 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(LogStash::Filters::DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
 
-      pipeline_thread
+      subject.start
       Timeout.timeout(timeout) do
         sleep(0.1) until subject.ready?
       end
@@ -882,7 +868,6 @@ describe LogStash::Pipeline do
 
     after :each do
       subject.shutdown
-      pipeline_thread.join
     end
 
     context "global metric" do
