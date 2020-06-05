@@ -66,8 +66,7 @@ module LogStash module PipelineAction
         # the block must emit a success boolean value
 
         # First shutdown old pipeline
-        old_pipeline.shutdown { LogStash::ShutdownWatcher.start(old_pipeline) }
-        old_pipeline.thread.join
+        old_pipeline.shutdown
 
         # Then create a new pipeline
         new_pipeline = java_exec ? LogStash::JavaPipeline.new(@pipeline_config, @metric, agent) : LogStash::Pipeline.new(@pipeline_config, @metric, agent)

@@ -60,18 +60,6 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
 
     private IRubyObject pipeline;
 
-    @JRubyMethod(meta = true, required = 1, optional = 3)
-    public static RubyThread start(final ThreadContext context, final IRubyObject recv, final IRubyObject[] args) {
-        return new RubyThread(context.runtime, context.runtime.getThread(), () -> {
-            try {
-                new ShutdownWatcherExt(context.runtime, RubyUtil.SHUTDOWN_WATCHER_CLASS)
-                    .initialize(context, args).start(context);
-            } catch (final InterruptedException ex) {
-                throw new IllegalStateException(ex);
-            }
-        });
-    }
-
     @JRubyMethod(name = "unsafe_shutdown?", meta = true)
     public static IRubyObject isUnsafeShutdown(final ThreadContext context,
         final IRubyObject recv) {
@@ -164,8 +152,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                 TimeUnit.SECONDS.sleep(cyclePeriod);
                 attemptsCount.incrementAndGet();
                 if (stopped(context).isTrue() ||
-                    !pipeline.callMethod(context, "thread")
-                        .callMethod(context, "alive?").isTrue()) {
+                    pipeline.callMethod(context, "finished_execution?").isTrue()) {
                     break;
                 }
                 reports.add(pipelineReportSnapshot(context));
