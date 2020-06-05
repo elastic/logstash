@@ -49,12 +49,28 @@ Operation not permitted
 == {ls} start up
 
 [float] 
+[[ts-java-home]] 
+=== [add decription] errors
+
+The `JAVA_HOME` version must be set before you start {ls}.
+If `JAVA_HOME` is not set, you may see errors similar to these: 
+
+[source,sh]
+-----
+WARNING: ERRORS GO HERE
+-----
+
+*Note to developers:* `JAVA_HOME` is a system variable. If you need to test with
+another Java version, you can use the `BUILD_JAVA_HOME` setting to specify a
+different version.
+
+[float] 
 [[ts-illegal-reflective-error]] 
 === 'Illegal reflective access' errors
 
 // https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
 
-Running Logstash with Java 11 results in warnings similar to these:
+Running Logstash with Java 11 or Java 14 results in warnings similar to these:
 
 [source,sh]
 -----
@@ -89,8 +105,8 @@ Try adding these values to the `jvm.options` file.
 
 *Notes:*
 
-* These settings allow Logstash to start without warnings in Java 11, but they
-prevent Logstash from starting on Java 8.
+* These settings allow Logstash to start without warnings in Java 11 or Java 14, but they
+prevent {ls} from starting on Java 8 and earlier versions.
 * This workaround has been tested with simple pipelines. If you have experiences
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
