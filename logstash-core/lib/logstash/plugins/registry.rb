@@ -188,7 +188,7 @@ module LogStash module Plugins
           raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin_spec.klass, plugin_name)
         end
 
-        return plugin_spec.klass
+        plugin_spec.klass
       end
     end
 
