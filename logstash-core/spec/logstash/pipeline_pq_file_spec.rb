@@ -100,13 +100,6 @@ describe LogStash::Pipeline do
   let(:max_bytes) { 1024 * 1024 * 1024 } # 1 gb
   let(:times) { [] }
 
-  let(:pipeline_thread) do
-    # subject has to be called for the first time outside the thread because it will create a race condition
-    # with the subject.ready? call since subject is lazily initialized
-    s = subject
-    Thread.new { s.run }
-  end
-
   let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
   before :each do
@@ -126,7 +119,7 @@ describe LogStash::Pipeline do
     pipeline_settings_obj.set("queue.max_bytes", max_bytes)
     times.push(Time.now.to_f)
 
-    pipeline_thread
+    subject.start
     sleep(0.1) until subject.ready?
 
     # make sure we have received all the generated events
@@ -139,7 +132,6 @@ describe LogStash::Pipeline do
 
   after :each do
     subject.shutdown
-    pipeline_thread.join
     # Dir.rm_rf(this_queue_folder)
   end
 

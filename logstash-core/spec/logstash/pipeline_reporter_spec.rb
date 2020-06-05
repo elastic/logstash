@@ -37,12 +37,11 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
 
     @pre_snapshot = reporter.snapshot
 
-    pipeline.run
-    @post_snapshot = reporter.snapshot
-  end
-
-  after do
+    pipeline.start
+    # wait for stopped? so the input can produce all events
+    sleep 0.01 until pipeline.stopped?
     pipeline.shutdown
+    @post_snapshot = reporter.snapshot
   end
 
   describe "stalling threads info" do
@@ -87,6 +86,10 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
 end
 
 describe LogStash::PipelineReporter do
-  it_behaves_like "a pipeline reporter", :mock_pipeline_from_string
-  it_behaves_like "a pipeline reporter", :mock_java_pipeline_from_string
+  context "with ruby execution" do
+    it_behaves_like "a pipeline reporter", :mock_pipeline_from_string
+  end
+  context "with java execution" do
+    it_behaves_like "a pipeline reporter", :mock_java_pipeline_from_string
+  end
 end
