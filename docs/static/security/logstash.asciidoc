@@ -249,3 +249,6 @@ xpack.management.elasticsearch.password: t0p.s3cr3t
 ----------------------------------------------------------
 <1> The user you specify here must have the built-in `logstash_admin` role as
 well as the `logstash_writer` role that you created earlier.
+
+include::api-keys.asciidoc[]
+

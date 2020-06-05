@@ -1,0 +1,9 @@
+[float]
+[[ls-api-keys]]
+==== Grant access using API keys
+
+
+Instead of using usernames and passwords, you can use API keys to grant
+access to {es} resources. You can set API keys to expire at a certain time,
+and you can explicitly invalidate them. Any user with the `manage_api_key`
+or `manage_own_api_key` cluster privilege can create API keys.
