@@ -7,39 +7,16 @@ input, parses the logs, and writes the parsed data to an Elasticsearch cluster. 
 
 This section includes the following topics:
 
+* <<ls-jvm>>
 * <<installing-logstash>>
 * <<first-event>>
 * {logstash-ref}/advanced-pipeline.html[Parsing Logs with Logstash]
 * {logstash-ref}/multiple-input-output-plugins.html[Stitching Together Multiple Input and Output Plugins]
 
+include::jvm.asciidoc[]
+
 [[installing-logstash]]
 === Installing Logstash
-
-NOTE: Logstash requires Java 8 or Java 11. Use the
-http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
-distribution such as http://openjdk.java.net/[OpenJDK].
-
-To check your Java version, run the following command:
-
-[source,shell]
-java -version
-
-On systems with Java installed, this command produces output similar to the following:
-
-[source,shell]
------
-java version "11.0.1" 2018-10-16 LTS
-Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
-Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
------
-
-On some Linux systems, you may also need to have the `JAVA_HOME` environment
-exported before attempting the install, particularly if you installed Java from
-a tarball.  This is because Logstash uses Java during installation to
-automatically detect your environment and install the correct startup method
-(SysV init scripts, Upstart, or systemd).  If Logstash is unable to find the
-JAVA_HOME environment variable during package installation time, you may get an
-error message, and Logstash will be unable to start properly.
 
 [float]
 [[installing-binary]]
