@@ -27,8 +27,7 @@ module LogStash module PipelineAction
 
     def execute(agent, pipelines_registry)
       pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
-        pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
-        pipeline.thread.join
+        pipeline.shutdown
       end
 
       LogStash::ConvergeResult::SuccessfulAction.new
