@@ -122,7 +122,7 @@ subprojects {
 }
 
 version = versionMap['logstash-core']
-String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions/"
+String artifactsVersionApi = "https://artifacts-api.elastic.co/v1/versions"
 
 tasks.register("setArchitecture") {
     String arch = "x86_64"
@@ -153,7 +153,7 @@ tasks.register("setStackVersions") {
         throw new GradleException("could not find the current artifact from the artifact-api ${artifactsVersionApi} for ${version}")
     }
     // find latest reference to last build
-    String buildsListApi = "${artifactsVersionApi}${qualifiedVersion}/builds/"
+    String buildsListApi = "${artifactsVersionApi}/${qualifiedVersion}/builds/"
     apiResponse = buildsListApi.toURL().text
     def dlBuilds = new JsonSlurper().parseText(apiResponse)
     project.ext.set("stackBuildVersion", dlBuilds["builds"][0])
@@ -343,12 +343,13 @@ tasks.register("downloadFilebeat", Download) {
     project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
     // find url of build artifact
-    String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${project.ext.get("qualifiedVersion")}/builds/${project.ext.get("stackBuildVersion")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
+    String artifactApiUrl = "${artifactsVersionApi}/${project.ext.get("qualifiedVersion")}/builds/${project.ext.get("stackBuildVersion")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
     String apiResponse = artifactApiUrl.toURL().text
     def buildUrls = new JsonSlurper().parseText(apiResponse)
 
     project.ext.set("filebeatSnapshotURL", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
     project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+
 
     src project.ext.filebeatSnapshotURL
     onlyIfNewer true
@@ -454,7 +455,7 @@ tasks.register("downloadEs", Download) {
     project.ext.set("unpackedElasticsearchName", "elasticsearch-${project.ext.get("qualifiedVersion")}")
 
     // find url of build artifact
-    String artifactApiUrl = "https://artifacts-api.elastic.co/v1/versions/${project.ext.get("qualifiedVersion")}/builds/${project.ext.get("stackBuildVersion")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+    String artifactApiUrl = "${artifactsVersionApi}/${project.ext.get("qualifiedVersion")}/builds/${project.ext.get("stackBuildVersion")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
     String apiResponse = artifactApiUrl.toURL().text
     def buildUrls = new JsonSlurper().parseText(apiResponse)
 
