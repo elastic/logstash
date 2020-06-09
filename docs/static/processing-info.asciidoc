@@ -19,7 +19,8 @@ occur in two places:
 * In-flight batches can be reordered when one or more batches are processed faster than
 others. 
 
-When maintaining event order is important, use a single worker. 
+When maintaining event order is important, use a single worker and set
+'pipeline.ordered => true'.
 This approach ensures that batches are computed one-after-the-other, and
 that events maintain their order within the batch.
 
