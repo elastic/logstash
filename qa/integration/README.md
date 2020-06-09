@@ -4,7 +4,7 @@ These test sets are full integration tests. They can:
 
 * start Logstash from a binary, 
 * run configs using `-e`, and 
-* use external services like Kafka, ES and S3.
+* use external services such as Kafka, Elasticsearch, and Beats.
 
 This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
 
@@ -19,9 +19,9 @@ This framework is hybrid -- a combination of bash scripts (to mainly setup servi
 
 ### Set JAVA_HOME
 
-`JAVA_HOME` is a system variable that points to the location where the JDK is installed. 
+`JAVA_HOME` is an environment variable that points to the location where the JDK is installed. 
 
-If you need to test with another Java version, you can use the `BUILD_JAVA_HOME` setting in test scripts to specify a different version. 
+If you need to test with a different Java version, you can use the `BUILD_JAVA_HOME` environment variable in test scripts to specify another version. 
 
 ## Testing on Mac/Linux
 
@@ -95,10 +95,7 @@ WARNING: Docker cleanup removes all images and containers except for the `logsta
 
 ## Testing on Windows
 
-The integration tests should be run from MacOS or Linux.  However, the tests can be run locally within Docker [on Windows???].
-
-//ToDO: Get specifics on what this means.   
-
+The integration tests should be run from MacOS or Linux.  However, the tests can be run locally within Docker on Windows.
 
 
 ## Adding a new test
