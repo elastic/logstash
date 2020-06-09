@@ -21,11 +21,6 @@ Is important to notice that the first time you set everything up, or when a
 new VM is added, there is the need to download the box (this will
 take a while depending on your internet speed).
 
-#### Set JAVA_HOME
-
-`JAVA_HOME` is a system variable that points to the location where the JDK is installed. 
-
-If you need to test with another Java version, you can use the `BUILD_JAVA_HOME` setting in test scripts to specify a different version. 
 
 ### Running Tests
 
