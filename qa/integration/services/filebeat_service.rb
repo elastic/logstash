@@ -16,7 +16,6 @@
 # under the License.
 
 class FilebeatService < Service
-  #File.join(File.dirname(__FILE__), "../../../../build/elasticsearch")
   FILEBEAT_CMD = [File.join(File.dirname(__FILE__), "../../../build", "filebeat", "filebeat"), "--strict.perms=false", "-c"]
 
   class BackgroundProcess
