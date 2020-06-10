@@ -62,5 +62,5 @@ else
   for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
     CLASSPATH=${CLASSPATH}${CLASSPATH:+:}${LOGSTASH_JARS}/${J}
   done
-  exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.Logstash "$@"
+  exec "${JAVACMD}" ${JAVA_OPTS} -Djruby.home=$LOGSTASH_HOME/vendor/jruby -cp "${CLASSPATH}" org.logstash.Logstash "$@"
 fi

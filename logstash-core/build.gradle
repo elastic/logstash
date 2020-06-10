@@ -104,6 +104,7 @@ tasks.register("rubyTests", Test) {
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+    systemProperty 'jruby.home', "${rootProject.projectDir}/vendor/jruby"
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
