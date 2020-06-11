@@ -359,7 +359,7 @@ tasks.register("downloadFilebeat", Download) {
     inputs.file("${projectDir}/versions.yml")
     outputs.file(project.ext.filebeatDownloadLocation)
     dest new File(project.ext.filebeatDownloadLocation)
-
+    retries 3
     doLast {
         System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
     }
@@ -468,6 +468,7 @@ tasks.register("downloadEs", Download) {
 
     src project.ext.elasticsearchSnapshotURL
     onlyIfNewer true
+    retries 3
     inputs.file("${projectDir}/versions.yml")
     outputs.file(project.ext.elasticsearchDownloadLocation)
     dest new File(project.ext.elasticsearchDownloadLocation)
