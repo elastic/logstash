@@ -8,6 +8,9 @@
 * Java 11
 * Java 14
 
+See the https://www.elastic.co/support/matrix#matrix_jvm[Elastic Support Matrix]
+for the official word on supported versions across releases.
+
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
 Oracle distribution] or an open-source distribution, such as
