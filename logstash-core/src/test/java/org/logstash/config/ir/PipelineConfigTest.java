@@ -65,7 +65,7 @@ public class PipelineConfigTest extends RubyEnvTestCase {
     private final static RubyObject SETTINGS = (RubyObject) RubyUtil.RUBY.evalScriptlet(
             "require 'logstash/environment'\n" + // this is needed to register "pipeline.system" setting
             "require 'logstash/settings'\n" +
-            "LogStash::SETTINGS");;
+            "LogStash::SETTINGS");
     private PipelineConfig sut;
     private SourceWithMetadata[] orderedConfigParts;
     public static final String PIPELINE_CONFIG_PART_2 =
@@ -125,6 +125,10 @@ public class PipelineConfigTest extends RubyEnvTestCase {
     public void testObjectEqualityOnConfigHashAndPipelineId() {
         PipelineConfig anotherExactPipeline = new PipelineConfig(source, pipelineIdSym, toRubyArray(orderedConfigParts), SETTINGS);
         assertEquals(anotherExactPipeline, sut);
+
+        final RubyObject CLONED_SETTINGS = (RubyObject)SETTINGS.callMethod("clone");
+        PipelineConfig anotherExactPipelineWithClonedSettings = new PipelineConfig(source, pipelineIdSym, toRubyArray(orderedConfigParts), CLONED_SETTINGS);
+        assertEquals(anotherExactPipelineWithClonedSettings, sut);
 
         PipelineConfig notMatchingPipeline = new PipelineConfig(source, pipelineIdSym, RubyArray.newEmptyArray(RubyUtil.RUBY), SETTINGS);
         assertNotEquals(notMatchingPipeline, sut);
