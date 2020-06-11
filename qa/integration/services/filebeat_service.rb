@@ -16,7 +16,7 @@
 # under the License.
 
 class FilebeatService < Service
-  FILEBEAT_CMD = [File.join(File.dirname(__FILE__), "installed", "filebeat", "filebeat"), "--strict.perms=false", "-c"]
+  FILEBEAT_CMD = [File.join(File.dirname(__FILE__), "../../../build", "filebeat", "filebeat"), "--strict.perms=false", "-c"]
 
   class BackgroundProcess
     def initialize(cmd)
