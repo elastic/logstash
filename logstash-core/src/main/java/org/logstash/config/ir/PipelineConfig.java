@@ -126,7 +126,7 @@ public final class PipelineConfig {
         PipelineConfig cother = (PipelineConfig) other;
         return configHash().equals(cother.configHash()) &&
                 this.pipelineId.equals(cother.pipelineId) &&
-                this.settings.eql(cother.settings);
+                this.settings.equals(cother.settings);
     }
 
     @Override
