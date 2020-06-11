@@ -60,9 +60,9 @@ If `JAVA_HOME` is not set, you may see errors similar to these:
 WARNING: ERRORS GO HERE
 -----
 
-*Note to developers:* `JAVA_HOME` is a system variable. If you need to test with
-another Java version, you can use the `BUILD_JAVA_HOME` setting to specify a
-different version.
+*Note to developers:* `JAVA_HOME` is an environment variable. If you need to
+test with another Java version, you can use the `BUILD_JAVA_HOME` environment
+variable to specify a different version.
 
 [float] 
 [[ts-illegal-reflective-error]] 
