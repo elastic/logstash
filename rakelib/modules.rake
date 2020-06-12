@@ -19,7 +19,7 @@ namespace "modules" do
 
   def unpacker(src_file, dest_dir)
     puts "Reading #{src_file}"
-    array = JSON.load(IO.read(src_file))
+    array = JSON.parse(IO.read(src_file))
 
     if !array.is_a?(Array)
       raise "#{src_file} does not contain a JSON array as the first object"

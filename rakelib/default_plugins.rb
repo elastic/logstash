@@ -40,7 +40,7 @@ module LogStash
       # Lets use the standard library here, in the context of the bootstrap the
       # logstash-core could have failed to be installed.
       require "json"
-      JSON.load(::File.read("rakelib/plugins-metadata.json")).select do |_, metadata|
+      JSON.parse(::File.read("rakelib/plugins-metadata.json")).select do |_, metadata|
         metadata[type]
       end.keys
     end
