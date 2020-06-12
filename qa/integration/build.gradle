@@ -45,5 +45,6 @@ tasks.register("integrationTests", Test) {
   inputs.files fileTree("${projectDir}/fixtures")
   inputs.files fileTree("${projectDir}/specs")
   systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'jruby.home', "${rootProject.projectDir}/vendor/jruby"
   include '/org/logstash/integration/RSpecTests.class'
 }
