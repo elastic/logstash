@@ -17,6 +17,6 @@
 
 namespace "dependency" do
   task "bundler" do
-    Rake::Task["gem:require"].invoke("bundler", "~> 1.17.3")
+    Rake::Task["gem:require"].invoke("bundler", "~> 2")
   end
 end # namespace dependency
