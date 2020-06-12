@@ -276,7 +276,7 @@ def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){
     dependsOn unpackTarDistribution
-    outputs.files fileTree("${qaBundleBin}")
+    outputs.files file("${qaBundleBin}")
   doLast {
       gem(projectDir, buildDir, "bundler", "~> 2", qaBundledGemPath)
   }
