@@ -85,7 +85,7 @@ describe "Beat Input" do
       {
         "filebeat" => {
           "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
-          "registry_file" => registry_file,
+          "registry.path" => registry_file,
           "scan_frequency" => "1s"
         },
         "output" => {
@@ -110,7 +110,7 @@ describe "Beat Input" do
         {
           "filebeat" => {
             "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
-            "registry_file" => registry_file,
+            "registry.path" => registry_file,
             "scan_frequency" => "1s"
           },
           "output" => {
@@ -137,7 +137,7 @@ describe "Beat Input" do
         {
           "filebeat" => {
             "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
-            "registry_file" => registry_file,
+            "registry.path" => registry_file,
             "scan_frequency" => "1s"
           },
           "output" => {
