@@ -120,7 +120,8 @@ setup_java() {
       done
   fi
   # then override with anything provided
-  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
+
+  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") -Djruby.home=$LOGSTASH_HOME/vendor/jruby $LS_JAVA_OPTS"
   JAVA_OPTS=$LS_JAVA_OPTS
 
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
