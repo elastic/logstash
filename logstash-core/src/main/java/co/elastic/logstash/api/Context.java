@@ -62,4 +62,15 @@ public interface Context {
      */
     EventFactory getEventFactory();
 
+    /**
+     * Provides an {@link AcknowledgeBus}, if configured, to register plugin to.
+     * If not configured or not an instance {@link AcknowledgablePlugin}
+     * {@code null} will be returned
+     *
+     * @return The acknowledgeBus.
+     */
+    default AcknowledgeBus getAcknowledgeBus(){
+        return null;
+    }
+
 }

@@ -28,7 +28,7 @@ import java.util.Map;
  * Event interface for Java plugins. Java plugins should be not rely on the implementation details of any
  * concrete implementations of the Event interface.
  */
-public interface Event {
+public interface Event extends Acknowledgable {
     Map<String, Object> getData();
 
     Map<String, Object> getMetadata();
@@ -66,4 +66,8 @@ public interface Event {
     String toString();
 
     void tag(String tag);
+
+    default AcknowledgeToken getAcknowledgeToken(){
+        return null;
+    }
 }
