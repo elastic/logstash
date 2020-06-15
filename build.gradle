@@ -131,7 +131,7 @@ tasks.register("configureArchitecture") {
     String esArch = arch
 
     // For aarch64 architectures, beats and elasticsearch name their artifacts differently
-    if (arch == "aarch64") {i
+    if (arch == "aarch64") {
         beatsArch="arm64"
         esArch="aarch64"
     } else if (arch == "amd64") {
