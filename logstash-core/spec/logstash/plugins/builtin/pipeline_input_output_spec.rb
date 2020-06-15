@@ -25,6 +25,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
   let(:execution_context) { double("execution_context" )}
   let(:agent) { double("agent") }
   let(:pipeline_bus) { org.logstash.plugins.pipeline.PipelineBus.new }
+  let(:acknowledge_bus) { org.logstash.plugins.acknowledge.AcknowledgeBus.new }
 
   let(:queue) { Queue.new }
 
@@ -36,6 +37,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
 
   before(:each) do
     allow(execution_context).to receive(:agent).and_return(agent)
+    allow(agent).to receive(:acknowledge_bus).and_return(acknowledge_bus)
     allow(agent).to receive(:pipeline_bus).and_return(pipeline_bus)
     inputs.each do |i|
       allow(i).to receive(:execution_context).and_return(execution_context)
@@ -53,7 +55,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
     def start_input
       input.register
 
-      @input_thread = Thread.new do 
+      @input_thread = Thread.new do
         input.run(queue)
       end
 
@@ -93,7 +95,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
           expect(subject.to_hash_with_metadata).not_to match(event.to_hash_with_metadata)
         end
       end
-      
+
       after(:each) do
         stop_input
         output.do_close
@@ -153,7 +155,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         output.register
 
         @input_threads = inputs_queues.map do |input_plugin,input_queue|
-          Thread.new do 
+          Thread.new do
             input_plugin.run(input_queue)
           end
         end
@@ -197,7 +199,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
           expect(inputs_queues[other_input].size).to eql(0)
         end
       end
-      
+
       after(:each) do
         inputs.each(&:do_stop)
         inputs.each(&:do_close)

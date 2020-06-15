@@ -28,6 +28,7 @@ describe LogStash::ExecutionContext do
   before do
     allow(pipeline).to receive(:agent).and_return(agent)
     allow(pipeline).to receive(:pipeline_id).and_return(pipeline_id)
+    allow(pipeline).to receive(:acknowledge_bus).and_return(nil)
   end
 
   subject { described_class.new(pipeline, agent, plugin_id, plugin_type, dlq_writer) }

@@ -1,5 +1,6 @@
 package org.logstash.plugins.factory;
 
+import co.elastic.logstash.api.AcknowledgeBus;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.DeadLetterQueueWriter;
 import org.jruby.Ruby;
@@ -30,6 +31,8 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
 
     private IRubyObject dlqWriter;
 
+    private AcknowledgeBus acknowledgeBus;
+
     public ExecutionContextFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
@@ -40,6 +43,13 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
         this.agent = agent;
         this.pipeline = pipeline;
         this.dlqWriter = dlqWriter;
+        this.acknowledgeBus = null;
+        if (agent != null && !agent.isNil()){
+            IRubyObject bus = agent.callMethod(RubyUtil.RUBY.getCurrentContext(), "acknowledge_bus");
+            if (bus != null && !bus.isNil() && AcknowledgeBus.class.isAssignableFrom(bus.getJavaClass())){
+                this.acknowledgeBus = bus.toJava(AcknowledgeBus.class);
+            }
+        }
         return this;
     }
 
@@ -67,8 +77,12 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
         } else if (dlqWriter.getJavaClass().equals(DeadLetterQueueWriter.class)) {
             dlq = dlqWriter.toJava(DeadLetterQueueWriter.class);
         }
+        AcknowledgeBus ack_bus = null;
+        if (pluginType == PluginLookup.PluginType.INPUT){
+            ack_bus = this.acknowledgeBus;
+        }
 
-        return new ContextImpl(dlq, new NamespacedMetricImpl(RubyUtil.RUBY.getCurrentContext(), metric));
+        return new ContextImpl(dlq, new NamespacedMetricImpl(RubyUtil.RUBY.getCurrentContext(), metric), ack_bus);
     }
 
     IRubyObject getPipeline() {

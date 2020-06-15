@@ -31,16 +31,24 @@ import java.util.Map;
 
 public class ContextImpl implements Context {
 
-    private DeadLetterQueueWriter dlqWriter;
+    private final DeadLetterQueueWriter dlqWriter;
+
+    private final AcknowledgeBus acknowledgeBus;
 
     /**
      * This is a reference to the [stats, pipelines, *name*, plugins] metric namespace.
      */
     private Metric pluginsScopedMetric;
 
-    public ContextImpl(DeadLetterQueueWriter dlqWriter, Metric metric) {
+    public ContextImpl(DeadLetterQueueWriter dlqWriter, Metric metric, AcknowledgeBus acknowledgeBus) {
         this.dlqWriter = dlqWriter;
         this.pluginsScopedMetric = metric;
+        this.acknowledgeBus = acknowledgeBus;
+    }
+
+
+    public ContextImpl(DeadLetterQueueWriter dlqWriter, Metric metric) {
+        this(dlqWriter, metric, null);
     }
 
     @Override
@@ -79,5 +87,10 @@ public class ContextImpl implements Context {
                 return new org.logstash.Event(data);
             }
         };
+    }
+
+    @Override
+    public AcknowledgeBus getAcknowledgeBus() {
+        return acknowledgeBus;
     }
 }

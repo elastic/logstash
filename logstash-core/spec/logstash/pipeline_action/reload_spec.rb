@@ -34,6 +34,7 @@ describe LogStash::PipelineAction::Reload do
 
   before do
     clear_data_dir
+    allow(agent).to receive(:acknowledge_bus).and_return(nil)
     pipeline.start
   end
 

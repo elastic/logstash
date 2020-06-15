@@ -30,6 +30,7 @@ describe LogStash::PipelineAction::Create do
 
   before do
     clear_data_dir
+    allow(agent).to receive(:acknowledge_bus).and_return(nil)
   end
 
   subject { described_class.new(pipeline_config, metric) }

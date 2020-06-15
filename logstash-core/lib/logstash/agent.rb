@@ -37,7 +37,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus
+  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus, :acknowledge_bus
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -59,6 +59,11 @@ class LogStash::Agent
 
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
+
+    # Special bus object for pipeline-plugin acknowledge communications.
+    # Used by Acknowledgable plugins, like an external queue plugin.
+    # Also used by `pipeline` input/output
+    @acknowledge_bus = org.logstash.plugins.acknowledge.AcknowledgeBus.new
 
     @pipelines_registry = LogStash::PipelinesRegistry.new
 
