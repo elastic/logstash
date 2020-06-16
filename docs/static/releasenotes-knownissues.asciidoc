@@ -1,0 +1,11 @@
+==== Known issue
+
+**TLS v1.3 with Docker images 7.2.0 - 7.4.1**
+
+Bugs in some JDK versions can prevent {ls} from successfully conducting a TLS
+v1.3 handshake. This issue impacts:
+
+* {ls} Docker images 7.2.0 - 7.4.1 when you use TLS v1.3.
+
+If you encounter this issue, we recommend upgrading to {ls} Docker images 7.4.2
+or later. If you cannot upgrade, try using and enforcing TLS v1.2.

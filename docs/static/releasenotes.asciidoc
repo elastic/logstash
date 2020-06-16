@@ -29,6 +29,10 @@ No user facing changes in this release.
 [[logstash-7-4-1]]
 === Logstash 7.4.1 Release Notes
 
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
+
 * Update patch plugin versions in gemfile lock for 7.4.1 https://github.com/elastic/logstash/pull/11181[#11181]
 * Update JrJackson to 0.4.10 https://github.com/elastic/logstash/pull/11184[#11184]
 * Remove 10k character truncation from log4j2.properties https://github.com/elastic/logstash/pull/11206[#11206]
@@ -83,6 +87,10 @@ No user facing changes in this release.
 
 [[logstash-7-4-0]]
 === Logstash 7.4.0 Release Notes
+
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
 
 * Improved logging of version mismatch in DLQ file reader (RecordIOReader) https://github.com/elastic/logstash/pull/11039[#11039]
 * Update jruby to 9.2.8.0 https://github.com/elastic/logstash/pull/11041[#11041]
