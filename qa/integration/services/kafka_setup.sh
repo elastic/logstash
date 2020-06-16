@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -x
 current_dir="$(dirname "$0")"
 
 export _JAVA_OPTIONS="-Djava.net.preferIPv4Stack=true"
@@ -10,32 +10,35 @@ if [ -n "${KAFKA_VERSION+1}" ]; then
     echo "KAFKA_VERSION is $KAFKA_VERSION"
     version=$KAFKA_VERSION
 else
-    version=2.4.1
+    version=2.5.0
 fi
 
 KAFKA_HOME=$INSTALL_DIR/kafka
 KAFKA_TOPIC=logstash_topic_plain
 KAFKA_MESSAGES=37
 KAFKA_LOGS_DIR=/tmp/ls_integration/kafka-logs
+ZOOKEEPER_DATA_DIR=/tmp/ls_integration/zookeeper
 
 setup_kafka() {
     local version=$1
     if [ ! -d $KAFKA_HOME ]; then
         echo "Downloading Kafka version $version"
-        curl -s -o $INSTALL_DIR/kafka.tgz "https://mirrors.ocf.berkeley.edu/apache/kafka/$version/kafka_2.11-$version.tgz"
+        curl -o $INSTALL_DIR/kafka.tgz "https://mirrors.ocf.berkeley.edu/apache/kafka/$version/kafka_2.12-$version.tgz"
         mkdir $KAFKA_HOME && tar xzf $INSTALL_DIR/kafka.tgz -C $KAFKA_HOME --strip-components 1
         rm $INSTALL_DIR/kafka.tgz
+        echo "dataDir=$ZOOKEEPER_DATA_DIR" >> $KAFKA_HOME/config/zookeeper.properties
     fi
 }
 
 start_kafka() {
     echo "Starting ZooKeeper"
-    $KAFKA_HOME/bin/zookeeper-server-start.sh -daemon $KAFKA_HOME/config/zookeeper.properties
-    wait_for_port 2181
-    echo "Starting Kafka broker"
     rm -rf ${KAFKA_LOGS_DIR}
     mkdir -p ${KAFKA_LOGS_DIR}
-    $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override advertised.host.name=127.0.0.1 --override log.dir=${KAFKA_LOGS_DIR} --override log.flush.interval.ms=200
+    rm -rf ${ZOOKEEPER_DATA_DIR}
+    mkdir -p ${ZOOKEEPER_DATA_DIR} 
+    $KAFKA_HOME/bin/zookeeper-server-start.sh -daemon $KAFKA_HOME/config/zookeeper.properties
+    wait_for_port 2181
+    $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override advertised.host.name=127.0.0.1 --override log.dir=${KAFKA_LOGS_DIR} --override log.dirs=${KAFKA_LOGS_DIR} --override log.flush.interval.ms=200 
     wait_for_port 9092
 }
 

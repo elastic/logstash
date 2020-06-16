@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -x
 current_dir="$(dirname "$0")"
 
 INSTALL_DIR=$current_dir/installed
