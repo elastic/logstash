@@ -5,8 +5,10 @@
 {ls} requires one of these versions:
 
 * Java 8
-* Java 11
+* Java 11*
 * Java 14
+
+*See <<java-11-issue,potential compatibility issue with TLS v1.3>>.
 
 See the https://www.elastic.co/support/matrix#matrix_jvm[Elastic Support Matrix]
 for the official word on supported versions across releases.
@@ -15,6 +17,7 @@ Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
 Oracle distribution] or an open-source distribution, such as
 http://openjdk.java.net/[OpenJDK].
+
 
 [float]
 [[check-jvm]]
@@ -47,3 +50,17 @@ a tarball.
 install the correct startup method (SysV init scripts, Upstart, or systemd). If
 {ls} is unable to find the `JAVA_HOME` environment variable during package
 installation, you may get an error message, and {ls} will not start properly.
+
+[float]
+[[java-11-issue]]
+==== Potential compatibility issue between TLS v1.3 and some Java 11 versions
+
+Bugs in some JDK versions can prevent {ls} from successfully conducting a TLS
+v1.3 handshake. This issue affects {ls} instances using both:
+
+* JDK 11.0.0 - 11.0.4, and
+* TLS v1.3 in plugins (such as Elasticsearch output, Beats input, TCP input) and/or
+central management/monitoring. Note that some plugins use TLS v1.3 by default.
+
+If you encounter this issue, we recommend upgrading to JDK 11.0.5 or later. 
+If you cannot upgrade your JDK, try using and enforcing TLS v1.2.
