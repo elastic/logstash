@@ -151,6 +151,10 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 [[logstash-7-3-2]]
 === Logstash 7.3.2 Release Notes
 
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
+
 * Bugfix: Avoid variable collision in pipeline stats api (backport of #11059 to 7.x) https://github.com/elastic/logstash/pull/11062[#11062]
 * Bugfix: Give multiple pipelines all the settings https://github.com/elastic/logstash/pull/11076[#11076]
 * Docs: Hint plugins need to be installed before bundle https://github.com/elastic/logstash/pull/11080[#11080]
@@ -161,6 +165,10 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 
 [[logstash-7-3-1]]
 === Logstash 7.3.1 Release Notes
+
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
 
 * Add regex support for conditionals with constants https://github.com/elastic/logstash/pull/11017[#11017]
 * Fix compilation of "[field] in [field]" event conditions https://github.com/elastic/logstash/pull/11026[#11026]
@@ -174,6 +182,10 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 
 [[logstash-7-3-0]]
 === Logstash 7.3.0 Release Notes
+
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
 
 * Fixes a crash that could occur when an illegal field reference was used as part of a field key https://github.com/elastic/logstash/pull/10839[#10839]
 * Fixes a stall that could occur when using the Beta Pipeline-to-Pipeline feature by ensuring that a Pipeline Input will not shut down before its upstream pipeline https://github.com/elastic/logstash/pull/10872[#10872]
@@ -256,6 +268,10 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 [[logstash-7-2-1]]
 === Logstash 7.2.1 Release Notes
 
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
+
 * Changed: Make sure joni regexp interruptability is enabled Fixes https://github.com/elastic/logstash/pull/10978[#10978]
 * Fixed: Java core plugin support for Java 11 https://github.com/elastic/logstash/pull/10951[#10951]
 * Updated: Jinja2 docker dependency https://github.com/elastic/logstash/pull/10986[#10986]
@@ -278,6 +294,10 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 
 [[logstash-7-2-0]]
 === Logstash 7.2.0 Release Notes
+
+include::releasenotes-knownissues.asciidoc[]
+
+==== New features and improvements
 
 * Native support for Java Plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]. Changes to Java plugins for GA include:
 
