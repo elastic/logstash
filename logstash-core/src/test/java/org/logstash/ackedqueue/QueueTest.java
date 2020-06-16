@@ -38,6 +38,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1040,6 +1042,25 @@ public class QueueTest {
             .queueMaxBytes(Long.MAX_VALUE)
             .build();
         try (Queue queue = new Queue(settings)) {
+            queue.open();
+        }
+    }
+
+    @Test
+    public void lockIsReleasedUponOpenException() throws Exception {
+        Settings settings = SettingsImpl.builder(TestSettings.persistedQueueSettings(100, dataPath))
+                .queueMaxBytes(Long.MAX_VALUE)
+                .build();
+        try {
+            Queue queue = new Queue(settings);
+            queue.open();
+            fail("expected queue.open() to throws when not enough disk free");
+        } catch (IOException e) {
+            assertThat(e.getMessage(), CoreMatchers.containsString("Unable to allocate"));
+        }
+
+        // at this point the Queue lock should be released and Queue.open should not throw a LockException
+        try (Queue queue = new Queue(TestSettings.persistedQueueSettings(10, dataPath))) {
             queue.open();
         }
     }
