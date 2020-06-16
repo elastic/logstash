@@ -30,21 +30,22 @@ describe "Test Kafka Input" do
   }
 
   after(:all) {
-    @fixture.teardown
+    @fixture.teardown unless @fixture.nil?
   }
 
   it "can ingest 37 apache log lines from Kafka broker" do
-    logstash_service = @fixture.get_service("logstash")
-    logstash_service.start_background(@fixture.config)
+    unless @fixture.nil?
+      logstash_service = @fixture.get_service("logstash")
+      logstash_service.start_background(@fixture.config)
 
-    try(num_retries) do
-      expect(@fixture.output_exists?).to be true
-    end
+      try(num_retries) do
+        expect(@fixture.output_exists?).to be true
+      end
 
-    try(num_retries) do
-      count = File.foreach(@fixture.actual_output).inject(0) {|c, _| c+1}
-      expect(count).to eq(num_events)
+      try(num_retries) do
+        count = File.foreach(@fixture.actual_output).inject(0) {|c, _| c+1}
+        expect(count).to eq(num_events)
+      end
     end
   end
-
 end
