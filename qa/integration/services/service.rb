@@ -32,7 +32,8 @@ class Service
   def setup
     puts "Setting up #{@name} service"
     if File.exists?(@setup_script)
-      `#{@setup_script}`
+      `#{Shellwords.escape(@setup_script)}`
+      raise "#{@setup_script} FAILED with exit status #{$?}" unless $?.success?
     else
       puts "Setup script not found for #{@name}"
     end
@@ -42,7 +43,8 @@ class Service
   def teardown
     puts "Tearing down #{@name} service"
     if File.exists?(@teardown_script)
-      `#{@teardown_script}`
+      `#{Shellwords.escape(@teardown_script)}`
+      raise "#{@teardown_script} FAILED with exit status #{$?}" unless $?.success?
     else
       puts "Teardown script not found for #{@name}"
     end

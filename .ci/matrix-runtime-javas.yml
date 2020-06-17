@@ -2,11 +2,13 @@
 # values below are included as an axis of the matrix.
 
 # This axis of the build matrix represents the versions of Java on
-# which Elasticsearch will be tested.  Valid Java versions are 'java'
-# or 'openjdk' followed by the major release number.
+# which Logstash can be tested against.
 
 LS_RUNTIME_JAVA:
   - java8
-  - zulu11
-  - adoptopenjdk11
+  - openjdk11
   - openjdk14
+  - adoptopenjdk11
+  - adoptopenjdk14
+  - zulu11
+  - zulu14

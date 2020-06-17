@@ -95,7 +95,7 @@ class LogstashService < Service
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
     Bundler.with_clean_env do
-      `cat #{input} | #{@logstash_bin} -e \'#{config}\'`
+      `cat #{Shellwords.escape(input)} | #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
     end
   end
 
@@ -206,7 +206,7 @@ class LogstashService < Service
   end
 
   def get_version
-    `#{@logstash_bin} --version`.split("\n").last
+    `#{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
   end
 
   def get_version_yml
