@@ -102,7 +102,7 @@ module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
 
 ==== Known issue
 
-*Performance regression.* A potential performance regression may be affecting 
+*Performance regression.* A potential performance regression may affects
 some users. This issue can cause a slowdown on pipeline compilation when
 multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
 This issue is currently being tracked and investigated in
@@ -208,6 +208,22 @@ https://github.com/elastic/logstash/pull/11772[#11772]
 * Fixed: when x-pack Monitoring is configured with `cloud_id`, the monitoring pipeline now correctly resolves the hosts.
 https://github.com/elastic/logstash/pull/11800[#11800]
 
+==== Known issue
+
+*Performance regression.* A potential performance regression may affects
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
+
 ==== Plugins
 
 *Elasticsearch Output - 10.4.2*
@@ -276,6 +292,22 @@ https://github.com/elastic/logstash/pull/11592[#11592]
 
 * Fixed: Change Javadoc to conform to updated requirements for JDK13
 https://github.com/elastic/logstash/pull/11642[#11642]
+
+==== Known issue
+
+*Performance regression.* A potential performance regression may affects
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
 
 ==== Logstash Plugin changes
 
