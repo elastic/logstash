@@ -101,11 +101,13 @@ public class AcknowledgeBus implements co.elastic.logstash.api.AcknowledgeBus {
 
     @Override
     public void acknowledgeEvents(final Collection<? extends Acknowledgable> events) {
+        logger.debug("Received acknowledgeEvents for {} events", events.size());
         this.proccessEvents(events, AcknowledgablePlugin::acknowledge, "Acknowledge");
     }
 
     @Override
     public void notifyClonedEvents(final Collection<? extends Acknowledgable> events) {
+        logger.debug("Received notifyClonedEvents for {} events", events.size());
         this.proccessEvents(events, AcknowledgablePlugin::notifyCloned, "Notification cloned Acknowledge");
     }
 
@@ -113,20 +115,23 @@ public class AcknowledgeBus implements co.elastic.logstash.api.AcknowledgeBus {
         if (events.isEmpty())
             return; // This can happen on pipeline shutdown or in some other situations
 
-        events.stream().forEach(event -> {
-            final AcknowledgeToken token = event.getAcknowledgeToken();
-            if (token != null) {
+        long acknowledgeCount = events.stream()
+            .map(Acknowledgable::getAcknowledgeToken)
+            .filter(token -> token != null)
+            .map(token -> {
                 final AcknowledgablePlugin plugin = acknowledgeIdMapping.get(token.getPluginId());
                 if (plugin != null) {
                     if (!processId.apply(plugin, token.getAcknowledgeId())) {
-                        logger.warn( processName + " for plugin: " + plugin.getId() + " was unsuccesful for id: "
-                                + token.getAcknowledgeId());
+                        logger.warn( "{} for plugin: {} was unsuccesful for id: {}",
+                            processName , plugin.getId(), token.getAcknowledgeId());
                     }
                 } else {
-                    logger.warn("Received " + processName + " for unknown plugin: " + token.getPluginId());
+                    logger.warn("Received {} for unknown plugin: {}", processName, token.getPluginId());
                 }
-            }
-        });
+                return null;
+            })
+            .count();
+        logger.debug("Proccessed {} events for {} ", acknowledgeCount, processName);
     }
 
     /**
@@ -139,7 +144,6 @@ public class AcknowledgeBus implements co.elastic.logstash.api.AcknowledgeBus {
     public AcknowledgeTokenFactory registerPlugin(final AcknowledgablePlugin plugin) {
         synchronized (plugin) {
             acknowledgeIdMapping.put(plugin.getId(), plugin);
-
             return id -> new AcknowledgeTokenImpl(plugin.getId(), id);
         }
     }
