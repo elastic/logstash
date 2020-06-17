@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -e
 current_dir="$(dirname "$0")"
 
 INSTALL_DIR=$current_dir/installed
@@ -54,4 +54,21 @@ clean_install_dir() {
     if [[ -d "$INSTALL_DIR" ]]; then
         rm -rf $INSTALL_DIR
     fi
+}
+
+stop_es() {
+    local count=10
+    [ ! -f /tmp/ls_integration/elasticsearch.pid ] && return 0
+    pid=$(cat /tmp/ls_integration/elasticsearch.pid) 2>/dev/null
+    if [ "x$pid" != "x" ] && [ "$pid" -gt 0 ]
+    then
+      while kill -SIGTERM "$pid" 2>/dev/null && [ $count -ne 0 ]; do
+         echo "waiting for elasticsearch to stop"
+         count=$(( $count - 1 ))
+         [[ $count -eq 0 ]] && echo "killing elasticsearch" && kill -9 $pid 2>/dev/null || true
+         sleep 0.5
+      done
+    fi
+    rm -rf /tmp/ls_integration/es-data
+    rm -rf /tmp/ls_integration/es-logs
 }
