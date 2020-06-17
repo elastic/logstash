@@ -25,6 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.config.ir.CompiledPipeline;
 
+import co.elastic.logstash.api.AcknowledgeBus;
+
 public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
@@ -32,6 +34,8 @@ public final class WorkerLoop implements Runnable {
     private final CompiledPipeline.CompiledExecution execution;
 
     private final QueueReadClient readClient;
+
+    private final AcknowledgeBus acknowledgeBus;
 
     private final AtomicBoolean flushRequested;
 
@@ -58,6 +62,21 @@ public final class WorkerLoop implements Runnable {
         final boolean drainQueue,
         final boolean preserveEventOrder)
     {
+        this(pipeline, readClient, null, filteredCounter, consumedCounter, flushRequested, flushing, shutdownRequested, drainQueue, preserveEventOrder);
+    }
+
+    public WorkerLoop(
+        final CompiledPipeline pipeline,
+        final QueueReadClient readClient,
+        final AcknowledgeBus acknowledgeBus,
+        final LongAdder filteredCounter,
+        final LongAdder consumedCounter,
+        final AtomicBoolean flushRequested,
+        final AtomicBoolean flushing,
+        final AtomicBoolean shutdownRequested,
+        final boolean drainQueue,
+        final boolean preserveEventOrder)
+    {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
         this.execution = pipeline.buildExecution(preserveEventOrder);
@@ -67,6 +86,7 @@ public final class WorkerLoop implements Runnable {
         this.flushing = flushing;
         this.shutdownRequested = shutdownRequested;
         this.preserveEventOrder = preserveEventOrder;
+        this.acknowledgeBus = acknowledgeBus;
     }
 
     @Override
@@ -86,6 +106,9 @@ public final class WorkerLoop implements Runnable {
                     readClient.addOutputMetrics(filteredCount);
                     readClient.addFilteredMetrics(filteredCount);
                     readClient.closeBatch(batch);
+                    if (acknowledgeBus != null && batch.filteredSize() > 0){
+                        acknowledgeBus.acknowledgeEvents(batch.events());
+                    }
                     if (isFlush) {
                         flushing.set(false);
                     }

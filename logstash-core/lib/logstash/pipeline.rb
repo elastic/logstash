@@ -44,6 +44,8 @@ module LogStash; class BasePipeline < AbstractPipeline
     @outputs = nil
     @agent = agent
 
+    @acknowledge_bus = agent.nil? ? nil : agent.acknowledge_bus
+
     @plugin_factory = LogStash::Plugins::PluginFactory.new(
       # use NullMetric if called in the BasePipeline context otherwise use the @metric value
       lir, LogStash::Plugins::PluginMetricsFactory.new(pipeline_id, metric),
@@ -374,7 +376,10 @@ module LogStash; class Pipeline < BasePipeline
       end
       if events.size > 0
         output_batch(events, output_events_map)
-        filter_queue_client.close_batch(batch)
+      end
+      filter_queue_client.close_batch(batch)
+      unless @acknowledge_bus.nil? || batch_size == 0
+        @acknowledge_bus.acknowledgeEvents(batch.events())
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
       break if (@worker_shutdown.get && !draining_queue?)
