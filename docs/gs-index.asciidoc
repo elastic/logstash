@@ -20,7 +20,6 @@ release-state can be: released | prerelease | unreleased
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{branch}/
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
-:stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
 
 [[introduction]]
 == Logstash Introduction
