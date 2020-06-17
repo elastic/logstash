@@ -35,6 +35,52 @@ This section summarizes the changes in the following releases:
 
 ==== New features and improvements
 
+===== Expanded JDK ecosystem 
+
+We have improved test scripts infrastructure to accept a specific Java
+Development Kit (JDK) present in the host. The changes include exporting the
+path to a JDK home into an environment variable named BUILD_JAVA_HOME and its
+use by shell scripts to launch test and integration scripts. This work and other
+JDK14 fixes pave the way for Logstash to support both AdoptOpenJDK 11 and 14 in
+the near future . https://github.com/elastic/logstash/pull/11786[#11786],
+https://github.com/elastic/logstash/pull/11839[#11839],
+https://github.com/elastic/logstash/pull/11935[#11935]
+
+===== Expanded JDK platform support 
+
+{ls} runs on many different operating platforms and various flavors of the Java
+Development Kit (JDK), and we’ve expanded this coverage in 7.8.0. {ls} has
+introduced support for running on CentOS/RHEL 8.x and Ubuntu 20.04.
+We’ve added new JDK support for Zulu 11, AdoptOpenJDK 11, and
+Oracle/OpenJDK/AdoptOpenJDK 14.
+
+===== {es} API key support
+
+Support for API keys was added to {es} in 6.7.0. With 7.8.0 {ls} introduces
+support for {es} API keys in the {es} output plugin
+https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/934[#934].
+
+Authentication in {es} can be done in different ways, from LDAP to SAML and
+others. User/password authentication makes sense for discrete users accessing
+{es}. For machine-to-machine communication, API key access is more common. Check out <<ls-api-keys>> for more information about using API keys with {ls}
+and {es}. 
+
+Support for API keys in the {es} input and filter plugins, and the monitoring
+and management features will be added in upcoming releases. 
+
+
+===== Proxy support for monitoring and centralized management
+
+Many of our users deploy {ls} and the Elastic Stack in segmented networks where
+one component may not be able to directly reach out to another or to the
+Internet. {ls} plugins, such as the elasticsearch, http and SNS outputs, support
+the configuration of proxy servers. Version 7.8.0 brings proxy support to
+monitoring and central management
+https://github.com/elastic/logstash/pull/11799[#11799]. 
+
+Configure the proxy's URL in your `logstash.yml` file using
+"xpack.monitoring.elasticsearch.proxy" (for monitoring) or
+"xpack.management.elasticsearch.proxy" (for central management).
 
 
 ==== Performance improvements and notable issues fixed
@@ -44,6 +90,31 @@ This section summarizes the changes in the following releases:
 * Refactor: Avoid array in case of single event https://github.com/elastic/logstash/pull/11732[#11732]
 * Debugging: Print RUBY_DESCRIPTION at startup to facilitate debugging https://github.com/elastic/logstash/pull/11852[#11852]
 * Fix: Avoid gsub (frame dependent) usage from Java https://github.com/elastic/logstash/pull/11874[#11874]
+
+==== Announcement: Azure and Netflow module deprecation
+
+Azure and Netflow modules in Logstash have been deprecated and replaced by
+the Azure modules in {filebeat-ref}/filebeat-module-azure.html[{filebeat}] and
+{metricbeat-ref}/metricbeat-module-azure.html[{metricbeat}], and the Netflow
+module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
+{filebeat} and {metricbeat} modules are compliant with the
+{ecs-ref}/index.html[Elastic Common Schema (ECS)].
+
+==== Known issue
+
+*Performance regression.* A potential performance regression may be affecting 
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
 
 ==== Plugins
 
@@ -121,35 +192,6 @@ This section summarizes the changes in the following releases:
 
 * Made `stale_cleanup_interval` configurable https://github.com/logstash-plugins/logstash-output-file/pull/84[#84]
 * CI: upgrade testing https://github.com/logstash-plugins/logstash-output-file/pull/83[#83]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 [[logstash-7-7-1]]
