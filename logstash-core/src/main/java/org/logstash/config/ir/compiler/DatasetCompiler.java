@@ -236,11 +236,12 @@ public final class DatasetCompiler {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
+        final ValueSyntaxElement outputField = fields.add(output);
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
             computeSyntax = Closure.wrap(
-                setPluginIdForLog4j(output),
-                invokeOutput(fields.add(output), BATCH_ARG),
+                setPluginIdForLog4j(outputField),
+                invokeOutput(outputField, BATCH_ARG),
                 unsetPluginIdForLog4j());
         } else {
             final Collection<ValueSyntaxElement> parentFields =
@@ -258,8 +259,8 @@ public final class DatasetCompiler {
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
             computeSyntax = withInputBuffering(
                 Closure.wrap(
-                    setPluginIdForLog4j(output),
-                    invokeOutput(fields.add(output), inputBuffer),
+                    setPluginIdForLog4j(outputField),
+                    invokeOutput(outputField, inputBuffer),
                     inlineClear,
                     unsetPluginIdForLog4j()
                 ),
@@ -284,7 +285,7 @@ public final class DatasetCompiler {
     {
         final ValueSyntaxElement filterField = fields.add(plugin);
         final Closure body = Closure.wrap(
-            setPluginIdForLog4j(plugin),
+            setPluginIdForLog4j(filterField),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
         );
         if (plugin.hasFlush()) {
@@ -393,21 +394,18 @@ public final class DatasetCompiler {
     }
 
     private static MethodLevelSyntaxElement unsetPluginIdForLog4j() {
-        return () -> "org.apache.logging.log4j.ThreadContext.remove(\"plugin.id\")";
+        return SyntaxFactory.value("org.apache.logging.log4j.ThreadContext").call(
+                "remove",
+                SyntaxFactory.value("\"plugin.id\"")
+        );
     }
 
-    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractFilterDelegatorExt filterPlugin) {
-        final IRubyObject pluginId = filterPlugin.getId();
-        return generateLog4jContextAssignment(pluginId);
-    }
-
-    private static MethodLevelSyntaxElement setPluginIdForLog4j(final AbstractOutputDelegatorExt outputPlugin) {
-        final IRubyObject pluginId = outputPlugin.getId();
-        return generateLog4jContextAssignment(pluginId);
-    }
-
-    private static MethodLevelSyntaxElement generateLog4jContextAssignment(IRubyObject pluginId) {
-        return () -> "org.apache.logging.log4j.ThreadContext.put(\"plugin.id\", \"" + pluginId + "\")";
+    private static MethodLevelSyntaxElement setPluginIdForLog4j(final ValueSyntaxElement plugin) {
+        return SyntaxFactory.value("org.apache.logging.log4j.ThreadContext").call(
+                "put",
+                SyntaxFactory.value("\"plugin.id\""),
+                plugin.call("getId").call("toString")
+        );
     }
 
     private static MethodLevelSyntaxElement clear(final ValueSyntaxElement field) {
