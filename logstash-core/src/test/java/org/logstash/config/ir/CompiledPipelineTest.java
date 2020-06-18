@@ -22,6 +22,10 @@ package org.logstash.config.ir;
 
 import co.elastic.logstash.api.Codec;
 import com.google.common.base.Strings;
+
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,10 +49,10 @@ import org.logstash.ConvertedList;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
-import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -56,6 +60,9 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.Context;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link CompiledPipeline}.
@@ -557,6 +564,155 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         @Override
         public Filter buildFilter(final String name, final String id,
                                   final Configuration configuration, final Context context) {
+            return null;
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void testCompilerCacheCompiledClasses() throws IOException, InvalidIRException {
+        final FixedPluginFactory pluginFactory = new FixedPluginFactory(
+                () -> null,
+                () -> IDENTITY_FILTER,
+                mockOutputSupplier()
+        );
+
+        final PipelineIR baselinePipeline = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline1.conf"),
+                false);
+        final CompiledPipeline cBaselinePipeline = new CompiledPipeline(baselinePipeline, pluginFactory);
+
+        final PipelineIR pipelineWithExtraFilter = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline2.conf"),
+                false);
+        final CompiledPipeline cPipelineWithExtraFilter = new CompiledPipeline(pipelineWithExtraFilter, pluginFactory);
+        
+        // actual test: compiling a pipeline with an extra filter should only create 1 extra class
+        ComputeStepSyntaxElement.cleanClassCache();
+        cBaselinePipeline.buildExecution();
+        final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
+        cPipelineWithExtraFilter.buildExecution();
+        final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
+        
+        final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
+        assertEquals(message, 1, cachedAfter - cachedBefore);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void compilerBenchmark() throws Exception {
+        final PipelineIR baselinePipelineIR = createPipelineIR(200);
+        final PipelineIR testPipelineIR = createPipelineIR(400);
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+                JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+
+        final FixedPluginFactory pluginFactory = new FixedPluginFactory(
+                () -> null,
+                () -> IDENTITY_FILTER,
+                mockOutputSupplier()
+        );
+        final CompiledPipeline baselineCompiledPipeline = new CompiledPipeline(baselinePipelineIR, pluginFactory);
+
+        final CompiledPipeline testCompiledPipeline = new CompiledPipeline(testPipelineIR, pluginFactory);
+
+        final long compilationBaseline = time(ChronoUnit.SECONDS, () -> {
+            final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.buildExecution();
+            compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        });
+
+        final long compilationTest = time(ChronoUnit.SECONDS, () -> {
+            final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.buildExecution();
+            compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        });
+
+        // sanity checks
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(2));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+
+        // regression check
+        final String testMessage = "regression in pipeline compilation, doubling the filters require more than 5 " +
+                "time, baseline: " + compilationBaseline + " secs, test: " + compilationTest + " secs";
+        assertTrue(testMessage, compilationTest/compilationBaseline <= 5);
+    }
+
+    private long time(ChronoUnit seconds, Runnable r) {
+        LocalTime start = LocalTime.now();
+        r.run();
+        LocalTime stop = LocalTime.now();
+        return seconds.between(start, stop);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private PipelineIR createPipelineIR(int numFilters) throws InvalidIRException {
+        final String pipelineConfig = createBigPipelineDefinition(numFilters);
+        final RubyArray swms = IRHelpers.toSourceWithMetadata(pipelineConfig);
+        return ConfigCompiler.configToPipelineIR(swms,false);
+    }
+
+    private String createBigPipelineDefinition(int numFilters) {
+        return "input { stdin {}} filter {" + createBigFilterSection(numFilters) + "} output { stdout {}}";
+    }
+
+    private String createBigFilterSection(int numFilters) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numFilters; i++) {
+            sb.append("mutate { id => \"").append(i).append("\" rename => [\"a_field\", \"into_another\"]}\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Fixed Mock {@link PluginFactory}
+     * */
+    static final class FixedPluginFactory implements PluginFactory {
+
+        private Supplier<IRubyObject> input;
+        private Supplier<IRubyObject> filter;
+        private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> output;
+
+        FixedPluginFactory(Supplier<IRubyObject> input,  Supplier<IRubyObject> filter,
+                           Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> output) {
+            this.input = input;
+            this.filter = filter;
+            this.output = output;
+        }
+
+        @Override
+        public Input buildInput(String name, String id, Configuration configuration, Context context) {
+            return null;
+        }
+
+        @Override
+        public Filter buildFilter(String name, String id, Configuration configuration, Context context) {
+            return null;
+        }
+
+        @Override
+        public IRubyObject buildInput(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+            return this.input.get();
+        }
+
+        @Override
+        public AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+            return PipelineTestUtil.buildOutput(this.output.get());
+        }
+
+        @Override
+        public AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+            final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
+            return new FilterDelegatorExt(
+                    RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
+                    .initForTesting(this.filter.get(), configNameDouble);
+        }
+
+        @Override
+        public IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+            return null;
+        }
+
+        @Override
+        public Codec buildDefaultCodec(String codecName) {
             return null;
         }
     }
