@@ -102,7 +102,7 @@ module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
 
 ==== Known issue
 
-*Performance regression.* A potential performance regression may affects
+*Performance regression.* A potential performance regression may affect
 some users. This issue can cause a slowdown on pipeline compilation when
 multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
 This issue is currently being tracked and investigated in
