@@ -20,6 +20,7 @@
 
 package org.logstash.config.ir.compiler;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import java.io.IOException;
@@ -84,6 +85,22 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
         return new ComputeStepSyntaxElement<>(methods, fields, interfce);
     }
 
+    @VisibleForTesting
+    public static int classCacheSize() {
+        return CLASS_CACHE.size();
+    }
+
+    /*
+     * Used in a test to clean start, with class loaders wiped out into Janino compiler and cleared the cached classes.
+    * */
+    @VisibleForTesting
+    public static void cleanClassCache() {
+        synchronized (COMPILER) {
+            CLASS_CACHE.clear();
+            COMPILER.setParentClassLoader(null);
+        }
+    }
+
     private ComputeStepSyntaxElement(
         final Iterable<MethodSyntaxElement> methods,
         final ClassFields fields,
@@ -100,9 +117,9 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     @SuppressWarnings("unchecked")
     public T instantiate() {
-         try {
-             final Class<? extends Dataset> clazz = compile();
-             return (T) clazz.getConstructor(Map.class).newInstance(ctorArguments());
+        try {
+            final Class<? extends Dataset> clazz = compile();
+            return (T) clazz.getConstructor(Map.class).newInstance(ctorArguments());
         } catch (final NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException(ex);
         }
