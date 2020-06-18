@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-8-0,Logstash 7.8.0>>
 * <<logstash-7-7-1,Logstash 7.7.1>>
 * <<logstash-7-7-0,Logstash 7.7.0>>
 * <<logstash-7-6-2,Logstash 7.6.2>>
@@ -29,6 +30,170 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+[[logstash-7-8-0]]
+=== Logstash 7.8.0 Release Notes
+
+==== New features and improvements
+
+===== Expanded JDK ecosystem 
+
+We have improved test scripts infrastructure to accept a specific Java
+Development Kit (JDK) present in the host. The changes include exporting the
+path to a JDK home into an environment variable named BUILD_JAVA_HOME and its
+use by shell scripts to launch test and integration scripts. This work and other
+JDK14 fixes pave the way for Logstash to support both AdoptOpenJDK 11 and 14 in
+the near future . https://github.com/elastic/logstash/pull/11786[#11786],
+https://github.com/elastic/logstash/pull/11839[#11839],
+https://github.com/elastic/logstash/pull/11935[#11935]
+
+===== Expanded JDK platform support 
+
+{ls} runs on many different operating platforms and various flavors of the Java
+Development Kit (JDK), and we’ve expanded this coverage in 7.8.0. {ls} has
+introduced support for running on CentOS/RHEL 8.x and Ubuntu 20.04.
+We’ve added new JDK support for Zulu 11, AdoptOpenJDK 11, and
+Oracle/OpenJDK/AdoptOpenJDK 14.
+
+===== {es} API key support
+
+Support for API keys was added to {es} in 6.7.0. With 7.8.0 {ls} introduces
+support for {es} API keys in the {es} output plugin
+https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/934[#934].
+
+Authentication in {es} can be done in different ways, from LDAP to SAML and
+others. User/password authentication makes sense for discrete users accessing
+{es}. For machine-to-machine communication, API key access is more common. Check out <<ls-api-keys>> for more information about using API keys with {ls}
+and {es}. 
+
+Support for API keys in the {es} input and filter plugins, and the monitoring
+and management features will be added in upcoming releases. 
+
+
+===== Proxy support for monitoring and centralized management
+
+Many of our users deploy {ls} and the Elastic Stack in segmented networks where
+one component may not be able to directly reach out to another or to the
+Internet. {ls} plugins, such as the elasticsearch, http and SNS outputs, support
+the configuration of proxy servers. Version 7.8.0 brings proxy support to
+monitoring and central management
+https://github.com/elastic/logstash/pull/11799[#11799]. 
+
+Configure the proxy's URL in your `logstash.yml` file using
+"xpack.monitoring.elasticsearch.proxy" (for monitoring) or
+"xpack.management.elasticsearch.proxy" (for central management).
+
+
+==== Performance improvements and notable issues fixed
+
+* Performance: Share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
+* Performance: Improve event.clone memory usage https://github.com/elastic/logstash/pull/11794[#11794]
+* Refactor: Avoid array in case of single event https://github.com/elastic/logstash/pull/11732[#11732]
+* Debugging: Print RUBY_DESCRIPTION at startup to facilitate debugging https://github.com/elastic/logstash/pull/11852[#11852]
+* Fix: Avoid gsub (frame dependent) usage from Java https://github.com/elastic/logstash/pull/11874[#11874]
+
+==== Announcement: Azure and Netflow module deprecation
+
+Azure and Netflow modules in Logstash have been deprecated and replaced by
+the Azure modules in {filebeat-ref}/filebeat-module-azure.html[{filebeat}] and
+{metricbeat-ref}/metricbeat-module-azure.html[{metricbeat}], and the Netflow
+module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
+{filebeat} and {metricbeat} modules are compliant with the
+{ecs-ref}/index.html[Elastic Common Schema (ECS)].
+
+==== Known issue
+
+*Performance regression.* A potential performance regression may affect
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple large pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
+
+==== Plugins
+
+*Cef Codec - 6.1.1*
+
+* Improved encoding performance, especially when encoding many extension fields https://github.com/logstash-plugins/logstash-codec-cef/pull/81[#81]
+* Fixed CEF short to long name translation for ahost/agentHostName field, according to documentation https://github.com/logstash-plugins/logstash-codec-cef/pull/75[#75]
+* Fixed support for deep dot notation https://github.com/logstash-plugins/logstash-codec-cef/pull/73[#73]
+* Removed obsolete `sev` and `deprecated_v1_fields` fields
+* Fixed minor doc inconsistencies (added reverse_mapping to options table, moved it to alpha order in option descriptions, fixed typo) https://github.com/logstash-plugins/logstash-codec-cef/pull/60[#60]
+* Added reverse_mapping option, which can be used to make encoder compliant to spec https://github.com/logstash-plugins/logstash-codec-cef/pull/51[#51]
+* Fix handling of malformed inputs that have illegal unescaped-equals characters in extension field values (restores behaviour from <= v5.0.3 in some edge-cases) https://github.com/logstash-plugins/logstash-codec-cef/issues/56[#56]
+* Fix bug in parsing headers where certain legal escape sequences could cause non-escaped pipe characters to be ignored.
+* Fix bug in parsing extension values where a legal unescaped space in a field's value could be interpreted as a field separator https://github.com/logstash-plugins/logstash-codec-cef/pull/54[#54]
+* Add explicit handling for extension key names that use array-like syntax that isn't legal with the strict-mode field-reference parser (e.g., `fieldname[0]` becomes `[fieldname][0]`).
+* Fix handling of higher-plane UTF-8 characters in message body
+* move `sev` and `deprecated_v1_fields` fields from deprecated to obsolete
+* added mapping for outcome = eventOutcome from CEF whitepaper (ref:p26/39)
+* changed rt from receiptTime to deviceReceiptTime (ref:p27/39)
+* changed tokenizer to include additional fields (ad.fieldname)
+* Add `delimiter` setting. This allows the decoder to be used with inputs like the TCP input where event delimiters are used.
+* Implements the dictionary translation for abbreviated CEF field names from chapter Chapter 2: ArcSight Extension Dictionary page 3 of 39 of the CEF specification.
+* add `_cefparsefailure` tag on failed decode
+* breaking: Updated plugin to use new Java Event APIs
+* Switch in-place sub! to sub when extracting `cef_version`. new Logstash Java Event does not support in-place String changes.
+* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+* New dependency requirements for logstash-core for the 5.0 release
+* Implements `encode` with escaping according to the CEF specification
+* Config option `sev` is deprecated, use `severity` instead.
+* Plugins were updated to follow the new shutdown semantic. This allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. https://github.com/elastic/logstash/pull/3895[#3895]
+* Dependency on logstash-core update to 2.0
+
+*Elasticsearch Filter - 3.7.1*
+
+* Fix: solves an issue where non-ascii unicode values in a template were not handled correctly https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/128[#128]
+
+*File Input - 4.1.18*
+
+* Fix: release watched files on completion (in read-mode) https://github.com/logstash-plugins/logstash-input-file/pull/271[#271]
+* Added configuration setting `check_archive_validity` settings to enable
+  gzipped files verification. Fixes: https://github.com/logstash-plugins/logstash-input-file/issues/261[#261]
+* [DOC] Added clarification for settings available with `read` mode https://github.com/logstash-plugins/logstash-input-file/pull/235[#235]
+* [DOC] Rearranged text and fixed formatting for `mode` setting https://github.com/logstash-plugins/logstash-input-file/pull/266[#266]
+
+*Syslog Input - 3.4.2*
+
+* Remove (deprecated) dependency on thread_safe gem.
+* CI: upgrade testing https://github.com/logstash-plugins/logstash-input-syslog/pull/58[#58]
+* [DOC] Correct example for `timezone` option https://github.com/logstash-plugins/logstash-input-syslog/pull/53[#53]
+
+*Tcp Input - 6.0.5*
+
+* Fix potential startup crash that could occur when multiple instances of this plugin were started simultaneously https://github.com/logstash-plugins/logstash-input-tcp/pull/155[#155]
+
+*Kafka Integration - 10.2.0*
+
+* Changed: config defaults to be aligned with Kafka client defaults https://github.com/logstash-plugins/logstash-integration-kafka/pull/30[#30]
+
+* updated kafka client (and its dependencies) to version 2.4.1 https://github.com/logstash-plugins/logstash-integration-kafka/pull/16[#16]
+* added the input `client_rack` parameter to enable support for follower fetching
+* added the output `partitioner` parameter for tuning partitioning strategy
+* Refactor: normalized error logging a bit - make sure exception type is logged
+* Fix: properly handle empty ssl_endpoint_identification_algorithm https://github.com/logstash-plugins/logstash-integration-kafka/pull/8[#8]
+* Refactor : made `partition_assignment_strategy` option easier to configure by accepting simple values from an enumerated set instead of requiring lengthy class paths https://github.com/logstash-plugins/logstash-integration-kafka/pull/25[#25]
+
+*Elasticsearch Output - 10.5.1*
+
+* [DOC] Removed outdated compatibility notices, reworked cloud notice, and fixed formatting for `hosts` examples https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/938[#938]
+* Added api_key support https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/934[#934]
+* [DOC] Added note about `_type` setting change from `doc` to `_doc` https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/884[#884]
+* Fixed default index value https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/927[#927]
+
+*File Output - 4.3.0*
+
+* Made `stale_cleanup_interval` configurable https://github.com/logstash-plugins/logstash-output-file/pull/84[#84]
+* CI: upgrade testing https://github.com/logstash-plugins/logstash-output-file/pull/83[#83]
+
+
 [[logstash-7-7-1]]
 === Logstash 7.7.1 Release Notes
 
@@ -42,6 +207,22 @@ https://github.com/elastic/logstash/pull/11772[#11772]
 
 * Fixed: when x-pack Monitoring is configured with `cloud_id`, the monitoring pipeline now correctly resolves the hosts.
 https://github.com/elastic/logstash/pull/11800[#11800]
+
+==== Known issue
+
+*Performance regression.* A potential performance regression may affects
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
 
 ==== Plugins
 
@@ -111,6 +292,22 @@ https://github.com/elastic/logstash/pull/11592[#11592]
 
 * Fixed: Change Javadoc to conform to updated requirements for JDK13
 https://github.com/elastic/logstash/pull/11642[#11642]
+
+==== Known issue
+
+*Performance regression.* A potential performance regression may affects
+some users. This issue can cause a slowdown on pipeline compilation when
+multiple pipelines are in use. We believe the issue was introduced in 7.7.0.
+This issue is currently being tracked and investigated in
+https://github.com/elastic/logstash/issues/12031[#12031]
+
+This issue seems to be affecting only big pipeline installations (that is, big
+pipeline definitions when multiple pipelines are defined). Symptoms include
+increased startup time and the appearance that Logstash is not responding to
+input events. 
+
+If you believe this issue is affecting you, we recommended that you downgrade to
+7.6.2 while we continue to investigate and provide a resolution.
 
 ==== Logstash Plugin changes
 
