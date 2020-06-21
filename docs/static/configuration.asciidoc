@@ -95,7 +95,7 @@ Example:
 
 [source,js]
 ----------------------------------
-  users => [ {id => 1, name => bob}, {id => 2, name => jane} ]
+  users => [ {"id" => 1 "name" => "bob"}, {"id" => 2 "name" => "jane"} ]
 ----------------------------------
 
 [[list]]
@@ -114,7 +114,7 @@ Example:
   uris => [ "http://elastic.co", "http://example.net" ]
 ----------------------------------
 
-This example configures `path`, which is a `string` to be a list that contains an element for each of the three strings. It also will configure the `uris` parameter to be a list of URIs, failing if any of the URIs provided are not valid.
+This example configures `path`, which is a `string` to be a list that contains an element for each of the two strings. It also will configure the `uris` parameter to be a list of URIs, failing if any of the URIs provided are not valid.
 
 
 [[boolean]]
