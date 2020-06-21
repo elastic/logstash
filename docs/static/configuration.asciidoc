@@ -95,7 +95,7 @@ Example:
 
 [source,js]
 ----------------------------------
-  users => [ {"id" => 1 "name" => "bob"}, {"id" => 2 "name" => "jane"} ]
+  users => [ { "id" => 1 "name" => "bob" }, { "id" => 2 "name" => "jane" } ]
 ----------------------------------
 
 [[list]]
