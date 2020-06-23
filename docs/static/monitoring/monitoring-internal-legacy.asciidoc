@@ -2,8 +2,10 @@
 [[monitoring-internal-collection-legacy]]
 === Collect {ls} monitoring data using legacy collectors
 ++++
-<titleabbrev>Legacy collection</titleabbrev>
+<titleabbrev>Legacy collection (deprecated)</titleabbrev>
 ++++
+
+deprecated[7.9.0]
 
 ==== Components for legacy collection
 
