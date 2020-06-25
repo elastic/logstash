@@ -49,6 +49,7 @@ import org.logstash.ConvertedList;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
