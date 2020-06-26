@@ -71,16 +71,25 @@ public class Plain implements Codec {
     /**
      * Required constructor.
      *
+     * @param id            plugin id
+     * @param configuration Logstash Configuration
+     * @param context       Logstash Context
+     */
+    public Plain(final String id, final Configuration configuration, final Context context) {
+        this(context, configuration.get(CHARSET_CONFIG), configuration.get(FORMAT_CONFIG),
+                (id != null && !id.isEmpty()) ? id : UUID.randomUUID().toString());
+    }
+    /**
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
     public Plain(final Configuration configuration, final Context context) {
-        this(context, configuration.get(CHARSET_CONFIG), configuration.get(FORMAT_CONFIG));
+        this(null, configuration, context);
     }
 
-    private Plain(Context context, String charsetName, String format) {
+    private Plain(Context context, String charsetName, String format, String id) {
         this.context = context;
-        this.id = UUID.randomUUID().toString();
+        this.id = id;
         this.charset = Charset.forName(charsetName);
         this.format = format;
         decoder = charset.newDecoder();
@@ -127,6 +136,6 @@ public class Plain implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new Plain(context, charset.name(), format);
+        return new Plain(context, charset.name(), format, UUID.randomUUID().toString());
     }
 }
