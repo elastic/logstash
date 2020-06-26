@@ -570,7 +570,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void testCompilerCacheCompiledClasses() throws IOException, InvalidIRException {
+    public void testCacheCompiledClassesWithDifferentId() throws IOException, InvalidIRException {
         final FixedPluginFactory pluginFactory = new FixedPluginFactory(
                 () -> null,
                 () -> IDENTITY_FILTER,
@@ -582,20 +582,20 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 false);
         final CompiledPipeline cBaselinePipeline = new CompiledPipeline(baselinePipeline, pluginFactory);
 
-        final PipelineIR pipelineWithExtraFilter = ConfigCompiler.configToPipelineIR(
+        final PipelineIR pipelineWithDifferentId = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline2.conf"),
                 false);
-        final CompiledPipeline cPipelineWithExtraFilter = new CompiledPipeline(pipelineWithExtraFilter, pluginFactory);
+        final CompiledPipeline cPipelineWithDifferentId = new CompiledPipeline(pipelineWithDifferentId, pluginFactory);
         
         // actual test: compiling a pipeline with an extra filter should only create 1 extra class
         ComputeStepSyntaxElement.cleanClassCache();
         cBaselinePipeline.buildExecution();
         final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
-        cPipelineWithExtraFilter.buildExecution();
+        cPipelineWithDifferentId.buildExecution();
         final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
-        
+
         final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
-        assertEquals(message, 1, cachedAfter - cachedBefore);
+        assertEquals(message, 0, cachedAfter - cachedBefore);
     }
 
     @Test
