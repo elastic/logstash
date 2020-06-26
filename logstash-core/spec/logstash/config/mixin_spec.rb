@@ -181,36 +181,58 @@ describe LogStash::Config::Mixin do
   end
 
   context "when validating :password" do
-    let(:klass) do
-      Class.new(LogStash::Filters::Base)  do
-        config_name "fake"
-        config :password, :validate => :password
+    shared_examples 'protected password' do
+      let(:secret) { 'fancy pants' }
+      let(:plugin_class) do
+        Class.new(LogStash::Filters::Base)  do
+          config_name "fake"
+          config :password, :validate => :password
+        end
+      end
+      subject(:plugin_instance) { plugin_class.new(instance_params) }
+
+      it "should be a Password object" do
+        expect(plugin_instance.password).to(be_a(LogStash::Util::Password))
+      end
+
+      it "should make password values hidden" do
+        expect(plugin_instance.password.to_s).to(be == "<password>")
+        expect(plugin_instance.password.inspect).to(be == "<password>")
+      end
+
+      it "should show password values via #value" do
+        expect(plugin_instance.password.value).to(be == secret)
+      end
+
+      it "should correctly copy password types" do
+        clone = plugin_instance.class.new(plugin_instance.params)
+        expect(clone.password.value).to(be == secret)
+      end
+
+      it "should obfuscate original_params" do
+        expect(plugin_instance.original_params['password']).to(be_a(LogStash::Util::Password))
       end
     end
 
-    let(:secret) { "fancy pants" }
-    subject { klass.new("password" => secret) }
-
-    it "should be a Password object" do
-      expect(subject.password).to(be_a(LogStash::Util::Password))
+    context 'when instantiated with a string literal password' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => secret } }
+      end
     end
 
-    it "should make password values hidden" do
-      expect(subject.password.to_s).to(be == "<password>")
-      expect(subject.password.inspect).to(be == "<password>")
-    end
+    context 'when instantiated with an environment variable placeholder' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => '${PLACEHOLDER}'} }
+        before(:each) { ENV.store('PLACEHOLDER', secret) }
+        after(:each) { ENV.delete('PLACEHOLDER')}
 
-    it "should show password values via #value" do
-      expect(subject.password.value).to(be == secret)
-    end
-
-    it "should correctly copy password types" do
-      clone = subject.class.new(subject.params)
-      expect(clone.password.value).to(be == secret)
-    end
-
-    it "should obfuscate original_params" do
-      expect(subject.original_params['password']).to(be_a(LogStash::Util::Password))
+        before(:each) do
+          # Ensure the shared examples are actually running with an
+          # environment variable placeholder.
+          # If this assertion fails, setup for the spec is invalid.
+          expect(instance_params['password']).to eq('${PLACEHOLDER}')
+        end
+      end
     end
   end
 

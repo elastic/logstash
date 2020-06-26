@@ -50,6 +50,10 @@ module ::LogStash::Util::SubstitutionVariables
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
   def replace_placeholders(value)
+    if value.kind_of?(::LogStash::Util::Password)
+      interpolated = replace_placeholders(value.value)
+      return ::LogStash::Util::Password.new(interpolated)
+    end
     return value unless value.is_a?(String)
 
     value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
