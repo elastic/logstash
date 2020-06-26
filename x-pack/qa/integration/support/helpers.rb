@@ -44,7 +44,7 @@ def elasticsearch(options = {})
   end
 
   # Launch in the background and wait for /started/ stdout
-  cmd = "bin/elasticsearch #{settings_arguments.join(' ')}"
+  cmd = "JAVA_HOME= bin/elasticsearch #{settings_arguments.join(' ')}"
   puts "Running elasticsearch: #{cmd}"
   response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path, :wait_condition => /license.*valid/, :timeout => 15 * 60 })
   unless response.successful?
@@ -67,7 +67,7 @@ end
 
 def bootstrap_elastic_password
   # we can't use Belzebuth here since the library doesn't support STDIN injection
-  cmd = "bin/elasticsearch-keystore add bootstrap.password -f -x"
+  cmd = "JAVA_HOME= bin/elasticsearch-keystore add bootstrap.password -f -x"
   result = Dir.chdir(get_elasticsearch_path) do |dir|
     _, status = Open3.capture2(cmd, :stdin_data => elastic_password)
     status
@@ -78,14 +78,14 @@ def bootstrap_elastic_password
 end
 
 def bootstrap_password_exists?
-  cmd = "bin/elasticsearch-keystore list"
+  cmd = "JAVA_HOME= bin/elasticsearch-keystore list"
   response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
   response.successful? && response.stdout_lines.any? { |line| line =~ /^bootstrap.password$/ }
 end
 
 
 def elasticsearch_xpack_installed?
-  cmd = "bin/elasticsearch-plugin list"
+  cmd = "JAVA_HOME= bin/elasticsearch-plugin list"
   response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
   response.stdout_lines.any? { |line| line =~ /x-pack/ }
 end
