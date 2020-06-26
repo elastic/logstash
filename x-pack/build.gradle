@@ -31,6 +31,7 @@ tasks.register("rubyTests", Test) {
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
   systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'jruby.home', "${rootProject.projectDir}/vendor/jruby"
   include '/org/logstash/xpack/test/RSpecTests.class'
 }
 
