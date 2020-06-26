@@ -20,9 +20,7 @@
 
 package co.elastic.logstash.api;
 
-import co.elastic.logstash.api.Plugin;
-
-public interface AcknowledgablePlugin extends Plugin{
+public interface AcknowledgablePlugin extends Plugin {
     /**
      * Accepts an acknowledgeId which was put into the event at creation by the plugin.
      *
