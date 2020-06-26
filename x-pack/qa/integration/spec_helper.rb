@@ -4,6 +4,8 @@
 
 MONITORING_INDEXES = ".monitoring-logstash-*"
 
+require "belzebuth"
+require_relative "support/belzebuth/process"
 require_relative "support/helpers"
 require_relative "support/shared_examples"
 require_relative "support/elasticsearch/api/actions/update_password"

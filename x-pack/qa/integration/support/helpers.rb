@@ -2,7 +2,6 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "belzebuth"
 require "yaml"
 require "elasticsearch"
 require "fileutils"
@@ -44,9 +43,8 @@ def elasticsearch(options = {})
   end
 
   # Launch in the background and wait for /started/ stdout
-  cmd = "JAVA_HOME= bin/elasticsearch #{settings_arguments.join(' ')}"
-  puts "Running elasticsearch: #{cmd}"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path, :wait_condition => /license.*valid/, :timeout => 15 * 60 })
+  cmd = "bin/elasticsearch #{settings_arguments.join(' ')}"
+  response = Belzebuth.run(cmd, { :environment => {"JAVA_HOME" => ''}, :directory => get_elasticsearch_path, :wait_condition => /license.*valid/, :timeout => 15 * 60 })
   unless response.successful?
     raise "Could not start Elasticsearch, response: #{response}"
   end
@@ -69,7 +67,7 @@ def bootstrap_elastic_password
   # we can't use Belzebuth here since the library doesn't support STDIN injection
   cmd = "JAVA_HOME= bin/elasticsearch-keystore add bootstrap.password -f -x"
   result = Dir.chdir(get_elasticsearch_path) do |dir|
-    _, status = Open3.capture2(cmd, :stdin_data => elastic_password)
+    _, status = Open3.capture2({"JAVA_HOME" => ''}, cmd, :stdin_data => elastic_password)
     status
   end
   unless result.success?
@@ -78,15 +76,15 @@ def bootstrap_elastic_password
 end
 
 def bootstrap_password_exists?
-  cmd = "JAVA_HOME= bin/elasticsearch-keystore list"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
+  cmd = "bin/elasticsearch-keystore list"
+  response = Belzebuth.run(cmd, {:environment => {"JAVA_HOME" => ''},  :directory => get_elasticsearch_path })
   response.successful? && response.stdout_lines.any? { |line| line =~ /^bootstrap.password$/ }
 end
 
 
 def elasticsearch_xpack_installed?
-  cmd = "JAVA_HOME= bin/elasticsearch-plugin list"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
+  cmd = "bin/elasticsearch-plugin list"
+  response = Belzebuth.run(cmd, {:environment => {"JAVA_HOME" => ''},  :directory => get_elasticsearch_path })
   response.stdout_lines.any? { |line| line =~ /x-pack/ }
 end
 
