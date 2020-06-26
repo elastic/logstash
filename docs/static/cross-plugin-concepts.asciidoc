@@ -1,7 +1,7 @@
 [[plugin-concepts]]
 === Cross-plugin concepts and features
 
-New section for concepts, features, and behaviors that apply to multiple plugins.
+New section for concepts, features, and behaviours that apply to multiple plugins.
 
 [[space-delimited-uris-in-list-params]]
 ==== Space-deliminated URIs in list-type params
