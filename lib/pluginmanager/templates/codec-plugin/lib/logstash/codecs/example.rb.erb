@@ -25,7 +25,7 @@ class LogStash::Codecs::<%= classify(plugin_name) %> < LogStash::Codecs::Base
   config :append, :validate => :string, :default => ', Hello World!'
 
   def register
-    @lines = LogStash::Codecs::Line.new
+    @lines = LogStash::Plugin.lookup("codec", "line").new
     @lines.charset = "UTF-8"
   end # def register
 
