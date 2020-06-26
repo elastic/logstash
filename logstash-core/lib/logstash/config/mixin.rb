@@ -342,6 +342,8 @@ module LogStash::Config::Mixin
         # Empty lists are converted to nils
         return true, [] if value.empty?
 
+        return validate_value(value, :uri_list) if config_val == :uri
+
         validated_items = value.map {|v| validate_value(v, config_val)}
         is_valid = validated_items.all? {|sr| sr[0] }
         processed_value = validated_items.map {|sr| sr[1]}
@@ -528,6 +530,15 @@ module LogStash::Config::Mixin
             end
 
             result = value.first.is_a?(::LogStash::Util::SafeURI) ? value.first : ::LogStash::Util::SafeURI.new(value.first)
+          when :uri_list
+            # expand entries that have space-delimited URIs in strings.
+            # This validator is considered private, and can be accessed
+            # by specifying `:validate => :uri` and `:list => true`
+            result = value.flat_map do |entry|
+              entry.kind_of?(String) ? entry.split(' ') : entry
+            end.map do |expanded_entry|
+              ::LogStash::Util::SafeURI.from(expanded_entry)
+            end
           when :path
             if value.size > 1 # Only 1 value wanted
               return false, "Expected path (one value), got #{value.size} values?"

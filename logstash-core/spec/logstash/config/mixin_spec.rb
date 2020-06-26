@@ -115,26 +115,74 @@ describe LogStash::Config::Mixin do
   context "when validating lists of items" do
     let(:klass) do
       Class.new(LogStash::Filters::Base)  do
-        config_name "multiuri"
-        config :uris, :validate => :uri, :list => true
+        config_name "list_validator_spec"
         config :strings, :validate => :string, :list => true
         config :required_strings, :validate => :string, :list => true, :required => true
       end
     end
 
-    let(:uris) { ["http://example.net/1", "http://example.net/2"] }
-    let(:safe_uris) { uris.map {|str| ::LogStash::Util::SafeURI.new(str) } }
     let(:strings) { ["I am a", "modern major general"] }
     let(:required_strings) { ["required", "strings"] }
 
-    subject { klass.new("uris" => uris, "strings" => strings, "required_strings" => required_strings) }
-
-    it "a URI list should return an array of URIs" do
-      expect(subject.uris).to match_array(safe_uris)
+    let(:config) do
+      {"strings" => strings, "required_strings" => required_strings}
     end
+
+    subject(:instance) { klass.new(config) }
 
     it "a string list should return an array of strings" do
       expect(subject.strings).to match_array(strings)
+    end
+
+    context 'URI lists' do
+      let(:klass) do
+        Class.new(LogStash::Filters::Base) do
+          config_name 'list_uri_validator_spec'
+          config :uris, :validate => :uri, :list => true
+        end
+      end
+      subject(:instance) { klass.new(config) }
+
+      let(:uri_1) { "http://example.net/1" }
+      let(:uri_2) { "http://example.net/2" }
+      let(:uri_3) { "http://example.net:9201/3" }
+
+      let(:uris) { [uri_1, uri_2, uri_3] }
+      let(:config) { Hash["uris" => uris_parameter] }
+
+      let(:safe_uris) { uris.map {|str| ::LogStash::Util::SafeURI.new(str) } }
+
+      shared_examples ':validate => :uri_list' do
+        it 'should normalize to a flat list containing all extracted URIs from the input' do
+          expect(instance.uris).to match_array(safe_uris)
+        end
+      end
+
+      context 'when given a single string containing exactly one uri' do
+        let(:uris_parameter) { "#{uri_1}" }
+        let(:uris) { [uri_1] }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array of strings, each containing exactly one uri' do
+        let(:uris_parameter) { uris }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given a single string containing multiple whitespace-delimited uris' do
+        let(:uris_parameter) { "#{uri_1} #{uri_2} #{uri_3}" }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array containing a single entry that has multiple whitespace-delimited uris' do
+        let(:uris_parameter) { ["#{uri_1} #{uri_2} #{uri_3}"] }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array containing multiple entries, one of which has multiple whitespace-delimited uris' do
+        let(:uris_parameter) { ["#{uri_1} #{uri_2}", "#{uri_3}"] }
+        include_examples ':validate => :uri_list'
+      end
     end
 
     context "with a scalar value" do
