@@ -47,13 +47,14 @@ import static org.logstash.ObjectMappers.JSON_MAPPER;
 public final class Event implements Cloneable, Queueable, co.elastic.logstash.api.Event {
 
     private boolean cancelled;
-    private final AcknowledgeToken acknowledgeToken;
     private ConvertedMap data;
     private ConvertedMap metadata;
+    private AcknowledgeToken acknowledgeToken;
 
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
     public static final String TIMESTAMP = "@timestamp";
+    public static final String ACKNOWLEDGE_TOKEN = "@acknowledge_token";
     public static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
     public static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
     public static final String VERSION = "@version";
@@ -65,18 +66,19 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     private static final Logger logger = LogManager.getLogger(Event.class);
 
-    public Event(){
-        this((AcknowledgeToken)null);
-    }
-
-    public Event(AcknowledgeToken acknowledgeToken)
+    public Event()
     {
         this.metadata = new ConvertedMap(10);
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        this.acknowledgeToken = acknowledgeToken;
+        this.acknowledgeToken = null;
         setTimestamp(Timestamp.now());
+    }
+
+    public Event(AcknowledgeToken acknowledgeToken){
+        this();
+        this.acknowledgeToken = acknowledgeToken;
     }
 
     /**
@@ -86,37 +88,16 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
      * keys and may contain Java and Ruby objects.
      */
     public Event(final Map<? extends Serializable, Object> data) {
-        this(data, null);
-    }
-
-    /**
-     * Constructor from a map that will be copied and the copy will have its contents converted to
-     * Java objects.
-     * @param data Map that is assumed to have either {@link String} or {@link RubyString}
-     * keys and may contain Java and Ruby objects.
-     * @param acknowledgeToken Reference used for sending acknowledgments
-     */
-    public Event(final Map<? extends Serializable, Object> data, AcknowledgeToken acknowledgeToken) {
-        this(ConvertedMap.newFromMap(data), acknowledgeToken);
+        this(ConvertedMap.newFromMap(data));
     }
 
     /**
      * Constructor wrapping a {@link ConvertedMap} without copying it. Any changes this instance
      * makes to its underlying data will be propagated to it.
      * @param data Converted Map
-     */
-    public Event(ConvertedMap data) {
-        this(data, null);
-    }
-
-    /**
-     * Constructor wrapping a {@link ConvertedMap} without copying it. Any changes this instance
-     * makes to its underlying data will be propagated to it.
-     * @param data Converted Map
-     * @param acknowledgeToken Reference used for sending acknowledgments
      */
     @SuppressWarnings("unchecked")
-    public Event(ConvertedMap data, AcknowledgeToken acknowledgeToken) {
+    public Event(ConvertedMap data) {
         this.data = data;
         if (!this.data.containsKey(VERSION)) {
             this.data.putInterned(VERSION, VERSION_ONE);
@@ -128,8 +109,13 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         } else {
             this.metadata = new ConvertedMap(10);
         }
+        if (this.data.containsKey(ACKNOWLEDGE_TOKEN)) {
+            Object token = this.data.remove(ACKNOWLEDGE_TOKEN);
+            if (token instanceof AcknowledgeToken){
+                this.acknowledgeToken = (AcknowledgeToken) token;
+            }
+        }
         this.cancelled = false;
-        this.acknowledgeToken = acknowledgeToken;
 
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
@@ -143,11 +129,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     @Override
-    public AcknowledgeToken getAcknowledgeToken(){
-        return this.acknowledgeToken;
-    }
-
-    @Override
     public ConvertedMap getData() {
         return this.data;
     }
@@ -155,6 +136,11 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     @Override
     public ConvertedMap getMetadata() {
         return this.metadata;
+    }
+
+    @Override
+    public AcknowledgeToken getAcknowledgeToken(){
+        return this.acknowledgeToken;
     }
 
     @Override
@@ -375,7 +361,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final ConvertedMap map =
             ConvertedMap.newFromMap(Cloner.<Map<String, Object>>deep(data));
         map.putInterned(METADATA, Cloner.<Map<String, Object>>deep(metadata));
-        return new Event(map, this.acknowledgeToken);
+        map.putInterned(ACKNOWLEDGE_TOKEN, this.acknowledgeToken);
+        return new Event(map);
     }
 
     @Override

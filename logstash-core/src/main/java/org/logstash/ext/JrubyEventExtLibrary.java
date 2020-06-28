@@ -87,14 +87,19 @@ public final class JrubyEventExtLibrary {
         }
 
         // def initialize(data = {})
-        @JRubyMethod(name = "initialize", optional = 2)
+        @JRubyMethod(name = "initialize", optional = 1)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
-            if (args.length == 1 && args[0] instanceof RubyHash) {
-                this.event = new Event(ConvertedMap.newFromRubyHash(context, (RubyHash) args[0]));
-
-                return context.nil;
+            final IRubyObject data = args.length > 0 ? args[0] : null;
+            if (data instanceof RubyHash) {
+                this.event = new Event(
+                    ConvertedMap.newFromRubyHash(context, (RubyHash) data)
+                );
+            } else if (data != null && data.getJavaClass().equals(Event.class)) {
+                this.event = data.toJava(Event.class);
+            } else {
+                initializeFallback(context, data);
             }
-            return initializeFallback(context, args);
+            return context.nil;
         }
 
         @JRubyMethod(name = "get", required = 1)
@@ -305,64 +310,23 @@ public final class JrubyEventExtLibrary {
 
         /**
          * Cold path for the Ruby constructor
-         * {@link JrubyEventExtLibrary.RubyEvent#ruby_initialize(ThreadContext, IRubyObject[])}
-         * for when its argument is not just a {@link RubyHash}.
-         *
-         * Supported argument combinations:
-         * Event.new()
-         * Event.new({@link RubyHash})
-         * Event.new({@link org.logstash.Event})
-         * Event.new({@link AcknowledgeToken})
-         * Event.new({@link RubyHash}, {@link AcknowledgeToken})
-         * Event.new({@link JavaMapProxy})
-         * Event.new({@link JavaMapProxy}, {@link AcknowledgeToken})
-         *
+         * {@link JrubyEventExtLibrary.RubyEvent#ruby_initialize(ThreadContext, IRubyObject[])} for
+         * when its argument is not a {@link RubyHash}.
          * @param context Ruby {@link ThreadContext}
-         * @param args    Argument list to hot constructor
+         * @param data Either {@code null}, {@link org.jruby.RubyNil} or an instance of
+         * {@link MapJavaProxy}
          */
         @SuppressWarnings("unchecked")
-        private IRubyObject initializeFallback(final ThreadContext context, final IRubyObject[] args) {
-            AcknowledgeToken token = null;
-            if (args.length > 1) {
-                if (args[1] != null && !args[1].isNil()) {
-                    if (args[0].getJavaClass().equals(AcknowledgeToken.class)) {
-                        token = args[0].toJava(AcknowledgeToken.class);
-                    } else {
-                        throw context.runtime.newTypeError(
-                                "wrong argument type " + args[1].getMetaClass() + " (expected AcknowledgeToken)");
-                    }
-                }
-            }
-            if (args.length > 0) {
-                if (args[0] != null && !args[0].isNil()) {
-                    // check if RubyHash
-                    if (args[0] instanceof RubyHash) {
-                        this.event = new Event(ConvertedMap.newFromRubyHash(context, (RubyHash) args[0]), token);
-                    }
-                    // check if Event
-                    else if (args[0].getJavaClass().equals(Event.class)) {
-                        if (token != null) {
-                            throw context.runtime.newArgumentError(
-                                    "wrong number of arguments, only single argument is allowed when providing event");
-                        }
-                        this.event = args[0].toJava(Event.class);
-                    } else if (args[0] instanceof MapJavaProxy) {
-                        this.event = new Event(
-                                ConvertedMap.newFromMap((Map<String, Object>) ((MapJavaProxy) args[0]).getObject()),
-                                token);
-                    }
-                    // check if token
-                    else if (args[0].getJavaClass().equals(AcknowledgeToken.class)) {
-                        this.event = new Event(args[0].toJava(AcknowledgeToken.class));
-                    } else {
-                        throw context.runtime
-                                .newTypeError("wrong argument type " + args[0].getMetaClass() + " (expected Hash)");
-                    }
-                }
-            } else {
+        private void initializeFallback(final ThreadContext context, final IRubyObject data) {
+            if (data == null || data.isNil()) {
                 this.event = new Event();
+            } else if (data instanceof MapJavaProxy) {
+                this.event = new Event(ConvertedMap.newFromMap(
+                    (Map<String, Object>)((MapJavaProxy)data).getObject())
+                );
+            } else {
+                throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
-            return context.nil;
         }
 
         /**

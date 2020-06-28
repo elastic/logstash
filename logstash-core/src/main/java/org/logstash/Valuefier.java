@@ -46,6 +46,8 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
+import co.elastic.logstash.api.AcknowledgeToken;
+
 public final class Valuefier {
 
     public static final Valuefier.Converter IDENTITY = input -> input;
@@ -133,6 +135,7 @@ public final class Valuefier {
         converters.put(RubyBoolean.class, IDENTITY);
         converters.put(RubyBignum.class, IDENTITY);
         converters.put(RubyBigDecimal.class, IDENTITY);
+        converters.put(AcknowledgeToken.class, IDENTITY);
         converters.put(String.class, input -> RubyUtil.RUBY.newString((String) input));
         converters.put(Float.class, FLOAT_CONVERTER);
         converters.put(Double.class, FLOAT_CONVERTER);

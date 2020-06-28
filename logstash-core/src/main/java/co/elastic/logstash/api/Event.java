@@ -32,6 +32,10 @@ public interface Event extends Acknowledgable {
     Map<String, Object> getData();
 
     Map<String, Object> getMetadata();
+    
+    default AcknowledgeToken getAcknowledgeToken(){
+        return null;
+    }
 
     void cancel();
 
@@ -66,8 +70,4 @@ public interface Event extends Acknowledgable {
     String toString();
 
     void tag(String tag);
-
-    default AcknowledgeToken getAcknowledgeToken(){
-        return null;
-    }
 }
