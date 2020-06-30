@@ -59,7 +59,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
      * across pipelines and workers.
      */
     private static final ConcurrentHashMap<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
-        = new ConcurrentHashMap<>(500);
+        = new ConcurrentHashMap<>(100);
 
     private static final AtomicLong DATASET_CLASS_INDEX = new AtomicLong(0);
 
