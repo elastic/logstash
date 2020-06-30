@@ -615,12 +615,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         final CompiledPipeline testCompiledPipeline = new CompiledPipeline(testPipelineIR, pluginFactory);
 
-        final long compilationBaseline = time(ChronoUnit.SECONDS, () -> {
+        final long compilationBaseline = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
 
-        final long compilationTest = time(ChronoUnit.SECONDS, () -> {
+        final long compilationTest = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
