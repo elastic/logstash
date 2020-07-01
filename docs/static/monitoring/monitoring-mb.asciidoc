@@ -52,7 +52,7 @@ monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 [[configure-metricbeat]]
 ==== Install and configure {metricbeat}
 
-. {metricbeat-ref}/metricbeat-installation.html[Install {metricbeat}] on the
+. {metricbeat-ref}/metricbeat-installation-configuration.html[Install {metricbeat}] on the
 same server as {ls}. 
 
 . Enable the `logstash-xpack` module in {metricbeat}. +
