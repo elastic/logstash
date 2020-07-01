@@ -82,6 +82,7 @@ bin/logstash-plugin install logstash-output-kafka
 
 Once the plugin is successfully installed, you can start using it in your configuration file.
 
+Need to add a guide to change the permissions so that users running Logstash can access the plug-ins installed
 [[installing-local-plugins]]
 [float]
 ==== Advanced: Adding a locally built plugin
