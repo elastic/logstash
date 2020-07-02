@@ -903,6 +903,7 @@ describe LogStash::JavaPipeline do
     it "correctly distributes events" do
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
       pipeline.start
+      sleep 0.01 until pipeline.finished_execution?
       pipeline.shutdown
       expect(output.events.size).to eq(60)
       expect(output.events.count {|e| e.get("cloned") == "cloned"}).to eq(30)
