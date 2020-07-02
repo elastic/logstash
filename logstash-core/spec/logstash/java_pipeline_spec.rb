@@ -88,6 +88,17 @@ class DummyFilter < LogStash::Filters::Base
   def close() end
 end
 
+class DummyCrashingFilter < LogStash::Filters::Base
+  config_name "dummycrashingfilter"
+  milestone 2
+
+  def register; end
+
+  def filter(event)
+    raise("crashing filter")
+  end
+end
+
 class DummySafeFilter < LogStash::Filters::Base
   config_name "dummysafefilter"
   milestone 2
@@ -223,6 +234,37 @@ describe LogStash::JavaPipeline do
       expect(output.events[1].get("tags")).to eq(["notdropped"])
 
       Thread.abort_on_exception = abort_on_exception_state
+    end
+  end
+
+  context "a crashing worker" do
+    subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
+
+    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1 } }
+    let(:config) do
+      <<-EOS
+      input { generator {} }
+      filter { dummycrashingfilter {} }
+      output { dummyoutput {} }
+      EOS
+    end
+    let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new }
+
+    before :each do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummycrashingfilter").and_return(DummyCrashingFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+    after :each do
+      subject.shutdown
+    end
+
+    it "does not raise in the main thread, terminates the run thread and finishes execution" do
+      expect { subject.start && subject.thread.join }.to_not raise_error
+      expect(subject.finished_execution?).to be_truthy
     end
   end
 
