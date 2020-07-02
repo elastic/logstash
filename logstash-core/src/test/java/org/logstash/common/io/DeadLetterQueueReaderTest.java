@@ -64,6 +64,7 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
     private Path dir;
+    private int defaultDlqSize = 100_000_000; // 100mb
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -147,7 +148,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("message", generateMessageContent(32500));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000)) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize)) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
                 messageSize += entry.serialize().length;
@@ -197,7 +198,7 @@ public class DeadLetterQueueReaderTest {
         int size = templateEntry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE + VERSION_SIZE;
         DeadLetterQueueWriter writeManager = null;
         try {
-            writeManager = new DeadLetterQueueWriter(dir, size, 10000000);
+            writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize);
             for (int i = 1; i <= count; i++) {
                 writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i)));
             }
@@ -236,7 +237,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", new String(field));
         Timestamp timestamp = new Timestamp();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000)) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize)) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -259,7 +260,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("message", new String(field));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000)) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize)) {
             for (int i = 1; i <= 5; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
                 messageSize += entry.serialize().length;
@@ -284,7 +285,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
         Timestamp timestamp = new Timestamp();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, 1_000_000_000)) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize)) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -301,11 +302,11 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testWriteReadRandomEventSize() throws Exception {
         Event event = new Event(Collections.emptyMap());
-        int eventCount = 3000;
-        int maxEventSize = BLOCK_SIZE * 2;
+        int maxEventSize = BLOCK_SIZE * 2; // 64kb
+        int eventCount = 1024; // max = 1000 * 64kb = 64mb
         long startTime = System.currentTimeMillis();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000L)) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize)) {
             for (int i = 0; i < eventCount; i++) {
                 event.setField("message", generateMessageContent((int)(Math.random() * (maxEventSize))));
                 DLQEntry entry = new DLQEntry(event, "", "", String.valueOf(i), new Timestamp(startTime++));
@@ -377,7 +378,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private void writeEntries(final Event event, int offset, final int numberOfEvents, long startTime) throws IOException {
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 10_000_000)) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize)) {
             for (int i = offset; i <= offset + numberOfEvents; i++) {
                 DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(startTime++));
                 writeManager.writeEntry(entry);
