@@ -101,6 +101,47 @@ describe LogStash::PipelinesRegistry do
         end
       end
     end
+
+    context "when pipeline is initializing" do
+      let (:wait_start_create_block) { Queue.new }
+      let (:wait_before_exiting_create_block) { Queue.new }
+      let (:slow_initializing_pipeline) { double("slow_initializing_pipeline") }
+      let (:pipeline2) { double("pipeline2") }
+
+      it "should create a loading state before calling the create block" do
+
+        # create a thread which calls create_pipeline and wait in the create
+        # block so we can controle the pipeline initialization phase
+        t = Thread.new do
+          subject.create_pipeline(pipeline_id, slow_initializing_pipeline) do
+            # signal that we entered the create block
+            wait_start_create_block << "ping"
+
+            # stall here until wait_before_exiting_create_block receives a message
+            wait_before_exiting_create_block.pop
+
+            true
+          end
+        end
+
+        # stall here until subject.create_pipeline has been called in the above thread
+        # and it entered the create block
+        wait_start_create_block.pop
+
+        # finished_execution? should not be called in the below tests using terminated?
+        # because the loading state is true. This is to make sure the state is used and not
+        # the pipeline termination status
+        expect(slow_initializing_pipeline).not_to receive(:finished_execution?)
+
+        expect(subject.states.get(pipeline_id).terminated?).to be_falsey
+        expect(subject.get_pipeline(pipeline_id)).to eq(slow_initializing_pipeline)
+        expect(subject.empty?).to be_falsey
+
+        # signal termination of create block
+        wait_before_exiting_create_block << "ping"
+        t.join
+      end
+    end
   end
 
   context "terminating a pipeline" do
