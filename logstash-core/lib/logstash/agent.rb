@@ -199,7 +199,9 @@ class LogStash::Agent
 
     converge_result
   rescue => e
-    logger.error("An exception happened when converging configuration", :exception => e.class, :message => e.message, :backtrace => e.backtrace)
+    attributes = {:exception => e.class, :message => e.message}
+    attributes.merge!({:backtrace => e.backtrace}) if logger.debug?
+    logger.error("An exception happened when converging configuration", attributes)
   end
 
   # Calculate the Logstash uptime in milliseconds
