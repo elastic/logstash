@@ -23,10 +23,10 @@ module LogStash module Config module Source
     include LogStash::Util::Loggable
     def pipeline_configs
       if config_conflict? # double check
-        raise ConfigurationError, @conflict_messages.join(", ")
+        raise ConfigurationError, conflict_messages.join(", ")
       end
 
-      pipelines = LogStash::Config::ModulesCommon.pipeline_configs(@settings)
+      pipelines = LogStash::Config::ModulesCommon.pipeline_configs(settings)
       pipelines.map do |hash|
         org.logstash.config.ir.PipelineConfig.new(self.class, hash["pipeline_id"].to_sym,
           org.logstash.common.SourceWithMetadata.new("module", hash["alt_name"], 0, 0, hash["config_string"]),
@@ -40,7 +40,7 @@ module LogStash module Config module Source
     end
 
     def config_conflict?
-      @conflict_messages.clear
+      conflict_messages.clear
       # Make note that if modules are configured in both cli and logstash.yml that cli module
       # settings will overwrite the logstash.yml modules settings
       if modules_cli? && modules?
@@ -48,15 +48,15 @@ module LogStash module Config module Source
       end
 
       if automatic_reload_with_modules?
-        @conflict_messages << I18n.t("logstash.runner.reload-with-modules")
+        conflict_messages << I18n.t("logstash.runner.reload-with-modules")
       end
 
       # Check if config (-f or -e) and modules are configured
       if (modules_cli? || modules?) && (config_string? || config_path?)
-        @conflict_messages << I18n.t("logstash.runner.config-module-exclusive")
+        conflict_messages << I18n.t("logstash.runner.config-module-exclusive")
       end
 
-      @conflict_messages.any?
+      conflict_messages.any?
     end
 
     private
