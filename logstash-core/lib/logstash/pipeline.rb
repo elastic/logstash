@@ -402,8 +402,10 @@ module LogStash; class Pipeline < BasePipeline
     #
     # Users need to check their configuration or see if there is a bug in the
     # plugin.
-    @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                  default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
+    @logger.error(
+      "Pipeline worker error, the pipeline will be stopped",
+      default_logging_keys("exception" => e.message, "backtrace" => e.backtrace)
+    )
 
     raise e
   end
