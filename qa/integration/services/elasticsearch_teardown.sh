@@ -7,9 +7,18 @@ source "$current_dir/helpers.sh"
 ES_HOME=$INSTALL_DIR/elasticsearch
 
 stop_es() {
-    pid=$(cat $ES_HOME/elasticsearch.pid)
-    [ "x$pid" != "x" ] && [ "$pid" -gt 0 ]
-    kill -SIGTERM $pid
+    local count=10
+    [ ! -f $ES_HOME/elasticsearch.pid ] && return 0
+    pid=$(cat $ES_HOME/elasticsearch.pid) 2>/dev/null
+    if [ "x$pid" != "x" ] && [ "$pid" -gt 0 ]
+    then
+      while kill -SIGTERM "$pid" 2>/dev/null && [ $count -ne 0 ]; do
+         echo "waiting for elasticsearch to stop"
+         count=$(( $count - 1 ))
+         [[ $count -eq 0 ]] && echo "killing elasticsearch" && kill -9 $pid 2>/dev/null || true
+         sleep 0.5
+      done
+    fi
 }
 
 stop_es
