@@ -370,20 +370,6 @@ describe LogStash::Pipeline do
       eos
     }
 
-    let(:test_config_with_output_workers) {
-      <<-eos
-      input {
-        dummyinput {}
-      }
-
-      output {
-        dummyoutput {
-          workers => 2
-        }
-      }
-      eos
-    }
-
     context "output close" do
       let(:pipeline) { mock_pipeline_from_string(test_config_without_output_workers) }
       let(:output) { pipeline.outputs.first }
@@ -392,13 +378,9 @@ describe LogStash::Pipeline do
         allow(output).to receive(:do_close)
       end
 
-      after do
-        pipeline.shutdown
-      end
-
       it "should call close of output without output-workers" do
         pipeline.start
-
+        pipeline.shutdown
         expect(output).to have_received(:do_close).once
       end
     end
