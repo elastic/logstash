@@ -98,10 +98,6 @@ public final class WorkerLoop implements Runnable {
             execution.compute(batch, true, true);
             readClient.closeBatch(batch);
         } catch (final Exception ex) {
-            LOGGER.error(
-                "Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                ex
-            );
             throw new IllegalStateException(ex);
         }
     }

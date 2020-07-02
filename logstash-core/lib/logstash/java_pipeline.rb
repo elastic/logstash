@@ -17,6 +17,7 @@
 
 require "thread"
 require "concurrent"
+require "thwait"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
@@ -119,19 +120,31 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @finished_run.make_false
 
     @thread = Thread.new do
+      error_log_params = ->(e) {
+        default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details
+        )
+      }
+
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
         ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
       rescue => e
-        close
-        pipeline_log_params = default_logging_keys(
-          :exception => e,
-          :backtrace => e.backtrace,
-          "pipeline.sources" => pipeline_source_details)
-        logger.error("Pipeline aborted due to error", pipeline_log_params)
+        # no need to log at ERROR level since this log will be redundant to the log in
+        # the worker loop thread global rescue clause
+        logger.debug("Pipeline terminated by worker error", error_log_params.call(e))
       ensure
+        # we must trap any exception here to make sure the following @finished_execution
+        # is always set to true regardless of any exception before in the close method call
+        begin
+          close
+        rescue => e
+          logger.error("Pipeline close error, ignoring", error_log_params.call(e))
+        end
         @finished_execution.make_true
       end
     end
@@ -176,21 +189,18 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     transition_to_running
     start_flusher # Launches a non-blocking thread for flush events
-    wait_inputs
-    transition_to_stopped
+    begin
+      monitor_inputs_and_workers
+    ensure
+      transition_to_stopped
 
-    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
+      shutdown_flusher
+      shutdown_workers
 
-    shutdown_flusher
-    shutdown_workers
-
-    close
-
+      close
+    end
     @logger.debug("Pipeline has been shutdown", default_logging_keys)
-
-    # exit code
-    return 0
-  end # def run
+  end
 
   def transition_to_running
     @running.make_true
@@ -279,7 +289,16 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         thread = Thread.new do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           ThreadContext.put("pipeline.id", pipeline_id)
-          worker_loop.run
+          begin
+            worker_loop.run
+          rescue => e
+            # WorkerLoop.run() catches all Java Exception class and re-throws as IllegalStateException with the
+            # original exception as the cause
+            @logger.error(
+              "Pipeline worker error, the pipeline will be stopped",
+              default_logging_keys(:error => e.cause.message, :exception => e.cause.class, :backtrace => e.cause.backtrace)
+            )
+          end
         end
         @worker_threads << thread
       end
@@ -309,10 +328,20 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     end.to_a.compact
   end
 
-  def wait_inputs
-    @input_threads.each do |thread|
-      thread.join # Thread or java.lang.Thread (both have #join)
+  def monitor_inputs_and_workers
+    twait = ThreadsWait.new(*(@input_threads + @worker_threads))
+
+    while !@input_threads.empty?
+      terminated_thread = twait.next_wait
+      if @input_threads.delete(terminated_thread).nil?
+        # this is a worker thread termination
+        # delete it from @worker_threads so that wait_for_workers does not wait for it
+        @worker_threads.delete(terminated_thread)
+        raise("Worker thread terminated in pipeline.id: #{pipeline_id}")
+      end
     end
+
+    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
   end
 
   def start_inputs
