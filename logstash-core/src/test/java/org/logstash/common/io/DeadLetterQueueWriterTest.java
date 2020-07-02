@@ -79,7 +79,7 @@ public class DeadLetterQueueWriterTest {
     @Test
     public void testLockFileManagement() throws Exception {
         Path lockFile = dir.resolve(".lock");
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000);
         assertTrue(Files.exists(lockFile));
         writer.close();
         assertFalse(Files.exists(lockFile));
@@ -87,9 +87,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testFileLocking() throws Exception {
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000);
         try {
-            new DeadLetterQueueWriter(dir, 1000, 100000);
+            new DeadLetterQueueWriter(dir, 100, 1000);
             fail();
         } catch (LockException e) {
         } finally {
@@ -101,7 +101,7 @@ public class DeadLetterQueueWriterTest {
     public void testUncleanCloseOfPreviousWriter() throws Exception {
         Path lockFilePath = dir.resolve(".lock");
         boolean created = lockFilePath.toFile().createNewFile();
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000);
 
         FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
         try {
@@ -116,7 +116,7 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testWrite() throws Exception {
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000);
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         writer.writeEntry(entry);
         writer.close();
@@ -129,7 +129,7 @@ public class DeadLetterQueueWriterTest {
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         DLQEntry dlqEntry = new DLQEntry(dlqEvent, "type", "id", "reason");
 
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);) {
+        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000);) {
             writer.writeEntry(entry);
             long dlqLengthAfterEvent  = dlqLength();
 
