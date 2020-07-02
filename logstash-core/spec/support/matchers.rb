@@ -92,9 +92,9 @@ RSpec::Matchers.define :have_running_pipeline? do |pipeline_config|
     try(30) do
       pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
       expect(pipeline).to_not be_nil
+      expect(pipeline.running?).to be_truthy
     end
     expect(pipeline.config_str).to eq(pipeline_config.config_string)
-    expect(pipeline.running?).to be_truthy
     expect(agent.running_pipelines.keys.map(&:to_s)).to include(pipeline_config.pipeline_id.to_s)
   end
 
