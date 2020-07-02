@@ -545,7 +545,8 @@ describe LogStash::Agent do
 
   describe "using persisted queue" do
     it_behaves_like "all Agent tests" do
-      let(:agent_settings) { mock_settings("queue.type" => "persisted", "queue.drain" => true) }
+      let(:agent_settings) { mock_settings("queue.type" => "persisted", "queue.drain" => true,
+                                           "queue.page_capacity" => "8mb", "queue.max_bytes" => "64mb") }
     end
   end
 end

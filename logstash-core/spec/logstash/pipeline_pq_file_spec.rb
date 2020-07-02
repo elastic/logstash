@@ -95,9 +95,9 @@ describe LogStash::Pipeline do
   let(:this_queue_folder) { File.join(base_queue_path, SecureRandom.hex(8)) }
 
   let(:worker_thread_count) { 8 } # 1 4 8
-  let(:number_of_events) { 100_000 }
-  let(:page_capacity) { 1 * 1024 * 512 } # 1 128
-  let(:max_bytes) { 1024 * 1024 * 1024 } # 1 gb
+  let(:number_of_events) { 10_000 }
+  let(:page_capacity) { 1 * 1024 * 1024 } # 1 mb
+  let(:max_bytes) { 64 * 1024 * 1024 } # 64 mb
   let(:times) { [] }
 
   let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
