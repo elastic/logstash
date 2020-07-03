@@ -27,7 +27,7 @@ describe LogStash::ShutdownWatcher do
 
   before :each do
     allow(pipeline).to receive(:reporter).and_return(reporter)
-    allow(pipeline).to receive(:thread).and_return(Thread.current)
+    allow(pipeline).to receive(:finished_execution?).and_return(false)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
   end

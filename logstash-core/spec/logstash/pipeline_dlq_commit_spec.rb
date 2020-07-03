@@ -92,13 +92,13 @@ describe LogStash::Pipeline do
 
     it "retrieves proper pipeline-level DLQ writer" do
       expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).and_call_original
-      subject.run
+      subject.start
+      subject.shutdown
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       dlq_reader = org.logstash.common.io.DeadLetterQueueReader.new(dlq_path)
       entry = dlq_reader.pollEntry(40)
       expect(entry).to_not be_nil
       expect(entry.reason).to eq("my reason")
-      subject.shutdown
     end
   end
 
@@ -109,7 +109,7 @@ describe LogStash::Pipeline do
     it "does not write to the DLQ" do
       expect(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:new).and_call_original
       expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).and_call_original
-      subject.run
+      subject.start
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       expect(java.nio.file.Files.exists(dlq_path)).to eq(false)
       subject.shutdown

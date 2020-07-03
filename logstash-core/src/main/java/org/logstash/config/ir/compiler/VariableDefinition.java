@@ -72,6 +72,8 @@ final class VariableDefinition implements SyntaxElement {
             safe = EventCondition.class;
         } else if (DynamicMethod.class.isAssignableFrom(clazz)) {
             safe = DynamicMethod.class;
+        } else if (Dataset.class.isAssignableFrom(clazz)) {
+            safe = Dataset.class;
         } else {
             safe = clazz;
         }

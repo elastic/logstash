@@ -45,6 +45,17 @@ class LogStash::Util::SafeURI
     raise ArgumentError, "URI is not valid - host is not specified" if @uri.host.nil?
   end
 
+  ##
+  # Attempts to efficiently return an instance of `SafeURI` from the given object.
+  # @param object [Object]: an object that may or may not already be a `SafeURI`.
+  # @return [SafeURI]: if the given `object` was a `SafeURI`, returns it unmodified.
+  #                    otherwise, a new `SafeURI` is initialized using the `object`.
+  def self.from(object)
+    return object if object.kind_of?(self)
+
+    new(object)
+  end
+
   def to_s
     sanitized.to_s
   end

@@ -162,6 +162,18 @@ class LogStash::Agent
     @running.false?
   end
 
+  # Only call converge_state_and_update if agent is running
+  # to avoid a double call to converge_state_and_update since
+  # agent.execute will call converge_state_and_update itself
+  def converge_state_and_update_if_running
+    converge_state_and_update if running?
+  end
+
+  # Trigger convergence of pipelines
+  # NOTE that there is no point of calling this method before
+  # Agent#execute has been called since it will itself call
+  # converge_state_and_update and will result in a double
+  # convergence. 
   def converge_state_and_update
     results = @source_loader.fetch
 

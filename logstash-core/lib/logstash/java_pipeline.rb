@@ -378,30 +378,23 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
-  # @param before_stop [Proc] code block called before performing stop operation on input plugins
-  def shutdown(&before_stop)
+  # and will block until the pipeline has successfully shut down.
+  def shutdown
+    return if finished_execution?
     # shutdown can only start once the pipeline has completed its startup.
     # avoid potential race condition between the startup sequence and this
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
     # TODO: should we also check against calling shutdown multiple times concurrently?
-
-    before_stop.call if block_given?
-
     stop_inputs
-
-    # We make this call blocking, so we know for sure when the method return the shutdown is
-    # stopped
-    wait_for_workers
+    wait_for_shutdown
     clear_pipeline_metrics
     @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
   end # def shutdown
 
-  def wait_for_workers
-    @logger.debug("Closing inputs", default_logging_keys)
-    @worker_threads.map(&:join)
-    @logger.debug("Worker closed", default_logging_keys)
+  def wait_for_shutdown
+    ShutdownWatcher.new(self).start
   end
 
   def stop_inputs

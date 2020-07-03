@@ -1,0 +1,17 @@
+[[plugin-concepts]]
+=== Cross-plugin concepts and features
+
+New section for concepts, features, and behaviours that apply to multiple plugins.
+
+[[space-delimited-uris-in-list-params]]
+==== Space-deliminated URIs in list-type params
+
+List-type URI parameters will automatically expand strings that contain multiple
+whitespace-delimited URIs into separate entries. This behaviour enables the expansion
+of an arbitrary list of URIs from a single Environment- or Keystore-variable.
+
+Examples of plugins and options that support this functionality:
+
+* <<plugins-inputs-elasticsearch-hosts,Elasticsearch input plugin - `hosts`>>
+* <<plugins-outputs-elasticsearch-hosts,Elasticsearch output plugin - `hosts`>>
+* <<plugins-filters-elasticsearch-hosts,Elasticsearch filter plugin - `hosts`>>

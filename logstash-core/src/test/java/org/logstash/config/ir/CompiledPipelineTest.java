@@ -570,7 +570,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void testCompilerCacheCompiledClasses() throws IOException, InvalidIRException {
+    public void testCacheCompiledClassesWithDifferentId() throws IOException, InvalidIRException {
         final FixedPluginFactory pluginFactory = new FixedPluginFactory(
                 () -> null,
                 () -> IDENTITY_FILTER,
@@ -582,20 +582,55 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 false);
         final CompiledPipeline cBaselinePipeline = new CompiledPipeline(baselinePipeline, pluginFactory);
 
-        final PipelineIR pipelineWithExtraFilter = ConfigCompiler.configToPipelineIR(
+        final PipelineIR pipelineWithDifferentId = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline2.conf"),
                 false);
-        final CompiledPipeline cPipelineWithExtraFilter = new CompiledPipeline(pipelineWithExtraFilter, pluginFactory);
-        
+        final CompiledPipeline cPipelineWithDifferentId = new CompiledPipeline(pipelineWithDifferentId, pluginFactory);
+
         // actual test: compiling a pipeline with an extra filter should only create 1 extra class
         ComputeStepSyntaxElement.cleanClassCache();
         cBaselinePipeline.buildExecution();
         final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
-        cPipelineWithExtraFilter.buildExecution();
+        cPipelineWithDifferentId.buildExecution();
         final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
-        
+
         final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
-        assertEquals(message, 1, cachedAfter - cachedBefore);
+        assertEquals(message, 0, cachedAfter - cachedBefore);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void testReuseCompiledClasses() throws IOException, InvalidIRException {
+        final FixedPluginFactory pluginFactory = new FixedPluginFactory(
+                () -> null,
+                () -> IDENTITY_FILTER,
+                mockOutputSupplier()
+        );
+
+        // this pipeline generates 10 classes
+        // - 7 for the filters for the nested and leaf Datasets
+        // - 3 for the sequence of outputs with a conditional
+        final PipelineIR baselinePipeline = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline_reuse_baseline.conf"),
+                false);
+        final CompiledPipeline cBaselinePipeline = new CompiledPipeline(baselinePipeline, pluginFactory);
+
+        // this pipeline is much bigger than the baseline
+        // but is carefully crafted to reuse the same classes as the baseline pipeline
+        final PipelineIR pipelineTwiceAsBig = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadataFromPath("org/logstash/config/ir/cache/pipeline_reuse_test.conf"),
+                false);
+        final CompiledPipeline cPipelineTwiceAsBig = new CompiledPipeline(pipelineTwiceAsBig, pluginFactory);
+
+        // test: compiling a much bigger pipeline and asserting no additional classes are generated
+        ComputeStepSyntaxElement.cleanClassCache();
+        cBaselinePipeline.buildExecution();
+        final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
+        cPipelineTwiceAsBig.buildExecution();
+        final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
+
+        final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
+        assertEquals(message, 0, cachedAfter - cachedBefore);
     }
 
     @Test
@@ -615,12 +650,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         final CompiledPipeline testCompiledPipeline = new CompiledPipeline(testPipelineIR, pluginFactory);
 
-        final long compilationBaseline = time(ChronoUnit.SECONDS, () -> {
+        final long compilationBaseline = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
 
-        final long compilationTest = time(ChronoUnit.SECONDS, () -> {
+        final long compilationTest = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
