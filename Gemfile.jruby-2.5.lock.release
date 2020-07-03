@@ -304,7 +304,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.1.18)
+    logstash-input-file (4.1.17)
       addressable
       logstash-codec-multiline (~> 3.0)
       logstash-codec-plain
