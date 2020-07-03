@@ -45,7 +45,7 @@ buildscript {
 
 ext {
   jmh = '1.23'
-  elasticsearch = '5.5.3'
+  elasticsearch = '5.6.16'
 }
 
 dependencies {
@@ -55,12 +55,12 @@ dependencies {
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
   implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
 
-  implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+  implementation group: 'commons-io', name: 'commons-io', version: '2.7'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
-  implementation group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
+  implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: elasticsearch
   implementation "org.openjdk.jmh:jmh-core:$jmh"
-  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.27.0'
   testImplementation "junit:junit:4.12"
 }
 
