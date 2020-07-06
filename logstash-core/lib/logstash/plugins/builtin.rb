@@ -18,7 +18,9 @@
 module ::LogStash::Plugins::Builtin
   require 'logstash/plugins/builtin/pipeline/input'
   require 'logstash/plugins/builtin/pipeline/output'
+  require 'logstash/plugins/builtin/acknowledge/acked_heartbeat'
 
   LogStash::PLUGIN_REGISTRY.add(:input, "pipeline", LogStash::Plugins::Builtin::Pipeline::Input)
   LogStash::PLUGIN_REGISTRY.add(:output, "pipeline", LogStash::Plugins::Builtin::Pipeline::Output)
+  LogStash::PLUGIN_REGISTRY.add(:input, "acked_heartbeat", LogStash::Plugins::Builtin::Acknowledge::AckedHeartbeat)
 end
