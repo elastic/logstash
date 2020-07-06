@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import co.elastic.logstash.api.Acknowledgable;
 import co.elastic.logstash.api.AcknowledgablePlugin;
-import co.elastic.logstash.api.AcknowledgeToken;
 import co.elastic.logstash.api.AcknowledgeTokenFactory;
 
 import java.util.Collection;
@@ -40,109 +39,55 @@ import java.util.function.BiFunction;
 public class AcknowledgeBus implements co.elastic.logstash.api.AcknowledgeBus {
 
     final ConcurrentHashMap<String, AcknowledgablePlugin> acknowledgeIdMapping = new ConcurrentHashMap<>();
-    volatile boolean blockOnUnlisten = false;
     private static final Logger logger = LogManager.getLogger(AcknowledgeBus.class);
-
-    private final class AcknowledgeTokenImpl implements AcknowledgeToken {
-        private final String pluginId;
-        private final String acknowledgeId;
-
-        AcknowledgeTokenImpl(final String pluginId, final String acknowledgeId) {
-            if (pluginId == null)
-                throw new IllegalArgumentException("pluginId cannot be null");
-            if (acknowledgeId == null)
-                throw new IllegalArgumentException("acknowledgeId cannot be null");
-            this.pluginId = pluginId;
-            this.acknowledgeId = acknowledgeId;
-        }
-
-        @Override
-        public String getPluginId() {
-            return pluginId;
-        }
-
-        @Override
-        public String getAcknowledgeId() {
-            return acknowledgeId;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (o == this)
-                return true;
-            if (!(o instanceof AcknowledgeToken))
-                return false;
-            final AcknowledgeTokenImpl other = (AcknowledgeTokenImpl) o;
-            if (!other.canEqual((Object) this))
-                return false;
-            if (this.getPluginId() == null ? other.getPluginId() != null
-                    : !this.getPluginId().equals(other.getPluginId()))
-                return false;
-            if (this.getAcknowledgeId() == null ? other.getAcknowledgeId() != null
-                    : !this.getAcknowledgeId().equals(other.getAcknowledgeId()))
-                return false;
-            return true;
-        }
-
-        protected boolean canEqual(final Object other) {
-            return other instanceof AcknowledgeTokenImpl;
-        }
-
-        @Override
-        public int hashCode() {
-            final int PRIME = 59;
-            int result = 1;
-            result = (result * PRIME) + (this.pluginId == null ? 43 : this.pluginId.hashCode());
-            result = (result * PRIME) + (this.acknowledgeId == null ? 43 : this.acknowledgeId.hashCode());
-            return result;
-        }
-
-    }
 
     @Override
     public void acknowledgeEvents(final Collection<? extends Acknowledgable> events) {
         logger.debug("Received acknowledgeEvents for {} events", events.size());
-        this.proccessEvents(events, AcknowledgablePlugin::acknowledge, "Acknowledge");
+        this.proccessEvents(events, AcknowledgablePlugin::acknowledge, "acknowledgeEvents");
     }
 
     @Override
     public void notifyClonedEvents(final Collection<? extends Acknowledgable> events) {
         logger.debug("Received notifyClonedEvents for {} events", events.size());
-        this.proccessEvents(events, AcknowledgablePlugin::notifyCloned, "Notification cloned Acknowledge");
+        this.proccessEvents(events, AcknowledgablePlugin::notifyCloned, "notifyClonedEvents");
     }
 
-    private void proccessEvents(final Collection<? extends Acknowledgable> events, BiFunction<AcknowledgablePlugin, String, Boolean> processId, String processName){
+    private void proccessEvents(final Collection<? extends Acknowledgable> events,
+            BiFunction<AcknowledgablePlugin, String, Boolean> processId, String processName) {
         if (events.isEmpty())
             return; // This can happen on pipeline shutdown or in some other situations
 
-        long acknowledgeCount = events.stream()
-            .map(Acknowledgable::getAcknowledgeToken)
-            .filter(token -> token != null)
-            .map(token -> {
-                final AcknowledgablePlugin plugin = acknowledgeIdMapping.get(token.getPluginId());
-                if (plugin != null) {
-                    if (!processId.apply(plugin, token.getAcknowledgeId())) {
-                        logger.warn( "{} for plugin: {} was unsuccesful for id: {}",
-                            processName , plugin.getId(), token.getAcknowledgeId());
+        long acknowledgeCount = events.stream().map(Acknowledgable::getAcknowledgeToken).filter(token -> token != null)
+                .map(token -> {
+                    final AcknowledgablePlugin plugin = acknowledgeIdMapping.get(token.getPluginId());
+                    if (plugin != null) {
+                        logger.debug("Plugin: {} Token: {}", token.getPluginId(), token.getAcknowledgeId());
+                        if (!processId.apply(plugin, token.getAcknowledgeId())) {
+                            logger.warn("{} for plugin: {} was unsuccesful for id: {}", processName, plugin.getId(),
+                                    token.getAcknowledgeId());
+                        }
+                    } else {
+                        logger.warn("Received {} for unknown plugin: {}", processName, token.getPluginId());
                     }
-                } else {
-                    logger.warn("Received {} for unknown plugin: {}", processName, token.getPluginId());
-                }
-                return null;
-            })
-            .count();
-        logger.debug("Proccessed {} events for {} ", acknowledgeCount, processName);
+                    return null;
+                }).count();
+        logger.debug("Proccessed {} events succesfully for {} ", acknowledgeCount, processName);
     }
 
     /**
      * Should be called by a plugin on register
      *
      * @param plugin plugin to be registered
-     * @return an AcknowledgeTokenGenerator instance
+     * @return an AcknowledgeTokenGenerator instance is succefully registerd
+     *         otherwise null is returned
      */
     @Override
     public AcknowledgeTokenFactory registerPlugin(final AcknowledgablePlugin plugin) {
         synchronized (plugin) {
+            if (acknowledgeIdMapping.containsKey(plugin.getId())) {
+                return null;
+            }
             acknowledgeIdMapping.put(plugin.getId(), plugin);
             return id -> new AcknowledgeTokenImpl(plugin.getId(), id);
         }
@@ -159,6 +104,5 @@ public class AcknowledgeBus implements co.elastic.logstash.api.AcknowledgeBus {
             return acknowledgeIdMapping.remove(plugin.getId()) != null;
         }
     }
-
 
 }

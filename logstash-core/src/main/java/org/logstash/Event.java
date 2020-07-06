@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public static final String VERSION_ONE = "1";
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
+    private static final String ACK_MAP_KEY = "ACK";
 
     private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
 
@@ -258,6 +260,14 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final Map<String, Object> metaMap = representation.get(META_MAP_KEY);
         if (metaMap == null) {
             throw new IOException("The deserialized Map must contain the \"META\" key");
+        }
+        final Map<String, Object> ackMap = representation.get(ACK_MAP_KEY);
+        if (ackMap != null) {
+            Object acknowledge_token = ackMap.get(ACKNOWLEDGE_TOKEN);
+            if (acknowledge_token != null){
+                dataMap.put(ACKNOWLEDGE_TOKEN, acknowledge_token);
+            }
+
         }
         dataMap.put(METADATA, metaMap);
         return new Event(dataMap);
@@ -483,6 +493,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final Map<String, Map<String, Object>> map = new HashMap<>(2, 1.0F);
         map.put(DATA_MAP_KEY, this.data);
         map.put(META_MAP_KEY, this.metadata);
+        if(this.acknowledgeToken != null){
+            map.put(ACK_MAP_KEY, Collections.singletonMap(ACKNOWLEDGE_TOKEN, this.acknowledgeToken));
+        }
         return CBOR_MAPPER.writeValueAsBytes(map);
     }
 

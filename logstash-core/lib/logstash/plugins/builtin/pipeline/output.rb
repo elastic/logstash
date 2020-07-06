@@ -35,8 +35,8 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Output
   end
 
   def multi_receive(events)
-    pipeline_bus.sendEvents(self, events, ensure_delivery)
     acknowledge_bus.notifyClonedEvents(events)
+    pipeline_bus.sendEvents(self, events, ensure_delivery)
   end
 
   def close

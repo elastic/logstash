@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.config.ir.CompiledPipeline;
 
 import co.elastic.logstash.api.AcknowledgeBus;
-import co.elastic.logstash.api.Acknowledgable;
 
 public final class WorkerLoop implements Runnable {
 
