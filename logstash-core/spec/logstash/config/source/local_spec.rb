@@ -25,19 +25,19 @@ require_relative "../../../support/matchers"
 require "spec_helper"
 require "webmock/rspec"
 
-describe LogStash::Config::Source::Local::ConfigStringLoader do
-  subject { described_class }
-  let(:config_string) { "input { generator {} } output { stdout {} }"}
-
-  it "returns one config_parts" do
-    expect(subject.read(config_string).size).to eq(1)
-  end
-
-  it "returns a valid config part" do
-    config_part = subject.read(config_string).first
-    expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
-  end
-end
+# describe LogStash::Config::Source::Local::ConfigStringLoader do
+#   subject { described_class }
+#   let(:config_string) { "input { generator {} } output { stdout {} }"}
+#
+#   it "returns one config_parts" do
+#     expect(subject.read(config_string).size).to eq(1)
+#   end
+#
+#   it "returns a valid config part" do
+#     config_part = subject.read(config_string).first
+#     expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
+#   end
+# end
 
 describe LogStash::Config::Source::Local::ConfigPathLoader do
   subject { described_class }
@@ -116,7 +116,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
       it "raises an exception" do
         # check against base name because on Windows long paths are shrinked in the exception message
-        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /.+#{::File.basename(file_path)}/
+        expect { subject.read(file_path) }.to raise_error Java.OrgLogstashConfigSource.ConfigLoadingException, /.+#{::File.basename(file_path)}/
       end
     end
 
