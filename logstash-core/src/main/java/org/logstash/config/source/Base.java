@@ -42,13 +42,8 @@ public class Base {
         return conflictMessages;
     }
 
-//    public RubyObject getSettings() {
-//        return settings;
-//    }
-
     // this must be used when in Ruby code was @settings = <new value>
     public void updateSettings(RubyObject settings) {
-//        System.out.println("DNADBG >> setSettings invoked");
         this.settings = settings;
     }
 
@@ -89,12 +84,6 @@ public class Base {
     public String configString() {
         final IRubyObject setting = configStringSetting();
         final IRubyObject value = setting.callMethod(RUBY.getCurrentContext(), "value");
-//        System.out.println("DNADBG >>        config_string?() setting: " + setting + ",\n\t value: " + value.getClass());
-//        System.out.println("DNADBG>>         setting name: " + setting.callMethod(RUBY.getCurrentContext(), "name") +
-//                " content: " + setting.callMethod(RUBY.getCurrentContext(), "to_hash") +
-//                " setting.Id: " + setting +
-//                " settings.Id: " + settings
-//        );
         return value.toJava(String.class);
     }
 
@@ -140,7 +129,6 @@ public class Base {
     @SuppressWarnings("rawtypes")
     public RubyArray modules() {
         return (RubyArray) modulesSetting().callMethod(RUBY.getCurrentContext(), "value");
-//        return modulesSetting().callMethod(RUBY.getCurrentContext(), "value").toJava(List.class);
     }
 
     public boolean isModules() {

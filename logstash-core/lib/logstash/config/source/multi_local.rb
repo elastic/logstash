@@ -31,25 +31,19 @@ module LogStash module Config module Source
 
     def pipeline_configs
       pipelines = deep_replace(retrieve_yaml_pipelines())
-#       puts "DNADBG >> pipeline_configs(), pipelines: #{pipelines}"
       pipelines_settings = pipelines.map do |pipeline_settings|
         clone = @original_settings.clone
         clone.merge_pipeline_settings(pipeline_settings)
       end
-#       puts "DNADBG >> pipeline_configs(), pipelines_settings: #{pipelines_settings.size}"
       detect_duplicate_pipelines(pipelines_settings)
-#       puts "DNADBG >> pipeline_configs(), pipelines_settings after detect_duplicate_pipelines: #{pipelines_settings.size} "
-#       puts "DNADBG >> \n #{pipelines_settings}"
       pipeline_configs = pipelines_settings.map do |pipeline_settings|
         update_settings(pipeline_settings)
         # this relies on instance variable @settings and the parent class' pipeline_configs
         # method. The alternative is to refactor most of the Local source methods to accept
         # a settings object instead of relying on @settings.
-#         puts "DNADBG >>         pipeline_configs(), inside pipelines_settings.map #{pipeline_settings}"
         local_pipeline_configs # create a PipelineConfig object based on @settings
       end.flatten
       settings = @original_settings
-#       puts "DNADBG >> pipeline_configs(), pipeline_configs: #{pipeline_configs}"
       pipeline_configs
     end
 
