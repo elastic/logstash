@@ -37,8 +37,7 @@ public class ConfigPathLoader {
 
     private Path normalizePath(String path) {
         final String cleaned = LOCAL_FILE_URI.matcher(path).replaceAll("");
-        final Path res = Paths.get(cleaned);
-        return res;
+        return Paths.get(cleaned);
     }
 
     public List<SourceWithMetadata> read() throws IOException, ConfigLoadingException, IncompleteSourceWithMetadataException {
