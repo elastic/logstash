@@ -3,6 +3,7 @@ dependency,dependencyUrl,licenseOverride
 "atomic:",http://github.com/ruby-concurrency/atomic,Apache-2.0
 "avl_tree:",https://github.com/nahi/avl_tree,BSD-2-Clause-FreeBSD
 "avro:",https://github.com/apache/avro/tree/master/lang/ruby,Apache-2.0
+"amazing_print:",https://github.com/amazing-print/amazing_print,MIT
 "awesome_print:",https://github.com/awesome-print/awesome_print,MIT
 "aws-eventstream:",https://github.com/aws/aws-sdk-ruby/tree/master/gems/aws-eventstream,Apache-2.0
 "aws-sdk-core:",http://github.com/aws/aws-sdk-ruby,Apache-2.0
