@@ -151,8 +151,12 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           }
         end
 
-        it "should raise an ArgumentError" do
-          expect { described_class.new(system_settings) }.to raise_error(ArgumentError)
+        it "will rely on username and password settings" do
+          # since cloud_id and cloud_auth are simply containers for host and username/password
+          # both could be set independently and if cloud_auth is not set then authn will be done
+          # using the provided username/password settings, which can be set or not if not auth is
+          # required.
+          expect { described_class.new(system_settings) }.to_not raise_error
         end
       end
     end
