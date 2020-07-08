@@ -509,6 +509,10 @@ namespace "artifact" do
       excluder = oss_excluder
     end
 
+    if bundle_jdk
+      suffix += "-jdk_bundled"
+    end
+
     files(excluder).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
