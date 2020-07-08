@@ -42,6 +42,10 @@ public class Base {
         return conflictMessages;
     }
 
+    public RubyObject getSettings() {
+        return settings;
+    }
+
     // this must be used when in Ruby code was @settings = <new value>
     public void updateSettings(RubyObject settings) {
         this.settings = settings;

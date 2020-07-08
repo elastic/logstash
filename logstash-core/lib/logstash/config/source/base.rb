@@ -17,9 +17,4 @@
 
 module LogStash module Config module Source
   java_import org.logstash.config.source.Base
-
-  class Base
-    field_accessor :conflictMessages => :conflict_messages
-    field_accessor :settings => :settings
-  end
 end end end

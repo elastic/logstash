@@ -43,7 +43,7 @@ module LogStash module Config module Source
         # a settings object instead of relying on @settings.
         local_pipeline_configs # create a PipelineConfig object based on @settings
       end.flatten
-      settings = @original_settings
+      update_settings(@original_settings)
       pipeline_configs
     end
 
