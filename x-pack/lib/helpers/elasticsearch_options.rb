@@ -67,9 +67,12 @@ module LogStash module Helpers
         opts['ssl'] = true
       end
 
-      # the username setting has a default value and should not be included when using another authentication
+      # the username setting has a default value and should not be included when using another authentication such as cloud_auth or api_key.
+      # it should also not be included when no password is set.
       # it is safe to silently remove here since all authentication verifications have been validated at this point.
-      if settings.set?("#{prefix}#{feature}.elasticsearch.cloud_auth") || settings.set?("#{prefix}#{feature}.elasticsearch.api_key")
+      if settings.set?("#{prefix}#{feature}.elasticsearch.cloud_auth") ||
+         settings.set?("#{prefix}#{feature}.elasticsearch.api_key") ||
+         (!settings.set?("#{prefix}#{feature}.elasticsearch.password") && !settings.set?("#{prefix}#{feature}.elasticsearch.username"))
         opts.delete('user')
       end
 
@@ -200,15 +203,6 @@ module LogStash module Helpers
       authentication_count += 1 if provided_cloud_auth
       authentication_count += 1 if provided_password
       authentication_count += 1 if provided_api_key
-
-      if authentication_count == 0
-        # when no explicit authentication is set it is relying on default username
-        # but without and explicit password set
-        raise(ArgumentError,
-          "With the default #{prefix}#{feature}.elasticsearch.username, " +
-          "#{prefix}#{feature}.elasticsearch.password must be set"
-        )
-      end
 
       if authentication_count > 1
         raise(ArgumentError, "Multiple authentication options are specified, please only use one of #{prefix}#{feature}.elasticsearch.username/password, #{prefix}#{feature}.elasticsearch.cloud_auth or #{prefix}#{feature}.elasticsearch.api_key")

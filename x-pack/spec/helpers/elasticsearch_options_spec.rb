@@ -107,10 +107,11 @@ describe LogStash::Helpers::ElasticsearchOptions do
         }
       end
 
-      it "fails without password" do
-        expect {
-          test_class.es_options_from_settings_or_modules('monitoring', system_settings)
-        }.to raise_error(ArgumentError, /password must be set/)
+      it "ignores the implicit default username when no password is set" do
+        # when no explicit password is set then the default/implicit username should be ignored
+        es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+        expect(es_options).to_not include("user")
+        expect(es_options).to_not include("password")
       end
 
       context "with cloud_auth" do
@@ -296,13 +297,10 @@ describe LogStash::Helpers::ElasticsearchOptions do
       end
 
       context "when cloud_auth is not set" do
-
-        it "raises for invalid configuration" do
-          # if not other authn is provided it will assume basic auth using the default username
-          # but the password is missing.
-          expect {
-            test_class.es_options_from_settings_or_modules('monitoring', system_settings)
-          }.to raise_error(ArgumentError, /With the default.*?username,.*?password must be set/)
+        it "does not use authentication and ignores the default username" do
+          es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          expect(es_options).to include("cloud_id")
+          expect(es_options.keys).to_not include("hosts", "user", "password")
         end
 
         context 'username and password set' do
