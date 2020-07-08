@@ -177,6 +177,15 @@ filter {
 
 
 [float]
+[[ls-api-key-mon]]
+====== Create an API key for monitoring and management
+
+Text here
+
+
+
+
+[float]
 [[learn-more-api-keys]]
 ===== Learn more about API keys
 
