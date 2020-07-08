@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-11,Logstash 6.8.11>>
 * <<logstash-6-8-10,Logstash 6.8.10>>
 * <<logstash-6-8-9,Logstash 6.8.9>>
 * <<logstash-6-8-8,Logstash 6.8.8>>
@@ -41,6 +42,62 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-11]]
+=== Logstash 6.8.11 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.11
+
+=== Logstash Commits between 6.8 and 6.8.10
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.10..6.8"
+
+f410c4dd7 - (HEAD -> 6.8, origin/6.8) fix license notices after version bumps (#12082) (5 days ago) <João Duarte>
+112e6259b - bump lock file for 6.8.11 (#12079) (5 days ago) <Logstash Machine>
+707d79353 - Bump 6.8.11 (#11963) (5 weeks ago) <Andrea Selva>
+b261bca84 - Update release notes 6.8.10 (#11955) (5 weeks ago) <Ry Biesemeyer>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.10..6.8 *.release"
+Changed plugin versions:
+logstash-input-azure_event_hubs: 1.1.2 -> 1.1.4
+logstash-input-file: 4.1.16 -> 4.1.17
+logstash-input-http: 3.3.4 -> 3.3.5
+logstash-input-syslog: 3.4.1 -> 3.4.3
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Azure_event_hubs Input*
+
+* Fixed missing configuration of the `max_batch_size`setting [#52](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/52)
+
+* [DOC] Added clarification for threads parameter [#50](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/50)
+
+*File Input*
+
+* Added configuration setting `check_archive_validity` settings to enable
+  gzipped files verification, issue
+  [#261](https://github.com/logstash-plugins/logstash-input-file/issues/261)
+* [DOC] Added clarification for settings available with `read` mode [#235](https://github.com/logstash-plugins/logstash-input-file/pull/235)
+* [DOC] Rearranged text and fixed formatting for `mode` setting [266](https://github.com/logstash-plugins/logstash-input-file/pull/266)  
+
+*Http Input*
+
+* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` +
+   `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
+   unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
+   JDK from u161 onwards)[#126](https://github.com/logstash-plugins/logstash-input-http/pull/126)
+
+*Syslog Input*
+
+* [DOC] Added expanded descriptions and requirements for facility_labels and severity_labels. [#52](https://github.com/logstash-plugins/logstash-input-syslog/pull/52)
+
+* Remove (deprecated) dependency on thread_safe gem.
+* CI: upgrade testing [#58](https://github.com/logstash-plugins/logstash-input-syslog/pull/58)
+* [DOC] Correct example for `timezone` option [#53](https://github.com/logstash-plugins/logstash-input-syslog/pull/53)
+
 
 [[logstash-6-8-10]]
 === Logstash 6.8.10 Release Notes
