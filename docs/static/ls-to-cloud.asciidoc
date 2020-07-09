@@ -1,12 +1,11 @@
 [[connecting-to-cloud]]
-=== Send {ls} Output to Elastic Cloud
+=== Sending data to Elasticsearch Service
 
 Our hosted Elasticsearch Service is available on AWS, GCP, and Azure.
 {ess-trial}[You can try the Elasticsearch Service for free].
 
-Logstash comes with two settings that simplify sending output to
-https://cloud.elastic.co/[Elastic Cloud]: `cloud.id` and `cloud-auth`. 
-You can set these values in the `logstash.yml` file or from the command line.
+Logstash comes with two settings that simplify sending data to
+https://cloud.elastic.co/[Elastic Cloud]: Cloud ID and Cloud Auth. 
 
 ==== Cloud ID
 
@@ -18,7 +17,7 @@ If you have several Cloud IDs, you can add a label, which is ignored
 internally, to help you tell them apart. To add a label you should prefix your
 Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
 
-`cloud.id` will overwrite these settings:
+Cloud ID overwrites these settings:
 ----
 var.elasticsearch.hosts
 var.kibana.host
@@ -30,7 +29,7 @@ Use your Cloud username for the first part. Use your Cloud password for the seco
 which is given once in the Cloud UI when you create a cluster.
 As your Cloud password is changeable, if you change it in the Cloud UI remember to change it here too.
 
-`cloud.auth` when specified will overwrite these settings:
+Cloud Auth when specified overwrites these settings:
 ----
 var.elasticsearch.username
 var.elasticsearch.password
@@ -38,7 +37,16 @@ var.kibana.username
 var.kibana.password
 ----
 
-==== Usage
+==== Using Cloud ID and Cloud Auth with plugins
+
+The Elasticsearch input, output, and filter plugins support cloud.id and
+cloud.auth in their configurations. 
+
+* <<plugins-inputs-elasticsearch-cloud_id,Elasticsearch input plugin>>
+* <<plugins-filters-elasticsearch-cloud_id,Elasticsearch filter plugin>>
+* <<plugins-outputs-elasticsearch-cloud_id,Elasticsearch output plugin>>
+
+==== Sending data to Elasticsearch Service from modules
 
 Cloud ID and Cloud Auth can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
 They should be added separately from any module configuration settings you may have added before.
@@ -61,7 +69,7 @@ These settings can be also specified at the command line, like this:
 
 ["source","sh",subs="attributes,callouts"]
 ----
-bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <cloud-id> --cloud.auth <cloud.auth>
+bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <your-cloud-id> --cloud.auth <your-cloud-auth>
 ----
 
 
