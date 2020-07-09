@@ -180,7 +180,18 @@ filter {
 [[ls-api-key-mon]]
 ====== Create an API key for monitoring and management
 
-Text here
+
+
+I think we should start with "API keys are tied to the cluster they were created
+in", and then go on to explain that in a single cluster a key can be shared for
+ingestion+monitoring purposes, while a cluster production cluster + monitoring
+cluster setup will require separate keys.
+
+=======
+
+{ls} can send both collected data and monitoring information to {es}. If you are
+sending both to the same cluster, you can use the same API key. For different
+clusters, you need to use an API key per cluster.
 
 
 
