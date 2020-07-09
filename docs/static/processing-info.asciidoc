@@ -44,3 +44,5 @@ processing cost required to preserve order.
 The Java pipeline initialization time appears in the startup logs at INFO level.
 Initialization time is the time it takes to compile the pipeline config and
 instantiate the compiled execution for all workers.
+
+include::reserved-fields.asciidoc[]
