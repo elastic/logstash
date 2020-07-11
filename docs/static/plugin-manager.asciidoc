@@ -56,7 +56,7 @@ available in your deployment:
 ----------------------------------
 bin/logstash-plugin list <1>
 bin/logstash-plugin list --verbose <2>
-bin/logstash-plugin list '*namefragment*' <3>
+bin/logstash-plugin list '.*namefragment.*' <3>
 bin/logstash-plugin list --group output <4>
 ----------------------------------
 <1> Will list all installed plugins
