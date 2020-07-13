@@ -450,12 +450,9 @@ tasks.register("runIntegrationTests"){
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
     dependsOn copyEs
     dependsOn copyFilebeat
+    shouldRunAfter ":logstash-core:test"
 }
 
-bootstrap.dependsOn assemblyDeps
-
-runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
-check.dependsOn runIntegrationTests
 
 
 tasks.register("generateLicenseReport", JavaExec) {
@@ -506,10 +503,7 @@ tasks.register("generatePluginsVersion") {
 }
 
 bootstrap.dependsOn assemblyDeps
-
-runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
-
 
 Boolean oss = System.getenv('OSS').equals('true')
 
@@ -520,11 +514,12 @@ if (!oss) {
         dependsOn installTestGems
       }
     }
-    tasks.getByPath(":logstash-xpack:rubyIntegrationTests").configure {
-      dependsOn copyEs
-    }
   }
-
-  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
-  task runXPackIntegrationTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyIntegrationTests")]) {}
 }
+
+ tasks.register("runXPackUnitTests"){
+   dependsOn ":logstash-xpack:rubyTests"
+ }
+ tasks.register("runXPackIntegrationTests"){
+   dependsOn ":logstash-xpack:rubyIntegrationTests"
+ }
