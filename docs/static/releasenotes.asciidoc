@@ -34,49 +34,24 @@ This section summarizes the changes in the following releases:
 [[logstash-7-8-1]]
 === Logstash 7.8.1 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.8.1
+==== Performance improvements and notable issues fixed
 
-* don't rely on a ruby thread created from java in shutdown watcher https://github.com/elastic/logstash/pull/11900[#11900]
-* release queue dir lock upon exceptions while opening queue https://github.com/elastic/logstash/pull/12023[#12023]
-* do not call agent.converge_state_and_update before agent.execute https://github.com/elastic/logstash/pull/12034[#12034]
+===== Fixed performance regression during pipeline compilation
 
-=== Logstash Commits between 7.8 and 7.8.0
+This regression was introduced in 7.7.0 and described in the release notes of 7.8.0 ***TODOLINK[HERE]***.
+Introducing the logging of the plugin id caused the id to explicity end up in the generated code during compilation, causing an explosion of generated classes and zero reuse of the cache.
+By changing the assignment of plugin.id to load the value dynamically instead, this has now been fixed. Find more details in https://github.com/elastic/logstash/pull/12038[#12038]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.8.0..7.8"
+===== Multiple fixes to pipeline shutdown and reloading
 
-8f983a1cd - (HEAD -> 7.8, origin/7.8) Clear `JAVA_HOME` to use bundled JDK for Elasticsearch (2 hours ago) <Rob Bavey>
-ceac229fa - update benchmark-cli dependencies (5 days ago) <Joao Duarte>
-ab1bacfda - Update patch plugin versions in gemfile lock for 7.8.1 (#12080) (5 days ago) <Logstash Machine>
-a301ae9fe - [7.8 bp] Add wait to `stop_es` integration test helper function (#12078) (6 days ago) <Rob Bavey>
-837e8c648 - make PQ and DLQ tests use less disk space (6 days ago) <Joao Duarte>
-61013440a - fix pipeline spec that didn't wait for pipeline to terminate (6 days ago) <Joao Duarte>
-9b37f17d0 - ensure pipeline terminates execution before doing assertion (6 days ago) <Joao Duarte>
-9c21d3595 - remove need for extra ShutdownWatcher thread (7 days ago) <Joao Duarte>
-435007f1e - do not call agent.converge_state_and_update before agent.execute (8 days ago) <Colin Surprenant>
-b0223266d - release queue dir lock upon exceptions while opening queue (8 days ago) <Colin Surprenant>
-9ae14eec7 - improve test for cache difference (12 days ago) <Joao Duarte>
-0310ca00c - Doc:Add info on using api keys for access Co-authored-by: João Duarte <jsvd@users.noreply.github.com> (12 days ago) <Karen Metts>
-6bdecd039 - Ensure line codec can be found in example ruby filter (#12042) (12 days ago) <vijairaj>
-ec23229ae - Fix missed import (13 days ago) <andsel>
-84f915441 - Changed the assignment of plugin.id to load the value dynamically istead of hardcode (13 days ago) <Colin Surprenant>
-ca0b7d789 - [Doc]Release notes for 7.8 (#12033) (3 weeks ago) <Karen Metts>
-de651003d - bump version to 7.8.1 (3 weeks ago) <Joao Duarte>
-59167cf94 - Add link conversion from Markdown to AsciiDoctor (#11508) (3 weeks ago) <Rob Bavey>
-c4667d897 - [DOCS] Fixes Stack Overview links (#12025) (#12027) (3 weeks ago) <Lisa Cawley>
+7.8.1 brings many fixes that improve the stability of the pipeline lifecycle. These include avoiding overlapping state resolution operations when monitoring was enabled (https://github.com/elastic/logstash/pull/12034[#12034]), ensuring that the persistent queue lock is correctly released if a pipeline fails to start https://github.com/elastic/logstash/pull/12023[#12023], and avoid a known JRuby issue by not spawning a Ruby thread from Java code https://github.com/elastic/logstash/pull/11900[#11900].
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.8.0..7.8 *.release"
-Changed plugin versions:
-logstash-filter-xml: 4.1.0 -> 4.1.1
-logstash-input-beats: 6.0.9 -> 6.0.11
-logstash-input-elasticsearch: 4.6.0 -> 4.6.2
-logstash-input-http: 3.3.4 -> 3.3.5
-logstash-input-syslog: 3.4.2 -> 3.4.3
-logstash-input-tcp: 6.0.5 -> 6.0.6
-logstash-integration-jdbc: 5.0.1 -> 5.0.5
-logstash-output-s3: 4.3.1 -> 4.3.2
----------- DELETE UP TO HERE ------------
+===== Changes in the dependencies of Beats/TCP/HTTP Input Plugins
+
+To avoid breaking changes and retain control on the set of ciphers exposed in these plugins the `tcnative` + `boringssl` dependencies have been dropped in favor of using JVM supplied ciphers instead.
+Overall you should see no impact but this may result in fewer ciphers being available if the JCE unlimited strength jurisdiction policy is not installed.
+NOTE: this policy is installed by default on versions of the JDK from u161 onwards
+You can find more information in the release notes of the respective plugins.
 
 ==== Plugins
 
@@ -90,13 +65,11 @@ logstash-output-s3: 4.3.1 -> 4.3.2
       `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
       unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
       JDK from u161 onwards)https://github.com/logstash-plugins/logstash-input-beats/pull/393[#393]
-
 * Added error handling to detect if ssl certificate or key files can't be read https://github.com/logstash-plugins/logstash-input-beats/pull/394[#394]
 
 *Elasticsearch Input - 4.6.2*
 
 * Added scroll clearing and better handling of scroll expiration https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/128[#128]
-
 * [DOC] Removed outdated compatibility notice https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/124[#124]
 
 *Http Input - 3.3.5*
@@ -121,11 +94,8 @@ logstash-output-s3: 4.3.1 -> 4.3.2
 
 * Fixed user sequel_opts not being passed down properly https://github.com/logstash-plugins/logstash-integration-jdbc/pull/37[#37]
 * Refactored jdbc_streaming to share driver loading, so the fixes from the jdbc plugin also effect jdbc_streaming
-
 * Fixed issue where JDBC Drivers that don't correctly register with Java's DriverManager fail to load (such as Sybase) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/34[#34]
-
 * Fixed issue where a lost connection to the database can cause errors when using prepared statements with the scheduler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/25[#25]
-
 * Fixed potential resource leak by ensuring scheduler is shutdown when a pipeline encounter an error during the running https://github.com/logstash-plugins/logstash-integration-jdbc/pull/28[#28]
 
 *S3 Output - 4.3.2*
