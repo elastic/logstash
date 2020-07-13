@@ -35,6 +35,7 @@ tasks.register("rubyTests", Test) {
 }
 
 tasks.register("rubyIntegrationTests", Test) {
+  dependsOn (":copyEs")
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
