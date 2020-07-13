@@ -46,7 +46,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-11]]
 === Logstash 6.8.11 Release Notes
 
-There are no user facing changes in Logstash Core.
+There are no user-facing changes in Logstash Core.
 
 ==== Plugin Releases
 
