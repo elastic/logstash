@@ -44,7 +44,7 @@ By changing the assignment of plugin.id to load the value dynamically instead, t
 
 ===== Multiple fixes to pipeline shutdown and reloading
 
-7.8.1 brings many fixes that improve the stability of the pipeline lifecycle. These include avoiding overlapping state resolution operations when monitoring was enabled (https://github.com/elastic/logstash/pull/12034[#12034]), ensuring that the persistent queue lock is correctly released if a pipeline fails to start https://github.com/elastic/logstash/pull/12023[#12023], and avoid a known JRuby issue by not spawning a Ruby thread from Java code https://github.com/elastic/logstash/pull/11900[#11900].
+7.8.1 brings many fixes that improve the stability of the pipeline lifecycle. These include avoiding overlapping state resolution operations when monitoring was enabled https://github.com/elastic/logstash/pull/12034[#12034], ensuring that the persistent queue lock is correctly released if a pipeline fails to start https://github.com/elastic/logstash/pull/12023[#12023], and avoiding a known JRuby issue by not spawning a Ruby thread from Java code https://github.com/elastic/logstash/pull/11900[#11900].
 
 ===== Changes in the dependencies of Beats/TCP/HTTP Input Plugins
 
