@@ -38,7 +38,7 @@ This section summarizes the changes in the following releases:
 
 ===== Fixed performance regression during pipeline compilation
 
-This regression was introduced in 7.7.0 and described in the release notes of 7.8.0 ***TODOLINK[HERE]***.
+This regression was introduced in 7.7.0 and described in the <<known-pipeline-slowdown,7.8.0 release notes>>*.
 Introducing the logging of the plugin id caused the id to explicity end up in the generated code during compilation, causing an explosion of generated classes and zero reuse of the cache.
 By changing the assignment of plugin.id to load the value dynamically instead, this has now been fixed. Find more details in https://github.com/elastic/logstash/pull/12038[#12038]
 
