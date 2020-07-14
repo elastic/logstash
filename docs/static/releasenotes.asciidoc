@@ -50,7 +50,7 @@ By changing the assignment of plugin.id to load the value dynamically instead, t
 
 To avoid breaking changes and retain control on the set of ciphers exposed in these plugins the `tcnative` + `boringssl` dependencies have been dropped in favor of using JVM supplied ciphers instead.
 Overall you should see no impact but this may result in fewer ciphers being available if the JCE unlimited strength jurisdiction policy is not installed.
-NOTE: this policy is installed by default on versions of the JDK from u161 onwards
+NOTE: This policy is installed by default on versions of the JDK from u161 onwards.
 You can find more information in the release notes of the respective plugins.
 
 ==== Plugins
