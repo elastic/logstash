@@ -173,6 +173,7 @@ module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
 {filebeat} and {metricbeat} modules are compliant with the
 {ecs-ref}/index.html[Elastic Common Schema (ECS)].
 
+[[known-pipeline-slowdown]] 
 ==== Known issue
 
 *Performance regression.* A potential performance regression may affect
