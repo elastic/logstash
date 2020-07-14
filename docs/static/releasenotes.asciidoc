@@ -38,9 +38,9 @@ This section summarizes the changes in the following releases:
 
 ===== Fixed performance regression during pipeline compilation
 
-As described in the <<known-pipeline-slowdown,7.8.0 release notes>>*, a performance regression was introduced in 7.7.0.
-The issue was found to be caused by an enhancement - https://github.com/elastic/logstash/pull/11078[#11078] - that included the plugin ids in log entries produced by Logstash pipelines.
-The implementation of this feature has been adapted to not cause the performance issue, you can find more about the solution here https://github.com/elastic/logstash/pull/12038[#12038].
+A performance regression was introduced in 7.7.0, as described in the <<known-pipeline-slowdown,7.8.0 release notes>>.
+The issue was caused by an enhancement - https://github.com/elastic/logstash/pull/11078[#11078] - that included the plugin ids in log entries produced by Logstash pipelines.
+The implementation of this feature has been fixed and no longer causes the performance issue. You can find more about the solution here https://github.com/elastic/logstash/pull/12038[#12038].
 
 ===== Multiple fixes to pipeline shutdown and reloading
 
@@ -63,10 +63,10 @@ You can find more information in the release notes of the respective plugins.
 
 *Beats Input - 6.0.11*
 
-* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` +
+* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
       `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
       unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
-      JDK from u161 onwards)https://github.com/logstash-plugins/logstash-input-beats/pull/393[#393]
+      JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-beats/pull/393[#393]
 * Added error handling to detect if ssl certificate or key files can't be read https://github.com/logstash-plugins/logstash-input-beats/pull/394[#394]
 
 *Elasticsearch Input - 4.6.2*
@@ -76,10 +76,10 @@ You can find more information in the release notes of the respective plugins.
 
 *Http Input - 3.3.5*
 
-* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` +
+* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
    `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
    unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
-   JDK from u161 onwards)https://github.com/logstash-plugins/logstash-input-http/pull/126[#126]
+   JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-http/pull/126[#126]
 
 *Syslog Input - 3.4.3*
 
@@ -87,10 +87,10 @@ You can find more information in the release notes of the respective plugins.
 
 *Tcp Input - 6.0.6*
 
-* Updated Netty dependencies. Additionally, this release removes the dependency on `tcnative` +
+* Updated Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
     `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
     unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
-    JDK from u161 onwards)https://github.com/logstash-plugins/logstash-input-tcp/pull/157[#157]
+    JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-tcp/pull/157[#157]
 
 *Jdbc Integration - 5.0.5*
 
