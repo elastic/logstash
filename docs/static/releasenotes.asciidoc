@@ -38,18 +38,20 @@ This section summarizes the changes in the following releases:
 
 ===== Fixed performance regression during pipeline compilation
 
-This regression was introduced in 7.7.0 and described in the <<known-pipeline-slowdown,7.8.0 release notes>>*.
-Introducing the logging of the plugin id caused the id to explicity end up in the generated code during compilation, causing an explosion of generated classes and zero reuse of the cache.
-By changing the assignment of plugin.id to load the value dynamically instead, this has now been fixed. Find more details in https://github.com/elastic/logstash/pull/12038[#12038]
+As described in the <<known-pipeline-slowdown,7.8.0 release notes>>*, a performance regression was introduced in 7.7.0.
+The issue was found to be caused by an enhancement - https://github.com/elastic/logstash/pull/11078[#11078] - that included the plugin ids in log entries produced by Logstash pipelines.
+The implementation of this feature has been adapted to not cause the performance issue, you can find more about the solution here https://github.com/elastic/logstash/pull/12038[#12038].
 
 ===== Multiple fixes to pipeline shutdown and reloading
 
-7.8.1 brings many fixes that improve the stability of the pipeline lifecycle. These include avoiding overlapping state resolution operations when monitoring was enabled https://github.com/elastic/logstash/pull/12034[#12034], ensuring that the persistent queue lock is correctly released if a pipeline fails to start https://github.com/elastic/logstash/pull/12023[#12023], and avoiding a known JRuby issue by not spawning a Ruby thread from Java code https://github.com/elastic/logstash/pull/11900[#11900].
+7.8.1 brings many fixes that improve the stability of the pipeline lifecycle.
+In previous releases, enabling monitoring could result in Logstash crashes if pipelines from concurrent pipeline reloads (fixed in https://github.com/elastic/logstash/pull/12034[#12034]).
+Also, pipelines failing to start correctly could prevent the Persistent Queue from being used afterwards (fixed in https://github.com/elastic/logstash/pull/12023[#12023]). Finally, a JRuby issue concerning threads and the Ruby/Java implementation boundary could cause crashes during pipeline reloads, and this has been fixed in https://github.com/elastic/logstash/pull/11900[#11900].
 
 ===== Changes in the dependencies of Beats/TCP/HTTP Input Plugins
 
-To avoid breaking changes and retain control on the set of ciphers exposed in these plugins the `tcnative` + `boringssl` dependencies have been dropped in favor of using JVM supplied ciphers instead.
-Overall you should see no impact but this may result in fewer ciphers being available if the JCE unlimited strength jurisdiction policy is not installed.
+To avoid breaking changes and retain control on the set of ciphers exposed in these plugins, underlying dependencies (`tcnative` and `boringssl`) have been dropped in favor of using JVM supplied ciphers instead.
+Overall there should be no impact but this may result in fewer ciphers being available if the JCE unlimited strength jurisdiction policy is not installed.
 NOTE: This policy is installed by default on versions of the JDK from u161 onwards.
 You can find more information in the release notes of the respective plugins.
 
