@@ -467,7 +467,7 @@ GEM
     logstash-output-elastic_app_search (1.1.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.6.0-java)
+    logstash-output-elasticsearch (10.5.1-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
