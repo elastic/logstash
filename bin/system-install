@@ -85,13 +85,12 @@ fi
 allopts=("${ENV_VAR_ARGS[@]}" "${opts[@]}")
 program="$(cd `dirname $0`/..; pwd)/bin/logstash"
 
-#$(ruby_exec "${LOGSTASH_HOME}/lib/systeminstall/pleasewrap.rb" "${allopts[@]}" ${program} ${LS_OPTS})
-ruby_exec "${LOGSTASH_HOME}/lib/systeminstall/pleasewrap.rb" "${allopts[@]}" ${program} ${LS_OPTS}
+$(ruby_exec "${LOGSTASH_HOME}/lib/systeminstall/pleasewrap.rb" "${allopts[@]}" ${program} ${LS_OPTS})
 exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
   cat $tempfile
-  echo "Unable to install system startup script for Logstash."
+  echo "Unable to install system startup script for Logstash. EXit code $exit_code"
 else
   echo "Successfully created system startup script for Logstash"
 fi
