@@ -9,7 +9,7 @@ module LogStash module Outputs
     # This is need to avoid deprecation warning in output
     config :document_type, :validate => :string
 
-    def use_event_type?(client)
+    def use_event_type?(client = nil)
       !LogStash::MonitoringExtension.use_direct_shipping?(LogStash::SETTINGS)
     end
   end
