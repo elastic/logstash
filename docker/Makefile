@@ -21,6 +21,7 @@ HTTPD ?= logstash-docker-artifact-server
 FIGLET := pyfiglet -w 160 -f puffy
 
 all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
+DATE:= $(shell date -u +'%Y-%m-%dT%H:%M:%S.%sZ')
 
 lint: venv
 	flake8 tests
@@ -70,6 +71,7 @@ docker_paths:
 
 public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
+	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='full' \
@@ -77,6 +79,7 @@ public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  -D release='$(RELEASE)' \
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-full && \
 	jinja2 \
+	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='oss' \
@@ -133,6 +136,7 @@ env2yaml: golang
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	  jinja2 \
+	    -D created_date='$(DATE)' \
 	    -D elastic_version='$(ELASTIC_VERSION)' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \

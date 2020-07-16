@@ -7,8 +7,10 @@
 
 {% if image_flavor == 'oss' -%}
   {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
+  {% set license = 'Apache 2.0' -%}
 {% else -%}
   {% set tarball = 'logstash-%s.tar.gz' % elastic_version -%}
+  {% set license = 'Elastic License' -%}
 {% endif -%}
 
 
@@ -62,17 +64,20 @@ ADD env2yaml/env2yaml /usr/local/bin/
 EXPOSE 9600 5044
 
 
-LABEL org.label-schema.schema-version="1.0" \
+LABEL  org.label-schema.schema-version="1.0" \
   org.label-schema.vendor="Elastic" \
+  org.opencontainers.image.vendor="Elastic" \
   org.label-schema.name="logstash" \
+  org.opencontainers.image.title="logstash" \
   org.label-schema.version="{{ elastic_version }}" \
+  org.opencontainers.image.version="{{ elastic_version }}" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
   org.label-schema.vcs-url="https://github.com/elastic/logstash" \
-{% if image_flavor == 'oss' -%}
-  license="Apache-2.0"
-{% else -%}
-  license="Elastic License"
-{% endif -%}
+  license="{{ license }}" \
+  org.label-schema.license="{{ license }}" \
+  org.opencontainers.image.licenses="{{ license }}" \
+  org.label-schema.build-date={{ created_date }} \
+  org.opencontainers.image.created={{ created_date }}
 
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
