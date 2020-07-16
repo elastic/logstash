@@ -17,11 +17,12 @@ package main
 
 import (
 	"errors"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 // If the given string can be parsed as YAML, then do so and return the
@@ -85,15 +86,15 @@ func normalizeSetting(setting string) (string, error) {
 		"path.logs",
 		"path.plugins",
 		"monitoring.enabled",
-        "monitoring.collection.interval",
-        "monitoring.elasticsearch.hosts",
-        "monitoring.elasticsearch.username",
-        "monitoring.elasticsearch.password",
-        "monitoring.elasticsearch.ssl.certificate_authority",
-        "monitoring.elasticsearch.ssl.truststore.path",
-        "monitoring.elasticsearch.ssl.truststore.password",
-        "monitoring.elasticsearch.ssl.keystore.path",
-        "monitoring.elasticsearch.ssl.keystore.password",
+		"monitoring.collection.interval",
+		"monitoring.elasticsearch.hosts",
+		"monitoring.elasticsearch.username",
+		"monitoring.elasticsearch.password",
+		"monitoring.elasticsearch.ssl.certificate_authority",
+		"monitoring.elasticsearch.ssl.truststore.path",
+		"monitoring.elasticsearch.ssl.truststore.password",
+		"monitoring.elasticsearch.ssl.keystore.path",
+		"monitoring.elasticsearch.ssl.keystore.password",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",
@@ -128,10 +129,15 @@ func normalizeSetting(setting string) (string, error) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		log.Fatalf("usage: env2yaml FILENAME")
+	if len(os.Args) < 2 || len(os.Args) > 3 {
+		log.Fatalf("usage: env2yaml FILENAME or env2yaml OLDFILE NEWFILE")
 	}
 	settingsFilePath := os.Args[1]
+
+	outputFilePath := settingsFilePath
+	if len(os.Args) == 3 {
+		outputFilePath = os.Args[2]
+	}
 
 	settingsFile, err := ioutil.ReadFile(settingsFilePath)
 	if err != nil {
@@ -165,12 +171,15 @@ func main() {
 			log.Fatalf("error: %v", err)
 		}
 
-		stat, err := os.Stat(settingsFilePath)
-		if err != nil {
+		var mode uint32 = 0400
+		stat, err := os.Stat(outputFilePath)
+		if err == nil {
+			mode = stat.Mode()
+		} else if err != nil && err != os.ErrNotExist {
 			log.Fatalf("error: %v", err)
 		}
 
-		err = ioutil.WriteFile(settingsFilePath, output, stat.Mode())
+		err = ioutil.WriteFile(outputFilePath, output, mode)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
