@@ -43,13 +43,13 @@ GEM
     avro (1.10.0)
       multi_json (~> 1)
     aws-eventstream (1.1.0)
-    aws-sdk (2.11.545)
-      aws-sdk-resources (= 2.11.545)
-    aws-sdk-core (2.11.545)
+    aws-sdk (2.11.546)
+      aws-sdk-resources (= 2.11.546)
+    aws-sdk-core (2.11.546)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.545)
-      aws-sdk-core (= 2.11.545)
+    aws-sdk-resources (2.11.546)
+      aws-sdk-core (= 2.11.546)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -449,6 +449,8 @@ GEM
       aws-sdk-v1 (>= 1.61.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+    logstash-mixin-ecs_compatibility_support (1.0.0-java)
+      logstash-core (>= 5.0.0)
     logstash-mixin-http_client (7.0.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -465,9 +467,10 @@ GEM
     logstash-output-elastic_app_search (1.1.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.5.1-java)
+    logstash-output-elasticsearch (10.6.1-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-mixin-ecs_compatibility_support (~> 1.0)
       manticore (>= 0.5.4, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
     logstash-output-email (4.1.1)
@@ -750,7 +753,7 @@ DEPENDENCIES
   logstash-output-cloudwatch
   logstash-output-csv
   logstash-output-elastic_app_search
-  logstash-output-elasticsearch (>= 10.4.2)
+  logstash-output-elasticsearch
   logstash-output-email
   logstash-output-file
   logstash-output-graphite
