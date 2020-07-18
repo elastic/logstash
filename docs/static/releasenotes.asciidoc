@@ -112,24 +112,23 @@ You can find more information in the release notes of the respective plugins.
 
 ==== New features and improvements
 
-===== Expanded JDK ecosystem 
+===== Expanded JDK ecosystem and platform support
 
-We have improved test scripts infrastructure to accept a specific Java
-Development Kit (JDK) present in the host. The changes include exporting the
-path to a JDK home into an environment variable named BUILD_JAVA_HOME and its
-use by shell scripts to launch test and integration scripts. This work and other
-JDK14 fixes pave the way for Logstash to support both AdoptOpenJDK 11 and 14 in
-the near future . https://github.com/elastic/logstash/pull/11786[#11786],
-https://github.com/elastic/logstash/pull/11839[#11839],
-https://github.com/elastic/logstash/pull/11935[#11935]
+We can be more flexible and responsive in supporting new JDKs and deprecating
+old ones, thanks to recent improvements to our test scripts infrastructure. This
+work and other JDK14 fixes pave the way for {ls} to support both AdoptOpenJDK 11
+and 14 in the near future. 
 
-===== Expanded JDK platform support 
-
-{ls} runs on many different operating platforms and various flavors of the Java
-Development Kit (JDK), and we’ve expanded this coverage in 7.8.0. {ls} has
-introduced support for running on CentOS/RHEL 8.x and Ubuntu 20.04.
+{ls} has introduced support for running on CentOS/RHEL 8.x and Ubuntu 20.04.
 We’ve added new JDK support for Zulu 11, AdoptOpenJDK 11, and
 Oracle/OpenJDK/AdoptOpenJDK 14.
+
+
+<<ls-jvm,JVM version info>> is covered in <<getting-started-with-logstash>>. 
+The complete list of supported operating systems and JVMs is available in the 
+https://www.elastic.co/support/matrix[support matrix].
+
+
 
 ===== {es} API key support
 
