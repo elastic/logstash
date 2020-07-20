@@ -122,7 +122,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss"]
+  task "docker_only" => ["prepare", "docker_aarch64_oss", "docker_aarch64_full", "docker_oss", "docker_full", "dockerfiles"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare", "generate_build_metadata"] do
@@ -196,29 +196,55 @@ namespace "artifact" do
     build_tar('ELASTIC-LICENSE', "-all-plugins")
   end
 
+  desc "Generate Dockerfiles for default and oss images"
+  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building Dockerfiles")
+    build_dockerfile('aarch64-oss')
+    build_dockerfile('aarch64-full')
+    build_dockerfile('oss')
+    build_dockerfile('full')
+  end
+
   desc "Build docker image"
-  task "docker" => ["prepare", "generate_build_metadata", "tar"] do
+  task "docker_full" => ["prepare", "generate_build_metadata", "tar"] do
     puts("[docker] Building docker image")
-    build_docker(false)
+    build_docker('full')
+  end
+
+  desc "Build aarch64 docker image"
+  task "docker_aarch64_full" => ["prepare", "generate_build_metadata", "tar"] do
+    puts("[docker_aarch64] Building aarch64 docker image")
+    build_docker('aarch64-full')
   end
 
   desc "Build OSS docker image"
   task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
     puts("[docker_oss] Building OSS docker image")
-    build_docker(true)
+    build_docker('oss')
   end
 
-  desc "Generate Dockerfiles for full and oss images"
-  task "dockerfiles" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building Dockerfiles")
-    build_dockerfile('oss')
-    build_dockerfile('full')
+  desc "Build aarch64 OSS docker image"
+  task "docker_aarch64_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
+    puts("[docker_aarch64_oss] Building aarch64 OSS docker image")
+    build_docker('aarch64-oss')
   end
 
   desc "Generate Dockerfile for oss images"
   task "dockerfile_oss" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building oss Dockerfile")
     build_dockerfile('oss')
+  end
+
+  desc "Generate Dockerfile for oss aarch64 images"
+  task "dockerfile_aarch64_oss" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building oss aarch64 Dockerfile")
+    build_dockerfile( 'aarch64-oss')
+  end
+
+  desc "Generate Dockerfile for full aarch64 images"
+  task "dockerfile_aarch64_full" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building default aarch64 Dockerfiles")
+    build_dockerfile('aarch64-full')
   end
 
   desc "Generate Dockerfile for full images"
@@ -231,29 +257,21 @@ namespace "artifact" do
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
-    Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:deb_oss"].invoke
-    Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:rpm_oss"].invoke
-    Rake::Task["artifact:zip"].invoke
-    Rake::Task["artifact:zip_oss"].invoke
+    #Rake::Task["artifact:deb"].invoke
+    #Rake::Task["artifact:deb_oss"].invoke
+    #Rake::Task["artifact:rpm"].invoke
+    #Rake::Task["artifact:rpm_oss"].invoke
+    #Rake::Task["artifact:zip"].invoke
+    #Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
     Rake::Task["artifact:tar_oss"].invoke
     unless ENV['SKIP_DOCKER'] == "1"
-      Rake::Task["artifact:docker"].invoke
+      Rake::Task["artifact:docker_aarch64_oss"].invoke
+      Rake::Task["artifact:docker_aarch64"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
-  end
-
-  task "build_docker_full" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker"].invoke
-    Rake::Task["artifact:dockerfile_full"].invoke
-  end
-
-  task "build_docker_oss" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss"].invoke
   end
 
   task "generate_build_metadata" do
@@ -580,18 +598,14 @@ namespace "artifact" do
     end
   end # def package
 
-  def build_docker(oss = false)
+  def build_docker(flavor)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      if oss
-        system(env, "make build-from-local-oss-artifacts")
-      else
-        system(env, "make build-from-local-artifacts")
-      end
+      system(env, "make build-from-local-#{flavor}-artifacts")
     end
   end
 

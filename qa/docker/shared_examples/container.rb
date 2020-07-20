@@ -2,14 +2,18 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
   before do
     @image = find_image(flavor)
-    @container = create_container(@image, {})
   end
 
-  after do
-    cleanup_container(@container)
-  end
+  if runnable?(flavor)
+    context 'logstash' do
+    before do
+      @container = create_container(@image, {})
+    end
 
-  context 'logstash' do
+    after do
+      cleanup_container(@container)
+    end
+
     it 'should run with the correct version' do
       expect(exec_in_container(@container, 'logstash --version')).to match /#{version}/
     end
@@ -19,8 +23,17 @@ shared_examples_for 'the container is configured correctly' do |flavor|
       expect(get_logstash_status(@container)).to eql 'green'
     end
   end
+  end
 
   context 'container files' do
+    before do
+      @container = create_container(@image, {})
+    end
+
+    after do
+      cleanup_container(@container)
+    end
+
     it 'should have the correct license agreement' do
       expect(exec_in_container(@container, 'cat /usr/share/logstash/LICENSE.txt')).to have_correct_license_agreement(flavor)
     end
@@ -55,22 +68,34 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
   end
 
-  context 'the java process' do
-    it 'should be running under the logstash user' do
-      expect(java_process(@container, "user")).to eql 'logstash'
-    end
+  if runnable?(flavor)
+    puts "This should not be here #{runnable?(flavor)}"
 
-    it 'should be running under the logstash group' do
-      expect(java_process(@container, "group")).to eql 'logstash'
-    end
+    context 'the java process' do
+      before do
+        @container = create_container(@image, {})
+      end
 
-    it 'should have cgroup overrides set' do
-      expect(java_process(@container, "args")).to match /-Dls.cgroup.cpu.path.override=/
-      expect(java_process(@container, "args")).to match /-Dls.cgroup.cpuacct.path.override=/
-    end
+      after do
+        cleanup_container(@container)
+      end
 
-    it 'should have a pid of 1' do
-      expect(java_process(@container, "pid")).to eql '1'
+      it 'should be running under the logstash user' do
+        expect(java_process(@container, "user")).to eql 'logstash'
+      end
+
+      it 'should be running under the logstash group' do
+        expect(java_process(@container, "group")).to eql 'logstash'
+      end
+
+      it 'should have cgroup overrides set' do
+        expect(java_process(@container, "args")).to match /-Dls.cgroup.cpu.path.override=/
+        expect(java_process(@container, "args")).to match /-Dls.cgroup.cpuacct.path.override=/
+      end
+
+      it 'should have a pid of 1' do
+        expect(java_process(@container, "pid")).to eql '1'
+      end
     end
   end
 end

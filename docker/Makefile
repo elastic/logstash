@@ -20,34 +20,56 @@ HTTPD ?= logstash-docker-artifact-server
 
 FIGLET := pyfiglet -w 160 -f puffy
 
-all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
+all: build-from-local-oss-artifacts build-from-local-aarch64_full-artifacts build-from-local-aarch64_oss-artifacts build-from-local-full-artifacts public-dockerfiles
 DATE:= $(shell date -u +'%Y-%m-%dT%H:%M:%S.%sZ')
+
+
+build_func = pyfiglet -f puffy -w 160 "Building: $(1)"; \
+             docker build --network=host -t $(IMAGE_TAG)-$(1):$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-$(1) data/logstash || (docker kill $(HTTPD); false); \
+             docker tag $(IMAGE_TAG)-$(1):$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
+
+start_server = docker run --rm -d --name=$(HTTPD) -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt python:3 bash -c 'cd /mnt && python3 -m http.server'; \
+               timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'	
+
+kill_server = docker kill $(HTTPD)
 
 lint: venv
 	flake8 tests
 
+# # Build from artifacts on the local filesystem, using an http server (running
+# # in a container) to provide the artifacts to the Dockerfile.
+# build-from-local-artifacts: venv dockerfile env2yaml
+# 	docker run --rm -d --name=$(HTTPD) \
+# 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+# 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+# 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+# 	pyfiglet -f puffy -w 160 "Building: $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)"; \
+# 	docker build --network=host -t $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR) data/logstash || \
+# 	  (docker kill $(HTTPD); false); \
+# 	docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
+# 	-docker kill $(HTTPD)
+
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts: venv dockerfile env2yaml
-	docker run --rm -d --name=$(HTTPD) \
-	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
-	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	pyfiglet -f puffy -w 160 "Building: full"; \
-	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
-	  (docker kill $(HTTPD); false); \
-	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
-	docker kill $(HTTPD)
+build-from-local-full-artifacts: venv dockerfile env2yaml
+	$(call start_server)
+	$(call build_func,full)
+	$(call kill_server)
 
 build-from-local-oss-artifacts: venv dockerfile env2yaml
-	docker run --rm -d --name=$(HTTPD) \
-	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
-	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	pyfiglet -f puffy -w 160 "Building: oss"; \
-	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
-	  (docker kill $(HTTPD); false);
-	-docker kill $(HTTPD)
+	$(call start_server)
+	$(call build_func,oss)
+	$(call kill_server)
+
+build-from-local-aarch64-full-artifacts: venv dockerfile env2yaml
+	$(call start_server)
+	$(call build_func,aarch64-full)
+	$(call kill_server)
+
+build-from-local-aarch64-oss-artifacts: venv dockerfile env2yaml
+	$(call start_server)
+	$(call build_func,aarch64-oss)
+	$(call kill_server)
 
 COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
 
@@ -97,11 +119,43 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
+
+public-dockerfiles_aarch64-oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+	jinja2 \
+	  -D created_date='$(DATE)' \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D architecture='aarch64' \
+	  -D image_flavor='oss' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-aarch64-oss && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-aarch64-oss Dockerfile && \
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_aarch64-full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+	jinja2 \
+	  -D created_date='$(DATE)' \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D architecture='aarch64' \
+	  -D image_flavor='full' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-aarch64-oss && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-aarch64-full Dockerfile && \
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	  docker tag $(IMAGE_TAG)-aarch64-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-aarch64-$(FLAVOR):$(VERSION_TAG); \
 	  docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
+	  docker push push.$(IMAGE_TAG)-aarch64-$(FLAVOR):$(VERSION_TAG); \
 	  docker push push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
+	  docker rmi push.$(IMAGE_TAG)-aarch64-$(FLAVOR):$(VERSION_TAG); \
 	  docker rmi push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	)
 	# Also push the default version, with no suffix like '-oss' or '-full'
@@ -145,8 +199,15 @@ dockerfile: venv templates/Dockerfile.j2
 	    -D elastic_version='$(ELASTIC_VERSION)' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
+	    -D architecture='aarch64' \
 	    -D local_artifacts='true' \
-	    templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR); \
+	    templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-aarch64-$(FLAVOR) && \
+      jinja2 \
+        -D elastic_version='$(ELASTIC_VERSION)' \
+        -D version_tag='$(VERSION_TAG)' \
+        -D image_flavor='$(FLAVOR)' \
+        -D local_artifacts='true' \
+        templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-$(FLAVOR); \
 	)
 
 clean:

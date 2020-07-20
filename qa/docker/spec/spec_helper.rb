@@ -18,10 +18,22 @@ def qualified_version
 end
 
 def find_image(flavor)
+  architecture = ENV['ARCHITECTURE']
+  label = architecture.nil? ? "logstash-#{flavor}" : "logstash-#{architecture}-#{flavor}"
   Docker::Image.all.detect{
       |image| image.info['RepoTags'].detect{
-        |tag| tag == "docker.elastic.co/logstash/logstash-#{flavor}:#{qualified_version}"
+        |tag| tag == "docker.elastic.co/logstash/#{label}:#{qualified_version}"
     }}
+end
+
+def architecture
+  architecture ||= ENV['ARCHITECTURE']
+  architecture ||= 'amd64'
+  architecture
+end
+
+def flavor_with_architecture(flavor)
+  architecture == 'aarch64' ? "aarch64-#{flavor}" : flavor
 end
 
 def create_container(image, options = {})
@@ -72,6 +84,10 @@ def get_settings(container)
   YAML.load(container.read_file('/usr/share/logstash/config/logstash.yml'))
 end
 
+def is_aarch64?
+  RbConfig::CONFIG["host_cpu"] == "aarch64"
+end
+
 def java_process(container, column)
   exec_in_container(container, "ps -C java -o #{column}=").strip
 end
@@ -111,6 +127,15 @@ RSpec::Matchers.define :have_correct_architecture_for_flavor do |expected|
   failure_message do |actual|
     "expected Architecture: #{actual} to be #{architecture_for_flavor(expected)}"
   end
+end
+
+# Sigh
+def normalized_cpu(cpu)
+  cpu == 'x86_64' ? 'amd64' : cpu
+end
+
+def runnable?(flavor)
+  architecture_for_flavor(flavor) == normalized_cpu(RbConfig::CONFIG["host_cpu"])
 end
 
 shared_context 'image_context' do |flavor|

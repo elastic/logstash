@@ -37,19 +37,37 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
-
   echo "Acceptance: Running the tests"
   bundle exec rspec docker/spec/oss/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "building full docker images"
   cd $LS_HOME
-  rake artifact:docker
+  rake artifact:docker_full
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
 
   echo "Acceptance: Running the tests"
   bundle exec rspec docker/spec/full/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "aarch64-full" ]]; then
+  echo "building full docker images"
+  cd $LS_HOME
+  rake artifact:docker_aarch64_full
+  echo "Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+
+  echo "Acceptance: Running the tests"
+  bundle exec rspec docker/spec/aarch64_full/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "aarch64-oss" ]]; then
+  echo "building full docker images"
+  cd $LS_HOME
+  rake artifact:docker_aarch64_oss
+  echo "Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+  echo "Acceptance: Running the tests"
+  bundle exec rspec docker/spec/aarch64_oss/*_spec.rb
 else
   echo "Building all docker images"
   cd $LS_HOME
