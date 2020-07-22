@@ -27,8 +27,8 @@ pipeline.batch.size: 125
 pipeline.batch.delay: 50
 -------------------------------------------------------------------------------------
 
-The `logstash.yml` file also supports bash-style interpolation of environment variables in
-setting values.
+The `logstash.yml` file also supports bash-style interpolation of environment variables and
+keystore secrets in setting values.
 
 [source,yaml]
 -------------------------------------------------------------------------------------
