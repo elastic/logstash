@@ -38,6 +38,13 @@ describe LogStash::LicenseChecker::LicenseReader do
     LogStash::Helpers::ElasticsearchOptions.es_options_from_settings('monitoring', system_settings)
   end
 
+  before(:each) do
+    # We do _not_ want the client's connection pool to start on initialization, as error conditions
+    # from accidentally succeeding at establishing a connection to an HTTP resource that's not actually
+    # a live Elasticsearch (e.g., reaped cloud instance) can cause errors.
+    allow_any_instance_of(LogStash::Outputs::ElasticSearch::HttpClient::Pool).to receive(:start)
+  end
+
   subject { described_class.new(system_settings, 'monitoring', elasticsearch_options) }
 
   describe '#fetch_xpack_info' do
