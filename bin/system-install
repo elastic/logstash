@@ -17,8 +17,8 @@ elif [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   echo
   echo "OPTIONSFILE: Full path to a startup.options file"
   echo "OPTIONSFILE is required if STARTUPTYPE is specified, but otherwise looks first"
-  echo "in $LOGSTASH_HOME/config/startup.options and then /etc/logstash/startup.options"
-  echo "Last match wins"
+  echo "in /etc/logstash/startup.options and then "
+  echo "in $LOGSTASH_HOME/config/startup.options "
   echo
   echo "STARTUPTYPE: e.g. sysv, upstart, systemd, etc."
   echo "OPTIONSFILE is required to specify a STARTUPTYPE."
