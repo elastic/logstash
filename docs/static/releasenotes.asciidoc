@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-8-1,Logstash 7.8.1>>
 * <<logstash-7-8-0,Logstash 7.8.0>>
 * <<logstash-7-7-1,Logstash 7.7.1>>
 * <<logstash-7-7-0,Logstash 7.7.0>>
@@ -29,6 +30,80 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-8-1]]
+=== Logstash 7.8.1 Release Notes
+
+==== Performance improvements and notable issues fixed
+
+===== Fixed performance regression during pipeline compilation
+
+A performance regression was introduced in 7.7.0, as described in the <<known-pipeline-slowdown,7.8.0 release notes>>.
+The issue was caused by an enhancement - https://github.com/elastic/logstash/pull/11078[#11078] - that included the plugin ids in log entries produced by Logstash pipelines.
+The implementation of this feature has been fixed and no longer causes the performance issue. You can find more about the solution here https://github.com/elastic/logstash/pull/12038[#12038].
+
+===== Multiple fixes to pipeline shutdown and reloading
+
+7.8.1 brings many fixes that improve the stability of the pipeline lifecycle.
+In previous releases, enabling monitoring could result in Logstash crashes if pipelines from concurrent pipeline reloads (fixed in https://github.com/elastic/logstash/pull/12034[#12034]).
+Also, pipelines failing to start correctly could prevent the Persistent Queue from being used afterwards (fixed in https://github.com/elastic/logstash/pull/12023[#12023]). Finally, a JRuby issue concerning threads and the Ruby/Java implementation boundary could cause crashes during pipeline reloads, and this has been fixed in https://github.com/elastic/logstash/pull/11900[#11900].
+
+===== Changes in the dependencies of Beats/TCP/HTTP Input Plugins
+
+To avoid breaking changes and retain control on the set of ciphers exposed in these plugins, underlying dependencies (`tcnative` and `boringssl`) have been dropped in favor of using JVM supplied ciphers instead.
+Overall there should be no impact but this may result in fewer ciphers being available if the JCE unlimited strength jurisdiction policy is not installed.
+NOTE: This policy is installed by default on versions of the JDK from u161 onwards.
+You can find more information in the release notes of the respective plugins.
+
+==== Plugins
+
+*Xml Filter - 4.1.1*
+
+* Fix: exceptions thrown while handling events no longer crash the pipeline https://github.com/logstash-plugins/logstash-filter-xml/pull/73[#73]
+
+*Beats Input - 6.0.11*
+
+* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
+      `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
+      unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
+      JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-beats/pull/393[#393]
+* Added error handling to detect if ssl certificate or key files can't be read https://github.com/logstash-plugins/logstash-input-beats/pull/394[#394]
+
+*Elasticsearch Input - 4.6.2*
+
+* Added scroll clearing and better handling of scroll expiration https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/128[#128]
+* [DOC] Removed outdated compatibility notice https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/124[#124]
+
+*Http Input - 3.3.5*
+
+* Updated jackson databind and Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
+   `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
+   unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
+   JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-http/pull/126[#126]
+
+*Syslog Input - 3.4.3*
+
+* [DOC] Added expanded descriptions and requirements for facility_labels and severity_labels. https://github.com/logstash-plugins/logstash-input-syslog/pull/52[#52]
+
+*Tcp Input - 6.0.6*
+
+* Updated Netty dependencies. Additionally, this release removes the dependency on `tcnative` and
+    `boringssl`, using JVM supplied ciphers instead. This may result in fewer ciphers being available if the JCE
+    unlimited strength jurisdiction policy is not installed. (This policy is installed by default on versions of the
+    JDK from u161 onwards.) https://github.com/logstash-plugins/logstash-input-tcp/pull/157[#157]
+
+*Jdbc Integration - 5.0.5*
+
+* Fixed user sequel_opts not being passed down properly https://github.com/logstash-plugins/logstash-integration-jdbc/pull/37[#37]
+* Refactored jdbc_streaming to share driver loading, so the fixes from the jdbc plugin also effect jdbc_streaming
+* Fixed issue where JDBC Drivers that don't correctly register with Java's DriverManager fail to load (such as Sybase) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/34[#34]
+* Fixed issue where a lost connection to the database can cause errors when using prepared statements with the scheduler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/25[#25]
+* Fixed potential resource leak by ensuring scheduler is shutdown when a pipeline encounter an error during the running https://github.com/logstash-plugins/logstash-integration-jdbc/pull/28[#28]
+
+*S3 Output - 4.3.2*
+
+*  [DOC]Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-output-s3/pull/223[#223]
+
 
 [[logstash-7-8-0]]
 === Logstash 7.8.0 Release Notes
@@ -99,6 +174,7 @@ module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
 {filebeat} and {metricbeat} modules are compliant with the
 {ecs-ref}/index.html[Elastic Common Schema (ECS)].
 
+[[known-pipeline-slowdown]] 
 ==== Known issue
 
 *Performance regression.* A potential performance regression may affect
