@@ -34,8 +34,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-8-1]]
 === Logstash 7.8.1 Release Notes
 
-coming::[7.8.1]
-
 ==== Performance improvements and notable issues fixed
 
 ===== Fixed performance regression during pipeline compilation
