@@ -1,8 +1,6 @@
 [[logstash-reference]]
 = Logstash Reference
 
-include::{docs-root}/shared/legacy-attrs.asciidoc[]
-
 :branch:                1.5
 :logstash_version:      1.5.2
 :elasticsearch_version: 1.5.1
