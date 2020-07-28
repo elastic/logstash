@@ -7,9 +7,19 @@ access to {es} resources. You can set API keys to expire at a certain time,
 and you can explicitly invalidate them. Any user with the `manage_api_key`
 or `manage_own_api_key` cluster privilege can create API keys.
 
-Note that API keys are tied to the cluster they are created in. If you are
+Tips for creating API keys:
+
+* API keys are tied to the cluster they are created in. If you are
 sending output to different clusters, be sure to create the correct kind of API
 key. 
+
+* {ls} can send both collected data and monitoring information to {es}. If you are
+sending both to the same cluster, you can use the same API key. For different
+clusters, you need an API key per cluster.
+
+* A single cluster can share a key for ingestion and monitoring purposes. 
+
+* A production cluster and a monitoring cluster require separate keys.
 
 NOTE: For security reasons, we recommend using a unique API key per {ls} instance.
 You can create as many API keys per user as necessary.
@@ -174,6 +184,100 @@ filter {
 }
 -----
 <1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
+
+
+[float]
+[[ls-api-key-monitor]]
+====== Create an API key for monitoring
+
+To create an API key to use for sending monitoring data to {es}, use the
+{ref}/security-api-create-api-key.html[Create API key API]. For example:
+
+[source,console,subs="attributes,callouts"]
+------------------------------------------------------------
+POST /_security/api_key
+{
+  "name": "logstash_host001", <1>
+  "role_descriptors": {
+    "logstash_monitoring": { <2>
+      "cluster": ["monitor"],
+      "index": [
+        {
+          "names": [".monitoring-ls-*"],
+          "privileges": ["create_index", "create"]
+        }
+      ]
+    }
+  }
+}
+------------------------------------------------------------
+<1> Name of the API key
+<2> Granted privileges
+
+The return value should look similar to this:
+
+[source,console-result,subs="attributes,callouts"]
+--------------------------------------------------
+{
+  "id":"TiNAGG4BaaMdaH1tRfuU", <1>
+  "name":"logstash_host001",
+  "api_key":"KnR6yE41RrSowb0kQ0HWoA" <2>
+}
+--------------------------------------------------
+<1> Unique id for this API key
+<2> Generated API key
+
+Now you can use this API key in your logstash.yml configuration file:
+["source","yml",subs="attributes"]
+--------------------
+xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
+--------------------
+<1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
+
+
+[float]
+[[ls-api-key-man]]
+====== Create an API key for central management
+
+To create an API key to use for central management, use the
+{ref}/security-api-create-api-key.html[Create API key API]. For example:
+
+[source,console,subs="attributes,callouts"]
+------------------------------------------------------------
+POST /_security/api_key
+{
+  "name": "logstash_host001", <1>
+  "role_descriptors": {
+    "logstash_monitoring": { <2>
+      "cluster": ["monitor"],
+      "index": ["read"]
+    }
+  }
+}
+------------------------------------------------------------
+<1> Name of the API key
+<2> Granted privileges
+
+The return value should look similar to this:
+
+[source,console-result,subs="attributes,callouts"]
+--------------------------------------------------
+{
+  "id":"TiNAGG4BaaMdaH1tRfuU", <1>
+  "name":"logstash_host001",
+  "api_key":"KnR6yE41RrSowb0kQ0HWoA" <2>
+}
+--------------------------------------------------
+<1> Unique id for this API key
+<2> Generated API key
+
+Now you can use this API key in your logstash.yml configuration file:
+["source","yml",subs="attributes"]
+--------------------
+xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
+--------------------
+<1> Format is `id:api_key` (as returned by
+{ref}/security-api-create-api-key.html[Create API key])
 
 
 [float]
