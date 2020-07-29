@@ -64,7 +64,6 @@ describe "A running oss docker container", :oss_image => true do
 
   it_behaves_like "it applies settings correctly", 'oss'
 end
-
 describe "A running default docker container", :default_image => true do
   include_context "image_context", 'full'
 
@@ -79,12 +78,12 @@ describe "A running default docker container", :default_image => true do
   it_behaves_like "it applies settings correctly", 'full'
 
   context 'when disabling xpack monitoring' do
-      let(:env) {['xpack.monitoring.enabled=false']}
+    let(:env) {['xpack.monitoring.enabled=false']}
 
-      it 'should set monitoring to false' do
-        expect(get_settings(@container)['xpack.monitoring.enabled']).to be_falsey
-      end
+    it 'should set monitoring to false' do
+      expect(get_settings(@container)['xpack.monitoring.enabled']).to be_falsey
     end
+  end
 
   context 'when enabling xpack monitoring' do
     let(:env) {['xpack.monitoring.enabled=true']}
