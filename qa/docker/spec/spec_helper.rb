@@ -72,30 +72,16 @@ def get_settings(container)
   YAML.load(container.read_file('/usr/share/logstash/config/logstash.yml'))
 end
 
-def compatible_image_flavors
-  #is_aarch64? ? %w(aarch64-full aarch64-oss) : %w(full oss)
-  %w(full oss)
-end
-
-def image_flavors
-  #%w(aarch64-full full aarch64-oss oss)
-  %w(full oss)
-end
-
-def architecture_for_flavor(flavor)
-  flavor.match(/aarch64/) ? 'arm64' : 'amd64'
-end
-
-def is_aarch64?
-  RbConfig::CONFIG["host_os"] == "aarch64"
-end
-
 def java_process(container, column)
   exec_in_container(container, "ps -C java -o #{column}=").strip
 end
 
 def exec_in_container(container, command)
   container.exec(command.split)[0][0]
+end
+
+def architecture_for_flavor(flavor)
+  flavor.match(/aarch64/) ? 'arm64' : 'amd64'
 end
 
 RSpec::Matchers.define :have_correct_license_label do |expected|
@@ -123,7 +109,7 @@ RSpec::Matchers.define :have_correct_architecture_for_flavor do |expected|
     true
   end
   failure_message do |actual|
-    "expected Architeture: #{actual} to be #{architecture_for_flavor(expected)}"
+    "expected Architecture: #{actual} to be #{architecture_for_flavor(expected)}"
   end
 end
 

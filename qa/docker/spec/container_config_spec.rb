@@ -38,10 +38,10 @@ shared_examples_for 'it runs when configured correctly' do |flavor|
   end
 end
 
-describe "A container running on a default image", :default_image => true do
+describe "A container running on a default image", :default_image do
   it_behaves_like 'it runs when configured correctly', 'full'
 end
 
-describe "A container running on an oss image", :oss_image => true do
+describe "A container running on an oss image", :oss_image do
   it_behaves_like 'it runs when configured correctly', 'oss'
 end

@@ -69,7 +69,7 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfiles: public-dockerfiles_full public_dockerfiles_full
+public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full
 
 public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \

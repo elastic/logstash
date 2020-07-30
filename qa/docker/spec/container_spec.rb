@@ -77,10 +77,10 @@ shared_examples_for "the container is configured correctly" do |flavor|
   end
 end
 
-context "A container running on a oss image", :oss_image => true do
-  it_behaves_like "the container is configured correctly", 'oss'
+context "A container running on a oss image", :oss_image do
+  it_behaves_like 'the container is configured correctly', 'oss'
 end
 
-context "A container running on a default image", :default_image => true do
+context "A container running on a default image", :default_image do
   it_behaves_like 'the container is configured correctly', 'full'
 end

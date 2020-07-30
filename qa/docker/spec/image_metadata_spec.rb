@@ -40,10 +40,10 @@ shared_examples_for "the metadata is set correctly" do |flavor|
   end
 end
 
-describe "Oss Docker Image metadata", :oss_image => true do
+describe "Oss Docker Image metadata", :oss_image do
   it_behaves_like "the metadata is set correctly", 'oss'
 end
 
-describe "Default Docker Image metadata", :default_image => true do
+describe "Default Docker Image metadata", :default_image do
   it_behaves_like "the metadata is set correctly", 'full'
 end
