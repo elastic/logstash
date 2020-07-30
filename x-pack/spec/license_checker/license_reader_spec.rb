@@ -24,7 +24,7 @@ describe LogStash::LicenseChecker::LicenseReader do
   let(:settings) do
     {
       "xpack.monitoring.enabled" => true,
-      "xpack.monitoring.elasticsearch.hosts" => [ elasticsearch_url],
+      "xpack.monitoring.elasticsearch.hosts" => [ elasticsearch_url ],
       "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
       "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
     }
@@ -124,6 +124,7 @@ describe LogStash::LicenseChecker::LicenseReader do
     end
 
     it "builds ES client" do
+      allow_any_instance_of(LogStash::Outputs::ElasticSearch::HttpClient::Pool).to receive(:start).and_return(nil)
       expect( subject.client.options[:hosts].size ).to eql 1
       expect( subject.client.options[:hosts][0].to_s ).to eql 'https://e1e631201fb64d55a75f431eb6349589.westeurope.azure.elastic-cloud.com:9243'
       expect( subject.client.options ).to include(:user => 'elastic', :password => 'LnWMLeK3EQPTf3G3F1IBdFvO')
