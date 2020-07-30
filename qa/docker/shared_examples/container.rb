@@ -2,17 +2,14 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
   before do
     @image = find_image(flavor)
+    @container = create_container(@image, {})
+  end
+
+  after do
+    cleanup_container(@container)
   end
 
   context 'logstash' do
-    before do
-      @container = create_container(@image, {})
-    end
-
-    after do
-      cleanup_container(@container)
-    end
-
     it 'should run with the correct version' do
       expect(exec_in_container(@container, 'logstash --version')).to match /#{version}/
     end
@@ -24,14 +21,6 @@ shared_examples_for 'the container is configured correctly' do |flavor|
   end
 
   context 'container files' do
-    before do
-      @container = create_container(@image, {})
-    end
-
-    after do
-      cleanup_container(@container)
-    end
-
     it 'should have the correct license agreement' do
       expect(exec_in_container(@container, 'cat /usr/share/logstash/LICENSE.txt')).to have_correct_license_agreement(flavor)
     end
@@ -67,14 +56,6 @@ shared_examples_for 'the container is configured correctly' do |flavor|
   end
 
   context 'the java process' do
-    before do
-      @container = create_container(@image, {})
-    end
-
-    after do
-      cleanup_container(@container)
-    end
-
     it 'should be running under the logstash user' do
       expect(java_process(@container, "user")).to eql 'logstash'
     end
