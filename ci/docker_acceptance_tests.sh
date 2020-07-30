@@ -35,7 +35,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rspec docker/spec -t oss_image:true
+  bundle exec rspec docker/spec/oss/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "building default docker images"
   cd $LS_HOME
@@ -45,7 +45,7 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rspec docker/spec -t default_image:true
+  bundle exec rspec docker/spec/default/*_spec.rb
 else
   echo "Building all docker images"
   cd $LS_HOME
@@ -56,5 +56,5 @@ else
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rspec docker/spec
+  bundle exec rspec docker/spec/**/*_spec.rb
 fi

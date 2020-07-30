@@ -1,9 +1,7 @@
-require_relative 'spec_helper'
-
-shared_examples_for 'it runs when configured correctly' do |flavor|
-  include_context "image_context", flavor
+shared_examples_for 'it runs with different configurations' do |flavor|
 
   before do
+    @image = find_image(flavor)
     @container = start_container(@image, options)
   end
 
@@ -14,7 +12,7 @@ shared_examples_for 'it runs when configured correctly' do |flavor|
   context 'when a single pipeline is configured via volume bind' do
     let(:options) { {"HostConfig" => { "Binds" => ["#{FIXTURES_DIR}/simple_pipeline/:/usr/share/logstash/pipeline/"] } } }
 
-    it "should show the stats for that pipeline" do
+    it 'should show the stats for that pipeline' do
       expect(get_node_stats(@container)['pipelines']['main']['plugins']['inputs'][0]['id']).to eq 'simple_pipeline'
     end
   end
@@ -32,16 +30,8 @@ shared_examples_for 'it runs when configured correctly' do |flavor|
   context 'when a custom `logstash.yml` is configured via volume bind' do
     let(:options) { {"HostConfig" => { "Binds" => ["#{FIXTURES_DIR}/custom_logstash_yml/logstash.yml:/usr/share/logstash/config/logstash.yml"] } } }
 
-    it "should change the value of pipeline.batch.size" do
+    it 'should change the value of pipeline.batch.size' do
       expect(get_node_info(@container)['pipelines']['main']['batch_size']).to eq 200
     end
   end
-end
-
-describe "A container running on a default image", :default_image do
-  it_behaves_like 'it runs when configured correctly', 'full'
-end
-
-describe "A container running on an oss image", :oss_image do
-  it_behaves_like 'it runs when configured correctly', 'oss'
 end

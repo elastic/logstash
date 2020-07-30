@@ -1,10 +1,8 @@
-require_relative 'spec_helper'
-
-shared_examples_for "the metadata is set correctly" do |flavor|
-  include_context "image_context", flavor
-
-  it 'should exist' do
-    expect(@image).not_to be_nil
+shared_examples_for 'the metadata is set correctly' do |flavor|
+  before do
+    @image = find_image(flavor)
+    @image_config = @image.json['Config']
+    @labels = @image_config['Labels']
   end
 
   it 'should have the correct working directory' do
@@ -38,12 +36,4 @@ shared_examples_for "the metadata is set correctly" do |flavor|
       expect(@labels[label]).to eql qualified_version
     end
   end
-end
-
-describe "Oss Docker Image metadata", :oss_image do
-  it_behaves_like "the metadata is set correctly", 'oss'
-end
-
-describe "Default Docker Image metadata", :default_image do
-  it_behaves_like "the metadata is set correctly", 'full'
 end

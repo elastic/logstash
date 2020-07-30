@@ -29,7 +29,7 @@ def create_container(image, options = {})
 end
 
 def start_container(image, options={})
-  container = image.run(nil, options)
+  container = create_container(image, options)
   wait_for_logstash(container)
   container
 end
