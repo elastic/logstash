@@ -29,7 +29,7 @@ cd $LS_HOME
 if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   echo "building oss docker images"
   cd $LS_HOME
-  rake artifact:docker_oss_only
+  rake artifact:docker_oss
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -39,7 +39,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "building default docker images"
   cd $LS_HOME
-  rake artifact:docker_full_only
+  rake artifact:docker
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install

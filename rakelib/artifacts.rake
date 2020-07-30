@@ -123,8 +123,6 @@ namespace "artifact" do
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
   task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss"]
-  task "docker_full_only" => ["prepare", "build_docker_full"]
-  task "docker_oss_only" => ["prepare", "build_docker_oss"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare", "generate_build_metadata"] do
