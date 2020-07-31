@@ -218,13 +218,13 @@ namespace "artifact" do
   desc "Generate Dockerfile for oss images"
   task "dockerfile_oss" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building oss Dockerfile")
-    build_dockerfile(true)
+    build_dockerfile('oss')
   end
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building default Dockerfiles")
-    build_dockerfile(false)
+    build_dockerfile('full')
   end
 
 
