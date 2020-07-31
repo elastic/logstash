@@ -37,7 +37,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   echo "Acceptance: Running the tests"
   bundle exec rspec docker/spec/oss/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
-  echo "building default docker images"
+  echo "building full docker images"
   cd $LS_HOME
   rake artifact:docker
   echo "Acceptance: Installing dependencies"
@@ -45,7 +45,7 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rspec docker/spec/default/*_spec.rb
+  bundle exec rspec docker/spec/full/*_spec.rb
 else
   echo "Building all docker images"
   cd $LS_HOME
