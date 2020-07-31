@@ -509,8 +509,8 @@ namespace "artifact" do
       excluder = oss_excluder
     end
 
-    if bundle_jdk
-      suffix += "-jdk_bundled"
+    unless bundle_jdk
+      suffix += "-no-jdk"
     end
 
     files(excluder).each do |path|
