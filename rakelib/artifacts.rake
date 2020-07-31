@@ -211,8 +211,8 @@ namespace "artifact" do
   desc "Generate Dockerfiles for full and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
-    build_dockerfile(true)
-    build_dockerfile(false)
+    build_dockerfile('oss')
+    build_dockerfile('full')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -595,15 +595,14 @@ namespace "artifact" do
     end
   end
 
-  def build_dockerfile(oss = false)
+  def build_dockerfile(flavor)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      make_command = oss ? "public-dockerfiles_oss" : "public-dockerfiles_full"
-      system(env, "make #{make_command}")
+      system(env, "make public-dockerfiles_#{flavor}")
       puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
     end
   end
