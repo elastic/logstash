@@ -44,10 +44,10 @@ dead_letter_queue.enable: true
 
 Dead letter queues are stored as files in the local directory of the Logstash
 instance. By default, the dead letter queue files are stored in
-`path.data/dead_letter_queue`. Each pipeline has a separate queue. For example,
+`%{path.data}/dead_letter_queue`. Each pipeline has a separate queue. For example,
 the dead letter queue for the `main` pipeline is stored in
-`LOGSTASH_HOME/data/dead_letter_queue/main` by default. The queue files are
-numbered sequentially: `1.log`, `2.log`, and so on.
+`${LOGSTASH_HOME}/data/dead_letter_queue/main` by default. A queue is composed of
+one or more sequentially-numbered files (e.g., `1.log`, `2.log`, and so on).
 
 You can set `path.dead_letter_queue` in the `logstash.yml` file to
 specify a different path for the files:
@@ -61,16 +61,13 @@ path.dead_letter_queue: "path/to/data/dead_letter_queue"
 NOTE: You may not use the same `dead_letter_queue` path for two different
 Logstash instances.
 
-===== File Rotation
+[[dlq-disk-usage]]
+===== Disk Usage
 
-Dead letter queues have a built-in file rotation policy that manages the file
-size of the queue. When the file size reaches a preconfigured threshold, a new
-file is created automatically.
-
-By default, the maximum size of each dead letter queue is set to 1024mb. To
-change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
-will be dropped if they would increase the size of the dead letter queue beyond
-this setting. 
+Dead letter queues manage their own disk usage, and will not consume more than
+the value of the `dead_letter_queue.max_bytes` option, which defaults to `1024mb`.
+Entries will be dropped if they would increase the size of the dead letter queue
+beyond this value.
 
 [[processing-dlq-events]]
 ==== Processing Events in the Dead Letter Queue
