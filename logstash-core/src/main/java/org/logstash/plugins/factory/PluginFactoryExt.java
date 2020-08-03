@@ -55,13 +55,13 @@ public final class PluginFactoryExt extends RubyBasicObject
     public static IRubyObject filterDelegator(final ThreadContext context,
                                               final IRubyObject recv, final IRubyObject... args) {
         final RubyHash arguments = (RubyHash) args[2];
-        final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
+        IRubyObject filter_class = args[1].callMethod(context, "with_execution_context", args[4]);
+        final IRubyObject filterInstance = filter_class.callMethod(context, "new", arguments);
         final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
         filterInstance.callMethod(
                 context, "metric=",
                 ((AbstractMetricExt) args[3]).namespace(context, id.intern())
         );
-        filterInstance.callMethod(context, "execution_context=", args[4]);
         return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
                 .initialize(context, filterInstance, id);
     }
@@ -201,11 +201,11 @@ public final class PluginFactoryExt extends RubyBasicObject
                         context, null,
                         filterClass, klass, rubyArgs, typeScopedMetric, executionCntx);
             } else {
-                final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
+                final IRubyObject klass_with_execution_context = klass.callMethod(context, "with_execution_context", executionCntx);
+                final IRubyObject pluginInstance = klass_with_execution_context.callMethod(context, "new", rubyArgs);
                 final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                 scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                 pluginInstance.callMethod(context, "metric=", scopedMetric);
-                pluginInstance.callMethod(context, "execution_context=", executionCntx);
                 return pluginInstance;
             }
         } else {

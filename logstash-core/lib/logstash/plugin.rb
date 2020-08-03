@@ -23,8 +23,10 @@ require_relative 'plugin_metadata'
 
 class LogStash::Plugin
   include LogStash::Util::Loggable
+  prepend ExecutionContextProvider
 
-  attr_accessor :params, :execution_context
+  attr_accessor :params
+  attr_reader :execution_context
 
   NL = "\n"
 
@@ -160,6 +162,27 @@ class LogStash::Plugin
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
   end
 
+  def self.with_execution_context(execution_context)
+    # TODO: maybe force use of plugin factory instead of this shim.
+    ExecutionContextProxy.new(self, execution_context)
+  end
+
+  def init_plugin(type, name, params)
+    plugin_factory.init(type, name, params)
+  end
+
+  def plugin_factory
+    require "logstash/plugin_factory"
+    @plugin_factory ||= LogStash::PluginFactory.new(execution_context)
+  end
+
+  # TODO: actionable deprecation log message
+  # TODO: does this need to be atomic?
+  def execution_context=(new_execution_context)
+    @plugin_factory = nil
+    @execution_context = new_execution_context
+  end
+
   ##
   # Returns this plugin's metadata key/value store.
   #
@@ -176,5 +199,17 @@ class LogStash::Plugin
   # @return [LogStash::PluginMetadata]
   def plugin_metadata
     LogStash::PluginMetadata.for_plugin(self.id)
+  end
+
+  class ExecutionContextProxy
+    def initialize(plugin_klass, execution_context)
+      @plugin_klass = plugin_klass
+      @plugin_factory = PluginFactory.new(execution_context)
+      freeze
+    end
+
+    def new(*args, &block)
+      @plugin_factory.init(@plugin_klass, *args, &block)
+    end
   end
 end # class LogStash::Plugin
