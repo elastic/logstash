@@ -122,6 +122,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare", "generate_build_metadata"] do
@@ -207,11 +208,25 @@ namespace "artifact" do
     build_docker(true)
   end
 
-  desc "Generate Dockerfile for default and oss images"
+  desc "Generate Dockerfiles for full and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
-    build_dockerfiles
+    build_dockerfile('oss')
+    build_dockerfile('full')
   end
+
+  desc "Generate Dockerfile for oss images"
+  task "dockerfile_oss" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building oss Dockerfile")
+    build_dockerfile('oss')
+  end
+
+  desc "Generate Dockerfile for full images"
+  task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building default Dockerfiles")
+    build_dockerfile('full')
+  end
+
 
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
@@ -229,6 +244,16 @@ namespace "artifact" do
       Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
+  end
+
+  task "build_docker_full" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker"].invoke
+    Rake::Task["artifact:dockerfile_full"].invoke
+  end
+
+  task "build_docker_oss" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_oss"].invoke
+    Rake::Task["artifact:dockerfile_oss"].invoke
   end
 
   task "generate_build_metadata" do
@@ -570,14 +595,14 @@ namespace "artifact" do
     end
   end
 
-  def build_dockerfiles
+  def build_dockerfile(flavor)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      system(env, "make public-dockerfiles")
+      system(env, "make public-dockerfiles_#{flavor}")
       puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
     end
   end

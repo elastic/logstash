@@ -69,7 +69,9 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full
+
+public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
@@ -78,6 +80,11 @@ public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  -D local_artifacts='false' \
 	  -D release='$(RELEASE)' \
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-full && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
@@ -87,8 +94,6 @@ public-dockerfiles: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  -D release='$(RELEASE)' \
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-oss && \
 	cd $(ARTIFACTS_DIR)/docker && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
