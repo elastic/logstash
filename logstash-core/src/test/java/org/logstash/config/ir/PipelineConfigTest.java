@@ -83,8 +83,11 @@ public class PipelineConfigTest extends RubyEnvTestCase {
 
         void appendSource(final String protocol, final String id, final int line, final int column, final String text) throws IncompleteSourceWithMetadataException {
             orderedConfigParts.add(new SourceWithMetadata(protocol, id, line, column, text));
+
+            if (compositeSource.length() > 0 && !compositeSource.toString().endsWith("\n")) {
+                compositeSource.append("\n");
+            }
             compositeSource.append(text);
-            compositeSource.append("\n");
         }
 
         String compositeSource() {
@@ -103,11 +106,11 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         pipelineIdSym = RubySymbol.newSymbol(RubyUtil.RUBY, PIPELINE_ID);
 
         final SourceCollector sourceCollector = new SourceCollector();
-        sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }");
+        sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n");
         sourceCollector.appendSource("file", "/tmp/2", 0, 0, "input { generator2 }");
-        sourceCollector.appendSource("file", "/tmp/3", 0, 0, "input { generator3 }");
+        sourceCollector.appendSource("file", "/tmp/3", 0, 0, "input { generator3 }\n");
         sourceCollector.appendSource("file", "/tmp/4", 0, 0, "input { generator4 }");
-        sourceCollector.appendSource("file", "/tmp/5", 0, 0, "input { generator5 }");
+        sourceCollector.appendSource("file", "/tmp/5", 0, 0, "input { generator5 }\n");
         sourceCollector.appendSource("file", "/tmp/6", 0, 0, "input { generator6 }");
         sourceCollector.appendSource("string", "config_string", 0, 0, "input { generator1 }");
 
