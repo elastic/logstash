@@ -62,6 +62,8 @@ public final class PipelineConfig {
     private volatile String configString;
     private List<LineToSource> sourceRefs;
 
+    private static final String NEWLINE = "\n";
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     public PipelineConfig(RubyClass source, RubySymbol pipelineId, RubyObject uncastedConfigParts, RubyObject logstashSettings) {
         IRubyObject uncasted = uncastedConfigParts.checkArrayType();
@@ -111,9 +113,16 @@ public final class PipelineConfig {
         if (this.configString == null) {
             synchronized(this) {
                 if (this.configString == null) {
-                    this.configString = confParts.stream()
-                            .map(SourceWithMetadata::getText)
-                            .collect(Collectors.joining("\n"));
+                    final StringBuilder compositeConfig = new StringBuilder();
+                    for (SourceWithMetadata confPart : confParts) {
+                        // If our composite config ends without a trailing newline,
+                        // append one before appending the next config part
+                        if (compositeConfig.lastIndexOf(NEWLINE) < compositeConfig.length() - 1 ) {
+                            compositeConfig.append(NEWLINE);
+                        }
+                        compositeConfig.append(confPart.getText());
+                    }
+                    this.configString = compositeConfig.toString();
                 }
             }
         }
