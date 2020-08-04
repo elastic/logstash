@@ -77,23 +77,42 @@ public class PipelineConfigTest extends RubyEnvTestCase {
             "  generator1\n" +
             "}";
 
+    static class SourceCollector {
+        private final StringBuilder compositeSource = new StringBuilder();
+        private final List<SourceWithMetadata> orderedConfigParts = new ArrayList<>();
+
+        void appendSource(final String protocol, final String id, final int line, final int column, final String text) throws IncompleteSourceWithMetadataException {
+            orderedConfigParts.add(new SourceWithMetadata(protocol, id, line, column, text));
+            compositeSource.append(text);
+            compositeSource.append("\n");
+        }
+
+        String compositeSource() {
+            return this.compositeSource.toString();
+        }
+
+        SourceWithMetadata[] orderedConfigParts() {
+            return this.orderedConfigParts.toArray(new SourceWithMetadata[]{});
+        }
+    }
+
     @Before
     public void setUp() throws IncompleteSourceWithMetadataException {
 
         source = RubyUtil.RUBY.getClass("LogStash::Config::Source::Local");
         pipelineIdSym = RubySymbol.newSymbol(RubyUtil.RUBY, PIPELINE_ID);
 
-        orderedConfigParts = new SourceWithMetadata[]{
-                new SourceWithMetadata("file", "/tmp/1", 0, 0, "input { generator1 }"),
-                new SourceWithMetadata("file", "/tmp/2", 0, 0, "input { generator2 }"),
-                new SourceWithMetadata("file", "/tmp/3", 0, 0, "input { generator3 }"),
-                new SourceWithMetadata("file", "/tmp/4", 0, 0, "input { generator4 }"),
-                new SourceWithMetadata("file", "/tmp/5", 0, 0, "input { generator5 }"),
-                new SourceWithMetadata("file", "/tmp/6", 0, 0, "input { generator6 }"),
-                new SourceWithMetadata("string", "config_string", 0, 0, "input { generator1 }"),
-        };
+        final SourceCollector sourceCollector = new SourceCollector();
+        sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }");
+        sourceCollector.appendSource("file", "/tmp/2", 0, 0, "input { generator2 }");
+        sourceCollector.appendSource("file", "/tmp/3", 0, 0, "input { generator3 }");
+        sourceCollector.appendSource("file", "/tmp/4", 0, 0, "input { generator4 }");
+        sourceCollector.appendSource("file", "/tmp/5", 0, 0, "input { generator5 }");
+        sourceCollector.appendSource("file", "/tmp/6", 0, 0, "input { generator6 }");
+        sourceCollector.appendSource("string", "config_string", 0, 0, "input { generator1 }");
 
-        configMerged = Arrays.stream(orderedConfigParts).map(SourceWithMetadata::getText).collect(Collectors.joining("\n"));
+        orderedConfigParts = sourceCollector.orderedConfigParts();
+        configMerged = sourceCollector.compositeSource();
 
         List<SourceWithMetadata> unorderedList = Arrays.asList(orderedConfigParts);
         Collections.shuffle(unorderedList);
