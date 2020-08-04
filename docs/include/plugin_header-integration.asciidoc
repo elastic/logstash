@@ -11,7 +11,7 @@ ifeval::["{versioned_docs}"=="true"]
 ++++
 endif::[]
 
-* A component of the <<plugins-integrations-{plugin},{plugin} integration plugin>> 
+* A component of the <<plugins-integrations-{integration},{integration} integration plugin>> 
 * Integration version: {version}
 * Released on: {release_date}
 * {changelog_url}[Changelog]
@@ -25,7 +25,7 @@ endif::[]
 
 ifeval::["{versioned_docs}"=="true"]
 
-For other versions, see the <<integration-{plugin}-index,overview list>>.
+For other versions, see the <<{type}-{plugin}-index,overview list>>.
 
 To learn more about Logstash, see the {logstash-ref}/index.html[Logstash Reference].
 
