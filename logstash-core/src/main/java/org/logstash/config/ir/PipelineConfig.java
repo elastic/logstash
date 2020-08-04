@@ -59,7 +59,7 @@ public final class PipelineConfig {
     private RubyObject settings;
     private LocalDateTime readAt;
     private String configHash;
-    private String configString;
+    private volatile String configString;
     private List<LineToSource> sourceRefs;
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -108,7 +108,15 @@ public final class PipelineConfig {
     }
 
     public String configString() {
-        this.configString = confParts.stream().map(SourceWithMetadata::getText).collect(Collectors.joining("\n"));
+        if (this.configString == null) {
+            synchronized(this) {
+                if (this.configString == null) {
+                    this.configString = confParts.stream()
+                            .map(SourceWithMetadata::getText)
+                            .collect(Collectors.joining("\n"));
+                }
+            }
+        }
         return this.configString;
     }
 
