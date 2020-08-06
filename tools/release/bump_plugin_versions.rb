@@ -4,6 +4,16 @@ require 'net/http'
 require 'uri'
 require 'fileutils'
 require 'yaml'
+require 'optparse'
+
+options = {pr: true}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bump_plugin_versions.rb base_branch last_release allow_for --[no-]pr"
+
+  opts.on("--[no-]pr", "Create Pull Request") do |v|
+    options[:pr] = v
+  end
+end.parse!
 
 def compute_dependecy(version, allow_for)
   gem_version = Gem::Version.new(version)
@@ -58,14 +68,12 @@ end
 
 IO.write("Gemfile.template", gemfile)
 
-puts "Cleaning up before running 'rake artifact:tar'"
-FileUtils.rm_f("Gemfile")
+puts "Cleaning up before running computing dependencies"
 FileUtils.rm_f("Gemfile.jruby-2.5.lock.release")
-FileUtils.rm_rf("vendor")
 
 # compute new lock file
-puts "Running 'rake artifact:tar'"
-result = `rake artifact:tar`
+puts "Running: ./gradlew clean installDefaultGems"
+`./gradlew clean installDefaultGems`
 
 puts "Cleaning up generated lock file (removing injected requirements)"
 # remove explicit requirements from lock file
@@ -84,6 +92,7 @@ FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.5.lock.release")
 
 puts `git diff Gemfile.jruby-2.5.lock.release`
 
+exit(0) unless options[:pr]
 puts "Creating commit.."
 
 branch_name = "update_lock_#{Time.now.to_i}"
