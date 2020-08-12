@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-12,Logstash 6.8.12>>
 * <<logstash-6-8-11,Logstash 6.8.11>>
 * <<logstash-6-8-10,Logstash 6.8.10>>
 * <<logstash-6-8-9,Logstash 6.8.9>>
@@ -42,6 +43,32 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-12]]
+=== Logstash 6.8.12 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.12
+
+=== Logstash Commits between 6.8 and 6.8.11
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.11..6.8"
+
+d9cfe659a - (HEAD -> 6.8, origin/6.8) allow skipping pr creation in version bump script (6 days ago) <Joao Duarte>
+391d91b12 - Doc:Remove coming tag from release notes after release (#12125) (2 weeks ago) <Karen Metts>
+a2e06a748 - Bump version to 6.8.12 (2 weeks ago) <andsel>
+dcb00c47b - add ci script setup dependencies (3 weeks ago) <Joao Duarte>
+db7ef2860 - initial introduction of .fossa.yml (3 weeks ago) <Joao Duarte>
+bc4b714e7 - Document use of keystore values in pipelines.yml (3 weeks ago) <João Duarte>
+d08696e79 - Doc:Add coming tag for 6.8.11 release notes (#12119) (4 weeks ago) <Karen Metts>
+79177fa8b - Release notes draft for 6.8.11 (#12091) (4 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.11..6.8 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-8-11]]
 === Logstash 6.8.11 Release Notes
