@@ -37,34 +37,108 @@ This section summarizes the changes in the following releases:
 
 ==== New features and enhancements
 
-Featured items go here
+===== ECS support in Elasticsearch output plugin
+
+This release is the first step toward Elastic Common Schema (ECS) support in
+{ls}. With 7.9, you can configure the <<plugins-outputs-elasticsearch,{es}
+output plugin>> to manage index templates that are compatible with the
+{ecs-ref}[Elastic Common Schema (ECS)]. The
+<<plugins-outputs-elasticsearch-ecs_compatibility,ECS compatibility setting>>
+in the {es} output plugin makes this possible. 
+
+See
+{logstash-ref}/plugins-outputs-elasticsearch.html#_compatibility_with_the_elastic_common_schema_ecs[Compatibility with the Elastic Common Schema (ECS)]
+in the {es} output plugin docs for more information.
 
 
+===== Improvements to persistent queue (PQ)
+
+We've enhanced persistent queues to better manage exceptions and error handling
+which could sometimes result in  a `LockException` when the queue file lock was
+not properly released. Under some conditions, a complex pipeline that is slower
+to initialize could be recreated when it was not done initializing, causing a
+`LockException`. Implementation details are in https://github.com/elastic/logstash/pull/12023[#12023].
+
+These changes result in better stability of persistent queues.
+ 
+===== Improvements to pipeline workers error handling
+
+Worker threads were not correctly monitored for a worker loop exception
+resulting in a complete logstash crash upon any exception even when multiple
+pipelines are running. Now only the failed pipeline is terminated. If pipeline
+reloading is enabled, you can edit the config and have the failed pipeline
+reloaded. 
+Implementation details are in
+https://github.com/elastic/logstash/pull/12019[#12019] and
+https://github.com/elastic/logstash/pull/12038[#12038].
 
 
+===== Improved support in App Search output
+
+We replaced the deprecated Java client library for the
+<<plugins-outputs-elastic_app_search,Elastic App Search output plugin>> with the
+Ruby client library, and expanded integration testing. These changes provide a
+foundation for expanding App Search integration and quality assurance in future
+releases. 
+
+===== Expanded API key support
+
+With this release, we've continued expanding support for {es} API keys. Support
+for API keys in the <<plugins-outputs-elasticsearch,{es} output plugin>> arrived
+in {ls} 7.8.0. {ls} 7.9.0 introduces support for {es} API keys in the
+<<plugins-inputs-elasticsearch,{es} input plugin>>, the
+<<plugins-filters-elasticsearch,{es} filter plugin>>, and {ls}
+<<ls-api-key-monitor,monitoring>> and <<ls-api-key-man,management>>. 
+
+Check out <<ls-api-keys>> for more information about using API keys with {ls}
+and {es}. 
+Implementation details are in https://github.com/elastic/logstash/pull/11953[#11953].
 
 
+===== ARM64 support (experimental)
 
-* [Featured items][7.x clean backport of #11864] add support for api_key authentication in xpack management and monitoring https://github.com/elastic/logstash/pull/11953[#11953]
-* [Featured items]Fix pipeline state logic and worker thread error handling https://github.com/elastic/logstash/pull/12019[#12019]
-* [Featured items]release queue dir lock upon exceptions while opening queue https://github.com/elastic/logstash/pull/12023[#12023]
-* [Featured pipeline optim] dynamically get the plugin id instead of hardcoding it in the generated classes https://github.com/elastic/logstash/pull/12038[#12038]
-* [FI] 40a807d4e - do not call agent.converge_state_and_update before agent.execute (6 weeks ago) <Colin Surprenant>
-* [FI]c2e4e4f18 - release queue dir lock upon exceptions while opening queue (6 weeks ago) <Colin Surprenant>
+{ls} runs on arm machines! We have tested {ls} against arm64, and we are looking
+to make docker and other images available soon.
 
+ARM artifacts are not yet supported for production, and we’re offering them as
+"experimental" to early adopters.
+
+===== Performance improvement on startup and pipeline restarts
+
+This release contains several optimizations to pipeline compilation, an
+essential step of the pipeline initialization process. These changes
+significantly improve startup and pipeline-restart performance for complex
+pipelines.  
+(For technical details, check out this PR: https://github.com/elastic/logstash/pull/12060[#12060].)
+
+From our tests in three different pipelines with eight workers each, we have
+seen times decrease from 9 - 28 minutes to around 1 minute.
+
+To aid the development of pipelines, especially the performance impact of
+compilation, Logstash now reports the time taken to compile each pipeline as a
+log entry such as:
+
+[source,sh]
+-----
+[2020-08-12T14:10:29,388][INFO ][logstash.javapipeline  ][main] Pipeline Java execution initialization time {"seconds"=>0.7}
+-----
+
+
+//TODO: Figure out which featured item this belongs with
+
+* [Featured Item] 40a807d4e - do not call agent.converge_state_and_update before agent.execute (6 weeks ago) <Colin Surprenant> https://github.com/elastic/logstash/pull/12034
 
 
 
 ==== Performance improvements and notable issues fixed
 
-* Support <<space-delimited-uris-in-list-params,white space as a delimiter>> on list-type params https://github.com/elastic/logstash/pull/12051[12051].
+* Support <<space-delimited-uris-in-list-params,white space as a delimiter>> on list-type params https://github.com/elastic/logstash/pull/12051[#12051].
 Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://github.com/elastic/logstash/issues/8157[#8157].
 * Support using unix pipe as local config file https://github.com/elastic/logstash/pull/11109[#11109]
 * Logging improvements
 ** Display Java pipeline initialization time to help with troubleshooting and diagnostics shttps://github.com/elastic/logstash/pull/11749[#11749]
 ** Logging framework enhancement to allow more finetuned logging https://github.com/elastic/logstash/pull/11853[#11853]
-** e5f1e613e - [log4j improvement - improved logging]update log4j script routes definition (9 weeks ago) <Joao Duarte>
-** (log4j definitions improvement for PQ info. Better logging)Fix integration tests related to logs when persistent_queue FEATURE_FLAG is enabled https://github.com/elastic/logstash/pull/11929[#11929]
+** Better logging after definition improvements and script routes in log4j https://github.com/elastic/logstash/pull/11929[#11929] and https://github.com/elastic/logstash/pull/11992[#11992]
 ** Improved {ls} startup logging to ensure that 'starting logstash' entry happens before any other log entries https://github.com/elastic/logstash/pull/12086[#12086]
 * Fix: Add back pipelines queue.data and queue.capacity subdocuments for _node/stats https://github.com/elastic/logstash/pull/11923[#11923]
 * Fix: Avoid reloading pipelines that have no changes [#12009]https://github.com/elastic/logstash/pull/12009
@@ -75,7 +149,6 @@ Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://gith
 * Updates to dependencies
 ** Update log4j dependency to 2.13.3
 ** Update jruby to 9.2.12.0
-
 
 ==== Plugin releases
 
