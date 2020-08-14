@@ -35,187 +35,58 @@ This section summarizes the changes in the following releases:
 [[logstash-7-9-0]]
 === Logstash 7.9.0 Release Notes
 
-Featured items here
+==== New features and enhancements
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.9.0
+Featured items go here
 
-* Feature/simplify plugin factory plugin method https://github.com/elastic/logstash/pull/11457[#11457]
-* display Java pipeline initialization time (helps with troubleshooting and diagnostics. Exact number of startup in logs) https://github.com/elastic/logstash/pull/11749[#11749]
-* Delete?  Feature/move compiler code to java v2 (more progress on javafication for pipeline compilation. code refactoring) https://github.com/elastic/logstash/pull/11773[#11773]
-* Delete? (refactoring code) Move PipelineConfig from Ruby to Java https://github.com/elastic/logstash/pull/11824[#11824]
-* Feat: (Logging framework enhancement.  Allows more finetuned logging.) ship log4j2 commons-logging bridge with LS https://github.com/elastic/logstash/pull/11853[#11853]
-* (jruby bug fix:  code refactor to work around a bug in jruby - link it) don't rely on a ruby thread created from java in shutdown watcher https://github.com/elastic/logstash/pull/11900[#11900]
-* Delete?  (dev environment) Pass FEATURE_FLAG as Docker environment variable https://github.com/elastic/logstash/pull/11922[#11922]
-* (Fix regression. Replaces missing info like capacity) Exposed again the pipelines queue.data and queue.capacity subdocuments for _node/stats https://github.com/elastic/logstash/pull/11923[#11923]
-* (log4j definitions improvement for PQ info. Better logging)Fix integration tests related to logs when persistent_queue FEATURE_FLAG is enabled https://github.com/elastic/logstash/pull/11929[#11929]
-* [notable features][7.x clean backport of #11864] add support for api_key authentication in xpack management and monitoring https://github.com/elastic/logstash/pull/11953[#11953]
-* [Delete]Backport fixes to enable feature flag https://github.com/elastic/logstash/pull/11970[#11970]
-* [Delete]add commented out options for api_key in logstash.yml https://github.com/elastic/logstash/pull/12006[#12006]
+
+
+
+
+
+
+* [Featured items][7.x clean backport of #11864] add support for api_key authentication in xpack management and monitoring https://github.com/elastic/logstash/pull/11953[#11953]
 * [Featured items]Fix pipeline state logic and worker thread error handling https://github.com/elastic/logstash/pull/12019[#12019]
 * [Featured items]release queue dir lock upon exceptions while opening queue https://github.com/elastic/logstash/pull/12023[#12023]
-* [Delete][DOCS] Fixes Stack Overview links https://github.com/elastic/logstash/pull/12025[#12025]
-* [Fix: pipeline init with slow pipeline and monitoring on - crashes- issue with slow to initialize pipeline when monitoring enabled]do not call agent.converge_state_and_update before agent.execute https://github.com/elastic/logstash/pull/12034[#12034]
 * [Featured pipeline optim] dynamically get the plugin id instead of hardcoding it in the generated classes https://github.com/elastic/logstash/pull/12038[#12038]
-* [FIX PR # mismatch][pipeline optmz]JEE: nix global compiler lock by normalizing to Dataset interface #12047 https://github.com/elastic/logstash/pull/12060[#12060]
-* [DELETE][DOCS] Change links to refactored Beats getting started docs https://github.com/elastic/logstash/pull/12068[#12068]
-* [FIX couldn't use default options when enabling monitoring. ignore defaut username]ignore default username when no password is set to not use authentication in xpack monitoring and management https://github.com/elastic/logstash/pull/12094[#12094]
-* [split config over multiple . injecting trailing newlines on merge files- corrupting config. Link to issue]Fix: allow trailing newlines in config fragments https://github.com/elastic/logstash/pull/12161[#12161]
+* [FI] 40a807d4e - do not call agent.converge_state_and_update before agent.execute (6 weeks ago) <Colin Surprenant>
+* [FI]c2e4e4f18 - release queue dir lock upon exceptions while opening queue (6 weeks ago) <Colin Surprenant>
 
-=== Logstash Commits between 7.9 and 7.8.1
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.8.1..7.9"
 
-[DELETE] 7a918e901 - (HEAD -> 7.9, origin/7.9) lir: inject newline delimiter only when necessary (6 days ago) <Ry Biesemeyer>
-[DELETE] 179b0ef88 - test: no-op refactor to avoid repeating implementation in test (6 days ago) <Ry Biesemeyer>
-[DELETE] df1be20cd - perf: fix memoization of `PipelineConfig#configString()` (6 days ago) <Ry Biesemeyer>
-[DELETE] 25b21a014 - allow skipping pr creation in version bump script (6 days ago) <Joao Duarte>
-[DELETE] 8e2cbe5d4 - Doc:Adjust link for integration plugin header file (6 days ago) <Karen Metts>
-[DELETE] e04debf7f - specs: don't start ES connection pool when only validating config (8 days ago) <Ry Biesemeyer>
-[DELETE] 258506ac3 - Doc:Fix name of monitoring settings (9 days ago) <Karen Metts>
-[DELETE] f86ae0ecc - Doc:Add monitoring and management to API key security content (12 days ago) <Karen Metts>
-[DELETE] d2b8ffa45 - Doc:Fix link to monitoring docs and tag optional features (2 weeks ago) <Karen Metts>
-[DELETE] 919209438 - Doc:Forwardport final 7.8.0 release notes (#12050) to 7.9 #12144 (2 weeks ago) <Karen Metts>
-[DELETE] 57f170658 - Doc:Forwardport 7.8.1 release notes (#12092) to 7.9 #12143 (2 weeks ago) <Karen Metts>
-[DELETE] 6c8c33b13 - initial introduction of .fossa.yml (3 weeks ago) <Joao Duarte>
-[DELETE] 42fa0c702 - Document use of keystore values in pipelines.yml (3 weeks ago) <João Duarte>
-[DELETE] b96833cbc - Doc:Create a new header for integration plugins (3 weeks ago) <Karen Metts>
-[DELETE] a34d00140 - bump lock file for 7.9.0 (#12120) (4 weeks ago) <Logstash Machine>
-[DELETE] 9ffc76d9e - add ci script setup dependencies (4 weeks ago) <Joao Duarte>
-[DELETE] 53e4a6b4e - update dependencies in lockfile for 7.9.0 (#12110) (4 weeks ago) <João Duarte>
-[DELETE] e79bd3509 - don't call runIntegrationTests from check gradle task (4 weeks ago) <Joao Duarte>
-[DELETE] b0b64a526 - add lockfile from 7.8 (4 weeks ago) <Joao Duarte>
-[DELETE] 8ec9d4e6d - [Doc]Release notes for 7.8 (#12033) (#12037) (4 weeks ago) <Karen Metts>
-[DELETE] 556865ee8 - ignore default username when no password is set (4 weeks ago) <Colin Surprenant>
-[DELETE] 05dbba780 - fix PipelineRegistry to avoid re-creating a pipeline in the process of being created (4 weeks ago) <Colin Surprenant>
-[DELETE] 9f7cc64ee - monitor worker threads exceptions to not crash logstash, just the failed pipeline (4 weeks ago) <Colin Surprenant>
-[DELETE] b2c652bf9 - Ensure more gradle tasks using task avoidance API (4 weeks ago) <Rob Bavey>
-[DELETE] 8e750ccd0 - Doc:Add info on reserved fields in events Co-authored-by: Ry Biesemeyer <yaauie@users.noreply.github.com> Fixes: 11946 (4 weeks ago) <Karen Metts>
-[DELETE] 7a4b81363 - Fix kafka setup scripts (4 weeks ago) <Rob Bavey>
-[DELETE] efbdd8d27 - Fix gradle typo (4 weeks ago) <Rob Bavey>
-[DELETE] 671916386 - Doc:Replace outdated pipeline viewer screenshot (5 weeks ago) <Karen Metts>
-[DELETE] b02978fd4 - add dependency notice for amazing_print (5 weeks ago) <Joao Duarte>
-[DELETE] 16b2ce735 - Change links to refactored Beats getting started docs (5 weeks ago) <DeDe Morton>
-[DELETE] 40f99249e - Clear `JAVA_HOME` to use bundled JDK for Elasticsearch (5 weeks ago) <Rob Bavey>
-85a572a07 - update jruby to 9.2.12.0 (5 weeks ago) <Joao Duarte>
-[DELETE] d99ac24c7 - bump gradle to 6.5.1 (#12085) (5 weeks ago) <João Duarte>
-8da85f438 - [Logging - Improvement in logstash startup logging - other logs were starting first] ensure 'starting logstash' log entry happens first (5 weeks ago) <Joao Duarte>
-[DELETE] 9fdef56b1 - update benchmark-cli dependencies (6 weeks ago) <Joao Duarte>
-[DELETE] 482727650 - make PQ and DLQ tests use less disk space (6 weeks ago) <Joao Duarte>
-[DELETE] 5a20843c8 - [7x backport]  Add wait functionality to `stop_es` integration test helper function (#12067) (6 weeks ago) <Rob Bavey>
-[DELETE] 6f30d81c9 - fix pipeline spec that didn't wait for pipeline to terminate (6 weeks ago) <Joao Duarte>
-[DELETE] c4834e55e - ensure pipeline terminates execution before doing assertion (6 weeks ago) <Joao Duarte>
-[DELETE] 29d7dcef9 - remove need for extra ShutdownWatcher thread (6 weeks ago) <Joao Duarte>
-[DELETE] bf7041fa2 - test improved cache reuse during generation (6 weeks ago) <Joao Duarte>
-[DELETE] 3a5f6860a - fix tests related to compiler cache due to reduced class generation (6 weeks ago) <Joao Duarte>
-[DELETE] 1413c62c4 - reduce Compiler Cache size to 100 (6 weeks ago) <Joao Duarte>
-[DELETE] e01c66c9b - JEE: nix global compiler lock by normalizing to Dataset interface (6 weeks ago) <Ry Biesemeyer>
-[FI] 40a807d4e - do not call agent.converge_state_and_update before agent.execute (6 weeks ago) <Colin Surprenant>
-[FI]c2e4e4f18 - release queue dir lock upon exceptions while opening queue (6 weeks ago) <Colin Surprenant>
-[DELETE] 8eddbd608 - Doc:Add deprecation notice to legacy collection (7 weeks ago) <Karen Metts>
-[DELETE] a63e53448 - Standardize on en-GB "behavioUr" for this doc (7 weeks ago) <Ry Biesemeyer>
-[DELETE] 4951f4e75 - Doc: Create section for cross-plugin functionality and add space delimiters (7 weeks ago) <Karen Metts>
-0efbc0488 - plugin config: support space-deliminated URIs on list-type params (7 weeks ago) <Ry Biesemeyer>
-[DELETE] 838c54879 - improve test for cache difference (7 weeks ago) <Joao Duarte>
-[DELETE] 27117a345 - Doc:Add info on using api keys for access Co-authored-by: João Duarte <jsvd@users.noreply.github.com> (7 weeks ago) <Karen Metts>
-[DELETE] fe105710b - Fix: missed 'equal' part in time comparison test (7 weeks ago) <andsel>
-[KEEP OR DELETE?]734ec0418 - Ensure line codec can be found in example ruby filter (#12042) (7 weeks ago) <vijairaj>
-659ef33f7 - [The symptom was that when pipeline reloading was triggered, the pipeline would always be reloaded regardless if it changed or not.]Backport #12009 to 7.x branch, bugfix in pipeline reload (7 weeks ago) <Colin Surprenant>
 
-[CHECK 7.8 0 minor Release Notes]41272371a - support Environment and Keystore substitutions in password-type plugin options (#11783) (7 weeks ago) <Ry Biesemeyer>
-[DELETE] 8de6cecc3 - Improve warning about UDP/TCP not having app level acks (7 weeks ago) <João Duarte>
-126056f3a - [Use unix pipe as local config file]Update local.rb for pipe file (#11109) (7 weeks ago) <Andrew Pan>
-[DELETE] 24ac6800c - Update proxy_support.rb (7 weeks ago) <Colin Milhaupt>
-[DELETE]  3e380bf10 - Backport of PR #11457 to 7.x (#12057) (7 weeks ago) <Andrea Selva>
-[DELETE]  c6795731f - Backport to 7.x of PR #11824 (7 weeks ago) <andsel>
-[DELETE]  72f4e2f8e - Backport of PR #11773 to branch 7.x (7 weeks ago) <andsel>
-[DELETE] d76784839 - Changed the assignment of plugin.id to load the value dynamically istead of hardcode (7 weeks ago) <Colin Surprenant>
-[DELETE] 35d2b391a - Feat: ship log4j2 commons-logging bridge with LS (7 weeks ago) <Karol Bucek>
-[DELETE] 6c50eda13 - [7x_backport] Add link conversion from Markdown to AsciiDoctor (#11508) (8 weeks ago) <Rob Bavey>
-[DELETE] 018550f86 - [DOCS] Fixes Stack Overview links (#12025) (#12026) (8 weeks ago) <Lisa Cawley>
-[DELETE] af54d95df - Tests: Add support for alternative architectures (8 weeks ago) <Rob Bavey>
-[DELETE] 1a0d5c961 - Use branch appropriate version of Elasticsearch (8 weeks ago) <Rob Bavey>
-[DELETE] b5528c5ff - Doc:Add link to JVM section of support matrix (9 weeks ago) <Karen Metts>
-[DELETE] 7f5859664 - remove uses of JSON.load in favor or JSON.parse (9 weeks ago) <Joao Duarte>
-[DELETE] addcb8a0a - Retrieve branch version of Filebeat via gradle (#12011) (9 weeks ago) <Rob Bavey>
-[DELETE] 8d53676aa - retry on failed gradlew wrapper command in Dockerfile (9 weeks ago) <Joao Duarte>
-[DELETE] 58b6e4d1c - add commented out options for api_key in logstash.yml (9 weeks ago) <Colin Surprenant>
-[DELETE] 6832040d2 - Doc:Add section and update JVM settings (9 weeks ago) <Karen Metts>
-[DELETE] 9bb792a0d - Incorporate review comments (9 weeks ago) <Karen Metts>
-[DELETE] 610abaaf9 - Wording tweak (9 weeks ago) <Karen Metts>
-[DELETE] 335032dc3 - Expand event ordering (9 weeks ago) <Karen Metts>
-[DELETE] 9597ab1ee - Add content for pipeline ordering and init time (9 weeks ago) <Karen Metts>
-[DELETE] 9aec96904 - Add section for conceptual info (9 weeks ago) <Karen Metts>
-[DELETE] c23360fc4 - Add java8 to test matrix (9 weeks ago) <Rob Bavey>
-[DELETE] 33b6059aa - Revert "upgrade google-java-format to 1.8" (9 weeks ago) <Joao Duarte>
-[DELETE] ecbc7aa15 - remove explicit return from Mutex#synchronize in Plugin Registry (9 weeks ago) <Joao Duarte>
-[DELETE] 3248317ea - upgrade google-java-format to 1.8 (9 weeks ago) <Joao Duarte>
-e5f1e613e - [log4j improvement - improved logging]update log4j script routes definition (9 weeks ago) <Joao Duarte>
-[DITTO] 216fa60b2 - update log4j dependency to 2.13.3 (9 weeks ago) <Joao Duarte>
-[DELETE] 8b44f37a0 - update commons-codec to 1.14 (9 weeks ago) <Joao Duarte>
-[DELETE] 2deb5c02a - Fix prepare_offline_spec.rb test (9 weeks ago) <Rob Bavey>
-[DELETE] ace1dd131 - [7x backport] Escape test fixture service scripts (9 weeks ago) <Rob Bavey>
-[DELETE] 20a30f823 - Give more options for testing with ruby while waiting for port (9 weeks ago) <Rob Bavey>
-[DELETE] efc31ff84 - Adds matrix-runtime-javas.yml (#11973) (10 weeks ago) <Andres Rodriguez>
-[DELETE] 3fcd117b8 - Doc:Add section to security docs for API keys (10 weeks ago) <Karen Metts>
-[DELETE] 8b6c52470 - better specification of the behaviour of in operator in various contexts (10 weeks ago) <andsel>
-[DELETE] d4e82663f - added description of xpack.monitoring.elasticsearch.proxy (10 weeks ago) <andsel>
-[DELETE] 24d60b81c - Exposed again the pipelines queue.data and queue.capacity subdocuments for _node/stats (10 weeks ago) <andsel>
-[DELETE] f3f6ca049 - Fix integration tests related to logs when persistent_queue FEATURE_FLAG is enabled (10 weeks ago) <andsel>
-[DELETE] 326b1c1ed - Pass FEATURE_FLAG as Docker environment variable (10 weeks ago) <andsel>
-[DELETE] 709602d9c - [7x backport] Drop unnecessary os files from .ci (#11959) (10 weeks ago) <Andres Rodriguez>
-[DELETE] 4ab9e9c4f - [7x backport] Add openjdk14 to windows build matrix (#11971) (10 weeks ago) <Rob Bavey>
-[DELETE] e810f96e6 - Use BUILD_JAVA_HOME FOR JAVA_HOME in xpack integration tests (10 weeks ago) <Rob Bavey>
-[DELETE] a278276ec - Forwardport: Add 7.7.1 release notes to 7.x branch (#11964) (2 months ago) <Karen Metts>
-[DELETE] 5e62c96c1 - add support for api_key authentication in xpack management and monitoring. (#11953) (2 months ago) <Colin Surprenant>
-[DELETE] fa75ac278 - Disable flaky multiReceiveRecordsDurationInMillis test (2 months ago) <Rob Bavey>
-[DELETE] 85e505778 - [7.x backport] Fix service script execution when path includes `&&` (#11944) (#11948) (2 months ago) <Rob Bavey>
-[DELETE] 94f282c88 - display Java pipeline initialization time (2 months ago) <Colin Surprenant>
-[DELETE] b28fa3e7d - Set beats permission checking to strict=false (2 months ago) <Rob Bavey>
-[DELETE] 1ed6523e8 - Fix typo (3 months ago) <Rob Bavey>
-[DELETE] 8cce2091d - Switch 'no nc' port checker to ruby (3 months ago) <Rob Bavey>
-[DELETE] e4a513476 - Enable fallback to sleep if nc not installed (3 months ago) <Rob Bavey>
-[DELETE] b2da4449a - Use task avoidance API in gradle scripts (#11914) (#11943) (3 months ago) <Rob Bavey>
-[DELETE] aeb46de6c - emit deprecation entry for netflow and azure modules (3 months ago) <Joao Duarte>
-[DELETE] c5b6a853d -  Introduced JDK environment variable to explicitly pass the JAVA_HOME to use and defined .ci/ with OS and JDK preferences (#11934) (3 months ago) <Andrea Selva>
-[DELETE] 84dd62a0a - Ignore flaky `testTimeCallable` test (3 months ago) <Rob Bavey>
-[DELETE] ffcba6faf - Quieten down kafka teardown script (3 months ago) <Rob Bavey>
-[DELETE] 1c4df35e0 - Doc:Replace cloud trial notice with attribute (3 months ago) <Karen Metts>
-[DELETE] 24987d4fd - Doc:Add deprecation notice for azure module (3 months ago) <Karen Metts>
-[DELETE] 881099c39 - download kafka from another mirror (3 months ago) <Joao Duarte>
-[DELETE] ecdf8715e - Fix: avoid gsub (frame dependent) usage from Java (3 months ago) <Karol Bucek>
-[DELETE] 1cc1ce390 - Performance: improve event.clone memory usage (3 months ago) <Karol Bucek>
-[DELETE] b3fd033e2 - Doc:Expand and clarify guidance for jvm settings (3 months ago) <Karen Metts>
-[DELETE] f31d9193c - bump version to 7.9.0 (3 months ago) <Joao Duarte>
+==== Performance improvements and notable issues fixed
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.8.1..7.9 *.release"
-Changed plugin versions:
-logstash-codec-rubydebug: 3.0.6 -> 3.1.0
-logstash-filter-elasticsearch: 3.7.1 -> 3.9.0
-logstash-filter-memcached: 1.0.2 -> 1.1.0
-logstash-input-elasticsearch: 4.6.2 -> 4.7.0
-logstash-input-file: 4.1.18 -> 4.2.1
-logstash-input-imap: 3.0.7 -> 3.1.0
-logstash-integration-kafka: 10.2.0 -> 10.4.0
-logstash-integration-rabbitmq: 7.0.3 -> 7.1.0
-logstash-mixin-ecs_compatibility_support: 1.0.0 -> 1.0.0
-logstash-output-elastic_app_search: 1.0.0 -> 1.1.0
-logstash-output-elasticsearch: 10.5.1 -> 10.6.1
----------- DELETE UP TO HERE ------------
+* Support <<space-delimited-uris-in-list-params,white space as a delimiter>> on list-type params https://github.com/elastic/logstash/pull/12051[12051].
+Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://github.com/elastic/logstash/issues/8157[#8157].
+* Support using unix pipe as local config file https://github.com/elastic/logstash/pull/11109[#11109]
+* Logging improvements
+** Display Java pipeline initialization time to help with troubleshooting and diagnostics shttps://github.com/elastic/logstash/pull/11749[#11749]
+** Logging framework enhancement to allow more finetuned logging https://github.com/elastic/logstash/pull/11853[#11853]
+** e5f1e613e - [log4j improvement - improved logging]update log4j script routes definition (9 weeks ago) <Joao Duarte>
+** (log4j definitions improvement for PQ info. Better logging)Fix integration tests related to logs when persistent_queue FEATURE_FLAG is enabled https://github.com/elastic/logstash/pull/11929[#11929]
+** Improved {ls} startup logging to ensure that 'starting logstash' entry happens before any other log entries https://github.com/elastic/logstash/pull/12086[#12086]
+* Fix: Add back pipelines queue.data and queue.capacity subdocuments for _node/stats https://github.com/elastic/logstash/pull/11923[#11923]
+* Fix: Avoid reloading pipelines that have no changes [#12009]https://github.com/elastic/logstash/pull/12009
+* Fix: Allow trailing newlines in config fragments to resolve an issue in which split configs were corrupted when merged https://github.com/elastic/logstash/pull/12161[#12161]
+* Fix: Resolve issue in which pipeline init fails for a slow pipeline when monitoring is enabled https://github.com/elastic/logstash/pull/12034[#12034]
+* Fix: Ignore default username when no password is set for monitoring and management https://github.com/elastic/logstash/pull/12094[#12094]
+* Refactor code refactor to launch ruby thread from ruby code instead of java (as a workaround for jruby bug) https://github.com/elastic/logstash/pull/11900[#11900]
+* Updates to dependencies
+** Update log4j dependency to 2.13.3
+** Update jruby to 9.2.12.0
 
-==== Plugins
+
+==== Plugin releases
 
 *Rubydebug Codec - 3.1.0*
 
-- Replace stale awesome_print library with maintained fork called amazing_print.
+* Replace stale awesome_print library with maintained fork called amazing_print.
 
 *Elasticsearch Filter - 3.9.0*
 
 * Add support to define a proxy with the proxy config option https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/134[#134]
-
 * Added api_key support https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/132[#132]
-
 * [DOC] Removed outdated compatibility notice https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/131[#131]
 
 *Memcached Filter - 1.1.0*
@@ -228,9 +99,8 @@ logstash-output-elasticsearch: 10.5.1 -> 10.6.1
 
 *File Input - 4.2.1*
 
-* Fix: skip sincedb eviction if read mode completion deletes file during flush https://github.com/logstash-plugins/logstash-input-file/pull/273[#273]
-  
-* Fix: watched files performance with huge filesets https://github.com/logstash-plugins/logstash-input-file/pull/268[#268] 
+* Fix: Skip sincedb eviction if read mode completion deletes file during flush https://github.com/logstash-plugins/logstash-input-file/pull/273[#273]  
+* Fix: Watched files performance with huge filesets https://github.com/logstash-plugins/logstash-input-file/pull/268[#268] 
 * Updated logging to include full traces in debug (and trace) levels
 
 *Imap Input - 3.1.0*
@@ -240,9 +110,8 @@ logstash-output-elasticsearch: 10.5.1 -> 10.6.1
 
 *Kafka Integration - 10.4.0*
 
-* added the input `isolation_level` to allow fine control of whether to return transactional messages https://github.com/logstash-plugins/logstash-integration-kafka/pull/44[#44]
-
-* added the input and output `client_dns_lookup` parameter to allow control of how DNS requests are made
+* Added the input `isolation_level` to allow fine control of whether to return transactional messages https://github.com/logstash-plugins/logstash-integration-kafka/pull/44[#44]
+* Added the input and output `client_dns_lookup` parameter to allow control of how DNS requests are made
 
 *Rabbitmq Integration - 7.1.0*
 
@@ -252,10 +121,6 @@ logstash-output-elasticsearch: 10.5.1 -> 10.6.1
 * Fixes bug where attempting to read from undeclared exchange resulted in infinite retry loop (https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/10[#10])
 * Fixes bug where failing to establish initial connection resulted in a pipeline that refused to shut down (https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/11[#11])
 
-*Ecs_compatibility_support Mixin - 1.0.0*
-
-404: Not Found
-
 *Elastic_app_search Output - 1.1.0*
 
 * Switched AppSearch client library from Java to Ruby https://github.com/logstash-plugins/logstash-output-elastic_app_search/issues/12[#12]
@@ -264,8 +129,31 @@ logstash-output-elasticsearch: 10.5.1 -> 10.6.1
 *Elasticsearch Output - 10.6.1*
 
 * Fixed an issue introduced in 10.6.0 that broke Logstash Core's monitoring feature when this plugin is run in Logstash 7.7-7.8. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/953[#953]
-
 * Added `ecs_compatiblity` mode, for managing ECS-compatable templates https://github.com/logstash-plugins/logstash-output-elasticsearch/issue/952[#952]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 [[logstash-7-8-1]]
