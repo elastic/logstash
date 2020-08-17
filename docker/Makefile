@@ -12,7 +12,7 @@ else
   VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
-IMAGE_FLAVORS ?= oss full
+IMAGE_FLAVORS ?= oss full ubi8
 DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
@@ -28,7 +28,7 @@ lint: venv
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts: venv dockerfile env2yaml
+build-from-local-full-artifacts: venv dockerfile env2yaml
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -46,6 +46,16 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
 	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
+	  (docker kill $(HTTPD); false);
+	-docker kill $(HTTPD)
+
+build-from-local-ubi8-artifacts: venv dockerfile env2yaml
+	docker run --rm -d --name=$(HTTPD) \
+	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	pyfiglet -f puffy -w 160 "Building: oss"; \
+	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -69,7 +79,7 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full
+public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full public_dockerfiles_ubi8
 
 public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
@@ -96,6 +106,19 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+	jinja2 \
+	  -D created_date='$(DATE)' \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='ubi8' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ubi8 && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
