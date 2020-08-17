@@ -178,8 +178,7 @@ Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://gith
 
 *Imap Input - 3.1.0*
 
-* Adds an option to recursively search the message parts for attachment and inline attachment filenames. If the save_attachments option is set to true, the content of attachments is included in the `attachments.data` field. The attachment data can then be used by the Elasticsearch Ingest Attachment Processor Plugin.
-  https://github.com/logstash-plugins/logstash-input-imap/pull/48[#48]
+* Adds an option to recursively search the message parts for attachment and inline attachment filenames. If the save_attachments option is set to true, the content of attachments is included in the `attachments.data` field. The attachment data can then be used by the Elasticsearch Ingest Attachment Processor Plugin https://github.com/logstash-plugins/logstash-input-imap/pull/48[#48]
 
 *Kafka Integration - 10.4.0*
 
@@ -203,30 +202,6 @@ Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://gith
 
 * Fixed an issue introduced in 10.6.0 that broke Logstash Core's monitoring feature when this plugin is run in Logstash 7.7-7.8. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/953[#953]
 * Added `ecs_compatiblity` mode, for managing ECS-compatable templates https://github.com/logstash-plugins/logstash-output-elasticsearch/issue/952[#952]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 [[logstash-7-8-1]]
