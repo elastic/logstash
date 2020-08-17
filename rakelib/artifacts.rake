@@ -122,7 +122,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare", "generate_build_metadata"] do
@@ -199,13 +199,19 @@ namespace "artifact" do
   desc "Build docker image"
   task "docker" => ["prepare", "generate_build_metadata", "tar"] do
     puts("[docker] Building docker image")
-    build_docker(false)
+    build_docker('full')
   end
 
   desc "Build OSS docker image"
   task "docker_oss" => ["prepare", "generate_build_metadata", "tar_oss"] do
     puts("[docker_oss] Building OSS docker image")
-    build_docker(true)
+    build_docker('oss')
+  end
+
+  desc "Build UBI8 docker image"
+  task "docker_ubi8" => %w(prepare generate_build_metadata tar) do
+    puts("[docker_ubi8] Building UBI docker image")
+    build_docker('ubi8')
   end
 
   desc "Generate Dockerfiles for full and oss images"
@@ -213,6 +219,7 @@ namespace "artifact" do
     puts("[dockerfiles] Building Dockerfiles")
     build_dockerfile('oss')
     build_dockerfile('full')
+    build_dockerfile('ubi8')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -227,6 +234,11 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
+  desc "Generate Dockerfile for full images"
+  task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building default Dockerfiles")
+    build_dockerfile('ubi8')
+  end
 
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
@@ -242,6 +254,7 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_ubi8"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
     end
   end
@@ -580,18 +593,14 @@ namespace "artifact" do
     end
   end # def package
 
-  def build_docker(oss = false)
+  def build_docker(flavor)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER
     }
     Dir.chdir("docker") do |dir|
-      if oss
-        system(env, "make build-from-local-oss-artifacts")
-      else
-        system(env, "make build-from-local-artifacts")
-      end
+        system(env, "make build-from-local-#{flavor}-artifacts")
     end
   end
 
