@@ -50,6 +50,16 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
 
   echo "Acceptance: Running the tests"
   bundle exec rspec docker/spec/full/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
+  echo "building full docker images"
+  cd $LS_HOME
+  rake artifact:docker_ubi8
+  echo "Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+
+  echo "Acceptance: Running the tests"
+  bundle exec rspec docker/spec/ubi8/*_spec.rb
 else
   echo "Building all docker images"
   cd $LS_HOME
