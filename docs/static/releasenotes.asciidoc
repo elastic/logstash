@@ -141,7 +141,7 @@ Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://gith
 ** Better logging after definition improvements and script routes in log4j https://github.com/elastic/logstash/pull/11929[#11929] and https://github.com/elastic/logstash/pull/11992[#11992]
 ** Improved {ls} startup logging to ensure that 'starting logstash' entry happens before any other log entries https://github.com/elastic/logstash/pull/12086[#12086]
 * Fix: Add back pipelines queue.data and queue.capacity subdocuments for _node/stats https://github.com/elastic/logstash/pull/11923[#11923]
-* Fix: Avoid reloading pipelines that have no changes [#12009]https://github.com/elastic/logstash/pull/12009
+* Fix: Avoid reloading pipelines that have no changes https://github.com/elastic/logstash/pull/12009[#12009]
 * Fix: Allow trailing newlines in config fragments to resolve an issue in which split configs were corrupted when merged https://github.com/elastic/logstash/pull/12161[#12161]
 * Fix: Resolve issue in which pipeline init fails for a slow pipeline when monitoring is enabled https://github.com/elastic/logstash/pull/12034[#12034]
 * Fix: Ignore default username when no password is set for monitoring and management https://github.com/elastic/logstash/pull/12094[#12094]
