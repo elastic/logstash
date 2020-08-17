@@ -154,7 +154,7 @@ Resolves https://github.com/elastic/logstash/issues/6366[#6366] and https://gith
 
 *Rubydebug Codec - 3.1.0*
 
-* Replace stale awesome_print library with maintained fork called amazing_print.
+* Replace stale awesome_print library with maintained fork called amazing_print https://github.com/logstash-plugins/logstash-codec-rubydebug/pull/8[#8]
 
 *Elasticsearch Filter - 3.9.0*
 
