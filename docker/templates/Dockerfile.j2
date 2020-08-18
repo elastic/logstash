@@ -16,9 +16,12 @@
 {% if image_flavor == 'ubi8' -%}
   {% set base_image = 'registry.access.redhat.com/ubi8/ubi-minimal' -%}
   {% set package_manager = 'microdnf'  -%}
+  # Minimal distributions do not ship with en language packs.
+  {% set locale = 'C.UTF-8' -%}
 {% else -%}
   {% set base_image = 'centos:7'  -%}
   {% set package_manager = 'yum' -%}
+  {% set locale = 'en_US.UTF-8' -%}
 {% endif -%}
 
 FROM {{ base_image }}
@@ -62,9 +65,8 @@ ADD config/log4j2.properties config/
 ADD pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 
-# Ensure Logstash gets a UTF-8 locale by default.
-# Minimal distributions do not ship with en language packs.
-ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
+# Ensure Logstash gets the correct locale by default.
+ENV LANG={{ locale }} LC_ALL={{ locale }}
 
 # Place the startup wrapper script.
 ADD bin/docker-entrypoint /usr/local/bin/
