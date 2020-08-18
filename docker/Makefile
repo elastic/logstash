@@ -54,7 +54,7 @@ build-from-local-ubi8-artifacts: venv dockerfile env2yaml
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	pyfiglet -f puffy -w 160 "Building: oss"; \
+	pyfiglet -f puffy -w 160 "Building: ubi8"; \
 	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)

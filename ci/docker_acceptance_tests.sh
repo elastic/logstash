@@ -11,6 +11,7 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=
 # Can run either a specific flavor, or all flavors -
 # eg `ci/acceptance_tests.sh oss` will run tests for open source container
 #    `ci/acceptance_tests.sh full` will run tests for the default container
+#    `ci/acceptance_tests.sh ubi8` will run tests for the ubi8 based container
 #    `ci/acceptance_tests.sh` will run tests for all containers
 SELECTED_TEST_SUITE=$1
 
@@ -51,7 +52,7 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "Acceptance: Running the tests"
   bundle exec rspec docker/spec/full/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
-  echo "building full docker images"
+  echo "building ubi8 docker images"
   cd $LS_HOME
   rake artifact:docker_ubi8
   echo "Acceptance: Installing dependencies"
