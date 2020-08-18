@@ -111,9 +111,9 @@ class LogStash::Agent
 
     transition_to_running
 
-    converge_state_and_update
-
     start_webserver_if_enabled
+
+    converge_state_and_update
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
