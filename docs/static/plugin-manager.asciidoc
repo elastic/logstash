@@ -11,7 +11,7 @@ Interface (CLI) invocations described below.
 ====
 Apple's rollout of stricter notarization requirements affected the notarization
 of the {version} {ls} artifacts. If macOS Catalina displays a dialog when you
-first run {ls} that interrupts it, you will need to take an action to allow it
+first run {ls} that interrupts it, you need to take an action to allow it
 to run.
 To prevent Gatekeeper checks on the {ls} files, run the following command on the
 downloaded `.tar.gz` archive or the directory to which was extracted:
@@ -31,21 +31,7 @@ or is from an unidentified developer_ section of
 https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
 ====
 
-
-[float]
-[[http-proxy]]
-=== Proxy configuration
-
-The majority of the plugin manager commands require access to the internet to reach https://rubygems.org[RubyGems.org].
-If your organization is behind a firewall you can set these environments variables to configure Logstash to use your proxy.
-
-[source, shell]
-----------------------------------
-export http_proxy=http://localhost:3128
-export https_proxy=http://localhost:3128
-----------------------------------
-
-[float]
+[discrete]
 [[listing-plugins]]
 === Listing plugins
 
@@ -59,15 +45,15 @@ bin/logstash-plugin list --verbose <2>
 bin/logstash-plugin list '*namefragment*' <3>
 bin/logstash-plugin list --group output <4>
 ----------------------------------
-<1> Will list all installed plugins
+<1> Lists all installed plugins
 
-<2> Will list installed plugins with version information
+<2> Lists installed plugins with version information
 
-<3> Will list all installed plugins containing a namefragment
+<3> Lists all installed plugins containing a namefragment
 
-<4> Will list all installed plugins for a particular group (input, filter, codec, output)
+<4> Lists all installed plugins for a particular group (input, filter, codec, output)
 
-[float]
+[discrete]
 [[installing-plugins]]
 === Adding plugins to your deployment
 
@@ -82,8 +68,8 @@ bin/logstash-plugin install logstash-output-kafka
 
 Once the plugin is successfully installed, you can start using it in your configuration file.
 
+[discrete]
 [[installing-local-plugins]]
-[float]
 ==== Advanced: Adding a locally built plugin
 
 In some cases, you want to install plugins which have not yet been released and not hosted on RubyGems.org. Logstash
@@ -94,8 +80,8 @@ provides you the option to install a locally built plugin which is packaged as a
 bin/logstash-plugin install /path/to/logstash-output-kafka-1.0.0.gem
 ----------------------------------
 
+[discrete]
 [[installing-local-plugins-path]]
-[float]
 ==== Advanced: Using `--path.plugins`
 
 Using the Logstash `--path.plugins` flag, you can load a plugin source code located on your file system. Typically this is used by
@@ -109,8 +95,8 @@ The path needs to be in a  specific directory hierarchy: `PATH/logstash/TYPE/NAM
 bin/logstash --path.plugins /opt/shared/lib
 ----------------------------------
 
+[discrete]
 [[updating-plugins]]
-[float]
 === Updating plugins
 
 Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update
@@ -121,12 +107,29 @@ subcommand you can get the latest version of the plugin.
 bin/logstash-plugin update <1>
 bin/logstash-plugin update logstash-output-kafka <2>
 ----------------------------------
-<1> will update all installed plugins
+<1> Updates all installed plugins
 
-<2> will update only this plugin
+<2> Updates only this plugin
 
+[discrete]
+[[plugin-shutdown]]
+==== Plugin Shutdown APIs
+
+You have three options for shutting down a plugin: `stop`, `stop?`, and `close`.
+
+* Call the `stop` method from outside the plugin thread. This method signals the plugin to stop.
+* The `stop?` method returns `true` when the `stop` method has already been called for that plugin.
+* The `close` method performs final bookkeeping and cleanup after the plugin's `run` method and the plugin's thread both
+exit. The `close` method is a a new name for the method known as `teardown` in previous versions of Logstash.
+
+The `shutdown`, `finished`, `finished?`, `running?`, and `terminating?` methods are redundant and no longer present in the
+Plugin Base class.
+
+Sample code for the plugin shutdown APIs is https://github.com/logstash-plugins/logstash-input-example/blob/master/lib/logstash/inputs/example.rb[available].
+
+
+[discrete]
 [[removing-plugins]]
-[float]
 === Removing plugins
 
 If you need to remove plugins from your Logstash installation:
@@ -136,9 +139,22 @@ If you need to remove plugins from your Logstash installation:
 bin/logstash-plugin remove logstash-output-kafka
 ----------------------------------
 
+[discrete]
+[[http-proxy]]
+=== Proxy configuration
+
+The majority of the plugin manager commands require access to the internet to reach https://rubygems.org[RubyGems.org].
+If your organization is behind a firewall you can set these environments variables to configure Logstash to use your proxy.
+
+[source, shell]
+----------------------------------
+export http_proxy=http://localhost:3128
+export https_proxy=http://localhost:3128
+----------------------------------
+
+[discrete]
 [[proxy-plugins]]
-[float]
-=== Proxy Support
+=== Proxy support
 
 The previous sections relied on Logstash being able to communicate with RubyGems.org. In certain environments, Forwarding
 Proxy is used to handle HTTP requests. Logstash Plugins can be installed and updated through a Proxy by setting the
@@ -148,7 +164,7 @@ Proxy is used to handle HTTP requests. Logstash Plugins can be installed and upd
 ----------------------------------
 export HTTP_PROXY=http://127.0.0.1:3128
 
-bin/logstash-plugin install logstash-output-kafka
+bin/logstash-plugin install logstash-output-elasticsearch
 ----------------------------------
 
 Once set, plugin commands install, update can be used through this proxy.

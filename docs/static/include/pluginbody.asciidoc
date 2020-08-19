@@ -21,6 +21,7 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 . Click the green **New** button in the upper right.
 . Specify the following settings for your new repo:
 ** **Repository name** -- a unique name of the form +logstash-pass:attributes[{plugintype}]-pluginname+.
+If the plugin name is more than one word, separate words with underscores.
 ** **Public or Private** -- your choice, but the repository must be Public if you want to submit it as an official plugin.
 ** **Initialize this repository with a README** -- enables you to immediately clone the repository to your computer.
 . Click **Create Repository**.

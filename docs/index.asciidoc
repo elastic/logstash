@@ -254,12 +254,15 @@ include::static/maintainer-guide.asciidoc[]
 
 // Submitting a Plugin
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
+:edit_url!:
 include::static/submitting-a-plugin.asciidoc[]
+
+:edit_url!:
+include::static/listing-a-plugin.asciidoc[]
 
 // Contributing to Logstash - JAVA EDITION
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-java-plugin.asciidoc
+:edit_url!:
 include::static/contributing-java-plugin.asciidoc[]
 
 // Glossary of Terms
