@@ -509,7 +509,9 @@ namespace "artifact" do
       excluder = oss_excluder
     end
 
-    unless bundle_jdk
+    if bundle_jdk
+      suffix += "-with-jdk-x86_64"
+    else
       suffix += "-no-jdk"
     end
 

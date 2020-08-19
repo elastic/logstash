@@ -119,7 +119,16 @@ module ServiceTester
 
     def filename(options={})
       snapshot  = options.fetch(:snapshot, true)
-      "logstash-#{options[:version]}#{(snapshot ?  "-SNAPSHOT" : "")}"
+      if @skip_jdk_infix
+        jdk_infix = ""
+      else
+        if @bundled_jdk
+          jdk_infix = "with-jdk-x86_64-"
+        else
+          jdk_infix = "no-jdk-"
+        end
+      end
+      "logstash-#{jdk_infix}#{options[:version]}#{(snapshot ?  "-SNAPSHOT" : "")}"
     end
   end
 
