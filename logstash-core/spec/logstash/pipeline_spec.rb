@@ -371,18 +371,21 @@ describe LogStash::Pipeline do
       eos
     }
 
-    context "output close" do
+    context "inputs and output close" do
       let(:pipeline) { mock_pipeline_from_string(test_config_without_output_workers) }
       let(:output) { pipeline.outputs.first }
+      let(:input) { pipeline.inputs.first }
 
       before do
         allow(output).to receive(:do_close)
+        allow(input).to receive(:do_close)
       end
 
       it "should call close of output without output-workers" do
         pipeline.start
         pipeline.shutdown
         expect(output).to have_received(:do_close).once
+        expect(input).to have_received(:do_close).once
       end
     end
   end
