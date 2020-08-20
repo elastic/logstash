@@ -474,32 +474,33 @@ module LogStash; class Pipeline < BasePipeline
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
-        @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
-                      default_logging_keys(:plugin => plugin.class.config_name, :exception => e.message, :backtrace => e.backtrace))
+        @logger.debug(
+          "Input plugin raised exception during shutdown, ignoring it.",
+          default_logging_keys(
+            :plugin => plugin.class.config_name,
+            :exception => e.message,
+            :backtrace => e.backtrace))
         return
       end
 
       # otherwise, report error and restart
-      @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                            default_logging_keys(
-                              :plugin => plugin.inspect,
-                              :error => e.message,
-                              :exception => e.class,
-                              :stacktrace => e.backtrace.join("\n"))))
+      @logger.error(I18n.t(
+        "logstash.pipeline.worker-error-debug",
+        default_logging_keys(
+          :plugin => plugin.inspect,
+          :error => e.message,
+          :exception => e.class,
+          :stacktrace => e.backtrace.join("\n"))))
 
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
       sleep(1)
-      begin
-        plugin.do_close
-      rescue => close_exception
-        @logger.debug("Input plugin raised exception while closing, ignoring",
-                      default_logging_keys(:plugin => plugin.class.config_name, :exception => close_exception.message,
-                                           :backtrace => close_exception.backtrace))
-      end
+      close_plugin_and_ignore(plugin)
       retry
+    ensure
+      close_plugin_and_ignore(plugin)
     end
-  end # def inputworker
+  end
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
@@ -653,6 +654,19 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   private
+
+  def close_plugin_and_ignore(plugin)
+    begin
+      plugin.do_close
+    rescue => e
+      @logger.warn(
+        "plugin raised exception while closing, ignoring",
+        default_logging_keys(
+          :plugin => plugin.class.config_name,
+          :exception => e.message,
+          :backtrace => e.backtrace))
+    end
+  end
 
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
