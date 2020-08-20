@@ -774,8 +774,9 @@ describe LogStash::JavaPipeline do
   end
 
   context "Periodic Flush" do
-    let(:config) do
-      <<-EOS
+    shared_examples 'it flushes correctly' do
+      let(:config) do
+        <<-EOS
       input {
         dummy_input {}
       }
@@ -785,37 +786,48 @@ describe LogStash::JavaPipeline do
       output {
         dummy_output {}
       }
-      EOS
-    end
-    let(:output) { ::LogStash::Outputs::DummyOutput.new }
-
-    before do
-      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-    end
-
-    it "flush periodically" do
-      Thread.abort_on_exception = true
-      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      Timeout.timeout(timeout) do
-        pipeline.start
+        EOS
       end
-      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(10).for do
-          # give us a bit of time to flush the events
-          output.events.empty?
-        end.to be_falsey
+      let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+      before do
+        allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+        allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+        allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+        allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       end
 
-      expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+      it "flush periodically" do
+        Thread.abort_on_exception = true
+        pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+        Timeout.timeout(timeout) do
+          pipeline.start
+        end
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          wait(10).for do
+            # give us a bit of time to flush the events
+            output.events.empty?
+          end.to be_falsey
+        end
 
-      pipeline.shutdown
+        expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+
+        pipeline.shutdown
+      end
+
+    end
+
+    it_behaves_like 'it flushes correctly'
+
+    context 'with pipeline ordered' do
+      before do
+        pipeline_settings_obj.set("pipeline.workers", 1)
+        pipeline_settings_obj.set("pipeline.ordered", true)
+      end
+      it_behaves_like 'it flushes correctly'
     end
   end
-
   context "Periodic Flush that intermittently returns nil" do
     let(:config) do
       <<-EOS
