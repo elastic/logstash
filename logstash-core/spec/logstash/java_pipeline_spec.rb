@@ -405,12 +405,14 @@ describe LogStash::JavaPipeline do
       eos
     }
 
-    context "output close" do
+    context "input and output close" do
       let(:pipeline) { mock_java_pipeline_from_string(test_config_without_output_workers) }
       let(:output) { pipeline.outputs.first }
+      let(:input) { pipeline.inputs.first }
 
-      it "should call close of output without output-workers" do
+      it "should call close of input and output without output-workers" do
         expect(output).to receive(:do_close).once
+        expect(input).to receive(:do_close).once
         pipeline.start
         pipeline.shutdown
       end
