@@ -256,6 +256,7 @@ pipeline.ordered: auto
 #xpack.monitoring.enabled: false
 #xpack.monitoring.elasticsearch.username: logstash_system
 #xpack.monitoring.elasticsearch.password: password
+#xpack.monitoring.elasticsearch.proxy: ["http://proxy:port"]
 #xpack.monitoring.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
 # an alternative to hosts + username/password settings is to use cloud_id/cloud_auth
 #xpack.monitoring.elasticsearch.cloud_id: monitoring_cluster_id:xxxxxxxxxx
@@ -278,6 +279,7 @@ pipeline.ordered: auto
 #xpack.management.pipeline.id: ["main", "apache_logs"]
 #xpack.management.elasticsearch.username: logstash_admin_user
 #xpack.management.elasticsearch.password: password
+#xpack.management.elasticsearch.proxy: ["http://proxy:port"]
 #xpack.management.elasticsearch.hosts: ["https://es1:9200", "https://es2:9200"]
 # an alternative to hosts + username/password settings is to use cloud_id/cloud_auth
 #xpack.management.elasticsearch.cloud_id: management_cluster_id:xxxxxxxxxx

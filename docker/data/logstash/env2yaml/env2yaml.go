@@ -112,6 +112,7 @@ func normalizeSetting(setting string) (string, error) {
 		"xpack.management.elasticsearch.hosts",
 		"xpack.management.elasticsearch.username",
 		"xpack.management.elasticsearch.password",
+		"xpack.management.elasticsearch.proxy",
 		"xpack.management.elasticsearch.ssl.certificate_authority",
 		"xpack.management.elasticsearch.ssl.verification_mode",
 		"xpack.management.elasticsearch.ssl.truststore.path",
