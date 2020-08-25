@@ -306,6 +306,8 @@ public final class CompiledPipeline {
 
     public final class CompiledOrderedExecution extends CompiledExecution {
 
+        @SuppressWarnings({"unchecked"})  private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
+
         @Override
         public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
            compute(batch.events(), flush, shutdown);
@@ -313,16 +315,26 @@ public final class CompiledPipeline {
 
         @Override
         public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-            // send batch one-by-one as single-element batches down the filters
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
-            for (final RubyEvent e : batch) {
-                filterBatch.set(0, e);
-                final Collection<RubyEvent> result = compiledFilters.compute(filterBatch, flush, shutdown);
-                copyNonCancelledEvents(result, outputBatch);
-                compiledFilters.clear();
+            if (!batch.isEmpty()) {
+                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
+                // send batch one-by-one as single-element batches down the filters
+                for (final RubyEvent e : batch) {
+                    filterBatch.set(0, e);
+                    _compute(filterBatch, outputBatch, flush, shutdown);
+                }
+                compiledOutputs.compute(outputBatch, flush, shutdown);
+            } else if (flush || shutdown) {
+                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+                _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
+                compiledOutputs.compute(outputBatch, flush, shutdown);
             }
-            compiledOutputs.compute(outputBatch, flush, shutdown);
+        }
+
+        private void _compute(final RubyArray<RubyEvent> batch, final RubyArray<RubyEvent> outputBatch, final boolean flush, final boolean shutdown) {
+            final Collection<RubyEvent> result = compiledFilters.compute(batch, flush, shutdown);
+            copyNonCancelledEvents(result, outputBatch);
+            compiledFilters.clear();
         }
     }
 
