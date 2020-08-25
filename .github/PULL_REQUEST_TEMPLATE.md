@@ -1,21 +1,33 @@
 <!-- Type of change
 Please label this PR with one of the following labels, depending on the scope of your change:
-- Bug
-- Enhancement
-- Breaking change
-- Deprecation
+- bug
+- enhancement
+- breaking change
 -->
 
 ## What does this PR do?
 
 <!-- Mandatory
 Explain here the changes you made on the PR. Please explain the WHAT: patterns used, algorithms implemented, design architecture, message processing, etc.
+
+Example:
+  Expose 'xpack.monitoring.elasticsearch.proxy' in the docker environment variables and update logstash.yml to surface this config option.
+  
+  This commit exposes the 'xpack.monitoring.elasticsearch.proxy' variable in the docker by adding it in env2yaml.go, which translates from being an environment   
+  variable to a proper yaml config.
+  
+  Additionally, this PR exposes this setting for both xpack monitoring & management to the logstash.yml file.
 -->
 
 ## Why is it important?
 
 <!-- Mandatory
-Explain here the WHY, or the rationale/motivation for the changes.
+Explain here the WHY or the IMPACT to the user, or the rationale/motivation for the changes.
+
+Example:
+  This PR fixes an issue that was preventing the docker image from using the proxy setting when sending xpack monitoring information.
+  and/or
+  This PR now allows the user to define the xpack monitoring proxy setting in the docker container.
 -->
 
 ## Checklist
@@ -29,7 +41,7 @@ List here all the items you have verified BEFORE sending this PR. Please DO NOT 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
-- [ ] I have made corresponding change to the default configuration files
+- [ ] I have made corresponding change to the default configuration files (and/or docker env variables)
 - [ ] I have added tests that prove my fix is effective or that my feature works
 
 ## Author's Checklist
