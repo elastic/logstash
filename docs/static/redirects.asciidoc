@@ -3,3 +3,15 @@
 
 The following pages have moved or been deleted.
 
+[role="exclude",id="plugins-filters-multiline"]
+=== Multiline filter plugin
+
+The <<plugins-codecs-multiline,multiline codec plugin>> replaces the multiline
+filter plugin. The multiline codec is better equipped to handle multi-worker
+pipelines and threading.
+
+If you need to <fill-in-functionality-here>, {filebeat-ref}[Filebeat]
+is a better option. 
+
+
+
