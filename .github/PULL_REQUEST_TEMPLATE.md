@@ -3,6 +3,7 @@ Please label this PR with one of the following labels, depending on the scope of
 - bug
 - enhancement
 - breaking change
+- doc
 -->
 
 ## What does this PR do?
