@@ -118,7 +118,7 @@ public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ubi8 && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
