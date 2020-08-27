@@ -1,14 +1,20 @@
 [[dead-letter-queues]]
-=== Dead Letter Queues
+=== Dead Letter Queues (DLQ)
 
-NOTE: The dead letter queue feature is currently supported for the
-<<plugins-outputs-elasticsearch>> output only. Additionally, The dead
-letter queue is only used where the response code is either 400
-or 404, both of which indicate an event that cannot be retried.   
-Support for additional outputs will be available in future releases of the 
-Logstash plugins. Before configuring Logstash to use this feature, refer to
-the output plugin documentation to verify that the plugin supports the dead
-letter queue feature.
+[NOTE] 
+--
+The dead letter queue is currently supported only for the
+<<plugins-outputs-elasticsearch,{es} output>>. The dead letter queue is used for
+documents with response codes of 400 or 404, both of which indicate an event
+that cannot be retried.
+
+Note that the {ref}/docs-bulk.html[{es} Bulk API] can perform multiple actions
+using the same request. If the Bulk API request is successful, it returns `200
+OK`, even if some documents in the batch have
+{ref}/docs-bulk.html#bulk-failures-ex[failed]. In this situation, the `errors`
+flag will be `true`. If the DLQ is configured, the failed documents are directed
+there.
+--
 
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
