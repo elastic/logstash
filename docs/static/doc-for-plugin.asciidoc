@@ -1,17 +1,23 @@
 [[plugin-doc]]
 === Documenting your plugin
 
+Documentation is a required component of your plugin.
 Quality documentation with good examples contributes to the adoption of your plugin.
 
-The documentation that you write for your plugin will be generated and published
-in the {logstash-ref}/index.html[Logstash Reference] and the
-{lsplugindocs}[Logstash Versioned Plugin Reference].
+.Plugin listing in {ls} Reference
+[NOTE]
+We can list your plugin in the {logstash-ref}/index.html[Logstash Reference] if
+it meets our requirements and quality standards. When we list your plugin, we point to
+your documentation--a readme.md, docs/index.asciidoc, or both--in your plugin repo.
+For more info on this option, see <<plugin-listing>>. 
 
+The following sections contain guidelines for documenting plugins hosted in
+the Github https://github.com/logstash-plugins/[logstash-plugins] organization. 
+ 
 [[plugin-doc-file]]
 ==== Documentation file
 
-Documentation is a required component of your plugin.
-It belongs in a single file called 'docs/index.asciidoc'.
+Documentation belongs in a single file called 'docs/index.asciidoc'.
 The <<plugin-generator,plugin generation utility>> creates a starter file for you.  
 
 [[heading-ids]]
@@ -65,7 +71,6 @@ Points to this heading in the same file:
 ==== Configuration models
 ----------------------------------
 
-
 ===== Link to content in the Logstash Reference Guide
 
 Use external link syntax for links that point to documentation for other plugins or content in the Logstash Reference Guide.
@@ -85,7 +90,6 @@ Use external link syntax for links that point to documentation for other plugins
 
 If you don't specify link text, the URL is used as the link text.
 
-
 *Examples*
 
 If you want your link to display as {logstash-ref}/getting-started-with-logstash.html, use this format:
@@ -94,13 +98,11 @@ If you want your link to display as {logstash-ref}/getting-started-with-logstash
 {logstash-ref}/getting-started-with-logstash.html
 -----
 
-
 If you want your link to display as {logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash], use this format:
 [source,txt]
 -----
 {logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash]
 -----
-
 
 ===== Link to data type descriptions
 
@@ -108,7 +110,6 @@ We make an exception for links that point to data type descriptions,
 such as `<<boolean,boolean>>`, because they are used so frequently. 
 We have a cleanup step in the conversion script that converts the links to the
 correct syntax. 
-
 
 [[format-code]]
 ==== Code samples
