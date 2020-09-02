@@ -155,6 +155,9 @@ namespace "artifact" do
 
   def create_single_archive_pack(os_name, arch, license_details)
     system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
+    if arch == 'arm64'
+      arch = 'aarch64'
+    end
     case os_name
     when "linux"
       build_tar(*license_details, platform: "-linux-#{arch}")
