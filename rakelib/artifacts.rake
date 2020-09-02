@@ -188,9 +188,14 @@ namespace "artifact" do
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:rpm] building rpm package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("centos", "5")
+    puts("[artifact:rpm] building rpm package x86_64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=x86_64")
+    package_with_jdk("centos", "5", "x86_64")
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    puts("[artifact:rpm] building rpm package arm64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=arm64")
+    package_with_jdk("centos", "5", "arm64")
     system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
 
     #without JDKs
@@ -200,9 +205,14 @@ namespace "artifact" do
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:rpm] building rpm package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("centos", "5", :oss)
+    puts("[artifact:rpm] building rpm OSS package x86_64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=x86_64")
+    package_with_jdk("centos", "5", "x86_64", :oss)
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    puts("[artifact:rpm] building rpm OSS package arm64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=arm64")
+    package_with_jdk("centos", "5", "arm64", :oss)
     system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
 
     #without JDKs
@@ -214,9 +224,14 @@ namespace "artifact" do
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    puts("[artifact:deb] building deb package for OS: linux")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("ubuntu", "12.04")
+    puts("[artifact:deb] building deb package for x86_64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=x86_64")
+    package_with_jdk("ubuntu", "12.04", "x86_64")
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    puts("[artifact:deb] building deb package for OS: linux arm64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=arm64")
+    package_with_jdk("ubuntu", "12.04", "arm64")
     system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
 
     #without JDKs
@@ -226,9 +241,14 @@ namespace "artifact" do
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:deb_oss] building deb package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("ubuntu", "12.04", :oss)
+    puts("[artifact:deb_oss] building deb OSS package x84_64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=x86_64")
+    package_with_jdk("ubuntu", "12.04", "x86_64", :oss)
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+
+    puts("[artifact:deb_oss] building deb OSS package arm64")
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=arm64")
+    package_with_jdk("ubuntu", "12.04", "arm64", :oss)
     system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
 
     #without JDKs
@@ -480,11 +500,11 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package_with_jdk(platform, version, variant=:standard)
-    package(platform, version, variant, true)
+  def package_with_jdk(platform, version, jdk_arch, variant=:standard)
+    package(platform, version, variant, true, jdk_arch)
   end
 
-  def package(platform, version, variant=:standard, bundle_jdk=false)
+  def package(platform, version, variant=:standard, bundle_jdk=false, jdk_arch='x86_64')
     oss = variant == :oss
 
     require "stud/temporary"
@@ -545,11 +565,22 @@ namespace "artifact" do
     end
 
     if bundle_jdk
-      case platform
-        when "debian", "ubuntu"
-          arch_suffix = "amd64"
-        else
-          arch_suffix = "x86_64"
+      if jdk_arch == 'x86_64'
+        case platform
+          when "debian", "ubuntu"
+            arch_suffix = "amd64"
+          else
+            arch_suffix = "x86_64"
+        end
+      elsif jdk_arch == 'arm64'
+        case platform
+          when "debian", "ubuntu"
+            arch_suffix = "arm64"
+          else
+            arch_suffix = "aarch64"
+        end
+      else
+        raise "CPU architecture not recognized: #{jdk_arch}"
       end
     else
       arch_suffix = "no-jdk"
@@ -628,11 +659,22 @@ namespace "artifact" do
     out.name = oss ? "logstash-oss" : "logstash"
     out.architecture = "all"
     if bundle_jdk
-      case platform
-        when "redhat", "centos"
-          out.architecture = "x86_64"
-        when "debian", "ubuntu"
-          out.architecture = "amd64"
+      if jdk_arch == 'x86_64'
+        case platform
+          when "redhat", "centos"
+            out.architecture = "x86_64"
+          when "debian", "ubuntu"
+            out.architecture = "amd64"
+        end
+      elsif jdk_arch == 'arm64'
+        case platform
+          when "debian", "ubuntu"
+            arch_suffix = "arm64"
+          else
+            arch_suffix = "aarch64"
+        end
+      else
+        raise "CPU architecture not recognized: #{jdk_arch}"
       end
     else
       out.architecture = "all"
