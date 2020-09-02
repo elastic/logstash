@@ -135,32 +135,33 @@ namespace "artifact" do
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    create_archive_pack("x86_64", "linux", "windows", "darwin")
-    create_archive_pack("arm64", "linux")
+    license_details = ['ELASTIC-LICENSE']
+    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
-    build_tar('ELASTIC-LICENSE')
-    build_zip('ELASTIC-LICENSE')
+    build_tar(*license_details)
+    build_zip(*license_details)
   end
 
-  def create_archive_pack(arch, *oses)
+  def create_archive_pack(license_details, arch, *oses)
     oses.each do |os_name|
       puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}, arch: #{arch}")
-      create_single_archive_pack(os_name, arch)
+      create_single_archive_pack(os_name, arch, license_details)
       system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
     end
   end
 
-  def create_single_archive_pack(os_name, arch)
+  def create_single_archive_pack(os_name, arch, license_details)
     system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
     case os_name
     when "linux"
-      build_tar('ELASTIC-LICENSE', platform: "-linux-#{arch}")
+      build_tar(*license_details, platform: "-linux-#{arch}")
     when "windows"
-      build_zip('ELASTIC-LICENSE', platform: "-windows-#{arch}")
+      build_zip(*license_details, platform: "-windows-#{arch}")
     when "darwin"
-      build_tar('ELASTIC-LICENSE', platform: "-darwin-#{arch}")
+      build_tar(*license_details, platform: "-darwin-#{arch}")
     end
   end
 
@@ -172,24 +173,14 @@ namespace "artifact" do
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    ["linux", "windows", "darwin"].each do |os_name|
-      puts("[artifact:archives_oss] Building OSS tar.gz/zip of default plugins for OS: #{os_name}")
-      system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name}")
-      case os_name
-      when "linux"
-        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-linux-x86_64')
-      when "windows"
-        build_zip('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-windows-x86_64')
-      when "darwin"
-        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-darwin-x86_64')
-      end
-      system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
-    end
+    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_excluder]
+    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
-    build_tar('APACHE-LICENSE-2.0',"-oss", oss_excluder)
-    build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder)
+    build_tar(*license_details)
+    build_zip(*license_details)
   end
 
   desc "Build an RPM of logstash with all dependencies"
