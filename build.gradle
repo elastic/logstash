@@ -541,9 +541,9 @@ class JDKDetails {
     private final String extension
     final String localPackageName
     final String unpackedJdkName
-    private String arch = "x64"
+    private String arch
 
-    JDKDetails(versionYml, osName) {
+    JDKDetails(versionYml, osName, jdkArch) {
         revision = versionYml.bundled_jdk.revision
         build = versionYml.bundled_jdk.build
         vendor = versionYml.bundled_jdk.vendor
@@ -557,8 +557,9 @@ class JDKDetails {
             default:
                 extension = "tar.gz"
         }
+        arch = parseJdkArchitecture(jdkArch)
         unpackedJdkName = "jdk-${revision}-${osName}"
-        localPackageName = "${unpackedJdkName}.${extension}"
+        localPackageName = "${unpackedJdkName}-${arch}.${extension}"
     }
 
     String createDownloadUrl() {
@@ -579,16 +580,30 @@ class JDKDetails {
             return "mac"
         return osName
     }
+
+    private String parseJdkArchitecture(String jdkArch) {
+        switch (jdkArch) {
+            case "x86_64":
+                return "x64"
+                break
+            case "arm64":
+                return "aarch64"
+                break
+            default:
+                throw RuntimeException("Can't handle CPU architechture: ${jdkArch}")
+        }
+    }
 }
 
 tasks.register("downloadJdk", Download) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
+    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
 
     project.ext.set("versionFound", true)
     String osName = selectOsType()
 
     def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
-    def jdkDetails = new JDKDetails(versionYml, osName)
+    String jdkArch = project.ext.jdk_arch
+    def jdkDetails = new JDKDetails(versionYml, osName, jdkArch)
 
     description "Download JDK ${jdkDetails.major}, OS: ${osName}"
 
@@ -663,7 +678,7 @@ tasks.register("decompressJdk") {
 tasks.register("copyJdk", Copy) {
     dependsOn = [decompressJdk, bootstrap]
     description = "Download, unpack and copy the JDK"
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
+    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
     doLast {
         System.out.println "Download location is ${project.ext.jdkDownloadLocation}, Decompressing ${project.ext.jdkDirectory} to \"${project.ext.jdkBundlingDirectory}\""
     }
