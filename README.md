@@ -96,6 +96,13 @@ The Logstash project includes the source code for all of Logstash, including the
 export OSS=true
 ```
 
+* Set up the location of the source code to build
+
+``` sh
+export LOGSTASH_SOURCE=1
+export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
+```
+
 * To run Logstash from the repo you must first bootstrap the environment:
 
 ```sh
@@ -200,7 +207,7 @@ If you set `LS_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,
 
 To run the tests of all currently installed plugins:
 
-    rake test:plugin
+    rake test:plugins
 
 You can install the default set of plugins included in the logstash package:
 
