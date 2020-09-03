@@ -55,7 +55,7 @@ This has now been fixed, and you can read more about how it was solved and all t
 
 ===== Updated JRuby to 9.2.13.0
 
-The new JRuby release brings greater stability to its code optimizations in multithreaded workloads and a fix to exception handling in Windows environments, both issues that could affect our users. For more on the JRuby release notes, see https://github.com/jruby/jruby/releases/tag/9.2.13.0[here].
+The new JRuby release brings greater stability to its code optimizations in multithreaded workloads and a fix to exception handling in Windows environments, both issues that could affect our users. See the https://github.com/jruby/jruby/releases/tag/9.2.13.0[JRuby release notes] for more information.
 
 ==== Plugins
 
