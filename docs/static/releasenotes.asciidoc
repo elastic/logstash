@@ -36,11 +36,16 @@ This section summarizes the changes in the following releases:
 [[logstash-7-9-1]]
 === Logstash 7.9.1 Release Notes
 
+Docker env vars changes:
 * Expose xpack.monitoring.elasticsearch.proxy setting as Docker env varible https://github.com/elastic/logstash/pull/12151[#12151]
 * add ssl verification_mode to env2yaml https://github.com/elastic/logstash/pull/12162[#12162]
-* ensure input plugin close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
 * Docker: Expose xpack.management.elasticsearch.proxy https://github.com/elastic/logstash/pull/12201[#12201]
+
+Pipeline execution fixes
+* ensure input plugin close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
 * fix flushing upon empty batches with ordered execution https://github.com/elastic/logstash/pull/12204[#12204]
+
+Updated jruby
 * bump jruby to 9.2.13.0 https://github.com/elastic/logstash/pull/12160[#12160]
 
 ==== Plugins
