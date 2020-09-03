@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-9-1,Logstash 7.9.1>>
 * <<logstash-7-9-0,Logstash 7.9.0>>
 * <<logstash-7-8-1,Logstash 7.8.1>>
 * <<logstash-7-8-0,Logstash 7.8.0>>
@@ -31,6 +32,102 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-9-1]]
+=== Logstash 7.9.1 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.9.1
+
+* Expose xpack.monitoring.elasticsearch.proxy setting as Docker env varible https://github.com/elastic/logstash/pull/12151[#12151]
+* add ssl verification_mode to env2yaml https://github.com/elastic/logstash/pull/12162[#12162]
+* bump version to 7.9.1 https://github.com/elastic/logstash/pull/12185[#12185]
+* ensure input plugin close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
+* Docker: Expose xpack.management.elasticsearch.proxy https://github.com/elastic/logstash/pull/12201[#12201]
+* fix flushing upon empty batches with ordered execution https://github.com/elastic/logstash/pull/12204[#12204]
+* Release notes draft for 7.9.1 https://github.com/elastic/logstash/pull/12212[#12212]
+
+=== Logstash Commits between 7.9 and 7.9.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.9.0..7.9"
+
+fa360cf3f - (HEAD -> 7.9, origin/7.9) Doc:Add redirect from multiline filter to multiline codec (#12208) (#12218) (17 hours ago) <Karen Metts>
+ffb96ff99 - Update patch plugin versions in gemfile lock for 7.9.1 (#12210) (3 days ago) <Logstash Machine>
+0ce6614e1 - fix flushing upon empty batches with ordered execution (8 days ago) <Colin Surprenant>
+75ac8eb23 - Add test for ordered pipeline flushing fix (8 days ago) <Rob Bavey>
+dfc7e51c5 - Docker: Expose xpack.management.elasticsearch.proxy (#12201) (9 days ago) <Andres Rodriguez>
+933c9fd18 - ensure input plugin close is called upon termination or pipeline reload (13 days ago) <Colin Surprenant>
+14dbf65a3 - Expose xpack.monitoring.elasticsearch.proxy setting as Docker env variable (13 days ago) <andsel>
+2fde15750 - add ssl verification_mode to env2yaml (13 days ago) <Drew Boswell>
+a850489c1 - Doc:Add note that stdin input doesn't allow config reloading (13 days ago) <Karen Metts>
+42a1d0dbf - bump jruby to 9.2.13.0 (2 weeks ago) <Joao Duarte>
+ded07b0cc - Release notes 7.9.0  (#12179) (2 weeks ago) <Karen Metts>
+e8d5c1cfa - bump version to 7.9.1 (#12185) (2 weeks ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.9.0..7.9 *.release"
+Changed plugin versions:
+logstash-codec-avro: 3.2.3 -> 3.2.4
+logstash-filter-fingerprint: 3.2.1 -> 3.2.2
+logstash-filter-kv: 4.4.0 -> 4.4.1
+logstash-input-elasticsearch: 4.7.0 -> 4.7.1
+logstash-input-http_poller: 5.0.1 -> 5.0.2
+logstash-input-snmp: 1.2.2 -> 1.2.5
+logstash-input-syslog: 3.4.3 -> 3.4.4
+logstash-integration-jdbc: 5.0.5 -> 5.0.6
+logstash-integration-rabbitmq: 7.1.0 -> 7.1.1
+logstash-output-elasticsearch: 10.6.1 -> 10.6.2
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Avro Codec - 3.2.4*
+
+* [DOC] Add clarifications on partial deserialization https://github.com/logstash-plugins/logstash-codec-avro/pull/35[#35]
+
+*Fingerprint Filter - 3.2.2*
+
+* Fixed lack of consistent fingerprints on Hash/Map objects https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/55[#55]
+
+*Kv Filter - 4.4.1*
+
+* Fixed issue where a `field_split_pattern` containing a literal backslash failed to match correctly https://github.com/logstash-plugins/logstash-filter-kv/issues/87[#87]
+
+*Elasticsearch Input - 4.7.1*
+
+* [DOC] Updated sliced scroll link to resolve to correct location after doc structure change https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/135[#135]
+* [DOC] Added usage example of docinfo metadata https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/98[#98]
+
+*Http_poller Input - 5.0.2*
+
+* [DOC]Expanded url option to include Manticore keys https://github.com/logstash-plugins/logstash-input-http_poller/pull/119[#119]
+
+*Snmp Input - 1.2.5*
+
+*  Updated snmp4j library to v2.8.4 https://github.com/logstash-plugins/logstash-input-snmp/pull/86[#86]
+
+*  Fixed: support SNMPv3 multiple identical security name with different credentials https://github.com/logstash-plugins/logstash-input-snmp/pull/84[#84]
+
+*  Fixed: multithreading problem when using multiple snmp inputs with multiple v3 credentials https://github.com/logstash-plugins/logstash-input-snmp/pull/80[#80]
+
+*Syslog Input - 3.4.4*
+
+* Refactor: avoid global side-effect + cleanup https://github.com/logstash-plugins/logstash-input-syslog/pull/62[#62]
+    * avoid setting `BasicSocket.do_not_reverse_lookup` as it has side effects for others 
+
+*Jdbc Integration - 5.0.6*
+
+* DOC:Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
+
+*Rabbitmq Integration - 7.1.1*
+
+* DOC:Replaced plugin_header file with plugin_header-integration file. (https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/34[#34])
+
+*Elasticsearch Output - 10.6.2*
+
+* [DOC] Added clarifying info on http compression settings and behaviors https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/943[#943]
+* [DOC] Fixed entry for ilm_policy default valuehttps://github.com/logstash-plugins/logstash-output-elasticsearch/pull/956[#956]
+
 
 [[logstash-7-9-0]]
 === Logstash 7.9.0 Release Notes
