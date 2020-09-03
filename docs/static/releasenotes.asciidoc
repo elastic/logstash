@@ -102,7 +102,7 @@ The new JRuby release brings greater stability to its code optimizations in mult
 *Elasticsearch Output - 10.6.2*
 
 * [DOC] Added clarifying info on http compression settings and behaviors https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/943[#943]
-* [DOC] Fixed entry for ilm_policy default valuehttps://github.com/logstash-plugins/logstash-output-elasticsearch/pull/956[#956]
+* [DOC] Fixed entry for ilm_policy default value https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/956[#956]
 
 
 [[logstash-7-9-0]]
