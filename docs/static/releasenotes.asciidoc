@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-9-1,Logstash 7.9.1>>
 * <<logstash-7-9-0,Logstash 7.9.0>>
 * <<logstash-7-8-1,Logstash 7.8.1>>
 * <<logstash-7-8-0,Logstash 7.8.0>>
@@ -31,6 +32,78 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-9-1]]
+=== Logstash 7.9.1 Release Notes
+
+==== Notable issues fixed
+
+===== Fixes in Docker image configuration of Monitoring and Central Management
+
+As more and more users adopt our docker images, we've been getting reports on gaps where these images don't provide all the configuration knobs the other artifacts do. This release exposes more environment variables for configuring proxy support and certificate verification mode for monitoring and central management (https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12201[#12201]), and for configuring verification_mode https://github.com/elastic/logstash/pull/12162[#12162].
+
+===== Pipeline execution fixes to flushing and shutdown
+
+Since 7.2.0, a change caused terminating pipelines to not request input plugins to cleanup before shutdown, which could cause leaks in resources that weren't freed during pipeline reloads. You can find more information on the fix here: https://github.com/elastic/logstash/pull/12195[#12195]
+
+Logstash supports ordered execution for pipelines with a single worker. A bug was found in this mode where the flushing mechanism wasn't working, preventing plugins like the aggregate filter from working correctly. This has been fixed, and you can read the details here: https://github.com/elastic/logstash/pull/12204[#12204]
+
+===== Consistent Fingerprinting
+
+Our fingerprint filter is a popular solution to perform deduplication of data in downstream systems like Elasticsearch, by computing a hash value based on data from each event. Users reported that this filter could produced different values for events containing the same data since it didn't ensure the order in which Hash Maps/Objects/Ruby Hashes processed their key/value pairs.
+This has now been fixed, and you can read more about how it was solved and all the tests we've done here: https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/55[#55]
+
+===== Updated JRuby to 9.2.13.0
+
+The new JRuby release brings greater stability to its code optimizations in multithreaded workloads and a fix to exception handling in Windows environments, both issues that could affect our users. See the https://github.com/jruby/jruby/releases/tag/9.2.13.0[JRuby release notes] for more information.
+
+==== Plugins
+
+*Avro Codec - 3.2.4*
+
+* [DOC] Add clarifications on partial deserialization https://github.com/logstash-plugins/logstash-codec-avro/pull/35[#35]
+
+*Fingerprint Filter - 3.2.2*
+
+* Fixed lack of consistent fingerprints on Hash/Map objects https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/55[#55]
+
+*Kv Filter - 4.4.1*
+
+* Fixed issue where a `field_split_pattern` containing a literal backslash failed to match correctly https://github.com/logstash-plugins/logstash-filter-kv/issues/87[#87]
+
+*Elasticsearch Input - 4.7.1*
+
+* [DOC] Updated sliced scroll link to resolve to correct location after doc structure change https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/135[#135]
+* [DOC] Added usage example of docinfo metadata https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/98[#98]
+
+*Http_poller Input - 5.0.2*
+
+* [DOC]Expanded url option to include Manticore keys https://github.com/logstash-plugins/logstash-input-http_poller/pull/119[#119]
+
+*Snmp Input - 1.2.5*
+
+* Updated snmp4j library to v2.8.4 https://github.com/logstash-plugins/logstash-input-snmp/pull/86[#86]
+* Fixed: support SNMPv3 multiple identical security name with different credentials https://github.com/logstash-plugins/logstash-input-snmp/pull/84[#84]
+* Fixed: multithreading problem when using multiple snmp inputs with multiple v3 credentials https://github.com/logstash-plugins/logstash-input-snmp/pull/80[#80]
+
+*Syslog Input - 3.4.4*
+
+* Refactor: avoid global side-effect + cleanup https://github.com/logstash-plugins/logstash-input-syslog/pull/62[#62]
+* avoid setting `BasicSocket.do_not_reverse_lookup` as it has side effects for others 
+
+*Jdbc Integration - 5.0.6*
+
+* DOC:Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
+
+*Rabbitmq Integration - 7.1.1*
+
+* DOC:Replaced plugin_header file with plugin_header-integration file. (https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/34[#34])
+
+*Elasticsearch Output - 10.6.2*
+
+* [DOC] Added clarifying info on http compression settings and behaviors https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/943[#943]
+* [DOC] Fixed entry for ilm_policy default value https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/956[#956]
+
 
 [[logstash-7-9-0]]
 === Logstash 7.9.0 Release Notes
