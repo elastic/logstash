@@ -36,10 +36,9 @@ This section summarizes the changes in the following releases:
 [[logstash-7-9-1]]
 === Logstash 7.9.1 Release Notes
 
+==== Notable issues fixed
 
-==== Performance improvements and notable issues fixed
-
-===== Fixed performance regression during pipeline compilation
+===== Fixes in Docker image configuration of Monitoring and Central Management
 
 As more and more users adopt our docker images, we've been getting reports on gaps where these images don't provide all the configuration knobs the other artifacts do. This release exposes more environment variables to configure proxy support and certificate verification mode for monitoring and central management https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12201[#12201] and also the configuration of the verification_mode and https://github.com/elastic/logstash/pull/12162[#12162]
 
