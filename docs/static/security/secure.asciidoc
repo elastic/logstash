@@ -1,0 +1,31 @@
+[role="xpack"]
+[[ls-security]]
+== Secure Logstash
+[subs="attributes"]
+++++
+<titleabbrev>Secure {ls}</titleabbrev>
+++++
+
+////
+// ToDo: This section is a collection of random security statements. Needs rework and rearchitecture.
+////
+
+The Logstash {es} plugins ({logstash-ref}/plugins-outputs-elasticsearch.html[output],
+{logstash-ref}/plugins-inputs-elasticsearch.html[input],
+{logstash-ref}/plugins-filters-elasticsearch.html[filter]
+and {logstash-ref}/monitoring-logstash.html[monitoring])
+support authentication and encryption over HTTP.
+
+To use Logstash with a secured cluster, you need to configure authentication
+credentials for Logstash. Logstash throws an exception and the processing
+pipeline is halted if authentication fails.
+
+If encryption is enabled on the cluster, you also need to enable TLS/SSL in the
+Logstash configuration.
+
+If you want to monitor your Logstash instance with {monitoring}, and store the
+monitoring data in a secured {es} cluster, you must configure Logstash
+with a username and password for a user with the appropriate permissions.
+
+In addition to configuring authentication credentials for Logstash, you need
+to grant authorized users permission to access the Logstash indices.
