@@ -219,4 +219,20 @@ module LogStash::Util
       Marshal.load(Marshal.dump(o))
     end
   end
+
+  # Returns true if the object is considered blank.
+  # A blank includes things like '', '   ', nil,
+  # and arrays and hashes that have nothing in them.
+  #
+  # This logic is mostly shared with ActiveSupport's blank?
+  def self.blank?(value)
+    if value.kind_of?(NilClass)
+      true
+    elsif value.kind_of?(String)
+      value !~ /\S/
+    else
+      value.respond_to?(:empty?) ? value.empty? : !value
+    end
+  end
+
 end # module LogStash::Util
