@@ -78,7 +78,7 @@ The new JRuby release brings greater stability to its code optimizations in mult
 
 *Http_poller Input - 5.0.2*
 
-* [DOC]Expanded url option to include Manticore keys https://github.com/logstash-plugins/logstash-input-http_poller/pull/119[#119]
+* [DOC] Expanded url option to include Manticore keys https://github.com/logstash-plugins/logstash-input-http_poller/pull/119[#119]
 
 *Snmp Input - 1.2.5*
 
@@ -93,11 +93,11 @@ The new JRuby release brings greater stability to its code optimizations in mult
 
 *Jdbc Integration - 5.0.6*
 
-* DOC:Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
+* [DOC] Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
 
 *Rabbitmq Integration - 7.1.1*
 
-* DOC:Replaced plugin_header file with plugin_header-integration file. (https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/34[#34])
+* [DOC] Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-rabbitmq/issues/34[#34]
 
 *Elasticsearch Output - 10.6.2*
 
@@ -341,7 +341,7 @@ You can find more information in the release notes of the respective plugins.
 
 *S3 Output - 4.3.2*
 
-*  [DOC]Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-output-s3/pull/223[#223]
+*  [DOC] Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-output-s3/pull/223[#223]
 
 
 [[logstash-7-8-0]]
