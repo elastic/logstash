@@ -91,8 +91,8 @@ module Bundler
             end
           end
 
-          builder.eval_gemfile("bundler file", gemfile.generate())
-          definition = builder.to_definition(lockfile_path, {})
+          builder.eval_gemfile("bundler file", gemfile.generate_without_groups(:build, :development))
+          definition = builder.to_definition(lockfile_path, true)
           definition.lock(lockfile_path)
           gemfile.save
         rescue => e
