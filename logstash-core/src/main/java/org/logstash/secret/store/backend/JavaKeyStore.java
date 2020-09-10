@@ -47,8 +47,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
@@ -66,9 +65,8 @@ public final class JavaKeyStore implements SecretStore {
     private char[] keyStorePass;
     private Path keyStorePath;
     private ProtectionParameter protectionParameter;
-    private Lock readLock;
+    private Lock lock;
     private boolean useDefaultPass = false;
-    private Lock writeLock;
     //package private for testing
     static String filePermissions = "rw-r--r--";
     private static final boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
@@ -89,7 +87,7 @@ public final class JavaKeyStore implements SecretStore {
         }
         try {
             init(config);
-            writeLock.lock();
+            lock.lock();
             LOGGER.debug("Creating new keystore at {}.", keyStorePath.toAbsolutePath());
             String keyStorePermissions = filePermissions;
             //create the keystore on disk with a default entry to identify this as a logstash keystore
@@ -120,7 +118,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to create the Logstash keystore. ", e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -129,7 +127,7 @@ public final class JavaKeyStore implements SecretStore {
     public void delete(SecureConfig config) {
         try {
             initLocks();
-            writeLock.lock();
+            lock.lock();
             if (exists(config)) {
                 Files.delete(Paths.get(new String(config.getPlainText(PATH_KEY))));
             }
@@ -138,7 +136,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to delete the Logstash keystore", e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -234,16 +232,14 @@ public final class JavaKeyStore implements SecretStore {
     }
 
     private void initLocks(){
-        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-        readLock = readWriteLock.readLock();
-        writeLock = readWriteLock.writeLock();
+        lock = new ReentrantLock();
     }
 
     @Override
     public Collection<SecretIdentifier> list() {
         Set<SecretIdentifier> identifiers = new HashSet<>();
         try {
-            readLock.lock();
+            lock.lock();
             loadKeyStore();
             Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
@@ -253,7 +249,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.ListException(e);
         } finally {
-            releaseLock(readLock);
+            releaseLock(lock);
         }
         return identifiers;
     }
@@ -275,7 +271,7 @@ public final class JavaKeyStore implements SecretStore {
         }
         try {
             init(config);
-            readLock.lock();
+            lock.lock();
             try (final InputStream is = Files.newInputStream(keyStorePath)) {
                 try {
                     keyStore.load(is, this.keyStorePass);
@@ -302,7 +298,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to load the Logstash keystore", e);
         } finally {
-            releaseLock(readLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -319,7 +315,7 @@ public final class JavaKeyStore implements SecretStore {
     @Override
     public void persistSecret(SecretIdentifier identifier, byte[] secret) {
         try {
-            writeLock.lock();
+            lock.lock();
             loadKeyStore();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
             //PBEKey requires an ascii password, so base64 encode it
@@ -337,14 +333,14 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
         }
     }
 
     @Override
     public void purgeSecret(SecretIdentifier identifier) {
         try {
-            writeLock.lock();
+            lock.lock();
             loadKeyStore();
             keyStore.deleteEntry(identifier.toExternalForm());
             saveKeyStore();
@@ -352,7 +348,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
         }
     }
 
@@ -366,7 +362,7 @@ public final class JavaKeyStore implements SecretStore {
     public byte[] retrieveSecret(SecretIdentifier identifier) {
         if (identifier != null && identifier.getKey() != null && !identifier.getKey().isEmpty()) {
             try {
-                readLock.lock();
+                lock.lock();
                 loadKeyStore();
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                 KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
@@ -385,7 +381,7 @@ public final class JavaKeyStore implements SecretStore {
             } catch (Exception e) {
                 throw new SecretStoreException.RetrievalException(identifier, e);
             } finally {
-                releaseLock(readLock);
+                releaseLock(lock);
             }
         }
         return null;
