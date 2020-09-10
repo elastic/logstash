@@ -693,10 +693,10 @@ public class JavaKeyStoreTest {
         new JavaKeyStore().load(withDefinedPassConfig);
     }
 
-    @Test(timeout = 10_000)
+    @Test(timeout = 40_000)
     public void concurrentReadTest() throws Exception {
 
-        final int KEYSTORE_COUNT = 25;
+        final int KEYSTORE_COUNT = 250;
 
         final ExecutorService executorService = Executors.newFixedThreadPool(KEYSTORE_COUNT);
         String password = "pAssW3rd!";
