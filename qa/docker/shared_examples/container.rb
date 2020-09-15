@@ -22,7 +22,11 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
   context 'container files' do
     it 'should have the correct license agreement' do
-      expect(exec_in_container(@container, 'cat /usr/share/logstash/LICENSE.txt')).to have_correct_license_agreement(flavor)
+      expect(exec_in_container(@container, 'cat /licenses/LICENSE.txt')).to have_correct_license_agreement(flavor)
+    end
+
+    it 'should have the license notices file' do
+      expect(exec_in_container(@container, 'cat /licenses/NOTICE.TXT')).to match /Notice for/
     end
 
     it 'should have the correct user' do
