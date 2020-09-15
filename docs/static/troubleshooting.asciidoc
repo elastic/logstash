@@ -163,6 +163,24 @@ troubleshooting tips to share, please:
 * create a pull request with your proposed changes at https://github.com/elastic/logstash.
 
 [float] 
+[[ts-pipeline-logging-level-performance]]
+=== Logging level can affect performances
+
+*Symptoms* 
+
+Simple filters such as `mutate` or `json` filter can take several milliseconds per event to execute.
+Inputs and outputs might be affected, too.
+
+*Background*
+
+The different plugins running on Logstash can be quite verbose if the logging level is set to `debug` or `trace`.
+As the logging library used in Logstash is synchronous, heavy logging can affect performances.
+
+*Solution*
+
+Reset the logging level to `info`.
+
+[float] 
 [[ts-kafka]] 
 == Common Kafka support issues and solutions
  
