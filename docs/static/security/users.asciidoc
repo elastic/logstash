@@ -3,27 +3,72 @@
 === Grant users access to secured resources
 [subs="attributes"]
 
-Put some intro stuff here.
+You can use role-based access control to grant users access to secured
+resources. The roles that you set up depend on your organization's security
+requirements and the minimum privileges required to use specific features.
+
+Typically you need the create the following separate roles:
+
+/////
+ToDo: Summarize roles here
+/////
+
+{es-security-features} provide {ref}/built-in-roles.html[built-in roles] that
+grant a subset of the privileges needed by {ls} users. When possible, use the
+built-in roles to minimize the affect of future changes on your security
+strategy.
+
+NOTE: Instead of using usernames and passwords, you can assign roles and
+privileges to API keys to grant access to {es} resources. See <<ls-api-keys>>
+for more information on that alternate approach to security.
 
 
-
-[discrete]
 [[ls-http-auth-basic]]
-==== Configure Logstash to use Basic Authentication
+==== Configure Logstash to use basic authentication
 [subs="attributes"]
 
-Logstash needs to be able to manage index templates, create indices,
+Logstash must be able to manage index templates, create indices,
 and write and delete documents in the indices it creates.
 
-To set up authentication credentials for Logstash:
+To set up authentication credentials for Logstash, you need to:
 
-. Use the the **Management > Roles** UI in {kib} or the `role` API to create a
-`logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
-For *indices* privileges, add `write`, `create`, `delete`, and `create_index`.
+. Create a <<create-writer-role,writer role>>, and grant it cluster and indices
+privileges.
 +
-If you plan to use {ref}/getting-started-index-lifecycle-management.html[index lifecycle
-management], also add `manage_ilm` for cluster and `manage` and `manage_ilm` for indices.
+Example: `logstash_writer`
+. Create an <<create-internal-user,internal user>>, and assign the
+`logstash_writer` role to it.
 +
+Example: `logstash_internal`
+
+. Configure {ls} to <<auth-int-user,authenticate using the internal user>>.
+
+
+[[create-writer-role]]
+===== Create a writer role
+
+Use the **Management > Roles** UI in {kib} or the `role` API to create a
+*writer* role (`logstash_writer`, for example). 
+Add these *cluster* privileges:
+
+* `manage_index_templates`
+* `monitor` (to allow retrieving cluster details, such as version)
+* `manage_ilm` (for use with {ref}/getting-started-index-lifecycle-management.html[index lifecycle
+management])
+
+Add these *indices* privileges: 
+
+* `write`
+* `create`
+* `delete`
+* `create_index` (to allow creating daily indices on clusters that do not support ILM. 
+Not needed when using ILM.)
+* `manage`
+* `manage_ilm` (for use with {ref}/getting-started-index-lifecycle-management.html[index lifecycle
+management])
+
+Omit any privileges that aren’t relevant in your environment.
+
 [source, sh]
 ---------------------------------------------------------------
 POST _security/role/logstash_writer
@@ -47,10 +92,13 @@ management] is enabled, the role requires the `manage` and `manage_ilm`
 privileges to load index lifecycle policies, create rollover aliases, and create
 and manage rollover indices.
 
-. Create a `logstash_internal` user and assign it the `logstash_writer` role.
+[[create-internal-user]]
+===== Create an internal user
+
+Create a `logstash_internal` user and assign it the `logstash_writer` role.
 You can create users from the **Management > Users** UI in {kib} or through
 the `user` API:
-+
+
 [source, sh]
 ---------------------------------------------------------------
 POST _security/user/logstash_internal
@@ -61,10 +109,13 @@ POST _security/user/logstash_internal
 }
 ---------------------------------------------------------------
 
-. Configure Logstash to authenticate as the `logstash_internal` user you just
-created. You configure credentials separately for each of the {es} plugins in
+[[auth-int-user]]
+===== Configure {ls} to authenticate as the internal user
+
+Configure Logstash to authenticate as the `logstash_internal` user you just
+created. Configure credentials separately for each of the {es} plugins in
 your Logstash `.conf` file. For example:
-+
+
 [source,js]
 --------------------------------------------------
 input {
@@ -90,17 +141,34 @@ output {
 }
 --------------------------------------------------
 
-[discrete]
+
 [[ls-user-access]]
-==== Grant Users Access to the Logstash Indices
+==== Grant users access to the {ls} indices
 
-To access the indices Logstash creates, users need the `read` and
-`view_index_metadata` privileges:
+Users must be able to access the indices {ls} creates.
+To grant access to the [ls] indices:
 
-. Create a `logstash_reader` role that has the `read` and `view_index_metadata`
-privileges  for the Logstash indices. You can create roles from the
-**Management > Roles** UI in {kib} or through the `role` API:
+. Create a <<create-reader-role,reader role>>, and grant it appropriate privileges. 
 +
+Example: `logstash_reader`
+
+. <<assign-reader-role,Assign reader role>> to users.
+
+
+[[create-reader-role]]
+==== Create a reader role
+
+Create a `logstash_reader` role that has the `read` and `view_index_metadata`
+privileges  for the Logstash indices. You can create roles from the
+**Management > Roles** UI in {kib} or through the `role` API.
+
+Add these index privileges to allow users to access the indices that {ls}
+creates:
+
+* `read` 
+* `view_index_metadata` 
+
+
 [source, sh]
 ---------------------------------------------------------------
 POST _security/role/logstash_reader
@@ -116,12 +184,19 @@ POST _security/role/logstash_reader
 <1> If you use a custom Logstash index pattern, specify that pattern
 instead of the default `logstash-*` pattern.
 
-. Assign your Logstash users the `logstash_reader` role. If the Logstash user
+
+
+
+
+[[assign-reader-role]]
+==== Assign reader role to users
+
+Assign your Logstash users the `logstash_reader` role. If the Logstash user
 will be using
 {logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management],
 also assign the `logstash_admin` role. You can create and manage users from the
 **Management > Users** UI in {kib} or through the `user` API:
-+
+
 [source, sh]
 ---------------------------------------------------------------
 POST _security/user/logstash_user
@@ -134,7 +209,7 @@ POST _security/user/logstash_user
 <1> `logstash_admin` is a built-in role that provides access to `.logstash-*`
 indices for managing configurations.
 
-[discrete]
+
 [role="xpack"]
 [[ls-monitoring-user]]
 ==== Configure Credentials for Logstash Monitoring
@@ -171,7 +246,7 @@ PUT _security/user/logstash_system/_enable
 ---------------------------------------------------------------------
 // CONSOLE
 
-[discrete]
+
 [role="xpack"]
 [[ls-pipeline-management-user]]
 ==== Configure Credentials for Centralized Pipeline Management
