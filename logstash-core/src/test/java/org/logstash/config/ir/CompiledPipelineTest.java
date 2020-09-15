@@ -54,7 +54,7 @@ import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.PluginFactory;
+import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.ext.JrubyEventExtLibrary;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Filter;
@@ -494,9 +494,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Configurable Mock {@link PluginFactory}
+     * Configurable Mock {@link RubyIntegration.PluginFactory}
      */
-    static final class MockPluginFactory implements PluginFactory {
+    static final class MockPluginFactory implements RubyIntegration.PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
@@ -554,17 +554,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
-        }
-
-        @Override
-        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
-            return null;
-        }
-
-        @Override
-        public Filter buildFilter(final String name, final String id,
-                                  final Configuration configuration, final Context context) {
-            return null;
         }
     }
 
@@ -698,9 +687,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Fixed Mock {@link PluginFactory}
+     * Fixed Mock {@link RubyIntegration.PluginFactory}
      * */
-    static final class FixedPluginFactory implements PluginFactory {
+    static final class FixedPluginFactory implements RubyIntegration.PluginFactory {
 
         private Supplier<IRubyObject> input;
         private Supplier<IRubyObject> filter;
@@ -711,16 +700,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             this.input = input;
             this.filter = filter;
             this.output = output;
-        }
-
-        @Override
-        public Input buildInput(String name, String id, Configuration configuration, Context context) {
-            return null;
-        }
-
-        @Override
-        public Filter buildFilter(String name, String id, Configuration configuration, Context context) {
-            return null;
         }
 
         @Override
