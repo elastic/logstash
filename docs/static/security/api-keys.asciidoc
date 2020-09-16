@@ -24,7 +24,6 @@ NOTE: For security reasons, we recommend using a unique API key per {ls} instanc
 You can create as many API keys per user as necessary.
 
 
-[discrete]
 [[ls-create-api-key]]
 ==== Create an API key 
 
@@ -73,7 +72,6 @@ The return value should look similar to this:
 <2> Generated API key
 
 
-[discrete]
 [[ls-api-key-publish]]
 ===== Create an API key for publishing
 
@@ -111,7 +109,6 @@ output {
 <1> Format is `id:api_key` (as returned by
 {ref}/security-api-create-api-key.html[Create API key])
 
-[discrete]
 [[ls-api-key-input]]
 ===== Create an API key for reading
 
@@ -148,7 +145,6 @@ input {
 {ref}/security-api-create-api-key.html[Create API key])s
 
 
-[discrete]
 [[ls-api-key-filter]]
 ===== Create an API key for filtering
 
@@ -185,7 +181,6 @@ filter {
 <1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
 
 
-[discrete]
 [[ls-api-key-monitor]]
 ===== Create an API key for monitoring
 
@@ -234,7 +229,6 @@ xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0H
 <1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
 
 
-[discrete]
 [[ls-api-key-man]]
 ===== Create an API key for central management
 
@@ -279,7 +273,6 @@ xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0H
 {ref}/security-api-create-api-key.html[Create API key])
 
 
-[discrete]
 [[learn-more-api-keys]]
 ==== Learn more about API keys
 

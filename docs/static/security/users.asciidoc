@@ -7,20 +7,22 @@ You can use role-based access control to grant users access to secured
 resources. The roles that you set up depend on your organization's security
 requirements and the minimum privileges required to use specific features.
 
-Typically you need the create the following separate roles:
+Typically you need the create the following roles:
 
-/////
-ToDo: Summarize roles here
-/////
+* <<create-writer-role,writer role>> for publishing events
+* <<create-reader-role,reader role>> so that users can access the indices {ls} creates
 
 {es-security-features} provide {ref}/built-in-roles.html[built-in roles] that
-grant a subset of the privileges needed by {ls} users. When possible, use the
-built-in roles to minimize the affect of future changes on your security
-strategy.
+grant a subset of the privileges needed by {ls} users. 
+For example, `logstash_admin` is a built-in role that provides access to `.logstash-*`
+indices for managing configurations.
 
-NOTE: Instead of using usernames and passwords, you can assign roles and
-privileges to API keys to grant access to {es} resources. See <<ls-api-keys>>
-for more information on that alternate approach to security.
+When possible, use the built-in roles to minimize the affect of future changes
+on your security strategy.
+
+NOTE: You can assign roles and privileges to **API keys** as an alternative to
+using usernames and passwords. See <<ls-api-keys>> for more information on that
+alternate approach to security.
 
 
 [[ls-http-auth-basic]]
@@ -221,7 +223,7 @@ Logstash uses to authenticate for shipping monitoring data.
 The {security-features} come preconfigured with a
 {ref}/built-in-users.html[`logstash_system` built-in user]
 for this purpose. This user has the minimum permissions necessary for the
-monitoring function, and _should not_ be used for any other purpose - it is
+monitoring function, and _should not_ be used for any other purpose. It is
 specifically _not intended_ for use within a Logstash pipeline.
 
 By default, the `logstash_system` user does not have a password. The user will
