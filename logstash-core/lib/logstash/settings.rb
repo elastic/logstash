@@ -222,83 +222,85 @@ module LogStash
     end
   end
 
+  java_import org.logstash.settings.Setting
+
   class Setting
-    include LogStash::Util::Loggable
-
-    attr_reader :name, :default
-
-    def initialize(name, klass, default=nil, strict=true, &validator_proc)
-      @name = name
-      unless klass.is_a?(Class)
-        raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
-      end
-      @klass = klass
-      @validator_proc = validator_proc
-      @value = nil
-      @value_is_set = false
-      @strict = strict
-
-      validate(default) if @strict
-      @default = default
-    end
-
-    def value
-      @value_is_set ? @value : default
-    end
-
-    def set?
-      @value_is_set
-    end
-
-    def strict?
-      @strict
-    end
-
-    def set(value)
-      validate(value) if @strict
-      @value = value
-      @value_is_set = true
-      @value
-    end
-
-    def reset
-      @value = nil
-      @value_is_set = false
-    end
-
-    def to_hash
-      {
-        "name" => @name,
-        "klass" => @klass,
-        "value" => @value,
-        "value_is_set" => @value_is_set,
-        "default" => @default,
-        # Proc#== will only return true if it's the same obj
-        # so no there's no point in comparing it
-        # also thereś no use case atm to return the proc
-        # so let's not expose it
-        #"validator_proc" => @validator_proc
-      }
-    end
-
-    def ==(other)
-      self.to_hash == other.to_hash
-    end
-
-    def validate_value
-      validate(value)
-    end
-
-    protected
-    def validate(input)
-      if !input.is_a?(@klass)
-        raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
-      end
-
-      if @validator_proc && !@validator_proc.call(input)
-        raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
-      end
-    end
+#     include LogStash::Util::Loggable
+#
+#     attr_reader :name, :default
+#
+#     def initialize(name, klass, default=nil, strict=true, &validator_proc)
+#       @name = name
+#       unless klass.is_a?(Class)
+#         raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+#       end
+#       @klass = klass
+#       @validator_proc = validator_proc
+#       @value = nil
+#       @value_is_set = false
+#       @strict = strict
+#
+#       validate(default) if @strict
+#       @default = default
+#     end
+#
+#     def value
+#       @value_is_set ? @value : default
+#     end
+#
+#     def set?
+#       @value_is_set
+#     end
+#
+#     def strict?
+#       @strict
+#     end
+#
+#     def set(value)
+#       validate(value) if @strict
+#       @value = value
+#       @value_is_set = true
+#       @value
+#     end
+#
+#     def reset
+#       @value = nil
+#       @value_is_set = false
+#     end
+#
+#     def to_hash
+#       {
+#         "name" => @name,
+#         "klass" => @klass,
+#         "value" => @value,
+#         "value_is_set" => @value_is_set,
+#         "default" => @default,
+#         # Proc#== will only return true if it's the same obj
+#         # so no there's no point in comparing it
+#         # also thereś no use case atm to return the proc
+#         # so let's not expose it
+#         #"validator_proc" => @validator_proc
+#       }
+#     end
+#
+#     def ==(other)
+#       self.to_hash == other.to_hash
+#     end
+#
+#     def validate_value
+#       validate(value)
+#     end
+#
+#     protected
+#     def validate(input)
+#       if !input.is_a?(@klass)
+#         raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+#       end
+#
+#       if @validator_proc && !@validator_proc.call(input)
+#         raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+#       end
+#     end
 
     class Coercible < Setting
       def initialize(name, klass, default=nil, strict=true, &validator_proc)
@@ -461,19 +463,20 @@ module LogStash
       end
     end
 
-    class String < Setting
-      def initialize(name, default=nil, strict=true, possible_strings=[])
-        @possible_strings = possible_strings
-        super(name, ::String, default, strict)
-      end
-
-      def validate(value)
-        super(value)
-        unless @possible_strings.empty? || @possible_strings.include?(value)
-          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
-        end
-      end
-    end
+    java_import org.logstash.settings.StringSetting
+#     class String < Setting
+#       def initialize(name, default=nil, strict=true, possible_strings=[])
+#         @possible_strings = possible_strings
+#         super(name, ::String, default, strict)
+#       end
+#
+#       def validate(value)
+#         super(value)
+#         unless @possible_strings.empty? || @possible_strings.include?(value)
+#           raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+#         end
+#       end
+#     end
 
     class NullableString < String
       def validate(value)
