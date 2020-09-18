@@ -415,16 +415,16 @@ namespace "artifact" do
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     Gem::Package::TarWriter.new(gz) do |tar|
       files(excluder).each do |path|
-        write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}/#{path}")
+        write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
       end
 
       source_license_path = "licenses/#{license}.txt"
       fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
-      write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}/LICENSE.txt")
+      write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
 
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
-      path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}", metadata_file_path_in_tar)
+      path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
       write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
     end
     gz.close
@@ -459,17 +459,17 @@ namespace "artifact" do
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files(excluder).each do |path|
-        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}/#{path}"
+        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
         zipfile.add(path_in_zip, path)
       end
 
       source_license_path = "licenses/#{license}.txt"
       fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
-      zipfile.add("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}/LICENSE.txt", source_license_path)
+      zipfile.add("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt", source_license_path)
 
       # add build.rb to zip
       metadata_file_path_in_zip = File.join("logstash-core", "lib", "logstash", "build.rb")
-      path_in_zip = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}", metadata_file_path_in_zip)
+      path_in_zip = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_zip)
       path = BUILD_METADATA_FILE.path
       Zip.continue_on_exists_proc = true
       zipfile.add(path_in_zip, path)
