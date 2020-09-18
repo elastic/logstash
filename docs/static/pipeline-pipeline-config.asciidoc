@@ -19,9 +19,9 @@ Here is a simple example of this configuration.
 ----
 # config/pipelines.yml
 - pipeline.id: upstream
-  config.string: input { stdin {} } output { pipeline { send_to => [myVirtualAddress] } }
+  config.string: input { stdin {} } output { pipeline { send_to => ["myVirtualAddress"] } }
 - pipeline.id: downstream
-  config.string: input { pipeline { address => myVirtualAddress } }
+  config.string: input { pipeline { address => "myVirtualAddress" } }
 ----
 
 [[how-pipeline-to-pipeline-works]]
@@ -86,16 +86,16 @@ Here is an example distributor pattern configuration.
     input { beats { port => 5044 } }
     output {
         if [type] == apache {
-          pipeline { send_to => weblogs }
+          pipeline { send_to => "weblogs" }
         } else if [type] == system {
-          pipeline { send_to => syslog }
+          pipeline { send_to => "syslog" }
         } else {
-          pipeline { send_to => fallback }
+          pipeline { send_to => "fallback" }
         }
     }
 - pipeline.id: weblog-processing
   config.string: |
-    input { pipeline { address => weblogs } }
+    input { pipeline { address => "weblogs" } }
     filter {
        # Weblog filter statements here...
     }
@@ -104,7 +104,7 @@ Here is an example distributor pattern configuration.
     }
 - pipeline.id: syslog-processing
   config.string: |
-    input { pipeline { address => syslog } }
+    input { pipeline { address => "syslog" } }
     filter {
        # Syslog filter statements here...
     }
@@ -113,7 +113,7 @@ Here is an example distributor pattern configuration.
     }
 - pipeline.id: fallback-processing
     config.string: |
-    input { pipeline { address => fallback } }
+    input { pipeline { address => "fallback" } }
     output { elasticsearch { hosts => [es_cluster_b_host] } }
 ----
 
@@ -137,16 +137,16 @@ Here is an example of this scenario using the output isolator pattern.
   queue.type: persisted
   config.string: |
     input { beats { port => 5044 } }
-    output { pipeline { send_to => [es, http] } }
+    output { pipeline { send_to => ["es", "http"] } }
 - pipeline.id: buffered-es
   queue.type: persisted
   config.string: |
-    input { pipeline { address => es } }
+    input { pipeline { address => "es" } }
     output { elasticsearch { } }
 - pipeline.id: buffered-http
   queue.type: persisted
   config.string: |
-    input { pipeline { address => http } }
+    input { pipeline { address => "http" } }
     output { http { } }
 ----
 
