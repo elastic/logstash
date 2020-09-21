@@ -204,7 +204,7 @@ public final class PluginFactoryExt extends RubyBasicObject
                                final String name,
                                final SourceWithMetadata source,
                                final Map<String, IRubyObject> args) {
-        final String id = generateOrRetrievePluginId(context, type, name, source);
+        final String id = generateOrRetrievePluginId(context, type, name, source, args);
         pluginsById.add(id);
         final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
 
@@ -273,19 +273,36 @@ public final class PluginFactoryExt extends RubyBasicObject
         return output;
     }
 
-    private String generateOrRetrievePluginId(ThreadContext context, PluginLookup.PluginType type, String name,
-                                              SourceWithMetadata source) {
-        final String id;
-        if (type == PluginLookup.PluginType.CODEC) {
-            id = UUID.randomUUID().toString();
-        } else {
-            String unresolvedId = lir.getGraph().vertices()
+    // TODO: caller seems to think that the args is `Map<String, IRubyObject>`, but
+    //       at least any `id` present is actually a `String`.
+    private String generateOrRetrievePluginId(final ThreadContext context,
+                                              final PluginLookup.PluginType type,
+                                              final String name,
+                                              final SourceWithMetadata source,
+                                              final Map<String, ?> args) {
+        String unresolvedId = null;
+        if (source != null) {
+            unresolvedId = lir.getGraph().vertices()
                     .filter(v -> v.getSourceWithMetadata() != null
                             && v.getSourceWithMetadata().equalsWithoutText(source))
                     .findFirst()
                     .map(Vertex::getId).orElse(null);
-            id = (String) configVariables.expand(unresolvedId);
         }
+
+        if (unresolvedId == null) {
+             if (args.containsKey("id")) {
+                 final Object explicitId = args.get("id");
+                 if (explicitId instanceof String) {
+                     unresolvedId = (String) explicitId;
+                 } else {
+                     unresolvedId = JavaUtil.unwrapIfJavaObject((IRubyObject) explicitId);
+                 }
+             } else if (type == PluginLookup.PluginType.CODEC) {
+                 unresolvedId = UUID.randomUUID().toString();
+             }
+        }
+
+        final String id = (String) configVariables.expand(unresolvedId);
         if (id == null) {
             throw context.runtime.newRaiseException(
                     RubyUtil.CONFIGURATION_ERROR_CLASS,
