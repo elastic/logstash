@@ -99,7 +99,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
         RubyString pluginName = RubyUtil.RUBY.newString("mockinput");
 
         // Exercise
-        IRubyObject pluginInstance = sut.buildInput(pluginName, sourceWithMetadata, RubyHash.newHash(RubyUtil.RUBY));
+        IRubyObject pluginInstance = sut.buildInput(pluginName, RubyHash.newHash(RubyUtil.RUBY), sourceWithMetadata);
 
         //Verify
         IRubyObject id = pluginInstance.callMethod(RUBY.getCurrentContext(), "id");

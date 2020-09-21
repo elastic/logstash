@@ -41,13 +41,13 @@ public final class RubyIntegration {
      */
     public interface PluginFactory {
 
-        IRubyObject buildInput(RubyString name, SourceWithMetadata source, IRubyObject args);
+        IRubyObject buildInput(RubyString name, IRubyObject args, SourceWithMetadata source);
 
-        AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source, IRubyObject args);
+        AbstractOutputDelegatorExt buildOutput(RubyString name, IRubyObject args, SourceWithMetadata source);
 
-        AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args);
+        AbstractFilterDelegatorExt buildFilter(RubyString name, IRubyObject args, SourceWithMetadata source);
 
-        IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args);
+        IRubyObject buildCodec(RubyString name, IRubyObject args, SourceWithMetadata source);
 
         Codec buildDefaultCodec(String codecName);
 

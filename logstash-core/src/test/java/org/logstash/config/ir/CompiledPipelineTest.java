@@ -510,20 +510,20 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
-                                      final IRubyObject args) {
+        public IRubyObject buildInput(final RubyString name, final IRubyObject args,
+                                      SourceWithMetadata source) {
             return setupPlugin(name, inputs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
-                                                      final IRubyObject args) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final IRubyObject args,
+                                                      SourceWithMetadata source) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
-                                                      final IRubyObject args) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final IRubyObject args,
+                                                      SourceWithMetadata source) {
             final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
                 RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
@@ -531,7 +531,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, SourceWithMetadata source) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 
@@ -698,17 +698,17 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(RubyString name, SourceWithMetadata source, IRubyObject args) {
+        public IRubyObject buildInput(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return this.input.get();
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source, IRubyObject args) {
+        public AbstractOutputDelegatorExt buildOutput(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return PipelineTestUtil.buildOutput(this.output.get());
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args) {
+        public AbstractFilterDelegatorExt buildFilter(RubyString name, IRubyObject args, SourceWithMetadata source) {
             final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
                     RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
@@ -716,7 +716,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args) {
+        public IRubyObject buildCodec(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return null;
         }
 

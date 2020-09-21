@@ -128,50 +128,50 @@ public final class PluginFactoryExt extends RubyBasicObject
     @SuppressWarnings("unchecked")
     @Override
     public IRubyObject buildInput(final RubyString name,
-                                  final SourceWithMetadata source,
-                                  final IRubyObject args) {
+                                  final IRubyObject args,
+                                  final SourceWithMetadata source) {
         return plugin(
                 RubyUtil.RUBY.getCurrentContext(),
                 PluginLookup.PluginType.INPUT,
                 name.asJavaString(),
-                source,
-                (Map<String, IRubyObject>) args
+                (RubyHash) args,
+                source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public AbstractOutputDelegatorExt buildOutput(final RubyString name,
-                                                  final SourceWithMetadata source,
-                                                  final IRubyObject args) {
+                                                  final IRubyObject args,
+                                                  final SourceWithMetadata source) {
         return (AbstractOutputDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args
+                (RubyHash) args, source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public AbstractFilterDelegatorExt buildFilter(final RubyString name,
-                                                  final SourceWithMetadata source,
-                                                  final IRubyObject args) {
+                                                  final IRubyObject args,
+                                                  final SourceWithMetadata source) {
         return (AbstractFilterDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args
+                (RubyHash) args, source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public IRubyObject buildCodec(final RubyString name,
-                                  final SourceWithMetadata source,
-                                  final IRubyObject args) {
+                                  final IRubyObject args,
+                                  final SourceWithMetadata source) {
         return plugin(
                 RubyUtil.RUBY.getCurrentContext(),
                 PluginLookup.PluginType.CODEC,
                 name.asJavaString(),
-                source,
-                (Map<String, IRubyObject>) args
+                (RubyHash) args,
+                source
         );
     }
 
@@ -181,20 +181,22 @@ public final class PluginFactoryExt extends RubyBasicObject
                 RubyUtil.RUBY.getCurrentContext(),
                 PluginLookup.PluginType.CODEC,
                 codecName,
-                null,
-                Collections.emptyMap()
+                RubyHash.newHash(RubyUtil.RUBY),
+                null
         ));
     }
 
     @SuppressWarnings("unchecked")
     @JRubyMethod(required = 3, optional = 1)
     public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
+        final SourceWithMetadata source = args.length > 3 ? (SourceWithMetadata) JavaUtil.unwrapIfJavaObject(args[3]) : null;
+
         return plugin(
                 context,
                 PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                 args[1].asJavaString(),
-                JavaUtil.unwrapIfJavaObject(args[2]),
-                args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>()
+                (RubyHash) args[2],
+                source
         );
     }
 
@@ -202,8 +204,8 @@ public final class PluginFactoryExt extends RubyBasicObject
     private IRubyObject plugin(final ThreadContext context,
                                final PluginLookup.PluginType type,
                                final String name,
-                               final SourceWithMetadata source,
-                               final Map<String, IRubyObject> args) {
+                               final RubyHash args,
+                               final SourceWithMetadata source) {
         final String id = generateOrRetrievePluginId(context, type, name, source, args);
         pluginsById.add(id);
         final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
