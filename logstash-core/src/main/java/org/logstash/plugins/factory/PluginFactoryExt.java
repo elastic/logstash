@@ -296,10 +296,17 @@ public final class PluginFactoryExt extends RubyBasicObject
     private String generateOrRetrievePluginId(final PluginLookup.PluginType type,
                                               final SourceWithMetadata source,
                                               final Map<String, ?> args) {
+        final Optional<String> unprocessedId;
+        if (source == null) {
+            unprocessedId = extractId(() -> extractIdFromArgs(args),
+                                      this::generateUUID);
+        } else {
+            unprocessedId = extractId(() -> extractIdFromLIR(source),
+                                      () -> extractIdFromArgs(args),
+                                      () -> generateUUIDForCodecs(type));
+        }
 
-        return extractId(() -> extractIdFromLIR(source),
-                         () -> extractIdFromArgs(args),
-                         () -> generateUUIDForCodecs(type))
+        return unprocessedId
                 .map(configVariables::expand)
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
