@@ -127,49 +127,62 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     @SuppressWarnings("unchecked")
     @Override
-    public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
-                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public IRubyObject buildInput(final RubyString name,
+                                  final SourceWithMetadata source,
+                                  final IRubyObject args) {
         return plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.INPUT,
+                name.asJavaString(),
+                source,
+                (Map<String, IRubyObject>) args
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
-                                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractOutputDelegatorExt buildOutput(final RubyString name,
+                                                  final SourceWithMetadata source,
+                                                  final IRubyObject args) {
         return (AbstractOutputDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                source, (Map<String, IRubyObject>) args
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
-                                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractFilterDelegatorExt buildFilter(final RubyString name,
+                                                  final SourceWithMetadata source,
+                                                  final IRubyObject args) {
         return (AbstractFilterDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                source, (Map<String, IRubyObject>) args
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
-                                  Map<String, Object> pluginArgs) {
+    public IRubyObject buildCodec(final RubyString name,
+                                  final SourceWithMetadata source,
+                                  final IRubyObject args) {
         return plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                name.asJavaString(), source, (Map<String, IRubyObject>) args, pluginArgs
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.CODEC,
+                name.asJavaString(),
+                source,
+                (Map<String, IRubyObject>) args
         );
     }
 
     @Override
     public Codec buildDefaultCodec(String codecName) {
         return (Codec) JavaUtil.unwrapJavaValue(plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                codecName, null, Collections.emptyMap(), Collections.emptyMap()
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.CODEC,
+                codecName,
+                null,
+                Collections.emptyMap()
         ));
     }
 
@@ -181,15 +194,16 @@ public final class PluginFactoryExt extends RubyBasicObject
                 PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                 args[1].asJavaString(),
                 JavaUtil.unwrapIfJavaObject(args[2]),
-                args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>(),
-                null
+                args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>()
         );
     }
 
     @SuppressWarnings("unchecked")
-    private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                               SourceWithMetadata source, final Map<String, IRubyObject> args,
-                               Map<String, Object> pluginArgs) {
+    private IRubyObject plugin(final ThreadContext context,
+                               final PluginLookup.PluginType type,
+                               final String name,
+                               final SourceWithMetadata source,
+                               final Map<String, IRubyObject> args) {
         final String id = generateOrRetrievePluginId(context, type, name, source);
         pluginsById.add(id);
         final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
@@ -239,8 +253,24 @@ public final class PluginFactoryExt extends RubyBasicObject
             }
 
             Context contextWithMetrics = executionContextFactory.toContext(type, metrics.getRoot(context));
-            return pluginCreator.createDelegator(name, pluginArgs, id, typeScopedMetric, pluginClass, contextWithMetrics);
+            return pluginCreator.createDelegator(name, convertToJavaCoercible(args), id, typeScopedMetric, pluginClass, contextWithMetrics);
         }
+    }
+
+    private Map<String, Object> convertToJavaCoercible(Map<String, IRubyObject> input) {
+        final Map<String, Object> output = new HashMap<>(input);
+
+        // Intercept Codecs
+        for (final Map.Entry<String, IRubyObject> entry : input.entrySet()) {
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
+            final Object unwrapped = JavaUtil.unwrapJavaValue((IRubyObject) value);
+            if (unwrapped instanceof Codec) {
+                output.put(key, unwrapped);
+            }
+        }
+
+        return output;
     }
 
     private String generateOrRetrievePluginId(ThreadContext context, PluginLookup.PluginType type, String name,

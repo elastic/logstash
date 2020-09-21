@@ -166,7 +166,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args), unwrapCodecs(args)
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args)
             ));
         });
         return res;
@@ -184,7 +184,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args), unwrapCodecs(args)
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args)
             ));
         }
         return res;
@@ -201,7 +201,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             IRubyObject o = pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args), unwrapCodecs(args));
+                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args));
             nodes.add(o);
         });
         return nodes;
@@ -234,35 +234,12 @@ public final class CompiledPipeline {
                 final Map<String, Object> codecArguments = expandArguments(codecDefinition, cve);
                 IRubyObject codecInstance = pluginFactory.buildCodec(RubyUtil.RUBY.newString(codecDefinition.getName()),
                         codecSource,
-                        Rubyfier.deep(RubyUtil.RUBY, codecArguments),
-                        unwrapCodecs(codecArguments));
+                        Rubyfier.deep(RubyUtil.RUBY, codecArguments));
                 arguments.put(key, codecInstance);
             }
         }
 
         return arguments;
-    }
-
-    private Map<String, Object> unwrapCodecs(final Map<String, Object> input) {
-        final Map<String, Object> output = new HashMap<>(input);
-
-        // Intercept and unwrap codecs
-        for (final Map.Entry<String, Object> entry : input.entrySet()) {
-            final String key = entry.getKey();
-            final Object value = entry.getValue();
-            if (value instanceof IRubyObject) {
-                try {
-                    final Object unwrapped = JavaUtil.unwrapJavaValue((IRubyObject) value);
-                    if (unwrapped instanceof Codec) {
-                        output.put(key, unwrapped);
-                    }
-                } catch (Exception e) {
-
-                }
-            }
-        }
-
-        return output;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
