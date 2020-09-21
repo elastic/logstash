@@ -23,6 +23,7 @@ import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.PluginLookup;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JRubyClass(name = "PluginFactory")
 public final class PluginFactoryExt extends RubyBasicObject
@@ -37,7 +38,7 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
 
-    private final Collection<String> pluginsById = new HashSet<>();
+    private final Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
 
     private Engine engine;
 
@@ -206,8 +207,23 @@ public final class PluginFactoryExt extends RubyBasicObject
                                final String name,
                                final RubyHash args,
                                final SourceWithMetadata source) {
-        final String id = generateOrRetrievePluginId(context, type, name, source, args);
-        pluginsById.add(id);
+        final String id = generateOrRetrievePluginId(type, source, args);
+
+        if (id == null) {
+            throw context.runtime.newRaiseException(
+                    RubyUtil.CONFIGURATION_ERROR_CLASS,
+                    String.format(
+                            "Could not determine ID for %s/%s", type.rubyLabel().asJavaString(), name
+                    )
+            );
+        }
+        if (!pluginsById.add(id)) {
+            throw context.runtime.newRaiseException(
+                    RubyUtil.CONFIGURATION_ERROR_CLASS,
+                    String.format("Two plugins have the id '%s', please fix this conflict", id)
+            );
+        }
+
         final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
 
         final PluginLookup.PluginClass pluginClass = pluginResolver.resolve(type, name);
@@ -279,9 +295,7 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     // TODO: caller seems to think that the args is `Map<String, IRubyObject>`, but
     //       at least any `id` present is actually a `String`.
-    private String generateOrRetrievePluginId(final ThreadContext context,
-                                              final PluginLookup.PluginType type,
-                                              final String name,
+    private String generateOrRetrievePluginId(final PluginLookup.PluginType type,
                                               final SourceWithMetadata source,
                                               final Map<String, ?> args) {
         String unresolvedId = null;
@@ -306,22 +320,7 @@ public final class PluginFactoryExt extends RubyBasicObject
              }
         }
 
-        final String id = (String) configVariables.expand(unresolvedId);
-        if (id == null) {
-            throw context.runtime.newRaiseException(
-                    RubyUtil.CONFIGURATION_ERROR_CLASS,
-                    String.format(
-                            "Could not determine ID for %s/%s", type.rubyLabel().asJavaString(), name
-                    )
-            );
-        }
-        if (pluginsById.contains(id)) {
-            throw context.runtime.newRaiseException(
-                    RubyUtil.CONFIGURATION_ERROR_CLASS,
-                    String.format("Two plugins have the id '%s', please fix this conflict", id)
-            );
-        }
-        return id;
+        return (String) configVariables.expand(unresolvedId);
     }
 
     ExecutionContextFactoryExt getExecutionContextFactory() {
