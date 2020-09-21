@@ -296,29 +296,63 @@ public final class PluginFactoryExt extends RubyBasicObject
     private String generateOrRetrievePluginId(final PluginLookup.PluginType type,
                                               final SourceWithMetadata source,
                                               final Map<String, ?> args) {
-        String unresolvedId = null;
-        if (source != null) {
-            unresolvedId = lir.getGraph().vertices()
-                    .filter(v -> v.getSourceWithMetadata() != null
-                            && v.getSourceWithMetadata().equalsWithoutText(source))
-                    .findFirst()
-                    .map(Vertex::getId).orElse(null);
+
+        return extractId(() -> extractIdFromLIR(source),
+                         () -> extractIdFromArgs(args),
+                         () -> generateUUIDForCodecs(type))
+                .map(configVariables::expand)
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .orElse(null);
+    }
+
+    private Optional<String> extractId(final IdExtractor... extractors) {
+        for (IdExtractor extractor : extractors) {
+            final Optional<String> extracted = extractor.extract();
+            if (extracted.isPresent()) {
+                return extracted;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @FunctionalInterface
+    interface IdExtractor {
+        Optional<String> extract();
+    }
+
+    private Optional<String> extractIdFromArgs(final Map<String, ?> args) {
+        if (!args.containsKey("id")) {
+            return Optional.empty();
         }
 
-        if (unresolvedId == null) {
-             if (args.containsKey("id")) {
-                 final Object explicitId = args.get("id");
-                 if (explicitId instanceof String) {
-                     unresolvedId = (String) explicitId;
-                 } else {
-                     unresolvedId = JavaUtil.unwrapIfJavaObject((IRubyObject) explicitId);
-                 }
-             } else if (type == PluginLookup.PluginType.CODEC) {
-                 unresolvedId = UUID.randomUUID().toString();
-             }
+        final Object explicitId = args.get("id");
+        if (explicitId instanceof String) {
+            return Optional.of((String) explicitId);
+        } else if (explicitId instanceof RubyString) {
+            return Optional.of(((RubyString) explicitId).asJavaString());
+        } else {
+            return Optional.empty();
         }
+    }
 
-        return (String) configVariables.expand(unresolvedId);
+    private Optional<String> generateUUID() {
+        return Optional.of(UUID.randomUUID().toString());
+    }
+
+    private Optional<String> generateUUIDForCodecs(final PluginLookup.PluginType pluginType) {
+        if (pluginType == PluginLookup.PluginType.CODEC) {
+            return generateUUID();
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> extractIdFromLIR(final SourceWithMetadata source) {
+        return lir.getGraph().vertices()
+                .filter(v -> v.getSourceWithMetadata() != null
+                        && v.getSourceWithMetadata().equalsWithoutText(source))
+                .findFirst()
+                .map(Vertex::getId);
     }
 
     ExecutionContextFactoryExt getExecutionContextFactory() {
