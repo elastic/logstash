@@ -5,6 +5,7 @@ import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -43,7 +44,7 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private PluginMetricsFactoryExt metrics;
 
-    private RubyClass filterClass;
+    private RubyClass filterDelegatorClass;
 
     private ConfigVariableExpander configVariables;
 
@@ -54,16 +55,22 @@ public final class PluginFactoryExt extends RubyBasicObject
     @JRubyMethod(name = "filter_delegator", meta = true, required = 5)
     public static IRubyObject filterDelegator(final ThreadContext context,
                                               final IRubyObject recv, final IRubyObject... args) {
+        //  filterDelegatorClass, klass, rubyArgs, typeScopedMetric, executionCntx
+        final RubyClass filterDelegatorClass = (RubyClass) args[0];
+        final RubyClass klass = (RubyClass) args[1];
         final RubyHash arguments = (RubyHash) args[2];
-        final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
+        final AbstractMetricExt typeScopedMetric = (AbstractMetricExt) args[3];
+        final ExecutionContextExt executionContext = (ExecutionContextExt) args[4];
+
+        final IRubyObject filterInstance = klass.callMethod(context, "new", arguments);
         final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
         filterInstance.callMethod(
                 context, "metric=",
-                ((AbstractMetricExt) args[3]).namespace(context, id.intern())
+                typeScopedMetric.namespace(context, id.intern())
         );
-        filterInstance.callMethod(context, "execution_context=", args[4]);
-        return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
-                .initialize(context, filterInstance, id);
+        filterInstance.callMethod(context, "execution_context=", executionContext);
+
+        return filterDelegatorClass.newInstance(context, filterInstance, id, Block.NULL_BLOCK);
     }
 
     public PluginFactoryExt(final Ruby runtime, final RubyClass metaClass) {
@@ -98,7 +105,7 @@ public final class PluginFactoryExt extends RubyBasicObject
         this.lir = lir;
         this.metrics = metrics;
         this.executionContextFactory = executionContextFactoryExt;
-        this.filterClass = filterClass;
+        this.filterDelegatorClass = filterClass;
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.INPUT, new InputPluginCreator(this));
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.CODEC, new CodecPluginCreator());
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.FILTER, new FilterPluginCreator());
@@ -199,7 +206,7 @@ public final class PluginFactoryExt extends RubyBasicObject
             } else if (type == PluginLookup.PluginType.FILTER) {
                 return filterDelegator(
                         context, null,
-                        filterClass, klass, rubyArgs, typeScopedMetric, executionCntx);
+                        filterDelegatorClass, klass, rubyArgs, typeScopedMetric, executionCntx);
             } else {
                 final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                 final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
