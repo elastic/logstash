@@ -34,25 +34,25 @@ import java.util.Collections;
 public class TestPluginFactory implements RubyIntegration.PluginFactory {
 
     @Override
-    public IRubyObject buildInput(RubyString name, SourceWithMetadata source,
-                                  IRubyObject args) {
+    public IRubyObject buildInput(RubyString name, IRubyObject args,
+                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source,
-                                                  IRubyObject args) {
+    public AbstractOutputDelegatorExt buildOutput(RubyString name, IRubyObject args,
+                                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source,
-                                                  IRubyObject args) {
+    public AbstractFilterDelegatorExt buildFilter(RubyString name, IRubyObject args,
+                                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args) {
+    public IRubyObject buildCodec(RubyString name, IRubyObject args, SourceWithMetadata source) {
         return null;
     }
 

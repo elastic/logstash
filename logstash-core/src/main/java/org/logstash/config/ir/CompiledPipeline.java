@@ -166,7 +166,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         });
         return res;
@@ -184,7 +184,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         }
         return res;
@@ -201,7 +201,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             IRubyObject o = pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(args));
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
             nodes.add(o);
         });
         return nodes;
@@ -233,8 +233,8 @@ public final class CompiledPipeline {
                 final SourceWithMetadata codecSource = codecPluginStatement.getSourceWithMetadata();
                 final Map<String, Object> codecArguments = expandArguments(codecDefinition, cve);
                 IRubyObject codecInstance = pluginFactory.buildCodec(RubyUtil.RUBY.newString(codecDefinition.getName()),
-                        codecSource,
-                        Rubyfier.deep(RubyUtil.RUBY, codecArguments));
+                        Rubyfier.deep(RubyUtil.RUBY, codecArguments),
+                        codecSource);
                 arguments.put(key, codecInstance);
             }
         }
