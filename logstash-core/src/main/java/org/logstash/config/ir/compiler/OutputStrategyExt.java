@@ -35,6 +35,9 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.ExecutionContextExt;
+
+import static org.logstash.RubyUtil.PLUGIN_CONTEXTUALIZER_MODULE;
 
 public final class OutputStrategyExt {
 
@@ -184,13 +187,14 @@ public final class OutputStrategyExt {
             final int count = workerCount.convertToInteger().getIntValue();
             workerQueue = new ArrayBlockingQueue<>(count);
             workers = context.runtime.newArray(count);
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
             for (int i = 0; i < count; ++i) {
                 final RubyClass outputClass = (RubyClass) args[0];
+                // TODO: this comment is a warning sign that I'll need to fix up mocks
                 // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-                final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
+                final IRubyObject output = PLUGIN_CONTEXTUALIZER_MODULE.callMethod("initialize_plugin", executionContext, outputClass, pluginArgs);
                 initOutputCallsite(outputClass);
                 output.callMethod(context, "metric=", args[1]);
-                output.callMethod(context, "execution_context=", args[2]);
                 workers.append(output);
                 workerQueue.add(output);
             }
@@ -248,11 +252,12 @@ public final class OutputStrategyExt {
         @JRubyMethod(required = 4)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
+            // TODO: fixup mocks
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
+            output = PLUGIN_CONTEXTUALIZER_MODULE.callMethod("initialize_plugin", executionContext, outputClass, args[3]);
             initOutputCallsite(outputClass);
             output.callMethod(context, "metric=", args[1]);
-            output.callMethod(context, "execution_context=", args[2]);
             return this;
         }
 

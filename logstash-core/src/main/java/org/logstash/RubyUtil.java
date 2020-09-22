@@ -74,6 +74,7 @@ import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.plugins.factory.ContextualizerExt;
 import org.logstash.util.UtilExt;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
 import org.logstash.plugins.factory.PluginMetricsFactoryExt;
@@ -198,6 +199,8 @@ public final class RubyUtil {
     public static final RubyClass PLUGIN_METRICS_FACTORY_CLASS;
 
     public static final RubyClass PLUGIN_FACTORY_CLASS;
+
+    public static final RubyModule PLUGIN_CONTEXTUALIZER_MODULE;
 
     public static final RubyClass LOGGER;
 
@@ -551,6 +554,8 @@ public final class RubyUtil {
             "PluginFactory", RUBY.getObject(), PluginFactoryExt::new
         );
         PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.class);
+        PLUGIN_CONTEXTUALIZER_MODULE = PLUGINS_MODULE.defineOrGetModuleUnder("Contextualizer");
+        PLUGIN_CONTEXTUALIZER_MODULE.defineAnnotatedMethods(ContextualizerExt.class);
         UNIVERSAL_PLUGIN_CLASS =
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         EVENT_DISPATCHER_CLASS =

@@ -125,16 +125,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
     metric
   end
 
-  def execution_context=(context)
-    super
-    # There is no easy way to propage an instance variable into the codec, because the codec
-    # are created at the class level
-    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their
-    #               parent plugin's
-    @codec.execution_context = context
-    context
-  end
-
   private
   def output?(event)
     # TODO: noop for now, remove this once we delete this call from all plugins
