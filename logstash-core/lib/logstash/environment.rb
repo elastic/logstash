@@ -34,7 +34,7 @@ module LogStash
   end
 
   [
-            Setting::StringSetting::Builder.new("node.name").defaultValue(Socket.gethostname).build,
+            Setting::String.new("node.name", Socket.gethostname),
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableString.new("config.string", nil, false),

@@ -222,7 +222,7 @@ module LogStash
     end
   end
 
-  java_import org.logstash.settings.Setting
+#   java_import org.logstash.settings.Setting
 
   class Setting
 #     include LogStash::Util::Loggable
@@ -463,20 +463,20 @@ module LogStash
       end
     end
 
-    java_import org.logstash.settings.StringSetting
-#     class String < Setting
-#       def initialize(name, default=nil, strict=true, possible_strings=[])
-#         @possible_strings = possible_strings
-#         super(name, ::String, default, strict)
-#       end
-#
-#       def validate(value)
-#         super(value)
-#         unless @possible_strings.empty? || @possible_strings.include?(value)
-#           raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
-#         end
-#       end
-#     end
+#     java_import org.logstash.settings.StringSetting
+    class String < Setting
+      def initialize(name, default=nil, strict=true, possible_strings=[])
+        @possible_strings = possible_strings
+        super(name, ::String, default, strict)
+      end
+
+      def validate(value)
+        super(value)
+        unless @possible_strings.empty? || @possible_strings.include?(value)
+          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+        end
+      end
+    end
 
     class NullableString < String
       def validate(value)
