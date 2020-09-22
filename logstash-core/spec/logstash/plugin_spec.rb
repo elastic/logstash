@@ -69,13 +69,28 @@ describe LogStash::Plugin do
   end
 
   context "#execution_context" do
-    subject { Class.new(LogStash::Plugin).new({}) }
+    let(:klass) { Class.new(LogStash::Plugin) }
+    subject(:instance) { klass.new({}) }
     include_context "execution_context"
 
-    it "can be set and get" do
-      expect(subject.execution_context).to be_nil
-      subject.execution_context = execution_context
-      expect(subject.execution_context).to eq(execution_context)
+    context 'execution_context=' do
+      let(:deprecation_logger_stub) { double('DeprecationLogger').as_null_object }
+      before(:each) do
+        allow(klass).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
+      end
+
+      it "can be set and get" do
+        new_ctx = execution_context.dup
+        subject.execution_context = new_ctx
+        expect(subject.execution_context).to eq(new_ctx)
+      end
+
+      it 'emits a deprecation warning' do
+        expect(deprecation_logger_stub).to receive(:deprecated) do |message|
+          expect(message).to match(/execution_context=/)
+        end
+        instance.execution_context = execution_context
+      end
     end
   end
 

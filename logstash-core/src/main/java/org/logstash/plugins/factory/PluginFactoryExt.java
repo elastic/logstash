@@ -66,13 +66,13 @@ public final class PluginFactoryExt extends RubyBasicObject
         final AbstractMetricExt typeScopedMetric = (AbstractMetricExt) args[3];
         final ExecutionContextExt executionContext = (ExecutionContextExt) args[4];
 
-        final IRubyObject filterInstance = klass.callMethod(context, "new", arguments);
+        final IRubyObject filterInstance = ContextualizerExt.initializePlugin(context, executionContext, klass, arguments);
+
         final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
         filterInstance.callMethod(
                 context, "metric=",
                 typeScopedMetric.namespace(context, id.intern())
         );
-        filterInstance.callMethod(context, "execution_context=", executionContext);
 
         return filterDelegatorClass.newInstance(context, filterInstance, id, Block.NULL_BLOCK);
     }
@@ -251,11 +251,11 @@ public final class PluginFactoryExt extends RubyBasicObject
                         context, null,
                         filterDelegatorClass, klass, rubyArgs, typeScopedMetric, executionCntx);
             } else {
-                final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
+                final IRubyObject pluginInstance = ContextualizerExt.initializePlugin(context, executionCntx, klass, rubyArgs);
+
                 final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                 scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                 pluginInstance.callMethod(context, "metric=", scopedMetric);
-                pluginInstance.callMethod(context, "execution_context=", executionCntx);
                 return pluginInstance;
             }
         } else {
