@@ -64,7 +64,7 @@ official word on supported versions across products and releases.
 
 *Elastic_app_search Output - 1.1.1*
 
-* Added missed dependency (elastic-app-search) to the gemspec, fixes issue https://github.com/logstash-plugins/logstash-output-elastic_app_search/issues/17[#17]
+* Added missed dependency (elastic-app-search) to the gemspec https://github.com/logstash-plugins/logstash-output-elastic_app_search/pull/18[#18]. Fixes https://github.com/logstash-plugins/logstash-output-elastic_app_search/issues/17[#17]
 
 [[logstash-7-9-1]]
 === Logstash 7.9.1 Release Notes
