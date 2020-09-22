@@ -46,7 +46,15 @@ Since `7.8.0`, a change to optimise the speed of loading variables from the Logs
 ===== App Search output startup failure
 
 Since `7.9.0`, a regression was introduced which prevented pipelines using the Elastic App Search output from starting. This release fixes support for this plugin, you can read the details here: https://github.com/logstash-plugins/logstash-output-elastic_app_search/pull/18[#18], https://github.com/elastic/logstash/pull/12251[#12251]
+[[jdk15-compat]]
+==== Compatibility notice: {ls} and JDK 15
 
+{ls} is not yet compatible with JDK 15.
+
+While we are working to support JDK 15, we encourage you to use supported JDK
+versions (8, 11 or 14). See <<ls-jvm>> for details and the
+https://www.elastic.co/support/matrix#matrix_jvm[Elastic Support Matrix] for the
+official word on supported versions across products and releases.
 ==== Plugins
 
 *Sleep Filter - 3.0.7*
