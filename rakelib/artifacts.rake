@@ -136,7 +136,8 @@ namespace "artifact" do
   task "archives" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     license_details = ['ELASTIC-LICENSE']
-    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    create_archive_pack(license_details, "x86_64", "linux")
+#     , "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
@@ -312,10 +313,10 @@ namespace "artifact" do
   # Auxiliary tasks
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
-    Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:deb_oss"].invoke
-    Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:rpm_oss"].invoke
+#    Rake::Task["artifact:deb"].invoke
+#    Rake::Task["artifact:deb_oss"].invoke
+#    Rake::Task["artifact:rpm"].invoke
+#    Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives"].invoke
     Rake::Task["artifact:archives_oss"].invoke
     unless ENV['SKIP_DOCKER'] == "1"
@@ -401,6 +402,7 @@ namespace "artifact" do
       ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
     end
   end
+
 
   def ensure_logstash_version_constant_defined
     # we do not want this file required when rake (ruby) parses this file

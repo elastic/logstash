@@ -10,7 +10,7 @@ shared_examples_for 'the metadata is set correctly' do |flavor|
   end
 
   it 'should have the correct Architecture' do
-    expect(@image.json['Architecture']).to have_correct_architecture_for_flavor(flavor)
+    expect(@image.json['Architecture']).to have_correct_architecture
   end
 
   %w(license org.label-schema.license org.opencontainers.image.licenses).each do |label|
