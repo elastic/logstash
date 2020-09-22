@@ -184,4 +184,28 @@ class LogStash::Plugin
     @deprecation_logger.deprecated("LogStash::Plugin#execution_context=(new_ctx) is deprecated. Use LogStash::Plugins::Contextualizer#initialize_plugin(new_ctx, klass, args) instead", :caller => caller.first)
     @execution_context = new_context
   end
+
+  private
+
+  ##
+  # Returns the setting's value, or yields to the provided block.
+  #
+  # @param setting_name [String]
+  # @yieldparam setting_name [String]: the name of the setting is yielded if the setting is not available
+  # @yieldreturn [Object]: the default value, if the specified setting is not available
+  def get_setting(setting_name)
+    fail("block required!") unless block_given?
+
+    pipeline = execution_context && execution_context.pipeline
+    settings = pipeline && pipeline.settings
+
+    if settings.nil?
+      @logger.warn("Per-pipeline settings not available; using global settings instead")
+      settings = LogStash::SETTINGS
+    end
+
+    return settings.get_value(setting_name) if settings.registered?(setting_name)
+
+    return yield(setting_name)
+  end
 end # class LogStash::Plugin
