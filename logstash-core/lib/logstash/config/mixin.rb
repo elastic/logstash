@@ -99,6 +99,17 @@ module LogStash::Config::Mixin
       params[name.to_s] = deep_replace(value)
     end
 
+    # Intercept codecs that have not been instantiated
+    params.each do |name, value|
+      validator = self.class.validator_find(name)
+      next unless validator && validator[:validate] == :codec && value.kind_of?(String)
+
+      codec_klass = LogStash::Plugin.lookup("codec", value)
+      codec_instance = LogStash::Plugins::Contextualizer.initialize_plugin(execution_context, codec_klass)
+
+      params[name.to_s] = LogStash::Codecs::Delegator.new(codec_instance)
+    end
+
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.runner.configuration.invalid_plugin_settings")
