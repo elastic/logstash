@@ -14,7 +14,7 @@
 {% endif -%}
 
 {% if image_flavor == 'ubi8' -%}
-  {% set base_image = 'registry.access.redhat.com/ubi8/ubi-minimal' -%}
+  {% set base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%}
   {% set package_manager = 'microdnf'  -%}
   # Minimal distributions do not ship with en language packs.
   {% set locale = 'C.UTF-8' -%}
