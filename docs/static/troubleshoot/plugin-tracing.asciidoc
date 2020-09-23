@@ -1,0 +1,4 @@
+[discrete]
+[[ts-plugin-tracing]] 
+==== Plugin tracing
+
