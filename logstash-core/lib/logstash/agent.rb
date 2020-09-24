@@ -359,8 +359,8 @@ class LogStash::Agent
 
           unless action_result.successful?
             logger.error("Failed to execute action",
-              :id => action.pipeline_id,
-              :action_type => action_result.class,
+              :pipeline_id => action.pipeline_id,
+              :action => action.class.to_s.split('::').last,
               :message => action_result.message,
               :backtrace => action_result.backtrace
             )
