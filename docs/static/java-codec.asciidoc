@@ -305,8 +305,8 @@ an UUID.
 ==== Unit tests
 
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
-The example codec plugin includes an 
-https://github.com/logstash-plugins/logstash-codec-java_codec_example/blob/master/src/test/java/org/logstash/javaapi/JavaCodecExampleTest.java[example unit
+The example codec plugin includes an
+https://github.com/logstash-plugins/logstash-codec-java_codec_example/blob/master/src/test/java/org/logstashplugins/JavaCodecExampleTest.java[example unit
 test] that you can use as a template for your own.
 
 // Pulls in shared section about Packaging and Deploying

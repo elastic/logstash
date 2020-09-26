@@ -248,8 +248,8 @@ constructor at instantiation time.
 [float]
 ==== Unit tests
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
-The example input plugin includes an 
-https://github.com/logstash-plugins/logstash-input-java_input_example/blob/master/src/test/java/org/logstash/javaapi/JavaInputExampleTest.java[example unit
+The example input plugin includes an
+https://github.com/logstash-plugins/logstash-input-java_input_example/blob/master/src/test/java/org/logstashplugins/JavaInputExampleTest.java[example unit
 test] that you can use as a template for your own.
 
 // Pulls in shared section about Packaging and Deploying
