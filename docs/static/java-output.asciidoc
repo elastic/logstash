@@ -229,8 +229,8 @@ constructor at instantiation time.
 ==== Unit tests
 
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
-The example output plugin includes an 
-https://github.com/logstash-plugins/logstash-output-java_output_example/blob/master/src/test/java/org/logstash/javaapi/JavaOutputExampleTest.java[example unit
+The example output plugin includes an
+https://github.com/logstash-plugins/logstash-output-java_output_example/blob/master/src/test/java/org/logstashplugins/JavaOutputExampleTest.java[example unit
 test] that you can use as a template for your own.
 
 
