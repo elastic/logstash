@@ -837,7 +837,7 @@ It is appropriate to change these values to fit your plugin. In particular,
 you are ready to publish your plugin.
 
 Logstash and all its plugins are licensed under
-https://github.com/elastic/logstash/blob/master/LICENSE[Apache License, version 2 ("ALv2")].
+https://github.com/elastic/logstash/blob/master/LICENSE.txt[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
 please make sure to have this line in your gemspec:
 
