@@ -77,7 +77,7 @@ def java_process(container, column)
 end
 
 def exec_in_container(container, command)
-  container.exec(command.split)[0][0]
+  container.exec(command.split)[0].join
 end
 
 def architecture_for_flavor(flavor)
