@@ -18,7 +18,7 @@ module LogStash
 
       class RemoteConfigError < LogStash::Error; end
 
-      PIPELINE_INDEX = ".logstash"
+      SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
       # exclude basic
       VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
@@ -69,27 +69,18 @@ module LogStash
           raise RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        if response["docs"].nil?
-          logger.debug("Server returned an unknown or malformed document structure", :response => response)
-          raise RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
-        end
-
-        # Cache pipelines to handle the case where a remote configuration error can render a pipeline unusable
-        # it is not reloadable
-        @cached_pipelines = response["docs"].collect do |document|
-          get_pipeline(document)
+        @cached_pipelines = pipeline_ids.collect do |pid|
+          get_pipeline(pid, response)
         end.compact
       end
 
-      def get_pipeline(response)
-        pipeline_id = response["_id"]
-
-        if response["found"] == false
+      def get_pipeline(pipeline_id, response)
+        if response.has_key?(pipeline_id) == false
           logger.debug("Could not find a remote configuration for a specific `pipeline_id`", :pipeline_id => pipeline_id)
           return nil
         end
 
-        config_string = response.fetch("_source", {})["pipeline"]
+        config_string = response.fetch(pipeline_id, {})["pipeline"]
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
@@ -100,7 +91,7 @@ module LogStash
         settings.set("pipeline.id", pipeline_id)
 
         # override global settings with pipeline settings from ES, if any
-        pipeline_settings = response["_source"]["pipeline_settings"]
+        pipeline_settings = response[pipeline_id]["pipeline_settings"]
         unless pipeline_settings.nil?
           pipeline_settings.each do |setting, value|
             if SUPPORTED_PIPELINE_SETTINGS.include? setting
@@ -128,12 +119,8 @@ module LogStash
       end
 
       def fetch_config(pipeline_ids)
-        request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
-        client.post(config_path, {}, request_body_string)
-      end
-
-      def config_path
-        "#{PIPELINE_INDEX}/_mget"
+        path_ids = pipeline_ids.join(",")
+        client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
       end
 
       def populate_license_state(xpack_info)

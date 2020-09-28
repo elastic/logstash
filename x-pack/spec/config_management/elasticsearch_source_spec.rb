@@ -162,22 +162,18 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
   end
 
-  describe "#config_path" do
-    before do
-      # we are testing the arguments here, not the behavior of the elasticsearch output
-      allow_any_instance_of(described_class).to receive(:build_client).and_return(nil)
-    end
+  describe "#fetch_config" do
+    let(:mock_client)  { double("http_client") }
 
-    let(:pipeline_id) { "foobar" }
-    let(:settings) do
-      {
-        "xpack.management.pipeline.id" => pipeline_id,
-        "xpack.management.elasticsearch.password" => "testpassword"
-      }
+    before do
+      expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
+      allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
+      allow_any_instance_of(LogStash::LicenseChecker::LicenseReader).to receive(:client).and_return(mock_license_client)
     end
 
     it "generates the path to get the configuration" do
-      expect(subject.config_path).to eq("#{described_class::PIPELINE_INDEX}/_mget")
+      expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(LogStash::Json.load("{}"))
+      subject.fetch_config(["apache", "nginx"])
     end
   end
 
@@ -216,11 +212,9 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     let(:pipeline_id) { "apache" }
     let(:mock_client)  { double("http_client") }
     let(:settings) { super.merge({ "xpack.management.pipeline.id" => pipeline_id }) }
-    let(:es_path) { "#{described_class::PIPELINE_INDEX}/_mget" }
-    let(:request_body_string) { LogStash::Json.dump({ "docs" => [{ "_id" => pipeline_id }] }) }
 
     before do
-      allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_response))
+      allow(mock_client).to receive(:get).with(instance_of(String)).and_return(LogStash::Json.load(elasticsearch_response))
       allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
       allow_any_instance_of(LogStash::LicenseChecker::LicenseReader).to receive(:client).and_return(mock_license_client)
 
@@ -241,29 +235,22 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         let(:invalid_pipeline_setting) {"nonsensical.invalid.setting"}
         let(:elasticsearch_response) {
           %{
-          { "docs": [{
-              "_index":".logstash",
-              "_type":"pipelines",
-              "_id":"#{pipeline_id}",
-              "_version":8,
-              "found":true,
-              "_source": {
-                "id":"apache",
-                "description":"Process apache logs",
-                "modified_timestamp":"2017-02-28T23:02:17.023Z",
-                "pipeline_metadata":{
-                  "version":5,
-                  "type":"logstash_pipeline",
-                  "username":"elastic"
-                },
-                "pipeline":"#{config}",
-                "pipeline_settings": {
-                  "#{whitelisted_pipeline_setting_name}":#{whitelisted_pipeline_setting_value},
-                  "#{non_whitelisted_pipeline_setting_name}":#{non_whitelisted_pipeline_setting_value},
-                  "#{invalid_pipeline_setting}":-9999
-                }
+          {
+            "#{pipeline_id}" : {
+              "username": "log.stash",
+              "modified_timestamp":"2017-02-28T23:02:17.023Z",
+              "pipeline_metadata":{
+                "version":5,
+                "type":"logstash_pipeline",
+                "username":"elastic"
+              },
+              "pipeline":"#{config}",
+              "pipeline_settings": {
+                "#{whitelisted_pipeline_setting_name}":#{whitelisted_pipeline_setting_value},
+                "#{non_whitelisted_pipeline_setting_name}":#{non_whitelisted_pipeline_setting_value},
+                "#{invalid_pipeline_setting}":-9999
               }
-            }]
+            }
           }
           }
         }
@@ -287,7 +274,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       context 'when the license has expired' do
         let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-        let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+        let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
         let(:license_status) { 'expired'}
         let(:license_expiry_date) { Time.now - (60 * 60 * 24)}
 
@@ -305,7 +292,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       context 'when the license server is not available' do
         let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-        let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+        let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
 
         before :each do
           allow(mock_license_client).to receive(:get).with('_xpack').and_raise("An error is here")
@@ -319,7 +306,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       context 'when the xpack is not installed' do
         let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-        let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+        let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
 
         before :each do
           expect(mock_license_client).to receive(:get).with('_xpack').and_return(no_xpack_response)
@@ -333,7 +320,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       describe 'security enabled/disabled in Elasticsearch' do
         let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-        let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+        let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
 
         let(:xpack_response) do
           {
@@ -377,7 +364,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       context "With an invalid basic license, it should raise an error" do
         let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-        let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+        let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
         let(:license_type) { 'basic' }
 
         it 'should raise an error' do
@@ -394,7 +381,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           end
 
           let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-          let(:elasticsearch_response) { "{ \"docs\":[{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}]}" }
+          let(:elasticsearch_response) { "{\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}}" }
           let(:license_type) { license_type }
 
           it "returns a valid pipeline config" do
@@ -410,7 +397,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     context "with multiples `pipeline_id` configured" do
 
       before do
-        allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_response))
+        allow(mock_client).to receive(:get).with(instance_of(String)).and_return(LogStash::Json.load(elasticsearch_response))
         expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
       end
 
@@ -421,15 +408,16 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             "firewall" => config_firewall
           }
         end
+        let(:pipeline_id) { pipelines.keys }
 
         let(:config_apache) { "input { generator { id => '123'} } filter { mutate {} } output { }" }
         let(:config_firewall) { "input { generator { id => '321' } } filter { mutate {} } output { }" }
         let(:elasticsearch_response) do
-          content = "{ \"docs\":["
+          content = "{"
           content << pipelines.collect do |pipeline_id, config|
-            "{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"#{pipeline_id}\",\"_version\":8,\"found\":true,\"_source\":{\"id\":\"apache\",\"description\":\"Process apache logs\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},\"pipeline\":\"#{config}\"}}"
+            "\"#{pipeline_id}\":{\"username\":\"log.stash\",\"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",\"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},\"pipeline\":\"#{config}\",\"pipeline_settings\":{\"pipeline.batch.delay\":\"50\"}}"
           end.join(",")
-          content << "]}"
+          content << "}"
           content
         end
 
@@ -443,7 +431,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
 
     context "when the configuration is not found" do
-      let(:elasticsearch_response) { "{ \"docs\": [{\"_index\":\".logstash\",\"_type\":\"pipelines\",\"_id\":\"donotexist\",\"found\":false}]}" }
+      let(:elasticsearch_response) { "{}" }
 
       before do
         expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
@@ -455,14 +443,14 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
 
     context "when any error returned from elasticsearch" do
-      let(:elasticsearch_response){'{ "error":{"root_cause":[{"type":"illegal_argument_exception","reason":"No endpoint or operation is available at [testing_ph]"}],"type":"illegal_argument_exception","reason":"No endpoint or operation is available at [testing_ph]"},"status":400}' }
+      let(:elasticsearch_response){"{\"error\" : \"no handler found for uri [/_logstash/pipelines?pretty] and method [GET]\"}" }
 
       before do
         expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
       end
 
       it "raises a `RemoteConfigError`" do
-        expect { subject.pipeline_configs }.to raise_error /illegal_argument_exception/
+        expect { subject.pipeline_configs }.to raise_error /no handler found/
       end
     end
 
@@ -474,7 +462,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       end
 
       it "raises the exception upstream" do
-        expect(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_raise("Something bad")
+        expect(mock_client).to receive(:get).with(instance_of(String)).and_raise("Something bad")
         expect { subject.pipeline_configs }.to raise_error /Something bad/
       end
     end

@@ -31,7 +31,7 @@ describe "Read configuration from elasticsearch" do
   def start_services(elasticsearch_options, logstash_options)
     @elasticsearch_service = elasticsearch(elasticsearch_options)
 
-    cleanup_elasticsearch(".logstash*")
+    cleanup_system_indices([PIPELINE_ID])
 
     config = "input { generator { count => 100 } tcp { port => 6000 } } output { null {} }"
     push_elasticsearch_config(PIPELINE_ID, config)
