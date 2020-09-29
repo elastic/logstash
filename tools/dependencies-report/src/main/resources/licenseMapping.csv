@@ -119,6 +119,7 @@ dependency,dependencyUrl,licenseOverride
 "rack-protection:",http://github.com/rkh/rack-protection,MIT
 "rack:",http://rack.github.io/,MIT
 "rake:",https://github.com/ruby/rake,MIT
+"Red Hat Universal Base Image minimal:",https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8,Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf
 "redis:",https://github.com/redis/redis-rb,MIT
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
