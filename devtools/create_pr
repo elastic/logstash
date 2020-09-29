@@ -65,8 +65,8 @@ def create_pr(args):
         check_call("git clean -df", shell=True)
         #check_call("git fetch", shell=True)
 
-        info("Checkout of {} to backport from....".format(args.local_branch))
-        check_call("git checkout {}".format(args.from_branch), shell=True)
+        info("Checkout of {} to create a PR....".format(args.local_branch))
+        check_call("git checkout {}".format(args.local_branch), shell=True)
         check_call("git rebase master", shell=True)
 
     if args.diff:
