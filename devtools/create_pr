@@ -97,7 +97,7 @@ def create_pr(args):
         info("GitHub API token not available.\n" +
              "Manually create a PR by following this URL: \n\t" +
              "https://github.com/elastic/logstash/compare/{}...{}:{}?expand=1"
-              .format(args.to_branch, remote, tmp_branch))
+              .format(args.to_branch, remote, args.local_branch))
     else:
         info("Automatically creating a PR for you...")
 
