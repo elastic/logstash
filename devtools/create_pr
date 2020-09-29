@@ -89,7 +89,7 @@ def create_pr(args):
 
     info("Checking if GitHub API token is available in `~/.elastic/github.token`")
     try:
-        token = open(expanduser("~/.elastic/github.tokens"), "r").read().strip()
+        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
     except:
         token = False
 
