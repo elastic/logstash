@@ -30,7 +30,8 @@ class LogStash::DependencyReport < Clamp::Command
     :required => true, :attribute_name => :output_path
 
   OTHER_DEPENDENCIES = [
-    ["jruby", "", "http://jruby.org", "EPL-2.0"]
+    ["jruby", "", "http://jruby.org", "EPL-2.0"],
+    ["Red Hat Universal Base Image minimal","8","https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8","Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf"]
   ]
 
   def execute
