@@ -18,7 +18,6 @@ module LogStash
 
       class RemoteConfigError < LogStash::Error; end
 
-      SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
       # exclude basic
       VALID_LICENSES = %w(trial standard gold platinum enterprise)
       FEATURE_INTERNAL = 'management'
@@ -50,6 +49,19 @@ module LogStash
         false
       end
 
+      def pipeline_fetcher_factory
+        response = client.get("/")
+
+        if response["error"]
+          raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
+        end
+
+        version_number = response["version"]["number"].split(".")
+        first = version_number[0].to_i
+        second = version_number[1].to_i
+        (first >= 8 || (first == 7 && second >= 10))? SystemIndicesFetcher.new: LegacyHiddenIndicesFetcher.new
+      end
+
       def pipeline_configs
         logger.trace("Fetch remote config pipeline", :pipeline_ids => pipeline_ids)
 
@@ -63,24 +75,27 @@ module LogStash
           end
         end
 
-        response = fetch_config(pipeline_ids)
+        fetcher = pipeline_fetcher_factory
+        response = fetcher.fetch_config(pipeline_ids, client)
 
         if response["error"]
           raise RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
+        response = fetcher.format_response(response)
+
         @cached_pipelines = pipeline_ids.collect do |pid|
-          get_pipeline(pid, response)
+          get_pipeline(pid, response, fetcher)
         end.compact
       end
 
-      def get_pipeline(pipeline_id, response)
+      def get_pipeline(pipeline_id, response, fetcher)
         if response.has_key?(pipeline_id) == false
           logger.debug("Could not find a remote configuration for a specific `pipeline_id`", :pipeline_id => pipeline_id)
           return nil
         end
 
-        config_string = response.fetch(pipeline_id, {})["pipeline"]
+        config_string = fetcher.get_single_pipeline_setting(response, pipeline_id)["pipeline"]
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
@@ -91,7 +106,7 @@ module LogStash
         settings.set("pipeline.id", pipeline_id)
 
         # override global settings with pipeline settings from ES, if any
-        pipeline_settings = response[pipeline_id]["pipeline_settings"]
+        pipeline_settings = fetcher.get_single_pipeline_setting(response, pipeline_id)["pipeline_settings"]
         unless pipeline_settings.nil?
           pipeline_settings.each do |setting, value|
             if SUPPORTED_PIPELINE_SETTINGS.include? setting
@@ -116,11 +131,6 @@ module LogStash
         new_logger = logger
         es.instance_eval { @logger = new_logger }
         es.build_client
-      end
-
-      def fetch_config(pipeline_ids)
-        path_ids = pipeline_ids.join(",")
-        client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
       end
 
       def populate_license_state(xpack_info)
@@ -180,5 +190,54 @@ module LogStash
         @client ||= build_client
       end
     end
+
+    class SystemIndicesFetcher
+      include LogStash::Util::Loggable
+
+      SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
+
+      def fetch_config(pipeline_ids, client)
+        path_ids = pipeline_ids.join(",")
+        client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
+      end
+
+      def format_response(response)
+        # for backwards compatibility
+        response
+      end
+
+      def get_single_pipeline_setting(response, pipeline_id)
+        response.fetch(pipeline_id, {})
+      end
+    end
+
+    # TODO clean up LegacyHiddenIndicesFetcher when 7.9.* is deprecated
+    class LegacyHiddenIndicesFetcher
+      include LogStash::Util::Loggable
+
+      PIPELINE_INDEX = ".logstash"
+
+      def fetch_config(pipeline_ids, client)
+        request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
+        client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
+      end
+
+      def format_response(response)
+        if response["docs"].nil?
+          logger.debug("Server returned an unknown or malformed document structure", :response => response)
+          raise LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
+        end
+
+        response["docs"].map { |pipeline|
+          {pipeline["_id"] => pipeline} if pipeline.fetch("found", false)
+        }.compact
+        .reduce({}, :merge)
+      end
+
+      def get_single_pipeline_setting(response, pipeline_id)
+        response.fetch(pipeline_id, {}).fetch("_source", {})
+      end
+    end
+
   end
 end

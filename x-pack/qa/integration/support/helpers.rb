@@ -95,10 +95,19 @@ def elasticsearch_client(options = { :url => "http://elastic:#{elastic_password}
   Elasticsearch::Client.new(options)
 end
 
+def es_version
+  response = elasticsearch_client.perform_request(:get, "")
+  response.body["version"]["number"].gsub(/(\d+\.\d+)\..+/, '\1').to_f
+end
+
 def push_elasticsearch_config(pipeline_id, config)
-  elasticsearch_client.perform_request(:put, "_logstash/pipeline/#{pipeline_id}", {},
-    { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => "1" },
-            :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
+  if es_version >= 7.10
+    elasticsearch_client.perform_request(:put, "_logstash/pipeline/#{pipeline_id}", {},
+      { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => "1" },
+              :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
+  else
+    elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
+  end
 end
 
 def cleanup_elasticsearch(index = MONITORING_INDEXES)
