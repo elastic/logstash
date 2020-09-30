@@ -13,11 +13,11 @@ import requests
 
 usage = """
     Example usage:
-        ./dev-tools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527
+        ./devtools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527
 
     In case of backporting errors, fix them, then run
         git cherry-pick --continue
-        ./dev-tools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527 --continue
+        ./devtools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527 --continue
 
     This script does the following:
         * cleanups both from_branch and to_branch (warning: drops local changes)
@@ -77,7 +77,7 @@ def create_pr(args):
         if not args.yes and input("This will destroy all local changes. " +
                                       "Continue? [y/n]: ") != "y":
             return 1
-        info("Destroying local changess...")
+        info("Destroying local changes...")
         check_call("git reset --hard", shell=True)
         check_call("git clean -df", shell=True)
         check_call("git fetch", shell=True)
