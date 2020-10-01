@@ -56,6 +56,7 @@ module LogStash
           raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
+        logger.debug("Elasticsearch version ", response["version"]["number"])
         version_number = response["version"]["number"].split(".")
         first = version_number[0].to_i
         second = version_number[1].to_i
@@ -225,7 +226,7 @@ module LogStash
       def format_response(response)
         if response["docs"].nil?
           logger.debug("Server returned an unknown or malformed document structure", :response => response)
-          raise LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
+          raise ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
         end
 
         response["docs"].map { |pipeline|
