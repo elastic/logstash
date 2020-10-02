@@ -9,7 +9,7 @@ shared_examples_for 'the metadata is set correctly' do |flavor|
     expect(@image_config['WorkingDir']).to eql '/usr/share/logstash'
   end
 
-  it 'should have the correct Architecture' do
+  it "should have an architecture of #{running_architecture}" do
     expect(@image.json['Architecture']).to have_correct_architecture
   end
 
