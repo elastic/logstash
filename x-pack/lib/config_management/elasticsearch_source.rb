@@ -49,6 +49,7 @@ module LogStash
         false
       end
 
+      # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
       def pipeline_fetcher_factory
         response = client.get("/")
 
@@ -223,6 +224,7 @@ module LogStash
         client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
       end
 
+      # transform legacy response to be similar to system indices response
       def format_response(response)
         if response["docs"].nil?
           logger.debug("Server returned an unknown or malformed document structure", :response => response)
