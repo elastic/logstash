@@ -6,10 +6,10 @@
 {% endif -%}
 
 {% if image_flavor == 'oss' -%}
-  {% set tarball = 'logstash-oss-%s-linux-x86_64.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-oss-%s-linux-%s.tar.gz' % (elastic_version, arch) -%}
   {% set license = 'Apache 2.0' -%}
 {% else -%}
-  {% set tarball = 'logstash-%s-linux-x86_64.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-%s-linux-%s.tar.gz' % (elastic_version, arch) -%}
   {% set license = 'Elastic License' -%}
 {% endif -%}
 

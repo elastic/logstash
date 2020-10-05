@@ -80,9 +80,23 @@ def exec_in_container(container, command)
   container.exec(command.split)[0].join
 end
 
-def architecture_for_flavor(flavor)
-  flavor.match(/aarch64/) ? 'arm64' : 'amd64'
+def running_architecture
+    architecture = ENV['DOCKER_ARCHITECTURE']
+    architecture = normalized_architecture(`uname -m`.strip) if architecture.nil?
+    architecture
 end
+
+def normalized_architecture(cpu)
+  case cpu
+  when 'x86_64'
+    'amd64'
+  when 'aarch64'
+    'arm64'
+  else
+    cpu
+  end
+end
+
 
 RSpec::Matchers.define :have_correct_license_label do |expected|
   match do |actual|
@@ -103,13 +117,12 @@ RSpec::Matchers.define :have_correct_license_agreement do |expected|
   end
 end
 
-RSpec::Matchers.define :have_correct_architecture_for_flavor do |expected|
+RSpec::Matchers.define :have_correct_architecture do
   match do |actual|
-    values_match? architecture_for_flavor(expected), actual
-    true
+    values_match? running_architecture, actual
   end
   failure_message do |actual|
-    "expected Architecture: #{actual} to be #{architecture_for_flavor(expected)}"
+    "expected Architecture: #{actual} to be #{running_architecture}"
   end
 end
 
