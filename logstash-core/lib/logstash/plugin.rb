@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/config/mixin"
+require "logstash/plugins/ecs_compatibility_support"
 require "concurrent"
 require "securerandom"
 
@@ -29,6 +30,7 @@ class LogStash::Plugin
   NL = "\n"
 
   include LogStash::Config::Mixin
+  include LogStash::Plugins::ECSCompatibilitySupport
 
   # Disable or enable metric logging for this specific plugin instance
   # by default we record all the metrics we can, but you can disable metrics collection

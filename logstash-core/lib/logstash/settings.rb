@@ -48,6 +48,7 @@ module LogStash
       "pipeline.system",
       "pipeline.workers",
       "pipeline.ordered",
+      "pipeline.ecs_compatibility",
       "queue.checkpoint.acks",
       "queue.checkpoint.interval",
       "queue.checkpoint.writes",
