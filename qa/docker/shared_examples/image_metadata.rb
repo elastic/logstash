@@ -9,8 +9,8 @@ shared_examples_for 'the metadata is set correctly' do |flavor|
     expect(@image_config['WorkingDir']).to eql '/usr/share/logstash'
   end
 
-  it 'should have the correct Architecture' do
-    expect(@image.json['Architecture']).to have_correct_architecture_for_flavor(flavor)
+  it "should have an architecture of #{running_architecture}" do
+    expect(@image.json['Architecture']).to have_correct_architecture
   end
 
   %w(license org.label-schema.license org.opencontainers.image.licenses).each do |label|

@@ -12,6 +12,12 @@ else
   VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
+ifdef DOCKER_ARCHITECTURE
+  ARCHITECTURE := $(DOCKER_ARCHITECTURE)
+else
+  ARCHITECTURE := $(shell uname -m)
+endif
+
 IMAGE_FLAVORS ?= oss full ubi8
 DEFAULT_IMAGE_FLAVOR ?= full
 
@@ -85,6 +91,7 @@ public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='full' \
 	  -D local_artifacts='false' \
@@ -98,6 +105,7 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='oss' \
 	  -D local_artifacts='false' \
@@ -111,6 +119,7 @@ public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
 	  -D created_date='$(DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='ubi8' \
 	  -D local_artifacts='false' \
@@ -166,6 +175,7 @@ dockerfile: venv templates/Dockerfile.j2
 	  jinja2 \
 	    -D created_date='$(DATE)' \
 	    -D elastic_version='$(ELASTIC_VERSION)' \
+	    -D arch='${ARCHITECTURE}' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
 	    -D local_artifacts='true' \
