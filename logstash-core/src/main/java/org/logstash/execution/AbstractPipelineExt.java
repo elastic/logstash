@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -277,10 +278,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger()
-                            .getLongValue()
-                    )
-                );
+                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+                    );
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }

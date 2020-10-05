@@ -38,6 +38,9 @@
  */
 package org.logstash.common.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -60,6 +63,7 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
  */
 public final class RecordIOReader implements Closeable {
 
+    private static final Logger logger = LogManager.getLogger(RecordIOReader.class);
     private final FileChannel channel;
     private ByteBuffer currentBlock;
     private int currentBlockSizeReadFromChannel;
@@ -78,7 +82,7 @@ public final class RecordIOReader implements Closeable {
         byte versionInFile = versionBuffer.get();
         if (versionInFile != VERSION) {
             this.channel.close();
-            throw new RuntimeException(String.format(
+            throw new IllegalStateException(String.format(
                     "Invalid version on DLQ data file %s. Expected version: %c. Version found on file: %c",
                     path, VERSION, versionInFile));
         }
@@ -238,7 +242,7 @@ public final class RecordIOReader implements Closeable {
         computedChecksum.update(currentBlock.array(), currentBlock.position(), header.getSize());
 
         if ((int) computedChecksum.getValue() != header.getChecksum()) {
-            throw new RuntimeException("invalid checksum of record");
+            throw new IllegalStateException("invalid checksum of record");
         }
 
         buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
@@ -341,6 +345,29 @@ public final class RecordIOReader implements Closeable {
             BufferState build(){
                 return new BufferState(this);
             }
+        }
+    }
+
+    /**
+     * Verify whether a segment is valid and non-empty.
+     * @param path Path to segment
+     * @return True if the segment is valid, false otherwise
+     */
+    static boolean validNonEmptySegment(Path path) {
+        try (RecordIOReader ioReader = new RecordIOReader(path)) {
+            boolean moreEvents = true;
+            boolean nonEmpty = false;
+            while (moreEvents) {
+                // If all events in the segment can be read, then assume that this is a valid segment
+                moreEvents = (ioReader.readEvent() != null);
+                if (moreEvents){
+                    nonEmpty = true;
+                }
+            }
+            return nonEmpty;
+        } catch (IOException | IllegalStateException e){
+            logger.warn("Error reading segment file {}", path, e);
+            return false;
         }
     }
 }
