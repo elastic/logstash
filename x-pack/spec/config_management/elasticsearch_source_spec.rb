@@ -98,6 +98,34 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   let(:es_version_8_response) { generate_es_version_response("8.0.0-SNAPSHOT") }
   let(:es_version_7_9_response) { generate_es_version_response("7.9.1") }
 
+  let(:elasticsearch_7_9_err_response) {
+    {"error"=>
+         {"root_cause"=>
+              [{"type"=>"parse_exception",
+                "reason"=>"request body or source parameter is required"}],
+          "type"=>"parse_exception",
+          "reason"=>"request body or source parameter is required"},
+     "status"=>400}
+  }
+
+  let(:elasticsearch_8_err_response) {
+    {"error"=>
+         {"root_cause"=>
+              [{"type"=>"index_not_found_exception",
+                "reason"=>"no such index [.logstash]",
+                "resource.type"=>"index_expression",
+                "resource.id"=>".logstash",
+                "index_uuid"=>"_na_",
+                "index"=>".logstash"}],
+          "type"=>"index_not_found_exception",
+          "reason"=>"no such index [.logstash]",
+          "resource.type"=>"index_expression",
+          "resource.id"=>".logstash",
+          "index_uuid"=>"_na_",
+          "index"=>".logstash"},
+     "status"=>404}
+  }
+
   before do
     extension.additionals_settings(system_settings)
     apply_settings(settings, system_settings)
@@ -176,8 +204,13 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
 
       it "#fetch_config" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(LogStash::Json.load("{}"))
-        subject.fetch_config(["apache", "nginx"], mock_client)
+        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(elasticsearch_response)
+        expect(subject.fetch_config(["apache", "nginx"], mock_client)).to eq(elasticsearch_response)
+      end
+
+      it "#fetch_config should raise error" do
+        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(elasticsearch_8_err_response)
+        expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#get_single_pipeline_setting" do
@@ -216,30 +249,28 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                         "input { generator { count => 100 } tcp { port => 6006 } } output {  }}"}},
               {"_index"=>".logstash", "_id"=>"not_exists", "found"=>false}]}
       }
-      let(:elasticsearch_err_response) {
-        {"error"=>
-             {"root_cause"=>
-                  [{"type"=>"parse_exception",
-                    "reason"=>"request body or source parameter is required"}],
-              "type"=>"parse_exception",
-              "reason"=>"request body or source parameter is required"},
-         "status"=>400}
-      }
+
       let(:formatted_es_response) {
         {"super_generator"=>{"_index"=>".logstash", "_id"=>"super_generator", "_version"=>2, "_seq_no"=>2, "_primary_term"=>1, "found"=>true, "_source"=>{"pipeline"=>"input { generator { count => 100 } tcp { port => 6005 } } output {  }}"}}}
       }
 
       it "#fetch_config" do
-        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(LogStash::Json.load("{}"))
-        subject.fetch_config(["apache", "nginx"], mock_client)
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(elasticsearch_response)
+        expect(subject.fetch_config(["apache", "nginx"], mock_client).size).to eq(2)
       end
 
-      it "#format_response should raise error" do
-        expect{ subject.format_response(elasticsearch_err_response) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+      it "#fetch_config should raise error" do
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(elasticsearch_7_9_err_response)
+        expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+      end
+
+      it "#fetch_config should raise error when response is empty" do
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(LogStash::Json.load("{}"))
+        expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#format_response should return pipelines" do
-        result = subject.format_response(elasticsearch_response)
+        result = subject.send(:format_response, elasticsearch_response)
         expect(result.size).to eq(2)
         expect(result.has_key?(pipeline_id)).to be_truthy
         expect(result.has_key?(another_pipeline_id)).to be_truthy
@@ -542,17 +573,17 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "should give SystemIndicesFetcher in [8]" do
         allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
-        expect(subject.pipeline_fetcher_factory).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
+        expect(subject.get_pipeline_fetcher).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
       end
 
       it "should give SystemIndicesFetcher in [7.10]" do
         allow(mock_client).to receive(:get).with("/").and_return(generate_es_version_response("7.10.0-SNAPSHOT"))
-        expect(subject.pipeline_fetcher_factory).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
+        expect(subject.get_pipeline_fetcher).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
       end
 
       it "should give LegacyHiddenIndicesFetcher in [7.9]" do
         allow(mock_client).to receive(:get).with("/").and_return(es_version_7_9_response)
-        expect(subject.pipeline_fetcher_factory).to be_an_instance_of LogStash::ConfigManagement::LegacyHiddenIndicesFetcher
+        expect(subject.get_pipeline_fetcher).to be_an_instance_of LogStash::ConfigManagement::LegacyHiddenIndicesFetcher
       end
     end
 

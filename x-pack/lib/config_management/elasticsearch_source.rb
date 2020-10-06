@@ -50,14 +50,14 @@ module LogStash
       end
 
       # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
-      def pipeline_fetcher_factory
+      def get_pipeline_fetcher
         response = client.get("/")
 
         if response["error"]
           raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        logger.debug("Elasticsearch version ", response["version"]["number"])
+        logger.debug("Reading configuration from Elasticsearch version {}", response["version"]["number"])
         version_number = response["version"]["number"].split(".")
         first = version_number[0].to_i
         second = version_number[1].to_i
@@ -77,14 +77,8 @@ module LogStash
           end
         end
 
-        fetcher = pipeline_fetcher_factory
+        fetcher = get_pipeline_fetcher
         response = fetcher.fetch_config(pipeline_ids, client)
-
-        if response["error"]
-          raise RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
-        end
-
-        response = fetcher.format_response(response)
 
         @cached_pipelines = pipeline_ids.collect do |pid|
           get_pipeline(pid, response, fetcher)
@@ -200,11 +194,12 @@ module LogStash
 
       def fetch_config(pipeline_ids, client)
         path_ids = pipeline_ids.join(",")
-        client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
-      end
+        response = client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
 
-      def format_response(response)
-        # for backwards compatibility
+        if response["error"]
+          raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
+        end
+
         response
       end
 
@@ -213,7 +208,7 @@ module LogStash
       end
     end
 
-    # TODO clean up LegacyHiddenIndicesFetcher when 7.9.* is deprecated
+    # clean up LegacyHiddenIndicesFetcher https://github.com/elastic/logstash/issues/12291
     class LegacyHiddenIndicesFetcher
       include LogStash::Util::Loggable
 
@@ -221,24 +216,31 @@ module LogStash
 
       def fetch_config(pipeline_ids, client)
         request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
-        client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
-      end
+        response = client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
 
-      # transform legacy response to be similar to system indices response
-      def format_response(response)
+        if response["error"]
+          raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
+        end
+
         if response["docs"].nil?
           logger.debug("Server returned an unknown or malformed document structure", :response => response)
           raise ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
         end
 
-        response["docs"].map { |pipeline|
-          {pipeline["_id"] => pipeline} if pipeline.fetch("found", false)
-        }.compact
-        .reduce({}, :merge)
+        format_response(response)
       end
 
       def get_single_pipeline_setting(response, pipeline_id)
         response.fetch(pipeline_id, {}).fetch("_source", {})
+      end
+
+      private
+      # transform legacy response to be similar to system indices response
+      def format_response(response)
+        response["docs"].map { |pipeline|
+          {pipeline["_id"] => pipeline} if pipeline.fetch("found", false)
+        }.compact
+        .reduce({}, :merge)
       end
     end
 
