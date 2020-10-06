@@ -78,20 +78,20 @@ module LogStash
         end
 
         fetcher = get_pipeline_fetcher
-        response = fetcher.fetch_config(pipeline_ids, client)
+        fetcher.fetch_config(pipeline_ids, client)
 
         @cached_pipelines = pipeline_ids.collect do |pid|
-          get_pipeline(pid, response, fetcher)
+          get_pipeline(pid, fetcher)
         end.compact
       end
 
-      def get_pipeline(pipeline_id, response, fetcher)
-        if response.has_key?(pipeline_id) == false
+      def get_pipeline(pipeline_id, fetcher)
+        unless fetcher.config_exist?(pipeline_id)
           logger.debug("Could not find a remote configuration for a specific `pipeline_id`", :pipeline_id => pipeline_id)
           return nil
         end
 
-        config_string = fetcher.get_single_pipeline_setting(response, pipeline_id)["pipeline"]
+        config_string = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline"]
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
@@ -102,7 +102,7 @@ module LogStash
         settings.set("pipeline.id", pipeline_id)
 
         # override global settings with pipeline settings from ES, if any
-        pipeline_settings = fetcher.get_single_pipeline_setting(response, pipeline_id)["pipeline_settings"]
+        pipeline_settings = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline_settings"]
         unless pipeline_settings.nil?
           pipeline_settings.each do |setting, value|
             if SUPPORTED_PIPELINE_SETTINGS.include? setting
@@ -187,8 +187,17 @@ module LogStash
       end
     end
 
+    module Fetcher
+      def config_exist?(pipeline_id)
+        @response.has_key?(pipeline_id)
+      end
+
+      def fetch_config(pipeline_ids, client) end
+      def get_single_pipeline_setting(pipeline_id) end
+    end
+
     class SystemIndicesFetcher
-      include LogStash::Util::Loggable
+      include LogStash::Util::Loggable, Fetcher
 
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
@@ -200,17 +209,17 @@ module LogStash
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        response
+        @response = response
       end
 
-      def get_single_pipeline_setting(response, pipeline_id)
-        response.fetch(pipeline_id, {})
+      def get_single_pipeline_setting(pipeline_id)
+        @response.fetch(pipeline_id, {})
       end
     end
 
     # clean up LegacyHiddenIndicesFetcher https://github.com/elastic/logstash/issues/12291
     class LegacyHiddenIndicesFetcher
-      include LogStash::Util::Loggable
+      include LogStash::Util::Loggable, Fetcher
 
       PIPELINE_INDEX = ".logstash"
 
@@ -227,11 +236,11 @@ module LogStash
           raise ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
         end
 
-        format_response(response)
+        @response = format_response(response)
       end
 
-      def get_single_pipeline_setting(response, pipeline_id)
-        response.fetch(pipeline_id, {}).fetch("_source", {})
+      def get_single_pipeline_setting(pipeline_id)
+        @response.fetch(pipeline_id, {}).fetch("_source", {})
       end
 
       private

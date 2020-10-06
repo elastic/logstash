@@ -204,17 +204,14 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
 
       it "#fetch_config" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(elasticsearch_response)
-        expect(subject.fetch_config(["apache", "nginx"], mock_client)).to eq(elasticsearch_response)
+        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/#{pipeline_id}").and_return(elasticsearch_response)
+        expect(subject.fetch_config([pipeline_id], mock_client)).to eq(elasticsearch_response)
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=> "#{config}"})
       end
 
       it "#fetch_config should raise error" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(elasticsearch_8_err_response)
         expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
-      end
-
-      it "#get_single_pipeline_setting" do
-        expect(subject.get_single_pipeline_setting(elasticsearch_response, pipeline_id)).to eq({"pipeline"=> "#{config}"})
       end
     end
   end
@@ -225,6 +222,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     describe "legacy api" do
       let(:mock_client)  { double("http_client") }
       let(:config) { "input { generator { count => 100 } tcp { port => 6005 } } output {  }}" }
+      let(:another_config) { "input { generator { count => 100 } tcp { port => 6006 } } output {  }}" }
       let(:pipeline_id) { "super_generator" }
       let(:another_pipeline_id) { "another_generator" }
       let(:elasticsearch_response) {
@@ -236,8 +234,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                "_primary_term"=>1,
                "found"=>true,
                "_source"=>
-                   {"pipeline"=>
-                        "#{config}"}},
+                   {"pipeline"=> "#{config}"}},
               {"_index"=>".logstash",
                "_id"=>"#{another_pipeline_id}",
                "_version"=>2,
@@ -245,8 +242,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                "_primary_term"=>1,
                "found"=>true,
                "_source"=>
-                   {"pipeline"=>
-                        "input { generator { count => 100 } tcp { port => 6006 } } output {  }}"}},
+                   {"pipeline"=> "#{another_config}"}},
               {"_index"=>".logstash", "_id"=>"not_exists", "found"=>false}]}
       }
 
@@ -255,18 +251,20 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       }
 
       it "#fetch_config" do
-        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(elasticsearch_response)
-        expect(subject.fetch_config(["apache", "nginx"], mock_client).size).to eq(2)
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_response)
+        expect(subject.fetch_config([pipeline_id, another_pipeline_id], mock_client).size).to eq(2)
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+        expect(subject.get_single_pipeline_setting(another_pipeline_id)).to eq({"pipeline" => "#{another_config}"})
       end
 
       it "#fetch_config should raise error" do
-        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(elasticsearch_7_9_err_response)
-        expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_7_9_err_response)
+        expect{ subject.fetch_config([pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#fetch_config should raise error when response is empty" do
-        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"apache\"},{\"_id\":\"nginx\"}]}").and_return(LogStash::Json.load("{}"))
-        expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(LogStash::Json.load("{}"))
+        expect{ subject.fetch_config([pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#format_response should return pipelines" do
@@ -274,11 +272,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect(result.size).to eq(2)
         expect(result.has_key?(pipeline_id)).to be_truthy
         expect(result.has_key?(another_pipeline_id)).to be_truthy
-      end
-
-      it "#get_single_pipeline_setting" do
-        result = subject.get_single_pipeline_setting(formatted_es_response, pipeline_id)
-        expect(result).to eq({"pipeline" => "#{config}"})
       end
     end
   end
