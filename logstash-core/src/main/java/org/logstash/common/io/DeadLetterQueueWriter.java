@@ -228,10 +228,6 @@ public final class DeadLetterQueueWriter implements Closeable {
                 if (isOpen()) {
                     nextWriter();
                 }
-            } else {
-                if (RecordIOReader.validNonEmptySegment(queuePath.resolve(String.format(TEMP_FILE_PATTERN, currentSegmentIndex)))) {
-                    Files.delete(queuePath.resolve(String.format(TEMP_FILE_PATTERN, currentSegmentIndex)));
-                }
             }
         } finally {
             lock.unlock();
