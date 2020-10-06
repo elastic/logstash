@@ -5,6 +5,7 @@ import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -13,6 +14,7 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.*;
 import org.logstash.config.ir.graph.Vertex;
+import org.logstash.execution.Engine;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -21,6 +23,7 @@ import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.PluginLookup;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JRubyClass(name = "PluginFactory")
 public final class PluginFactoryExt extends RubyBasicObject
@@ -35,7 +38,9 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
 
-    private final Collection<String> pluginsById = new HashSet<>();
+    private final Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
+
+    private Engine engine;
 
     private PipelineIR lir;
 
@@ -43,7 +48,7 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private PluginMetricsFactoryExt metrics;
 
-    private RubyClass filterClass;
+    private RubyClass filterDelegatorClass;
 
     private ConfigVariableExpander configVariables;
 
@@ -54,16 +59,22 @@ public final class PluginFactoryExt extends RubyBasicObject
     @JRubyMethod(name = "filter_delegator", meta = true, required = 5)
     public static IRubyObject filterDelegator(final ThreadContext context,
                                               final IRubyObject recv, final IRubyObject... args) {
+        //  filterDelegatorClass, klass, rubyArgs, typeScopedMetric, executionCntx
+        final RubyClass filterDelegatorClass = (RubyClass) args[0];
+        final RubyClass klass = (RubyClass) args[1];
         final RubyHash arguments = (RubyHash) args[2];
-        final IRubyObject filterInstance = args[1].callMethod(context, "new", arguments);
+        final AbstractMetricExt typeScopedMetric = (AbstractMetricExt) args[3];
+        final ExecutionContextExt executionContext = (ExecutionContextExt) args[4];
+
+        final IRubyObject filterInstance = ContextualizerExt.initializePlugin(context, executionContext, klass, arguments);
+
         final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
         filterInstance.callMethod(
                 context, "metric=",
-                ((AbstractMetricExt) args[3]).namespace(context, id.intern())
+                typeScopedMetric.namespace(context, id.intern())
         );
-        filterInstance.callMethod(context, "execution_context=", args[4]);
-        return new FilterDelegatorExt(context.runtime, RubyUtil.FILTER_DELEGATOR_CLASS)
-                .initialize(context, filterInstance, id);
+
+        return filterDelegatorClass.newInstance(context, filterInstance, id, Block.NULL_BLOCK);
     }
 
     public PluginFactoryExt(final Ruby runtime, final RubyClass metaClass) {
@@ -80,25 +91,33 @@ public final class PluginFactoryExt extends RubyBasicObject
                                        final IRubyObject[] args) {
         return init(
                 args[0].toJava(PipelineIR.class),
-                (PluginMetricsFactoryExt) args[1], (ExecutionContextFactoryExt) args[2],
-                (RubyClass) args[3]
+                (PluginMetricsFactoryExt) args[1],
+                (ExecutionContextFactoryExt) args[2],
+                (RubyClass) args[3],
+                EnvironmentVariableProvider.defaultProvider(),
+                Engine.RUBY
         );
     }
 
-    public PluginFactoryExt init(final PipelineIR lir, final PluginMetricsFactoryExt metrics,
-                                 final ExecutionContextFactoryExt executionContextFactoryExt,
-                                 final RubyClass filterClass) {
-        return this.init(lir, metrics, executionContextFactoryExt, filterClass, EnvironmentVariableProvider.defaultProvider());
+    public PluginFactoryExt init(final PipelineIR lir,
+                                     final PluginMetricsFactoryExt metrics,
+                                     final ExecutionContextFactoryExt executionContextFactoryExt,
+                                     final RubyClass filterClass,
+                                     final Engine engine) {
+        return this.init(lir, metrics, executionContextFactoryExt, filterClass, EnvironmentVariableProvider.defaultProvider(), engine);
     }
 
-    PluginFactoryExt init(final PipelineIR lir, final PluginMetricsFactoryExt metrics,
+    PluginFactoryExt init(final PipelineIR lir,
+                          final PluginMetricsFactoryExt metrics,
                           final ExecutionContextFactoryExt executionContextFactoryExt,
                           final RubyClass filterClass,
-                          final EnvironmentVariableProvider envVars) {
+                          final EnvironmentVariableProvider envVars,
+                          final Engine engine) {
         this.lir = lir;
         this.metrics = metrics;
         this.executionContextFactory = executionContextFactoryExt;
-        this.filterClass = filterClass;
+        this.filterDelegatorClass = filterClass;
+        this.engine = engine;
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.INPUT, new InputPluginCreator(this));
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.CODEC, new CodecPluginCreator());
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.FILTER, new FilterPluginCreator());
@@ -109,71 +128,102 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     @SuppressWarnings("unchecked")
     @Override
-    public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
-                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public IRubyObject buildInput(final RubyString name,
+                                  final IRubyObject args,
+                                  final SourceWithMetadata source) {
         return plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.INPUT, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.INPUT,
+                name.asJavaString(),
+                (RubyHash) args,
+                source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
-                                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractOutputDelegatorExt buildOutput(final RubyString name,
+                                                  final IRubyObject args,
+                                                  final SourceWithMetadata source) {
         return (AbstractOutputDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                (RubyHash) args, source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
-                                                  final IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractFilterDelegatorExt buildFilter(final RubyString name,
+                                                  final IRubyObject args,
+                                                  final SourceWithMetadata source) {
         return (AbstractFilterDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.FILTER, name.asJavaString(),
-                source, (Map<String, IRubyObject>) args, pluginArgs
+                (RubyHash) args, source
         );
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
-                                  Map<String, Object> pluginArgs) {
+    public IRubyObject buildCodec(final RubyString name,
+                                  final IRubyObject args,
+                                  final SourceWithMetadata source) {
         return plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                name.asJavaString(), source, (Map<String, IRubyObject>) args, pluginArgs
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.CODEC,
+                name.asJavaString(),
+                (RubyHash) args,
+                source
         );
     }
 
     @Override
     public Codec buildDefaultCodec(String codecName) {
         return (Codec) JavaUtil.unwrapJavaValue(plugin(
-                RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.CODEC,
-                codecName, null, Collections.emptyMap(), Collections.emptyMap()
+                RubyUtil.RUBY.getCurrentContext(),
+                PluginLookup.PluginType.CODEC,
+                codecName,
+                RubyHash.newHash(RubyUtil.RUBY),
+                null
         ));
     }
 
     @SuppressWarnings("unchecked")
     @JRubyMethod(required = 3, optional = 1)
     public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {
+        final SourceWithMetadata source = args.length > 3 ? (SourceWithMetadata) JavaUtil.unwrapIfJavaObject(args[3]) : null;
+
         return plugin(
                 context,
                 PluginLookup.PluginType.valueOf(args[0].asJavaString().toUpperCase(Locale.ENGLISH)),
                 args[1].asJavaString(),
-                JavaUtil.unwrapIfJavaObject(args[2]),
-                args.length > 3 ? (Map<String, IRubyObject>) args[3] : new HashMap<>(),
-                null
+                (RubyHash) args[2],
+                source
         );
     }
 
     @SuppressWarnings("unchecked")
-    private IRubyObject plugin(final ThreadContext context, final PluginLookup.PluginType type, final String name,
-                               SourceWithMetadata source, final Map<String, IRubyObject> args,
-                               Map<String, Object> pluginArgs) {
-        final String id = generateOrRetrievePluginId(context, type, name, source);
-        pluginsById.add(id);
+    private IRubyObject plugin(final ThreadContext context,
+                               final PluginLookup.PluginType type,
+                               final String name,
+                               final RubyHash args,
+                               final SourceWithMetadata source) {
+        final String id = generateOrRetrievePluginId(type, source, args);
+
+        if (id == null) {
+            throw context.runtime.newRaiseException(
+                    RubyUtil.CONFIGURATION_ERROR_CLASS,
+                    String.format(
+                            "Could not determine ID for %s/%s", type.rubyLabel().asJavaString(), name
+                    )
+            );
+        }
+        if (!pluginsById.add(id)) {
+            throw context.runtime.newRaiseException(
+                    RubyUtil.CONFIGURATION_ERROR_CLASS,
+                    String.format("Two plugins have the id '%s', please fix this conflict", id)
+            );
+        }
+
         final AbstractNamespacedMetricExt typeScopedMetric = metrics.create(context, type.rubyLabel());
 
         final PluginLookup.PluginClass pluginClass = pluginResolver.resolve(type, name);
@@ -199,19 +249,19 @@ public final class PluginFactoryExt extends RubyBasicObject
             } else if (type == PluginLookup.PluginType.FILTER) {
                 return filterDelegator(
                         context, null,
-                        filterClass, klass, rubyArgs, typeScopedMetric, executionCntx);
+                        filterDelegatorClass, klass, rubyArgs, typeScopedMetric, executionCntx);
             } else {
-                final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
+                final IRubyObject pluginInstance = ContextualizerExt.initializePlugin(context, executionCntx, klass, rubyArgs);
+
                 final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
                 scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                 pluginInstance.callMethod(context, "metric=", scopedMetric);
-                pluginInstance.callMethod(context, "execution_context=", executionCntx);
                 return pluginInstance;
             }
         } else {
-            if (pluginArgs == null) {
-                String err = String.format("Cannot start the Java plugin '%s' in the Ruby execution engine." +
-                        " The Java execution engine is required to run Java plugins.", name);
+            if (engine != Engine.JAVA) {
+                String err = String.format("Cannot start the Java plugin '%s' in the %s execution engine." +
+                        " The Java execution engine is required to run Java plugins.", name, engine);
                 throw new IllegalStateException(err);
             }
 
@@ -221,38 +271,97 @@ public final class PluginFactoryExt extends RubyBasicObject
             }
 
             Context contextWithMetrics = executionContextFactory.toContext(type, metrics.getRoot(context));
-            return pluginCreator.createDelegator(name, pluginArgs, id, typeScopedMetric, pluginClass, contextWithMetrics);
+            return pluginCreator.createDelegator(name, convertToJavaCoercible(args), id, typeScopedMetric, pluginClass, contextWithMetrics);
         }
     }
 
-    private String generateOrRetrievePluginId(ThreadContext context, PluginLookup.PluginType type, String name,
-                                              SourceWithMetadata source) {
-        final String id;
-        if (type == PluginLookup.PluginType.CODEC) {
-            id = UUID.randomUUID().toString();
+    private Map<String, Object> convertToJavaCoercible(Map<String, Object> input) {
+        final Map<String, Object> output = new HashMap<>(input);
+
+        // Intercept Codecs
+        for (final Map.Entry<String, Object> entry : input.entrySet()) {
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
+            if (value instanceof IRubyObject) {
+                final Object unwrapped = JavaUtil.unwrapJavaValue((IRubyObject) value);
+                if (unwrapped instanceof Codec) {
+                    output.put(key, unwrapped);
+                }
+            }
+        }
+
+        return output;
+    }
+
+    // TODO: caller seems to think that the args is `Map<String, IRubyObject>`, but
+    //       at least any `id` present is actually a `String`.
+    private String generateOrRetrievePluginId(final PluginLookup.PluginType type,
+                                              final SourceWithMetadata source,
+                                              final Map<String, ?> args) {
+        final Optional<String> unprocessedId;
+        if (source == null) {
+            unprocessedId = extractId(() -> extractIdFromArgs(args),
+                                      this::generateUUID);
         } else {
-            String unresolvedId = lir.getGraph().vertices()
-                    .filter(v -> v.getSourceWithMetadata() != null
-                            && v.getSourceWithMetadata().equalsWithoutText(source))
-                    .findFirst()
-                    .map(Vertex::getId).orElse(null);
-            id = (String) configVariables.expand(unresolvedId);
+            unprocessedId = extractId(() -> extractIdFromLIR(source),
+                                      () -> extractIdFromArgs(args),
+                                      () -> generateUUIDForCodecs(type));
         }
-        if (id == null) {
-            throw context.runtime.newRaiseException(
-                    RubyUtil.CONFIGURATION_ERROR_CLASS,
-                    String.format(
-                            "Could not determine ID for %s/%s", type.rubyLabel().asJavaString(), name
-                    )
-            );
+
+        return unprocessedId
+                .map(configVariables::expand)
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .orElse(null);
+    }
+
+    private Optional<String> extractId(final IdExtractor... extractors) {
+        for (IdExtractor extractor : extractors) {
+            final Optional<String> extracted = extractor.extract();
+            if (extracted.isPresent()) {
+                return extracted;
+            }
         }
-        if (pluginsById.contains(id)) {
-            throw context.runtime.newRaiseException(
-                    RubyUtil.CONFIGURATION_ERROR_CLASS,
-                    String.format("Two plugins have the id '%s', please fix this conflict", id)
-            );
+        return Optional.empty();
+    }
+
+    @FunctionalInterface
+    interface IdExtractor {
+        Optional<String> extract();
+    }
+
+    private Optional<String> extractIdFromArgs(final Map<String, ?> args) {
+        if (!args.containsKey("id")) {
+            return Optional.empty();
         }
-        return id;
+
+        final Object explicitId = args.get("id");
+        if (explicitId instanceof String) {
+            return Optional.of((String) explicitId);
+        } else if (explicitId instanceof RubyString) {
+            return Optional.of(((RubyString) explicitId).asJavaString());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> generateUUID() {
+        return Optional.of(UUID.randomUUID().toString());
+    }
+
+    private Optional<String> generateUUIDForCodecs(final PluginLookup.PluginType pluginType) {
+        if (pluginType == PluginLookup.PluginType.CODEC) {
+            return generateUUID();
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> extractIdFromLIR(final SourceWithMetadata source) {
+        return lir.getGraph().vertices()
+                .filter(v -> v.getSourceWithMetadata() != null
+                        && v.getSourceWithMetadata().equalsWithoutText(source))
+                .findFirst()
+                .map(Vertex::getId);
     }
 
     ExecutionContextFactoryExt getExecutionContextFactory() {

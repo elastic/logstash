@@ -75,6 +75,14 @@ class LogStash::Agent
       logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
     end
 
+    if @settings.set?('pipeline.ecs_compatibility')
+      ecs_compatibility_value = settings.get('pipeline.ecs_compatibility')
+      if ecs_compatibility_value != 'disabled'
+        logger.warn("Setting `pipeline.ecs_compatibility` given as `#{ecs_compatibility_value}`; " +
+                    "values other than `disabled` are currently considered BETA and may have unintended consequences when upgrading minor versions of Logstash.")
+      end
+    end
+
     # This is for backward compatibility in the tests
     if source_loader.nil?
       @source_loader = LogStash::Config::SourceLoader.new

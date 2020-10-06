@@ -25,6 +25,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -45,14 +46,16 @@ public final class ExecutionContextExt extends RubyObject {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(required = 5)
+    @JRubyMethod(required = 2, optional = 1)
     public ExecutionContextExt initialize(final ThreadContext context,
         final IRubyObject[] args) {
         pipeline = args[0];
         agent = args[1];
-        dlqWriter = new AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt(
-            context.runtime, RubyUtil.PLUGIN_DLQ_WRITER_CLASS
-        ).initialize(context, args[4], args[2], args[3]);
+        if (args.length > 2 && !args[2].isNil()) {
+            dlqWriter = (AbstractDeadLetterQueueWriterExt) args[2];
+        } else {
+            dlqWriter = (AbstractDeadLetterQueueWriterExt) RubyUtil.DUMMY_DLQ_WRITER_CLASS.newInstance(context, Block.NULL_BLOCK);
+        }
         return this;
     }
 
@@ -73,6 +76,9 @@ public final class ExecutionContextExt extends RubyObject {
 
     @JRubyMethod(name = "pipeline_id")
     public IRubyObject pipelineId(final ThreadContext context) {
+        if (pipeline.isNil()) {
+            return context.nil;
+        }
         return pipeline.callMethod(context, "pipeline_id");
     }
 }
