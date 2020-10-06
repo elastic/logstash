@@ -301,7 +301,6 @@ public final class DeadLetterQueueWriter implements Closeable {
                 }
             }
         } catch (IOException e){
-            logger.error("Unable to clean up temp files", e);
             throw new IllegalStateException("Unable to clean up temp files", e);
         }
     }
