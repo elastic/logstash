@@ -360,9 +360,7 @@ public final class RecordIOReader implements Closeable {
             while (moreEvents) {
                 // If all events in the segment can be read, then assume that this is a valid segment
                 moreEvents = (ioReader.readEvent() != null);
-                if (moreEvents){
-                    nonEmpty = true;
-                }
+                nonEmpty |= moreEvents;
             }
             return nonEmpty;
         } catch (IOException | IllegalStateException e){

@@ -99,8 +99,6 @@ public final class RecordIOWriter implements Closeable {
     static final char VERSION = '1';
 
     private Path recordsFile;
-
-    private final AtomicBoolean hasWritten = new AtomicBoolean(false);
     private Instant lastWrite = null;
 
     public RecordIOWriter(Path recordsFile) throws IOException {
