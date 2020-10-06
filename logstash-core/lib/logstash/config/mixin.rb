@@ -49,6 +49,7 @@ LogStash::Environment.load_locale!
 module LogStash::Config::Mixin
 
   include LogStash::Util::SubstitutionVariables
+  include LogStash::Util::Loggable
 
   attr_accessor :config
   attr_accessor :original_params
@@ -440,6 +441,11 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
+              # A plugin's codecs should be instantiated by `PluginFactory` or in `Config::Mixin#config_init(Hash)`,
+              # which ensure the inner plugin has access to the outer's execution context and metric store.
+              # This deprecation exists to warn plugins that call `Config::Mixin::validate_value` directly.
+              self.deprecation_logger.deprecated("Codec instantiated by `Config::Mixin::DSL::validate_value(String, :codec)` which cannot propagate parent plugin's execution context or metrics. ",
+                                                 self.logger.debug? ? {:backtrace => caller} : {})
               value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
               return true, value
             else

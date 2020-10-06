@@ -47,6 +47,31 @@ describe LogStash::Config::Mixin do
     end
   end
 
+  context 'DSL::validate_value(String, :codec)' do
+    subject(:plugin_class) { Class.new(LogStash::Filters::Base) { config_name "test_deprecated_two" } }
+    let(:codec_class) { Class.new(LogStash::Codecs::Base) { config_name 'dummy' } }
+    let(:deprecation_logger) { double("DeprecationLogger").as_null_object }
+
+    before(:each) do
+      allow(plugin_class).to receive(:deprecation_logger).and_return(deprecation_logger)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", codec_class.config_name).and_return(codec_class)
+    end
+
+    it 'instantiates the codec' do
+      success, codec = plugin_class.validate_value(codec_class.config_name, :codec)
+
+      expect(success).to be true
+      expect(codec.class).to eq(codec_class)
+    end
+
+    it 'logs a deprecation' do
+      plugin_class.validate_value(codec_class.config_name, :codec)
+      expect(deprecation_logger).to have_received(:deprecated) do |message|
+        expect(message).to include("validate_value(String, :codec)")
+      end
+    end
+  end
+
   context "when validating :bytes successfully" do
     subject do
       local_num_bytes = num_bytes # needs to be locally scoped :(
