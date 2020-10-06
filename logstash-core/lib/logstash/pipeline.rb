@@ -89,8 +89,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   private
 
 
-  def plugin(plugin_type, name, source, *args)
-    @plugin_factory.plugin(plugin_type, name, source, *args)
+  def plugin(plugin_type, name, args, source)
+    @plugin_factory.plugin(plugin_type, name, args, source)
   end
 
   def default_logging_keys(other_keys = {})

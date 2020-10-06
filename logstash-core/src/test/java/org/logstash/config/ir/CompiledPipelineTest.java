@@ -54,12 +54,8 @@ import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.PluginFactory;
+import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.ext.JrubyEventExtLibrary;
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Filter;
-import co.elastic.logstash.api.Input;
-import co.elastic.logstash.api.Context;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -494,9 +490,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Configurable Mock {@link PluginFactory}
+     * Configurable Mock {@link RubyIntegration.PluginFactory}
      */
-    static final class MockPluginFactory implements PluginFactory {
+    static final class MockPluginFactory implements RubyIntegration.PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
@@ -514,20 +510,20 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildInput(final RubyString name, SourceWithMetadata source,
-                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildInput(final RubyString name, final IRubyObject args,
+                                      SourceWithMetadata source) {
             return setupPlugin(name, inputs);
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(final RubyString name, SourceWithMetadata source,
-                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final IRubyObject args,
+                                                      SourceWithMetadata source) {
             return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(final RubyString name, SourceWithMetadata source,
-                                                      final IRubyObject args, Map<String, Object> pluginArgs) {
+        public AbstractFilterDelegatorExt buildFilter(final RubyString name, final IRubyObject args,
+                                                      SourceWithMetadata source) {
             final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
                 RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
@@ -535,8 +531,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildCodec(final RubyString name, SourceWithMetadata source, final IRubyObject args,
-                                      Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args, SourceWithMetadata source) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 
@@ -554,17 +549,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
-        }
-
-        @Override
-        public Input buildInput(final String name, final String id, final Configuration configuration, final Context context) {
-            return null;
-        }
-
-        @Override
-        public Filter buildFilter(final String name, final String id,
-                                  final Configuration configuration, final Context context) {
-            return null;
         }
     }
 
@@ -698,9 +682,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Fixed Mock {@link PluginFactory}
+     * Fixed Mock {@link RubyIntegration.PluginFactory}
      * */
-    static final class FixedPluginFactory implements PluginFactory {
+    static final class FixedPluginFactory implements RubyIntegration.PluginFactory {
 
         private Supplier<IRubyObject> input;
         private Supplier<IRubyObject> filter;
@@ -714,27 +698,17 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public Input buildInput(String name, String id, Configuration configuration, Context context) {
-            return null;
-        }
-
-        @Override
-        public Filter buildFilter(String name, String id, Configuration configuration, Context context) {
-            return null;
-        }
-
-        @Override
-        public IRubyObject buildInput(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildInput(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return this.input.get();
         }
 
         @Override
-        public AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+        public AbstractOutputDelegatorExt buildOutput(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return PipelineTestUtil.buildOutput(this.output.get());
         }
 
         @Override
-        public AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+        public AbstractFilterDelegatorExt buildFilter(RubyString name, IRubyObject args, SourceWithMetadata source) {
             final RubyObject configNameDouble = org.logstash.config.ir.PluginConfigNameMethodDouble.create(name);
             return new FilterDelegatorExt(
                     RubyUtil.RUBY, RubyUtil.FILTER_DELEGATOR_CLASS)
@@ -742,7 +716,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args, Map<String, Object> pluginArgs) {
+        public IRubyObject buildCodec(RubyString name, IRubyObject args, SourceWithMetadata source) {
             return null;
         }
 

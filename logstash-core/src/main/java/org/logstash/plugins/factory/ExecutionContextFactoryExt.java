@@ -46,10 +46,14 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public ExecutionContextExt create(final ThreadContext context, final IRubyObject id,
                                       final IRubyObject classConfigName) {
+        final AbstractDeadLetterQueueWriterExt dlqWriterForInstance = new AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt(
+                context.runtime, RubyUtil.PLUGIN_DLQ_WRITER_CLASS
+        ).initialize(context, dlqWriter, id, classConfigName);
+
         return new ExecutionContextExt(
             context.runtime, RubyUtil.EXECUTION_CONTEXT_CLASS
         ).initialize(
-            context, new IRubyObject[]{pipeline, agent, id, classConfigName, dlqWriter}
+            context, new IRubyObject[]{pipeline, agent, dlqWriterForInstance}
         );
     }
 

@@ -49,6 +49,7 @@ LogStash::Environment.load_locale!
 module LogStash::Config::Mixin
 
   include LogStash::Util::SubstitutionVariables
+  include LogStash::Util::Loggable
 
   attr_accessor :config
   attr_accessor :original_params
@@ -97,6 +98,17 @@ module LogStash::Config::Mixin
     # Resolve environment variables references
     params.each do |name, value|
       params[name.to_s] = deep_replace(value)
+    end
+
+    # Intercept codecs that have not been instantiated
+    params.each do |name, value|
+      validator = self.class.validator_find(name)
+      next unless validator && validator[:validate] == :codec && value.kind_of?(String)
+
+      codec_klass = LogStash::Plugin.lookup("codec", value)
+      codec_instance = LogStash::Plugins::Contextualizer.initialize_plugin(execution_context, codec_klass)
+
+      params[name.to_s] = LogStash::Codecs::Delegator.new(codec_instance)
     end
 
     if !self.class.validate(params)
@@ -190,7 +202,7 @@ module LogStash::Config::Mixin
       name = name.to_s if name.is_a?(Symbol)
       @config[name] = opts  # ok if this is empty
 
-      if name.is_a?(String)
+      if name.is_a?(String) && opts.fetch(:attr_accessor, true)
         define_method(name) { instance_variable_get("@#{name}") }
         define_method("#{name}=") { |v| instance_variable_set("@#{name}", v) }
       end
@@ -429,6 +441,11 @@ module LogStash::Config::Mixin
         case validator
           when :codec
             if value.first.is_a?(String)
+              # A plugin's codecs should be instantiated by `PluginFactory` or in `Config::Mixin#config_init(Hash)`,
+              # which ensure the inner plugin has access to the outer's execution context and metric store.
+              # This deprecation exists to warn plugins that call `Config::Mixin::validate_value` directly.
+              self.deprecation_logger.deprecated("Codec instantiated by `Config::Mixin::DSL::validate_value(String, :codec)` which cannot propagate parent plugin's execution context or metrics. ",
+                                                 self.logger.debug? ? {:backtrace => caller} : {})
               value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
               return true, value
             else

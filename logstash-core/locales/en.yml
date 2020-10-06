@@ -362,6 +362,21 @@ en:
           if there are still inflight events in memory.
           By default, logstash will refuse to quit until all
           received events have been pushed to the outputs.
+        ecs_compatibility: |+
+          Sets the pipeline's default value for `ecs_compatibility`,
+          a setting that is available to plugins that implement
+          an ECS Compatibility mode for use with the Elastic Common
+          Schema.
+          Possible values are:
+           - disabled (default)
+           - v1
+           - v2
+          This option allows the early opt-in (or preemptive opt-out)
+          of ECS Compatibility modes in plugins, which is scheduled to
+          be on-by-default in a future major release of Logstash.
+
+          Values other than `disabled` are currently considered BETA,
+          and may produce unintended consequences when upgrading Logstash.
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"
