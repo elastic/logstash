@@ -154,6 +154,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.unsafe_shutdown",
     :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
 
+  option ["--pipeline.ecs_compatibility"], "STRING",
+    I18n.t("logstash.runner.flag.ecs_compatibility"),
+    :attribute_name => "pipeline.ecs_compatibility",
+    :default => LogStash::SETTINGS.get_default('pipeline.ecs_compatibility')
+
   # Data Path Setting
   option ["--path.data"] , "PATH",
     I18n.t("logstash.runner.flag.datapath"),

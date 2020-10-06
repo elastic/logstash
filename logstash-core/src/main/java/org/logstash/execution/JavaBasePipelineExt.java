@@ -77,7 +77,8 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
                 new ExecutionContextFactoryExt(
                     context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
                 ).initialize(context, args[3], this, dlqWriter(context)),
-                RubyUtil.FILTER_DELEGATOR_CLASS
+                RubyUtil.FILTER_DELEGATOR_CLASS,
+                Engine.JAVA
             ),
             getSecretStore(context)
         );

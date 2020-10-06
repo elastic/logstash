@@ -164,8 +164,9 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         });
         return res;
@@ -181,8 +182,9 @@ public final class CompiledPipeline {
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         }
         return res;
@@ -197,71 +199,47 @@ public final class CompiledPipeline {
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             IRubyObject o = pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve));
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
             nodes.add(o);
         });
         return nodes;
     }
 
-    /**
-     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
-     * Ruby types.
-     * @param def PluginDefinition as provided by {@link PipelineIR}
-     * @return RubyHash of plugin arguments as understood by {@link RubyIntegration.PluginFactory}
-     * methods
-     */
-    private RubyHash convertArgs(final PluginDefinition def) {
+
+    final RubyHash convertArgs(final Map<String, Object> input) {
         final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
-        for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+        for (final Map.Entry<String, Object> entry : input.entrySet()) {
             final Object value = entry.getValue();
             final String key = entry.getKey();
-            final Object toput;
-            if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
-                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
-                toput = pluginFactory.buildCodec(
-                    RubyUtil.RUBY.newString(codec.getName()),
-                    source,
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    codec.getArguments()
-                );
-            } else {
-                toput = value;
-            }
-            converted.put(key, toput);
+            converted.put(key, value);
         }
+
         return converted;
     }
 
-    /**
-     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
-     * Java types for consumption by Java plugins.
-     * @param def PluginDefinition as provided by {@link PipelineIR}
-     * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
-     * methods that create Java plugins
-     */
-    private Map<String, Object> convertJavaArgs(final PluginDefinition def, ConfigVariableExpander cve) {
-        Map<String, Object> args = expandConfigVariables(cve, def.getArguments());
-        for (final Map.Entry<String, Object> entry : args.entrySet()) {
-            final Object value = entry.getValue();
+
+    private Map<String, Object> expandArguments(final PluginDefinition pluginDefinition, final ConfigVariableExpander cve) {
+        Map<String, Object> arguments = expandConfigVariables(cve, pluginDefinition.getArguments());
+
+        // Intercept codec definitions from LIR
+        for (final Map.Entry<String, Object> entry : arguments.entrySet()) {
             final String key = entry.getKey();
-            final IRubyObject toput;
+            final Object value = entry.getValue();
             if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
-                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
-                Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
-                toput = pluginFactory.buildCodec(
-                    RubyUtil.RUBY.newString(codec.getName()),
-                    source,
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    codecArgs
-                );
-                Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
-                args.put(key, javaCodec);
+                final PluginStatement codecPluginStatement = (PluginStatement) value;
+                final PluginDefinition codecDefinition = codecPluginStatement.getPluginDefinition();
+                final SourceWithMetadata codecSource = codecPluginStatement.getSourceWithMetadata();
+                final Map<String, Object> codecArguments = expandArguments(codecDefinition, cve);
+                IRubyObject codecInstance = pluginFactory.buildCodec(RubyUtil.RUBY.newString(codecDefinition.getName()),
+                        Rubyfier.deep(RubyUtil.RUBY, codecArguments),
+                        codecSource);
+                arguments.put(key, codecInstance);
             }
         }
-        return args;
+
+        return arguments;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
