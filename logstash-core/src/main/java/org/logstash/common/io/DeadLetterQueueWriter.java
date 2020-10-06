@@ -133,8 +133,17 @@ public final class DeadLetterQueueWriter implements Closeable {
             } catch (Exception e) {
                 logger.debug("Unable to close dlq writer", e);
             }
-            releaseFileLock();
-            flushScheduler.shutdown();
+            try {
+                releaseFileLock();
+            }catch (Exception e){
+                logger.debug("Unable to release fileLock", e);
+            }
+
+            try {
+                flushScheduler.shutdown();
+            }catch (Exception e){
+                logger.debug("Unable shutdown flush scheduler", e);
+            }
         }
     }
 
