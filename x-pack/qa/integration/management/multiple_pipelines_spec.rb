@@ -17,7 +17,7 @@ describe "Read configuration from elasticsearch" do
       "hello" => nil
     }
 
-    cleanup_elasticsearch(".logstash*")
+    cleanup_system_indices(@pipelines.keys)
     cleanup_elasticsearch(".monitoring-logstash*")
 
     @pipelines.each do |pipeline_id, config|

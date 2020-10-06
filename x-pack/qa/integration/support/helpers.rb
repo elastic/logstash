@@ -8,6 +8,7 @@ require "elasticsearch"
 require "fileutils"
 require "stud/try"
 require "open3"
+require "time"
 
 VERSIONS_YML_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "..", "versions.yml")
 VERSION_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "VERSION")
@@ -94,12 +95,34 @@ def elasticsearch_client(options = { :url => "http://elastic:#{elastic_password}
   Elasticsearch::Client.new(options)
 end
 
+def es_version
+  response = elasticsearch_client.perform_request(:get, "")
+  response.body["version"]["number"].gsub(/(\d+\.\d+)\..+/, '\1').to_f
+end
+
 def push_elasticsearch_config(pipeline_id, config)
-  elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
+  if es_version >= 7.10
+    elasticsearch_client.perform_request(:put, "_logstash/pipeline/#{pipeline_id}", {},
+      { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => "1" },
+              :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
+  else
+    elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
+  end
 end
 
 def cleanup_elasticsearch(index = MONITORING_INDEXES)
   elasticsearch_client.indices.delete :index => index
+  elasticsearch_client.indices.refresh
+end
+
+def cleanup_system_indices(pipeline_ids)
+  pipeline_ids.each do |id|
+    begin
+      elasticsearch_client.perform_request(:delete, "_logstash/pipeline/#{id}")
+    rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+      puts ".logstash can be empty #{e.message}"
+    end
+  end
   elasticsearch_client.indices.refresh
 end
 
