@@ -132,18 +132,18 @@ public final class DeadLetterQueueWriter implements Closeable {
             try {
                 finalizeSegment(FinalizeWhen.ALWAYS);
             } catch (Exception e) {
-                logger.warn("Unable to close dlq writer", e);
+                logger.warn("Unable to close dlq writer, ignoring", e);
             }
             try {
                 releaseFileLock();
             } catch (Exception e) {
-                logger.debug("Unable to release fileLock", e);
+                logger.warn("Unable to release fileLock, ignoring", e);
             }
 
             try {
                 flushScheduler.shutdown();
             } catch (Exception e) {
-                logger.debug("Unable shutdown flush scheduler", e);
+                logger.warn("Unable shutdown flush scheduler, ignoring", e);
             }
         }
     }
