@@ -23,6 +23,14 @@ require_relative 'spec_helper.rb'
 
 require "logstash/devutils/rspec/spec_helper"
 
+def generate_message(number)
+  message = {}
+  number.times do |i|
+    message["field#{i}"] = "value#{i}"
+  end
+  message.to_json
+end
+
 describe "Test Dead Letter Queue" do
 
   before(:all) {
@@ -58,7 +66,7 @@ describe "Test Dead Letter Queue" do
   let!(:settings_dir) { Stud::Temporary.directory }
 
   shared_examples_for "it can send 1000 documents to and index from the dlq" do
-    xit 'should index all documents' do
+    it 'should index all documents' do
       es_service = @fixture.get_service("elasticsearch")
       es_client = es_service.get_client
       # test if all data was indexed by ES, but first refresh manually
@@ -91,13 +99,14 @@ describe "Test Dead Letter Queue" do
     end
 
     context 'with multiple pipelines' do
+      let(:message) { generate_message(100)}
       let(:pipelines) {[
           {
               "pipeline.id" => "test",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => true,
               "pipeline.batch.size" => 1,
-              "config.string" => "input { generator { message => '{\"test\":\"one\"}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
+              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
           },
           {
               "pipeline.id" => "test2",
@@ -112,6 +121,7 @@ describe "Test Dead Letter Queue" do
     end
 
     context 'with a single pipeline' do
+      let(:message) { generate_message(100)}
       let(:pipelines) {[
         {
             "pipeline.id" => "main",
@@ -119,7 +129,7 @@ describe "Test Dead Letter Queue" do
             "dead_letter_queue.enable" => true,
             "pipeline.batch.size" => 1,
             "config.string" => "
-                input { generator{ message => '{\"test\":\"one\"}' codec => \"json\" count => 1000 }
+                input { generator{ message => '#{message}' codec => \"json\" count => 1000 }
                         dead_letter_queue { path => \"#{dlq_dir}\" commit_offsets => true }
                 }
                 filter {
@@ -135,7 +145,6 @@ describe "Test Dead Letter Queue" do
   end
 
   context 'using logstash.yml and separate config file' do
-    skip("This test fails Jenkins CI, tracked in https://github.com/elastic/logstash/issues/10275")
     let(:generator_config_file) { config_to_temp_file(@fixture.config("root",{ :dlq_dir => dlq_dir })) }
 
     before :each do

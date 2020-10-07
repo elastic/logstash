@@ -76,6 +76,7 @@ func normalizeSetting(setting string) (string, error) {
 		"queue.drain",
 		"dead_letter_queue.enable",
 		"dead_letter_queue.max_bytes",
+		"dead_letter_queue.flush_interval",
 		"path.dead_letter_queue",
 		"http.host",
 		"http.port",
