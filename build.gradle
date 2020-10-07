@@ -513,7 +513,7 @@ bootstrap.dependsOn assemblyDeps
 // to compartimentalize failures is needed going forward
 //check.dependsOn runIntegrationTest
 
-runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
+//runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 
 def selectOsType() {
     if (project.ext.has("jdk_bundle_os")) {
