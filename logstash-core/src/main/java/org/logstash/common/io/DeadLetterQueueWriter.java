@@ -65,6 +65,7 @@ import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -131,17 +132,17 @@ public final class DeadLetterQueueWriter implements Closeable {
             try {
                 finalizeSegment(FinalizeWhen.ALWAYS);
             } catch (Exception e) {
-                logger.debug("Unable to close dlq writer", e);
+                logger.warn("Unable to close dlq writer", e);
             }
             try {
                 releaseFileLock();
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.debug("Unable to release fileLock", e);
             }
 
             try {
                 flushScheduler.shutdown();
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.debug("Unable shutdown flush scheduler", e);
             }
         }
@@ -293,20 +294,35 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     // check if there is a corresponding .log file - if yes delete the temp file, if no atomic move the
     // temp file to be a new segment file..
-    private void cleanupTempFile(final Path file) {
-        String filename = file.getFileName().toString().split("\\.")[0];
-        Path segmentFile = queuePath.resolve(String.format("%s.log", filename));
+    private void cleanupTempFile(final Path tempFile) {
+        String tempFilename = tempFile.getFileName().toString().split("\\.")[0];
+        Path segmentFile = queuePath.resolve(String.format("%s.log", tempFilename));
         try {
             if (Files.exists(segmentFile)) {
-                Files.delete(file);
+                Files.delete(tempFile);
             }
             else {
-                if (RecordIOReader.validNonEmptySegment(file)) {
-                    Files.move(file, segmentFile, StandardCopyOption.ATOMIC_MOVE);
+                SegmentStatus segmentStatus = RecordIOReader.getSegmentStatus(tempFile);
+                switch (segmentStatus){
+                    case VALID:
+                        logger.debug("Moving tmp file {} ti segment file {}", tempFilename, segmentFile);
+                        Files.move(tempFile, segmentFile, StandardCopyOption.ATOMIC_MOVE);
+                        break;
+                    case EMPTY:
+                        logger.debug("Removing unused temp file {}", tempFilename);
+                        Files.delete(tempFile);
+                        break;
+                    case INVALID:
+                        Path errorFile = queuePath.resolve(String.format("%s.err", tempFilename));
+                        logger.warn("Segment file {} is in an error state, saving as {}", tempFilename, errorFile);
+                        Files.move(tempFile, errorFile, StandardCopyOption.ATOMIC_MOVE);
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + RecordIOReader.getSegmentStatus(tempFile));
                 }
             }
         } catch (IOException e){
-            throw new IllegalStateException("Unable to clean up temp files", e);
+            throw new IllegalStateException("Unable to clean up temp file: " + tempFile, e);
         }
     }
 }

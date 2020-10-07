@@ -70,6 +70,7 @@ public final class RecordIOReader implements Closeable {
     private final Path path;
     private long channelPosition;
     private static final int UNSET = -1;
+    enum SegmentStatus { EMPTY, VALID, INVALID}
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
@@ -351,21 +352,22 @@ public final class RecordIOReader implements Closeable {
     /**
      * Verify whether a segment is valid and non-empty.
      * @param path Path to segment
-     * @return True if the segment is valid, false otherwise
+     * @return SegmentStatus EMPTY if the segment is empty, VALID if it is valid, INVALID otherwise
      */
-    static boolean validNonEmptySegment(Path path) {
+    static SegmentStatus getSegmentStatus(Path path) {
         try (RecordIOReader ioReader = new RecordIOReader(path)) {
             boolean moreEvents = true;
-            boolean nonEmpty = false;
+            SegmentStatus segmentStatus = SegmentStatus.EMPTY;
             while (moreEvents) {
                 // If all events in the segment can be read, then assume that this is a valid segment
                 moreEvents = (ioReader.readEvent() != null);
-                nonEmpty |= moreEvents;
+                if (moreEvents) segmentStatus = SegmentStatus.VALID;
             }
-            return nonEmpty;
+            return segmentStatus;
         } catch (IOException | IllegalStateException e){
             logger.warn("Error reading segment file {}", path, e);
-            return false;
+            return SegmentStatus.INVALID;
         }
     }
+
 }

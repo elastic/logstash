@@ -177,7 +177,7 @@ public class RecordIOReaderTest {
 
     @Test
     public void testObviouslyInvalidSegment() throws Exception {
-        assertThat(RecordIOReader.validNonEmptySegment(file), is(false));
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.INVALID));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class RecordIOReaderTest {
             writer.writeRecordHeader(
                     new RecordHeader(RecordType.COMPLETE, 100, OptionalInt.empty(), 0));
         }
-        assertThat(RecordIOReader.validNonEmptySegment(file), is(false));
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.INVALID));
     }
 
     @Test
@@ -196,7 +196,7 @@ public class RecordIOReaderTest {
             // This line avoids a compiler warning.
             writer.toString();
         }
-        assertThat(RecordIOReader.validNonEmptySegment(file), is(false));
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.EMPTY));
     }
 
     @Test
@@ -205,7 +205,7 @@ public class RecordIOReaderTest {
             writer.writeEvent(new byte[]{ 72, 101, 108, 108, 111});
         }
 
-        assertThat(RecordIOReader.validNonEmptySegment(file), is(true));
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.VALID));
     }
 
     @Test
