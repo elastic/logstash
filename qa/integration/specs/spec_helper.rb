@@ -26,6 +26,10 @@ end
 RSpec::Matchers.define :have_hits do |expected|
   match do |actual|
     # For Elasticsearch versions 7+, the result is in a value field, just in total for > 6
-    expected == actual['hits']['total'].is_a?(Hash) ? actual['hits']['total']['value'] : actual['hits']['total']
+    if actual['hits']['total'].is_a?(Hash)
+      expected == actual['hits']['total']['value']
+    else
+      expected == actual['hits']['total']
+    end
   end
 end
