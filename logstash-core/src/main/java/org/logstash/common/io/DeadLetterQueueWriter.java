@@ -305,7 +305,7 @@ public final class DeadLetterQueueWriter implements Closeable {
                 SegmentStatus segmentStatus = RecordIOReader.getSegmentStatus(tempFile);
                 switch (segmentStatus){
                     case VALID:
-                        logger.debug("Moving tmp file {} ti segment file {}", tempFilename, segmentFile);
+                        logger.debug("Moving temp file {} to segment file {}", tempFilename, segmentFile);
                         Files.move(tempFile, segmentFile, StandardCopyOption.ATOMIC_MOVE);
                         break;
                     case EMPTY:
