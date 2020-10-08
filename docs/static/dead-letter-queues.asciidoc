@@ -102,9 +102,9 @@ size of the queue. When the file size reaches a preconfigured threshold, a new
 file is created automatically.
 
 By default, the maximum size of each dead letter queue is set to 1024mb. To
-change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
-will be dropped if they would increase the size of the dead letter queue beyond
-this setting. 
+change this value, use the `dead_letter_queue.max_bytes` option in the
+`logstash.yml` configuration file.  Entries will be dropped if they would
+increase the size of the dead letter queue beyond this setting. 
 
 [[processing-dlq-events]]
 ==== Processing events in the dead letter queue
