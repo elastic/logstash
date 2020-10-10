@@ -49,7 +49,7 @@ POST _security/role/logstash_writer
   "cluster": ["manage_index_templates", "monitor", "manage_ilm"], <1>
   "indices": [
     {
-      "names": [ "logstash-*" ], <2>
+      "names": [ "logstash*" ], <2>
       "privileges": ["write","create","delete","create_index","manage","manage_ilm"]  <3>
     }
   ]
