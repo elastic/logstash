@@ -295,8 +295,8 @@ public final class DeadLetterQueueWriter implements Closeable {
     // check if there is a corresponding .log file - if yes delete the temp file, if no atomic move the
     // temp file to be a new segment file..
     private void cleanupTempFile(final Path tempFile) {
-        String tempFilename = tempFile.getFileName().toString().split("\\.")[0];
-        Path segmentFile = queuePath.resolve(String.format("%s.log", tempFilename));
+        String segmentName = tempFile.getFileName().toString().split("\\.")[0];
+        Path segmentFile = queuePath.resolve(String.format("%s.log", segmentName));
         try {
             if (Files.exists(segmentFile)) {
                 Files.delete(tempFile);
@@ -305,16 +305,15 @@ public final class DeadLetterQueueWriter implements Closeable {
                 SegmentStatus segmentStatus = RecordIOReader.getSegmentStatus(tempFile);
                 switch (segmentStatus){
                     case VALID:
-                        logger.debug("Moving temp file {} to segment file {}", tempFilename, segmentFile);
+                        logger.debug("Moving temp file {} to segment file {}", tempFile, segmentFile);
                         Files.move(tempFile, segmentFile, StandardCopyOption.ATOMIC_MOVE);
                         break;
                     case EMPTY:
-                        logger.debug("Removing unused temp file {}", tempFilename);
-                        Files.delete(tempFile);
+                        deleteTemporaryFile(tempFile, segmentName);
                         break;
                     case INVALID:
-                        Path errorFile = queuePath.resolve(String.format("%s.err", tempFilename));
-                        logger.warn("Segment file {} is in an error state, saving as {}", tempFilename, errorFile);
+                        Path errorFile = queuePath.resolve(String.format("%s.err", segmentName));
+                        logger.warn("Segment file {} is in an error state, saving as {}", segmentFile, errorFile);
                         Files.move(tempFile, errorFile, StandardCopyOption.ATOMIC_MOVE);
                         break;
                     default:
@@ -324,5 +323,26 @@ public final class DeadLetterQueueWriter implements Closeable {
         } catch (IOException e){
             throw new IllegalStateException("Unable to clean up temp file: " + tempFile, e);
         }
+    }
+
+    // Windows can leave files in a "Delete pending" state, where the file presents as existing to certain
+    // methods, and not to others, and actively prevents a new file being created with the same file name,
+    // throwing AccessDeniedException. This method moves the temporary file to a .del file before
+    // deletion, enabling a new temp file to be created in its place.
+    private void deleteTemporaryFile(Path tempFile, String segmentName) throws IOException {
+        Path deleteTarget;
+        if (isWindows()) {
+            Path deletedFile = queuePath.resolve(String.format("%s.del", segmentName));
+            logger.debug("Moving temp file {} to {}", tempFile, deletedFile);
+            deleteTarget = deletedFile;
+            Files.move(tempFile, deletedFile, StandardCopyOption.ATOMIC_MOVE);
+        } else {
+            deleteTarget = tempFile;
+        }
+        Files.delete(deleteTarget);
+    }
+
+    private static boolean isWindows(){
+        return System.getProperty("os.name").startsWith("Windows");
     }
 }
