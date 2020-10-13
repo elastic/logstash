@@ -28,6 +28,8 @@ require "logstash/config/lir_serializer"
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
 
+  class WorkerException < RuntimeError; end
+
   java_import org.apache.logging.log4j.ThreadContext
 
   attr_reader \
@@ -122,7 +124,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @thread = Thread.new do
       error_log_params = ->(e) {
         default_logging_keys(
-          :exception => e,
+          :exception => e.class,
+          :message => e.message,
           :backtrace => e.backtrace,
           "pipeline.sources" => pipeline_source_details
         )
@@ -133,10 +136,12 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
-      rescue => e
+      rescue WorkerException => e
         # no need to log at ERROR level since this log will be redundant to the log in
         # the worker loop thread global rescue clause
-        logger.debug("Pipeline terminated by worker error", error_log_params.call(e))
+        logger.debug("Worker terminated by error", error_log_params.call(e))
+      rescue => e
+        logger.error("Pipeline terminated by error", error_log_params.call(e))
       ensure
         # we must trap any exception here to make sure the following @finished_execution
         # is always set to true regardless of any exception before in the close method call
@@ -337,7 +342,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         # this is a worker thread termination
         # delete it from @worker_threads so that wait_for_workers does not wait for it
         @worker_threads.delete(terminated_thread)
-        raise("Worker thread terminated in pipeline.id: #{pipeline_id}")
+        raise WorkerException.new("Worker thread terminated in pipeline.id: #{pipeline_id}")
       end
     end
 
