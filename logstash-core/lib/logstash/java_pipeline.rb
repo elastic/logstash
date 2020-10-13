@@ -32,12 +32,15 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   attr_reader \
     :worker_threads,
+    :input_threads,
     :events_consumed,
     :events_filtered,
     :started_at,
     :thread
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
+  SECOND = 1
+  MEMORY = "memory".freeze
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
@@ -46,7 +49,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     @worker_threads = []
 
-    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
+    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
     @events_consumed = java.util.concurrent.atomic.LongAdder.new
@@ -134,9 +137,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         run
         @finished_run.make_true
       rescue => e
-        # no need to log at ERROR level since this log will be redundant to the log in
-        # the worker loop thread global rescue clause
-        logger.debug("Pipeline terminated by worker error", error_log_params.call(e))
+        logger.error("Pipeline error", error_log_params.call(e))
       ensure
         # we must trap any exception here to make sure the following @finished_execution
         # is always set to true regardless of any exception before in the close method call
@@ -146,6 +147,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
           logger.error("Pipeline close error, ignoring", error_log_params.call(e))
         end
         @finished_execution.make_true
+        @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
       end
     end
 
@@ -331,13 +333,38 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def monitor_inputs_and_workers
     twait = ThreadsWait.new(*(@input_threads + @worker_threads))
 
-    while !@input_threads.empty?
+    loop do
+      break if @input_threads.empty?
+
       terminated_thread = twait.next_wait
+
       if @input_threads.delete(terminated_thread).nil?
-        # this is a worker thread termination
-        # delete it from @worker_threads so that wait_for_workers does not wait for it
+        # this is an abnormal worker thread termination, we need to terminate the pipeline
+
         @worker_threads.delete(terminated_thread)
-        raise("Worker thread terminated in pipeline.id: #{pipeline_id}")
+
+        # before terminating the pipeline we need to close the inputs
+        stop_inputs
+
+        # wait 10 seconds for all input threads to terminate
+        wait_input_threads_termination(10 * SECOND) do
+          @logger.warn("Waiting for input plugin to close", default_logging_keys)
+          sleep(1)
+        end
+
+        if inputs_running? && settings.get("queue.type") == MEMORY
+          # if there are still input threads alive they are probably blocked pushing on the memory queue
+          # because no worker is present to consume from the ArrayBlockingQueue
+          # if this is taking too long we have a problem
+          wait_input_threads_termination(10 * SECOND) do
+            dropped_batch = filter_queue_client.read_batch
+            @logger.error("Dropping events to unblock input plugin", default_logging_keys(:count => dropped_batch.filteredSize)) if dropped_batch.filteredSize > 0
+          end
+        end
+
+        raise("Unable to stop input plugin(s)") if inputs_running?
+
+        break
       end
     end
 
@@ -420,7 +447,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     stop_inputs
     wait_for_shutdown
     clear_pipeline_metrics
-    @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
   end # def shutdown
 
   def wait_for_shutdown
@@ -581,4 +607,18 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     false
   end
+
+  def wait_input_threads_termination(timeout_seconds, &block)
+    start = Time.now
+    seconds = 0
+    while inputs_running? && (seconds < timeout_seconds)
+      block.call
+      seconds = Time.now - start
+    end
+  end
+
+  def inputs_running?
+    @input_threads.any?(&:alive?)
+  end
+
 end; end
