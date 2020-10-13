@@ -77,7 +77,7 @@ The internal queueing model for event buffering. Options are *memory* for
 in-memory queueing, or *persisted* for disk-based acknowledged queueing. 
 
 Queue max bytes::
-The total capacity of the queue.
+The total capacity of the queue when persistent queues are enabled.
 
 Queue checkpoint writes::
 The maximum number of events written before a checkpoint is forced when
