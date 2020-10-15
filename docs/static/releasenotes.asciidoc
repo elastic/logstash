@@ -44,17 +44,17 @@ coming[7.10.0]
 TODO placeholder
 
 ==== Performance improvements and notable issues fixed
-
 * ensure input plugin close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
 * fix flushing upon empty batches with ordered execution https://github.com/elastic/logstash/pull/12204[#12204]
-* Doc:Clarify how Bulk API interacts with DLQ https://github.com/elastic/logstash/pull/12209[#12209]
-* Fix to implement the blank? method that doesn't exists for String https://github.com/elastic/logstash/pull/12227[#12227]
-* Fix keystore thread safety https://github.com/elastic/logstash/pull/12233[#12233]
-* [DOC] Logging settings can affect performances https://github.com/elastic/logstash/pull/12246[#12246]
-* [DOC][Backport-7.x] Logging settings can affect performances https://github.com/elastic/logstash/pull/12247[#12247]
-* Doc:Clarify how Bulk API interacts with DLQ https://github.com/elastic/logstash/pull/12268[#12268]
-* [Backport to 7.x]Doc: Increase visibility of offline plugin support https://github.com/elastic/logstash/pull/12284[#12284]
-
+* Fixed a race condition on accessing KeyStore https://github.com/elastic/logstash/pull/12233[#12233] after a previous
+  improvement to share one KeyStore for each variable substitution https://github.com/elastic/logstash/pull/10794[#10794]
+* Some work and improvements on Docker images, were added RedHat UBI license information and some fixes to pass RedHat docker image certification.
+  Now UBI8 (Universal Base Image) images are created. Improved acceptance tests for Docker and added integration tests for the same
+  https://github.com/elastic/logstash/pull/12248[#12248] https://github.com/elastic/logstash/pull/12296[#12296].
+* Exposed proxy and ssl verification mode options for management and monitoring of a Docker image
+  https://github.com/elastic/logstash/pull/12201[#12201], https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12205[#12205]
+* Changed DLQ writer policy to avoid the possibility of the DLQ reader reading an incomplete DLQ segment. Now the writer
+  output to a temporary file, renamed on completion https://github.com/elastic/logstash/pull/12304[#12304]
 * Updates to dependencies
 ** Update jruby to 9.2.13.0
 ** Pinned open-ssl version to 0.10.4 to avoid https://github.com/elastic/logstash/pull/12300
