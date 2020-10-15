@@ -188,6 +188,6 @@ class Dependency implements Comparable<Dependency> {
 
     @Override
     public String toString() {
-        return "<Dependency " + name + " v" + version + spdxLicense + ">";
+        return "<Dependency " + name + " v" + version + ">";
     }
 }
