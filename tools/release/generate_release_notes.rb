@@ -110,17 +110,17 @@ release_notes.insert(release_notes_entry_index, report.join("\n").gsub(/\n{3,}/,
 
 IO.write(RELEASE_NOTES_PATH, release_notes.join("\n"))
 
-# puts "Creating commit.."
-# branch_name = "update_release_notes_#{Time.now.to_i}"
-# `git checkout -b #{branch_name}`
-# `git commit docs/static/releasenotes.asciidoc -m "Update release notes for #{current_release}"`
-#
-# puts "Pushing commit.."
-# `git remote add upstream git@github.com:elastic/logstash.git`
-# `git push upstream #{branch_name}`
-#
-# puts "Creating Pull Request"
-# pr_title = "Release notes draft for #{current_release}"
-# `curl -H "Authorization: token #{ENV['GITHUB_TOKEN']}" -d '{"title":"#{pr_title}","base":"#{ENV['branch_specifier']}", "head":"#{branch_name}"}' https://api.github.com/repos/elastic/logstash/pulls`
+puts "Creating commit.."
+branch_name = "update_release_notes_#{Time.now.to_i}"
+`git checkout -b #{branch_name}`
+`git commit docs/static/releasenotes.asciidoc -m "Update release notes for #{current_release}"`
+
+puts "Pushing commit.."
+`git remote add upstream git@github.com:elastic/logstash.git`
+`git push upstream #{branch_name}`
+
+puts "Creating Pull Request"
+pr_title = "Release notes draft for #{current_release}"
+`curl -H "Authorization: token #{ENV['GITHUB_TOKEN']}" -d '{"title":"#{pr_title}","base":"#{ENV['branch_specifier']}", "head":"#{branch_name}"}' https://api.github.com/repos/elastic/logstash/pulls`
 
 puts "Done"
