@@ -11,6 +11,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
@@ -31,7 +32,7 @@ public class SettingExt extends RubyObject {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(name= "initialize", required = 2, optional = 2)
+    @JRubyMethod(required = 2, optional = 2, visibility = Visibility.PRIVATE)
     @SuppressWarnings("unchecked")
     public SettingExt initialize(ThreadContext context, IRubyObject[] args, final Block block) {
         RubyString name = (RubyString) args[0];
@@ -65,24 +66,27 @@ public class SettingExt extends RubyObject {
         return (RubyObject) setting.getValue();
     }
 
-    @JRubyMethod
+    @JRubyMethod(name = "set?")
     public RubyBoolean isSet() {
         return RubyBoolean.newBoolean(RubyUtil.RUBY, setting.isValueIsSet());
     }
 
-    @JRubyMethod
+    @JRubyMethod(name = "strict?")
     public RubyBoolean isStrict() {
         return RubyBoolean.newBoolean(RubyUtil.RUBY, setting.isStrict());
     }
 
     @JRubyMethod
-    public void set(IRubyObject value) {
+    public IRubyObject set(IRubyObject value) {
+        final Object old = setting.getValue();
         setting.set(value);
+        return (IRubyObject) old;
     }
 
     @JRubyMethod
-    public void reset() {
+    public IRubyObject reset(ThreadContext context) {
         setting.reset();
+        return context.nil;
     }
 
     @JRubyMethod(name = "to_hash")
@@ -102,13 +106,15 @@ public class SettingExt extends RubyObject {
         return RubyBoolean.newBoolean(RubyUtil.RUBY, false);
     }
 
-    @JRubyMethod
-    public void validateValue() {
+    @JRubyMethod(name = "validate_value")
+    public IRubyObject validateValue() {
         setting.validateValue(setting.getValue());
+        return null; // TODO
     }
 
-    @JRubyMethod
-    protected void validate(IRubyObject input) {
+    @JRubyMethod(visibility = Visibility.PROTECTED)
+    public IRubyObject validate(IRubyObject input) {
         setting.validate(input);
+        return null; // TODO
     }
 }

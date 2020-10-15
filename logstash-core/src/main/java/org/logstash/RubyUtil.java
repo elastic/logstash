@@ -251,7 +251,7 @@ public final class RubyUtil {
 
     private static final RubyModule PLUGINS_MODULE;
 
-    private static final RubyClass SETTINGS_CLASS;
+//    private static final RubyClass SETTINGS_CLASS;
 
     private static final RubyClass SETTING_CLASS;
 
@@ -346,11 +346,9 @@ public final class RubyUtil {
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
 
-//        SETTINGS_CLASS = LOGSTASH_MODULE.getClass("Settings");
-        SETTINGS_CLASS = LOGSTASH_MODULE.defineOrGetClassUnder("Settings", RUBY.getObject());
-        SETTING_CLASS = SETTINGS_CLASS.defineClassUnder("Setting", RUBY.getObject(), SettingExt::new);
+//        SETTINGS_CLASS = LOGSTASH_MODULE.defineOrGetClassUnder("Settings", RUBY.getObject());
+        SETTING_CLASS = LOGSTASH_MODULE.defineClassUnder("Setting", RUBY.getObject(), SettingExt::new);
         SETTING_CLASS.defineAnnotatedMethods(SettingExt.class);
-//        SETTING_CLASS = setupLogstashClass(SETTINGS_CLASS, SettingExt::new, SettingExt.class);
 
         ABSTRACT_DLQ_WRITER_CLASS.defineAnnotatedMethods(AbstractDeadLetterQueueWriterExt.class);
         DUMMY_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
