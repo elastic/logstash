@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-13,Logstash 6.8.13>>
 * <<logstash-6-8-12,Logstash 6.8.12>>
 * <<logstash-6-8-11,Logstash 6.8.11>>
 * <<logstash-6-8-10,Logstash 6.8.10>>
@@ -43,6 +44,11 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-13]]
+=== Logstash 6.8.13 Release Notes
+
+Fix thread safety issues with the JavaKeystore implementation of the secret store https://github.com/elastic/logstash/pull/12237[#12237]
 
 [[logstash-6-8-12]]
 === Logstash 6.8.12 Release Notes
