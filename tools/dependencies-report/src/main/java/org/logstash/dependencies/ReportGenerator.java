@@ -49,7 +49,7 @@ public class ReportGenerator {
 
     final String UNKNOWN_LICENSE = "UNKNOWN";
     final Collection<Dependency> UNKNOWN_LICENSES = new ArrayList<>();
-    final String[] CSV_HEADERS = {"name", "version", "revision", "url", "license", "copyright"};
+    final String[] CSV_HEADERS = {"name", "version", "revision", "url", "license", "copyright","sourceURL"};
     final Collection<Dependency> MISSING_NOTICE = new ArrayList<>();
 
     boolean generateReport(
@@ -65,7 +65,7 @@ public class ReportGenerator {
         Dependency.addDependenciesFromRubyReport(rubyDependenciesStream, dependencies);
         addJavaDependencies(javaDependenciesStreams, dependencies);
 
-        Map<String, LicenseUrlPair> licenseMapping = new HashMap<>();
+        Map<String, LicenseInfo> licenseMapping = new HashMap<>();
         checkDependencyLicenses(licenseMappingStream, acceptableLicensesStream, licenseMapping, dependencies);
         checkDependencyNotices(noticeOutput, dependencies);
 
@@ -91,7 +91,7 @@ public class ReportGenerator {
     }
 
     private void checkDependencyLicenses(InputStream licenseMappingStream, InputStream acceptableLicensesStream,
-                                         Map<String, LicenseUrlPair> licenseMapping, SortedSet<Dependency> dependencies) throws IOException {
+                                         Map<String, LicenseInfo> licenseMapping, SortedSet<Dependency> dependencies) throws IOException {
         readLicenseMapping(licenseMappingStream, licenseMapping);
         List<String> acceptableLicenses = new ArrayList<>();
         readAcceptableLicenses(acceptableLicensesStream, acceptableLicenses);
@@ -134,10 +134,10 @@ public class ReportGenerator {
         }
     }
 
-    private void reportUnusedLicenseMappings(Writer unusedLicenseWriter, Map<String, LicenseUrlPair> licenseMapping) throws IOException {
+    private void reportUnusedLicenseMappings(Writer unusedLicenseWriter, Map<String, LicenseInfo> licenseMapping) throws IOException {
         SortedSet<String> unusedDependencies = new TreeSet<>();
 
-        for (Map.Entry<String, LicenseUrlPair> entry : licenseMapping.entrySet()) {
+        for (Map.Entry<String, LicenseInfo> entry : licenseMapping.entrySet()) {
             if (entry.getValue().isUnused) {
                 unusedDependencies.add(entry.getKey());
             }
@@ -177,13 +177,13 @@ public class ReportGenerator {
         }
     }
 
-    private void checkDependencyLicense(Map<String, LicenseUrlPair> licenseMapping, List<String> acceptableLicenses, Dependency dependency) {
+    private void checkDependencyLicense(Map<String, LicenseInfo> licenseMapping, List<String> acceptableLicenses, Dependency dependency) {
         if (licenseMapping.containsKey(dependency.name)) {
-            LicenseUrlPair pair = licenseMapping.get(dependency.name);
+            LicenseInfo licenseInfo = licenseMapping.get(dependency.name);
 
-            String[] dependencyLicenses = pair.license.split("\\|");
+            String[] dependencyLicenses = licenseInfo.license.split("\\|");
             boolean hasAcceptableLicense = false;
-            if (pair.url != null && !pair.url.equals("")) {
+            if (licenseInfo.url != null && !licenseInfo.url.equals("")) {
                 for (int k = 0; k < dependencyLicenses.length && !hasAcceptableLicense; k++) {
                     if (acceptableLicenses.stream().anyMatch(dependencyLicenses[k]::equalsIgnoreCase)) {
                         hasAcceptableLicense = true;
@@ -192,9 +192,11 @@ public class ReportGenerator {
             }
 
             if (hasAcceptableLicense) {
-                dependency.spdxLicense = pair.license;
-                dependency.url = pair.url;
-                pair.isUnused = false;
+                dependency.spdxLicense = licenseInfo.license;
+                dependency.url = licenseInfo.url;
+                dependency.sourceURL = licenseInfo.sourceURL;
+                dependency.copyright = licenseInfo.copyright;
+                licenseInfo.isUnused = false;
             } else {
                 // unacceptable license or missing URL
                 UNKNOWN_LICENSES.add(dependency);
@@ -216,7 +218,7 @@ public class ReportGenerator {
         }
     }
 
-    private void readLicenseMapping(InputStream stream, Map<String, LicenseUrlPair> licenseMapping)
+    private void readLicenseMapping(InputStream stream, Map<String, LicenseInfo> licenseMapping)
             throws IOException {
         Reader in = new InputStreamReader(stream);
         for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
@@ -226,14 +228,15 @@ public class ReportGenerator {
                 String depName = lastIndex < 0
                         ? dependencyNameAndVersion
                         : dependencyNameAndVersion.substring(0,  lastIndex);
-                validateAndAdd(licenseMapping, depName, new LicenseUrlPair(record.get(2), record.get(1)));
+
+                validateAndAdd(licenseMapping, depName, LicenseInfo.fromCSVRecord(record));
             }
         }
     }
 
-    private static void validateAndAdd(Map<String, LicenseUrlPair> licenses, String depName, LicenseUrlPair lup) {
+    private static void validateAndAdd(Map<String, LicenseInfo> licenses, String depName, LicenseInfo lup) {
         if (licenses.containsKey(depName)) {
-            LicenseUrlPair existingLicense = licenses.get(depName);
+            LicenseInfo existingLicense = licenses.get(depName);
 
             // Because dependency versions are not treated independently, if dependencies with different versions
             // have different licenses, we cannot distinguish between them
@@ -249,13 +252,26 @@ public class ReportGenerator {
 
 }
 
-class LicenseUrlPair {
+class LicenseInfo {
     String license;
     String url;
+    String sourceURL;
+    String copyright;
     boolean isUnused = true;
 
-    LicenseUrlPair(String license, String url) {
+    LicenseInfo(String license, String url) {
         this.license = license;
         this.url = url;
+    }
+
+    static LicenseInfo fromCSVRecord(CSVRecord record){
+        LicenseInfo info = new LicenseInfo(record.get(2), record.get(1));
+        if (record.size() > 3){
+            info.copyright = record.get(3);
+        }
+        if (record.size() > 4){
+            info.sourceURL = record.get(4);
+        }
+        return info;
     }
 }
