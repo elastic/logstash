@@ -316,8 +316,9 @@ tasks.register("unpackTarDistribution", Copy) {
   into {buildDir}
 }
 
-def qaVendorPath = "${buildDir}/qa/integration/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0"
+def qaBuildPath = "${buildDir}/qa/integration"
+def qaVendorPath = "${qaBuildPath}/vendor"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){
@@ -340,8 +341,11 @@ tasks.register("installIntegrationTestGems") {
   doLast {
       bundleWithEnv(
         projectDir, buildDir,
-        "${projectDir}/qa/integration", qaBundleBin, ['install', '--path', qaVendorPath],
-        [LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath]
+        qaBuildPath, qaBundleBin, ['install', '--path', qaVendorPath],
+        [
+                GEM_PATH: qaBundledGemPath, GEM_HOME: qaBundledGemPath,
+                LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath
+        ]
       )
   }
 }
