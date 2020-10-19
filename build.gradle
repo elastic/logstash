@@ -342,10 +342,7 @@ tasks.register("installIntegrationTestGems") {
       bundleWithEnv(
         projectDir, buildDir,
         qaBuildPath, qaBundleBin, ['install', '--path', qaVendorPath],
-        [
-                GEM_PATH: qaBundledGemPath, GEM_HOME: qaBundledGemPath,
-                LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath
-        ]
+        [ GEM_PATH: qaBundledGemPath, GEM_HOME: qaBundledGemPath ]
       )
   }
 }
