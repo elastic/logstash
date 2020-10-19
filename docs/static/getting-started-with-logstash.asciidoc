@@ -67,7 +67,7 @@ to sign all our packages. It is available from https://pgp.mit.edu.
 
 [NOTE]
 --
-When installing from a package repository (or from the DEB or RPM),
+When installing from a package repository (or from the DEB or RPM installation file),
 you will need to run Logstash as a service. Please refer to
 {logstash-ref}/running-logstash.html[Running Logstash as a Service] for more
 information.
