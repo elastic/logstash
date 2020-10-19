@@ -42,6 +42,7 @@ script--`bin/logstash-plugin`--to manage plugins:
 * <<installing-local-plugins>>
 * <<installing-local-plugins-path>>
 
+Note: probably need to pass `LS_JAVA_OPTS` when run `logstash-plugin` script if logstash is configured with heap size more than half of the RAM, as the `logstash-plugin` script currently use the same jvm.options setting as logstash itself, which may get OOM error in that case. For example : `# LS_JAVA_OPTS="-Xms5g -Xmx5g" /usr/share/logstash/bin/logstash-plugin --help`
 [discrete]
 [[pointer-to-offline]]
 === No internet connection? 
