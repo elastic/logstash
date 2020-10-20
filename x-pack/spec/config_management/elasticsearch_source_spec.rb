@@ -202,16 +202,57 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:config) { "input { generator { count => 100 } tcp { port => 6005 } } output { }}" }
       let(:pipeline_id) { "super_generator" }
       let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
+      let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
 
       it "#fetch_config" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/#{pipeline_id}").and_return(elasticsearch_response)
+        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(elasticsearch_response.clone)
         expect(subject.fetch_config([pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=> "#{config}"})
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=>"#{config}"})
       end
 
       it "#fetch_config should raise error" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/apache,nginx").and_return(elasticsearch_8_err_response)
+        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(elasticsearch_8_err_response.clone)
         expect{ subject.fetch_config(["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+      end
+
+      describe "wildcard" do
+        it "should accept * " do
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:logger).never
+          expect(subject.fetch_config(["*"], mock_client).keys.length).to eq(all_pipelines.keys.length)
+        end
+
+        it "should accept multiple * in one pattern " do
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:logger).never
+          expect(subject.fetch_config(["host*_pipeline*"], mock_client).keys).to eq(["host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
+        end
+
+        it "should give unique pipeline with multiple wildcard patterns" do
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:log_pipeline_not_found).with(["*pipeline*"]).exactly(1)
+          expect(subject.fetch_config(["host1_pipeline*", "host2_pipeline*","*pipeline*"], mock_client).keys).to eq(["host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
+        end
+
+        it "should accept a mix of wildcard and non wildcard pattern" do
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:logger).never
+          expect(subject.fetch_config(["host1_pipeline*", "host2_pipeline*","super_generator"], mock_client).keys).to eq(["super_generator", "host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
+        end
+
+        it "should log unmatched pattern" do
+          pipeline_ids = ["very_awesome_pipeline", "*whatever*"]
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:log_pipeline_not_found).with(pipeline_ids).exactly(1)
+          expect(subject.fetch_config(pipeline_ids, mock_client)).to eq({})
+        end
+
+        it "should log unmatched pattern and return matched pipeline" do
+          pipeline_ids = ["very_awesome_pipeline", "*whatever*"]
+          expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
+          expect(subject).to receive(:log_pipeline_not_found).with(pipeline_ids).exactly(1)
+          expect(subject.fetch_config(pipeline_ids + [pipeline_id], mock_client)).to eq(elasticsearch_response)
+        end
       end
     end
   end
@@ -252,6 +293,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "#fetch_config" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_response)
+        expect(subject).to receive(:logger).never
         expect(subject.fetch_config([pipeline_id, another_pipeline_id], mock_client).size).to eq(2)
         expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
         expect(subject.get_single_pipeline_setting(another_pipeline_id)).to eq({"pipeline" => "#{another_config}"})
@@ -259,12 +301,21 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "#fetch_config should raise error" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_7_9_err_response)
+        expect(subject).to receive(:logger).never
         expect{ subject.fetch_config([pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#fetch_config should raise error when response is empty" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(LogStash::Json.load("{}"))
         expect{ subject.fetch_config([pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+      end
+
+      it "#fetch_config should log unmatched pipeline id" do
+        expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"},{\"_id\":\"*\"}]}").and_return(elasticsearch_response)
+        expect(subject).to receive(:log_pipeline_not_found).with(["*"]).exactly(1)
+        expect(subject.fetch_config([pipeline_id, another_pipeline_id, "*"], mock_client).size).to eq(2)
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+        expect(subject.get_single_pipeline_setting(another_pipeline_id)).to eq({"pipeline" => "#{another_config}"})
       end
 
       it "#format_response should return pipelines" do

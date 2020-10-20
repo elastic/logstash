@@ -80,17 +80,12 @@ module LogStash
         fetcher = get_pipeline_fetcher
         fetcher.fetch_config(pipeline_ids, client)
 
-        @cached_pipelines = pipeline_ids.collect do |pid|
+        @cached_pipelines = fetcher.get_pipelines_key.collect do |pid|
           get_pipeline(pid, fetcher)
         end.compact
       end
 
       def get_pipeline(pipeline_id, fetcher)
-        unless fetcher.config_exist?(pipeline_id)
-          logger.debug("Could not find a remote configuration for a specific `pipeline_id`", :pipeline_id => pipeline_id)
-          return nil
-        end
-
         config_string = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline"]
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
@@ -188,12 +183,18 @@ module LogStash
     end
 
     module Fetcher
-      def config_exist?(pipeline_id)
-        @response.has_key?(pipeline_id)
+      include LogStash::Util::Loggable
+
+      def get_pipelines_key
+        @pipelines.keys
       end
 
       def fetch_config(pipeline_ids, client) end
       def get_single_pipeline_setting(pipeline_id) end
+
+      def log_pipeline_not_found(pipeline_ids)
+        logger.debug("Could not find a remote configuration for specific `pipeline_id` or the wildcard setting is not relevant", :pipeline_ids => pipeline_ids) if pipeline_ids.any?
+      end
     end
 
     class SystemIndicesFetcher
@@ -202,18 +203,47 @@ module LogStash
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
       def fetch_config(pipeline_ids, client)
-        path_ids = pipeline_ids.join(",")
-        response = client.get("#{SYSTEM_INDICES_API_PATH}/#{path_ids}")
+        response = client.get("#{SYSTEM_INDICES_API_PATH}/")
 
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        @response = response
+        @pipelines = get_wildcard_pipelines(pipeline_ids, response)
       end
 
       def get_single_pipeline_setting(pipeline_id)
-        @response.fetch(pipeline_id, {})
+        @pipelines.fetch(pipeline_id, {})
+      end
+
+      private
+      # get pipelines if pipeline_ids match wildcard patterns
+      # split user pipeline id setting into wildcard and non wildcard pattern
+      # take the non wildcard pipelines. transform user's wildcard pattern to valid regex pattern and do the matching
+      def get_wildcard_pipelines(pipeline_ids, response)
+        wildcard_patterns, fix_pids = pipeline_ids.partition { |pattern| pattern.include?("*")}
+
+        fix_id_pipelines = fix_pids.map { |id|
+          response.has_key?(id) ? {id => response[id]}: {}
+        }.reduce({}, :merge)
+        fix_id_pipelines.keys.map { |id| response.delete(id)}
+
+        wildcard_matched_patterns = Set.new
+        wildcard_pattern_regex = wildcard_patterns.map { |pattern|
+          {pattern => Regexp.new("^" + pattern.gsub("*", ".*") + "$")}
+        }.reduce({}, :merge)
+        wildcard_pipelines = response.keys.map { |id|
+          found_pattern = wildcard_pattern_regex.keys.any? { |pattern|
+            matched = id.match?(wildcard_pattern_regex[pattern])
+            wildcard_matched_patterns << pattern if matched
+            matched
+          }
+          found_pattern ? {id => response[id]}: {}
+        }.reduce({}, :merge)
+
+        log_pipeline_not_found((fix_pids - fix_id_pipelines.keys) + (wildcard_patterns - wildcard_matched_patterns.to_a))
+
+        fix_id_pipelines.merge(wildcard_pipelines)
       end
     end
 
@@ -236,11 +266,15 @@ module LogStash
           raise ElasticsearchSource::RemoteConfigError, "Elasticsearch returned an unknown or malformed document structure"
         end
 
-        @response = format_response(response)
+        @pipelines = format_response(response)
+
+        log_pipeline_not_found(pipeline_ids - @pipelines.keys)
+
+        @pipelines
       end
 
       def get_single_pipeline_setting(pipeline_id)
-        @response.fetch(pipeline_id, {}).fetch("_source", {})
+        @pipelines.fetch(pipeline_id, {}).fetch("_source", {})
       end
 
       private
