@@ -1,0 +1,7 @@
+# JVM Options specified in this file are used when running command-line helper tools
+# and _override_ options specified in the adjacent `jvm.options` configuration file.
+
+# TODO: This file has no effect on Windows when invoking *.bat launchers
+
+-Xms1G
+-Xmx1G

@@ -2,7 +2,7 @@
 
 unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
-setup
+setup_cli_tool
 
 # bin/logstash-plugin is a short lived ruby script thus we can use aggressive "faster starting JRuby options"
 # see https://github.com/jruby/jruby/wiki/Improving-startup-time

@@ -564,6 +564,9 @@ namespace "artifact" do
     File.join(basedir, "config", "jvm.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
+    File.join(basedir, "config", "cli-jvm.options").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
     File.join(basedir, "config", "logstash.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
@@ -589,6 +592,7 @@ namespace "artifact" do
         out.attributes[:rpm_os] = "linux"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/cli-jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
         out.config_files << "/etc/logstash/logstash-sample.conf"
@@ -605,6 +609,7 @@ namespace "artifact" do
         out.attributes[:deb_suggests] = "java8-runtime-headless" unless bundle_jdk
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/cli-jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
         out.config_files << "/etc/logstash/logstash-sample.conf"
