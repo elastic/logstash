@@ -59,6 +59,6 @@ public class CloudSettingAuth {
 
     @Override
     public String toString() {
-        return String.join(":", username, password.toString());
+        return String.join(":", username, password != null ? password.toString() : "<no password defined>");
     }
 }

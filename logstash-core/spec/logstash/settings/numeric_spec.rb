@@ -30,7 +30,7 @@ describe LogStash::Setting::Numeric do
       context "float" do
         it "should coerce that string to the number" do
           subject.set("1.1")
-          expect(subject.value).to eq(1.1)
+          expect(subject.value).to be_within(0.01).of(1.1)
         end
       end
       context "int" do

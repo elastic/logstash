@@ -253,7 +253,7 @@ public final class RubyUtil {
 
 //    private static final RubyClass SETTINGS_CLASS;
 
-    private static final RubyClass SETTING_CLASS;
+    public static final RubyClass SETTING_CLASS;
 
     static {
         RUBY = Ruby.getGlobalRuntime();

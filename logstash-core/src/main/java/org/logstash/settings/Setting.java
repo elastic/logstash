@@ -10,28 +10,40 @@ import java.util.function.Predicate;
 public class Setting {
 
     private final String name;
-    private final Class<? extends Object> klass;
-    private final Object defaultValue;
+    final Class<? extends Object> klass;
+    protected Object defaultValue;
     private boolean valueIsSet;
     private Object value;
     private final boolean strict;
     private final Predicate<Object> validator;
 
-    public Setting(String name, Class<? extends Object> klass, Object defaultValue, boolean strict) {
+    Setting(String name, Class<? extends Object> klass, Object defaultValue, boolean strict) {
         this(name, klass, defaultValue, strict, null);
     }
 
-    public Setting(String name, Class<? extends Object> klass, Object defaultValue, boolean strict, Predicate<Object> validator) {
+    Setting(String name, Class<? extends Object> klass, Object defaultValue, boolean strict, Predicate<Object> validator) {
         this.name = name;
         this.klass = klass;
         this.strict = strict;
         this.validator = validator;
         this.value = null;
         this.valueIsSet = false;
+        this.defaultValue = defaultValue;
+    }
+
+    void init() {
         if (strict) {
             validate(defaultValue);
         }
-        this.defaultValue = defaultValue;
+    }
+
+    // Copy constructor
+    Setting(Setting copy) {
+        this.name = copy.name;
+        this.klass = copy.klass;
+        this.defaultValue = copy.defaultValue;
+        this.strict = copy.strict;
+        this.validator = copy.validator;
     }
 
     public String getName() {
@@ -66,6 +78,14 @@ public class Setting {
         this.value = value;
         this.valueIsSet = true;
         return value;
+    }
+
+    /**
+     * Used by Ruby subclasses to assign value without any validation
+     * */
+    protected void assignValue(Object value) {
+        this.value = value;
+        this.valueIsSet = true;
     }
 
     public void reset() {
