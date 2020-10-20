@@ -109,9 +109,10 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             }
             final Map<String, Object> data = LsBenchJsonUtil.deserializeMetrics(baos.toByteArray());
             final long count;
-            if (data.containsKey("pipeline")) {
+            if (data.containsKey("pipelines")) {    
+                count = readNestedLong(data, "pipelines", "main", "events", "filtered");
+            } else if (data.containsKey("pipeline")) {
                 count = readNestedLong(data, "pipeline", "events", "filtered");
-
             } else if (data.containsKey("events")) {
                 count = readNestedLong(data, "events", "filtered");
             } else {
@@ -140,6 +141,9 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         Map<String, Object> nested = map;
         for (int i = 0; i < path.length - 1; ++i) {
             nested = (Map<String, Object>) nested.get(path[i]);
+        }
+        if (nested == null) {
+            return -1L;
         }
         return ((Number) nested.get(path[path.length - 1])).longValue();
     }
