@@ -29,7 +29,7 @@ module ServiceTester
         stdout = cmd.stdout
       end
       stdout.match(/^Installed Packages$/)
-      stdout.match(/^logstash.noarch/)
+      stdout.match(/^logstash.noarch/) || stdout.match(/^logstash.#{architecture_extension}/)
     end
 
     def package_extension
