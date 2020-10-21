@@ -287,7 +287,7 @@ module LogStash
       def log_wildcard_unsupported(pipeline_ids)
         has_wildcard = pipeline_ids.any? { |id| id.include?("*") }
         if has_wildcard
-          logger.info("wildcard '*' in xpack.management.pipeline.id is not supported in Elasticsearch version < 7.10")
+          logger.warn("wildcard '*' in xpack.management.pipeline.id is not supported in Elasticsearch version < 7.10")
         end
       end
     end
