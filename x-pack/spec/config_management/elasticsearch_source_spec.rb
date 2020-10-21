@@ -324,6 +324,11 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect(result.has_key?(pipeline_id)).to be_truthy
         expect(result.has_key?(another_pipeline_id)).to be_truthy
       end
+
+      it "should log wildcard warning" do
+        result = subject.send(:log_wildcard_unsupported, [pipeline_id, another_pipeline_id, "*"])
+        expect(result).not_to be_nil
+      end
     end
   end
 

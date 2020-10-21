@@ -265,6 +265,7 @@ module LogStash
 
         @pipelines = format_response(response)
 
+        log_wildcard_unsupported(pipeline_ids)
         log_pipeline_not_found(pipeline_ids - @pipelines.keys)
 
         @pipelines
@@ -281,6 +282,13 @@ module LogStash
           {pipeline["_id"] => pipeline} if pipeline.fetch("found", false)
         }.compact
         .reduce({}, :merge)
+      end
+
+      def log_wildcard_unsupported(pipeline_ids)
+        has_wildcard = pipeline_ids.any? { |id| id.include?("*") }
+        if has_wildcard
+          logger.info("wildcard '*' in xpack.management.pipeline.id is not supported in Elasticsearch version < 7.10")
+        end
       end
     end
 
