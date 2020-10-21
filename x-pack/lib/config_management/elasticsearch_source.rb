@@ -80,7 +80,7 @@ module LogStash
         fetcher = get_pipeline_fetcher
         fetcher.fetch_config(pipeline_ids, client)
 
-        @cached_pipelines = fetcher.get_pipelines_key.collect do |pid|
+        @cached_pipelines = fetcher.get_pipeline_ids.collect do |pid|
           get_pipeline(pid, fetcher)
         end.compact
       end
@@ -185,7 +185,7 @@ module LogStash
     module Fetcher
       include LogStash::Util::Loggable
 
-      def get_pipelines_key
+      def get_pipeline_ids
         @pipelines.keys
       end
 
@@ -219,7 +219,7 @@ module LogStash
       private
       # get pipelines if pipeline_ids match wildcard patterns
       # split user pipeline id setting into wildcard and non wildcard pattern
-      # take the non wildcard pipelines. transform user's wildcard pattern to valid regex pattern and do the matching
+      # take the non wildcard pipelines. take the wildcard pipelines by matching with glob pattern
       def get_wildcard_pipelines(pipeline_ids, response)
         wildcard_patterns, fix_pids = pipeline_ids.partition { |pattern| pattern.include?("*")}
 
@@ -229,12 +229,9 @@ module LogStash
         fix_id_pipelines.keys.map { |id| response.delete(id)}
 
         wildcard_matched_patterns = Set.new
-        wildcard_pattern_regex = wildcard_patterns.map { |pattern|
-          {pattern => Regexp.new("^" + pattern.gsub("*", ".*") + "$")}
-        }.reduce({}, :merge)
         wildcard_pipelines = response.keys.map { |id|
-          found_pattern = wildcard_pattern_regex.keys.any? { |pattern|
-            matched = id.match?(wildcard_pattern_regex[pattern])
+          found_pattern = wildcard_patterns.any? { |pattern|
+            matched = ::File::fnmatch(pattern, id, ::File::FNM_EXTGLOB)
             wildcard_matched_patterns << pattern if matched
             matched
           }
