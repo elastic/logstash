@@ -231,7 +231,7 @@ module LogStash
         wildcard_matched_patterns = Set.new
         wildcard_pipelines = response.keys.map { |id|
           found_pattern = wildcard_patterns.any? { |pattern|
-            matched = ::File::fnmatch(pattern, id, ::File::FNM_EXTGLOB)
+            matched = ::File::fnmatch?(pattern, id, ::File::FNM_EXTGLOB)
             wildcard_matched_patterns << pattern if matched
             matched
           }
