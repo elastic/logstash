@@ -46,9 +46,9 @@ module LogStash
           raise LogStash::BootstrapCheckError, "You need to specify the ID of the pipelines with the `xpack.management.pipeline.id` options in your logstash.yml"
         end
 
-        invalid_pipeline_ids =  pipeline_ids.reject { |entry| PIPELINE_ID_PATTERN =~ entry }
-        if invalid_pipeline_ids.any?
-          raise LogStash::BootstrapCheckError, "Pipeline id in `xpack.management.pipeline.id` must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers. The asterisk wildcard `*` can also be used. Invalid ids: #{invalid_pipeline_ids.join(', ')}"
+        invalid_patterns =  pipeline_ids.reject { |entry| PIPELINE_ID_PATTERN =~ entry }
+        if invalid_patterns.any?
+          raise LogStash::BootstrapCheckError, "Pipeline id in `xpack.management.pipeline.id` must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers. The asterisk wildcard `*` can also be used. Invalid ids: #{invalid_patterns.join(', ')}"
         end
 
         duplicate_ids = find_duplicate_ids(pipeline_ids)
