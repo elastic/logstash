@@ -193,7 +193,7 @@ module LogStash
       def get_single_pipeline_setting(pipeline_id) end
 
       def log_pipeline_not_found(pipeline_ids)
-        logger.debug("Could not find a remote configuration for specific `pipeline_id` or the wildcard setting is not relevant", :pipeline_ids => pipeline_ids) if pipeline_ids.any?
+        logger.debug("Could not find a remote configuration for specific `pipeline_id`", :pipeline_ids => pipeline_ids) if pipeline_ids.any?
       end
     end
 
@@ -231,7 +231,7 @@ module LogStash
         wildcard_matched_patterns = Set.new
         wildcard_pipelines = response.keys.map { |id|
           found_pattern = wildcard_patterns.any? { |pattern|
-            matched = ::File::fnmatch?(pattern, id, ::File::FNM_EXTGLOB)
+            matched = ::File::fnmatch?(pattern, id)
             wildcard_matched_patterns << pattern if matched
             matched
           }
