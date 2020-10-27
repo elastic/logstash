@@ -43,6 +43,11 @@ coming[7.10.0]
 ==== New features and enhancements
 TODO placeholder
 
+==== Upgrading to Logstash 7.10
+Starting with this version, Logstash comes with bundled JDK. If you are upgrading from a previous version you already have
+installed a JDK. In this case Logstash starts using the bundled JDK ignoring the system's one. Instead if you specified
+JAVA_HOME, Logstash will pick up that JDK, but warn you.
+
 ==== Performance improvements and notable issues fixed
 * Some work and improvements on Docker images,
 ** Added RedHat UBI license information and some fixes to pass RedHat docker image certification.
