@@ -60,6 +60,7 @@ public final class PipelineConfig {
     private LocalDateTime readAt;
     private String configHash;
     private volatile String configString;
+    private volatile String metadata;
     private List<LineToSource> sourceRefs;
 
     private static final String NEWLINE = "\n";
@@ -104,7 +105,7 @@ public final class PipelineConfig {
 
     public String configHash() {
         if (configHash == null) {
-            configHash = DigestUtils.sha1Hex(configString());
+            configHash = DigestUtils.sha1Hex(configString() + metadataString());
         }
         return configHash;
     }
@@ -127,6 +128,18 @@ public final class PipelineConfig {
             }
         }
         return this.configString;
+    }
+
+    public String metadataString() {
+        if (this.metadata == null) {
+            synchronized(this) {
+                if (this.metadata == null) {
+                    StringBuilder sb = confParts.stream().reduce(new StringBuilder(), (builder, item) -> builder.append(item.getMetadata()), StringBuilder::append);
+                    this.metadata = sb.toString();
+                }
+            }
+        }
+        return this.metadata;
     }
 
     public boolean isSystem() {
