@@ -43,11 +43,6 @@ coming[7.10.0]
 ==== New features and enhancements
 TODO placeholder
 
-==== Upgrading to Logstash 7.10
-Starting with this version, Logstash comes with bundled JDK. If you are upgrading from a previous version you already have
-installed a JDK. In this case Logstash starts using the bundled JDK ignoring the system's one. Instead if you specified
-JAVA_HOME, Logstash will pick up that JDK, but warn you.
-
 ==== Performance improvements and notable issues fixed
 * Some work and improvements on Docker images,
 ** Added RedHat UBI license information and some fixes to pass RedHat docker image certification.
@@ -65,91 +60,6 @@ JAVA_HOME, Logstash will pick up that JDK, but warn you.
 * Updates to dependencies
 ** Update jruby to 9.2.13.0
 ** Pinned open-ssl version to 0.10.4 to avoid Gem not found error with jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
-
----------- DELETE FROM HERE 8<------------
-=== Logstash Commits between 7.10 and 7.9.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.9.2..7.10"
-
-a93d45468 - (origin/7.x, 7.x) replace direct access of hidden indices with system indices api (#12279) (19 hours ago) <kaisecheng>
-
-c606e9f5b - ECS Compatibility 7.x Backport (#12308) (23 hours ago) <Ry Biesemeyer>
-
-19d8a170e - fix dependency issue, jruby-openssl, of integration test (#12301) (2 days ago) <Rob Bavey>
-
-* JDK
-ccbc5691c - Docker Build: Add ability to detect/set build architecture (#12303) (2 days ago) <Rob Bavey>
-97028a032 - Update license information (#12294) (6 days ago) <Rob Bavey>
-9668b9ec5 - Bundle JDK (AdoptOpenJDK 11) in Logstash artifacts (ARM64) (7 days ago) <andsel>
-9472d8936 - [7x backport] Update ubi8-minimal to pull from elastic docker registry (#12258) (2 weeks ago) <Rob Bavey>
-813e059a9 - Bundle JDK (AdoptOpenJDK 11) in Logstash artifacts (x86_64) (7 days ago) <Rob Bavey>
-
-* Docker/UBI8
-1684c8529 - [7x backport]Fix docker image certification (#12248) (3 weeks ago) <Rob Bavey>
-23141e8f7 - Add RedHat Univeral Base Image license information  (#12296) (5 days ago) <Rob Bavey>
-713fbfbf1 - fix ubi8 docker build context (6 weeks ago) <Julien Mailleret>
-a755eb547 - Docker: Expose xpack.management.elasticsearch.proxy (#12201) (6 weeks ago) <Andres Rodriguez>
-dcca6c2c6 - Expose xpack.monitoring.elasticsearch.proxy setting as Docker env variable (10 weeks ago) <andsel>
-7b8335c54 - Limit locale changes to ubi8 container (7 weeks ago) <Rob Bavey>
-ef1352ef5 - Add UBI8 docker image to artifacts (7 weeks ago) <Rob Bavey>
-0772e72fa - Minor fixes to acceptance and docker test scripts (7 weeks ago) <Rob Bavey>
-702f872ef - Fix docker image labels (3 months ago) <Rob Bavey>
-4ef020409 - add ssl verification_mode to env2yaml (7 weeks ago) <Drew Boswell>
-e8385738c - 7x Introduce integration tests for docker images (#12157) (9 weeks ago) <Rob Bavey>
-
-Docs
-f9f998313 - Doc:Increase visibility of offline plugin support (#12283) (#12284) (8 days ago) <Karen Metts>
-b287ec72e - Doc:Clarify how Bulk API interacts with DLQ (#12209) (#12268) (2 weeks ago) <Karen Metts>
-2fb348e05 - [DOC] Logging settings can affect performances (#12246) (#12247) (3 weeks ago) <Karen Metts>
-07e8400f2 - Doc:Add redirect from multiline filter to multiline codec (#12208) (#12217) (5 weeks ago) <Karen Metts>
-0fd5d3a03 - Doc:Add note that stdin input doesn't allow config reloading (7 weeks ago) <Karen Metts>
-762d48e31 - Doc:Adjust link for integration plugin header file (9 weeks ago) <Karen Metts>
-2c9cf09e8 - Doc:Fix name of monitoring settings (9 weeks ago) <Karen Metts>
-2e7ba7b41 - Doc:Add monitoring and management to API key security content (10 weeks ago) <Karen Metts>
-2aa5cadd4 - Doc:Fix link to monitoring docs and tag optional features (2 months ago) <Karen Metts>
-69ba072ef - Doc:Forwardport 7.8.1 release notes (#12092) to 7.x #12142 (2 months ago) <Karen Metts>
-d78635ca4 - Document use of keystore values in pipelines.yml (3 months ago) <João Duarte>
-313583153 - Doc:Create a new header for integration plugins (3 months ago) <Karen Metts>
-6546bb3ba - Doc:Fine tune 7.8 release notes (#12122) (3 months ago) <Karen Metts>
-dbf43f9bd - reword bin/system_install help text to be less confusing. (2 months ago) <Ry Biesemeyer>
-
-
-Dep libs/Jruby
-d792d4dd4 - Added elastic-app-search and jwt license definition and notices (3 weeks ago) <andsel>
-f736d9c86 - bump jruby to 9.2.13.0 (9 weeks ago) <Joao Duarte>
-
-Fixes/perfs
-68ac9477d - [7.x backport] Fix keystore thread safety (#12235) (4 weeks ago) <Rob Bavey>
-c0d9b025e - Fix to implement the blank? method that doesn't exists for String, is added by Rails framework (5 weeks ago) <andsel>
-c1dc47486 - fix flushing upon empty batches with ordered execution (6 weeks ago) <Colin Surprenant>
-75411cfe0 - ensure input plugin close is called upon termination or pipeline reload (7 weeks ago) <Colin Surprenant>
-854a31756 - lir: inject newline delimiter only when necessary (9 weeks ago) <Ry Biesemeyer>
-6f421e56d - perf: fix memoization of `PipelineConfig#configString()` (9 weeks ago) <Ry Biesemeyer>
-
-Housekeeping
-1013a80b3 - allow skipping pr creation in version bump script (9 weeks ago) <Joao Duarte>
-e7db1ae16 - initial introduction of .fossa.yml (3 months ago) <Joao Duarte>
-dc412713e - add ci script setup dependencies (3 months ago) <Joao Duarte>
-7df59fbe7 - Remove settings that was intended to direct ship monitoring data to ES monitoring cluster (10 weeks ago) <andsel>
-51b521782 - don't call runIntegrationTests from check gradle task (3 months ago) <Joao Duarte>
-
-Other
-ad631e464 - Add test for ordered pipeline flushing fix (6 weeks ago) <Rob Bavey>
-b2961deae - test: no-op refactor to avoid repeating implementation in test (9 weeks ago) <Ry Biesemeyer>
-04a385242 - specs: don't start ES connection pool when only validating config (9 weeks ago) <Ry Biesemeyer>
-
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.9.2..7.10 *.release"
-Changed plugin versions:
-logstash-input-elasticsearch: 4.7.1 -> 4.8.1
-logstash-input-file: 4.2.1 -> 4.2.2
-logstash-input-snmp: 1.2.5 -> 1.2.7
-logstash-input-twitter: 4.0.1 -> 4.0.3
-logstash-integration-kafka: 10.4.0 -> 10.5.1
-logstash-mixin-aws: 4.3.0 -> 4.4.1
-logstash-output-elasticsearch: 10.6.2 -> 10.7.0
----------->8 DELETE UP TO HERE ------------
 
 ==== Plugin releases
 
