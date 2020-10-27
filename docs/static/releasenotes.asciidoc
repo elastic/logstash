@@ -44,20 +44,22 @@ coming[7.10.0]
 TODO placeholder
 
 ==== Performance improvements and notable issues fixed
-* ensure input plugin close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
-* fix flushing upon empty batches with ordered execution https://github.com/elastic/logstash/pull/12204[#12204]
+* Some work and improvements on Docker images,
+** Added RedHat UBI license information and some fixes to pass RedHat docker image certification.
+    Now UBI8 (Universal Base Image) images are created. https://github.com/elastic/logstash/pull/12248[#12248] https://github.com/elastic/logstash/pull/12296[#12296].
+** Docker ARM images are created.
+** Exposed proxy and ssl verification mode options for management and monitoring of a Docker image
+  https://github.com/elastic/logstash/pull/12201[#12201], https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12205[#12205]
+* Fixes to pipeline execution and management
+** Input plugin's close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
+** Addressed an issue when using the aggregate filter in the Java execution. It was preventing events from being generated
+   (when the amount of time for an aggregation event timed out) from effectively summing events. https://github.com/elastic/logstash/pull/12204[#12204]
 * Fixed a race condition on accessing KeyStore https://github.com/elastic/logstash/pull/12233[#12233] after a previous
   improvement to share one KeyStore for each variable substitution https://github.com/elastic/logstash/pull/10794[#10794]
-* Some work and improvements on Docker images, were added RedHat UBI license information and some fixes to pass RedHat docker image certification.
-  Now UBI8 (Universal Base Image) images are created. Improved acceptance tests for Docker and added integration tests for the same
-  https://github.com/elastic/logstash/pull/12248[#12248] https://github.com/elastic/logstash/pull/12296[#12296].
-* Exposed proxy and ssl verification mode options for management and monitoring of a Docker image
-  https://github.com/elastic/logstash/pull/12201[#12201], https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12205[#12205]
-* Changed DLQ writer policy to avoid the possibility of the DLQ reader reading an incomplete DLQ segment. Now the writer
-  output to a temporary file, renamed on completion https://github.com/elastic/logstash/pull/12304[#12304]
+* Changed DLQ writer policy to avoid the possibility of the DLQ reader reading an incomplete DLQ segment https://github.com/elastic/logstash/pull/12304[#12304]
 * Updates to dependencies
 ** Update jruby to 9.2.13.0
-** Pinned open-ssl version to 0.10.4 to avoid https://github.com/elastic/logstash/pull/12300
+** Pinned open-ssl version to 0.10.4 to avoid Gem not found error with jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
 
 ---------- DELETE FROM HERE 8<------------
 === Logstash Commits between 7.10 and 7.9.2
