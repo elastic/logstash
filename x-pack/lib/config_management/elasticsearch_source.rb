@@ -92,7 +92,7 @@ module LogStash
         end
 
         config_string = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline"]
-        pipeline_metadata_str = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline_metadata"].to_s
+        pipeline_metadata_str = (fetcher.get_single_pipeline_setting(pipeline_id)["pipeline_metadata"] || "").to_s
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
