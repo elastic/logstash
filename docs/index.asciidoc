@@ -102,10 +102,26 @@ include::static/upgrading.asciidoc[]
 :edit_url!:
 include::static/configuration.asciidoc[]
 
-:edit_url!:
-include::static/security/logstash.asciidoc[]
 
-// Advanced Logstash Configurion
+// Securing Logstash
+
+:edit_url!:
+include::static/security/secure.asciidoc[]
+
+:edit_url!:
+include::static/security/users.asciidoc[]
+
+:edit_url!:
+include::static/security/tls.asciidoc[]
+
+:edit_url!:
+include::static/security/pki-auth.asciidoc[]
+
+:edit_url!:
+include::static/security/api-keys.asciidoc[]
+
+
+// Advanced Logstash Configuration
 
 :edit_url!:
 include::static/configuration-advanced.asciidoc[]
