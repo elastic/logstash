@@ -134,8 +134,7 @@ public final class PipelineConfig {
         if (this.metadata == null) {
             synchronized(this) {
                 if (this.metadata == null) {
-                    StringBuilder sb = confParts.stream().reduce(new StringBuilder(), (builder, item) -> builder.append(item.getMetadata()), StringBuilder::append);
-                    this.metadata = sb.toString();
+                    this.metadata =  confParts.stream().map(SourceWithMetadata::getMetadata).collect(Collectors.joining());
                 }
             }
         }
