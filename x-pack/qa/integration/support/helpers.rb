@@ -97,13 +97,15 @@ end
 
 def es_version
   response = elasticsearch_client.perform_request(:get, "")
-  response.body["version"]["number"].gsub(/(\d+\.\d+)\..+/, '\1').to_f
+  major, minor = response.body["version"]["number"].split(".")
+  [major.to_i, minor.to_i]
 end
 
-def push_elasticsearch_config(pipeline_id, config)
-  if es_version >= 7.10
+def push_elasticsearch_config(pipeline_id, config, version="1")
+  major, minor = es_version
+  if major >= 8 || (major == 7 && minor >= 10)
     elasticsearch_client.perform_request(:put, "_logstash/pipeline/#{pipeline_id}", {},
-      { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => "1" },
+      { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => version },
               :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
   else
     elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
@@ -116,14 +118,20 @@ def cleanup_elasticsearch(index = MONITORING_INDEXES)
 end
 
 def cleanup_system_indices(pipeline_ids)
-  pipeline_ids.each do |id|
-    begin
-      elasticsearch_client.perform_request(:delete, "_logstash/pipeline/#{id}")
-    rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
-      puts ".logstash can be empty #{e.message}"
+  major, minor = es_version
+
+  if major >= 8 || (major == 7 && minor >= 10)
+    pipeline_ids.each do |id|
+      begin
+        elasticsearch_client.perform_request(:delete, "_logstash/pipeline/#{id}")
+      rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+        puts ".logstash can be empty #{e.message}"
+      end
     end
+    elasticsearch_client.indices.refresh
+  else
+    cleanup_elasticsearch(".logstash*")
   end
-  elasticsearch_client.indices.refresh
 end
 
 def logstash_command_append(cmd, argument, value)
