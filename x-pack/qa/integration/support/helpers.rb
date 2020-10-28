@@ -128,10 +128,11 @@ def cleanup_system_indices(pipeline_ids)
         puts ".logstash can be empty #{e.message}"
       end
     end
-    elasticsearch_client.indices.refresh
   else
     cleanup_elasticsearch(".logstash*")
   end
+
+  elasticsearch_client.indices.refresh
 end
 
 def logstash_command_append(cmd, argument, value)
