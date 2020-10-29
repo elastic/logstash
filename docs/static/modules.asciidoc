@@ -27,7 +27,7 @@ the data.
 
 image::static/images/logstash-module-overview.png[Logstash modules overview]
 
-[]
+[discrete]
 [[running-logstash-modules]]
 === Running modules
 
@@ -170,6 +170,20 @@ places, the value specified at the command line takes precedence.
 Cloud ID and Cloud Auth can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
 They should be added separately from any module configuration settings you may have added before.
 
+Cloud ID overwrites these settings:
+----
+var.elasticsearch.hosts
+var.kibana.host
+----
+
+Cloud Auth overwrites these settings:
+----
+var.elasticsearch.username
+var.elasticsearch.password
+var.kibana.username
+var.kibana.password
+----
+
 ["source","yaml",subs="attributes"]
 ----
 # example with a label
@@ -193,3 +207,5 @@ bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <
 
 NOTE: When working with modules, use the dot notation to specify cloud.id and
 cloud.auth, as indicated in the examples.
+
+For more info on Cloud ID and Cloud Auth, see <<connecting-to-cloud>>.

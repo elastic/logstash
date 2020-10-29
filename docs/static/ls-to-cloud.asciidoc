@@ -17,26 +17,12 @@ If you have several Cloud IDs, you can add a label, which is ignored
 internally, to help you tell them apart. To add a label you should prefix your
 Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
 
-Cloud ID overwrites these settings:
-----
-var.elasticsearch.hosts
-var.kibana.host
-----
-
 [[cloud-auth]]
 ==== Cloud Auth
 Cloud Auth is optional. Construct this value by following this format "<username>:<password>".
 Use your Cloud username for the first part. Use your Cloud password for the second part,
 which is given once in the Cloud UI when you create a cluster.
 If you change your Cloud password in the Cloud UI, remember to change it here, too.
-
-Cloud Auth when specified overwrites these settings:
-----
-var.elasticsearch.username
-var.elasticsearch.password
-var.kibana.username
-var.kibana.password
-----
 
 [[cloud-id-plugins]]
 ==== Using Cloud ID and Cloud Auth with plugins
