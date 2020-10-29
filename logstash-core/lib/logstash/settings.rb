@@ -85,7 +85,7 @@ module LogStash
 
     def get_setting(setting_name)
       setting = @settings[setting_name]
-      raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?
+      raise ArgumentError.new("Setting \"#{setting_name}\" doesn't exist") if setting.nil?
       setting
     end
 
