@@ -52,7 +52,7 @@ Each section contains the configuration options for one or more plugins. If you 
 multiple filters, they are applied in the order of their appearance in the configuration file.
 
 
-[float]
+[discrete]
 [[plugin_configuration]]
 === Plugin Configuration
 
@@ -78,7 +78,7 @@ In this example, two settings are configured for each of the file inputs: 'path'
 
 The settings you can configure vary according to the plugin type. For information about each plugin, see <<input-plugins,Input Plugins>>, <<output-plugins, Output Plugins>>, <<filter-plugins,Filter Plugins>>, and <<codec-plugins,Codec Plugins>>.
 
-[float]
+[discrete]
 [[plugin-value-types]]
 === Value Types
 
@@ -98,27 +98,9 @@ Example:
   users => [ {id => 1, name => bob}, {id => 2, name => jane} ]
 ----------------------------------
 
-[[list]]
-[float]
-==== Lists
-
-Not a type in and of itself, but a property types can have.
-This makes it possible to type check multiple values.
-Plugin authors can enable list checking by specifying `:list => true` when declaring an argument.
-
-Example:
-
-[source,js]
-----------------------------------
-  path => [ "/var/log/messages", "/var/log/*.log" ]
-  uris => [ "http://elastic.co", "http://example.net" ]
-----------------------------------
-
-This example configures `path`, which is a `string` to be a list that contains an element for each of the three strings. It also will configure the `uris` parameter to be a list of URIs, failing if any of the URIs provided are not valid.
-
 
 [[boolean]]
-[float]
+[discrete]
 ==== Boolean
 
 A boolean must be either `true` or `false`. Note that the `true` and `false` keywords
@@ -132,7 +114,7 @@ Example:
 ----------------------------------
 
 [[bytes]]
-[float]
+[discrete]
 ==== Bytes
 
 A bytes field is a string field that represents a valid unit of bytes. It is a
@@ -153,7 +135,7 @@ Examples:
 ----------------------------------
 
 [[codec]]
-[float]
+[discrete]
 ==== Codec
 
 A codec is the name of Logstash codec used to represent the data. Codecs can be
@@ -173,7 +155,7 @@ Example:
 ----------------------------------
 
 [[hash]]
-[float]
+[discrete]
 ==== Hash
 
 A hash is a collection of key value pairs specified in the format `"field1" => "value1"`.
@@ -192,8 +174,29 @@ match => {
 match => { "field1" => "value1" "field2" => "value2" }
 ----------------------------------
 
+[[list]]
+[discrete]
+==== Lists
+
+Not a type in and of itself, but a property types can have.
+This makes it possible to type check multiple values.
+Plugin authors can enable list checking by specifying `:list => true` when declaring an argument.
+
+Example:
+
+[source,js]
+----------------------------------
+  path => [ "/var/log/messages", "/var/log/*.log" ]
+  uris => [ "http://elastic.co", "http://example.net" ]
+----------------------------------
+
+This example configures `path`, which is a `string` to be a list that contains
+an element for each of the three strings. It also will configure the `uris`
+parameter to be a list of URIs, failing if any of the URIs provided are not
+valid.
+
 [[number]]
-[float]
+[discrete]
 ==== Number
 
 Numbers must be valid numeric values (floating point or integer).
@@ -206,7 +209,7 @@ Example:
 ----------------------------------
 
 [[password]]
-[float]
+[discrete]
 ==== Password
 
 A password is a string with a single value that is not logged or printed.
@@ -218,23 +221,9 @@ Example:
   my_password => "password"
 ----------------------------------
 
-[[uri]]
-[float]
-==== URI
-
-A URI can be anything from a full URL like 'http://elastic.co/' to a simple identifier
-like 'foobar'. If the URI contains a password such as 'http://user:pass@example.net' the password
-portion of the URI will not be logged or printed.
-
-Example:
-[source,js]
-----------------------------------
-  my_uri => "http://foo:bar@example.net"
-----------------------------------
-
 
 [[path]]
-[float]
+[discrete]
 ==== Path
 
 A path is a string that represents a valid operating system path.
@@ -247,7 +236,7 @@ Example:
 ----------------------------------
 
 [[string]]
-[float]
+[discrete]
 ==== String
 
 A string must be a single character sequence. Note that string values are
@@ -278,7 +267,22 @@ Example:
   name => 'It\'s a beautiful day'
 ----------------------------------
 
-[float]
+[[uri]]
+[discrete]
+==== URI
+
+A URI can be anything from a full URL like 'http://elastic.co/' to a simple identifier
+like 'foobar'. If the URI contains a password such as 'http://user:pass@example.net' the password
+portion of the URI will not be logged or printed.
+
+Example:
+[source,js]
+----------------------------------
+  my_uri => "http://foo:bar@example.net"
+----------------------------------
+
+
+[discrete]
 [[comments]]
 === Comments
 
@@ -314,7 +318,7 @@ options will only work within filter and output blocks.
 IMPORTANT: Field references, sprintf format and conditionals, described below,
 will not work in an input block.
 
-[float]
+[discrete]
 [[logstash-config-field-references]]
 ==== Field References
 
@@ -351,7 +355,7 @@ field such as `request`, you can simply specify the field name.
 
 For more detailed information, see <<field-references-deepdive>>.
 
-[float]
+[discrete]
 [[sprintf]]
 ==== sprintf format
 
@@ -383,7 +387,7 @@ output {
 }
 ----------------------------------
 
-[float]
+[discrete]
 [[conditionals]]
 ==== Conditionals
 
@@ -502,7 +506,7 @@ doesn't exist versus a field that's simply false. The expression `if [foo]` retu
 
 For more complex examples, see <<using-conditionals, Using Conditionals>>.
 
-[float]
+[discrete]
 [[metadata]]
 ==== The @metadata field
 
@@ -806,7 +810,7 @@ TIP: If you need help building grok patterns, try out the
 {kibana-ref}/xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
 {xpack} feature under the Basic License and is therefore *free to use*.
 
-[float]
+[discrete]
 [[filter-example]]
 ==== Configuring Filters
 Filters are an in-line processing mechanism that provide the flexibility to slice and dice your data to fit your needs. Let's take a look at some filters in action. The following configuration file sets up the `grok` and `date` filters.
@@ -872,7 +876,7 @@ As you can see, Logstash (with help from the `grok` filter) was able to parse th
 
 The other filter used in this example is the `date` filter. This filter parses out a timestamp and uses it as the timestamp for the event (regardless of when you're ingesting the log data). You'll notice that the `@timestamp` field in this example is set to December 11, 2013, even though Logstash is ingesting the event at some point afterwards. This is handy when backfilling logs. It gives you the ability to tell Logstash "use this value as the timestamp for this event".
 
-[float]
+[discrete]
 ==== Processing Apache Logs
 Let's do something that's actually *useful*: process apache2 access log files! We are going to read the input from a file on the localhost, and use a <<conditionals,conditional>> to process the event according to our needs. First, create a file called something like 'logstash-apache.conf' with the following contents (you can change the log's file path to suit your needs):
 
@@ -938,7 +942,7 @@ When you restart Logstash, it will process both the error and access logs. Howev
 
 Note that Logstash did not reprocess the events that were already seen in the access_log file. When reading from a file, Logstash saves its position and only processes new lines as they are added. Neat!
 
-[float]
+[discrete]
 [[using-conditionals]]
 ==== Using Conditionals
 You use conditionals to control what events are processed by a filter or output. For example, you could label each event according to which file it appeared in (access_log, error_log, and other random files that end with "log").
@@ -1001,7 +1005,7 @@ output {
 }
 ----------------------------------
 
-[float]
+[discrete]
 ==== Processing Syslog Messages
 Syslog is one of the most common use cases for Logstash, and one it handles exceedingly well (as long as the log lines conform roughly to RFC3164). Syslog is the de facto UNIX networked logging standard, sending messages from client machines to a local file, or to a centralized log server via rsyslog. For this example, you won't need a functioning syslog instance; we'll fake it from the command line so you can get a feel for what happens.
 
