@@ -6,7 +6,6 @@ visualizing it with purpose-built dashboards.
 
 These modules are available:
 
-* <<connecting-to-cloud,Elastic Cloud>>
 * <<arcsight-module>>
 * <<netflow-module,Netflow Module (deprecated)>>
 * <<azure-module, Microsoft Azure Module (deprecated)>>
@@ -28,7 +27,7 @@ the data.
 
 image::static/images/logstash-module-overview.png[Logstash modules overview]
 
-[float]
+[discrete]
 [[running-logstash-modules]]
 === Running modules
 
@@ -72,7 +71,7 @@ bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com
 ----
 
 
-[float]
+[discrete]
 [[configuring-logstash-modules]]
 === Configuring modules
 
@@ -81,7 +80,7 @@ To configure a module, you can either
 `logstash.yml` <<logstash-settings-file,settings file>>, or use command-line overrides to
 <<overriding-logstash-module-settings,specify settings at the command line>>.
 
-[float]
+[discrete]
 [[setting-logstash-module-config]]
 ==== Specify module settings in `logstash.yml`
 
@@ -106,7 +105,7 @@ modules:
 
 For a list of available module settings, see the documentation for the module.
 
-[float]
+[discrete]
 [[overriding-logstash-module-settings]]
 ==== Specify module settings at the command line
 
@@ -164,47 +163,26 @@ Settings that you specify at the command line are merged with any settings
 specified in the `logstash.yml` file. If an option is set in both
 places, the value specified at the command line takes precedence. 
 
-[[connecting-to-cloud]]
-=== Using Elastic Cloud
+[discrete]
+[[module-to-cloud]]
+==== Sending data to Elasticsearch Service from modules
 
-Logstash comes with two settings that simplify using modules with https://cloud.elastic.co/[Elastic Cloud].
-The Elasticsearch and Kibana hostnames in Elastic Cloud may be hard to set
-in the Logstash config or on the commandline, so a Cloud ID can be used instead.
+Cloud ID and Cloud Auth can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
+They should be added separately from any module configuration settings you may have added before.
 
-==== Cloud ID
-
-The Cloud ID, which can be found in the Elastic Cloud web console, is used by
-Logstash to build the Elasticsearch and Kibana hosts settings.
-It is a base64 encoded text value of about 120 characters made up of upper and
-lower case letters and numbers.
-If you have several Cloud IDs, you can add a label, which is ignored
-internally, to help you tell them apart. To add a label you should prefix your
-Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
-
-`cloud.id` will overwrite these settings:
+Cloud ID overwrites these settings:
 ----
 var.elasticsearch.hosts
 var.kibana.host
 ----
 
-==== Cloud Auth
-This is optional. Construct this value by following this format "<username>:<password>".
-Use your Cloud username for the first part. Use your Cloud password for the second part,
-which is given once in the Cloud UI when you create a cluster.
-As your Cloud password is changeable, if you change it in the Cloud UI remember to change it here too.
-
-`cloud.auth` when specified will overwrite these settings:
+Cloud Auth overwrites these settings:
 ----
 var.elasticsearch.username
 var.elasticsearch.password
 var.kibana.username
 var.kibana.password
 ----
-
-Example:
-
-These settings can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
-They should be added separately from any module configuration settings you may have added before.
 
 ["source","yaml",subs="attributes"]
 ----
@@ -224,7 +202,10 @@ These settings can be also specified at the command line, like this:
 
 ["source","sh",subs="attributes,callouts"]
 ----
-bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <cloud-id> --cloud.auth <cloud.auth>
+bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <your-cloud-id> --cloud.auth <your-cloud-auth>
 ----
 
+NOTE: When working with modules, use the dot notation to specify cloud.id and
+cloud.auth, as indicated in the examples.
 
+For more info on Cloud ID and Cloud Auth, see <<connecting-to-cloud>>.
