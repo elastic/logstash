@@ -2,4 +2,3 @@
 === Troubleshooting specific plugins
 
 include::ts-kafka.asciidoc[]
-s
