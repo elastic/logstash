@@ -478,7 +478,7 @@ Replace $DATE with the current date, in YYYY.MM.DD format:
 
 [source,shell]
 --------------------------------------------------------------------------------
-curl -XGET 'localhost:9200/logstash-$DATE/_search?pretty&q=response=200'
+curl -XGET "localhost:9200/logstash-$DATE/_search?pretty&q=response=200"
 --------------------------------------------------------------------------------
 
 NOTE: The date used in the index name is based on UTC, not the timezone where Logstash is running.
@@ -568,7 +568,7 @@ Replace $DATE with the current date, in YYYY.MM.DD format:
 
 [source,shell]
 --------------------------------------------------------------------------------
-curl -XGET 'localhost:9200/logstash-$DATE/_search?pretty&q=geoip.city_name=Buffalo'
+curl -XGET "localhost:9200/logstash-$DATE/_search?pretty&q=geoip.city_name=Buffalo"
 --------------------------------------------------------------------------------
 
 A few log entries come from Buffalo, so the query produces the following response:
