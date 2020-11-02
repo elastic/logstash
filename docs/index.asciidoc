@@ -225,7 +225,7 @@ include::static/best-practice.asciidoc[]
 include::static/config-details.asciidoc[]
 
 :edit_url!:
-include::static/troubleshooting.asciidoc[]
+include::static/troubleshoot/troubleshooting.asciidoc[]
 
 :edit_url:
 

@@ -1,0 +1,5 @@
+[[ts-plugins-general]] 
+=== Troubleshooting plugins
+
+include::plugin-tracing.asciidoc[]
+
