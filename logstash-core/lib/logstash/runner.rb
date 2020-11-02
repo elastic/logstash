@@ -286,6 +286,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.log.format", setting("log.format"))
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
     java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
+    java.lang.System.setProperty("org.jruby.embed.localcontext.scope", 'concurrent') # for log4j2 scripting
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
 
