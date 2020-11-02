@@ -1,5 +1,5 @@
 [[connecting-to-cloud]]
-=== Sending data to Elastic Cloud
+=== Sending data to Elastic Cloud (hosted Elasticsearch Service)
 
 Elastic Cloud is our our hosted Elasticsearch Service, and it is
 available on AWS, GCP, and Azure.
