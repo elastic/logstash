@@ -27,7 +27,7 @@ describe "Read configuration from elasticsearch" do
     @logstash_service = logstash("bin/logstash -w 1", {
       :settings => {
         "xpack.management.enabled" => true,
-        "xpack.management.pipeline.id" => @pipelines.keys,
+        "xpack.management.pipeline.id" => @pipelines.keys + ["*"],
         "xpack.management.logstash.poll_interval" => "1s",
         "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
         "xpack.management.elasticsearch.username" => "elastic",
@@ -87,6 +87,19 @@ describe "Read configuration from elasticsearch" do
     wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(4)
+  end
+
+  it "add new pipelines" do
+    temporary_file = File.join(Stud::Temporary.directory, "wildcard_pipeline.log")
+    new_config = "input { generator { count => 10000 } tcp { port => 6008 }} output { file { path => '#{temporary_file}' } }"
+
+    expect(File.exist?(temporary_file)).to be_falsey
+    push_elasticsearch_config("wildcard_pipeline", new_config)
+    elasticsearch_client.indices.refresh
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(temporary_file)).to be_truthy
+    end
   end
 
   # Returns the number of hashes for the list of pipelines
