@@ -40,7 +40,7 @@ The default is 5s.
 Specify a comma-separated list of pipeline IDs to register for centralized
 pipeline management. After changing this setting, you need to restart Logstash
 to pick up changes.
-Pipeline ID support <<wildcard-in-pipeline-id, wildcard>> `*` to match multiple IDs
+Pipeline IDs support `*` as a <<wildcard-in-pipeline-id, wildcard>> for matching multiple IDs
 
 `xpack.management.elasticsearch.hosts`::
 
