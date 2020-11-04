@@ -209,6 +209,11 @@ module LogStash
       lock.unlock
     end
 
+    def delete_pipeline(pipeline_id)
+      success = @states.remove(pipeline_id)
+      logger.info("Removed pipeline from registry successfully", :pipeline_id => pipeline_id) if success
+    end
+
     # @param pipeline_id [String, Symbol] the pipeline id
     # @return [Pipeline] the pipeline object or nil if none for pipeline_id
     def get_pipeline(pipeline_id)

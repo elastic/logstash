@@ -16,16 +16,23 @@
 # under the License.
 
 require "logstash/pipeline_action/base"
-require "logstash/pipeline_action/create"
-require "logstash/pipeline_action/stop"
-require "logstash/pipeline_action/reload"
-require "logstash/pipeline_action/delete"
 
 module LogStash module PipelineAction
-  ORDERING = {
-    LogStash::PipelineAction::Create => 100,
-    LogStash::PipelineAction::Reload => 200,
-    LogStash::PipelineAction::Stop => 300,
-    LogStash::PipelineAction::Delete => 400
-  }
+  class Delete < Base
+    attr_reader :pipeline_id
+
+    def initialize(pipeline_id)
+      @pipeline_id = pipeline_id
+    end
+
+    def execute(agent, pipelines_registry)
+      pipelines_registry.delete_pipeline(@pipeline_id)
+
+      LogStash::ConvergeResult::SuccessfulAction.new
+    end
+
+    def to_s
+      "PipelineAction::Delete<#{pipeline_id}>"
+    end
+  end
 end end

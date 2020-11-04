@@ -41,13 +41,19 @@ module LogStash
         end
       end
 
-      configured_pipelines = pipeline_configs.map { |config| config.pipeline_id.to_sym }
+      configured_pipelines = pipeline_configs.map { |config| config.pipeline_id.to_sym }.to_set
 
       # If one of the running pipeline is not in the pipeline_configs, we assume that we need to
       # stop it.
       pipelines_registry.running_pipelines.keys
         .select { |pipeline_id| !configured_pipelines.include?(pipeline_id) }
         .each { |pipeline_id| actions << LogStash::PipelineAction::Stop.new(pipeline_id) }
+
+      # If one of the stopping pipeline is not in the pipeline_configs, we assume that we need to
+      # delete it in registry.
+      pipelines_registry.non_running_pipelines.keys
+        .select { |pipeline_id| !configured_pipelines.include?(pipeline_id) }
+        .each { |pipeline_id| actions << LogStash::PipelineAction::Delete.new(pipeline_id)}
 
       actions.sort # See logstash/pipeline_action.rb
     end
