@@ -8,3 +8,8 @@ if ! getent passwd logstash >/dev/null; then
   useradd -r -g logstash -d /usr/share/logstash \
     -s /sbin/nologin -c "logstash" logstash
 fi
+
+# Handle upgrade: Check if old service unit exists and remove it
+if [ -f /etc/systemd/system/logstash.service ]; then
+  rm -rf /etc/systemd/system/logstash.service || true
+fi
