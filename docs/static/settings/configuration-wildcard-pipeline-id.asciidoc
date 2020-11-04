@@ -12,7 +12,7 @@ You can use `*` in `xpack.management.pipeline.id` to match any number of letters
 xpack.management.pipeline.id: ["*logs", "*apache*", "tomcat_log"]
 -----
 
-In this example, `"*logs"` matches all IDs end in `logs`. `"*apache *"` matches any IDs with `apache` in the name.
+In this example, `"*logs"` matches all IDs ending in `logs`. `"*apache*"` matches any IDs with `apache` in the name.
 
 Wildcard is available starting with Logstash 7.11 alongside Elasticsearch 7.10. Logstash can pick up new pipeline without restart Logstash if the new pipeline ID matches the wildcard pattern.
 
