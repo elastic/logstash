@@ -26,9 +26,9 @@ module LogStash module PipelineAction
     end
 
     def execute(agent, pipelines_registry)
-      pipelines_registry.delete_pipeline(@pipeline_id)
+      success = pipelines_registry.delete_pipeline(@pipeline_id)
 
-      LogStash::ConvergeResult::SuccessfulAction.new
+      LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 
     def to_s
