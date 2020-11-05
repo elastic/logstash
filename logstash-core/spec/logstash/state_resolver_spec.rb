@@ -172,5 +172,45 @@ describe LogStash::StateResolver do
         end
       end
     end
+
+    context "when a pipeline stops" do
+      let(:main_pipeline) { mock_pipeline(:main) }
+      let(:main_pipeline_config) { main_pipeline.pipeline_config }
+      let(:pipelines) do
+        r =  LogStash::PipelinesRegistry.new
+        r.create_pipeline(:main, main_pipeline) { true }
+        r
+      end
+
+      before do
+        expect(main_pipeline).to receive(:finished_execution?).at_least(:once).and_return(true)
+      end
+
+      context "when pipeline config contains a new one and the existing" do
+        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
+
+        it "creates the new one and keep the other one stop" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:create, :hello_world])
+          expect(pipelines.non_running_pipelines.size).to eq(1)
+        end
+      end
+
+      context "when pipeline config contains an updated pipeline" do
+        let(:pipeline_configs) { [mock_pipeline_config(:main, "input { generator {}}")] }
+
+        it "should reload the stopped pipeline" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:reload, :main])
+        end
+      end
+
+      context "when pipeline config contains no pipeline" do
+        let(:pipeline_configs) { [] }
+
+        it "should delete the stopped one" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:delete, :main])
+        end
+      end
+    end
+
   end
 end
