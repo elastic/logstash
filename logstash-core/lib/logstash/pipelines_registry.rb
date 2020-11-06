@@ -76,7 +76,6 @@ module LogStash
     def remove(pipeline_id)
       @lock.synchronize do
         @states.delete(pipeline_id)
-        @locks.delete(pipeline_id)
       end
     end
 
@@ -205,6 +204,32 @@ module LogStash
       end
 
       success
+    ensure
+      lock.unlock
+    end
+
+    # Delete the pipeline that is terminated
+    # @param pipeline_id [String, Symbol] the pipeline id
+    # @return [Boolean] pipeline delete success
+    def delete_pipeline(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
+      lock.lock
+
+      state = @states.get(pipeline_id)
+
+      if state.nil?
+        logger.error("Attempted to delete a pipeline that does not exists", :pipeline_id => pipeline_id)
+        return false
+      end
+
+      if state.terminated?
+        @states.remove(pipeline_id)
+        logger.info("Removed pipeline from registry successfully", :pipeline_id => pipeline_id)
+        return true
+      else
+        logger.info("Attempted to delete a pipeline that is not terminated", :pipeline_id => pipeline_id)
+        return false
+      end
     ensure
       lock.unlock
     end
