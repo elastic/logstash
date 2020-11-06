@@ -4,6 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-7-10-0,Logstash 7.10.0>>
+* <<logstash-7-9-3,Logstash 7.9.3>>
 * <<logstash-7-9-2,Logstash 7.9.2>>
 * <<logstash-7-9-1,Logstash 7.9.1>>
 * <<logstash-7-9-0,Logstash 7.9.0>>
@@ -69,22 +70,6 @@ TODO placeholder
 
 * Added the ability to configure connection-, request-, and socket-timeouts with `connect_timeout_seconds`, `request_timeout_seconds`, and `socket_timeout_seconds` https://github.com/logstash-plugins/logstash-input-elasticsearch/issues/121[#121]
 
-*File Input - 4.2.2*
-
-* Fix: sincedb_clean_after not being respected https://github.com/logstash-plugins/logstash-input-file/pull/276[#276]
-
-*Snmp Input - 1.2.7*
-
-* Added integration tests to ensure SNMP server and IPv6 connections https://github.com/logstash-plugins/logstash-input-snmp/pull/87[#87]
-
-* Docs: example on setting IPv6 hosts https://github.com/logstash-plugins/logstash-input-snmp/pull/89[#89]
-
-*Twitter Input - 4.0.3*
-
-* Fix: broken proxy configuration https://github.com/logstash-plugins/logstash-input-twitter/pull/69[#69]
-
-* Fix: user rest api call + proxy configuration https://github.com/logstash-plugins/logstash-input-twitter/pull/68[#68]
-
 *Kafka Integration - 10.5.1*
 
 * [DOC]Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-kafka/pull/46[#46]
@@ -105,6 +90,34 @@ TODO placeholder
 *Elasticsearch Output - 10.7.0*
 
 * Changed: don't set the pipeline parameter if the value resolves to an empty string https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/962[#962]
+
+
+[[logstash-7-9-3]]
+=== Logstash 7.9.3 Release Notes
+
+==== Notable issues fixed
+
+===== Pipeline execution fixes to flushing and shutdown
+Fix to stop inputs upon a worker error before terminating the pipeline https://github.com/elastic/logstash/pull/12336[#12336]
+
+==== Plugins
+
+*File Input - 4.2.2*
+
+* Fix: sincedb_clean_after not being respected https://github.com/logstash-plugins/logstash-input-file/pull/276[#276]
+
+*Snmp Input - 1.2.7*
+
+* Added integration tests to ensure SNMP server and IPv6 connections https://github.com/logstash-plugins/logstash-input-snmp/pull/87[#87]
+
+* Docs: example on setting IPv6 hosts https://github.com/logstash-plugins/logstash-input-snmp/pull/89[#89]
+
+*Twitter Input - 4.0.3*
+
+* Fix: broken proxy configuration https://github.com/logstash-plugins/logstash-input-twitter/pull/69[#69]
+
+* Fix: user rest api call + proxy configuration https://github.com/logstash-plugins/logstash-input-twitter/pull/68[#68]
+
 
 [[logstash-7-9-2]]
 === Logstash 7.9.2 Release Notes

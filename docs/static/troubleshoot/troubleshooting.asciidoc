@@ -1,0 +1,30 @@
+[[troubleshooting]] 
+== Troubleshooting 
+
+If you have issues installing or running {ls}, check out these sections:
+
+* <<ts-logstash>>
+* <<ts-plugins-general>>
+* <<ts-plugins>>
+
+We are adding more troubleshooting tips, so please check back soon.
+
+[discrete]
+[[add-tips]]
+=== Contribute tips
+If you have something to add, please:
+
+* create an issue at
+https://github.com/elastic/logstash/issues, or
+* create a pull request with your proposed changes at https://github.com/elastic/logstash.
+
+[discrete]
+[[discuss]]
+=== Discussion forums
+Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+forum].
+
+include::ts-logstash.asciidoc[]
+include::ts-plugins-general.asciidoc[]
+include::ts-plugins.asciidoc[]
+include::ts-other-issues.asciidoc[]

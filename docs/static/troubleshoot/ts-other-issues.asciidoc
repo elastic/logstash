@@ -1,0 +1,14 @@
+[discrete]
+[[ts-other]] 
+== Other issues
+
+Coming soon, and you can help! If you have something to add, please:
+
+* create an issue at
+https://github.com/elastic/logstash/issues, or
+* create a pull request with your proposed changes at https://github.com/elastic/logstash.
+
+Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+forum].
+
+
