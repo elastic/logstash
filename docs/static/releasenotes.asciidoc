@@ -42,50 +42,108 @@ This section summarizes the changes in the following releases:
 coming[7.10.0]
 
 ==== New features and enhancements
-TODO placeholder
+
+===== Architecture-specific artifacts with bundled JDK
+
+Logstash 7.10.0 offers new architecture-specific download and installation
+options that include a bundled Java Development Kit (JDK). AdoptOpenJDK 11, the
+latest long term support (LTS) release, is the bundled version. Before Logstash
+included the JDK, users had to install a JDK before they could install Logstash.
+Logstash with AdoptOpenJDK 11 makes installation and setup easier, especially
+for first time users. 
+
+**Upgrade impacts**
+
+* If you have JAVA_HOME set to use a custom JDK, Logstash will continue to use the
+JDK version you have specified. 
+
+* If you are using the system's JDK (from Ubuntu/Debian/CentOS archives, for
+example) and have not set JAVA_HOME, Logstash will default to the  bundled
+version of Java after you upgrade. Set JAVA_HOME to use your system's JDK if
+that is the version you prefer. 
+
+===== Elastic Common Schema (ECS) compatibility
+
+As we continue to add opt-in ECS compatibility modes in Logstash plugins,
+Release 7.10.0 introduces a new pipeline-level setting in
+<<logstash-settings-file,`logstash.yml`>>. The `pipeline.ecs_compatibility`
+setting allows users to control the ECS compatibility of all plugins in a
+pipeline at once instead of configuring each instance manually. While ECS
+compatibility in these plugins is off-by-default in Logstash 7.x, we plan to
+make them on-by-default in Logstash 8.0. This setting allows users to lock in a
+specific behavior in advance of their next major version upgrade.
+
+===== New Docker images and improvements
+
+* This release adds RedHat Universal Base Images (UBIs). We have updated license
+information and added fixes that enable images to pass RedHat docker image
+certification. https://github.com/elastic/logstash/pull/12248[#12248],
+https://github.com/elastic/logstash/pull/12296[#12296].
+* We have given users more security options by exposing proxy and ssl verification
+modes for management and monitoring of a Docker image.
+https://github.com/elastic/logstash/pull/12201[#12201],
+https://github.com/elastic/logstash/pull/12151[#12151],
+https://github.com/elastic/logstash/pull/12205[#12205]
+
 
 ==== Performance improvements and notable issues fixed
-* Some work and improvements on Docker images,
-** Added RedHat UBI license information and some fixes to pass RedHat docker image certification.
-    Now UBI8 (Universal Base Image) images are created. https://github.com/elastic/logstash/pull/12248[#12248] https://github.com/elastic/logstash/pull/12296[#12296].
-** Docker ARM images are created.
-** Exposed proxy and ssl verification mode options for management and monitoring of a Docker image
-  https://github.com/elastic/logstash/pull/12201[#12201], https://github.com/elastic/logstash/pull/12151[#12151], https://github.com/elastic/logstash/pull/12205[#12205]
-* Fixes to pipeline execution and management
-** Input plugin's close is called upon termination or pipeline reload https://github.com/elastic/logstash/pull/12195[#12195]
-** Addressed an issue when using the aggregate filter in the Java execution. It was preventing events from being generated
-   (when the amount of time for an aggregation event timed out) from effectively summing events. https://github.com/elastic/logstash/pull/12204[#12204]
-* Fixed a race condition on accessing KeyStore https://github.com/elastic/logstash/pull/12233[#12233] after a previous
-  improvement to share one KeyStore for each variable substitution https://github.com/elastic/logstash/pull/10794[#10794]
-* Changed DLQ writer policy to avoid the possibility of the DLQ reader reading an incomplete DLQ segment https://github.com/elastic/logstash/pull/12304[#12304]
-* Updates to dependencies
-** Update jruby to 9.2.13.0
-** Pinned open-ssl version to 0.10.4 to avoid Gem not found error with jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
+
+**Java pipeline execution and management** 
+
+* We have addressed an issue with the aggregate filter in the Java execution. 
+The issue prevented events from being generated (when the amount of time for an
+aggregation event timed out), preventing a pipeline from effectively summing
+events. https://github.com/elastic/logstash/pull/12204[#12204]
+
+* We have made pipelines more stable by calling `close` on input plugins when a pipeline is
+terminated or reloaded. https://github.com/elastic/logstash/pull/12195[#12195]
+
+**Keystore thread safety.**  
+After a https://github.com/elastic/logstash/pull/10794[recent performance
+improvement], Logstash could fail to start reliably in certain configurations
+involving parameter expansion and multiple pipelines. Access to the shared
+keystore has since been made thread-safe and is no longer a source of errors.
+https://github.com/elastic/logstash/pull/12233[#12233]
+
+**Dead letter queue (DLQ).**
+We changed the DLQ writer policy to avoid the possibility of the DLQ reader processing
+an incomplete DLQ segment. Logstash now writes to a temporary file that is
+renamed upon completion. https://github.com/elastic/logstash/pull/12304[#12304]
+
+**Persistent queues (PQ).**
+We have addressed PQ issues in which exceptions were impacting pipeline
+execution and causing Logstash to crash or to fail to reload.
+https://github.com/elastic/logstash/pull/12019[#12019]
+
+
+**Updates to dependencies**
+
+* Update jruby to 9.2.13.0 
+* Pinned open-ssl version to 0.10.4 to avoid "Gem not found" error with
+jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
+
 
 ==== Plugin releases
 
 *Elasticsearch Input - 4.8.1*
 
-* Fixed connection error when using multiple `slices`. https://github.com/logstash-plugins/logstash-input-elasticsearch/issues/133[#133]
-
+* Fixed connection error when using multiple `slices` https://github.com/logstash-plugins/logstash-input-elasticsearch/issues/133[#133]
 * Added the ability to configure connection-, request-, and socket-timeouts with `connect_timeout_seconds`, `request_timeout_seconds`, and `socket_timeout_seconds` https://github.com/logstash-plugins/logstash-input-elasticsearch/issues/121[#121]
 
 *Kafka Integration - 10.5.1*
 
-* [DOC]Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-kafka/pull/46[#46]
+* [DOC]Replaced plugin_header file with plugin_header-integration file https://github.com/logstash-plugins/logstash-integration-kafka/pull/46[#46]
 * [DOC]Update kafka client version across kafka integration docs https://github.com/logstash-plugins/logstash-integration-kafka/pull/47[#47]
 * [DOC]Replace hard-coded kafka client and doc path version numbers with attributes to simplify doc maintenance https://github.com/logstash-plugins/logstash-integration-kafka/pull/48[#48]  
-
 * Changed: retry sending messages only for retriable exceptions https://github.com/logstash-plugins/logstash-integration-kafka/pull/29[#27]
-
 * [DOC] Fixed formatting issues and made minor content edits https://github.com/logstash-plugins/logstash-integration-kafka/pull/43[#43]
 
 *Aws Mixin - 4.4.1*
 
-*  Fix: proxy with assumed role (properly) https://github.com/logstash-plugins/logstash-mixin-aws/pull/50[#50].
-
-*  Fix: credentials/proxy with assumed role https://github.com/logstash-plugins/logstash-mixin-aws/pull/48[#48].
-     Plugin no longer assumes `access_key_id`/`secret_access_key` credentials not to be set when `role_arn` specified.
+*  Fix: proxy with assumed role (properly) https://github.com/logstash-plugins/logstash-mixin-aws/pull/50[#50]
+*  Fix: credentials/proxy with assumed role.  Plugin no longer assumes
+`access_key_id`/`secret_access_key` credentials not to be set when `role_arn`
+specified. https://github.com/logstash-plugins/logstash-mixin-aws/pull/48[#48]
 
 *Elasticsearch Output - 10.7.0*
 
@@ -131,6 +189,7 @@ Since `7.8.0`, a change to optimise the speed of loading variables from the Logs
 ===== App Search output startup failure
 
 Since `7.9.0`, a regression was introduced which prevented pipelines using the Elastic App Search output from starting. This release fixes support for this plugin, you can read the details here: https://github.com/logstash-plugins/logstash-output-elastic_app_search/pull/18[#18], https://github.com/elastic/logstash/pull/12251[#12251]
+
 [[jdk15-compat]]
 ==== Compatibility notice: {ls} and JDK 15
 
