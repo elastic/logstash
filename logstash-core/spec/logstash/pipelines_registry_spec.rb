@@ -228,6 +228,48 @@ describe LogStash::PipelinesRegistry do
     end
   end
 
+  context "deleting a pipeline" do
+    context "when pipeline is in registry" do
+      before :each do
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+      end
+
+      it "should not delete pipeline if pipeline is not terminated" do
+        expect(pipeline).to receive(:finished_execution?).and_return(false)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_falsey
+        expect(subject.get_pipeline(pipeline_id)).not_to be_nil
+      end
+
+      it "should delete pipeline if pipeline is terminated" do
+        expect(pipeline).to receive(:finished_execution?).and_return(true)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_truthy
+        expect(subject.get_pipeline(pipeline_id)).to be_nil
+      end
+
+      it "should recreate pipeline if pipeline is delete and create again" do
+        expect(pipeline).to receive(:finished_execution?).and_return(true)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_truthy
+        expect(subject.get_pipeline(pipeline_id)).to be_nil
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+        expect(subject.get_pipeline(pipeline_id)).not_to be_nil
+      end
+    end
+
+    context "when pipeline is not in registry" do
+      it "should log error" do
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:error)
+        expect(subject.delete_pipeline(pipeline_id)).to be_falsey
+      end
+    end
+  end
+
   context "pipelines collections" do
     context "with a non terminated pipelines" do
       before :each do
