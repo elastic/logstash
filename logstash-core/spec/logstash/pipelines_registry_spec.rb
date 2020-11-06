@@ -249,6 +249,16 @@ describe LogStash::PipelinesRegistry do
         expect(subject.delete_pipeline(pipeline_id)).to be_truthy
         expect(subject.get_pipeline(pipeline_id)).to be_nil
       end
+
+      it "should recreate pipeline if pipeline is delete and create again" do
+        expect(pipeline).to receive(:finished_execution?).and_return(true)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_truthy
+        expect(subject.get_pipeline(pipeline_id)).to be_nil
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+        expect(subject.get_pipeline(pipeline_id)).not_to be_nil
+      end
     end
 
     context "when pipeline is not in registry" do
