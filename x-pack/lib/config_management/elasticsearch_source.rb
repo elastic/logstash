@@ -92,10 +92,11 @@ module LogStash
         end
 
         config_string = fetcher.get_single_pipeline_setting(pipeline_id)["pipeline"]
+        pipeline_metadata_str = (fetcher.get_single_pipeline_setting(pipeline_id)["pipeline_metadata"] || "").to_s
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
-        config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s, config_string)
+        config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s, config_string, pipeline_metadata_str)
 
         # We don't support multiple pipelines, so use the global settings from the logstash.yml file
         settings = @settings.clone
