@@ -81,8 +81,8 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         private final StringBuilder compositeSource = new StringBuilder();
         private final List<SourceWithMetadata> orderedConfigParts = new ArrayList<>();
 
-        void appendSource(final String protocol, final String id, final int line, final int column, final String text) throws IncompleteSourceWithMetadataException {
-            orderedConfigParts.add(new SourceWithMetadata(protocol, id, line, column, text));
+        void appendSource(final String protocol, final String id, final int line, final int column, final String text, final String metadata) throws IncompleteSourceWithMetadataException {
+            orderedConfigParts.add(new SourceWithMetadata(protocol, id, line, column, text, metadata));
 
             if (compositeSource.length() > 0 && !compositeSource.toString().endsWith("\n")) {
                 compositeSource.append("\n");
@@ -106,13 +106,13 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         pipelineIdSym = RubySymbol.newSymbol(RubyUtil.RUBY, PIPELINE_ID);
 
         final SourceCollector sourceCollector = new SourceCollector();
-        sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n");
-        sourceCollector.appendSource("file", "/tmp/2", 0, 0, "input { generator2 }");
-        sourceCollector.appendSource("file", "/tmp/3", 0, 0, "input { generator3 }\n");
-        sourceCollector.appendSource("file", "/tmp/4", 0, 0, "input { generator4 }");
-        sourceCollector.appendSource("file", "/tmp/5", 0, 0, "input { generator5 }\n");
-        sourceCollector.appendSource("file", "/tmp/6", 0, 0, "input { generator6 }");
-        sourceCollector.appendSource("string", "config_string", 0, 0, "input { generator1 }");
+        sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("file", "/tmp/2", 0, 0, "input { generator2 }", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("file", "/tmp/3", 0, 0, "input { generator3 }\n", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("file", "/tmp/4", 0, 0, "input { generator4 }", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("file", "/tmp/5", 0, 0, "input { generator5 }\n", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("file", "/tmp/6", 0, 0, "input { generator6 }", "{\"version\": \"1\"}");
+        sourceCollector.appendSource("string", "config_string", 0, 0, "input { generator1 }", "{\"version\": \"1\"}");
 
         orderedConfigParts = sourceCollector.orderedConfigParts();
         configMerged = sourceCollector.compositeSource();
@@ -129,6 +129,7 @@ public class PipelineConfigTest extends RubyEnvTestCase {
         assertEquals("returns the source", source, sut.getSource());
         assertEquals("returns the pipeline id", PIPELINE_ID, sut.getPipelineId());
         assertNotNull("returns the config_hash", sut.configHash());
+        assertNotNull("returns the config_hash", sut.metadataString());
         assertEquals("returns the merged `ConfigPart#config_string`", configMerged, sut.configString());
         assertThat("records when the config was read", sut.getReadAt(), isBeforeOrSame(LocalDateTime.now()));
     }
