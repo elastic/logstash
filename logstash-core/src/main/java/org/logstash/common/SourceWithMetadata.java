@@ -39,6 +39,7 @@ public class SourceWithMetadata implements HashableWithSource {
     private final Integer column;
     private final String text;
     private int linesCount;
+    private final String metadata;
 
     public String getProtocol() {
         return this.protocol;
@@ -60,14 +61,17 @@ public class SourceWithMetadata implements HashableWithSource {
         return text;
     }
 
+    public String getMetadata() { return metadata; }
+
     private static final Pattern emptyString = Pattern.compile("^\\s*$");
 
-    public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text) throws IncompleteSourceWithMetadataException {
+    public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text, String metadata) throws IncompleteSourceWithMetadataException {
         this.protocol = protocol;
         this.id = id;
         this.line = line;
         this.column = column;
         this.text = text;
+        this.metadata = metadata;
 
         List<Object> badAttributes = this.attributes().stream().filter(a -> {
             if (a == null) return true;
@@ -82,8 +86,7 @@ public class SourceWithMetadata implements HashableWithSource {
         }
 
         if (!badAttributes.isEmpty()) {
-            String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") "
-                    + this.toString();
+            String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") " + this.toString();
             throw new IncompleteSourceWithMetadataException(message);
         }
 
@@ -91,7 +94,15 @@ public class SourceWithMetadata implements HashableWithSource {
     }
 
     public SourceWithMetadata(String protocol, String id, String text) throws IncompleteSourceWithMetadataException {
-        this(protocol, id, 0, 0, text);
+        this(protocol, id, 0, 0, text, "");
+    }
+
+    public SourceWithMetadata(String protocol, String id, String text, String metadata) throws IncompleteSourceWithMetadataException {
+        this(protocol, id, 0, 0, text, metadata);
+    }
+
+    public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text) throws IncompleteSourceWithMetadataException {
+        this(protocol, id, line, column, text, "");
     }
 
     public int hashCode() {
