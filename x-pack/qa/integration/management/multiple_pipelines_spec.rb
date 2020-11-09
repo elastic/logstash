@@ -177,6 +177,29 @@ describe "Read configuration from elasticsearch" do
     end
   end
 
+  it "should pick up recreated pipeline with the same config string and different metadata" do
+    elasticsearch_client.indices.refresh
+
+    pipeline_id = @pipelines.keys[0]
+    config = @pipelines.values[0]
+    file = File.join(@temporary_directory, pipeline_id)
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(file)).to be_truthy
+    end
+
+    cleanup_system_indices([pipeline_id])
+    File.delete(file)
+    expect(File.exist?(file)).to be_falsey
+
+    push_elasticsearch_config(pipeline_id, config, "2")
+    elasticsearch_client.indices.refresh
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(file)).to be_truthy
+    end
+  end
+
   after :each do
     @logstash_service.stop if !!@logstash_service
     @elasticsearch_service.stop if !!@elasticsearch_service
