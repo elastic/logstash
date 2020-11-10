@@ -11,6 +11,10 @@ var IngestSet = {
         } else {
             value_contents = value;
         }
+        var painless_condition = set_json["if"];
+        if (!!painless_condition) {
+          print("WARN Found in 'set' processor an 'if' painless condition not translated: " + painless_condition);
+        }
         var mutate_contents = IngestConverter.create_field(
             IngestConverter.quote_string(IngestConverter.dots_to_square_brackets(set_json["field"])),
             value_contents);

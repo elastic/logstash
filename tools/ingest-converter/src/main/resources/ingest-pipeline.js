@@ -26,50 +26,63 @@ function ingest_pipeline_to_logstash(json, append_stdio) {
                 );
             }
         }
+        var processed = false;
         if (IngestDate.has_date(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("date", IngestDate.date_hash(processor))
             )
+            processed = true;
         }
         if (IngestGeoIp.has_geoip(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("geoip", IngestGeoIp.geoip_hash(processor))
             )
+            processed = true;
         }
         if (IngestConvert.has_convert(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestConvert.convert_hash(processor))
             );
+            processed = true;
         }
         if (IngestGsub.has_gsub(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestGsub.gsub_hash(processor))
             );
+            processed = true;
         }
         if (IngestAppend.has_append(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestAppend.append_hash(processor))
             );
+            processed = true;
         }
         if (IngestJson.has_json(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("json", IngestJson.json_hash(processor))
             );
+            processed = true;
         }
         if (IngestRename.has_rename(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestRename.rename_hash(processor))
             );
+            processed = true;
         }
         if (IngestLowercase.has_lowercase(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestLowercase.lowercase_hash(processor))
             );
+            processed = true;
         }
         if (IngestSet.has_set(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestSet.set_hash(processor))
             );
+            processed = true;
+        }
+        if (!processed) {
+            print("WARN Found unrecognized processor named: " + Object.keys(processor)[0]);
         }
         return IngestConverter.join_hash_fields(filter_blocks);
     }
