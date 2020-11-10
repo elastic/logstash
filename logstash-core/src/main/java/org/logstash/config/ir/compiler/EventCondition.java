@@ -665,20 +665,34 @@ public interface EventCondition {
 
             UnexpectedTypeException(final Expression left, final Expression right) {
                 super(
-                    String.format("Unexpected input types %s %s", left.getClass(), right.getClass())
+                        String.format(
+                                "Unexpected input types left: %s, right: %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                        )
                 );
             }
 
             UnexpectedTypeException(final Object inner) {
-                super(String.format("Unexpected input type %s", inner.getClass()));
+                super(String.format("Unexpected input type %s", getUnexpectedTypeDetails(inner)));
             }
 
             UnexpectedTypeException(final Object left, final Object right) {
                 super(
-                    String.format(
-                        "Unexpected input type combination %s %s", left.getClass(), right.getClass()
-                    )
+                        String.format(
+                                "Unexpected input type combination left %s, right %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                        )
                 );
+            }
+
+            private static String getUnexpectedTypeDetails(Object unexpected) {
+                String details;
+                if (unexpected instanceof Expression) {
+                    Expression expression = (Expression)unexpected;
+                    details = (expression.getSourceWithMetadata() != null) ? expression.getSourceWithMetadata().toString()
+                                                                           : expression.toString();
+                } else {
+                    details = unexpected.toString();
+                }
+                return String.format("%s:%s", unexpected.getClass(), details);
             }
         }
     }
