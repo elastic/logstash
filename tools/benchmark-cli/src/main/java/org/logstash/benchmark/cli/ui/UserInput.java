@@ -103,6 +103,10 @@ public final class UserInput {
     public static final String TEST_CASE_CONFIG_HELP =
             "Path to custom logstash config. Required if testcase is set to 'custom'";
 
+    public static final String TEST_CASE_DATA_PARAM = "data";
+    public static final String TEST_CASE_DATA_HELP =
+            "Path to custom logstash data. Only if testcase is set to 'custom'";
+
     /**
      * Constructor.
      */
