@@ -39,8 +39,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-10-0]]
 === Logstash 7.10.0 Release Notes
 
-coming[7.10.0]
-
 ==== New features and enhancements
 
 ===== Architecture-specific artifacts with bundled JDK
