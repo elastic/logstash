@@ -35,6 +35,19 @@ module LogStash
       end
     end
 
+    def running?
+      @lock.synchronize do
+        # not terminated and not loading
+        @loading.false? && !@pipeline.finished_execution?
+      end
+    end
+
+    def loading?
+      @lock.synchronize do
+        @loading.true?
+      end
+    end
+
     def set_loading(is_loading)
       @lock.synchronize do
         @loading.value = is_loading
@@ -253,7 +266,11 @@ module LogStash
 
     # @return [Hash{String=>Pipeline}]
     def running_pipelines
-      select_pipelines { |state| !state.terminated? }
+      select_pipelines { |state| state.running? }
+    end
+
+    def loading_pipelines
+      select_pipelines { |state| state.loading? }
     end
 
     # @return [Hash{String=>Pipeline}]
