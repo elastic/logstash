@@ -92,16 +92,10 @@ LABEL  org.label-schema.schema-version="1.0" \
   org.opencontainers.image.version="{{ elastic_version }}" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
   org.label-schema.vcs-url="https://github.com/elastic/logstash" \
-  license="{{ license }}" \
   org.label-schema.license="{{ license }}" \
   org.opencontainers.image.licenses="{{ license }}" \
   org.label-schema.build-date={{ created_date }} \
-  org.opencontainers.image.created={{ created_date }} \
-  description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  name="logstash" \
-  maintainer="info@elastic.co" \
-  summary="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  vendor="Elastic"
+  org.opencontainers.image.created={{ created_date }}
 
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
