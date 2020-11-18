@@ -29,6 +29,10 @@ shared_examples_for 'the metadata is set correctly' do |flavor|
     expect(@labels['org.opencontainers.image.vendor']).to eql "Elastic"
   end
 
+  it "should set the description label org.opencontainers.image.description correctly" do
+    expect(@labels['org.opencontainers.image.description']).to eql "Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'"
+  end
+
   %w(org.label-schema.version org.opencontainers.image.version).each do |label|
     it "should set the version label #{label} correctly" do
       expect(@labels[label]).to eql qualified_version
