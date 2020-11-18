@@ -336,14 +336,21 @@ namespace "artifact" do
     Rake::Task["artifact:dockerfile_oss"].invoke
   end
 
+  task "build_docker_ubi8" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_ubi8"].invoke
+    Rake::Task["artifact:dockerfile_ubi8"].invoke
+  end
+
   task "generate_build_metadata" do
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
+    BUILD_DATE=Time.now.iso8601
     build_info = {
-      "build_date" => Time.now.iso8601,
+      "build_date" => BUILD_DATE,
       "build_sha" => `git rev-parse HEAD`.chomp,
       "build_snapshot" => SNAPSHOT_BUILD
     }
+
     metadata = [ "# encoding: utf-8", "BUILD_INFO = #{build_info}" ]
     IO.write(BUILD_METADATA_FILE.path, metadata.join("\n"))
   end
@@ -690,7 +697,8 @@ namespace "artifact" do
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
         system(env, "make build-from-local-#{flavor}-artifacts")
@@ -701,7 +709,8 @@ namespace "artifact" do
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
       system(env, "make public-dockerfiles_#{flavor}")
