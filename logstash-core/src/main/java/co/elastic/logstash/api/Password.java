@@ -20,10 +20,14 @@
 
 package co.elastic.logstash.api;
 
+import java.io.Serializable;
+
 /**
  * Wraps a password string so that it is not inadvertently printed or logged.
  */
-public class Password {
+public class Password implements Serializable {
+
+    private static final long serialVersionUID = -8683271728417419530L;
 
     private String password;
 
@@ -40,7 +44,13 @@ public class Password {
         return "<password>";
     }
 
+    // Ruby code compatibility, value attribute
     public String getValue() {
         return getPassword();
+    }
+
+    // Ruby code compatibility, inspect method
+    public String inspect() {
+        return toString();
     }
 }
