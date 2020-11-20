@@ -50,26 +50,26 @@ describe LogStash::Setting::Modules do
     subject { described_class.new("mycloudid", LogStash::Util::CloudSettingId) }
     context "when given a string which is not a cloud id" do
       it "should raise an exception" do
-        expect { subject.set("foobarbaz") }.to raise_error(IllegalArgumentException, /Cloud Id.*is invalid/)
+        expect { subject.set("foobarbaz") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
       end
     end
 
     context "when given a string which is empty" do
       it "should raise an exception" do
-        expect { subject.set("") }.to raise_error(IllegalArgumentException, /Cloud Id.*is invalid/)
+        expect { subject.set("") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
       end
     end
 
     context "when given a string which is has environment prefix only" do
       it "should raise an exception" do
-        expect { subject.set("testing:") }.to raise_error(IllegalArgumentException, /Cloud Id.*is invalid/)
+        expect { subject.set("testing:") }.to raise_error(ArgumentError, /Cloud Id.*is invalid/)
       end
     end
 
     context "when given a badly formatted encoded id" do
       it "should not raise an error" do
         encoded = Base64.urlsafe_encode64("foo$$bal")
-        expect { subject.set(encoded) }.to raise_error(IllegalArgumentException, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"foo$$bal\".")
+        expect { subject.set(encoded) }.to raise_error(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"foo$$bal\".")
       end
     end
 

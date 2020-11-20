@@ -19,6 +19,8 @@
 
 package org.logstash.util;
 
+import org.logstash.RubyUtil;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -56,7 +58,7 @@ public class CloudSettingId {
             final String[] hostParts = part.split(":");
             String host = hostParts[0];
             if ("undefined".equals(host)) {
-                throw new IllegalArgumentException(guidanceMessageWhenHostEqualsUndefined);
+                throw RubyUtil.RUBY.newArgumentError(guidanceMessageWhenHostEqualsUndefined);
             }
             String port = null;
             if (hostParts.length > 1) {
@@ -107,11 +109,11 @@ public class CloudSettingId {
         }
         long separatorCount = decoded.chars().filter(c -> c == '$').count();
         if (separatorCount < 2) {
-            throw new IllegalArgumentException("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + decoded + "\".");
+            throw RubyUtil.RUBY.newArgumentError("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + decoded + "\".");
         }
         final String[] segments = decoded.split("\\$");
         if (Arrays.stream(segments).anyMatch(String::isEmpty)) {
-            throw new IllegalArgumentException("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + decoded + "\".");
+            throw RubyUtil.RUBY.newArgumentError("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + decoded + "\".");
         }
         String cloudBase = segments[0];
         String cloudHost = DOT_SEPARATOR + cloudBase;

@@ -61,7 +61,7 @@ public class CloudSettingIdTest {
     public void testThrowExceptionWhenMalformedValueIsGiven() {
         String[] raw = new String[] {"first", "second"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
 
         new CloudSettingId(encoded);
@@ -71,7 +71,7 @@ public class CloudSettingIdTest {
     public void testThrowExceptionWhenAtLeatOneSegmentIsEmpty() {
         String[] raw = new String[] {"first", "", "third"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
 
         new CloudSettingId(encoded);
@@ -81,7 +81,7 @@ public class CloudSettingIdTest {
     public void testThrowExceptionWhenElasticSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "undefined", "my-kibana"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.");
 
         new CloudSettingId(encoded);
@@ -91,7 +91,7 @@ public class CloudSettingIdTest {
     public void testThrowExceptionWhenKibanaSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "my-elastic-cluster", "undefined"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.");
 
         new CloudSettingId(encoded);
