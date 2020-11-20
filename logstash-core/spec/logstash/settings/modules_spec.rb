@@ -97,4 +97,46 @@ describe LogStash::Setting::Modules do
       end
     end
   end
+
+  describe "Cloud.Auth" do
+    subject { described_class.new("mycloudauth", LogStash::Util::CloudSettingAuth) }
+    context "when given a string without a separator or a password" do
+      it "should raise an exception" do
+        expect { subject.set("foobarbaz") }.to raise_error(ArgumentError, /Cloud Auth username and password format should be/)
+      end
+    end
+
+    context "when given a string without a password" do
+      it "should raise an exception" do
+        expect { subject.set("foo:") }.to raise_error(ArgumentError, /Cloud Auth username and password format should be/)
+      end
+    end
+
+    context "when given a string without a username" do
+      it "should raise an exception" do
+        expect { subject.set(":bar") }.to raise_error(ArgumentError, /Cloud Auth username and password format should be/)
+      end
+    end
+
+    context "when given a string which is empty" do
+      it "should raise an exception" do
+        expect { subject.set("") }.to raise_error(ArgumentError, /Cloud Auth username and password format should be/)
+      end
+    end
+
+    context "when given a nil" do
+      it "should not raise an error" do
+        expect { subject.set(nil) }.to_not raise_error
+      end
+    end
+
+    context "when given a string which is a cloud auth" do
+      it "should set the string" do
+        expect { subject.set("frodo:baggins") }.to_not raise_error
+        expect(subject.value.username).to eq("frodo")
+        expect(subject.value.password.value).to eq("baggins")
+        expect(subject.value.to_s).to eq("frodo:<password>")
+      end
+    end
+  end
 end
