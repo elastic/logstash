@@ -276,6 +276,7 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     exclude "**/stdlib/bundler.rb"
     exclude "**/bundler-1.16.6/**"
     exclude "**/bundler-1.16.6.*"
+    exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
