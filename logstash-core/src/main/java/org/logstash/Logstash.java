@@ -68,17 +68,17 @@ public final class Logstash implements Runnable, AutoCloseable {
         } catch (final IllegalStateException e) {
             String errorMessage[] = null;
             if (e.getMessage().contains("Could not load FFI Provider")) {
-                errorMessage = new String[]{
+                errorMessage = new String[] {
                         "\nError accessing temp directory: " + System.getProperty("java.io.tmpdir"),
-                        "This often occurs because the temp directory has been mounted with NOEXEC or",
-                        "the Logstash user has insufficient permissions on the directory. Possible",
-                        "workarounds include setting the -Djava.io.tmpdir property in the jvm.options",
+                        "This often occurs because the temp directory has been mounted with NOEXEC or " +
+                        "the Logstash user has insufficient permissions on the directory. ",
+                        "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
                         "file to an alternate directory or correcting the Logstash user's permissions."
                 };
             }
             handleCriticalError(e, errorMessage);
         } catch (final Throwable t) {
-            handleCriticalError(t, null);
+            handleCriticalError(t);
         }
         System.exit(0);
     }
@@ -92,8 +92,8 @@ public final class Logstash implements Runnable, AutoCloseable {
         }
     }
 
-    private static void handleCriticalError(Throwable t, String[] errorMessage) {
-        LOGGER.error(t);
+    private static void handleCriticalError(Throwable t, String... errorMessage) {
+        LOGGER.fatal((String) null, t);
         if (errorMessage != null) {
             for (String err : errorMessage) {
                 System.err.println(err);
