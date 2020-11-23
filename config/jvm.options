@@ -52,9 +52,6 @@
 # Make sure joni regexp interruptability is enabled
 -Djruby.regexp.interruptible=true
 
-# make sure LS exits when running out of (heap) memory
--XX:+ExitOnOutOfMemoryError
-
 ## heap dumps
 
 # generate a heap dump when an allocation from the Java heap fails
