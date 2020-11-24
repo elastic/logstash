@@ -15,6 +15,7 @@ NOTE: Migrating directly between non-consecutive major versions (5.x to
 
 See these topics for a description of breaking changes:
 
+* <<breaking-8.0>>
 * <<breaking-7.0>>
 * <<breaking-pq>>
 * <<breaking-6.0>>
@@ -23,6 +24,21 @@ See also <<releasenotes>>.
 
 //NOTE: The notable-breaking-changes tagged regions are re-used in the
 //Installation and Upgrade Guide
+
+[[breaking-8.0]]
+=== Breaking changes in 8.0
+Here are the breaking changes for 8.0.
+
+[float]
+==== Changes in Logstash Core
+
+[float]
+[[field-reference-parser]]
+===== Field Reference parser removed
+The Field Reference parser by default was STRICT in version 7. This configuration is removed permanently.
+Logstash keeps the behaviour as if the default setting, which interprets references to fields in your pipelines and plugins,
+and rejects inputs that are either ambiguous or illegal.
+
 
 [[breaking-7.0]]
 === Breaking changes in 7.0

@@ -69,12 +69,6 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    # Set the global FieldReference parsing mode
-    if @settings.set?('config.field_reference.parser')
-      # TODO: i18n
-      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
-    end
-
     if @settings.set?('pipeline.ecs_compatibility')
       ecs_compatibility_value = settings.get('pipeline.ecs_compatibility')
       if ecs_compatibility_value != 'disabled'
