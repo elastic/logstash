@@ -66,19 +66,18 @@ public final class Logstash implements Runnable, AutoCloseable {
         ) {
             logstash.run();
         } catch (final IllegalStateException e) {
-            String errorMessage[] = null;
+            String errorMessage = null;
             if (e.getMessage().contains("Could not load FFI Provider")) {
-                errorMessage = new String[] {
-                        "\nError accessing temp directory: " + System.getProperty("java.io.tmpdir"),
-                        "This often occurs because the temp directory has been mounted with NOEXEC or " +
-                        "the Logstash user has insufficient permissions on the directory. ",
+                errorMessage =
+                        "Error accessing temp directory: " + System.getProperty("java.io.tmpdir") +
+                        " this often occurs because the temp directory has been mounted with NOEXEC or" +
+                        " the Logstash user has insufficient permissions on the directory. \n" +
                         "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
-                        "file to an alternate directory or correcting the Logstash user's permissions."
-                };
+                        "file to an alternate directory or correcting the Logstash user's permissions.";
             }
-            handleCriticalError(e, errorMessage);
+            handleCriticalError("critical error", e, errorMessage);
         } catch (final Throwable t) {
-            handleCriticalError(t);
+            handleCriticalError("critical error", t, null);
         }
         System.exit(0);
     }
@@ -92,12 +91,10 @@ public final class Logstash implements Runnable, AutoCloseable {
         }
     }
 
-    private static void handleCriticalError(Throwable t, String... errorMessage) {
-        LOGGER.fatal((String) null, t);
-        if (errorMessage != null) {
-            for (String err : errorMessage) {
-                System.err.println(err);
-            }
+    private static void handleCriticalError(String message, Throwable t, String supplementaryErrorMessage) {
+        LOGGER.fatal(message, t);
+        if (supplementaryErrorMessage != null) {
+            LOGGER.error(supplementaryErrorMessage);
         }
         System.exit(1);
     }
@@ -193,4 +190,5 @@ public final class Logstash implements Runnable, AutoCloseable {
     private static void uncleanShutdown(final Exception ex) {
         throw new IllegalStateException("Logstash stopped processing because of an error: " + ex.getMessage(), ex);
     }
+
 }
