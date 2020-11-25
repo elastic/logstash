@@ -34,7 +34,7 @@ GEM
   specs:
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
-    amazing_print (1.2.1)
+    amazing_print (1.2.2)
     arr-pm (0.0.10)
       cabin (> 0)
     atomic (1.1.101-java)
@@ -43,13 +43,13 @@ GEM
     avro (1.10.0)
       multi_json (~> 1)
     aws-eventstream (1.1.0)
-    aws-sdk (2.11.602)
-      aws-sdk-resources (= 2.11.602)
-    aws-sdk-core (2.11.602)
+    aws-sdk (2.11.632)
+      aws-sdk-resources (= 2.11.632)
+    aws-sdk-core (2.11.632)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.602)
-      aws-sdk-core (= 2.11.602)
+    aws-sdk-resources (2.11.632)
+      aws-sdk-core (= 2.11.632)
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
@@ -285,7 +285,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.2.2)
+    logstash-input-azure_event_hubs (1.2.3)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -346,7 +346,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.5-java)
+    logstash-input-http (3.3.6-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -388,7 +388,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snmp
-    logstash-input-sqs (3.1.2)
+    logstash-input-sqs (3.1.3)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -433,7 +433,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (10.5.1-java)
+    logstash-integration-kafka (10.5.3-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 6.5.0)
@@ -559,7 +559,7 @@ GEM
     nio4r (2.5.4-java)
     nokogiri (1.10.10-java)
     numerizer (0.1.1)
-    octokit (4.18.0)
+    octokit (4.19.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
     openssl_pkcs8_pure (0.0.0.2)
@@ -585,20 +585,20 @@ GEM
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rake (12.3.3)
-    redis (4.2.2)
-    rspec (3.9.0)
-      rspec-core (~> 3.9.0)
-      rspec-expectations (~> 3.9.0)
-      rspec-mocks (~> 3.9.0)
-    rspec-core (3.9.3)
-      rspec-support (~> 3.9.3)
-    rspec-expectations (3.9.2)
+    redis (4.2.5)
+    rspec (3.10.0)
+      rspec-core (~> 3.10.0)
+      rspec-expectations (~> 3.10.0)
+      rspec-mocks (~> 3.10.0)
+    rspec-core (3.10.0)
+      rspec-support (~> 3.10.0)
+    rspec-expectations (3.10.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.9.0)
-    rspec-mocks (3.9.1)
+      rspec-support (~> 3.10.0)
+    rspec-mocks (3.10.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.9.0)
-    rspec-support (3.9.3)
+      rspec-support (~> 3.10.0)
+    rspec-support (3.10.0)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
     ruby-progressbar (1.10.1)
@@ -610,7 +610,7 @@ GEM
       faraday (> 0.8, < 2.0)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.37.0)
+    sequel (5.38.0)
     simple_oauth (0.3.1)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -639,14 +639,14 @@ GEM
       multipart-post (~> 2.0)
       naught (~> 1.0)
       simple_oauth (~> 0.3.0)
-    tzinfo (2.0.2)
+    tzinfo (2.0.3)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2020.1)
+    tzinfo-data (1.2020.4)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.9.0)
       addressable
-    webmock (3.9.1)
+    webmock (3.10.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
