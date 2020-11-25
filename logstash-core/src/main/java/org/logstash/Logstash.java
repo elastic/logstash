@@ -20,11 +20,15 @@
 
 package org.logstash;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -59,6 +63,7 @@ public final class Logstash implements Runnable, AutoCloseable {
             );
         }
         configureNashornDeprecationSwitchForJavaAbove11();
+        installGlobalUncaughtExceptionHandler();
 
         final Path home = Paths.get(lsHome).toAbsolutePath();
         try (
@@ -67,7 +72,7 @@ public final class Logstash implements Runnable, AutoCloseable {
             logstash.run();
         } catch (final IllegalStateException e) {
             String errorMessage = null;
-            if (e.getMessage().contains("Could not load FFI Provider")) {
+            if (e.getMessage() != null && e.getMessage().contains("Could not load FFI Provider")) {
                 errorMessage =
                         "Error accessing temp directory: " + System.getProperty("java.io.tmpdir") +
                         " this often occurs because the temp directory has been mounted with NOEXEC or" +
@@ -75,10 +80,11 @@ public final class Logstash implements Runnable, AutoCloseable {
                         "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
                         "file to an alternate directory or correcting the Logstash user's permissions.";
             }
-            handleCriticalError("critical error", e, errorMessage);
+            handleFatalError("fatal error", e, errorMessage);
         } catch (final Throwable t) {
-            handleCriticalError("critical error", t, null);
+            handleFatalError("fatal error", t, null);
         }
+
         System.exit(0);
     }
 
@@ -91,12 +97,60 @@ public final class Logstash implements Runnable, AutoCloseable {
         }
     }
 
-    private static void handleCriticalError(String message, Throwable t, String supplementaryErrorMessage) {
+    private static void installGlobalUncaughtExceptionHandler() {
+        Thread.setDefaultUncaughtExceptionHandler((thread, e) -> {
+            if (e instanceof Error) {
+                handleFatalError("uncaught error (in thread " + thread.getName() + ")",  e, null);
+            } else {
+                LOGGER.error("uncaught exception (in thread " + thread.getName() + ")", e);
+            }
+        });
+    }
+
+    private static void handleFatalError(String message, Throwable t, String supplementaryErrorMessage) {
         LOGGER.fatal(message, t);
         if (supplementaryErrorMessage != null) {
             LOGGER.error(supplementaryErrorMessage);
         }
+
+        if (t instanceof InternalError) {
+            halt(128);
+        } else if (t instanceof OutOfMemoryError) {
+            halt(127);
+        } else if (t instanceof StackOverflowError) {
+            halt(126);
+        } else if (t instanceof UnknownError) {
+            halt(125);
+        } else if (t instanceof IOError) {
+            halt(124);
+        } else if (t instanceof AssertionError) {
+            halt(123);
+        } else if (t instanceof Error) {
+            halt(120);
+        }
+
         System.exit(1);
+    }
+
+    private static void halt(final int status) {
+        AccessController.doPrivileged(new PrivilegedHaltAction(status));
+    }
+
+    private static class PrivilegedHaltAction implements PrivilegedAction<Void> {
+
+        private final int status;
+
+        private PrivilegedHaltAction(final int status) {
+            this.status = status;
+        }
+
+        @Override
+        public Void run() {
+            // we halt to prevent shutdown hooks from running
+            Runtime.getRuntime().halt(status);
+            return null;
+        }
+
     }
 
     /**
