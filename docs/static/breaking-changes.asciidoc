@@ -35,9 +35,10 @@ Here are the breaking changes for 8.0.
 [float]
 [[field-reference-parser]]
 ===== Field Reference parser removed
-The Field Reference parser by default was STRICT in version 7. This configuration is removed permanently.
-Logstash keeps the behaviour as if the default setting, which interprets references to fields in your pipelines and plugins,
-and rejects inputs that are either ambiguous or illegal.
+The Field Reference parser interprets references to fields in your pipelines and
+plugins. It was configurable in 7.x, with the default set to strict to reject
+inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
+{ls} rejects ambiguous and illegal inputs as standard behavior.
 
 
 [[breaking-7.0]]
