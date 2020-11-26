@@ -38,7 +38,7 @@ Here are the breaking changes for 8.0.
 The Field Reference parser interprets references to fields in your pipelines and
 plugins. It was configurable in 7.x, with the default set to strict to reject
 inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
-{ls] rejects ambiguous and illegal inputs as standard behavior.
+{ls} rejects ambiguous and illegal inputs as standard behavior.
 
 
 [[breaking-7.0]]
