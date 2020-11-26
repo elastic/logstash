@@ -32,7 +32,7 @@ public class CloudSettingAuthTest {
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutSeparatorOrPassword() {
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Auth username and password format should be");
 
         new CloudSettingAuth("foobarbaz");
@@ -40,7 +40,7 @@ public class CloudSettingAuthTest {
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutPassword() {
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Auth username and password format should be");
 
         new CloudSettingAuth("foo:");
@@ -48,7 +48,7 @@ public class CloudSettingAuthTest {
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutUsername() {
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Auth username and password format should be");
 
         new CloudSettingAuth(":bar");
@@ -56,7 +56,7 @@ public class CloudSettingAuthTest {
 
     @Test
     public void testThrowExceptionWhenGivenStringWhichIsEmpty() {
-        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
         exceptionRule.expectMessage("Cloud Auth username and password format should be");
 
         new CloudSettingAuth("");

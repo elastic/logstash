@@ -20,6 +20,7 @@
 package org.logstash.util;
 
 import co.elastic.logstash.api.Password;
+import org.logstash.RubyUtil;
 
 public class CloudSettingAuth {
 
@@ -34,7 +35,7 @@ public class CloudSettingAuth {
         this.original = value;
         final String[] parts = this.original.split(":");
         if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
-            throw new IllegalArgumentException("Cloud Auth username and password format should be \"<username>:<password>\".");
+            throw RubyUtil.RUBY.newArgumentError("Cloud Auth username and password format should be \"<username>:<password>\".");
         }
 
         this.username = parts[0];

@@ -42,6 +42,12 @@ logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
 logger.elasticsearchoutput.level = debug
 --------------------------------------------------
 
+The previous example defines a name and level for the logger `logstash.outputs.elasticsearch`.
+The logger is usually identified by a Java class name, such as
+`org.logstash.dissect.Dissector`, for example.  It can also be a partial package
+path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
+the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
+
 ==== Logging APIs
 
 For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
