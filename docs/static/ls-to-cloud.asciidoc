@@ -1,7 +1,8 @@
 [[connecting-to-cloud]]
-=== Sending data to Elasticsearch Service
+=== Sending data to Elastic Cloud (hosted Elasticsearch Service)
 
-Our hosted Elasticsearch Service is available on AWS, GCP, and Azure.
+Elastic Cloud is our our hosted Elasticsearch Service, and it is
+available on AWS, GCP, and Azure.
 {ess-trial}[You can try the Elasticsearch Service for free].
 
 Logstash comes with two settings that simplify sending data to
