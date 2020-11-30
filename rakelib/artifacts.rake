@@ -25,7 +25,6 @@ namespace "artifact" do
     PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
   end
 
-  ## TODO: Install new service files
   def package_files
     [
       "NOTICE.TXT",
@@ -63,6 +62,8 @@ namespace "artifact" do
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
+      "jdk/**/*",
+      "jdk.app/**/*",
     ]
   end
 
