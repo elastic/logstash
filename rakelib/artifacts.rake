@@ -37,7 +37,6 @@ namespace "artifact" do
 
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
-      "lib/systeminstall/**/*",
       "lib/secretstore/**/*",
 
       "logstash-core/lib/**/*",
@@ -61,16 +60,9 @@ namespace "artifact" do
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
 
-      # Without this when JRuby runs 'pleaserun' gem using the AdoptOpenJDK, during the post install script
-      # it claims that modules are not open for private introspection and suggest it's missing --add-opens
-      # so including these files JRuby run with modules opened to private introspection.
-      "vendor/jruby/bin/.jruby.java_opts",
-      "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
-      "jdk/**/*",
-      "jdk.app/**/*",
     ]
   end
 
