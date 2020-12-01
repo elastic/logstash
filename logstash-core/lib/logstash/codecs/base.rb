@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/event"
+
 require "logstash/plugin"
 
 # This is the base class for logstash codecs.
