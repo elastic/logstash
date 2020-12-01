@@ -24,7 +24,7 @@ require "logstash/pipeline"
 describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
   let(:pipeline_id) { :main }
-  let(:pipeline) { mock_pipeline_from_string(pipeline_config) }
+  let(:pipeline) { mock_java_pipeline_from_string(pipeline_config) }
   let(:pipelines) { chm = LogStash::PipelinesRegistry.new; chm.create_pipeline(pipeline_id, pipeline) { true }; chm }
   let(:agent) { double("agent") }
 

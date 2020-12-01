@@ -86,9 +86,6 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
 end
 
 describe LogStash::PipelineReporter do
-  context "with ruby execution" do
-    it_behaves_like "a pipeline reporter", :mock_pipeline_from_string
-  end
   context "with java execution" do
     it_behaves_like "a pipeline reporter", :mock_java_pipeline_from_string
   end
