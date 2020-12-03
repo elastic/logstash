@@ -16,7 +16,6 @@
 # under the License.
 
 require "spec_helper"
-require "logstash/pipeline"
 require_relative "../support/helpers"
 require_relative "../support/mocks_classes"
 
