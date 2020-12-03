@@ -81,10 +81,6 @@ The `logstash.yml` file includes the following settings.
 | The ID of the pipeline.
 | `main`
 
-| `pipeline.java_execution`
-| Use the Java execution engine.
-| true
-
 | `pipeline.workers` 
 | The number of workers that will, in parallel, execute the filter and output
 stages of the pipeline. This setting uses the

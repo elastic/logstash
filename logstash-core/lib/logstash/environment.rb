@@ -56,7 +56,6 @@ module LogStash
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
            Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
-           Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
            Setting::Boolean.new("pipeline.plugin_classloaders", false),
            Setting::Boolean.new("pipeline.separate_logs", false),
