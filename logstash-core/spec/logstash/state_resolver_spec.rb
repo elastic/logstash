@@ -19,7 +19,6 @@ require "spec_helper"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
 require "logstash/state_resolver"
-require "logstash/pipeline"
 require "ostruct"
 require "digest"
 

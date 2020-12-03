@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/pipeline_action/base"
-require "logstash/pipeline"
 require "logstash/java_pipeline"
 
 

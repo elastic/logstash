@@ -19,7 +19,6 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require "logstash/pipelines_registry"
 require "logstash/pipeline_action/stop"
-require "logstash/pipeline"
 
 describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
