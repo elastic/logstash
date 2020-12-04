@@ -470,7 +470,7 @@ GEM
       elastic-app-search (~> 7.8.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.7.3-java)
+    logstash-output-elasticsearch (10.7.0-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
@@ -577,7 +577,7 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (4.3.7-java)
+    puma (4.3.6-java)
       nio4r (~> 2.0)
     rack (2.2.3)
     rack-protection (2.1.0)
