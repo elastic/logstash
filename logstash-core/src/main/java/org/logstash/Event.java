@@ -43,6 +43,9 @@ import java.util.Map;
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
+/**
+ * Event implementation, is the Logstash's event implementation
+ * */
 public final class Event implements Cloneable, Queueable, co.elastic.logstash.api.Event {
 
     private boolean cancelled;

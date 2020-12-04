@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.logstash.ackedqueue.Queueable;
 
-
+/**
+ * Dead letter queue item
+ */
 public class DLQEntry implements Cloneable, Queueable {
 
     private final Event event;

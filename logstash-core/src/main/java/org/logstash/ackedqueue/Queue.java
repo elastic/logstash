@@ -46,6 +46,9 @@ import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
 
+/**
+ * Persistent queue implementation.
+ * */
 public final class Queue implements Closeable {
 
     private long seqNum;

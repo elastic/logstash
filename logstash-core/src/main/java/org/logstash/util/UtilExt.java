@@ -26,6 +26,9 @@ import org.jruby.anno.JRubyModule;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * Utility methods class
+ * */
 @JRubyModule(name = "Util") // LogStash::Util
 public class UtilExt {
 
