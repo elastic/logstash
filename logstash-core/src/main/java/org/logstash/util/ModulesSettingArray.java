@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+/**
+ * Wrapper of Logstash modules settings, with ability to replace password fields with
+ * the obfuscator {@link Password} implementation.
+ * */
 public final class ModulesSettingArray extends ArrayList<Map<String, Object>> {
 
     private static final long serialVersionUID = 4094949366274116593L;

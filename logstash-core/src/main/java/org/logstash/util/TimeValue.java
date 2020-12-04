@@ -23,6 +23,9 @@ import org.logstash.RubyUtil;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Express a period of time, expressing in numerical quantity and time unit, for example "3 seconds"
+ * */
 public class TimeValue {
 
     public static TimeValue fromValue(Object value) {

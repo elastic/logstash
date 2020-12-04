@@ -29,6 +29,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 
+/**
+ * Interface definition for JRuby extensions for in memory and persistent queue
+ * */
 @JRubyClass(name = "AbstractWrappedQueue")
 public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
 

@@ -24,6 +24,9 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import java.io.IOException;
 import java.util.Collection;
 
+/**
+ * Defines collection of queue events to be processed.
+ * */
 public interface QueueBatch {
     int filteredSize();
     RubyArray<RubyEvent> to_a();
