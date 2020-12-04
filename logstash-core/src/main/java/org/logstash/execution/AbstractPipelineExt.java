@@ -65,6 +65,9 @@ import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
+/**
+ * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
+ * */
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
 

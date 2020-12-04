@@ -28,6 +28,10 @@ import org.codehaus.commons.nullanalysis.NotNull;
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.PageIO;
 
+/**
+ * Represents persistent queue Page metadata, like the page number, the minimum sequence number contained in the page,
+ * the status of the page (writeable or not).
+ * */
 public final class Page implements Closeable {
     protected final int pageNum;
     protected long minSeqNum; // TODO: see if we can make it final?

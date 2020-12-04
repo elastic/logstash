@@ -24,10 +24,16 @@ import org.logstash.plugins.PluginLookup;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * JRuby extension to implement the factory that create plugin instances
+ * */
 @JRubyClass(name = "PluginFactory")
 public final class PluginFactoryExt extends RubyBasicObject
     implements RubyIntegration.PluginFactory {
 
+    /**
+     * Definition of plugin resolver, maps plugin type and name to the plugin's class.
+     * */
     @FunctionalInterface
     public interface PluginResolver {
         PluginLookup.PluginClass resolve(PluginLookup.PluginType type, String name);

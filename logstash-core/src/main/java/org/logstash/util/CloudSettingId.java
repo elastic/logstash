@@ -38,6 +38,9 @@ import java.util.Base64;
  * The third segment is the kibana host identifier, e.g. 'identifier'
  * The 'cloud.id' value decoded into the various fields.
  */
+/**
+ * Represents and decode an Elastic cloudid of an instance.
+ * */
 public class CloudSettingId {
 
     private static class HostAndPort {
