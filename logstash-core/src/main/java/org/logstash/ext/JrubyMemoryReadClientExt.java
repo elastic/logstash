@@ -31,6 +31,9 @@ import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClientBase;
 
+/**
+ * JRuby extension to provide an implementation of queue client for InMemory queue
+ * */
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
 public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 

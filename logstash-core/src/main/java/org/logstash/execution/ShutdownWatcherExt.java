@@ -37,6 +37,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
+/**
+ * JRuby extension, used by pipelines to execute the shutdown flow of a pipeline.
+ * */
 @JRubyClass(name = "ShutdownWatcher")
 public final class ShutdownWatcherExt extends RubyBasicObject {
 

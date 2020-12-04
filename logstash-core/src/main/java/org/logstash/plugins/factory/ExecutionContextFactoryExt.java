@@ -19,6 +19,9 @@ import org.logstash.plugins.ContextImpl;
 import org.logstash.plugins.NamespacedMetricImpl;
 import org.logstash.plugins.PluginLookup;
 
+/**
+ * JRuby extension, factory class for plugins execution contexts
+ * */
 @JRubyClass(name = "ExecutionContextFactory")
 public final class ExecutionContextFactoryExt extends RubyBasicObject {
 

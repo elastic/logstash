@@ -35,6 +35,9 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.LogstashJavaCompat;
 import org.logstash.ackedqueue.SequencedList;
 
+/**
+ * Internal API, v2 mmap implementation of {@link PageIO}
+ * */
 public final class MmapPageIOV2 implements PageIO {
 
     public static final byte VERSION_TWO = (byte) 2;
@@ -392,6 +395,9 @@ public final class MmapPageIOV2 implements PageIO {
         }
     }
 
+    /**
+     * Invalid Page structure exception
+     * */
     public static final class PageIOInvalidElementException extends IOException {
 
         private static final long serialVersionUID = 1L;
@@ -401,6 +407,9 @@ public final class MmapPageIOV2 implements PageIO {
         }
     }
 
+    /**
+     * Invalid page version exception.
+     * */
     public static final class PageIOInvalidVersionException extends IOException {
 
         private static final long serialVersionUID = 1L;
