@@ -62,7 +62,6 @@ public final class Logstash implements Runnable, AutoCloseable {
                     "LS_HOME environment variable must be set. This is likely a bug that should be reported."
             );
         }
-        configureNashornDeprecationSwitchForJavaAbove11();
         installGlobalUncaughtExceptionHandler();
 
         final Path home = Paths.get(lsHome).toAbsolutePath();
@@ -91,15 +90,6 @@ public final class Logstash implements Runnable, AutoCloseable {
         }
 
         System.exit(0);
-    }
-
-    private static void configureNashornDeprecationSwitchForJavaAbove11() {
-        final String javaVersion = System.getProperty("java.version");
-        // match version 1.x.y, 9.x.y and 10.x.y
-        if (!javaVersion.matches("^1\\.\\d\\..*") && !javaVersion.matches("^(9|10)\\.\\d\\..*")) {
-            // Avoid Nashorn deprecation logs in JDK >= 11
-            System.setProperty("nashorn.args", "--no-deprecation-warning");
-        }
     }
 
     private static void installGlobalUncaughtExceptionHandler() {
