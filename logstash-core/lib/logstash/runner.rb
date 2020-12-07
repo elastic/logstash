@@ -296,6 +296,10 @@ class LogStash::Runner < Clamp::StrictCommand
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
 
+    if log_configuration_contains_javascript_usage?
+      logger.warn("Logging configuration uses appender or filter with scripting language JavaScript, which will be removed in a future major release of Logstash.")
+    end
+
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
@@ -436,6 +440,18 @@ class LogStash::Runner < Clamp::StrictCommand
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
+
+  def log_configuration_contains_javascript_usage?
+     context = LoggerContext.getContext(false)
+     config = context.configuration
+     config_file = config.configuration_source.file
+     # no config file so nothing to check
+     return false if config_file.nil?
+
+     logger.info("Log4j configuration path used is: #{config_file.path}")
+     log_config = File.open(config_file.absolute_path).read
+     (log_config =~ /^[^#]+script\.language\s*=\s*JavaScript/) != nil
+  end
 
   def show_version
     show_version_logstash
