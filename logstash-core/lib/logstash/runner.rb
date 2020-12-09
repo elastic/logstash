@@ -364,9 +364,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
         # TODO(ph): make it better for multiple pipeline
         if results.success?
-          results.response.each do |pipeline_config|
-            LogStash::JavaPipeline.new(pipeline_config)
-          end
+          results.response.each { |pipeline_config| LogStash::JavaPipeline.new(pipeline_config) }
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         else

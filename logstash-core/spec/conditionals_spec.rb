@@ -82,7 +82,7 @@ describe "conditionals in output" do
       pipeline.close
     end
 
-    it "example run" do
+    it "should not fail in pipeline run" do
       #LOGSTASH-2288, should not fail raising an exception
       pipeline.run
     end
