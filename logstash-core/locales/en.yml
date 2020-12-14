@@ -285,8 +285,6 @@ en:
           from starting if there are multiple workers.
           Use `false` to disable any extra processing necessary for preserving
           ordering.
-        java-execution: |+
-          Use Java execution engine.
         plugin-classloaders: |+
           (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
         pipeline-batch-size: |+
