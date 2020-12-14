@@ -14,7 +14,6 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.*;
 import org.logstash.config.ir.graph.Vertex;
-import org.logstash.execution.Engine;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -39,8 +38,6 @@ public final class PluginFactoryExt extends RubyBasicObject
     private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
 
     private final Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
-
-    private Engine engine;
 
     private PipelineIR lir;
 
@@ -86,38 +83,22 @@ public final class PluginFactoryExt extends RubyBasicObject
         this.pluginResolver = pluginResolver;
     }
 
-    @JRubyMethod(required = 4)
-    public PluginFactoryExt initialize(final ThreadContext context,
-                                       final IRubyObject[] args) {
-        return init(
-                args[0].toJava(PipelineIR.class),
-                (PluginMetricsFactoryExt) args[1],
-                (ExecutionContextFactoryExt) args[2],
-                (RubyClass) args[3],
-                EnvironmentVariableProvider.defaultProvider(),
-                Engine.RUBY
-        );
-    }
-
     public PluginFactoryExt init(final PipelineIR lir,
                                      final PluginMetricsFactoryExt metrics,
                                      final ExecutionContextFactoryExt executionContextFactoryExt,
-                                     final RubyClass filterClass,
-                                     final Engine engine) {
-        return this.init(lir, metrics, executionContextFactoryExt, filterClass, EnvironmentVariableProvider.defaultProvider(), engine);
+                                     final RubyClass filterClass) {
+        return this.init(lir, metrics, executionContextFactoryExt, filterClass, EnvironmentVariableProvider.defaultProvider());
     }
 
     PluginFactoryExt init(final PipelineIR lir,
                           final PluginMetricsFactoryExt metrics,
                           final ExecutionContextFactoryExt executionContextFactoryExt,
                           final RubyClass filterClass,
-                          final EnvironmentVariableProvider envVars,
-                          final Engine engine) {
+                          final EnvironmentVariableProvider envVars) {
         this.lir = lir;
         this.metrics = metrics;
         this.executionContextFactory = executionContextFactoryExt;
         this.filterDelegatorClass = filterClass;
-        this.engine = engine;
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.INPUT, new InputPluginCreator(this));
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.CODEC, new CodecPluginCreator());
         this.pluginCreatorsRegistry.put(PluginLookup.PluginType.FILTER, new FilterPluginCreator());
@@ -259,12 +240,6 @@ public final class PluginFactoryExt extends RubyBasicObject
                 return pluginInstance;
             }
         } else {
-            if (engine != Engine.JAVA) {
-                String err = String.format("Cannot start the Java plugin '%s' in the %s execution engine." +
-                        " The Java execution engine is required to run Java plugins.", name, engine);
-                throw new IllegalStateException(err);
-            }
-
             AbstractPluginCreator<? extends Plugin> pluginCreator = pluginCreatorsRegistry.get(type);
             if (pluginCreator == null) {
                 throw new IllegalStateException("Unable to create plugin: " + pluginClass.toReadableString());

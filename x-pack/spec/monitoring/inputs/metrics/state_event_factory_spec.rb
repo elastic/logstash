@@ -47,7 +47,7 @@ describe LogStash::Inputs::Metrics::StateEventFactory do
     LogStash::SETTINGS.set_value("monitoring.enabled", false)
   end
 
-  let(:pipeline) { LogStash::Pipeline.new(config) }
+  let(:pipeline) { LogStash::JavaPipeline.new(config) }
 
   subject(:sut) { described_class.new(pipeline, "funky_cluster_uuid") }
 
