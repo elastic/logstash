@@ -52,7 +52,7 @@ class PipelinePqFileOutput < LogStash::Outputs::Base
   end
 end
 
-describe LogStash::Pipeline do
+describe LogStash::JavaPipeline do
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_id) { "main" }
 
@@ -154,10 +154,6 @@ describe LogStash::Pipeline do
 
   context "using PQ" do
     let(:queue_type) { "persisted" } #  "memory", "persisted"
-    context "with Ruby execution" do
-      subject { LogStash::Pipeline.new(pipeline_config, metric) }
-      it_behaves_like "a well behaved pipeline"
-    end
     context "with Java execution" do
       subject { LogStash::JavaPipeline.new(pipeline_config, metric) }
       it_behaves_like "a well behaved pipeline"
@@ -165,10 +161,6 @@ describe LogStash::Pipeline do
   end
   context "using MQ" do
     let(:queue_type) { "memory" } #  "memory", "persisted"
-    context "with Ruby execution" do
-      subject { LogStash::Pipeline.new(pipeline_config, metric) }
-      it_behaves_like "a well behaved pipeline"
-    end
     context "with Java execution" do
       subject { LogStash::JavaPipeline.new(pipeline_config, metric) }
       it_behaves_like "a well behaved pipeline"

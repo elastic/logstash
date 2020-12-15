@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/event"
+
 require "logstash/plugin"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
