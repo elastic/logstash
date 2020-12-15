@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
@@ -62,6 +63,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
     
     private static final Logger logger = LogManager.getLogger(Event.class);
+
+    private static final long MILLISEC_EPOCH_THRESHOLD = 20000000000L;
 
     public Event()
     {
@@ -387,6 +390,12 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 return new Timestamp((Date) o);
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
+            } else if (o instanceof RubyFixnum) {
+                // per https://github.com/elastic/logstash/pull/10369 is was decided to use 20000000000
+                // as the threshold to differentiate between a seconds vs milliseconds epoch representations
+                final long epoch = RubyFixnum.num2long((RubyFixnum)o);
+                final long units_multiplier = (epoch < MILLISEC_EPOCH_THRESHOLD) ? 1000 : 1;
+                return new Timestamp(epoch * units_multiplier);
             } else {
                 logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
