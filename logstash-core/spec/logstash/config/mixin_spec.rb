@@ -72,6 +72,41 @@ describe LogStash::Config::Mixin do
     end
   end
 
+  context "validating :field_reference" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base) do
+        config :target, :validate => :field_reference
+      end
+    end
+    let(:params) do
+      { "target" => target_param }
+    end
+
+    before(:each) do
+      allow(plugin_class).to receive(:logger).and_return(double('Logger').as_null_object)
+    end
+
+    context "when input is valid" do
+      let(:target_param) { "[@metadata][target]" }
+      it 'successfully initializes the plugin' do
+        expect(plugin_class.new(params)).to be_a_kind_of plugin_class
+      end
+      it 'coerces the value' do
+        instance = plugin_class.new(params)
+        expect(instance.target).to_not be_nil
+        expect(instance.target).to eq(target_param)
+      end
+    end
+
+    context "when input is invalid" do
+      let(:target_param) { "][Nv@l][d" }
+      it 'does not initialize the plugin' do
+        expect { plugin_class.new(params) }.to raise_exception(LogStash::ConfigurationError)
+        expect(plugin_class.logger).to have_received(:error).with(/must be a field_reference/)
+      end
+    end
+  end
+
   context "when validating :bytes successfully" do
     subject do
       local_num_bytes = num_bytes # needs to be locally scoped :(

@@ -195,6 +195,15 @@ module LogStash::Config::Mixin
     end
 
     # Define a new configuration setting
+    #
+    # @param name [String, Symbol, Regexp]
+    # @param opts [Hash]: the options for this config parameter
+    # @option opts [Array,Symbol] :validate
+    #   When `Array`, the expanded form of the given directive MUST exist in the Array.
+    #   When `Symbol`, the named validator matching the provided `Symbol` is used.
+    # @option opts [Boolean]      :list
+    # @option opts [Object]       :default
+    # @option opts [Boolean]      :required
     def config(name, opts={})
       @config ||= Hash.new
       # TODO(sissel): verify 'name' is of type String, Symbol, or Regexp
@@ -412,6 +421,32 @@ module LogStash::Config::Mixin
       return nil
     end
 
+    ##
+    # Performs deep replacement of the provided value, then performs validation and coercion.
+    #
+    # The provided validator can be nil, an Array of acceptable values, or a Symbol
+    # representing a named validator, and is the result of a configuration parameter's `:validate` option (@see DSL#config)
+    #
+    # @overload validate_value(value, validator)
+    #   Validation occurs with the named validator.
+    #   @param value [Object]
+    #   @param validator [Symbol]
+    # @overload validate_value(value, validator)
+    #   The value must exist in the provided Array.
+    #   @param value [Object]
+    #   @param validator [Array]
+    # @overload validate_value(value, validator)
+    #   The value is always considered valid
+    #   @param value [Object]
+    #   @param validator [nil]
+    #
+    # @return [Array<(true, Object)>]: when value is valid, a tuple containing true and a coerced form of the value is returned
+    # @return [Array<(false, String)>]: when value is not valid, a tuple containing false and an error string is returned.
+    #
+    # @api private
+    #
+    # WARNING: validators added here must be back-ported to the Validation Support plugin mixin so that plugins
+    #          that use them are not constrained to the version of Logstash that introduced the validator.
     def validate_value(value, validator)
       # Validator comes from the 'config' pieces of plugins.
       # They look like this
@@ -578,6 +613,15 @@ module LogStash::Config::Mixin
             rescue ArgumentError
               return false, "Unparseable filesize: #{value.first}. possible units (KiB, MiB, ...) e.g. '10 KiB'. doc reference: http://www.elastic.co/guide/en/logstash/current/configuration.html#bytes"
             end
+          when :field_reference # @since 7.11
+            return [false, "Expected exactly one field reference, got `#{value.inspect}`"] unless value.kind_of?(Array) && value.size <= 1
+            return [true, nil] if value.empty? || value.first.nil? || value.first.empty?
+
+            candidate = value.first
+
+            return [false, "Expected a valid field reference, got `#{candidate.inspect}`"] unless org.logstash.FieldReference.isValid(candidate)
+
+            return [true, candidate]
           else
             return false, "Unknown validator symbol #{validator}"
         end # case validator
