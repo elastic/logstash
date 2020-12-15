@@ -278,6 +278,14 @@ Example:
   name => 'It\'s a beautiful day'
 ----------------------------------
 
+[[field-reference]]
+[float]
+==== Field Reference
+
+A Field Reference is a special <<string>> value representing the path to a field in an event, such as `@timestamp` or `[@timestamp]` to reference a top-level field, or `[client][ip]` to access a nested field.
+The <<field-references-deepdive>> provides detailed information about the structure of Field References.
+When provided as a configuration option, Field References need to be quoted and special characters must be escaped following the same rules as <<string>>.
+
 [float]
 [[comments]]
 === Comments

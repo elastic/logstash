@@ -127,6 +127,15 @@ public final class FieldReference {
         return parseToCache(reference);
     }
 
+    public static boolean isValid(final String reference) {
+        try {
+            FieldReference.from(reference);
+            return true;
+        } catch (IllegalSyntaxException ise) {
+            return false;
+        }
+    }
+
     /**
      * Returns the type of this instance to allow for fast switch operations in
      * {@link Event#getUnconvertedField(FieldReference)} and
