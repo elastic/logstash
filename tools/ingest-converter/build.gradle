@@ -43,6 +43,7 @@ buildscript {
 
 dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:4.6'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
   testImplementation "junit:junit:4.12"
   testImplementation 'commons-io:commons-io:2.5'
 }

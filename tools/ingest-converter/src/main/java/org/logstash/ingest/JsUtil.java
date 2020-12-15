@@ -98,13 +98,79 @@ final class JsUtil {
                 parser.printHelpOn(System.out);
                 throw ex;
             }
-            final ScriptEngine engine = JsUtil.engine();
-            Files.write(
-                Paths.get(options.valueOf(output)),
-                ((String) ((Invocable) engine).invokeFunction(
-                    jsFunc, input(options.valueOf(input)), options.has(appendStdio)
-                )).getBytes(StandardCharsets.UTF_8)
-            );
+            switch (jsFunc) {
+                case "ingest_append_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestAppend.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_convert_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestConvert.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_to_logstash_date":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestDate.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_to_logstash_geoip":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestGeoIp.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_to_logstash_grok":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestGrok.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_to_logstash_gsub":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestGsub.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_json_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestJson.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_lowercase_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestLowercase.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_rename_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestRename.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_set_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestSet.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+                case "ingest_pipeline_to_logstash":
+                    Files.write(
+                            Paths.get(options.valueOf(output)),
+                            IngestPipeline.toLogstash(input(options.valueOf(input)), options.has(appendStdio)).getBytes(StandardCharsets.UTF_8)
+                    );
+                    break;
+
+                default: {
+                    throw new IllegalArgumentException("Can't recognize " + jsFunc + " processor");
+                }
+            }
+
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }
@@ -131,5 +197,14 @@ final class JsUtil {
                  new InputStreamReader(JsUtil.class.getResourceAsStream(file))) {
             engine.eval(reader);
         }
+    }
+
+    /***
+     * Not empty check with nullability
+     * @param s string to check
+     * @return true iff s in not null and not empty
+     */
+    static boolean isNotEmpty(String s) {
+        return s != null && !s.isEmpty();
     }
 }
