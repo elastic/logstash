@@ -59,7 +59,13 @@ allprojects {
   }
 
   tasks.withType(Javadoc).configureEach {
-      options.addStringOption("Xwerror", "-quiet")
+      if (JavaVersion.current().compareTo(JavaVersion.VERSION_14) > 0) {
+          // with JDK 15 the -Xwerror undocumented feature becomes official with switch -Werror
+          options.addBooleanOption("Werror", true)
+      } else {
+          options.addBooleanOption("Xwerror", true)
+      }
+      options.addBooleanOption("Xdoclint:all,-missing", true)
       if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
           options.addBooleanOption("html5", true)
       }
