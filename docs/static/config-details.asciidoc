@@ -2,6 +2,52 @@
 === JVM settings
 
 Configure the jvm settings in the `jvm.options` <<settings-files,settings file>>.
+This file contains a line-delimited list of JVM arguments following a special syntax:
+
+* lines consisting of whitespace only are ignored
+* lines beginning with `#` are treated as comments and are ignored
++
+[source,text]
+-------------------------------------
+# this is a comment
+-------------------------------------
+
+* lines beginning with a `-` are treated as a JVM option that applies
+independent of the version of the JVM
++
+[source,text]
+-------------------------------------
+-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `:` followed by a `-` are treated
+as a JVM option that applies only if the version of the JVM matches the number
++
+[source,text]
+-------------------------------------
+8:-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `-` followed by a `:` are treated
+as a JVM option that applies only if the version of the JVM is greater than or
+equal to the number
++
+[source,text]
+-------------------------------------
+8-:-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `-` followed by a number followed
+by a `:` are treated as a JVM option that applies only if the version of the
+JVM falls in the inclusive range of the two numbers
++
+[source,text]
+-------------------------------------
+8-9:-Xmx2g
+-------------------------------------
+
+* all other lines are rejected
+
 
 [[heap-size]]
 ==== Setting the JVM heap size
