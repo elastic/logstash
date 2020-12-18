@@ -17,9 +17,9 @@
 ################################################################
 
 ## GC configuration
--XX:+UseConcMarkSweepGC
--XX:CMSInitiatingOccupancyFraction=75
--XX:+UseCMSInitiatingOccupancyOnly
+8-14:-XX:+UseConcMarkSweepGC
+8-14:-XX:CMSInitiatingOccupancyFraction=75
+8-14:-XX:+UseCMSInitiatingOccupancyOnly
 
 ## Locale
 # Set the locale language
