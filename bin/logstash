@@ -56,9 +56,6 @@ if [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
   fi
   echo "logstash $LOGSTASH_VERSION"
 else
-  unset CLASSPATH
-  for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do
-    CLASSPATH=${CLASSPATH}${CLASSPATH:+:}${LOGSTASH_JARS}/${J}
-  done
+  CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
   exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.Logstash "$@"
 fi
