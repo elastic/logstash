@@ -116,6 +116,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "pry:",http://pryrepl.org,MIT
 "public_suffix:",https://simonecarletti.com/code/publicsuffix-ruby,MIT
 "puma:",http://puma.io,BSD-3-Clause
+"racc:",https://github.com/ruby/rake,Ruby
 "rack-protection:",http://github.com/rkh/rack-protection,MIT
 "rack:",http://rack.github.io/,MIT
 "rake:",https://github.com/ruby/rake,MIT
