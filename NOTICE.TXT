@@ -298,7 +298,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: amazing_print-1.2.1
+Notice for: amazing_print-1.2.2
 ----------
 
 MIT License
@@ -504,7 +504,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========
-Notice for: avro-1.10.0
+Notice for: avro-1.10.1
 ----------
 
 Apache Avro
@@ -522,7 +522,7 @@ AWS SDK for Ruby
 Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 ==========
-Notice for: aws-sdk-2.11.596
+Notice for: aws-sdk-2.11.632
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -730,7 +730,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-core-2.11.596
+Notice for: aws-sdk-core-2.11.632
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -938,7 +938,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-resources-2.11.596
+Notice for: aws-sdk-resources-2.11.632
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -1502,7 +1502,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: bundler-2.1.4
+Notice for: bundler-2.2.4
 ----------
 
 Portions copyright (c) 2010 Andre Arko  
@@ -2043,7 +2043,7 @@ from the source code management (SCM) system project uses.
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-databind-2.9.10.4
+Notice for: com.fasterxml.jackson.core:jackson-databind-2.9.10.6
 ----------
 
 # Jackson JSON processor
@@ -3229,7 +3229,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: ffi-1.13.1
+Notice for: ffi-1.14.2
 ----------
 
 source: https://github.com/ffi/ffi/blob/1.9.23/LICENSE
@@ -3481,7 +3481,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 ==========
-Notice for: i18n-1.8.5
+Notice for: i18n-1.8.7
 ----------
 
 source: https://github.com/svenfuchs/i18n/blob/v0.6.9/MIT-LICENSE
@@ -3966,7 +3966,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.4.12
+Notice for: jrjackson-0.4.13
 ----------
 
 https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
@@ -6458,7 +6458,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: jruby-openssl-0.10.4
+Notice for: jruby-openssl-0.10.5
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
@@ -6641,7 +6641,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: march_hare-4.2.0
+Notice for: march_hare-4.3.0
 ----------
 
 source: https://github.com/ruby-amqp/march_hare/blob/v3.1.1/LICENSE
@@ -6988,7 +6988,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: nokogiri-1.10.10
+Notice for: nokogiri-1.11.0
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
@@ -7162,7 +7162,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: puma-4.3.6
+Notice for: puma-4.3.7
 ----------
 
 Some code copyright (c) 2005, Zed Shaw
@@ -7191,6 +7191,35 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+==========
+Notice for: racc-1.5.2
+----------
+
+source: https://github.com/ruby/racc/blob/master/COPYING
+
+Copyright (C) 2019 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
 
 ==========
 Notice for: rack-2.2.3
@@ -7270,7 +7299,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-Notice for: redis-4.2.2
+Notice for: redis-4.2.5
 ----------
 
 Copyright (c) 2009 Ezra Zygmuntowicz
@@ -7294,7 +7323,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: ruby-progressbar-1.10.1
+Notice for: ruby-progressbar-1.11.0
 ----------
 
 Copyright (c) 2010-2016 The Kompanee, Ltd
@@ -7433,7 +7462,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: sequel-5.36.0
+Notice for: sequel-5.40.0
 ----------
 
 Copyright (c) 2007-2008 Sharon Rosner
@@ -7969,7 +7998,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-2.0.2
+Notice for: tzinfo-2.0.4
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -7993,7 +8022,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-data-1.2020.1
+Notice for: tzinfo-data-1.2020.6
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -8064,7 +8093,7 @@ Copyright (C) 2012 Fluentd Project
    limitations under the License.
 
 ==========
-Notice for: xml-simple-1.1.5
+Notice for: xml-simple-1.1.8
 ----------
 
 Readme.md: 
