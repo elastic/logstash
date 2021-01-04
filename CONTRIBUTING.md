@@ -3,6 +3,8 @@
 All contributions are welcome: ideas, patches, documentation, bug reports,
 complaints, etc!
 
+If you want to be rewarded for your contributions, sign up for the [Elastic Contributor Program](https://www.elastic.co/community/contributor). Each time you make a valid contribution, you’ll earn points that increase your chances of winning prizes and being recognized as a top contributor.
+
 Programming is not a required skill, and there are many ways to help out!
 It is more important to us that you are able to contribute.
 
