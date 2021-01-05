@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyException;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyNumeric;
 import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -124,7 +123,7 @@ public final class Logstash implements Runnable, AutoCloseable {
             halt(125);
         } else if (t instanceof IOError) {
             halt(124);
-        } else if (t instanceof AssertionError) {
+        } else if (t instanceof LinkageError) {
             halt(123);
         } else if (t instanceof Error) {
             halt(120);
