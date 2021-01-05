@@ -71,18 +71,23 @@ public final class Logstash implements Runnable, AutoCloseable {
         ) {
             logstash.run();
         } catch (final IllegalStateException e) {
-            String errorMessage = null;
-            if (e.getMessage() != null && e.getMessage().contains("Could not load FFI Provider")) {
-                errorMessage =
-                        "Error accessing temp directory: " + System.getProperty("java.io.tmpdir") +
-                        " this often occurs because the temp directory has been mounted with NOEXEC or" +
-                        " the Logstash user has insufficient permissions on the directory. \n" +
-                        "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
-                        "file to an alternate directory or correcting the Logstash user's permissions.";
+            Throwable t = e;
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.startsWith(UNCLEAN_SHUTDOWN_PREFIX)) {
+                    t = e.getCause(); // be less verbose with uncleanShutdown's wrapping exception
+                } else if (message.contains("Could not load FFI Provider")) {
+                    message =
+                            "Error accessing temp directory: " + System.getProperty("java.io.tmpdir") +
+                                    " this often occurs because the temp directory has been mounted with NOEXEC or" +
+                                    " the Logstash user has insufficient permissions on the directory. \n" +
+                                    "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
+                                    "file to an alternate directory or correcting the Logstash user's permissions.";
+                }
             }
-            handleFatalError("fatal error", e, errorMessage);
+            handleFatalError(message, t);
         } catch (final Throwable t) {
-            handleFatalError("fatal error", t, null);
+            handleFatalError("", t);
         }
 
         System.exit(0);
@@ -100,18 +105,15 @@ public final class Logstash implements Runnable, AutoCloseable {
     private static void installGlobalUncaughtExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler((thread, e) -> {
             if (e instanceof Error) {
-                handleFatalError("uncaught error (in thread " + thread.getName() + ")",  e, null);
+                handleFatalError("uncaught error (in thread " + thread.getName() + ")",  e);
             } else {
                 LOGGER.error("uncaught exception (in thread " + thread.getName() + ")", e);
             }
         });
     }
 
-    private static void handleFatalError(String message, Throwable t, String supplementaryErrorMessage) {
+    private static void handleFatalError(String message, Throwable t) {
         LOGGER.fatal(message, t);
-        if (supplementaryErrorMessage != null) {
-            LOGGER.error(supplementaryErrorMessage);
-        }
 
         if (t instanceof InternalError) {
             halt(128);
@@ -240,8 +242,10 @@ public final class Logstash implements Runnable, AutoCloseable {
         return resolved.toString();
     }
 
+    private static final String UNCLEAN_SHUTDOWN_PREFIX = "Logstash stopped processing because of an error: ";
+
     private static void uncleanShutdown(final Exception ex) {
-        throw new IllegalStateException("Logstash stopped processing because of an error: " + ex.getMessage(), ex);
+        throw new IllegalStateException(UNCLEAN_SHUTDOWN_PREFIX + ex.getMessage(), ex);
     }
 
 }
