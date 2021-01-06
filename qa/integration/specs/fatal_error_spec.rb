@@ -49,7 +49,7 @@ describe "uncaught exception" do
 
   it "logs unexpected exception (from Java thread)" do
     config = "input { generator { count => 1 message => 'unexpected' } } "
-    config += "filter { ruby { code => 'java.lang.Thread.new { sleep(1); raise java.io.EOFException.new event.get(\"message\") }.start' } }"
+    config += "filter { ruby { code => 'java.lang.Thread.new { raise java.io.EOFException.new event.get(\"message\") }.start; sleep(1.5)' } }"
 
     spawn_logstash_and_wait_for_exit! config, timeout
 
