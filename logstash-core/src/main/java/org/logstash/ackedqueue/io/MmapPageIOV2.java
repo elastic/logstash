@@ -190,6 +190,7 @@ public final class MmapPageIOV2 implements PageIO {
         }
         buffer.position(0);
         buffer.put(VERSION_TWO);
+        buffer.force();
         this.head = 1;
         this.minSeqNum = 0L;
         this.elementCount = 0;
