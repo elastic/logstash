@@ -35,7 +35,7 @@ import java.util.function.Predicate;
 @JRubyClass(name = "Setting")
 public class SettingExt extends RubyObject {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -4283509226931417677L;
 
     private ProxyJavaSetting setting;
 
@@ -309,9 +309,16 @@ public class SettingExt extends RubyObject {
 
     @JRubyMethod(name = "clone")
     public IRubyObject rubyClone(ThreadContext context) {
-        final SettingExt settingExt = new SettingExt(context.runtime, RubyUtil.SETTING_CLASS);
-        settingExt.setting = new ProxyJavaSetting(setting);
-        return settingExt;
+//        this doesn't work
+//        final SettingExt settingExt = new SettingExt(context.runtime, RubyUtil.SETTING_CLASS);
+//        settingExt.setting = new ProxyJavaSetting(setting);
+//        return settingExt;
+//        this works
+        try {
+            return (IRubyObject) this.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @JRubyMethod(name = "klass")
