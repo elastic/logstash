@@ -68,26 +68,23 @@ end
 
 def bootstrap_elastic_password
   # we can't use Belzebuth here since the library doesn't support STDIN injection
-  cmd = "bin/elasticsearch-keystore add bootstrap.password -f -x"
-  result = Dir.chdir(get_elasticsearch_path) do |dir|
-    _, status = Open3.capture2(cmd, :stdin_data => elastic_password)
-    status
-  end
-  unless result.success?
-    raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresponse: #{response}"
+  cmd = File.join(get_elasticsearch_path, 'bin/elasticsearch-keystore')
+  out_err, status = Open3.capture2e(cmd, 'add', 'bootstrap.password', '-f', '-x', :stdin_data => elastic_password)
+  unless status.success?
+    raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresult: #{status.inspect} - #{out_err}"
   end
 end
 
 def bootstrap_password_exists?
   cmd = "bin/elasticsearch-keystore list"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
+  response = Belzebuth.run(cmd, :directory => get_elasticsearch_path)
   response.successful? && response.stdout_lines.any? { |line| line =~ /^bootstrap.password$/ }
 end
 
 
 def elasticsearch_xpack_installed?
   cmd = "bin/elasticsearch-plugin list"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })
+  response = Belzebuth.run(cmd, :directory => get_elasticsearch_path)
   response.stdout_lines.any? { |line| line =~ /x-pack/ }
 end
 
