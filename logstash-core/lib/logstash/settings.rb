@@ -463,14 +463,65 @@ module LogStash
 
     class String < Setting
       def initialize(name, default=nil, strict=true, possible_strings=[])
-        @possible_strings = possible_strings
-        super(name, ::String, default, strict)
+        @spec = Java::OrgLogstashSettings::StringSetting.spec(name, default, possible_strings)
+        @value_is_set = false
+      end
+
+      def value
+        @value_is_set ? @setting.getValue() : @spec.getDefaultValue()
+      end
+
+      def set?
+        @value_is_set
+      end
+
+      def strict?
+        @spec.isStrict()
+      end
+
+      def set(value)
+        begin
+          @setting = Java::OrgLogstashSettings::StringSetting.new(value, @spec)
+        rescue java.lang.IllegalArgumentException => e
+          raise ArgumentError.new(e.message)
+        end
+        @value_is_set = true
+        @setting.getValue()
+      end
+
+      def reset
+        @setting = nil
+        @value_is_set = false
+      end
+
+      def to_hash
+        {
+          "name" => @spec.getName(),
+          "klass" => @spec.getKlass(),
+          "value" => @setting.getValue(),
+          "value_is_set" => @value_is_set,
+          "default" => @spec.getDefaultValue(),
+          # Proc#== will only return true if it's the same obj
+          # so no there's no point in comparing it
+          # also thereś no use case atm to return the proc
+          # so let's not expose it
+          #"validator_proc" => @validator_proc
+        }
+      end
+
+      def name
+        @spec.getName()
+      end
+
+      def default
+        @spec.getDefaultValue()
       end
 
       def validate(value)
-        super(value)
-        unless @possible_strings.empty? || @possible_strings.include?(value)
-          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+        begin
+          @spec.validate(value)
+        rescue java.lang.IllegalArgumentException => e
+          raise ArgumentError.new(e.message)
         end
       end
     end
