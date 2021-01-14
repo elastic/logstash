@@ -205,14 +205,26 @@ tasks.register("installBundler") {
     outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
     doLast {
       gem(projectDir, buildDir, "bundler", "~> 2", "${projectDir}/vendor/bundle/jruby/2.5.0")
-  }
+    }
+}
+
+tasks.register("updateRubygems", Exec) {
+    dependsOn assemblyDeps
+
+    // RGs 3.2 also packages Bundler -> will end up being a (stdlib) builtin library
+    outputs.files file("${projectDir}/vendor/jruby/bin/bundle")
+
+    workingDir "${projectDir}/vendor/jruby"
+    commandLine 'bin/jruby', '-S', 'gem', 'update', '--system', '3.2.5'
+
+    // NOTE: after the upgrade we could uninstall the rubygems-update gem
 }
 
 tasks.register("bootstrap"){
-    dependsOn installBundler
+    dependsOn updateRubygems
     doLast {
       setupJruby(projectDir, buildDir)
-  }
+    }
 }
 
 
