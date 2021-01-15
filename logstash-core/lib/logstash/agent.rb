@@ -363,7 +363,23 @@ class LogStash::Agent
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
 
     slow_start_monitor = SlowStartMonitor.new(self)
-    slow_start_monitor.start_creating_pipelines
+    slow_start_monitor.start_creating_pipelines do |still_loading_pipelines|
+      logger.warn("Starving pipelines loading", :slow_pipelines => still_loading_pipelines)
+      if auto_reload?
+        # retrieve the pipelines config and compute which Reload actions are present
+        results = @source_loader.fetch
+        if results.success?
+          pipeline_configs = results.response
+          pipeline_actions = resolve_actions(pipeline_configs)
+          logger.info("new pipeline actions", :pipeline_actions => pipeline_actions)
+          reload_pipeline_ids = pipeline_actions
+                .select {|action| action.is_a?(LogStash::PipelineAction::Reload)}
+                .map {|action| action.pipeline_id}
+          pipelines_to_force_kill = reload_pipeline_ids & still_loading_pipelines
+          logger.warn("Pipelines to be killed: ", :pipelines_to_force_kill => pipelines_to_force_kill)
+        end
+      end
+    end
 
     pipeline_actions.map do |action|
       Thread.new(action, converge_result) do |action, converge_result|
@@ -412,7 +428,7 @@ class LogStash::Agent
   end
 
   def resolve_actions(pipeline_configs)
-    fail("Illegal access to `LogStash::Agent#resolve_actions()` without exclusive lock at #{caller[1]}") unless @convergence_lock.owned?
+#     fail("Illegal access to `LogStash::Agent#resolve_actions()` without exclusive lock at #{caller[1]}") unless @convergence_lock.owned?
     @state_resolver.resolve(@pipelines_registry, pipeline_configs)
   end
 
@@ -575,13 +591,14 @@ class SlowStartMonitor
     @agent = agent
   end
 
-  def start_creating_pipelines
+  def start_creating_pipelines(&block)
     @thread = Thread.new do
       Stud.interval(@monitoring_interval, :sleep_then_run => true) do
         pipeline_names = @agent.loading_pipelines.keys
         if !Stud.stop?
           still_loading_pipelines = @agent.loading_pipelines.keys & pipeline_names
-          logger.warn("Starving pipelines loading", :slow_pipelines => still_loading_pipelines)
+#           logger.warn("Starving pipelines loading", :slow_pipelines => still_loading_pipelines)
+          block.call(still_loading_pipelines)
         end
       end
     end
