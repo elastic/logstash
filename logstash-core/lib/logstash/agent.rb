@@ -362,6 +362,8 @@ class LogStash::Agent
 
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
 
+    @running_action_threads = {}
+
     slow_start_monitor = SlowStartMonitor.new(self)
     slow_start_monitor.start_creating_pipelines do |still_loading_pipelines|
       logger.warn("Starving pipelines loading", :slow_pipelines => still_loading_pipelines)
@@ -371,18 +373,20 @@ class LogStash::Agent
         if results.success?
           pipeline_configs = results.response
           pipeline_actions = resolve_actions(pipeline_configs)
-          logger.info("new pipeline actions", :pipeline_actions => pipeline_actions)
           reload_pipeline_ids = pipeline_actions
                 .select {|action| action.is_a?(LogStash::PipelineAction::Reload)}
                 .map {|action| action.pipeline_id}
           pipelines_to_force_kill = reload_pipeline_ids & still_loading_pipelines
           logger.warn("Pipelines to be killed: ", :pipelines_to_force_kill => pipelines_to_force_kill)
+          pipelines_to_force_kill.each do |pipeline_id|
+            @running_action_threads[pipeline_id].kill
+          end
         end
       end
     end
 
     pipeline_actions.map do |action|
-      Thread.new(action, converge_result) do |action, converge_result|
+      @running_action_threads[action.pipeline_id] = Thread.new(action, converge_result) do |action, converge_result|
         LogStash::Util.set_thread_name("Converge #{action}")
         # We execute every task we need to converge the current state of pipelines
         # for every task we will record the action result, that will help us
