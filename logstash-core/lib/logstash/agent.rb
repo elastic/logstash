@@ -362,6 +362,9 @@ class LogStash::Agent
 
     converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
 
+    slow_start_monitor = SlowStartMonitor.new(self)
+    slow_start_monitor.start_creating_pipelines
+
     pipeline_actions.map do |action|
       Thread.new(action, converge_result) do |action, converge_result|
         LogStash::Util.set_thread_name("Converge #{action}")
@@ -396,6 +399,8 @@ class LogStash::Agent
         end
       end
     end.each(&:join)
+
+    slow_start_monitor.finished_pipeline_creation
 
     logger.trace? && logger.trace("Converge results",
       :success => converge_result.success?,
@@ -556,3 +561,33 @@ class LogStash::Agent
     end
   end
 end # class LogStash::Agent
+
+
+class SlowStartMonitor
+  include LogStash::Util::Loggable
+
+  attr_reader :logger
+
+  def initialize(agent)
+    @logger = self.class.logger
+    @monitor_thread = nil
+    @monitoring_interval = 5 #seconds
+    @agent = agent
+  end
+
+  def start_creating_pipelines
+    @thread = Thread.new do
+      Stud.interval(@monitoring_interval, :sleep_then_run => true) do
+        pipeline_names = @agent.loading_pipelines.keys
+        if !Stud.stop?
+          still_loading_pipelines = @agent.loading_pipelines.keys & pipeline_names
+          logger.warn("Starving pipelines loading", :slow_pipelines => still_loading_pipelines)
+        end
+      end
+    end
+  end
+
+  def finished_pipeline_creation
+    Stud.stop!(@thread)
+  end
+end
