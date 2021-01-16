@@ -2,7 +2,7 @@
 
 unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
-setup
+setup_cli_tool
 
 if [ -z "$1" ]; then
   if [ -r /etc/logstash/startup.options ]; then

@@ -26,7 +26,7 @@ else
 fi
 
 . "$(cd `dirname ${SOURCEPATH}`/..; pwd)/bin/logstash.lib.sh"
-setup
+setup_cli_tool
 
 unset CLASSPATH
 for J in $(cd "${LOGSTASH_JARS}"; ls *.jar); do

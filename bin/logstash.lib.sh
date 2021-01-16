@@ -133,14 +133,7 @@ setup_java() {
   # Set the initial JVM options from the jvm.options file.  Look in
   # /etc/logstash first, and break if that file is found readable there.
   if [ -z "$LS_JVM_OPTS" ]; then
-      for jvm_options in /etc/logstash/jvm.options \
-                        "$LOGSTASH_HOME"/config/jvm.options;
-                         do
-          if [ -r "$jvm_options" ]; then
-              LS_JVM_OPTS=$jvm_options
-              break
-          fi
-      done
+    LS_JVM_OPTS=$(find_jvm_options_file "jvm.options")
   fi
   # then override with anything provided
   LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
@@ -149,6 +142,15 @@ setup_java() {
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
   export JAVA_OPTS
+}
+
+find_jvm_options_file() {
+  for jvm_options in "/etc/logstash/${1}" "${LOGSTASH_HOME}/config/${1}"; do
+     if [ -r "${jvm_options}" ] ; then
+       echo "${jvm_options}"
+       break
+     fi
+  done
 }
 
 setup_vendored_jruby() {
@@ -183,6 +185,14 @@ setup_vendored_jruby() {
 setup() {
   setup_java
   setup_vendored_jruby
+}
+
+setup_cli_tool() {
+  cli_jvm_opts=$(find_jvm_options_file "cli-jvm.options")
+  LS_JAVA_OPTS="$(parse_jvm_options "${cli_jvm_opts}") ${LS_JAVA_OPTS}"
+  export LS_JAVA_OPTS
+
+  setup
 }
 
 ruby_exec() {
