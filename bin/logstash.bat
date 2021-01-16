@@ -52,7 +52,7 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 	call :concat "%%i"
 )
 
-%JAVA% %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
+%JAVA% %JAVA_OPTS% -cp "%LS_CLASSPATH%" org.logstash.Logstash %*
 
 goto :end
 
@@ -80,10 +80,10 @@ echo logstash !LOGSTASH_VERSION!
 goto :end
 
 :concat
-IF not defined CLASSPATH (
-  set CLASSPATH="%~1"
+IF not defined LS_CLASSPATH (
+  set LS_CLASSPATH="%~1"
 ) ELSE (
-  set CLASSPATH=%CLASSPATH%;"%~1"
+  set LS_CLASSPATH="%~1";%LS_CLASSPATH%
 )
 goto :eof
 
