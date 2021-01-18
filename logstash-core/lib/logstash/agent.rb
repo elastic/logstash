@@ -206,6 +206,15 @@ class LogStash::Agent
     logger.error("An exception happened when converging configuration", attributes)
   end
 
+  # Beware the usage with #resolve_actions_and_converge_state
+  # Calling this method in plugin #register causes deadlock.
+  # For example, resolve_actions_and_converge_state -> pipeline reload_action -> plugin register -> converge_state_with_resolved_actions
+  def converge_state_with_resolved_actions(pipeline_actions)
+    @convergence_lock.synchronize do
+      converge_state(pipeline_actions)
+    end
+  end
+
   # Calculate the Logstash uptime in milliseconds
   #
   # @return [Integer] Uptime in milliseconds
@@ -321,6 +330,8 @@ class LogStash::Agent
       converge_state(pipeline_actions)
     end
   end
+
+
 
   # We depends on a series of task derived from the internal state and what
   # need to be run, theses actions are applied to the current pipelines to converge to
