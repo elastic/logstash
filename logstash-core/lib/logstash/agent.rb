@@ -331,8 +331,6 @@ class LogStash::Agent
     end
   end
 
-
-
   # We depends on a series of task derived from the internal state and what
   # need to be run, theses actions are applied to the current pipelines to converge to
   # the desired state.
