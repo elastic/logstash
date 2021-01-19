@@ -333,7 +333,7 @@ describe LogStash::Agent do
       end
     end
 
-    describe "#resolve_actions_and_converge_state" do
+    describe "#stop_pipeline" do
       let(:config_string) { "input { generator { id => 'old'} } output { }" }
       let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
       let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
@@ -348,10 +348,9 @@ describe LogStash::Agent do
         subject.shutdown
       end
 
-      context "when the upgrade succeeds" do
-        it "starts the pipeline" do
-          action = LogStash::PipelineAction::Stop.new(:main)
-          converge_result = subject.converge_state_with_resolved_actions([action])
+      context "when agent stops the pipeline" do
+        it "should stop successfully", :aggregate_failures do
+          converge_result = subject.stop_pipeline('main')
 
           expect(converge_result).to be_a_successful_converge
           expect(subject.get_pipeline('main').stopped?).to be_truthy
