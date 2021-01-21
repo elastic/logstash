@@ -81,9 +81,9 @@ goto :end
 
 :concat
 IF not defined CLASSPATH (
-  set CLASSPATH="%~1"
+  set CLASSPATH=%~1
 ) ELSE (
-  set CLASSPATH=%CLASSPATH%;"%~1"
+  set CLASSPATH=%CLASSPATH%;%~1
 )
 goto :eof
 
