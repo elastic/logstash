@@ -57,8 +57,8 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 goto :end
 
 :version
-set "LOGSTASH_VERSION_FILE1=%LS_HOME%\logstash-core\versions-gem-copy.yml"
-set "LOGSTASH_VERSION_FILE2=%LS_HOME%\versions.yml"
+set LOGSTASH_VERSION_FILE1="%LS_HOME%\logstash-core\versions-gem-copy.yml"
+set LOGSTASH_VERSION_FILE2="%LS_HOME%\versions.yml"
 
 set "LOGSTASH_VERSION=Version not detected"
 if exist !LOGSTASH_VERSION_FILE1! (
