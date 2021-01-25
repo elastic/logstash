@@ -275,9 +275,6 @@ class LogStash::Runner < Clamp::StrictCommand
       LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
     end
 
-    # override log level that may have been introduced from a custom log4j config file
-    LogStash::Logging::Logger::configure_logging(setting("log.level"))
-
     super(*[args])
   end
 
@@ -287,6 +284,10 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
+
+    # override log level that may have been introduced from a custom log4j config file
+    LogStash::Logging::Logger::configure_logging(setting("log.level"))
+
 
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
