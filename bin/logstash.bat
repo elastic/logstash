@@ -52,21 +52,21 @@ set JAVA_OPTS=%LS_JAVA_OPTS%
 goto :end
 
 :version
-set "LOGSTASH_VERSION_FILE1=%LS_HOME%\logstash-core\versions-gem-copy.yml"
-set "LOGSTASH_VERSION_FILE2=%LS_HOME%\versions.yml"
+set LOGSTASH_VERSION_FILE1="%LS_HOME%\logstash-core\versions-gem-copy.yml"
+set LOGSTASH_VERSION_FILE2="%LS_HOME%\versions.yml"
 
 set "LOGSTASH_VERSION=Version not detected"
 if exist !LOGSTASH_VERSION_FILE1! (
 	rem this file is present in zip, deb and rpm artifacts and after bundle install
 	rem but might not be for a git checkout type install
-	for /F "tokens=1,2 delims=: " %%a in (!LOGSTASH_VERSION_FILE1!) do (
+	for /F "tokens=1,2 delims=: " %%a in ('type !LOGSTASH_VERSION_FILE1!') do (
 		if "%%a"=="logstash" set LOGSTASH_VERSION=%%b
 	)
 ) else (
 	if exist !LOGSTASH_VERSION_FILE2! (
 		rem this file is present for a git checkout type install
 		rem but its not in zip, deb and rpm artifacts (and in integration tests)
-		for /F "tokens=1,2 delims=: " %%a in (!LOGSTASH_VERSION_FILE2!) do (
+		for /F "tokens=1,2 delims=: " %%a in ('type !LOGSTASH_VERSION_FILE2!') do (
 			if "%%a"=="logstash" set LOGSTASH_VERSION=%%b
 		)
 	)
@@ -76,9 +76,9 @@ goto :end
 
 :concat
 IF not defined CLASSPATH (
-  set CLASSPATH="%~1"
+  set CLASSPATH=%~1
 ) ELSE (
-  set CLASSPATH=%CLASSPATH%;"%~1"
+  set CLASSPATH=%CLASSPATH%;%~1
 )
 goto :eof
 
