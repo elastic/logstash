@@ -296,10 +296,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
           rescue => e
             # WorkerLoop.run() catches all Java Exception class and re-throws as IllegalStateException with the
             # original exception as the cause
-            @logger.error(
-              "Pipeline worker error, the pipeline will be stopped",
-              default_logging_keys(:error => e.cause.message, :exception => e.cause.class, :backtrace => e.cause.backtrace)
-            )
+            e = e.is_a?(java.lang.IllegalStateException) ? e.cause : e
+            @logger.error("Pipeline worker error, the pipeline will be stopped", error_logging_keys(e))
           end
         end
         @worker_threads << thread
@@ -407,10 +405,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       if plugin.stop?
         @logger.debug(
           "Input plugin raised exception during shutdown, ignoring it.",
-           default_logging_keys(
-             :plugin => plugin.class.config_name,
-             :exception => e.message,
-             :backtrace => e.backtrace))
+          error_logging_keys(e, :plugin => plugin.class.config_name))
         return
       end
 
@@ -552,10 +547,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     rescue => e
       @logger.warn(
         "plugin raised exception while closing, ignoring",
-        default_logging_keys(
-          :plugin => plugin.class.config_name,
-          :exception => e.message,
-          :backtrace => e.backtrace))
+        error_logging_keys(e, :plugin => plugin.class.config_name))
     end
   end
 
@@ -573,9 +565,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         @drain_queue,
         @preserve_event_order)
     rescue => e
-      @logger.error(
-        "Worker loop initialization error",
-        default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+      @logger.error("Worker loop initialization error", error_logging_keys(e))
       nil
     end
   end
@@ -588,8 +578,23 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def default_logging_keys(other_keys = {})
-    keys = {:pipeline_id => pipeline_id}.merge other_keys
+    keys = { :pipeline_id => pipeline_id }
+    keys.merge! other_keys
     keys[:thread] ||= thread.inspect if thread
+    keys
+  end
+
+  def error_logging_keys(e, other_keys = {})
+    keys = default_logging_keys(other_keys)
+    keys[:message] = e.message
+    keys[:exception] = e.class
+    keys[:backtrace] = e.backtrace
+    cause = e.cause
+    if cause && cause != e
+      cause_details = { message: cause.message, exception: cause.class }
+      cause_details[:backtrace] = cause.backtrace if @logger.debug?
+      keys[:cause] = cause_details
+    end
     keys
   end
 
