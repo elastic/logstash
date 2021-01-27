@@ -86,7 +86,7 @@ class LogStash::Agent
 
     # Normalize time interval to seconds
     # we can't do .to_seconds here as values under 1 seconds are rounded to 0
-    # causing a race condition in the test. So we get the nanos and convert to seconds
+    # so we get the nanos and convert to seconds instead.
     @reload_interval = setting("config.reload.interval").to_nanos * 1e-9
 
     @collect_metric = setting("metric.collect")
