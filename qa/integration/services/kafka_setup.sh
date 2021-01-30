@@ -10,7 +10,7 @@ if [ -n "${KAFKA_VERSION+1}" ]; then
     echo "KAFKA_VERSION is $KAFKA_VERSION"
     version=$KAFKA_VERSION
 else
-    version=2.4.1
+    version=2.7.0
 fi
 
 KAFKA_HOME=$INSTALL_DIR/kafka
@@ -23,7 +23,7 @@ setup_kafka() {
     local version=$1
     if [ ! -d $KAFKA_HOME ]; then
         echo "Downloading Kafka version $version"
-        curl -s -o $INSTALL_DIR/kafka.tgz "https://mirrors.ocf.berkeley.edu/apache/kafka/$version/kafka_2.11-$version.tgz"
+        curl -s -o $INSTALL_DIR/kafka.tgz "https://downloads.apache.org/kafka/$version/kafka_2.13-$version.tgz"
         mkdir $KAFKA_HOME && tar xzf $INSTALL_DIR/kafka.tgz -C $KAFKA_HOME --strip-components 1
         rm $INSTALL_DIR/kafka.tgz
         echo "dataDir=$ZOOKEEPER_DATA_DIR" >> $KAFKA_HOME/config/zookeeper.properties
