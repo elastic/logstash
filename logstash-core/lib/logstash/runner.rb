@@ -228,17 +228,14 @@ class LogStash::Runner < Clamp::StrictCommand
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
-    :attribute_name => "verbose",
     :new_flag => "log.level", :new_value => "info"
 
   deprecated_option ["--debug"], :flag,
     I18n.t("logstash.runner.flag.debug"),
-    :attribute_name => "debug",
     :new_flag => "log.level", :new_value => "debug"
 
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
-    :attribute_name => "quiet",
     :new_flag => "log.level", :new_value => "error"
 
   # We configure the registry and load any plugin that can register hooks
