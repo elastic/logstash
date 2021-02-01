@@ -51,6 +51,7 @@ require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
+require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
 
@@ -227,14 +228,17 @@ class LogStash::Runner < Clamp::StrictCommand
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
+    :attribute_name => "verbose",
     :new_flag => "log.level", :new_value => "info"
 
   deprecated_option ["--debug"], :flag,
     I18n.t("logstash.runner.flag.debug"),
+    :attribute_name => "debug",
     :new_flag => "log.level", :new_value => "debug"
 
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
+    :attribute_name => "quiet",
     :new_flag => "log.level", :new_value => "error"
 
   # We configure the registry and load any plugin that can register hooks
@@ -260,6 +264,15 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def run(args)
     return 1 unless LogStash::Util::SettingsHelper.from_yaml(args)
+    super(*[args])
+  end
+
+  def execute
+    LogStash::Util::SettingsHelper.post_process
+
+    require "logstash/util"
+    require "logstash/util/java_version"
+    require "stud/task"
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
@@ -274,20 +287,8 @@ class LogStash::Runner < Clamp::StrictCommand
       file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
       LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
     end
-
-    super(*[args])
-  end
-
-  def execute
-    LogStash::Util::SettingsHelper.post_process
-
-    require "logstash/util"
-    require "logstash/util/java_version"
-    require "stud/task"
-
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
-
 
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
@@ -296,6 +297,10 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
+    end
+
+    while(msg = LogStash::DeprecationMessage.instance.shift)
+      logger.warn msg
     end
 
     # Skip any validation and just return the version
