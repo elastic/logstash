@@ -66,12 +66,6 @@ for i in "$@"; do
  fi
 done
 
-parse_jvm_options() {
-  if [ -f "$1" ]; then
-    echo "$(grep "^-" "$1" | tr '\n' ' ')"
-  fi
-}
-
 setup_bundled_jdk_part() {
   OS_NAME="$(uname -s)"
   if [ $OS_NAME = "Darwin" ]; then
@@ -79,6 +73,16 @@ setup_bundled_jdk_part() {
   else
     BUNDLED_JDK_PART="jdk"
   fi
+}
+
+# Accepts 1 parameter which is the path the directory where logstash jar are contained.
+setup_classpath() {
+  local jar_directory="${1?jar directory required}"
+  local classpath
+  for J in $(cd "${jar_directory}"; ls *.jar); do
+    classpath=${classpath}${classpath:+:}${jar_directory}/${J}
+  done
+  echo "${classpath}"
 }
 
 setup_java() {
@@ -130,24 +134,12 @@ setup_java() {
     LS_GC_LOG_FILE="./logstash-gc.log"
   fi
 
-  # Set the initial JVM options from the jvm.options file.  Look in
-  # /etc/logstash first, and break if that file is found readable there.
-  if [ -z "$LS_JVM_OPTS" ]; then
-      for jvm_options in /etc/logstash/jvm.options \
-                        "$LOGSTASH_HOME"/config/jvm.options;
-                         do
-          if [ -r "$jvm_options" ]; then
-              LS_JVM_OPTS=$jvm_options
-              break
-          fi
-      done
-  fi
-  # then override with anything provided
-  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
-  JAVA_OPTS=$LS_JAVA_OPTS
-
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
+
+  CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
+  JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
+  unset CLASSPATH
   export JAVA_OPTS
 }
 
