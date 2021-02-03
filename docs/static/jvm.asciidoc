@@ -77,9 +77,9 @@ In the `config/jvm.options` file, replace all CMS related flags with:
 [source,shell]
 -----
 ## GC configuration
-8-14:-XX:+UseConcMarkSweepGC
-8-14:-XX:CMSInitiatingOccupancyFraction=75
-8-14:-XX:+UseCMSInitiatingOccupancyOnly
+8-13:-XX:+UseConcMarkSweepGC
+8-13:-XX:CMSInitiatingOccupancyFraction=75
+8-13:-XX:+UseCMSInitiatingOccupancyOnly
 -----
 
 For more information about how to use `jvm.options`, please refer to <<jvm-settings>>.
