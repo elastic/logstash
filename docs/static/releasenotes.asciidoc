@@ -55,7 +55,7 @@ pick new pipelines that match the wildcard set in
 
 ==== Performance improvements and notable issues fixed
 
-===== Central Pipeline Management improvements 
+**Central Pipeline Management improvements.** 
 
 This release introduces a fix to a long-standing issue for Logstash Central
 Management in Kibana. When a user tried to delete a Logstash pipeline using
@@ -65,10 +65,7 @@ been resolved: https://github.com/elastic/logstash/issues/12387[[Meta] support
 xpack delete and recreate pipeline with same pipeline ID and config string
 #12387].
 
-
-
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.11.0
+==== Logstash core
 
 * [7.x clean backport of #12307] stop inputs upon a worker error before terminating the pipeline https://github.com/elastic/logstash/pull/12342[#12342]
 * [7x backport] Add optional sourceURL to license report CSV https://github.com/elastic/logstash/pull/12362[#12362]
@@ -98,54 +95,54 @@ xpack delete and recreate pipeline with same pipeline ID and config string
 * REE: gauge reload interval https://github.com/elastic/logstash/pull/12494[#12494]
 * plugin: adds `:validate => :field_reference` (7.x backport) https://github.com/elastic/logstash/pull/12521[#12521]
 
-=== Logstash Commits between 7.11 and 7.10.2
+===== Logstash Commits between 7.11 and 7.10.2
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.10.2..7.11"
-
-7adb93882 - (HEAD -> 7.11, origin/7.11) [forwardport 7.11] Release notes for 7.10.2 (#12553) (12 days ago) <Joao Duarte>
 101d61bd6 -  Fix: make sure LS exits when running into fatal errors (#12563) (13 days ago) <Ry Biesemeyer>
+
 5ae08a09a - pq: eliminate corruption by forcing version byte to be persisted (2 weeks ago) <Ry Biesemeyer>
-716b9996a - Doc: Add info on contributor program (#12546) (3 weeks ago) <Karen Metts>
-5292cd9ec - Version bumps for 7.11 (#12522) (6 weeks ago) <Ry Biesemeyer>
-8746cdeda - plugin: adds `:validate => :field_reference` (#12459) (#12521) (6 weeks ago) <Ry Biesemeyer>
-06418b863 - Fix error due to missing variable when listitng tasks and no architecture is externally specified with -Pos_arch= (7 weeks ago) <andsel>
-8550059a2 - Forward port of 7.10.1 release notes to 7.x (7 weeks ago) <andsel>
+
+06418b863 - Fix error due to missing variable when listing tasks and no architecture is externally specified with -Pos_arch= (7 weeks ago) <andsel>
+
 0588d5105 - [7x_backport] Add UBI8 image specific labels back to the docker image (#12502) (7 weeks ago) <Rob Bavey>
+
 7457bc903 - REE: output reload interval as nanos instead of object (8 weeks ago) <Ry Biesemeyer>
+
 8539d3fb9 - Moved LogStash::Util::TimeValue to Java (8 weeks ago) <andsel>
+
 872d25b9f - Moved ModulesSettingArray from Ruby to Java. (8 weeks ago) <andsel>
+
 f50cc38ea - [Doc] expanded the description of how to obtain the logger's names form Java and Ruby class names (9 weeks ago) <andsel>
+
 fee5c7202 - Fix an API break, a Ruby's ArgumentError should be raised. Reestablished Ruby specs to test moved code. (9 weeks ago) <andsel>
+
 e9aabdc3f - Fix an API break in CloudSettingsAuth, a Ruby's ArgumentError should be raised. Bring back Ruby specs to double check the change also in Ruby context. (9 weeks ago) <andsel>
+
 45099c1b5 - remove evaluation dir from JRuby bundled did_you_mean gem (9 weeks ago) <Colin Surprenant>
+
 f37d9a462 - Drop Password Ruby class to use only the Java version (10 weeks ago) <andsel>
+
 747c38d6d - Move code of CloudSettingAuth to Java - moved the class's code - moved spec tests to JUnit tests (10 weeks ago) <andsel>
+
 44fa84985 - [7x backport] Fix docker image metadata (#12450) (10 weeks ago) <Rob Bavey>
+
 b1e5c4f25 - Moved CloudSettingId class and tests to Java (2 months ago) <andsel>
-cf7e2e308 - [Forward] Doc:Release notes 7.10.0 to 7.x (#12433) (2 months ago) <Karen Metts>
+
 88ceb5ccf - Added console prints in ingest-converter for not recognized processor definitions. (3 months ago) <andsel>
-68f9ba899 - [7x backport] Add more information to UnexpectedTypeException (#12429) (3 months ago) <Rob Bavey>
-aba562e88 - [backport 7x] hash function of pipeline config  with metadata (#12425) (3 months ago) <kaisecheng>
-1ea4837b7 - [backport 7x] delete pipeline in registry (#12419) (3 months ago) <kaisecheng>
-5037fd23e - [Backport] Doc: Add bundled JDK info (#12417) (3 months ago) <Karen Metts>
-d473e0b7c - [backport 7x] Doc: wildcards in xpack.management.pipeline.id (#12416) (3 months ago) <kaisecheng>
-92f304a13 - [7.x backport] Add addresses to p2pipeline input and output plugin metrics (#12413) (3 months ago) <Rob Bavey>
-958ffa71f - add wildcard support in xpack pipeline id (#12370) (#12407) (3 months ago) <kaisecheng>
-54505a9b4 - [Backport]Doc:Restructure troubleshooting docs and add plugin tracing (#12405) (3 months ago) <Karen Metts>
-50428785c - [Backport][Doc]Relocate logstash-to-cloud info for increased visibility (#12400) (3 months ago) <Karen Metts>
-c96543b01 - [7x backport] document system indices api privilege (#12393) (3 months ago) <kaisecheng>
+
 a02b7e13c - [7x backport] Update jrjackon and databind versions (3 months ago) <Rob Bavey>
+
 350bb28b0 - In QA test, when Logstash package with bundled JDK is installed on RedHat it has to check also the architecture (3 months ago) <andsel>
-582f88627 - Forward of 7.9.3 release notes (3 months ago) <andsel>
-bf1238dec - [7x backport] Add optional sourceURL to license report CSV (#12362) (3 months ago) <Rob Bavey>
+
 a693fa3bf - Build: properly isolate integration (test) env setup (#12364) (3 months ago) <Karol Bucek>
+
 0727260c7 - [7x backport] Handle Windows delete pending files (#12337) (3 months ago) <Rob Bavey>
-69e6200a7 - stop inputs upon a worker error before terminating the pipeline (#12342) (3 months ago) <Colin Surprenant>
-0b18b79cc - Doc: Clarify use of queue max bytes setting (#12341) (3 months ago) <Karen Metts>
+
 80db07d36 - [7x backport] env2yaml syntax error  (#12322) (4 months ago) <Rob Bavey>
+
 708c156c1 - [7x backport] Write DLQ entries to temp file first (#12304) (#12318) (4 months ago) <Rob Bavey>
+
 a6a31ec42 - [7x backport] Remove redundant shouldRunAfter (#12316) (4 months ago) <Rob Bavey>
-5ad7bbb03 - Bump 7.11 (4 months ago) <andsel>
+
 
 
 ==== Plugin releases
