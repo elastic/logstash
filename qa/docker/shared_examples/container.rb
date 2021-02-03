@@ -70,6 +70,10 @@ shared_examples_for 'the container is configured correctly' do |flavor|
   end
 
   context 'the java process' do
+    before do
+      wait_for_logstash(@container)
+    end
+
     it 'should be running under the logstash user' do
       expect(java_process(@container, "user")).to eql 'logstash'
     end
