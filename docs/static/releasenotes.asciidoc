@@ -42,6 +42,31 @@ This section summarizes the changes in the following releases:
 [[logstash-7-11-0]]
 === Logstash 7.11.0 Release Notes
 
+==== New features and enhancements
+
+===== Wildcard support in Central Pipeline Management
+
+With {logstash-ref}/configuring-centralized-pipelines.html[Central Pipeline
+Management], users can create {ls} pipelines in {kib}. Release 7.11.0 introduces
+wildcard support, providing users a more dynamic configuration process. Users no
+longer have to list all pipelines manually. Instead, Logstash will automatically
+pick new pipelines that match the wildcard set in
+`xpack.management.pipeline.id`. 
+
+==== Performance improvements and notable issues fixed
+
+===== Central Pipeline Management improvements 
+
+This release introduces a fix to a long-standing issue for Logstash Central
+Management in Kibana. When a user tried to delete a Logstash pipeline using
+Kibana, the pipeline wasn’t deleted from the registry. The issue prevented users
+from creating a new pipeline with the same name and config string. The issue has
+been resolved: https://github.com/elastic/logstash/issues/12387[[Meta] support
+xpack delete and recreate pipeline with same pipeline ID and config string
+#12387].
+
+
+
 ---------- DELETE FROM HERE ------------
 === Logstash Pull Requests with label v7.11.0
 
@@ -122,16 +147,8 @@ a693fa3bf - Build: properly isolate integration (test) env setup (#12364) (3 mon
 a6a31ec42 - [7x backport] Remove redundant shouldRunAfter (#12316) (4 months ago) <Rob Bavey>
 5ad7bbb03 - Bump 7.11 (4 months ago) <andsel>
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.10.2..7.11 *.release"
-Changed plugin versions:
-logstash-input-elasticsearch: 4.8.1 -> 4.9.0
-logstash-integration-kafka: 10.5.3 -> 10.7.0
-logstash-mixin-validator_support: 1.0.1 -> 1.0.1
-logstash-output-elasticsearch: 10.7.3 -> 10.8.1
----------- DELETE UP TO HERE ------------
 
-==== Plugins
+==== Plugin releases
 
 *Elasticsearch Input - 4.9.0*
 
@@ -149,10 +166,7 @@ logstash-output-elasticsearch: 10.7.3 -> 10.8.1
 * Added functionality to Kafka input to use Avro deserializer in retrieving data from Kafka. The schema is retrieved
     from an instance of Confluent's Schema Registry service https://github.com/logstash-plugins/logstash-integration-kafka/pull/51[#51]
      
-
 *Validator_support Mixin - 1.0.1*
-
-# v1.0.0
 
 * Introduces plugin parameter validation adapters, including initial backport for `:field_reference` validator.
 
