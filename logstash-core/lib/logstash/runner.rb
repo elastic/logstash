@@ -51,6 +51,7 @@ require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
+require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
 
@@ -293,6 +294,10 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
+    end
+
+    while(msg = LogStash::DeprecationMessage.instance.shift)
+      logger.warn msg
     end
 
     # Skip any validation and just return the version
