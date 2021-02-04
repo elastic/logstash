@@ -49,22 +49,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-14]]
 === Logstash 6.8.14 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.14
-
-=== Logstash Commits between 6.8 and 6.8.13
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.13..6.8"
-
-6ca568e7a - (HEAD -> 6.8, origin/6.8) bumped version to 6.8.14 (#12378) (3 months ago) <João Duarte>
-193e624bc - Added release notes for 6.8.13 (3 months ago) <andsel>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.13..6.8 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
+No user-facing changes in this release.
 
 [[logstash-6-8-13]]
 === Logstash 6.8.13 Release Notes
