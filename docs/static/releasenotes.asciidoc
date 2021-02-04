@@ -66,83 +66,11 @@ xpack delete and recreate pipeline with same pipeline ID and config string
 #12387].
 
 ==== Logstash core
-
-* [7.x clean backport of #12307] stop inputs upon a worker error before terminating the pipeline https://github.com/elastic/logstash/pull/12342[#12342]
-* [7x backport] Add optional sourceURL to license report CSV https://github.com/elastic/logstash/pull/12362[#12362]
-* add wildcard support in xpack pipeline id https://github.com/elastic/logstash/pull/12370[#12370]
-* [7x backport] Update jrjackson and databind versions https://github.com/elastic/logstash/pull/12386[#12386]
-* fix delete and recreate pipeline with same pipeline ID and config string https://github.com/elastic/logstash/pull/12389[#12389]
-* [7x backport] document system indices api privilege https://github.com/elastic/logstash/pull/12393[#12393]
-* [7x backport][Doc]Move logstash-to-cloud info for increased visibility https://github.com/elastic/logstash/pull/12400[#12400]
-* [Backport]Doc:Restructure troubleshooting docs and add plugin tracing https://github.com/elastic/logstash/pull/12405[#12405]
-* [backport 7x] add wildcard support in xpack pipeline id (#12370) https://github.com/elastic/logstash/pull/12407[#12407]
-* [7.x backport] Add addresses to p2pipeline input and output plugin me… https://github.com/elastic/logstash/pull/12413[#12413]
-* delete pipeline in registry https://github.com/elastic/logstash/pull/12414[#12414]
-* [backport 7x] Doc: wildcards in xpack.management.pipeline.id https://github.com/elastic/logstash/pull/12416[#12416]
-* [Backport] Doc: Add bundled JDK info https://github.com/elastic/logstash/pull/12417[#12417]
-* [backport 7x] delete pipeline in registry (#12414) https://github.com/elastic/logstash/pull/12419[#12419]
-* [backport 7x] fix delete and recreate pipeline with same pipeline ID and config string (#12389) https://github.com/elastic/logstash/pull/12425[#12425]
-* Added console prints in ingest-converter for not recognized processor definitions. https://github.com/elastic/logstash/pull/12428[#12428]
-* [7x backport] Add more information to UnexpectedTypeException https://github.com/elastic/logstash/pull/12429[#12429]
-* Move `CloudSettingId` to Java https://github.com/elastic/logstash/pull/12436[#12436]
-* Move CloudSettingsAuth to java https://github.com/elastic/logstash/pull/12443[#12443]
-* Drop Password Ruby class to use only the Java version https://github.com/elastic/logstash/pull/12455[#12455]
-* Moved ModulesSettingArray from Ruby to Java. https://github.com/elastic/logstash/pull/12458[#12458]
-* remove evaluation dir from JRuby bundled did_you_mean gem https://github.com/elastic/logstash/pull/12460[#12460]
-* Fix an API break in CloudSettingsId, a Ruby's ArgumentError should be raised https://github.com/elastic/logstash/pull/12462[#12462]
-* Fix an API break in CloudSettingsAuth, a Ruby's ArgumentError should be raised https://github.com/elastic/logstash/pull/12463[#12463]
-* Moved LogStash::Util::TimeValue to Java https://github.com/elastic/logstash/pull/12479[#12479]
-* REE: gauge reload interval https://github.com/elastic/logstash/pull/12494[#12494]
-* plugin: adds `:validate => :field_reference` (7.x backport) https://github.com/elastic/logstash/pull/12521[#12521]
-
-===== Logstash Commits between 7.11 and 7.10.2
-
-101d61bd6 -  Fix: make sure LS exits when running into fatal errors (#12563) (13 days ago) <Ry Biesemeyer>
-
-5ae08a09a - pq: eliminate corruption by forcing version byte to be persisted (2 weeks ago) <Ry Biesemeyer>
-
-06418b863 - Fix error due to missing variable when listing tasks and no architecture is externally specified with -Pos_arch= (7 weeks ago) <andsel>
-
-0588d5105 - [7x_backport] Add UBI8 image specific labels back to the docker image (#12502) (7 weeks ago) <Rob Bavey>
-
-7457bc903 - REE: output reload interval as nanos instead of object (8 weeks ago) <Ry Biesemeyer>
-
-8539d3fb9 - Moved LogStash::Util::TimeValue to Java (8 weeks ago) <andsel>
-
-872d25b9f - Moved ModulesSettingArray from Ruby to Java. (8 weeks ago) <andsel>
-
-f50cc38ea - [Doc] expanded the description of how to obtain the logger's names form Java and Ruby class names (9 weeks ago) <andsel>
-
-fee5c7202 - Fix an API break, a Ruby's ArgumentError should be raised. Reestablished Ruby specs to test moved code. (9 weeks ago) <andsel>
-
-e9aabdc3f - Fix an API break in CloudSettingsAuth, a Ruby's ArgumentError should be raised. Bring back Ruby specs to double check the change also in Ruby context. (9 weeks ago) <andsel>
-
-45099c1b5 - remove evaluation dir from JRuby bundled did_you_mean gem (9 weeks ago) <Colin Surprenant>
-
-f37d9a462 - Drop Password Ruby class to use only the Java version (10 weeks ago) <andsel>
-
-747c38d6d - Move code of CloudSettingAuth to Java - moved the class's code - moved spec tests to JUnit tests (10 weeks ago) <andsel>
-
-44fa84985 - [7x backport] Fix docker image metadata (#12450) (10 weeks ago) <Rob Bavey>
-
-b1e5c4f25 - Moved CloudSettingId class and tests to Java (2 months ago) <andsel>
-
-88ceb5ccf - Added console prints in ingest-converter for not recognized processor definitions. (3 months ago) <andsel>
-
-a02b7e13c - [7x backport] Update jrjackon and databind versions (3 months ago) <Rob Bavey>
-
-350bb28b0 - In QA test, when Logstash package with bundled JDK is installed on RedHat it has to check also the architecture (3 months ago) <andsel>
-
-a693fa3bf - Build: properly isolate integration (test) env setup (#12364) (3 months ago) <Karol Bucek>
-
-0727260c7 - [7x backport] Handle Windows delete pending files (#12337) (3 months ago) <Rob Bavey>
-
-80db07d36 - [7x backport] env2yaml syntax error  (#12322) (4 months ago) <Rob Bavey>
-
-708c156c1 - [7x backport] Write DLQ entries to temp file first (#12304) (#12318) (4 months ago) <Rob Bavey>
-
-a6a31ec42 - [7x backport] Remove redundant shouldRunAfter (#12316) (4 months ago) <Rob Bavey>
-
+TODO: other fixes
+pq: eliminate corruption by forcing version byte to be persisted #12554 https://github.com/elastic/logstash/pull/12554
+Fix: make sure LS exits when running into fatal errors (#12563) (13 days ago) <Ry Biesemeyer>
+[7x backport] Handle Windows delete pending files (#12337) (3 months ago) <Rob Bavey>
+[7x backport] Write DLQ entries to temp file first (#12304) (#12318) https://github.com/elastic/logstash/pull/12318
 
 
 ==== Plugin releases
@@ -150,18 +78,13 @@ a6a31ec42 - [7x backport] Remove redundant shouldRunAfter (#12316) (4 months ago
 *Elasticsearch Input - 4.9.0*
 
 * Added `target` option, allowing the hit's source to target a specific field instead of being expanded at the root of the event. This allows the input to play nicer with the Elastic Common Schema when the input does not follow the schema. https://github.com/logstash-plugins/logstash-input-elasticsearch/issues/117[#117]
-
 * [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/139[#139]
-
 * [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/137[#137]
 
 *Kafka Integration - 10.7.0*
 
-* Switched use from Faraday to Manticore as HTTP client library to access Schema Registry service 
-    to fix issue https://github.com/logstash-plugins/logstash-integration-kafka/issue/63[#63] 
-
-* Added functionality to Kafka input to use Avro deserializer in retrieving data from Kafka. The schema is retrieved
-    from an instance of Confluent's Schema Registry service https://github.com/logstash-plugins/logstash-integration-kafka/pull/51[#51]
+* Switched use from Faraday to Manticore as HTTP client library to access Schema Registry service to fix issue https://github.com/logstash-plugins/logstash-integration-kafka/issue/63[#63] 
+* Added functionality to Kafka input to use Avro deserializer in retrieving data from Kafka. The schema is retrieved from an instance of Confluent's Schema Registry service https://github.com/logstash-plugins/logstash-integration-kafka/pull/51[#51]
      
 *Validator_support Mixin - 1.0.1*
 
@@ -170,7 +93,6 @@ a6a31ec42 - [7x backport] Remove redundant shouldRunAfter (#12316) (4 months ago
 *Elasticsearch Output - 10.8.1*
 
 * Fixed an issue when assigning the no-op license checker https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/984[#984]
-
 * Refactored configuration options into specific and shared in PluginMixins namespace https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/973[#973]
 * Refactored common methods into specific and shared in PluginMixins namespace https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/976[#976]
 
