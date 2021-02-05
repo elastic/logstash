@@ -66,11 +66,8 @@ xpack delete and recreate pipeline with same pipeline ID and config string
 #12387].
 
 ==== Logstash core
-TODO: other fixes
 pq: eliminate corruption by forcing version byte to be persisted #12554 https://github.com/elastic/logstash/pull/12554
 Fix: make sure LS exits when running into fatal errors (#12563) (13 days ago) <Ry Biesemeyer>
-[7x backport] Handle Windows delete pending files (#12337) (3 months ago) <Rob Bavey>
-[7x backport] Write DLQ entries to temp file first (#12304) (#12318) https://github.com/elastic/logstash/pull/12318
 
 
 ==== Plugin releases
