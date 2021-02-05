@@ -50,39 +50,41 @@ With {logstash-ref}/configuring-centralized-pipelines.html[Central Pipeline
 Management], users can create {ls} pipelines in {kib}. Release 7.11.0 introduces
 wildcard support, providing users a more dynamic configuration process. Users no
 longer have to list all pipelines manually. Instead, Logstash will automatically
-pick new pipelines that match the wildcard set in
+pick up new pipelines that match the wildcard set in
 `xpack.management.pipeline.id`. 
 
 ==== Performance improvements and notable issues fixed
 
-**Central Pipeline Management improvements.** 
+**Central Pipeline Management improvements**
 
 This release introduces a fix to a long-standing issue for Logstash Central
 Management in Kibana. When a user tried to delete a Logstash pipeline using
 Kibana, the pipeline wasn’t deleted from the registry. The issue prevented users
 from creating a new pipeline with the same name and config string. The issue has
-been resolved: https://github.com/elastic/logstash/issues/12387[[Meta] support
-xpack delete and recreate pipeline with same pipeline ID and config string
-#12387].
+been resolved in https://github.com/elastic/logstash/issues/12387[#12387].
 
 **Persistent Queue corruption after newly allocated page**
 
-A Logstash crash or forceful termination could leave queue in an unrecoverable state,
-causing the following error to be logged as the pipeline starts:
+A Logstash crash or forceful termination could leave the queue in an
+unrecoverable state, causing the following error to be logged as the pipeline
+starts:
 
 ```
 [ERROR][org.logstash.execution.AbstractPipelineExt] Logstash failed to create queue.
 org.logstash.ackedqueue.io.MmapPageIOV2$PageIOInvalidVersionException: Expected page version=2 but found version=0
 ```
 
-This has been solved in https://github.com/elastic/logstash/pull/12554[#12554] by ensuring the version file
-is persisted.
+This has been resolved in https://github.com/elastic/logstash/pull/12554[#12554]
+by ensuring the version file is persisted.
 
 **Better handling of fatal exceptions**
 
-Under certain circumstances, Logstash would not respect fatal errors such as java.lang.OutOfMemoryError and continue executing
-without processing data. This issue has been addressed in https://github.com/elastic/logstash/pull/12563[#12563].
-As a consequence of this change, Logstash will now terminate with exit codes associated with the kind of fatal error:
+Under certain circumstances, Logstash would not respect fatal errors such as
+java.lang.OutOfMemoryError and would continue executing without processing data.
+This issue has been addressed in
+https://github.com/elastic/logstash/pull/12563[#12563]. As a consequence of this
+change, Logstash will now terminate with exit codes associated with the kind of
+fatal error:
 
 * 128 - InternalError (error in the Java Virtual Machine)
 * 127 - OutOfMemoryError
@@ -102,7 +104,7 @@ As a consequence of this change, Logstash will now terminate with exit codes ass
 
 *Kafka Integration - 10.7.0*
 
-* Switched use from Faraday to Manticore as HTTP client library to access Schema Registry service to fix issue https://github.com/logstash-plugins/logstash-integration-kafka/issue/63[#63] 
+* Switched use from Faraday to Manticore as HTTP client library to access Schema Registry service to fix issue https://github.com/logstash-plugins/logstash-integration-kafka/pull/63[#63] 
 * Added functionality to Kafka input to use Avro deserializer in retrieving data from Kafka. The schema is retrieved from an instance of Confluent's Schema Registry service https://github.com/logstash-plugins/logstash-integration-kafka/pull/51[#51]
      
 *Validator_support Mixin - 1.0.1*
