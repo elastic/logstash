@@ -65,10 +65,23 @@ been resolved: https://github.com/elastic/logstash/issues/12387[[Meta] support
 xpack delete and recreate pipeline with same pipeline ID and config string
 #12387].
 
-==== Logstash core
-pq: eliminate corruption by forcing version byte to be persisted #12554 https://github.com/elastic/logstash/pull/12554
-Fix: make sure LS exits when running into fatal errors (#12563) (13 days ago) <Ry Biesemeyer>
+**Persistent Queue corruption after newly allocated page**
 
+A Logstash crash or forceful termination could leave queue in an unrecoverable state,
+causing the following error to be logged as the pipeline starts:
+
+```
+[ERROR][org.logstash.execution.AbstractPipelineExt] Logstash failed to create queue.
+org.logstash.ackedqueue.io.MmapPageIOV2$PageIOInvalidVersionException: Expected page version=2 but found version=0
+```
+
+This has been solved in https://github.com/elastic/logstash/pull/12554[#12554] by ensuring the version file
+is persisted.
+
+**Better handling of fatal exceptions**
+
+Under certain circumstances, Logstash would not respect fatal errors such as java.lang.OutOfMemoryError and continue executing
+without processing data. This issue has been addressed in https://github.com/elastic/logstash/pull/12563[#12563].
 
 ==== Plugin releases
 
