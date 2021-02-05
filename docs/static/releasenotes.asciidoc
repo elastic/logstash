@@ -82,6 +82,15 @@ is persisted.
 
 Under certain circumstances, Logstash would not respect fatal errors such as java.lang.OutOfMemoryError and continue executing
 without processing data. This issue has been addressed in https://github.com/elastic/logstash/pull/12563[#12563].
+As a consequence of this change, Logstash will now terminate with exit codes associated with the kind of fatal error:
+
+* 128 - InternalError (error in the Java Virtual Machine)
+* 127 - OutOfMemoryError
+* 126 - StackOverflowError
+* 125 - UnknownError (unknown error in the Java Virtual Machine)
+* 124 - IOError
+* 123 - LinkageError (related to JRuby/FFI)
+* 120 - Error
 
 ==== Plugin releases
 
