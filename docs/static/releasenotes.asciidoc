@@ -83,7 +83,7 @@ Under certain circumstances, Logstash would not respect fatal errors such as
 java.lang.OutOfMemoryError and would continue executing without processing data.
 This issue has been addressed in
 https://github.com/elastic/logstash/pull/12563[#12563]. As a consequence of this
-change, Logstash will now terminate with exit codes associated with the kind of
+change, Logstash will now halt immediately with exit codes associated with the kind of
 fatal error:
 
 * 128 - InternalError (error in the Java Virtual Machine)
