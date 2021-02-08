@@ -92,7 +92,7 @@ fatal error:
 * 125 - UnknownError (unknown error in the Java Virtual Machine)
 * 124 - IOError
 * 123 - LinkageError (related to JRuby/FFI)
-* 120 - Error
+* 120 - any other Error type not covered by a specific error code
 
 ==== Plugin releases
 
