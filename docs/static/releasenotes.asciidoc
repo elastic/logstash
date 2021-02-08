@@ -53,6 +53,13 @@ longer have to list all pipelines manually. Instead, Logstash will automatically
 pick up new pipelines that match the wildcard set in
 `xpack.management.pipeline.id`. 
 
+===== Confluent schema registry support in Kafka input plugin
+
+In response to user requests, we have added Confluent schema registry support
+and new configuration options to {logstash-ref}/plugins-inputs-kafka.html[Kafka
+input] plugin version 10.6.0. Now you can configure the Kafka input plugin to
+use the Avro deserializer to retrieve data from Kafka. 
+
 ==== Performance improvements and notable issues fixed
 
 **Central Pipeline Management improvements**
