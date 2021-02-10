@@ -15,7 +15,7 @@ PATH
       filesize (~> 0.2)
       gems (~> 1)
       i18n (~> 1)
-      jrjackson (= 0.4.13)
+      jrjackson (= 0.4.14)
       jruby-openssl (~> 0.10)
       manticore (~> 0.6)
       minitar (~> 0.8)
@@ -56,7 +56,7 @@ GEM
     aws-sigv4 (1.2.2)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
-    backports (3.18.2)
+    backports (3.20.2)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.8.4)
@@ -75,8 +75,9 @@ GEM
       rspec (>= 2.14, < 4)
     clamp (0.6.5)
     coderay (1.1.3)
-    concurrent-ruby (1.1.7)
-    crack (0.4.4)
+    concurrent-ruby (1.1.8)
+    crack (0.4.5)
+      rexml
     dalli (2.7.11)
     diff-lcs (1.4.4)
     domain_name (0.5.20190701)
@@ -96,7 +97,7 @@ GEM
     equalizer (0.0.11)
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
-    ffi (1.13.1-java)
+    ffi (1.14.2-java)
     filesize (0.2.0)
     fivemat (1.3.7)
     flores (0.0.7)
@@ -124,7 +125,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.8.5)
+    i18n (1.8.8)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     jar-dependencies (0.4.1)
@@ -133,7 +134,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.13-java)
+    jrjackson (0.4.14-java)
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
@@ -225,7 +226,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elasticsearch (3.9.0)
+    logstash-filter-elasticsearch (3.9.3)
       elasticsearch (>= 5.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (~> 0.6)
@@ -250,7 +251,7 @@ GEM
     logstash-filter-memcached (1.1.0)
       dalli (~> 2.7)
       logstash-core-plugin-api (~> 2.0)
-    logstash-filter-metrics (4.0.6)
+    logstash-filter-metrics (4.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
@@ -290,7 +291,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.0.12-java)
+    logstash-input-beats (6.0.14-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -305,7 +306,7 @@ GEM
     logstash-input-dead_letter_queue (1.1.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-elasticsearch (4.9.0)
+    logstash-input-elasticsearch (4.9.1)
       elasticsearch (>= 5.0.3)
       faraday (~> 0.15.4)
       logstash-codec-json
@@ -347,7 +348,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.6-java)
+    logstash-input-http (3.3.7-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -398,14 +399,14 @@ GEM
       jruby-stdin-channel
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-syslog (3.4.4)
+    logstash-input-syslog (3.4.5)
       concurrent-ruby
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-filter-date
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.0.6-java)
+    logstash-input-tcp (6.0.7-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -474,7 +475,7 @@ GEM
       elastic-app-search (~> 7.8.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.8.1-java)
+    logstash-output-elasticsearch (10.8.2-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
@@ -511,7 +512,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
       stud
-    logstash-output-s3 (4.3.2)
+    logstash-output-s3 (4.3.3)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -553,17 +554,18 @@ GEM
       hitimes (~> 1.1)
     mime-types (2.6.2)
     minitar (0.9)
-    msgpack (1.3.3-java)
+    msgpack (1.4.2-java)
     multi_json (1.15.0)
     multipart-post (2.1.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     mustermann (1.0.3)
     naught (1.1.0)
-    nio4r (2.5.4-java)
-    nokogiri (1.10.10-java)
+    nio4r (2.5.5-java)
+    nokogiri (1.11.1-java)
+      racc (~> 1.4)
     numerizer (0.1.1)
-    octokit (4.19.0)
+    octokit (4.20.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
     openssl_pkcs8_pure (0.0.0.2)
@@ -576,13 +578,14 @@ GEM
       mustache (= 0.99.8)
       stud
     polyglot (0.3.5)
-    pry (0.13.1-java)
+    pry (0.14.0-java)
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
     puma (4.3.7-java)
       nio4r (~> 2.0)
+    racc (1.5.2-java)
     rack (2.2.3)
     rack-protection (2.1.0)
       rack
@@ -590,22 +593,23 @@ GEM
       rack (>= 1.0, < 3)
     rake (12.3.3)
     redis (4.2.5)
+    rexml (3.2.4)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
       rspec-expectations (~> 3.10.0)
       rspec-mocks (~> 3.10.0)
-    rspec-core (3.10.0)
+    rspec-core (3.10.1)
       rspec-support (~> 3.10.0)
-    rspec-expectations (3.10.0)
+    rspec-expectations (3.10.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
-    rspec-mocks (3.10.0)
+    rspec-mocks (3.10.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
-    rspec-support (3.10.0)
+    rspec-support (3.10.2)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
-    ruby-progressbar (1.10.1)
+    ruby-progressbar (1.11.0)
     rubyzip (1.3.0)
     rufus-scheduler (3.0.9)
       tzinfo
@@ -614,7 +618,7 @@ GEM
       faraday (> 0.8, < 2.0)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.39.0)
+    sequel (5.41.0)
     simple_oauth (0.3.1)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -643,18 +647,18 @@ GEM
       multipart-post (~> 2.0)
       naught (~> 1.0)
       simple_oauth (~> 0.3.0)
-    tzinfo (2.0.3)
+    tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2020.4)
+    tzinfo-data (1.2021.1)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.9.0)
       addressable
-    webmock (3.10.0)
+    webmock (3.11.2)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    xml-simple (1.1.7)
+    xml-simple (1.1.8)
 
 PLATFORMS
   java
@@ -757,6 +761,7 @@ DEPENDENCIES
   logstash-mixin-aws
   logstash-mixin-ecs_compatibility_support
   logstash-mixin-http_client
+  logstash-mixin-validator_support
   logstash-output-cloudwatch
   logstash-output-csv
   logstash-output-elastic_app_search
