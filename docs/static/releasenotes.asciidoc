@@ -43,25 +43,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-11-1]]
 === Logstash 7.11.1 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.11.1
-
-* bump version to 7.11.1 https://github.com/elastic/logstash/pull/12652[#12652]
-
-=== Logstash Commits between 7.11 and 7.11.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.11.0..7.11"
-
-c2f9ff8d7 - (HEAD -> 7.11, origin/7.11) bump version to 7.11.1 (#12652) (6 days ago) <João Duarte>
-7f8f2a435 - Doc: Add kafka confluent support to release notes (#12648) (7 days ago) <Karen Metts>
-5ed5f0504 - Release notes for 7.11.0 (#12596) (8 days ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.11.0..7.11 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
+No user-facing changes in this release.
 
 [[logstash-7-11-0]]
 === Logstash 7.11.0 Release Notes
