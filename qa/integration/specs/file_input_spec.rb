@@ -32,6 +32,7 @@ describe "File Input" do
     logstash_service.teardown
   end
 
+  let(:temp_dir) { Stud::Temporary.directory("logstash-file-test") }
   let(:max_retry) { 120 }
   let(:logstash_service) { @fixture.get_service("logstash") }
   let(:log_path) do
@@ -40,6 +41,7 @@ describe "File Input" do
     FileUtils.cp(source, tmp_path)
     tmp_path
   end
+  let(:timeout) { 90 } # seconds
   let(:number_of_events) do
     File.open(File.expand_path(@fixture.input), "r").readlines.size
   end
@@ -63,11 +65,28 @@ describe "File Input" do
          expect(result["in"]).to eq(number_of_events)
       end
     end
+
+    it 'should not crash the plugin' do
+      spawn_logstash_and_wait_for_exit! logstash_config, timeout
+      log_file = "#{temp_dir}/logstash-plain.log"
+      expect( File.exists?(log_file) ).to be true
+      expect( File.read(log_file) ).not_to match /A plugin had an unrecoverable error/
+    end
   end
 
   context "Read mode" do
     let(:logstash_config) { @fixture.config("read_mode", { :log_path => log_path }) }
 
     include_examples "send events"
+  end
+
+  def spawn_logstash_and_wait_for_exit!(config, timeout)
+    logstash_service.spawn_logstash('-w', '1', '--path.logs', temp_dir, '-e', config)
+
+    time = Time.now
+    while (Time.now - time) < timeout
+      sleep(0.1)
+      break if logstash_service.exited?
+    end
   end
 end
