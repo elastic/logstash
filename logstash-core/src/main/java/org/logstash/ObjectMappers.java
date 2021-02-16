@@ -73,7 +73,7 @@ public final class ObjectMappers {
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
     ).registerModules(RUBY_SERIALIZERS, CBOR_DESERIALIZERS)
-        .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        .activateDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
