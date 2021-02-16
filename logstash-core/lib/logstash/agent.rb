@@ -114,9 +114,9 @@ class LogStash::Agent
 
     transition_to_running
 
-    converge_state_and_update
-
     start_webserver_if_enabled
+
+    converge_state_and_update
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -288,6 +288,10 @@ class LogStash::Agent
 
   def running_pipelines
     @pipelines_registry.running_pipelines
+   end
+
+   def loading_pipelines
+    @pipelines_registry.loading_pipelines
    end
 
   def non_running_pipelines

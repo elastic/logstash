@@ -6,6 +6,37 @@ require "monitoring/inputs/metrics/stats_event_factory"
 require "logstash/config/pipeline_config"
 require 'json'
 
+shared_examples_for("old model monitoring event with webserver setting") do
+  let(:schema_file) { File.join(schemas_path, "monitoring_document_schema.json") }
+
+  it "should be valid" do
+    global_stats = {"uuid" => "00001" }
+    sut = described_class.new(global_stats, collector.snapshot_metric, nil)
+    LogStash::SETTINGS.set_value("monitoring.enabled", false)
+    LogStash::SETTINGS.set_value("http.enabled", webserver_enabled)
+
+    monitoring_evt = sut.make(agent, true)
+    json = JSON.parse(monitoring_evt.to_json)
+    expect(JSON::Validator.fully_validate(schema_file, monitoring_evt.to_json)).to be_empty
+  end
+end
+
+shared_examples_for("new model monitoring event with webserver setting") do
+  let(:schema_file) { File.join(schemas_path, "monitoring_document_new_schema.json") }
+
+  it "should be valid" do
+    global_stats = {"uuid" => "00001" }
+    sut = described_class.new(global_stats, collector.snapshot_metric, "funky_cluster_uuid")
+    LogStash::SETTINGS.set_value("monitoring.enabled", true)
+    LogStash::SETTINGS.set_value("http.enabled", webserver_enabled)
+
+    monitoring_evt = sut.make(agent, true)
+    json = JSON.parse(monitoring_evt.to_json)
+    expect(json['type']).to eq('logstash_stats')
+    expect(JSON::Validator.fully_validate(schema_file, monitoring_evt.to_json)).to be_empty
+  end
+end
+
 describe LogStash::Inputs::Metrics::StatsEventFactory do
   let(:schemas_path) { File.join(File.dirname(__FILE__), "..", "..", "..", "..", "spec", "monitoring", "schemas") }
   let(:queue) { Concurrent::Array.new }
@@ -52,31 +83,20 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   end
 
  context "new model" do
-   let(:schema_file) { File.join(schemas_path, "monitoring_document_new_schema.json") }
-
-   it "should be valid" do
-     global_stats = {"uuid" => "00001" }
-     sut = described_class.new(global_stats, collector.snapshot_metric, "funky_cluster_uuid")
-     LogStash::SETTINGS.set_value("monitoring.enabled", true)
-
-     monitoring_evt = sut.make(agent, true)
-     json = JSON.parse(monitoring_evt.to_json)
-     expect(json['type']).to eq('logstash_stats')
-     expect(JSON::Validator.fully_validate(schema_file, monitoring_evt.to_json)).to be_empty
+   it_behaves_like("new model monitoring event with webserver setting") do
+     let(:webserver_enabled) {false}
+   end
+   it_behaves_like("new model monitoring event with webserver setting") do
+     let(:webserver_enabled) {true}
    end
  end
 
  context "old model" do
-   let(:schema_file) { File.join(schemas_path, "monitoring_document_schema.json") }
-
-   it "should be valid" do
-     global_stats = {"uuid" => "00001" }
-     sut = described_class.new(global_stats, collector.snapshot_metric, nil)
-     LogStash::SETTINGS.set_value("monitoring.enabled", false)
-
-     monitoring_evt = sut.make(agent, true)
-     json = JSON.parse(monitoring_evt.to_json)
-     expect(JSON::Validator.fully_validate(schema_file, monitoring_evt.to_json)).to be_empty
-   end
+    it_behaves_like("old model monitoring event with webserver setting") do
+      let(:webserver_enabled) {false}
+    end
+    it_behaves_like("old model monitoring event with webserver setting") do
+      let(:webserver_enabled) {true}
+    end
   end
 end
