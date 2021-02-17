@@ -22,6 +22,7 @@ require_relative "../../framework/helpers"
 require "logstash/devutils/rspec/spec_helper"
 require "stud/temporary"
 require "fileutils"
+require "open3"
 
 def gem_in_lock_file?(pattern, lock_file)
   content =  File.read(lock_file)
@@ -51,7 +52,13 @@ describe "CLI > logstash-plugin install" do
         before do
           Dir.chdir(offline_wrapper_path) do
             system("make clean")
-            system("make")
+            stdout_str, stderr_str, status = Open3.capture3("make")
+            unless status.success?
+              puts "ERROR in compiling 'offline' tool"
+              puts "STDOUT: #{stdout_str}"
+              puts "STDERR: #{stderr_str}"
+            end
+            expect(status.success?).to be(true)
           end
         end
 
