@@ -5,6 +5,7 @@
 require "logstash/util/loggable"
 require_relative "util"
 require_relative "database_metadata"
+require "logstash-filter-geoip_jars"
 require "faraday"
 require "json"
 require "zlib"

@@ -2,7 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "logstash-core/logstash-core"
+require 'spec_helper'
 require "digest"
 
 def get_vendor_path
@@ -10,7 +10,7 @@ def get_vendor_path
 end
 
 def get_file_path(filename)
-  ::File.join(::File.expand_path("./vendor/", ::File.dirname(__FILE__)), filename)
+  ::File.join(get_vendor_path, filename)
 end
 
 def md5(file_path)

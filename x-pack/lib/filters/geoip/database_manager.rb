@@ -23,7 +23,7 @@ require "date"
 # If the last update timestamp is 25 days ago, a warning message shows in the log;
 # if it was 30 days ago, the GeoIP Filter should shutdown in order to be compliant.
 # There are online mode and offline mode in DatabaseManager. `online` is for automatic database update
-#   while `offline` is for static database path provided by users or Logstash running in <= 7.11
+#   while `offline` is for static database path provided by users
 
 module LogStash module Filters module Geoip class DatabaseManager
   include LogStash::Util::Loggable

@@ -1,19 +1,14 @@
-# Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
-# or more contributor license agreements. Licensed under the Elastic License;
-# you may not use this file except in compliance with the Elastic License.
+# # Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+# # or more contributor license agreements. Licensed under the Elastic License;
+# # you may not use this file except in compliance with the Elastic License.
 
 require_relative 'test_helper'
 require "filters/geoip/database_metadata"
 require "stud/temporary"
 
 module LogStash module Filters module Geoip
-  RSpec.configure do |c|
-    c.define_derived_metadata do |meta|
-      meta[:aggregate_failures] = true
-    end
-  end
 
-  describe DatabaseMetadata do
+  describe DatabaseMetadata, :aggregate_failures do
     let(:dbm) do
       dbm = DatabaseMetadata.new("City", get_vendor_path)
       dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)

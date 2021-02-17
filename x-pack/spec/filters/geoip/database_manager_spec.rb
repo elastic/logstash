@@ -1,18 +1,13 @@
-# Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
-# or more contributor license agreements. Licensed under the Elastic License;
-# you may not use this file except in compliance with the Elastic License.
+# # Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+# # or more contributor license agreements. Licensed under the Elastic License;
+# # you may not use this file except in compliance with the Elastic License.
 
 require_relative 'test_helper'
 require "filters/geoip/database_manager"
 
 module LogStash module Filters module Geoip
-  RSpec.configure do |c|
-    c.define_derived_metadata do |meta|
-      meta[:aggregate_failures] = true
-    end
-  end
 
-  describe DatabaseManager do
+  describe DatabaseManager, :aggregate_failures do
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }
     let(:mock_download_manager)  { double("download_manager") }
@@ -202,7 +197,6 @@ module LogStash module Filters module Geoip
         filename = db_manager.instance_variable_get(:@database_path).split('/').last
         expect(filename).to match /#{DEFAULT_CITY_DB_NAME}/
       end
-
     end
   end
 end end end

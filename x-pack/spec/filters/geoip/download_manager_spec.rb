@@ -6,20 +6,15 @@ require_relative 'test_helper'
 require "filters/geoip/download_manager"
 
 module LogStash module Filters module Geoip
-  RSpec.configure do |c|
-    c.define_derived_metadata do |meta|
-      meta[:aggregate_failures] = true
-    end
-  end
 
-  describe DownloadManager do
+  describe DownloadManager, :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
       manager = DownloadManager.new( "City", mock_metadata, get_vendor_path)
       manager
     end
     let(:logger) { double("Logger") }
-    
+
 
     context "rest client" do
       it "can call endpoint" do
@@ -37,7 +32,7 @@ module LogStash module Filters module Geoip
     context "check update" do
       before(:each) do
         expect(download_manager).to receive(:get_uuid).and_return(SecureRandom.uuid)
-        mock_resp = double("geoip_endpoint", :body => ::File.read("spec/fixtures/normal_resp.json"), :status => 200)
+        mock_resp = double("geoip_endpoint", :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))), :status => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
@@ -99,12 +94,12 @@ module LogStash module Filters module Geoip
 
     context "unzip" do
       before(:each) do
-        file_path = "spec/fixtures/sample"
+        file_path = ::File.expand_path("./fixtures/sample", ::File.dirname(__FILE__))
         ::File.delete(file_path) if ::File.exist?(file_path)
       end
 
       it "gz file" do
-        path = "spec/fixtures/sample.gz"
+        path = ::File.expand_path("./fixtures/sample.gz", ::File.dirname(__FILE__))
         unzip_path = download_manager.send(:unzip, path)
         expect(::File.exist?(unzip_path)).to be_truthy
       end
