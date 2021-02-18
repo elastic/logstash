@@ -34,7 +34,7 @@ test {
   exclude '/**'
 }
 
-tasks.register("unzip", Copy) {
+tasks.register("unzipGeolite", Copy) {
   from(zipTree(configurations.geolite2.singleFile)) {
     include "GeoLite2-ASN.mmdb"
     include "GeoLite2-City.mmdb"
@@ -43,7 +43,7 @@ tasks.register("unzip", Copy) {
 }
 
 tasks.register("rubyTests", Test) {
-  dependsOn unzip
+  dependsOn unzipGeolite
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
