@@ -35,19 +35,21 @@ describe "Test Dead Letter Queue" do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
+    es_allow_wildcard_deletes(@fixture.get_service("elasticsearch").get_client)
   }
 
   after(:all) {
-      @fixture.teardown
+    clean_es(@fixture.get_service("elasticsearch").get_client)
+    @fixture.teardown
   }
 
   before(:each) {
     IO.write(config_yaml_file, config_yaml)
+    clean_es(@fixture.get_service("elasticsearch").get_client)
   }
 
+
   after(:each) do
-    es_client = @fixture.get_service("elasticsearch").get_client
-    es_client.indices.delete(index: 'logstash-*') unless es_client.nil?
     logstash_service.teardown
   end
 
@@ -57,7 +59,6 @@ describe "Test Dead Letter Queue" do
       {
           "dead_letter_queue.enable" => true,
           "path.dead_letter_queue" => dlq_dir,
-          "log.level" => "debug"
       }
   }
   let!(:config_yaml) { dlq_config.to_yaml }
@@ -95,7 +96,7 @@ describe "Test Dead Letter Queue" do
 
     before :each do
       IO.write(pipelines_yaml_file, pipelines_yaml)
-      logstash_service.spawn_logstash("--path.settings", settings_dir, "--log.level=debug")
+      logstash_service.spawn_logstash("--path.settings", settings_dir)
     end
 
     context 'with multiple pipelines' do
