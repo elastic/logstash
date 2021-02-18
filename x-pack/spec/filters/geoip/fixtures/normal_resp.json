@@ -1,0 +1,23 @@
+[
+  {
+    "md5_hash": "865cda8a8dda3178cacd9011b5ff43b3",
+    "name": "GeoLite2-ASN.mmdb.gz",
+    "provider": "maxmind",
+    "updated": 1609840452,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-ASN.mmdb.gz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210107%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210107T135955Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=8362fd6001d6e6aca53bb968e77dbb2366a9ef65140e8a1e926974a690308e6328e9ccd82e53c6ea58cec9c58d4a77b16cb94b98a80f7d20969b3ce403ea6d3305771fb091d6505f5dee0e4597b6c6785adfec8e8708cfac75489d16297ac67edad81fd51e4a948ac2ede0bc0dea636e89443aed453815e9c4c557fea486304d15356fb6f32d8a168cbf58b5b31571c39e0ecbf877beb4b101f3e07cff667d952eaf5ad01bf90bed94469ac1e1046782b445db8c119cc7c01eaad5f7565932a6d40f5da182532d9032e6848ec916c24f18069bbb75e3ae50830023dc711d59eca8ec767f3701b45cbf3b358c9ca5ead763c9897792353cfdd12468a788311337"
+  },
+  {
+    "md5_hash": "4013dc17343af52a841bca2a8bad7e5e",
+    "name": "GeoLite2-City.mmdb.gz",
+    "provider": "maxmind",
+    "updated": 1609891257,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-City.mmdb.gz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210107%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210107T135955Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=7e03e8ea5dfd2edfab99bd471105009479754e379248f173b61d1f55cc4cac2f7fadfc76bb1da062bebe530b6b1f482a83305a27bd5ab0be2eec9d5801f5690f2c05c2c333ce312b7e739090956a78c3ee1a54382b8b94edd3bd83fdabd4ae4d722fed0aad078e3c0cd920b7f9467f84969df0a3dcde569eb2763e4f0b96a739891efb5180d150aac41375697cb94d88018d1aa9877f98937003cdba6c5770b40334b5d43ba302eb12f5765c67c49269418512127d4ee5315c3d8dd8c07a4261ff04477e230e96cb5a622fab944b2cc98f83eb532708f8ec42fa23e47a62ba800bd939bf29d6bf2afc20a6835500f67b7a2063663c4bb53a6a2f3d982a1822bc"
+  },
+  {
+    "md5_hash": "1b94cc12c605c33b21ad3ea1ffa2a6a9",
+    "name": "GeoLite2-Country.mmdb.gz",
+    "provider": "maxmind",
+    "updated": 1609891257,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-Country.mmdb.gz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210107%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210107T135955Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=8cfcdbc08b2894fe5ec59f7231c4e0be187256216c6a1a89319cae8bb0bc87d1cfe1e946ce57553310a22116f930b4d1b21c1621f89b69e44180457231fe0c5dfa0795184ab5153989027e24a6a96a466f7d72c45d5bf83f81158272c2909f7ac6ec39dea292a8500e410f8e07c68710b7888f267a8622a130876f4a21ee676aed0e104f992dcb074fbe3b7f1f7182343af6aee16c0b70b0dda9316401b67c932df76470d7be9b685d15509d9fc936e0d934ff03ac25264c5c996a4d82d9cab42dc3b2a02c30bf97ea0cb03564d21417544532c553ab70d4ec5a64613fb60468a05e914e40fbb14842fc89a802b4a27d18180045f147d7f3dc6c5eb78607f2a9"
+  }
+]

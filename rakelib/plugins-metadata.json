@@ -133,6 +133,7 @@
   },
   "logstash-filter-geoip": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-grok": {
