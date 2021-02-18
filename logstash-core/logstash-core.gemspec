@@ -72,4 +72,10 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "elasticsearch", '~> 7'
   gem.add_runtime_dependency "manticore", '~> 0.6'
+
+  # xpack geoip database service
+  gem.add_dependency 'faraday' #(MIT license)
+  gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
+  gem.add_dependency 'tzinfo-data' #(MIT license)
+  gem.add_dependency 'rufus-scheduler' #(MIT license)
 end

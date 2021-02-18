@@ -143,3 +143,4 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "unf:",https://github.com/knu/ruby-unf,BSD-2-Clause
 "webhdfs:",https://github.com/kzk/webhdfs,Apache-2.0
 "xml-simple:",https://github.com/maik/xml-simple,BSD-2-Clause
+"down",https://github.com/janko/down,MIT
