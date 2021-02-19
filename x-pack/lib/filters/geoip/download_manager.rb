@@ -82,8 +82,8 @@ module LogStash module Filters module Geoip class DownloadManager
 
   def rest_client
     @client ||= Faraday.new do |conn|
-      conn.adapter :net_http
       conn.use Faraday::Response::RaiseError
+      conn.adapter :net_http
     end
   end
 

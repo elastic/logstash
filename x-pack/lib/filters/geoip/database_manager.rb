@@ -78,6 +78,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     begin
       if execute_download_job
         @geoip.setup_filter(database_path)
+        clean_up_database
       end
     rescue DatabaseExpiryError => e
       logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
