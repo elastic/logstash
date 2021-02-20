@@ -28,11 +28,13 @@ module LogStash module Filters module Geoip class DatabaseMetadata
       metadata.each { |row| csv << row }
     end
 
+    @cache = metadata
     logger.debug("metadata updated", :metadata => metadata)
   end
 
   def get_all
-    file_exist?(@metadata_path)? ::CSV.read(@metadata_path, headers: false) : Array.new
+    @cache ||= file_exist?(@metadata_path)?
+                 ::CSV.read(@metadata_path, headers: false) : Array.new
   end
 
   # Give rows of metadata in default database type, or empty array
