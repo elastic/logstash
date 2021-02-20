@@ -73,7 +73,7 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   # scheduler callback
   def call(job, time)
-    logger.debug "scheduler is running"
+    logger.debug "scheduler runs database update check"
 
     begin
       if execute_download_job
@@ -97,15 +97,9 @@ module LogStash module Filters module Geoip class DatabaseManager
   protected
   # return a valid database path or default database path
   def patch_database_path(database_path)
-    unless file_exist?(database_path)
-      database_path = get_file_path("GeoLite2-#{@database_type}.mmdb")
-
-      unless file_exist?(database_path)
-        raise "You must specify 'database => ...' in your geoip filter (I looked for '#{database_path}')"
-      end
-    end
-
-    database_path
+    return database_path if file_exist?(database_path)
+    return database_path if database_path = get_file_path("GeoLite2-#{@database_type}.mmdb") and file_exist?(database_path)
+    raise "You must specify 'database => ...' in your geoip filter (I looked for '#{database_path}')"
   end
 
   def check_age
@@ -121,6 +115,8 @@ module LogStash module Filters module Geoip class DatabaseManager
       logger.warn("The MaxMind database has been used for #{days_without_update} days without update. "\
       "Logstash will stop the GeoIP plugin in #{30 - days_without_update} days. "\
       "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+    else
+      logger.debug("The MaxMind database hasn't updated", :days_without_update => days_without_update)
     end
   end
 

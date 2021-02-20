@@ -22,6 +22,11 @@ module LogStash module Filters module Geoip
     let(:logger) { double("Logger") }
 
     context "patch database" do
+      it "use input path" do
+        path = db_manager.send(:patch_database_path, DEFAULT_ASN_DB_PATH)
+        expect(path).to eq(DEFAULT_ASN_DB_PATH)
+      end
+
       it "use CC license database as default" do
         path = db_manager.send(:patch_database_path, "")
         expect(path).to eq(DEFAULT_CITY_DB_PATH)

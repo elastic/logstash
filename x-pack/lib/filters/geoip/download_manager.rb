@@ -46,12 +46,14 @@ module LogStash module Filters module Geoip class DownloadManager
   def check_update
     uuid = get_uuid
     res = rest_client.get("#{GEOIP_ENDPOINT}?key=#{uuid}&elastic_geoip_service_tos=agree")
-    logger.info "#{GEOIP_ENDPOINT} return #{res.status}"
+    logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
 
-    all_db = JSON.parse(res.body)
-    target_db = all_db.select { |info| info['name'].include?(@database_type) }.first
+    dbs = JSON.parse(res.body)
+    target_db = dbs.select { |db| db['name'].include?(@database_type) }.first
+    has_update = @metadata.gz_md5 != target_db['md5_hash']
+    logger.info "new database version detected? #{has_update}"
 
-    [@metadata.gz_md5 != target_db['md5_hash'], target_db]
+    [has_update, target_db]
   end
 
   def download_database(server_db)
@@ -60,7 +62,7 @@ module LogStash module Filters module Geoip class DownloadManager
       Down.download(server_db['url'], destination: new_database_zip_path)
       raise "the new download has wrong checksum" if md5(new_database_zip_path) != server_db['md5_hash']
 
-      logger.debug("new database downloaded in #{new_database_zip_path}")
+      logger.debug("new database downloaded in ", :path => new_database_zip_path)
       new_database_zip_path
     end
   end
