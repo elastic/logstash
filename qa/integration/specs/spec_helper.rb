@@ -15,6 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
+def es_allow_wildcard_deletes(es_client)
+  es_client.cluster.put_settings body: { transient: { 'action.destructive_requires_name' => false } }
+end
+
+def clean_es(es_client)
+  es_client.indices.delete_template(:name => "*")
+  es_client.indices.delete(:index => "*")
+  es_client.indices.refresh
+end
+
 RSpec.configure do |config|
   if RbConfig::CONFIG["host_os"] != "linux"
     exclude_tags = { :linux => true }
@@ -25,6 +35,7 @@ end
 
 RSpec::Matchers.define :have_hits do |expected|
   match do |actual|
+    return false if actual.nil? || actual['hits'].nil?
     # For Elasticsearch versions 7+, the result is in a value field, just in total for > 6
     if actual['hits']['total'].is_a?(Hash)
       expected == actual['hits']['total']['value']
