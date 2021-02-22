@@ -24,11 +24,11 @@ describe "Test Elasticsearch output" do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
+    es_allow_wildcard_deletes(@fixture.get_service("elasticsearch").get_client)
   }
 
   after(:all) {
-    es_client = @fixture.get_service("elasticsearch").get_client
-    es_client.indices.delete(index: 'logstash-*')
+    clean_es(@fixture.get_service("elasticsearch").get_client)
     @fixture.teardown
   }
 
