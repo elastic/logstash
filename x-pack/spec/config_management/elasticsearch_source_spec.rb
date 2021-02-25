@@ -366,7 +366,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   describe "#pipeline_configs" do
     let(:pipeline_id) { "apache" }
     let(:mock_client)  { double("http_client") }
-    let(:settings) { super.merge({ "xpack.management.pipeline.id" => pipeline_id }) }
+    let(:settings) { super().merge({ "xpack.management.pipeline.id" => pipeline_id }) }
     let(:config) { "input { generator {} } filter { mutate {} } output { }" }
     let(:elasticsearch_response) { elasticsearch_8_response }
     let(:elasticsearch_8_response) {

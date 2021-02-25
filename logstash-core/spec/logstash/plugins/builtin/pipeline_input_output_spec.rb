@@ -204,7 +204,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       end
 
       context "with ensure delivery set to false" do
-        let(:output_options) { super.merge("ensure_delivery" => false) }
+        let(:output_options) { super().merge("ensure_delivery" => false) }
         before(:each) do
           other_input.do_stop
           other_input.do_close
