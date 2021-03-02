@@ -105,15 +105,15 @@ module LogStash module Filters module Geoip
       end
     end
 
-    # context "assert database" do
-    #   it "should raise error if file is invalid" do
-    #     expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
-    #   end
-    #
-    #   it "should pass validation" do
-    #     expect(download_manager.send(:assert_database!, DEFAULT_CITY_DB_PATH)).to be_nil
-    #   end
-    # end
+    context "assert database" do
+      it "should raise error if file is invalid" do
+        expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
+      end
+
+      it "should pass validation" do
+        expect(download_manager.send(:assert_database!, DEFAULT_CITY_DB_PATH)).to be_nil
+      end
+    end
 
     context "fetch database" do
       it "should be false if no update" do
