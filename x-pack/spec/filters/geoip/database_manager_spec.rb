@@ -11,15 +11,22 @@ module LogStash module Filters module Geoip
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }
     let(:mock_download_manager)  { double("download_manager") }
+    let(:mock_scheduler)  { double("scheduler") }
     let(:db_manager) do
       manager = DatabaseManager.new(mock_geoip_plugin, DEFAULT_CITY_DB_PATH, "City", get_vendor_path)
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
+      manager.instance_variable_set(:@scheduler, mock_scheduler)
       manager
     end
     let(:logger) { double("Logger") }
 
     context "patch database" do
+      it "use input path" do
+        path = db_manager.send(:patch_database_path, DEFAULT_ASN_DB_PATH)
+        expect(path).to eq(DEFAULT_ASN_DB_PATH)
+      end
+
       it "use CC license database as default" do
         path = db_manager.send(:patch_database_path, "")
         expect(path).to eq(DEFAULT_CITY_DB_PATH)
@@ -110,6 +117,13 @@ module LogStash module Filters module Geoip
         allow(mock_download_manager).to receive(:fetch_database).and_return([false, nil])
         expect(mock_metadata).to receive(:save_timestamp)
         allow(mock_geoip_plugin).to receive(:setup_filter).never
+        db_manager.send(:call, nil, nil)
+      end
+
+      it "should call scheduler when has update" do
+        allow(db_manager).to receive(:execute_download_job).and_return(true)
+        allow(mock_geoip_plugin).to receive(:setup_filter).once
+        allow(db_manager).to receive(:clean_up_database).once
         db_manager.send(:call, nil, nil)
       end
     end
