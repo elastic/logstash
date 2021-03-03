@@ -19,13 +19,13 @@ module LogStash module Filters module Geoip
     context "rest client" do
       it "can call endpoint" do
         conn = download_manager.send(:rest_client)
-        res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}")
+        res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
         expect(res.status).to eq(200)
       end
 
       it "should raise error when endpoint response 4xx" do
         conn = download_manager.send(:rest_client)
-        expect { conn.get("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}") }.to raise_error /404/
+        expect { conn.get("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree") }.to raise_error /404/
       end
     end
 
