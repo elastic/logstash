@@ -2,9 +2,13 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+require "logstash/agent"
+require "logstash/runner"
+require "spec_helper"
 require "monitoring/inputs/metrics/stats_event_factory"
 require "logstash/config/pipeline_config"
 require 'json'
+require "json-schema"
 
 shared_examples_for("old model monitoring event with webserver setting") do
   let(:schema_file) { File.join(schemas_path, "monitoring_document_schema.json") }
@@ -91,7 +95,8 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
    end
  end
 
- context "old model" do
+ # TODO: fix issue https://github.com/elastic/logstash/issues/12711
+ xcontext "old model" do
     it_behaves_like("old model monitoring event with webserver setting") do
       let(:webserver_enabled) {false}
     end
