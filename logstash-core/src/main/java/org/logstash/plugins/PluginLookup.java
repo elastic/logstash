@@ -106,6 +106,9 @@ public final class PluginLookup {
         }
     }
 
+    /**
+     * Descriptor of a plugin implementation. Defines the implementation language and the plugin class
+     * */
     public interface PluginClass {
         PluginLookup.PluginLanguage language();
 
@@ -116,10 +119,16 @@ public final class PluginLookup {
         }
     }
 
+    /**
+     * Enum all the implementation languages used by plugins
+     * */
     public enum PluginLanguage {
         JAVA, RUBY
     }
 
+    /**
+     * Enum all the plugins types used inside Logstash
+     * */
     public enum PluginType {
         INPUT("input", "inputs", Input.class),
         FILTER("filter", "filters", Filter.class),

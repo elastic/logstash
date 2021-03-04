@@ -22,7 +22,7 @@ end
 shared_examples 'elasticsearch options hash is populated with secure options' do
   context "with ca" do
     let(:elasticsearch_ca) { Stud::Temporary.file.path }
-    let(:settings) { super.merge({ "xpack.monitoring.elasticsearch.ssl.certificate_authority" => elasticsearch_ca })}
+    let(:settings) { super().merge({ "xpack.monitoring.elasticsearch.ssl.certificate_authority" => elasticsearch_ca })}
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
@@ -39,7 +39,7 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
     let(:elasticsearch_truststore_path) { Stud::Temporary.file.path }
     let(:elasticsearch_truststore_password) { "truststore_password" }
     let(:settings) do
-      super.merge({
+      super().merge({
                       "xpack.monitoring.elasticsearch.ssl.truststore.path" => elasticsearch_truststore_path,
                       "xpack.monitoring.elasticsearch.ssl.truststore.password" => elasticsearch_truststore_password,
                   })
@@ -62,7 +62,7 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
     let(:elasticsearch_keystore_password) { "keystore_password" }
 
     let(:settings) do
-      super.merge({
+      super().merge({
                       "xpack.monitoring.elasticsearch.ssl.keystore.path" => elasticsearch_keystore_path,
                       "xpack.monitoring.elasticsearch.ssl.keystore.password" => elasticsearch_keystore_password,
                   })
@@ -120,7 +120,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
         let(:cloud_auth) { "#{cloud_username}:#{cloud_password}" }
 
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.cloud_auth" => cloud_auth,
           )
         end
@@ -135,7 +135,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
       context "with api_key" do
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
           )
         end
@@ -148,7 +148,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         context "and explicit password" do
           let(:settings) do
-            super.merge(
+            super().merge(
               "xpack.monitoring.elasticsearch.password" => elasticsearch_password
             )
           end
@@ -179,7 +179,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
       context "with cloud_auth" do
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.password" => "bar",
             "xpack.monitoring.elasticsearch.cloud_auth" => "foo:bar",
           )
@@ -194,7 +194,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
       context "with api_key" do
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.password" => "bar",
             "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
           )
@@ -237,7 +237,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
       context 'hosts also set' do
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.hosts" => 'https://localhost:9200'
           )
         end
@@ -254,7 +254,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
         let(:cloud_password) { 'passw0rd'}
         let(:cloud_auth) { "#{cloud_username}:#{cloud_password}" }
         let(:settings) do
-          super.merge(
+          super().merge(
             "xpack.monitoring.elasticsearch.cloud_auth" => cloud_auth,
           )
         end
@@ -269,7 +269,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         context 'username also set' do
           let(:settings) do
-            super.merge(
+            super().merge(
                 "xpack.monitoring.elasticsearch.username" => 'elastic'
             )
           end
@@ -283,7 +283,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         context 'api_key also set' do
           let(:settings) do
-            super.merge(
+            super().merge(
                 "xpack.monitoring.elasticsearch.api_key" => 'foo:bar',
             )
           end
@@ -305,7 +305,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         context 'username and password set' do
           let(:settings) do
-            super.merge(
+            super().merge(
               "xpack.monitoring.elasticsearch.username" => 'foo',
               "xpack.monitoring.elasticsearch.password" => 'bar'
             )
@@ -320,7 +320,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         context 'api_key set' do
           let(:settings) do
-            super.merge(
+            super().merge(
               "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
             )
           end

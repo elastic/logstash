@@ -36,6 +36,9 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 
+/**
+ * Persistent queue factory JRuby extension.
+ * */
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 

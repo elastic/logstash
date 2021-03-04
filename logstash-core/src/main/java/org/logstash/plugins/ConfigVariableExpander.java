@@ -28,6 +28,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Expand the configuration variables used in pipeline configuration, bringing them from secret store or from the
+ * environment.
+ * */
 public class ConfigVariableExpander implements AutoCloseable {
 
     private static String SUBSTITUTION_PLACEHOLDER_REGEX = "\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}";

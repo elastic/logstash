@@ -20,5 +20,8 @@
 
 package org.logstash.plugins.pipeline;
 
+/**
+ * Represents the out endpoint of a pipeline to pipeline communication.
+ * */
 public interface PipelineOutput {
 }

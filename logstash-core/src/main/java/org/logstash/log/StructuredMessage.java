@@ -26,6 +26,9 @@ import org.apache.logging.log4j.message.Message;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Logging message extension class
+ * */
 @JsonSerialize(using = CustomLogEventSerializer.class)
 public class StructuredMessage implements Message {
 

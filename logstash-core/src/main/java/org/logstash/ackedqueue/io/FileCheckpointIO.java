@@ -33,6 +33,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.Checkpoint;
 
+
+/**
+ * File implementation for {@link CheckpointIO}
+ * */
 public class FileCheckpointIO implements CheckpointIO {
 //    Checkpoint file structure
 //

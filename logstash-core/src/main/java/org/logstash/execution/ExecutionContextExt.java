@@ -31,6 +31,10 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 
+/**
+ * JRuby extension to provide execution context to the plugins,
+ * instantiated by {@link org.logstash.plugins.factory.ExecutionContextFactoryExt}
+ * */
 @JRubyClass(name = "ExecutionContext")
 public final class ExecutionContextExt extends RubyObject {
 

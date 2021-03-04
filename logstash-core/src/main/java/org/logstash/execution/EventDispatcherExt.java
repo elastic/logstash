@@ -30,6 +30,9 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * JRuby extension that provides a class to keep track of listener and dispatch events to those.
+ * */
 @JRubyClass(name = "EventDispatcher")
 public final class EventDispatcherExt extends RubyBasicObject {
 

@@ -24,6 +24,9 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.stream.Stream;
 
+/**
+ * Represents the in endpoint of a pipeline to pipeline communication.
+ * */
 public interface PipelineInput {
     /**
      * Accepts an event. It might be rejected if the input is stopping.

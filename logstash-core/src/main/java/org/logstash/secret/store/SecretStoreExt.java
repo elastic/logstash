@@ -24,6 +24,9 @@ import org.jruby.RubyHash;
 import org.logstash.RubyUtil;
 import org.logstash.secret.SecretIdentifier;
 
+/**
+ * Collect static methods to access Java keystore
+ * */
 public class SecretStoreExt {
 
     private static final SecretStoreFactory SECRET_STORE_FACTORY = SecretStoreFactory.fromEnvironment();

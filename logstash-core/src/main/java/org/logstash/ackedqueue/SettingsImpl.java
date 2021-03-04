@@ -20,6 +20,9 @@
 
 package org.logstash.ackedqueue;
 
+/**
+ * Persistent queue settings implementation.
+ * */
 public class SettingsImpl implements Settings {
     private String dirForFiles;
     private Class<? extends Queueable> elementClass;
@@ -94,6 +97,9 @@ public class SettingsImpl implements Settings {
         return this.checkpointRetry;
     }
 
+    /**
+     * Default implementation for Setting's Builder
+     * */
     private static final class BuilderImpl implements Builder {
 
         /**

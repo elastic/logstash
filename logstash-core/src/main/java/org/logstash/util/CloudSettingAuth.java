@@ -22,6 +22,9 @@ package org.logstash.util;
 import co.elastic.logstash.api.Password;
 import org.logstash.RubyUtil;
 
+/**
+ * Represents and decode credentials to access Elastic cloud instance.
+ * */
 public class CloudSettingAuth {
 
     private String original;

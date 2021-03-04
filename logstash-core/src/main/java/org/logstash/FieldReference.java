@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyString;
 
+/**
+ * Represents a reference to another field of the event {@link Event}
+ * */
 public final class FieldReference {
     /**
      * A custom unchecked {@link RuntimeException} that can be thrown by parsing methods when

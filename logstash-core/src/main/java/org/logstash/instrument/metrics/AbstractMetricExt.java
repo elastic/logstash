@@ -28,6 +28,9 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * JRuby extension to model the metrics collection
+ * */
 @JRubyClass(name = "AbstractMetric")
 public abstract class AbstractMetricExt extends RubyObject {
 
