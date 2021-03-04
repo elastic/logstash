@@ -297,7 +297,7 @@ describe LogStash::Plugin do
 
         context "When a user provide an ID for the plugin" do
           let(:id) { "ABC" }
-          let(:config) { super.merge("id" => id) }
+          let(:config) { super().merge("id" => id) }
 
           it "uses the user provided ID" do
             expect(subject.id).to eq(id)
@@ -346,7 +346,7 @@ describe LogStash::Plugin do
 
 
           context(desc) do
-            let(:config) { super.merge(config_override) }
+            let(:config) { super().merge(config_override) }
 
             it "has a PluginMetadata" do
               expect(plugin_instance.plugin_metadata).to be_a_kind_of(LogStash::PluginMetadata)
@@ -400,7 +400,7 @@ describe LogStash::Plugin do
 
     context "when the id is provided" do
       let(:my_id) { "mysuper-plugin" }
-      let(:config) { super.merge({ "id" => my_id })}
+      let(:config) { super().merge({ "id" => my_id })}
       subject { plugin.new(config) }
 
       it "return a human readable ID" do
