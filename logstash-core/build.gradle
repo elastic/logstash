@@ -30,6 +30,8 @@ String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 
+String log4jVersion = '2.13.3'
+
 repositories {
     mavenCentral()
 }
@@ -151,8 +153,6 @@ idea {
 
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
-
-String log4jVersion = '2.13.3'
 
 dependencies {
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
