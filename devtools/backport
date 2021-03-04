@@ -189,7 +189,7 @@ def create_pr(args):
         # Set a version label on the original PR
         if version:
             session.post(
-                base + "/issues/{}/labels".format(args.pr_number), json=[version])
+                base + "/issues/{}/labels".format(args.pr_number), json=labels)
 
         info("Done. PR created: {}".format(new_pr["html_url"]))
         info("Please go and check it and add the review tags")
