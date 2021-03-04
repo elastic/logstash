@@ -173,10 +173,10 @@ def create_pr(args):
 
         # add labels
         labels = ["backport"]
-        # get the version we are backported to
+        # get the version (vX.Y.Z) we are backporting to
         version = get_version(os.getcwd())
         if version:
-            labels.append("v" + version)
+            labels.append(version)
 
         session.post(
             base + "/issues/{}/labels".format(new_pr["number"]), json=labels)
@@ -199,7 +199,7 @@ def get_version(base_dir):
     with open(os.path.join(base_dir, "versions.yml"), "r") as f:
         for line in f:
             if line.startswith('logstash:'):
-                return line.split(':')[-1].strip()
+                return "v" + line.split(':')[-1].strip()
             #match = pattern.match(line)
             #if match:
             #    return match.group('version')
