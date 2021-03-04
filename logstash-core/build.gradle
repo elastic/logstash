@@ -30,6 +30,8 @@ String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 
+String log4jVersion = '2.13.3'
+
 repositories {
     mavenCentral()
 }
@@ -153,12 +155,13 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
-    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.13.3'
-    api 'org.apache.logging.log4j:log4j-core:2.13.3'
-    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    runtimeOnly "org.slf4j:slf4j-api:1.7.30"
     // concerns libraries such as manticore's http-client 4.5 (using commons-logging)
-    runtimeOnly 'org.apache.logging.log4j:log4j-jcl:2.13.3'
+    runtimeOnly "org.apache.logging.log4j:log4j-jcl:${log4jVersion}"
     // for the log4j-jcl bridge to work commons-logging needs to be on the same class-path
     runtimeOnly 'commons-logging:commons-logging:1.2'
     implementation('org.reflections:reflections:0.9.11') {
@@ -184,7 +187,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.javassist:javassist:3.26.0-GA'
-    testImplementation 'org.apache.logging.log4j:log4j-core:2.13.3:tests'
+    testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
     testImplementation 'junit:junit:4.12'
     testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testImplementation 'org.elasticsearch:securemock:1.2'
