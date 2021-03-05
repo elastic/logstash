@@ -44,7 +44,8 @@ module LogStash module Filters module Geoip class DownloadManager
   # Call infra endpoint to get md5 of latest database and verify with metadata
   # return [has_update, server db info]
   def check_update
-    res = rest_client.get("#{GEOIP_ENDPOINT}?elastic_geoip_service_tos=agree")
+    uuid = get_uuid
+    res = rest_client.get("#{GEOIP_ENDPOINT}?key=#{uuid}&elastic_geoip_service_tos=agree")
     logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
 
     dbs = JSON.parse(res.body)
@@ -88,4 +89,7 @@ module LogStash module Filters module Geoip class DownloadManager
     end
   end
 
+  def get_uuid
+    @uuid ||= ::File.read(::File.join(LogStash::SETTINGS.get("path.data"), "uuid"))
+  end
 end end end end
