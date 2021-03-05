@@ -44,56 +44,25 @@ This section summarizes the changes in the following releases:
 [[logstash-7-11-2]]
 === Logstash 7.11.2 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.11.2
+==== Notable issues fixed
 
-* Separate "not terminated" state in "loading" and "running" https://github.com/elastic/logstash/pull/12444[#12444]
-* bump lock file for 7.11.1 https://github.com/elastic/logstash/pull/12660[#12660]
-* [backport #12444 7.11] Separate "not terminated" pipeline state into "running" and "loading". https://github.com/elastic/logstash/pull/12716[#12716]
-
-=== Logstash Commits between 7.11 and 7.11.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.11.1..7.11"
-
-5ea72dd81 - (HEAD -> 7.11, origin/7.11) Separate "not terminated" pipeline state into "running" and "loading". (#12716) (9 hours ago) <Andrea Selva>
-854a58b5d - Update patch plugin versions in gemfile lock for 7.11.2 (#12705) (2 days ago) <Logstash Machine>
-e9d48e8e9 - bump lock file for 7.11.1 (#12660) (2 weeks ago) <Logstash Machine>
-00449470b - bump version to 7.11.2 (#12677) (2 weeks ago) <João Duarte>
-4faa50eb0 - Release notes for 7.11.1 (#12674) (2 weeks ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.11.1..7.11 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 3.9.0 -> 3.9.3
-logstash-filter-geoip: 6.0.3 -> 6.0.5
-logstash-filter-metrics: 4.0.6 -> 4.0.7
-logstash-input-beats: 6.0.12 -> 6.0.14
-logstash-input-elasticsearch: 4.9.0 -> 4.9.1
-logstash-input-http: 3.3.6 -> 3.3.7
-logstash-input-syslog: 3.4.4 -> 3.4.5
-logstash-input-tcp: 6.0.6 -> 6.0.7
-logstash-integration-kafka: 10.7.0 -> 10.7.1
-logstash-output-cloudwatch: 3.0.8 -> 3.0.9
-logstash-output-elasticsearch: 10.8.1 -> 10.8.4
-logstash-output-lumberjack: 3.1.7 -> 3.1.8
-logstash-output-s3: 4.3.2 -> 4.3.3
----------- DELETE UP TO HERE ------------
+We resolved an issue that could cause problems with automatic reloading. We
+replaced the `not terminated` state with two states that are more descriptive:
+`running` and `loading`. This fix prevents pipelines that are loading from being
+described as `running`. https://github.com/elastic/logstash/pull/12444[#12444]
 
 ==== Plugins
 
 *Elasticsearch Filter - 3.9.3*
 
 * [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
-
 * [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
-
 * [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
   
 
 *Geoip Filter - 6.0.5*
 
 * Fix database download task. Upgrade project to java 11 https://github.com/logstash-plugins/logstash-filter-geoip/pull/175[#175]
-
 * Enable the use of MaxMind GeoIP2-Domain databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/162[#162]
 
 *Metrics Filter - 4.0.7*
@@ -103,7 +72,6 @@ logstash-output-s3: 4.3.2 -> 4.3.3
 *Beats Input - 6.0.14*
 
 * Feat: log + unwrap generic SSL context exceptions https://github.com/logstash-plugins/logstash-input-beats/pull/405[#405]
-
 * [DOC] Update links to use shared attributes
 
 *Elasticsearch Input - 4.9.1*
@@ -115,7 +83,6 @@ logstash-output-s3: 4.3.2 -> 4.3.3
 
 * Feat: improved error handling/logging/unwraping https://github.com/logstash-plugins/logstash-input-http/pull/133[#133]
  
-
 *Syslog Input - 3.4.5*
 
 * Added support for listening on IPv6 addresses
@@ -129,18 +96,15 @@ logstash-output-s3: 4.3.2 -> 4.3.3
 *Kafka Integration - 10.7.1*
 
 * Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/issue/71[#71]
-  
 
 *Cloudwatch Output - 3.0.9*
 
-- Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/18[#18]
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/18[#18]
 
 *Elasticsearch Output - 10.8.4*
 
 * Fixed an issue where a retried request would drop "update" parameters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/800[#800]
-
 * Avoid to implicitly set deprecated type to `_doc` when connects to Elasticsearch version 7.x  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/994[#994]
-
 * [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/985[#985]
 
 *Lumberjack Output - 3.1.8*
