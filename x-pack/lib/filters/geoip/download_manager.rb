@@ -22,8 +22,8 @@ module LogStash module Filters module Geoip class DownloadManager
     @metadata = metadata
   end
 
-  GEOIP_HOST = "https://paisano.elastic.dev".freeze
-  GEOIP_ENDPOINT = "#{GEOIP_HOST}/v1/geoip/database/".freeze
+  GEOIP_HOST = "https://geoip.elastic.co".freeze
+  GEOIP_ENDPOINT = "#{GEOIP_HOST}/v1/database".freeze
 
   public
   # Check available update and download it. Unzip and validate the file.
@@ -44,8 +44,7 @@ module LogStash module Filters module Geoip class DownloadManager
   # Call infra endpoint to get md5 of latest database and verify with metadata
   # return [has_update, server db info]
   def check_update
-    uuid = get_uuid
-    res = rest_client.get("#{GEOIP_ENDPOINT}?key=#{uuid}&elastic_geoip_service_tos=agree")
+    res = rest_client.get("#{GEOIP_ENDPOINT}?elastic_geoip_service_tos=agree")
     logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
 
     dbs = JSON.parse(res.body)
@@ -87,10 +86,6 @@ module LogStash module Filters module Geoip class DownloadManager
       conn.use Faraday::Response::RaiseError
       conn.adapter :net_http
     end
-  end
-
-  def get_uuid
-    @uuid ||= ::File.read(::File.join(LogStash::SETTINGS.get("path.data"), "uuid"))
   end
 
 end end end end

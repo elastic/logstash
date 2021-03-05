@@ -19,19 +19,18 @@ module LogStash module Filters module Geoip
     context "rest client" do
       it "can call endpoint" do
         conn = download_manager.send(:rest_client)
-        res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
+        res = conn.get("#{GEOIP_STAGING_ENDPOINT}?elastic_geoip_service_tos=agree")
         expect(res.status).to eq(200)
       end
 
       it "should raise error when endpoint response 4xx" do
         conn = download_manager.send(:rest_client)
-        expect { conn.get("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree") }.to raise_error /404/
+        expect { conn.get("#{GEOIP_STAGING_HOST}?elastic_geoip_service_tos=agree") }.to raise_error /404/
       end
     end
 
     context "check update" do
       before(:each) do
-        expect(download_manager).to receive(:get_uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint", :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))), :status => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
@@ -50,7 +49,7 @@ module LogStash module Filters module Geoip
       end
 
       it "should return false when md5 is the same" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("4013dc17343af52a841bca2a8bad7e5e")
+        expect(mock_metadata).to receive(:gz_md5).and_return("2449075797a3ecd7cd2d4ea9d01e6e8f")
 
         has_update, info = download_manager.send(:check_update)
         expect(has_update).to be_falsey
