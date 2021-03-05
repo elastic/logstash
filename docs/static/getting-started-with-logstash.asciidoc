@@ -307,7 +307,7 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 ["source","sh",subs="attributes"]
 --------------------------------------------------
 cd logstash-{logstash_version}
-\bin\logstash.bat -e "input { stdin { } } output { stdout {} }"
+.\bin\logstash.bat -e "input { stdin { } } output { stdout {} }"
 --------------------------------------------------
 
 The command might vary slightly, depending on the terminal or shell you
