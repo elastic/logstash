@@ -22,8 +22,8 @@ module LogStash module Filters module Geoip class DownloadManager
     @metadata = metadata
   end
 
-  GEOIP_HOST = "https://paisano.elastic.dev".freeze
-  GEOIP_ENDPOINT = "#{GEOIP_HOST}/v1/geoip/database/".freeze
+  GEOIP_HOST = "https://geoip.elastic.co".freeze
+  GEOIP_ENDPOINT = "#{GEOIP_HOST}/v1/database".freeze
 
   public
   # Check available update and download it. Unzip and validate the file.
@@ -92,5 +92,4 @@ module LogStash module Filters module Geoip class DownloadManager
   def get_uuid
     @uuid ||= ::File.read(::File.join(LogStash::SETTINGS.get("path.data"), "uuid"))
   end
-
 end end end end

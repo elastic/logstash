@@ -26,8 +26,8 @@ SECOND_CITY_DB_NAME = "GeoLite2-City_20200220.mmdb"
 SECOND_CITY_DB_PATH = get_file_path("GeoLite2-City_20200220.mmdb")
 DEFAULT_CITY_DB_MD5 = md5(DEFAULT_CITY_DB_PATH)
 DEFAULT_ASN_DB_MD5 = md5(DEFAULT_ASN_DB_PATH)
-GEOIP_STAGING_HOST = "https://paisano-staging.elastic.dev"
-GEOIP_STAGING_ENDPOINT = "#{GEOIP_STAGING_HOST}/v1/geoip/database/"
+GEOIP_STAGING_HOST = "https://geoip.elastic.dev"
+GEOIP_STAGING_ENDPOINT = "#{GEOIP_STAGING_HOST}/v1/database"
 
 def write_temp_metadata(temp_file_path, row = nil)
   now = Time.now.to_i
