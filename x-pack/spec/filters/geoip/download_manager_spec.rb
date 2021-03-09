@@ -50,7 +50,7 @@ module LogStash module Filters module Geoip
       end
 
       it "should return false when md5 is the same" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("4013dc17343af52a841bca2a8bad7e5e")
+        expect(mock_metadata).to receive(:gz_md5).and_return("2449075797a3ecd7cd2d4ea9d01e6e8f")
 
         has_update, info = download_manager.send(:check_update)
         expect(has_update).to be_falsey
