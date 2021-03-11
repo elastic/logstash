@@ -68,9 +68,12 @@ def main():
 
     print(args)
 
-    create_pr(args)
+    create_pr(parser, args)
 
-def create_pr(args):
+def create_pr(parser, args):
+    info("Checking if GitHub API token is available in `~/.elastic/github.token`")
+    token = get_github_token()
+
     tmp_branch = "backport_{}_{}".format(args.pr_number, args.to_branch)
 
     if not vars(args)["continue"]:
@@ -96,9 +99,7 @@ def create_pr(args):
 
         commit_hashes = "{}".format(" ").join(args.commit_hashes)
         info("Cherry-picking {}".format(commit_hashes))
-        #if call("git cherry-pick -x {}".format(" ".join(args.commit_hashes)),
-        if call("git cherry-pick -x {}".format(commit_hashes),
-                shell=True) != 0:
+        if call("git cherry-pick -x {}".format(commit_hashes), shell=True) != 0:
             info("Looks like you have cherry-pick errors.")
             info("Fix them, then run: ")
             info("    git cherry-pick --continue")
@@ -128,16 +129,8 @@ def create_pr(args):
         remote = input("To which remote should I push? (your fork): ")
 
     info("Pushing branch {} to remote {}".format(tmp_branch, remote))
-    call("git push {} :{} > /dev/null".format(remote, tmp_branch),
-         shell=True)
-    check_call("git push --set-upstream {} {}"
-               .format(remote, tmp_branch), shell=True)
-
-    info("Checking if GitHub API token is available in `~/.elastic/github.token`")
-    try:
-        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
-    except:
-        token = False
+    call("git push {} :{} > /dev/null".format(remote, tmp_branch), shell=True)
+    check_call("git push --set-upstream {} {}".format(remote, tmp_branch), shell=True)
 
     if not token:
         info("GitHub API token not available.\n" +
@@ -147,15 +140,12 @@ def create_pr(args):
     else:
         info("Automatically creating a PR for you...")
 
+        session = github_session(token)
         base = "https://api.github.com/repos/elastic/logstash"
-        session = requests.Session()
-        session.headers.update({"Authorization": "token " + token})
-
         original_pr = session.get(base + "/pulls/" + args.pr_number).json()
 
         # get the github username from the remote where we pushed
-        remote_url = check_output("git remote get-url {}".format(remote),
-                                  shell=True)
+        remote_url = check_output("git remote get-url {}".format(remote), shell=True)
         remote_user = re.search("github.com[:/](.+)/logstash", str(remote_url)).group(1)
 
         # create PR
@@ -203,6 +193,18 @@ def get_version(base_dir):
             #match = pattern.match(line)
             #if match:
             #    return match.group('version')
+
+def get_github_token():
+    try:
+        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
+    except:
+        token = False
+    return token
+
+def github_session(token):
+    session = requests.Session()
+    session.headers.update({"Authorization": "token " + token})
+    return session
 
 def info(msg):
     print("\nINFO: {}".format(msg))
