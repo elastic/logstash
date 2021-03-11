@@ -16,27 +16,6 @@ For information about building the documentation, see the README in https://gith
 You can download officially released Logstash binaries, as well as debian/rpm packages for the
 supported platforms, from [downloads page](https://www.elastic.co/downloads/logstash).
 
-### Snapshot Builds
-
-For the daring, snapshot builds are available.
-These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
-
-| Complete, with X-Pack | Apache 2.0 licensed    |
-| --------------------- | ---------------------- |
-| [tar-complete][]      | [tar-oss][]            |
-| [zip-complete][]      | [zip-oss][]            |
-| [deb-complete][]      | [deb-oss][]            |
-| [rpm-complete][]      | [rpm-oss][]            |
-
-[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.tar.gz
-[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.zip
-[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.deb
-[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.rpm
-[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.tar.gz
-[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.zip
-[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.deb
-[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.rpm
-
 ## Need Help?
 
 - [Logstash Forum](https://discuss.elastic.co/c/logstash)
