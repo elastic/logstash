@@ -47,7 +47,7 @@ def main():
                         help="To branch (e.g 7.x)")
     parser.add_argument("pr_number",
                         help="The PR number being merged (e.g. 2345)")
-    parser.add_argument("commit_hashes", metavar="hash", nargs="+",
+    parser.add_argument("commit_hashes", metavar="hash", nargs="*",
                         help="The commit hashes to cherry pick." +
                         " You can specify multiple.")
     parser.add_argument("--yes", action="store_true",
