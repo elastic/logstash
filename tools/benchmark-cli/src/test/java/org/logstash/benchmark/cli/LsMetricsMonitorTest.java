@@ -57,7 +57,7 @@ public final class LsMetricsMonitorTest {
         ) {
             TimeUnit.SECONDS.sleep(5L);
             final Statistics stats = monitor.stopAndGet().get(LsMetricStats.THROUGHPUT);
-            MatcherAssert.assertThat(stats.getMax(), CoreMatchers.is(21052.0D));
+            MatcherAssert.assertThat(stats.getMax(), CoreMatchers.is(170250.0D));
         }
     }
 
@@ -75,7 +75,7 @@ public final class LsMetricsMonitorTest {
         ) {
             TimeUnit.SECONDS.sleep(5L);
             final Statistics stats = monitor.stopAndGet().get(LsMetricStats.CPU_USAGE);
-            MatcherAssert.assertThat(stats.getMax(), CoreMatchers.is(63.0D));
+            MatcherAssert.assertThat(stats.getMax(), CoreMatchers.is(33.0D));
         }
     }
 
