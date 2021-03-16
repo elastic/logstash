@@ -10,7 +10,7 @@ The Logstash {es} plugins ({logstash-ref}/plugins-outputs-elasticsearch.html[out
 {logstash-ref}/plugins-inputs-elasticsearch.html[input],
 {logstash-ref}/plugins-filters-elasticsearch.html[filter]
 and {logstash-ref}/monitoring-logstash.html[monitoring])
-support authentication and encryption over HTTP.
+support authentication and encryption over HTTPS.
 
 To use Logstash with a secured cluster, you need to configure authentication
 credentials for Logstash. Logstash throws an exception and the processing
