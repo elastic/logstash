@@ -25,6 +25,8 @@ module LogStash module Helpers
       opts['sniffing'] = settings.get("xpack.#{feature}.elasticsearch.sniffing")
       opts['ssl_certificate_verification'] = settings.get("xpack.#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
 
+      opts['ssl'] = true if Array(opts['hosts']).all? { |h| h.start_with?('https://') }
+
       if cacert = settings.get("xpack.#{feature}.elasticsearch.ssl.certificate_authority")
         opts['cacert'] = cacert
         opts['ssl'] = true
