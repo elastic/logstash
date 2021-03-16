@@ -254,7 +254,7 @@ The log level. Valid options are:
 
 | `pipeline.separate_logs`
 |  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled Logstash will create a different log file for each pipeline,
-using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in Logstash,
+using the pipeline.id as name of the file. The destination directory is taken from the `path.logs` setting. When there are many pipelines configured in Logstash,
 separating each log lines per pipeline could be helpful in case you need to troubleshoot what’s happening in a single pipeline, without interference of the other ones.
 | `false`
 
