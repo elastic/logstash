@@ -54,7 +54,10 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  DEFAULT_DATABASE_FILENAME = ["GeoLite2-ASN.mmdb", "GeoLite2-City.mmdb"].freeze
+  DEFAULT_DATABASE_FILENAME = %w{
+    GeoLite2-City.mmdb
+    GeoLite2-ASN.mmdb
+  }.map(&:freeze).freeze
 
   public
 
@@ -98,7 +101,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   # return a valid database path or default database path
   def patch_database_path(database_path)
     return database_path if file_exist?(database_path)
-    return database_path if database_path = get_file_path("GeoLite2-#{@database_type}.mmdb") and file_exist?(database_path)
+    return database_path if database_path = get_file_path("#{database_name}") and file_exist?(database_path)
     raise "You must specify 'database => ...' in your geoip filter (I looked for '#{database_path}')"
   end
 
@@ -120,11 +123,12 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  # Clean up files .mmdb, .gz which are not mentioned in metadata and not default database
+  # Clean up files .mmdb, .tgz which are not mentioned in metadata and not default database
   def clean_up_database
     if @metadata.exist?
       protected_filenames = (@metadata.database_filenames + DEFAULT_DATABASE_FILENAME).uniq
-      existing_filenames = ::Dir.glob(get_file_path('*.{mmdb,gz}')).map { |path| path.split("/").last }
+      existing_filenames = ::Dir.glob(get_file_path("*.{#{DB_EXTENSION},#{GZ_EXTENSION}}"))
+                                .map { |path| path.split("/").last }
 
       (existing_filenames - protected_filenames).each do |filename|
         ::File.delete(get_file_path(filename))

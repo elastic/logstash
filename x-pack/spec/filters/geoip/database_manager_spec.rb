@@ -130,11 +130,11 @@ module LogStash module Filters module Geoip
 
     context "clean up database" do
       let(:asn00) { get_file_path("GeoLite2-ASN_000000000.mmdb") }
-      let(:asn00gz) { get_file_path("GeoLite2-ASN_000000000.gz") }
+      let(:asn00gz) { get_file_path("GeoLite2-ASN_000000000.tgz") }
       let(:city00) { get_file_path("GeoLite2-City_000000000.mmdb") }
-      let(:city00gz) { get_file_path("GeoLite2-City_000000000.gz") }
+      let(:city00gz) { get_file_path("GeoLite2-City_000000000.tgz") }
       let(:city44) { get_file_path("GeoLite2-City_4444444444.mmdb") }
-      let(:city44gz) { get_file_path("GeoLite2-City_4444444444.gz") }
+      let(:city44gz) { get_file_path("GeoLite2-City_4444444444.tgz") }
 
       before(:each) do
         [asn00, asn00gz, city00, city00gz, city44, city44gz].each { |file_path| ::File.delete(file_path) if ::File.exist?(file_path) }

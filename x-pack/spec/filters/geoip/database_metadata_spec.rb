@@ -50,6 +50,14 @@ module LogStash module Filters module Geoip
     end
 
     context "save timestamp" do
+      before do
+        ::File.open(DEFAULT_CITY_GZ_PATH, "w") { |f| f.write "make a non empty file" }
+      end
+
+      after do
+        delete_file(DEFAULT_CITY_GZ_PATH)
+      end
+
       it "write the current time" do
         dbm.save_timestamp(DEFAULT_CITY_DB_PATH)
 
@@ -57,7 +65,8 @@ module LogStash module Filters module Geoip
         expect(metadata[DatabaseMetadata::Column::DATABASE_TYPE]).to eq("City")
         past = metadata[DatabaseMetadata::Column::UPDATE_AT]
         expect(Time.now.to_i - past.to_i).to be < 100
-        expect(metadata[DatabaseMetadata::Column::GZ_MD5]).to eq('')
+        expect(metadata[DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
+        expect(metadata[DatabaseMetadata::Column::GZ_MD5]).to eq(md5(DEFAULT_CITY_GZ_PATH))
         expect(metadata[DatabaseMetadata::Column::MD5]).to eq(DEFAULT_CITY_DB_MD5)
         expect(metadata[DatabaseMetadata::Column::FILENAME]).to eq(DEFAULT_CITY_DB_NAME)
       end
@@ -128,9 +137,10 @@ module LogStash module Filters module Geoip
     end
 
     context "database filenames" do
-      it "should give filename in .mmdb .gz" do
+      it "should give filename in .mmdb .tgz" do
         write_temp_metadata(temp_metadata_path)
-        expect(dbm.database_filenames).to match_array([DEFAULT_CITY_DB_NAME, DEFAULT_ASN_DB_NAME, 'GeoLite2-City.mmdb.gz', 'GeoLite2-ASN.mmdb.gz'])
+        expect(dbm.database_filenames).to match_array([DEFAULT_CITY_DB_NAME, DEFAULT_ASN_DB_NAME,
+                                                       'GeoLite2-City.tgz', 'GeoLite2-ASN.tgz'])
       end
     end
 
@@ -145,5 +155,6 @@ module LogStash module Filters module Geoip
         expect(dbm.exist?).to be_truthy
       end
     end
+
   end
 end end end

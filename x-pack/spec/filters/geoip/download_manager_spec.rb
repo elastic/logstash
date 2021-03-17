@@ -15,6 +15,12 @@ module LogStash module Filters module Geoip
     end
     let(:logger) { double("Logger") }
 
+    GEOIP_STAGING_HOST = "https://geoip.elastic.dev"
+    GEOIP_STAGING_ENDPOINT = "#{GEOIP_STAGING_HOST}#{LogStash::Filters::Geoip::DownloadManager::GEOIP_PATH}"
+
+    before do
+      stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
+    end
 
     context "rest client" do
       it "can call endpoint" do
@@ -32,7 +38,9 @@ module LogStash module Filters module Geoip
     context "check update" do
       before(:each) do
         expect(download_manager).to receive(:get_uuid).and_return(SecureRandom.uuid)
-        mock_resp = double("geoip_endpoint", :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))), :status => 200)
+        mock_resp = double("geoip_endpoint",
+                           :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
+                           :status => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
@@ -50,7 +58,7 @@ module LogStash module Filters module Geoip
       end
 
       it "should return false when md5 is the same" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("2449075797a3ecd7cd2d4ea9d01e6e8f")
+        expect(mock_metadata).to receive(:gz_md5).and_return("89d225ac546310b1e7979502ac9ad11c")
 
         has_update, info = download_manager.send(:check_update)
         expect(has_update).to be_falsey
@@ -75,7 +83,7 @@ module LogStash module Filters module Geoip
         }
       end
       let(:md5_hash) { SecureRandom.hex }
-      let(:filename) { "GeoLite2-City.mmdb.gz"}
+      let(:filename) { "GeoLite2-City.tgz"}
 
       it "should raise error if md5 does not match" do
         allow(Down).to receive(:download)
@@ -85,27 +93,44 @@ module LogStash module Filters module Geoip
       it "should download file and return zip path" do
         expect(download_manager).to receive(:md5).and_return(md5_hash)
 
-        path = download_manager.send(:download_database, db_info)
-        expect(path).to match /GeoLite2-City_\d+\.mmdb\.gz/
+        path, timestamp = download_manager.send(:download_database, db_info)
+        expect(path).to match /GeoLite2-City_#{timestamp}\.tgz/
         expect(::File.exist?(path)).to be_truthy
-        ::File.delete(path) if ::File.exist?(path)
+
+        delete_file(path)
       end
     end
 
     context "unzip" do
-      before(:each) do
+      let(:copyright_path) { get_file_path('COPYRIGHT.txt') }
+      let(:license_path) { get_file_path('LICENSE.txt') }
+      let(:readme_path) { get_file_path('README.txt') }
+
+      before do
         file_path = ::File.expand_path("./fixtures/sample", ::File.dirname(__FILE__))
-        ::File.delete(file_path) if ::File.exist?(file_path)
+        delete_file(file_path, copyright_path, license_path, readme_path)
+      end
+      
+      after do
+        delete_file(copyright_path, license_path, readme_path)
       end
 
-      it "gz file" do
-        path = ::File.expand_path("./fixtures/sample.gz", ::File.dirname(__FILE__))
-        unzip_path = download_manager.send(:unzip, path)
-        expect(::File.exist?(unzip_path)).to be_truthy
+      it "should extract database and license related files" do
+        path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
+        timestamp = (Time.now.to_f * 1000).to_i
+        unzip_db_path = download_manager.send(:unzip, path, timestamp)
+
+        expect(unzip_db_path.include?("GeoLite2-City_#{timestamp}.#{DB_EXTENSION}")).to be_truthy
+        expect(::File.exist?(unzip_db_path)).to be_truthy
+        expect(::File.exist?(copyright_path)).to be_truthy
+        expect(::File.exist?(license_path)).to be_truthy
+        expect(::File.exist?(readme_path)).to be_falsey
+
+        delete_file(unzip_db_path, copyright_path, license_path, readme_path)
       end
     end
 
-    context "assert database" do
+    xcontext "assert database" do
       it "should raise error if file is invalid" do
         expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
       end
