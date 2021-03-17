@@ -24,7 +24,7 @@ module LogStash module Filters
       end
 
       def get_gz_name(filename)
-        filename.sub(/(.*)\.#{DB_EXTENSION}/, "\\1.#{GZ_EXTENSION}")
+        filename[0...-(DB_EXTENSION.length)] + GZ_EXTENSION
       end
 
       def database_name_prefix

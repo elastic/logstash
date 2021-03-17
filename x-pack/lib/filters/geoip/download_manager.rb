@@ -2,7 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "bootstrap/util/compress"
+require_relative '../../../../lib/bootstrap/util/compress'
 require "logstash/util/loggable"
 require_relative "util"
 require_relative "database_metadata"
@@ -35,8 +35,7 @@ module LogStash module Filters module Geoip class DownloadManager
     has_update, database_info = check_update
 
     if has_update
-      new_database_zip_path, new_database_timestamp = download_database(database_info)
-      new_database_path = unzip new_database_zip_path, new_database_timestamp
+      new_database_path = unzip download_database(database_info)
       assert_database!(new_database_path)
       return [true, new_database_path]
     end
@@ -62,23 +61,22 @@ module LogStash module Filters module Geoip class DownloadManager
 
   def download_database(server_db)
     Stud.try(3.times) do
-      timestamp = (Time.now.to_f * 1000).to_i
-      new_database_zip_path = get_file_path("#{database_name_prefix}_#{timestamp}.#{GZ_EXTENSION}")
+      new_database_zip_path = get_file_path("#{database_name_prefix}_#{Time.now.to_i}.#{GZ_EXTENSION}")
       Down.download(server_db['url'], destination: new_database_zip_path)
       raise "the new download has wrong checksum" if md5(new_database_zip_path) != server_db['md5_hash']
 
       logger.debug("new database downloaded in ", :path => new_database_zip_path)
-      [new_database_zip_path, timestamp]
+      new_database_zip_path
     end
   end
 
-  def unzip(zip_path, timestamp)
-    new_database_path = get_file_path("#{database_name_prefix}_#{timestamp}.#{DB_EXTENSION}")
-    extract_dir = get_file_path("#{database_name_prefix}_#{timestamp}")
+  def unzip(zip_path)
+    new_database_path = zip_path[0...-(GZ_EXTENSION.length)] + DB_EXTENSION
+    extract_dir = zip_path[0...-(GZ_EXTENSION.length + 1)]
 
     LogStash::Util::Tar.extract(zip_path, extract_dir)
 
-    FileUtils.cp( "#{extract_dir}/#{database_name_prefix}.#{DB_EXTENSION}", new_database_path)
+    FileUtils.cp("#{extract_dir}/#{database_name}", new_database_path)
     FileUtils.cp_r(Dir.glob("#{extract_dir}/{COPYRIGHT,LICENSE}.txt"), @vendor_path)
     FileUtils.remove_dir(extract_dir)
 

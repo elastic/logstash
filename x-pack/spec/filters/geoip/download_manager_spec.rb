@@ -93,8 +93,8 @@ module LogStash module Filters module Geoip
       it "should download file and return zip path" do
         expect(download_manager).to receive(:md5).and_return(md5_hash)
 
-        path, timestamp = download_manager.send(:download_database, db_info)
-        expect(path).to match /GeoLite2-City_#{timestamp}\.tgz/
+        path = download_manager.send(:download_database, db_info)
+        expect(path).to match /GeoLite2-City_\d+\.tgz/
         expect(::File.exist?(path)).to be_truthy
 
         delete_file(path)
@@ -110,23 +110,18 @@ module LogStash module Filters module Geoip
         file_path = ::File.expand_path("./fixtures/sample", ::File.dirname(__FILE__))
         delete_file(file_path, copyright_path, license_path, readme_path)
       end
-      
-      after do
-        delete_file(copyright_path, license_path, readme_path)
-      end
 
       it "should extract database and license related files" do
         path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
-        timestamp = (Time.now.to_f * 1000).to_i
-        unzip_db_path = download_manager.send(:unzip, path, timestamp)
+        unzip_db_path = download_manager.send(:unzip, path)
 
-        expect(unzip_db_path.include?("GeoLite2-City_#{timestamp}.#{DB_EXTENSION}")).to be_truthy
+        expect(unzip_db_path).to match /\.mmdb/
         expect(::File.exist?(unzip_db_path)).to be_truthy
         expect(::File.exist?(copyright_path)).to be_truthy
         expect(::File.exist?(license_path)).to be_truthy
         expect(::File.exist?(readme_path)).to be_falsey
 
-        delete_file(unzip_db_path, copyright_path, license_path, readme_path)
+        delete_file(unzip_db_path, copyright_path, license_path)
       end
     end
 
