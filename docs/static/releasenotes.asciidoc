@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-15,Logstash 6.8.15>>
 * <<logstash-6-8-14,Logstash 6.8.14>>
 * <<logstash-6-8-13,Logstash 6.8.13>>
 * <<logstash-6-8-12,Logstash 6.8.12>>
@@ -45,6 +46,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-15]]
+=== Logstash 6.8.15 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.15
+
+* bump version to 6.8.15 https://github.com/elastic/logstash/pull/12653[#12653]
+* internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12749[#12749]
+* Backport PR #12749 to 6.8: internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12752[#12752]
+
+=== Logstash Commits between 6.8 and 6.8.14
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.14..6.8"
+
+3c0cd07dc - (HEAD -> 6.8, origin/6.8) Backport PR #12749 to 6.8: internal-monitoring: use configured ssl verification mode (#12752) (2 days ago) <Ry Biesemeyer>
+255590616 - bump version to 6.8.15 (#12653) (5 weeks ago) <João Duarte>
+17b3a7bda - Release notes draft for 6.8.14 (#12595) (5 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.14..6.8 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-8-14]]
 === Logstash 6.8.14 Release Notes
