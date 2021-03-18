@@ -7,8 +7,8 @@ require "digest"
 
 module LogStash module Filters
   module Geoip
-    GZ_EXTENSION = 'tgz'.freeze
-    DB_EXTENSION = 'mmdb'.freeze
+    GZ_EXT = 'tgz'.freeze
+    DB_EXT = 'mmdb'.freeze
 
     module Util
       def get_file_path(filename)
@@ -23,8 +23,9 @@ module LogStash module Filters
         file_exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)): ""
       end
 
+      # replace *.mmdb to *.tgz
       def get_gz_name(filename)
-        filename[0...-(DB_EXTENSION.length)] + GZ_EXTENSION
+        filename[0...-(DB_EXT.length)] + GZ_EXT
       end
 
       def database_name_prefix
@@ -32,7 +33,7 @@ module LogStash module Filters
       end
 
       def database_name
-        @database_name ||= database_name_prefix + '.' + DB_EXTENSION
+        @database_name ||= database_name_prefix + '.' + DB_EXT
       end
     end
   end

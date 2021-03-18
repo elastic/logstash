@@ -127,7 +127,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   def clean_up_database
     if @metadata.exist?
       protected_filenames = (@metadata.database_filenames + DEFAULT_DATABASE_FILENAME).uniq
-      existing_filenames = ::Dir.glob(get_file_path("*.{#{DB_EXTENSION},#{GZ_EXTENSION}}"))
+      existing_filenames = ::Dir.glob(get_file_path("*.{#{DB_EXT},#{GZ_EXT}}"))
                                 .map { |path| path.split("/").last }
 
       (existing_filenames - protected_filenames).each do |filename|
