@@ -1,10 +1,14 @@
 <!-- Type of change
-Please label this PR with one of the following labels, depending on the scope of your change:
+Please label this PR with the release version and one of the following labels, depending on the scope of your change:
 - bug
 - enhancement
 - breaking change
 - doc
 -->
+
+## Release notes
+<!-- Add content to appear in  [Release Notes](https://www.elastic.co/guide/en/logstash/current/releasenotes.html), or add [rn:skip] to leave this PR out of release notes -->
+
 
 ## What does this PR do?
 
