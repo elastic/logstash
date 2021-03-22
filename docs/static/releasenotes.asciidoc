@@ -3,6 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-11-2,Logstash 7.11.2>>
+* <<logstash-7-11-1,Logstash 7.11.1>>
 * <<logstash-7-11-0,Logstash 7.11.0>>
 * <<logstash-7-10-2,Logstash 7.10.2>>
 * <<logstash-7-10-1,Logstash 7.10.1>>
@@ -38,6 +40,86 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-11-2]]
+=== Logstash 7.11.2 Release Notes
+
+==== Notable issues fixed
+
+We resolved an issue that could cause problems with automatic reloading. We
+replaced the `not terminated` state with two states that are more descriptive:
+`running` and `loading`. This fix prevents pipelines that are loading from being
+described as `running`. https://github.com/elastic/logstash/pull/12444[#12444]
+
+==== Plugins
+
+*Elasticsearch Filter - 3.9.3*
+
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
+* [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
+* [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
+  
+
+*Geoip Filter - 6.0.5*
+
+* Fix database download task. Upgrade project to java 11 https://github.com/logstash-plugins/logstash-filter-geoip/pull/175[#175]
+* Enable the use of MaxMind GeoIP2-Domain databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/162[#162]
+
+*Metrics Filter - 4.0.7*
+
+* Fixed typo in documentation
+
+*Beats Input - 6.0.14*
+
+* Feat: log + unwrap generic SSL context exceptions https://github.com/logstash-plugins/logstash-input-beats/pull/405[#405]
+* [DOC] Update links to use shared attributes
+
+*Elasticsearch Input - 4.9.1*
+
+* [DOC] Replaced hard-coded links with shared attributes https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/143[#143]
+* [DOC] Added missing quote to docinfo_fields example https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/145[#145]
+
+*Http Input - 3.3.7*
+
+* Feat: improved error handling/logging/unwraping https://github.com/logstash-plugins/logstash-input-http/pull/133[#133]
+ 
+*Syslog Input - 3.4.5*
+
+* Added support for listening on IPv6 addresses
+
+*Tcp Input - 6.0.7*
+
+* Fix: reduce error logging (to info level) on connection resets https://github.com/logstash-plugins/logstash-input-tcp/pull/168[#168]
+* Refactor: only patch Socket classes once (on first input)
+* Refactor: use a proper log4j logger (in Java to avoid surprises when unwrapping `LogStash::Logging::Logger`)
+
+*Kafka Integration - 10.7.1*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/issue/71[#71]
+
+*Cloudwatch Output - 3.0.9*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/18[#18]
+
+*Elasticsearch Output - 10.8.4*
+
+* Fixed an issue where a retried request would drop "update" parameters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/800[#800]
+* Avoid to implicitly set deprecated type to `_doc` when connects to Elasticsearch version 7.x  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/994[#994]
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/985[#985]
+
+*Lumberjack Output - 3.1.8*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-lumberjack/pull/31[#31]
+
+*S3 Output - 4.3.3*
+
+*  [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-output-s3/pull/230[#230]
+
+
+[[logstash-7-11-1]]
+=== Logstash 7.11.1 Release Notes
+
+No user-facing changes in this release.
 
 [[logstash-7-11-0]]
 === Logstash 7.11.0 Release Notes
