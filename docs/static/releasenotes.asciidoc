@@ -135,8 +135,6 @@ the availability of the metrics API. https://github.com/elastic/logstash/pull/12
 We've fixed an issue where Logstash would crash when attempting to start using the bundled JDK when Logstash was located
 in a folder where the folder name contained spaces https://github.com/elastic/logstash/pull/12585[#12585]
 
-**Persistent queues (PQ).**
-We have fixed a PQ issue where an unexpected shutdown could cause corruption of the persistent queue https://github.com/elastic/logstash/pull/12554[#12554]
 
 **Certificate Verification with Internal Monitoring**
 A bug in the monitoring pipeline was causing it to always start its Elasticsearch Output Plugin with certificate
