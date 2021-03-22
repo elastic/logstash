@@ -47,7 +47,7 @@ This section summarizes the changes in the following releases:
 
 ==== New features and enhancements
 
-===== Progress toward Elastic Common Schema (ECS) 
+===== Progress toward Elastic Common Schema (ECS)
 
 We've done more work to help ease your transition to Elastic Common Schema
 (ECS). This release extends ECS work in previous releases. Here's a recap:
@@ -63,17 +63,17 @@ once instead of configuring each instance manually. This setting lets users lock
 in a specific behavior in advance of their next major version upgrade.
 
 ECS compatibility is off-by-default in Logstash 7.x, but will be on-by-default
-in Logstash 8.0. 
+in Logstash 8.0.
 
 ====== ECS-compliant grok patterns
 
 The {logstash-ref}/plugins-filters-grok.html[grok filter plugin] offers a new
 set of patterns to make event field names ECS-compliant. (No worries if you're
 not ready to transition yet. The complete set of legacy patterns is still
-available and continues to be the default for Logstash 7.x.) 
+available and continues to be the default for Logstash 7.x.)
 
 The ECS pattern set has an equivalent for each pattern in the legacy set, and is
-a drop-in replacement. 
+a drop-in replacement.
 Use the {logstash-ref}/plugins-filters-grok.html#plugins-filters-grok-ecs_compatibility[ecs_compatibility]
 setting when you're ready to switch modes.
 
@@ -90,19 +90,19 @@ namespace.
 ===== JDK 15 support
 
 Logstash introduces support for JDK 15!  You need to update settings in
-`jvm.options` and `log4j2.properties` if: 
+`jvm.options` and `log4j2.properties` if:
 
-* you are upgrading from Logstash 7.11.x (or earlier) to 7.12 or later, AND 
-* you are using JDK 15 or later. 
+* you are upgrading from Logstash 7.11.x (or earlier) to 7.12 or later, AND
+* you are using JDK 15 or later.
 
 Unless both of these conditions apply, you don't need to adjust settings because
-of the upgrade.  See <<jdk15-upgrade,Using JDK 15>> for more information. 
+of the upgrade.  See <<jdk15-upgrade,Using JDK 15>> for more information.
 
 ===== Conditional settings for JVM versions
 
 We've added support for conditional settings and behavior, dependent on the JVM
 version. Now you can configure different settings for different JVM versions.
-Here is an example from the default `jvm.options` file. 
+Here is an example from the default `jvm.options` file.
 
 Example:
 ```
@@ -112,7 +112,7 @@ Example:
 8-13:-XX:+UseCMSInitiatingOccupancyOnly
 ```
 This example sets garbage collection (GC) values for JDK 8-13 only. Those
-settings don't apply to JVM 14 and above.   
+settings don't apply to JVM 14 and above.
 
 This feature is available for any setting in the `jvm.options` file, and aligns
 more closely with the {es} implementation of jvm settings.
@@ -151,7 +151,7 @@ the Elasticsearch Output Plugin in other pipelines. https://github.com/elastic/l
 * [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
 * [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
 * [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
-  
+
 
 *Geoip Filter - 6.0.5*
 
@@ -163,7 +163,7 @@ the Elasticsearch Output Plugin in other pipelines. https://github.com/elastic/l
 * Feat: ECS compatibility support. Add (built-in) patterns definitions that are
 fully Elastic Common Schema compliant.
 https://github.com/logstash-plugins/logstash-filter-grok/pull/162[#162]
- 
+
 *Metrics Filter - 4.0.7*
 
 * [DOC] Fixed typo in documentation
@@ -184,7 +184,7 @@ https://github.com/logstash-plugins/logstash-input-beats/pull/404[#404]
 *Http Input - 3.3.7*
 
 * Feat: improved error handling/logging/unwraping https://github.com/logstash-plugins/logstash-input-http/pull/133[#133]
- 
+
 *Redis Input - 3.6.0*
 
 * Remove ruby pipeline dependency. Starting from Logstash 8, Ruby execution engine
@@ -209,7 +209,7 @@ https://github.com/logstash-plugins/logstash-input-redis/pull/84[#84]
 *Kafka Integration - 10.7.1*
 
 * Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/issue/71[#71]
-  
+
 *Rabbitmq Integration - 7.2.0*
 
 * Remove ruby pipeline dependency. Starting from Logstash 8, Ruby execution engine is not available. All pipelines should use Java pipeline https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/39[#39]
@@ -305,7 +305,7 @@ NOTE: to leverage the new ECS pattern set in Logstash a grok filter upgrade to v
   * `CATALINALOG` matching was updated to handle Tomcat 7/8/9 logging format
   * `TOMCATLOG` handles the default Tomcat 7/8/9 logging format
   * old (custom) legacy TOMCAT format is handled by the added `TOMCATLEGACY_LOG`
-  * `TOMCATLOG` and `TOMCAT_DATESTAMP` still match the legacy format, 
+  * `TOMCATLOG` and `TOMCAT_DATESTAMP` still match the legacy format,
       however this might change at a later point - if you rely on the old format use `TOMCATLEGACY_` patterns
 
 - **junos**
@@ -340,7 +340,7 @@ NOTE: to leverage the new ECS pattern set in Logstash a grok filter upgrade to v
 
     For longer paths, a non matching character towards the end of the path would cause the RegExp engine a long time to abort.
     With this change we're also explicit about not supporting relative paths (using the `PATH` pattern), these won't be properly matched.
- 
+
 * Feat: allow UNIXPATH to match non-ascii chars https://github.com/logstash-plugins/logstash-patterns-core/pull/291[#291]
 
 
