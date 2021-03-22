@@ -50,7 +50,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-15]]
 === Logstash 6.8.15 Release Notes
 
-* Fix an issue where ssl verification mode was not being used correctly with stack monitoring using internal collection https://github.com/elastic/logstash/pull/12749[#12749]
+* A bug in the monitoring pipeline was causing it to always start its Elasticsearch Output Plugin with certificate verification disabled, which meant that Logstash Internal Monitoring has been sending _monitoring_ metadata (such as pipeline throughput metrics) to Elasticsearch without verifying the recipient. This bug did _NOT_ affect instances of the Elasticsearch Output Plugin in other pipelines. https://github.com/elastic/logstash/pull/12749[#12749]
 
 [[logstash-6-8-14]]
 === Logstash 6.8.14 Release Notes
