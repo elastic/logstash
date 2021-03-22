@@ -23,7 +23,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   def save_timestamp(database_path)
     metadata = get_metadata(false)
     metadata << [@database_type, Time.now.to_i, md5(get_gz_name(database_path)), md5(database_path),
-                 database_path.split("/").last]
+                 ::File.basename(database_path)]
 
     ::CSV.open @metadata_path, 'w' do |csv|
       metadata.each { |row| csv << row }

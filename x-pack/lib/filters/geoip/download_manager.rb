@@ -78,8 +78,9 @@ module LogStash module Filters module Geoip class DownloadManager
     LogStash::Util::Tar.extract(zip_path, temp_dir)
     logger.debug("extract database to ", :path => temp_dir)
 
-    FileUtils.cp("#{temp_dir}/#{database_name}", new_database_path)
-    FileUtils.cp_r(Dir.glob("#{temp_dir}/{COPYRIGHT,LICENSE}.txt"), @vendor_path)
+
+    FileUtils.cp(::File.join(temp_dir, database_name), new_database_path)
+    FileUtils.cp_r(::Dir.glob(::File.join(temp_dir, "{COPYRIGHT,LICENSE}.txt")), @vendor_path)
 
     new_database_path
   end

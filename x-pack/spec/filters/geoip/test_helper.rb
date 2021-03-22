@@ -6,7 +6,7 @@ require 'spec_helper'
 require "digest"
 
 def get_vendor_path
-  ::File.expand_path("./vendor/", ::File.dirname(__FILE__))
+  ::File.expand_path("vendor", ::File.dirname(__FILE__))
 end
 
 def get_file_path(filename)
