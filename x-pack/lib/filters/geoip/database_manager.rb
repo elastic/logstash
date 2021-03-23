@@ -101,7 +101,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   # return a valid database path or default database path
   def patch_database_path(database_path)
     return database_path if file_exist?(database_path)
-    return database_path if database_path = get_file_path(database_name) and file_exist?(database_path)
+    return database_path if database_path = get_file_path("#{DB_PREFIX}#{@database_type}.#{DB_EXT}") and file_exist?(database_path)
     raise "You must specify 'database => ...' in your geoip filter (I looked for '#{database_path}')"
   end
 

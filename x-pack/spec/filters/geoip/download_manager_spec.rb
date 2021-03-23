@@ -5,12 +5,12 @@
 require_relative 'test_helper'
 require "filters/geoip/download_manager"
 
-module LogStash module Filters module Geoip
+describe LogStash::Filters::Geoip do
 
-  describe DownloadManager, :aggregate_failures do
+  describe 'DownloadManager', :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
-      manager = DownloadManager.new( "City", mock_metadata, get_vendor_path)
+      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata, get_vendor_path)
       manager
     end
     let(:logger) { double("Logger") }
@@ -131,7 +131,7 @@ module LogStash module Filters module Geoip
       end
 
       it "should pass validation" do
-        expect(download_manager.send(:assert_database!, DEFAULT_CITY_DB_PATH)).to be_nil
+        expect(download_manager.send(:assert_database!, default_city_db_path)).to be_nil
       end
     end
 
@@ -165,4 +165,4 @@ module LogStash module Filters module Geoip
     end
 
   end
-end end end
+end

@@ -43,6 +43,14 @@ module LogStash module Filters module Geoip class DownloadManager
     [false, nil]
   end
 
+  def database_name
+    @database_name ||= "#{DB_PREFIX}#{@database_type}"
+  end
+
+  def database_name_ext
+    @database_name_ext ||= "#{database_name}.#{DB_EXT}"
+  end
+  
   private
   # Call infra endpoint to get md5 of latest database and verify with metadata
   # return [has_update, server db info]
@@ -52,7 +60,7 @@ module LogStash module Filters module Geoip class DownloadManager
     logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
 
     dbs = JSON.parse(res.body)
-    target_db = dbs.select { |db| db['name'].eql?("#{database_name_prefix}.#{GZ_EXT}") }.first
+    target_db = dbs.select { |db| db['name'].eql?("#{database_name}.#{GZ_EXT}") }.first
     has_update = @metadata.gz_md5 != target_db['md5_hash']
     logger.info "new database version detected? #{has_update}"
 
@@ -61,7 +69,7 @@ module LogStash module Filters module Geoip class DownloadManager
 
   def download_database(server_db)
     Stud.try(3.times) do
-      new_database_zip_path = get_file_path("#{database_name_prefix}_#{Time.now.to_i}.#{GZ_EXT}")
+      new_database_zip_path = get_file_path("#{database_name}_#{Time.now.to_i}.#{GZ_EXT}")
       Down.download(server_db['url'], destination: new_database_zip_path)
       raise "the new download has wrong checksum" if md5(new_database_zip_path) != server_db['md5_hash']
 
@@ -79,7 +87,7 @@ module LogStash module Filters module Geoip class DownloadManager
     logger.debug("extract database to ", :path => temp_dir)
 
 
-    FileUtils.cp(::File.join(temp_dir, database_name), new_database_path)
+    FileUtils.cp(::File.join(temp_dir, database_name_ext), new_database_path)
     FileUtils.cp_r(::Dir.glob(::File.join(temp_dir, "{COPYRIGHT,LICENSE}.txt")), @vendor_path)
 
     new_database_path
