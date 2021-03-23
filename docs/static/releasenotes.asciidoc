@@ -119,7 +119,7 @@ more closely with the {es} implementation of jvm settings.
 
 ===== ARM64 support for Linux (beta)
 
-Support for 64-bit ARM architectures on Linux is now in beta, with downloadable artifacts and docker images available
+Support for 64-bit ARM architectures on Linux is now in beta, with downloadable artifacts and docker images available.
 
 
 ==== Performance improvements and notable issues fixed
