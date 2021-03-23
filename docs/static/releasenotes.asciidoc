@@ -137,6 +137,7 @@ in a folder where the folder name contained spaces https://github.com/elastic/lo
 
 
 **Certificate Verification with Internal Monitoring**
+
 We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
 to {es} with certificate verification disabled. {ls} internal monitoring had
 been sending monitoring metadata (such as pipeline throughput metrics) to {es}
