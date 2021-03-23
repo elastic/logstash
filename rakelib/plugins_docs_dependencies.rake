@@ -212,6 +212,21 @@ task :generate_plugins_version do
         @proxies.clear
       end
     end
+
+    Fetcher::CompactIndex.class_eval do
+      alias_method :__bundle_worker, :bundle_worker
+      # The compact index is built using multiple threads and this is hard-coded atm to 25 threads:
+      #   `Bundler::Worker.new(Bundler.current_ruby.rbx? ? 1 : 25, worker_name, func)`
+      # each thread might built up a Bundler::Source::Rubygems object which retains more than 100MB.
+      # By limiting the worker thread count we make sure not to produce too many of these objects.
+      def bundle_worker(func = nil)
+        __bundle_worker(func).tap do |worker|
+          size = worker.instance_variable_get(:@size)
+          fail("@size = #{size.inspect} is no longer an integer") unless size.is_a?(Integer)
+          worker.instance_variable_set(:@size, 2)
+        end
+      end
+    end
   end
 
   PluginVersionWorking.new.generate
