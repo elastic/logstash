@@ -50,13 +50,17 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-15]]
 === Logstash 6.8.15 Release Notes
 
-==== Notable issues fixed
+[[security-updates-6.8.15]]
+==== Security update
 
-We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
-to {es} with certificate verification disabled. {ls} internal monitoring had
-been sending monitoring metadata (such as pipeline throughput metrics) to {es}
-without verifying the recipient.
+**Certificate verification with internal monitoring**. We fixed a bug in the
+monitoring pipeline that caused it to pass monitoring data to {es} with
+certificate verification disabled. {ls} internal monitoring had been sending
+monitoring metadata (such as pipeline throughput metrics) to {es} without
+verifying the recipient.
 https://github.com/elastic/logstash/pull/12749[#12749]
+
+For information: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-22138[CVE-2021-22138].
 
 [[logstash-6-8-14]]
 === Logstash 6.8.14 Release Notes
