@@ -45,6 +45,17 @@ This section summarizes the changes in the following releases:
 [[logstash-7-12-0]]
 === Logstash 7.12.0 Release Notes
 
+==== Security update
+
+**Certificate verification with internal monitoring.** We fixed a bug in the
+monitoring pipeline that caused it to pass monitoring data to {es} with
+certificate verification disabled. {ls} internal monitoring had been sending
+monitoring metadata (such as pipeline throughput metrics) to {es} without
+verifying the recipient.
+https://github.com/elastic/logstash/pull/12749[#12749]
+
+For information: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-22138[CVE-2021-22138].
+
 ==== New features and enhancements
 
 ===== Progress toward Elastic Common Schema (ECS)
@@ -53,9 +64,9 @@ We've done more work to help ease your transition to Elastic Common Schema
 (ECS). This release extends ECS work in previous releases. Here's a recap:
 
 * ECS support in Elasticsearch output plugin (7.9). The elasticsearch output
-plugin can manage index templates that are compatible with ECS. For more info:
+plugin can manage index templates that are compatible with ECS. For more info, see
 {logstash-ref}/plugins-outputs-elasticsearch.html#_compatibility_with_the_elastic_common_schema_ecs[Compatibility
-with the Elastic Common Schema (ECS)]
+with the Elastic Common Schema (ECS)].
 
 * Pipeline level ECS compatibility (7.10). The `pipeline.ecs_compatibility`
 setting lets users control ECS compatibility for all plugins in a pipeline at
@@ -121,28 +132,19 @@ more closely with the {es} implementation of jvm settings.
 
 Support for 64-bit ARM architectures on Linux is now in beta, with downloadable artifacts and docker images available.
 
-
 ==== Performance improvements and notable issues fixed
 
-**Pipeline Loading and Monitoring improvements**
+**Pipeline loading and monitoring improvements**
 
 We've made changes to start the webserver that exposes the Logstash metrics API earlier in the startup process.
 For slow starting pipelines, this would cause error messages to appear in the Logstash logs, and cause delays to
 the availability of the metrics API. https://github.com/elastic/logstash/pull/12571[#12571]
 
-**Windows Startup Fixes**
+**Windows startup fixes**
 
 We've fixed an issue where Logstash would crash when attempting to start using the bundled JDK when Logstash was located
 in a folder where the folder name contained spaces https://github.com/elastic/logstash/pull/12585[#12585]
 
-
-**Certificate Verification with Internal Monitoring**
-
-We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
-to {es} with certificate verification disabled. {ls} internal monitoring had
-been sending monitoring metadata (such as pipeline throughput metrics) to {es}
-without verifying the recipient.
-https://github.com/elastic/logstash/pull/12749[#12749]
 
 ==== Plugin releases
 
