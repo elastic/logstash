@@ -137,10 +137,11 @@ in a folder where the folder name contained spaces https://github.com/elastic/lo
 
 
 **Certificate Verification with Internal Monitoring**
-A bug in the monitoring pipeline was causing it to always start its Elasticsearch Output Plugin with certificate
-verification disabled, which meant that Logstash Internal Monitoring has been sending _monitoring_ metadata (such as
-pipeline throughput metrics) to Elasticsearch without verifying the recipient. This bug did _NOT_ affect instances of
-the Elasticsearch Output Plugin in other pipelines. https://github.com/elastic/logstash/pull/12749[#12749]
+We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
+to {es} with certificate verification disabled. {ls} internal monitoring had
+been sending monitoring metadata (such as pipeline throughput metrics) to {es}
+without verifying the recipient.
+https://github.com/elastic/logstash/pull/12749[#12749]
 
 ==== Plugin releases
 
