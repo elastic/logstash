@@ -207,7 +207,7 @@ https://github.com/logstash-plugins/logstash-input-redis/pull/84[#84]
 
 *Kafka Integration - 10.7.1*
 
-* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/issue/71[#71]
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/pull/71[#71]
 
 *Rabbitmq Integration - 7.2.0*
 
