@@ -50,8 +50,6 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-15]]
 === Logstash 6.8.15 Release Notes
 
-coming[6.8.15]
-
 ==== Notable issues fixed
 
 We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
