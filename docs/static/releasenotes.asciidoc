@@ -42,11 +42,307 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
-
 [[logstash-7-12-0]]
 === Logstash 7.12.0 Release Notes
 
-coming[7.12.0]
+==== New features and enhancements
+
+===== Progress toward Elastic Common Schema (ECS)
+
+We've done more work to help ease your transition to Elastic Common Schema
+(ECS). This release extends ECS work in previous releases. Here's a recap:
+
+* ECS support in Elasticsearch output plugin (7.9). The elasticsearch output
+plugin can manage index templates that are compatible with ECS. For more info:
+{logstash-ref}/plugins-outputs-elasticsearch.html#_compatibility_with_the_elastic_common_schema_ecs[Compatibility
+with the Elastic Common Schema (ECS)]
+
+* Pipeline level ECS compatibility (7.10). The `pipeline.ecs_compatibility`
+setting lets users control ECS compatibility for all plugins in a pipeline at
+once instead of configuring each instance manually. This setting lets users lock
+in a specific behavior in advance of their next major version upgrade.
+
+ECS compatibility is off-by-default in Logstash 7.x, but will be on-by-default
+in Logstash 8.0.
+
+====== ECS-compliant grok patterns
+
+The {logstash-ref}/plugins-filters-grok.html[grok filter plugin] offers a new
+set of patterns to make event field names ECS-compliant. (No worries if you're
+not ready to transition yet. The complete set of legacy patterns is still
+available and continues to be the default for Logstash 7.x.)
+
+The ECS pattern set has an equivalent for each pattern in the legacy set, and is
+a drop-in replacement.
+Use the {logstash-ref}/plugins-filters-grok.html#plugins-filters-grok-ecs_compatibility[ecs_compatibility]
+setting when you're ready to switch modes.
+
+====== ECS-compliant beats input
+
+The {logstash-ref}/plugins-inputs-beats.html[beats input plugin] is now
+ECS-compliant. It adds two fields related to the event: the deprecated host
+which contains the hostname, and the ip_address containing the remote address of
+the client’s connection. When
+{logstash-ref}/plugins-inputs-beats.html#plugins-inputs-beats-ecs_compatibility[ECS
+compatibility mode] is enabled these fields are moved to ECS-compatible
+namespace.
+
+===== JDK 15 support
+
+Logstash introduces support for JDK 15!  You need to update settings in
+`jvm.options` and `log4j2.properties` if:
+
+* you are upgrading from Logstash 7.11.x (or earlier) to 7.12 or later, AND
+* you are using JDK 15 or later.
+
+Unless both of these conditions apply, you don't need to adjust settings because
+of the upgrade.  See <<jdk15-upgrade,Using JDK 15>> for more information.
+
+===== Conditional settings for JVM versions
+
+We've added support for conditional settings and behavior, dependent on the JVM
+version. Now you can configure different settings for different JVM versions.
+Here is an example from the default `jvm.options` file.
+
+Example:
+```
+## GC configuration
+8-13:-XX:+UseConcMarkSweepGC
+8-13:-XX:CMSInitiatingOccupancyFraction=75
+8-13:-XX:+UseCMSInitiatingOccupancyOnly
+```
+This example sets garbage collection (GC) values for JDK 8-13 only. Those
+settings don't apply to JVM 14 and above.
+
+This feature is available for any setting in the `jvm.options` file, and aligns
+more closely with the {es} implementation of jvm settings.
+
+===== ARM64 support for Linux (beta)
+
+Support for 64-bit ARM architectures on Linux is now in beta, with downloadable artifacts and docker images available.
+
+
+==== Performance improvements and notable issues fixed
+
+**Pipeline Loading and Monitoring improvements**
+
+We've made changes to start the webserver that exposes the Logstash metrics API earlier in the startup process.
+For slow starting pipelines, this would cause error messages to appear in the Logstash logs, and cause delays to
+the availability of the metrics API. https://github.com/elastic/logstash/pull/12571[#12571]
+
+**Windows Startup Fixes**
+
+We've fixed an issue where Logstash would crash when attempting to start using the bundled JDK when Logstash was located
+in a folder where the folder name contained spaces https://github.com/elastic/logstash/pull/12585[#12585]
+
+
+**Certificate Verification with Internal Monitoring**
+
+We fixed a bug in the monitoring pipeline that caused it to pass monitoring data
+to {es} with certificate verification disabled. {ls} internal monitoring had
+been sending monitoring metadata (such as pipeline throughput metrics) to {es}
+without verifying the recipient.
+https://github.com/elastic/logstash/pull/12749[#12749]
+
+==== Plugin releases
+
+*Elasticsearch Filter - 3.9.3*
+
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
+* [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
+* [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
+
+
+*Geoip Filter - 6.0.5*
+
+* Fix database download task. Upgrade project to java 11 https://github.com/logstash-plugins/logstash-filter-geoip/pull/175[#175]
+* Enable the use of MaxMind GeoIP2-Domain databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/162[#162]
+
+*Grok Filter - 4.4.0*
+
+* Feat: ECS compatibility support. Add (built-in) patterns definitions that are
+fully Elastic Common Schema compliant.
+https://github.com/logstash-plugins/logstash-filter-grok/pull/162[#162]
+
+*Metrics Filter - 4.0.7*
+
+* [DOC] Fixed typo in documentation
+
+*Beats Input - 6.1.0*
+
+* ECS compatibility enablement. Introduces an `ecs_compatibility` setting is used
+to declare the level of ECS compatibility  at plugin level.
+https://github.com/logstash-plugins/logstash-input-beats/pull/404[#404]
+* Feat: log + unwrap generic SSL context exceptions https://github.com/logstash-plugins/logstash-input-beats/pull/405[#405]
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-input-beats/pull/403[#403]
+
+*Elasticsearch Input - 4.9.1*
+
+* [DOC] Replaced hard-coded links with shared attributes https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/143[#143]
+* [DOC] Added missing quote to docinfo_fields example https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/145[#145]
+
+*Http Input - 3.3.7*
+
+* Feat: improved error handling/logging/unwraping https://github.com/logstash-plugins/logstash-input-http/pull/133[#133]
+
+*Redis Input - 3.6.0*
+
+* Remove ruby pipeline dependency. Starting from Logstash 8, Ruby execution engine
+is not available. All pipelines should use Java pipeline
+https://github.com/logstash-plugins/logstash-input-redis/pull/84[#84]
+
+*Syslog Input - 3.4.5*
+
+* Added support for listening on IPv6 addresses
+
+*Tcp Input - 6.0.7*
+
+* Fix: reduce error logging (to info level) on connection resets https://github.com/logstash-plugins/logstash-input-tcp/pull/168[#168]
+* Refactor: only patch Socket classes once (on first input)
+* Refactor: use a proper log4j logger (in Java to avoid surprises when unwrapping `LogStash::Logging::Logger`)
+
+*Udp Input - 3.4.0*
+
+* Added ECS compatibility mode (`disabled` and `v1`) to rename ip source address in a ECS compliant name https://github.com/logstash-plugins/logstash-input-udp/pull/50[#50]
+* Fixed integration tests for IPv6 downgrading Docker to version 2.4 https://github.com/logstash-plugins/logstash-input-udp/pull/51[#51]
+
+*Kafka Integration - 10.7.1*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-integration-kafka/pull/71[#71]
+
+*Rabbitmq Integration - 7.2.0*
+
+* Remove ruby pipeline dependency. Starting from Logstash 8, Ruby execution engine is not available. All pipelines should use Java pipeline https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/39[#39]
+
+*Ecs_compatibility_support Mixin - 1.1.0*
+
+* Support Mixin for ensuring a plugin has an `ecs_compatibility` method that is configurable from an `ecs_compatibility` option that accepts the literal `disabled` or a v-prefixed integer representing a major ECS version (e.g., `v1`), using the implementation from Logstash core if available.
+
+*Cloudwatch Output - 3.0.9*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/18[#18]
+
+*Elasticsearch Output - 10.8.2*
+
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/985[#985]
+
+*Lumberjack Output - 3.1.8*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 https://github.com/logstash-plugins/logstash-output-lumberjack/pull/31[#31]
+
+*S3 Output - 4.3.3*
+
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-output-s3/pull/230[#230]
+
+*Core Patterns - 4.3.0*
+
+With **4.3.0** we're introducing a new set of pattern definitions compliant with Elastic Common Schema (ECS), on numerous 
+places patterns are capturing names prescribed by the schema or use custom namespaces that do not conflict with ECS ones.
+
+Changes are backwards compatible as much as possible and also include improvements to some of the existing patterns.
+
+Besides fields having new names, values for numeric (integer or floating point) types are usually converted to their 
+numeric representation to ease further event processing (e.g. `http.response.status_code` is now stored as an integer).
+
+NOTE: to leverage the new ECS pattern set in Logstash a grok filter upgrade to version >= 4.4.0 is required.
+
+- **aws**
+  * in ECS mode we dropped the (incomplete) attempt to capture `rawrequest` from `S3_REQUEST_LINE`
+  * `S3_ACCESS_LOG` will handle up-to-date S3 access-log formats (6 'new' field captures at the end)
+    Host Id -> Signature Version -> Cipher Suite -> Authentication Type -> Host Header -> TLS version
+  * `ELB_ACCESS_LOG` will handle optional (`-`) in legacy mode
+  * null values such as `-` or `-1` time values (e.g. `ELB_ACCESS_LOG`'s `request_processing_time`)
+    are not captured in ECS mode
+
+- **bacula**
+* Fix: improve matching of `BACULA_HOST` as `HOSTNAME`
+* Fix: legacy `BACULA_` patterns to handle (optional) spaces
+* Fix: handle `BACULA_LOG` 'Job Id: X' prefix as optional
+* Fix: legacy matching of BACULA fatal error lines
+
+- **bind**
+* `BIND9`'s legacy `querytype` was further split into multiple fields as:
+     `dns.question.type` and `bind.log.question.flags`
+* `BIND9` patterns (legacy as well) were adjusted to handle Bind9 >= 9.11 compatibility
+* `BIND9_QUERYLOGBASE` was introduced for potential re-use
+
+- **bro**
+  * `BRO_` patterns are stricter in ECS mode - won't mistakenly match newer BRO/Zeek formats
+  * place holders such as `(empty)` tags and `-` null values won't be captured
+  * each `BRO_` pattern has a newer `ZEEK_` variant that supports latest Zeek 3.x versions
+    e.g. `ZEEK_HTTP` as a replacement for `BRO_HTTP` (in ECS mode only),
+    there's a new file **zeek** where all of the `ZEEK_XXX` pattern variants live
+
+- **exim**
+  * introduced `EXIM` (`EXIM_MESSAGE_ARRIVAL`) to match message arrival log lines - in ECS mode!
+
+- **firewalls**
+  * introduced `IPTABLES` pattern which is re-used within `SHOREWALL` and `SFW2`
+  * `SHOREWALL` now supports IPv6 addresses (in ECS mode - due `IPTABLES` pattern)
+  * `timestamp` fields will be captured for `SHOREWALL` and `SFW2` in legacy mode as well
+  * `SHOREWALL` became less strict in containing the `kernel:` sub-string
+  * `NETSCREENSESSIONLOG` properly handles optional `session_id=... reason=...` suffix
+  * `interval` and `xlate_type` (legacy) CISCO fields are not captured in ECS mode
+
+- **core** (grok-patterns)
+  * `SYSLOGFACILITY` type casts facility code and priority in ECS mode
+  * `SYSLOGTIMESTAMP` will be captured (from `SYSLOGBASE`) as `timestamp`
+  * Fix: e-mail address's local part to match according to RFC (#273)
+
+- **haproxy**
+  * several ECS-ified fields will be type-casted to integer in ECS mode e.g. *haproxy.bytes_read*
+  * fields containing null value (`-`) are no longer captured
+    (e.g. in legacy mode `captured_request_cookie` gets captured even if `"-"`)
+
+- **httpd**
+  * optional fields (e.g. `http.request.referrer` or `user_agent`) are only captured when not null (`-`)
+  * `source.port` (`clientport` in legacy mode) is considered optional
+  * dropped raw data (`rawrequest` legacy field) in ECS mode
+  * Fix: HTTPD_ERRORLOG should match when module missing (#299)
+
+- **java**
+  * `JAVASTACKTRACEPART`'s matched line number will be converted to an integer
+  * `CATALINALOG` matching was updated to handle Tomcat 7/8/9 logging format
+  * `TOMCATLOG` handles the default Tomcat 7/8/9 logging format
+  * old (custom) legacy TOMCAT format is handled by the added `TOMCATLEGACY_LOG`
+  * `TOMCATLOG` and `TOMCAT_DATESTAMP` still match the legacy format,
+      however this might change at a later point - if you rely on the old format use `TOMCATLEGACY_` patterns
+
+- **junos**
+  * integer fields (e.g. `juniper.srx.elapsed_time`) are captured as integer values
+
+- **linux-syslog**
+  * `SYSLOG5424LINE` captures (overwrites) the `message` field instead of using a custom field name
+  * regardless of the format used, in ECS mode, timestamps are always captured as `timestamp`
+  * fields such as `log.syslog.facility.code` and `process.pid` are converted to integers
+
+- **mcollective**
+  * *mcollective-patterns* file was removed, it's all one *mcollective* in ECS mode
+  * `MCOLLECTIVE`'s `process.pid` (`pid` previously) is not type-casted to an integer
+
+- **nagios**
+  * numeric fields such as `nagios.log.attempt` are converted to integer values in ECS mode
+
+- **rails**
+  * request duration times from `RAILS3` log will be converted to floating point values
+
+- **squid**
+  * `SQUID3`'s `duration` http.response `status_code` and `bytes` are type-casted to int
+  * `SQUID3` pattern won't capture null ('-') `user.name` or `squid.response.content_type`
+  * Fix: allow to parse SQUID log with status 0 (#298)
+  * Fix: handle optional server address (#298)
+
+* Fix: Java stack trace's JAVAFILE to better match generated names
+* Fix: match Information/INFORMATION in LOGLEVEL https://github.com/logstash-plugins/logstash-patterns-core/pull/274[#274]
+* Fix: NAGIOS TIMEPERIOD unknown (from/to) field matching https://github.com/logstash-plugins/logstash-patterns-core/pull/275[#275]
+* Fix: HTTPD access log parse failure on missing response https://github.com/logstash-plugins/logstash-patterns-core/pull/282[#282]
+* Fix: UNIXPATH to avoid DoS on long paths with unmatching chars https://github.com/logstash-plugins/logstash-patterns-core/pull/292[#292]
+
+    For longer paths, a non matching character towards the end of the path would cause the RegExp engine a long time to abort.
+    With this change we're also explicit about not supporting relative paths (using the `PATH` pattern), these won't be properly matched.
+
+* Feat: allow UNIXPATH to match non-ascii chars https://github.com/logstash-plugins/logstash-patterns-core/pull/291[#291]
+
 
 [[logstash-7-11-2]]
 === Logstash 7.11.2 Release Notes
@@ -65,7 +361,7 @@ described as `running`. https://github.com/elastic/logstash/pull/12444[#12444]
 * [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
 * [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
 * [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
-  
+
 
 *Geoip Filter - 6.0.5*
 
@@ -89,7 +385,7 @@ described as `running`. https://github.com/elastic/logstash/pull/12444[#12444]
 *Http Input - 3.3.7*
 
 * Feat: improved error handling/logging/unwraping https://github.com/logstash-plugins/logstash-input-http/pull/133[#133]
- 
+
 *Syslog Input - 3.4.5*
 
 * Added support for listening on IPv6 addresses
