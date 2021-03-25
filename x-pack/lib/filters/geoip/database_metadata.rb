@@ -22,7 +22,8 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   # csv format: database_type, update_at, gz_md5, md5, filename
   def save_timestamp(database_path)
     metadata = get_metadata(false)
-    metadata << [@database_type, Time.now.to_i, md5(database_path + '.gz'), md5(database_path), database_path.split("/").last]
+    metadata << [@database_type, Time.now.to_i, md5(get_gz_name(database_path)), md5(database_path),
+                 ::File.basename(database_path)]
 
     ::CSV.open @metadata_path, 'w' do |csv|
       metadata.each { |row| csv << row }
@@ -58,9 +59,9 @@ module LogStash module Filters module Geoip class DatabaseMetadata
                  .last || 0).to_i
   end
 
-  # Return database related filenames in .mmdb .gz
+  # Return database related filenames in .mmdb .tgz
   def database_filenames
-    get_all.flat_map { |metadata| [metadata[Column::FILENAME], metadata[Column::FILENAME] + '.gz'] }
+    get_all.flat_map { |metadata| [ metadata[Column::FILENAME], get_gz_name(metadata[Column::FILENAME]) ] }
   end
   
   def exist?

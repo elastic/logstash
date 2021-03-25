@@ -5,15 +5,15 @@
 require_relative 'test_helper'
 require "filters/geoip/database_manager"
 
-module LogStash module Filters module Geoip
+describe LogStash::Filters::Geoip do
 
-  describe DatabaseManager, :aggregate_failures do
+  describe 'DatabaseManager', :aggregate_failures do
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }
     let(:mock_download_manager)  { double("download_manager") }
     let(:mock_scheduler)  { double("scheduler") }
     let(:db_manager) do
-      manager = DatabaseManager.new(mock_geoip_plugin, DEFAULT_CITY_DB_PATH, "City", get_vendor_path)
+      manager = LogStash::Filters::Geoip::DatabaseManager.new(mock_geoip_plugin, default_city_db_path, "City", get_vendor_path)
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
       manager.instance_variable_set(:@scheduler, mock_scheduler)
@@ -23,13 +23,13 @@ module LogStash module Filters module Geoip
 
     context "patch database" do
       it "use input path" do
-        path = db_manager.send(:patch_database_path, DEFAULT_ASN_DB_PATH)
-        expect(path).to eq(DEFAULT_ASN_DB_PATH)
+        path = db_manager.send(:patch_database_path, default_asn_db_path)
+        expect(path).to eq(default_asn_db_path)
       end
 
       it "use CC license database as default" do
         path = db_manager.send(:patch_database_path, "")
-        expect(path).to eq(DEFAULT_CITY_DB_PATH)
+        expect(path).to eq(default_city_db_path)
       end
 
       it "failed when default database is missing" do
@@ -40,7 +40,7 @@ module LogStash module Filters module Geoip
 
     context "md5" do
       it "return md5 if file exists" do
-        str = db_manager.send(:md5, DEFAULT_CITY_DB_PATH)
+        str = db_manager.send(:md5, default_city_db_path)
         expect(str).not_to eq("")
         expect(str).not_to be_nil
       end
@@ -61,7 +61,7 @@ module LogStash module Filters module Geoip
       it "should give warning after 25 days" do
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 26)).to_i)
         expect(mock_geoip_plugin).to receive(:terminate_filter).never
-        expect(DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
+        expect(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
         expect(logger).to receive(:warn)
         expect(logger).to receive(:info)
 
@@ -130,11 +130,11 @@ module LogStash module Filters module Geoip
 
     context "clean up database" do
       let(:asn00) { get_file_path("GeoLite2-ASN_000000000.mmdb") }
-      let(:asn00gz) { get_file_path("GeoLite2-ASN_000000000.gz") }
+      let(:asn00gz) { get_file_path("GeoLite2-ASN_000000000.tgz") }
       let(:city00) { get_file_path("GeoLite2-City_000000000.mmdb") }
-      let(:city00gz) { get_file_path("GeoLite2-City_000000000.gz") }
+      let(:city00gz) { get_file_path("GeoLite2-City_000000000.tgz") }
       let(:city44) { get_file_path("GeoLite2-City_4444444444.mmdb") }
-      let(:city44gz) { get_file_path("GeoLite2-City_4444444444.gz") }
+      let(:city44gz) { get_file_path("GeoLite2-City_4444444444.tgz") }
 
       before(:each) do
         [asn00, asn00gz, city00, city00gz, city44, city44gz].each { |file_path| ::File.delete(file_path) if ::File.exist?(file_path) }
@@ -154,7 +154,7 @@ module LogStash module Filters module Geoip
 
         db_manager.send(:clean_up_database)
         [asn00, asn00gz, city00, city00gz, city44gz].each { |file_path| expect(::File.exist?(file_path)).to be_falsey }
-        [DEFAULT_CITY_DB_PATH, DEFAULT_ASN_DB_PATH, city44].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
+        [default_city_db_path, default_asn_db_path, city44].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
       end
 
       it "should keep the default database" do
@@ -162,13 +162,13 @@ module LogStash module Filters module Geoip
         expect(mock_metadata).to receive(:database_filenames).and_return(["GeoLite2-City_4444444444.mmdb"])
 
         db_manager.send(:clean_up_database)
-        [DEFAULT_CITY_DB_PATH, DEFAULT_ASN_DB_PATH].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
+        [default_city_db_path, default_asn_db_path].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
       end
     end
 
     context "setup metadata" do
       let(:db_metadata) do
-        dbm = DatabaseMetadata.new("City", get_vendor_path)
+        dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City", get_vendor_path)
         dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
         dbm
       end
@@ -177,40 +177,40 @@ module LogStash module Filters module Geoip
 
       before(:each) do
         expect(::File.empty?(temp_metadata_path)).to be_truthy
-        allow(DatabaseMetadata).to receive(:new).and_return(db_metadata)
+        allow(LogStash::Filters::Geoip::DatabaseMetadata).to receive(:new).and_return(db_metadata)
       end
 
       after(:each) do
-        ::File.delete(SECOND_CITY_DB_PATH) if ::File.exist?(SECOND_CITY_DB_PATH)
+        ::File.delete(second_city_db_path) if ::File.exist?(second_city_db_path)
       end
 
       it "create metadata when file is missing" do
         db_manager.send(:setup)
-        expect(db_manager.instance_variable_get(:@database_path)).to eql(DEFAULT_CITY_DB_PATH)
-        expect(db_metadata.database_path).to eql(DEFAULT_CITY_DB_PATH)
+        expect(db_manager.instance_variable_get(:@database_path)).to eql(default_city_db_path)
+        expect(db_metadata.database_path).to eql(default_city_db_path)
         expect(::File.exist?(temp_metadata_path)).to be_truthy
         expect(::File.empty?(temp_metadata_path)).to be_falsey
       end
 
       it "manager should use database path in metadata" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
-        copy_city_database(SECOND_CITY_DB_NAME)
+        copy_city_database(second_city_db_name)
         expect(db_metadata).to receive(:save_timestamp).never
 
         db_manager.send(:setup)
         filename = db_manager.instance_variable_get(:@database_path).split('/').last
-        expect(filename).to match /#{SECOND_CITY_DB_NAME}/
+        expect(filename).to match /#{second_city_db_name}/
       end
 
       it "ignore database_path in metadata if md5 does not match" do
-        write_temp_metadata(temp_metadata_path, ["City","","","INVALID_MD5",SECOND_CITY_DB_NAME])
-        copy_city_database(SECOND_CITY_DB_NAME)
+        write_temp_metadata(temp_metadata_path, ["City","","","INVALID_MD5",second_city_db_name])
+        copy_city_database(second_city_db_name)
         expect(db_metadata).to receive(:save_timestamp).never
 
         db_manager.send(:setup)
         filename = db_manager.instance_variable_get(:@database_path).split('/').last
-        expect(filename).to match /#{DEFAULT_CITY_DB_NAME}/
+        expect(filename).to match /#{default_city_db_name}/
       end
     end
   end
-end end end
+end
