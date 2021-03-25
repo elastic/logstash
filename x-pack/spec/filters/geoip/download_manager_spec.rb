@@ -125,7 +125,7 @@ describe LogStash::Filters::Geoip do
       end
     end
 
-    xcontext "assert database" do
+    context "assert database" do
       it "should raise error if file is invalid" do
         expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
       end
