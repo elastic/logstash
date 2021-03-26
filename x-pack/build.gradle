@@ -16,17 +16,34 @@ buildscript {
   }
 }
 
+configurations {
+  geolite2
+}
+
 dependencies {
   testImplementation project(':logstash-core')
   testImplementation 'org.assertj:assertj-core:3.8.0'
   testImplementation 'junit:junit:4.12'
+
+  geolite2('org.elasticsearch:geolite2-databases:20191119') {
+    transitive = false
+  }
 }
 
 test {
   exclude '/**'
 }
 
+tasks.register("unzipGeolite", Copy) {
+  from(zipTree(configurations.geolite2.singleFile)) {
+    include "GeoLite2-ASN.mmdb"
+    include "GeoLite2-City.mmdb"
+  }
+  into file("${projectDir}/spec/filters/geoip/vendor")
+}
+
 tasks.register("rubyTests", Test) {
+  dependsOn unzipGeolite
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
