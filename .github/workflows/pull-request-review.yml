@@ -1,24 +1,24 @@
 name: "Pull Request Review Status Labeler"
- on:
-   pull_request:
-     types:
-       [
-         opened,
-         synchronize,
-         reopened,
-         ready_for_review,
-         review_requested,
-         review_request_removed,
-         closed
-       ]
-   pull_request_review:
+on:
+  pull_request:
+    types:
+      [
+        opened,
+        synchronize,
+        reopened,
+        ready_for_review,
+        review_requested,
+        review_request_removed,
+        closed
+      ]
+  pull_request_review:
 
- jobs:
-   build:
-     strategy:
-       max-parallel: 1
-     runs-on: ubuntu-latest
-     steps:
-       - uses: amblerhq/gh-actions-pr-reviewstatus-labeler@v1
-         with:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  build:
+    strategy:
+      max-parallel: 1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amblerhq/gh-actions-pr-reviewstatus-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
