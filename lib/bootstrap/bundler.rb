@@ -16,6 +16,7 @@
 # under the License.
 
 require "fileutils"
+require "stringio"
 
 module LogStash
   module Bundler
