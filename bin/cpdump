@@ -9,3 +9,5 @@ require "logstash/settings"
 io = Java::OrgLogstashAckedqueueIo::FileCheckpointIO.new(LogStash::SETTINGS.get_value("path.queue"))
 cp = io.read(ARGV[0])
 puts("checkpoint #{cp.toString}")
+
+#test
