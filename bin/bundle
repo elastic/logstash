@@ -17,3 +17,4 @@ require "bundler/friendly_errors"
 ::Bundler.with_friendly_errors do
   ::Bundler::CLI.start(ARGV, :debug => true)
 end
+dasfdsaf
