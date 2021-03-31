@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env rubyasdfasdf
 
 # This is basically a copy of the original bundler "bundle" shim
 # with the addition of the loading of our Bundler patches that
