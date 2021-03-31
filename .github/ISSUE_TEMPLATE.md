@@ -1,9 +1,11 @@
 ---
-name: Tracking issue
-about: Use this template for tracking new features.
-title: "[DATE]: [FEATURE NAME]"
-labels: needs-triage
----
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: needs-review
+assignees: ''
+
+ ---
 
 Please post all product and debugging questions on our [forum](https://discuss.elastic.co/c/logstash). Your questions will reach our wider community members there, and if we confirm that there is a bug, then we can open a new issue here.
 
