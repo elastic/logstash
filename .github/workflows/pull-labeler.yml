@@ -8,7 +8,7 @@ jobs:
     steps:
     - name: Run PR Helper
       id: runprhelper
-      uses: Matticusau/pr-helper@v1.2.4
+      uses: Matticusau/pr-helper@v1.2.6
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         prlabel-default: needs-triage
