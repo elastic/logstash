@@ -1,11 +1,11 @@
 ---
- name: Bug report
- about: Create a report to help us improve
- title: ''
- labels: needs-triage
- assignees: ''
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: needs-triage
+assignees: ''
 
- ---
+---
 
 <!-- Type of change
 Please label this PR with the release version and one of the following labels, depending on the scope of your change:
