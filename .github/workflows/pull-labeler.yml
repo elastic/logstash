@@ -11,7 +11,7 @@ jobs:
       uses: Matticusau/pr-helper@v1.2.4
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        prlabel-default: 'status:needs-triage'
-        prlabel-ready: 'status:approved'
-        prlabel-onhold: 'status:on-hold'
-        prlabel-reviewrequired: 'status:needs-review'
+        prlabel-default: needs-triage
+        prlabel-ready: needs-triage
+        prlabel-onhold: needs-triage
+        prlabel-reviewrequired: needs-triage
