@@ -12,3 +12,10 @@ For all general issues, please provide the following details for fast resolution
 - Config File (if you have sensitive info, please remove it):
 - Sample Data:
 - Steps to Reproduce:
+
+---
+name: Tracking issue
+about: Use this template for tracking new features.
+title: "[DATE]: [FEATURE NAME]"
+labels: tracking issue, needs triage
+---
