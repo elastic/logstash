@@ -11,5 +11,4 @@ jobs:
       - uses: Renato66/auto-label@v2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          ignore-comments: true
           default-labels: '["needs-triage"]'
