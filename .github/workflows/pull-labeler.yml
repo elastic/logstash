@@ -1,0 +1,17 @@
+name: PR Helper
+
+on: [pull_request, pull_request_review, issue_comment]
+
+jobs:
+  prhelper_job:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run PR Helper
+      id: runprhelper
+      uses: Matticusau/pr-helper@v1.2.4
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        prlabel-default: 'status:needs-triage'
+        prlabel-ready: 'status:approved'
+        prlabel-onhold: 'status:on-hold'
+        prlabel-reviewrequired: 'status:needs-review'
