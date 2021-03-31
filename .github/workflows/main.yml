@@ -1,14 +1,14 @@
-name: Labeling new issue
+name: Attach labels
 on:
   issues:
     types: ['opened']
   pull_request:
     types: ['opened']
 jobs:
-  build:
+  triage:
     runs-on: ubuntu-latest
     steps:
-      - uses: Renato66/auto-label@v2
+      - uses: KeisukeYamashita/attach-labels@v1
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          default-labels: '["needs-triage"]'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: needs-triage
