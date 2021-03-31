@@ -11,4 +11,4 @@ jobs:
       - uses: KeisukeYamashita/attach-labels@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          labels: needs-triage
+          labels: attach-labels:needs-triage
