@@ -1,3 +1,10 @@
+---
+name: Tracking issue
+about: Use this template for tracking new features.
+title: "[DATE]: [FEATURE NAME]"
+labels: tracking issue, needs triage
+---
+
 Please post all product and debugging questions on our [forum](https://discuss.elastic.co/c/logstash). Your questions will reach our wider community members there, and if we confirm that there is a bug, then we can open a new issue here.
 
 For security vulnerabilities please only send reports to security@elastic.co.
@@ -12,10 +19,3 @@ For all general issues, please provide the following details for fast resolution
 - Config File (if you have sensitive info, please remove it):
 - Sample Data:
 - Steps to Reproduce:
-
----
-name: Tracking issue
-about: Use this template for tracking new features.
-title: "[DATE]: [FEATURE NAME]"
-labels: tracking issue, needs triage
----
