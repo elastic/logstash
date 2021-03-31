@@ -40,7 +40,7 @@ module LogStash
     def self.run(cmd, debug=false)
       # This block is require to be able to launch a ruby subprocess
       # that use bundler.
-      Bundler.with_unbundled_env do
+      Bundler.with_clean_env do
         stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
         stdout_acc, stderr_acc = "", ""
         stdout_reporter = reporter(stdout, wait_thr) do |c|

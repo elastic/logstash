@@ -37,7 +37,7 @@ shared_examples "logstash uninstall" do |logstash|
     end
 
     # Disabled because of this bug https://github.com/elastic/logstash/issues/5286
-    xcontext "when the plugin is installed" do
+    context "when the plugin is installed" do
       it "successfully uninstall it" do
         result = logstash.run_command_in_path("bin/logstash-plugin install logstash-filter-qatest")
         expect(logstash).to have_installed?("logstash-filter-qatest")
