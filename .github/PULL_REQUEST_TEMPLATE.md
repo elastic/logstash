@@ -1,3 +1,10 @@
+---
+name: Tracking issue
+about: Use this template for tracking new features.
+title: "[DATE]: [FEATURE NAME]"
+labels: needs-triage
+---
+
 <!-- Type of change
 Please label this PR with the release version and one of the following labels, depending on the scope of your change:
 - bug
@@ -93,7 +100,3 @@ Add here screenshots about how the project will be changed after the PR is appli
 <!-- Recommended
 Paste here output logs discovered while creating this PR, such as stack traces or integration logs, or any other output you consider important to be shared with the team.
 -->
-
----
-labels: needs-triage
----
