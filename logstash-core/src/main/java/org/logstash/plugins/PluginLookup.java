@@ -34,6 +34,8 @@ import org.logstash.RubyUtil;
 import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.plugins.factory.PluginFactoryExt;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +44,9 @@ import java.util.stream.Stream;
  * {@code LogStash::Plugin} class for the Ruby plugin lookup.
  */
 public final class PluginLookup implements PluginFactoryExt.PluginResolver {
+
+    private static final Map<String, String> ALIASES = new HashMap<>();
+    private static final Map<String, String> REVERSE_ALIASES = new HashMap<>();
 
     private static final IRubyObject RUBY_REGISTRY = RubyUtil.RUBY.executeScript(
             "require 'logstash/plugins/registry'\nrequire 'logstash/plugin'\nLogStash::Plugin",
@@ -52,6 +57,40 @@ public final class PluginLookup implements PluginFactoryExt.PluginResolver {
 
     public PluginLookup(PluginRegistry pluginRegistry) {
         this.pluginRegistry = pluginRegistry;
+    }
+
+    private static void configurePluginAliases() {
+        ALIASES.put("elastic_agent", "beats");
+        ALIASES.put("dna_java_generator", "java_generator");
+        for (Map.Entry<String, String> e : ALIASES.entrySet()) {
+            if (REVERSE_ALIASES.containsKey(e.getValue())) {
+                throw new IllegalStateException("Found plugin " + e.getValue() + " aliased more than one time");
+            }
+            REVERSE_ALIASES.put(e.getValue(), e.getKey());
+        }
+    }
+
+    public static boolean isAlias(String pluginName) {
+        return ALIASES.containsKey(pluginName);
+    }
+
+    public static boolean isAliased(String realPluginName) {
+        return ALIASES.containsValue(realPluginName);
+    }
+
+    public static String originalFromAlias(String pluginAlias) {
+        return ALIASES.get(pluginAlias);
+    }
+
+    public static String aliasFromOriginal(String realPluginName) {
+        return REVERSE_ALIASES.get(realPluginName);
+    }
+
+    /**
+     * if pluginName is an alias then return the real plugin name else return it unchanged
+     * */
+    public static String resolveAlias(String pluginName) {
+        return ALIASES.getOrDefault(pluginName, pluginName);
     }
 
     @SuppressWarnings("rawtypes")
