@@ -68,6 +68,10 @@ public final class JrubyTimestampExtLibrary {
             this.timestamp = timestamp;
         }
 
+        public java.time.Instant toInstant() {
+            return this.timestamp.toInstant();
+        }
+
         // def initialize(time = Time.new)
         @JRubyMethod(optional = 1)
         public JrubyTimestampExtLibrary.RubyTimestamp initialize(final ThreadContext context,
@@ -78,7 +82,7 @@ public final class JrubyTimestampExtLibrary {
             if (time.isNil()) {
                 this.timestamp = new Timestamp();
             } else if (time instanceof RubyTime) {
-                this.timestamp = new Timestamp(((RubyTime) time).getDateTime());
+                this.timestamp = new Timestamp(((RubyTime) time).toInstant());
             } else if (time instanceof RubyString) {
                 try {
                     this.timestamp = new Timestamp(time.toString());
@@ -98,19 +102,19 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "time")
         public RubyTime ruby_time(ThreadContext context)
         {
-            return RubyTime.newTime(context.runtime, this.timestamp.getTime());
+            return RubyTime.newTimeFromNanoseconds(context.runtime, epochNanos());
         }
 
         @JRubyMethod(name = "to_i")
         public IRubyObject ruby_to_i(ThreadContext context)
         {
-            return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getMillis() / 1000);
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.toInstant().getEpochSecond());
         }
 
         @JRubyMethod(name = "to_f")
         public IRubyObject ruby_to_f(ThreadContext context)
         {
-            return RubyFloat.newFloat(context.runtime, this.timestamp.getTime().getMillis() / 1000.0d);
+            return RubyFloat.newFloat(context.runtime, epochNanos() / 1_000_000_000d);
         }
 
         @JRubyMethod(name = "to_s")
@@ -162,7 +166,7 @@ public final class JrubyTimestampExtLibrary {
                 } else if (time instanceof RubyTime) {
                     return RubyTimestamp.newRubyTimestamp(
                         context.runtime,
-                        new Timestamp(((RubyTime) time).getDateTime())
+                        new Timestamp(((RubyTime) time).toInstant())
                     );
                 } else if (time instanceof RubyString) {
                     return fromRString(context.runtime, (RubyString) time);
@@ -206,7 +210,7 @@ public final class JrubyTimestampExtLibrary {
             } else {
                 t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0], args[1]);
             }
-            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp(t.getDateTime()));
+            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp(t.toInstant()));
         }
 
         @JRubyMethod(name = "now", meta = true)
@@ -233,18 +237,23 @@ public final class JrubyTimestampExtLibrary {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.usec());
         }
 
+        @JRubyMethod(name = {"nsec", "tv_nsec"})
+        public org.jruby.RubyInteger ruby_nsec(final ThreadContext context) {
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.nsec());
+        }
+
         @JRubyMethod(name = "year")
         public IRubyObject ruby_year(ThreadContext context)
         {
-            return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
+            final int year = this.timestamp.toInstant().atOffset(java.time.ZoneOffset.UTC).getYear();
+            return RubyFixnum.newFixnum(context.runtime, year);
         }
 
         @JRubyMethod(name = "<=>")
         public IRubyObject op_cmp(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return ruby_time(context).op_cmp(
-                    context, ((JrubyTimestampExtLibrary.RubyTimestamp) other).ruby_time(context)
-                );
+                final int cmp = this.timestamp.compareTo(((RubyTimestamp) other).timestamp);
+                return RubyFixnum.newFixnum(context.runtime, cmp);
             }
             return context.nil;
         }
@@ -299,6 +308,21 @@ public final class JrubyTimestampExtLibrary {
                 context, "-",
                 val instanceof RubyTimestamp ? ((RubyTimestamp)val).ruby_time(context) : val
             );
+        }
+
+        /**
+         * Returns the number of nanoseconds since the unix epoch.
+         *
+         * This value is only sensible for the years 1678-2262 CE.
+         *
+         * @return
+         */
+        private long epochNanos() {
+            final java.time.Instant instant = this.timestamp.toInstant();
+            final long epochSecond = instant.getEpochSecond();
+            final long extraNanos = instant.getNano();
+
+            return (epochSecond * 1_000_000_000) + extraNanos;
         }
 
         private int compare(final ThreadContext context, final IRubyObject other) {
