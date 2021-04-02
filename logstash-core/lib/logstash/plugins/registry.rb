@@ -198,6 +198,7 @@ module LogStash module Plugins
     def legacy_lookup(type, plugin_name)
       begin
         has_alias = org.logstash.plugins.discovery.PluginRegistry.alias?(plugin_name)
+        path = "logstash/#{type}s/#{plugin_name}"
 
         klass = begin
           load_plugin_class(type, plugin_name)
@@ -209,6 +210,7 @@ module LogStash module Plugins
           alias_name = plugin_name
           plugin_name = org.logstash.plugins.discovery.PluginRegistry.original_from_alias(plugin_name)
           logger.debug("Plugin name #{alias_name} is aliased as #{plugin_name}")
+          path = "logstash/#{type}s/#{plugin_name}"
           begin
             load_plugin_class(type, plugin_name)
           rescue LoadError => e
