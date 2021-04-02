@@ -52,8 +52,12 @@ public final class PluginRegistry {
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
     private static final Object LOCK = new Object();
     private static volatile PluginRegistry INSTANCE;
+    private final Map<String, String> ALIASES = new HashMap<>();
+    private final Map<String, String> REVERSE_ALIASES = new HashMap<>();
 
     private PluginRegistry() {
+        //order is important here, alias is used by lookup in discoverPlugins
+        configurePluginAliases();
         discoverPlugins();
     }
 
@@ -68,6 +72,40 @@ public final class PluginRegistry {
         return INSTANCE;
     }
     
+    private void configurePluginAliases() {
+        ALIASES.put("elastic_agent", "beats");
+        ALIASES.put("dna_java_generator", "java_generator");
+        for (Map.Entry<String, String> e : ALIASES.entrySet()) {
+            if (REVERSE_ALIASES.containsKey(e.getValue())) {
+                throw new IllegalStateException("Found plugin " + e.getValue() + " aliased more than one time");
+            }
+            REVERSE_ALIASES.put(e.getValue(), e.getKey());
+        }
+    }
+
+    public boolean isAlias(String pluginName) {
+        return ALIASES.containsKey(pluginName);
+    }
+
+    private boolean isAliased(String realPluginName) {
+        return ALIASES.containsValue(realPluginName);
+    }
+
+    public String originalFromAlias(String pluginAlias) {
+        return ALIASES.get(pluginAlias);
+    }
+
+    public String aliasFromOriginal(String realPluginName) {
+        return REVERSE_ALIASES.get(realPluginName);
+    }
+
+    /**
+     * if pluginName is an alias then return the real plugin name else return it unchanged
+     * */
+    public String resolveAlias(String pluginName) {
+        return ALIASES.getOrDefault(pluginName, pluginName);
+    }
+
     @SuppressWarnings("unchecked")
     private void discoverPlugins() {
         // the constructor of Reflection must be called only by one thread, else there is a
@@ -94,6 +132,29 @@ public final class PluginRegistry {
                     break;
                 }
             }
+        }
+
+        // after loaded all plugins, check if aliases has to be provided
+        addAliasedPlugins(filters);
+        addAliasedPlugins(outputs);
+        addAliasedPlugins(inputs);
+        addAliasedPlugins(codecs);
+    }
+
+    private <T> void addAliasedPlugins(Map<String, Class<T>> pluginCache) {
+        final Map<String, Class<T>> aliasesToAdd = new HashMap<>();
+        for (Map.Entry<String, Class<T>> e : pluginCache.entrySet()) {
+            final String realPluginName = e.getKey();
+            if (isAliased(realPluginName)) {
+                final String alias = aliasFromOriginal(realPluginName);
+                if (!inputs.containsKey(alias)) {
+                    // no real plugin with same alias name was found
+                    aliasesToAdd.put(alias, e.getValue());
+                }
+            }
+        }
+        for (Map.Entry<String, Class<T>> e : aliasesToAdd.entrySet()) {
+            pluginCache.put(e.getKey(), e.getValue());
         }
     }
 

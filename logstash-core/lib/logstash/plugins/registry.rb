@@ -197,17 +197,22 @@ module LogStash module Plugins
     # plugin with the appropriate type.
     def legacy_lookup(type, plugin_name)
       begin
-        path = "logstash/#{type}s/#{plugin_name}"
+        has_alias = org.logstash.plugins.discovery.PluginRegistry.alias?(plugin_name)
 
         klass = begin
-          namespace_lookup(type, plugin_name)
-        rescue UnknownPlugin => e
-          # Plugin not registered. Try to load it.
-          begin
-            require path
-            namespace_lookup(type, plugin_name)
-          rescue LoadError => e
+          load_plugin_class(type, plugin_name)
+        rescue LoadError => e
+          unless has_alias
             logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
+            raise
+          end
+          alias_name = plugin_name
+          plugin_name = org.logstash.plugins.discovery.PluginRegistry.original_from_alias(plugin_name)
+          logger.debug("Plugin name #{alias_name} is aliased as #{plugin_name}")
+          begin
+            load_plugin_class(type, plugin_name)
+          rescue LoadError => e
+            logger.error("Tried to load aliased plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
             raise
           end
         end
@@ -225,9 +230,27 @@ module LogStash module Plugins
         raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
       end
 
+      if has_alias
+        @registry[key_for(type, alias_name)] = plugin
+      end
+
       plugin
     end
 
+    private
+    def load_plugin_class(type, plugin_name)
+      path = "logstash/#{type}s/#{plugin_name}"
+
+      klass = begin
+        namespace_lookup(type, plugin_name)
+      rescue UnknownPlugin => e
+        # Plugin not registered. Try to load it.
+        require path
+        namespace_lookup(type, plugin_name)
+      end
+    end
+
+    public
     def lookup_pipeline_plugin(type, name)
       LogStash::PLUGIN_REGISTRY.lookup(type, name) do |plugin_klass, plugin_name|
         is_a_plugin?(plugin_klass, plugin_name)
@@ -290,7 +313,8 @@ module LogStash module Plugins
     def is_a_plugin?(klass, name)
       (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
-      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name)
+      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) &&
+            klass.config_name == org.logstash.plugins.discovery.PluginRegistry.resolve_alias(name))
     end
 
     def add_plugin(type, name, klass)
