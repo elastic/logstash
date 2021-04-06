@@ -41,19 +41,17 @@ import java.util.Set;
  */
 public final class PluginRegistry {
 
-    private static final Map<String, Class<Input>> INPUTS = new HashMap<>();
-    private static final Map<String, Class<Filter>> FILTERS = new HashMap<>();
-    private static final Map<String, Class<Output>> OUTPUTS = new HashMap<>();
-    private static final Map<String, Class<Codec>> CODECS = new HashMap<>();
+    private final Map<String, Class<Input>> inputs = new HashMap<>();
+    private final Map<String, Class<Filter>> filters = new HashMap<>();
+    private final Map<String, Class<Output>> outputs = new HashMap<>();
+    private final Map<String, Class<Codec>> codecs = new HashMap<>();
 
-    static {
+    public PluginRegistry() {
         discoverPlugins();
     }
-
-    private PluginRegistry() {} // utility class
-
+    
     @SuppressWarnings("unchecked")
-    private static void discoverPlugins() {
+    private void discoverPlugins() {
         Reflections reflections = new Reflections("org.logstash.plugins");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
         for (final Class<?> cls : annotated) {
@@ -61,16 +59,16 @@ public final class PluginRegistry {
                 if (annotation instanceof LogstashPlugin) {
                     String name = ((LogstashPlugin) annotation).name();
                     if (Filter.class.isAssignableFrom(cls)) {
-                        FILTERS.put(name, (Class<Filter>) cls);
+                        filters.put(name, (Class<Filter>) cls);
                     }
                     if (Output.class.isAssignableFrom(cls)) {
-                        OUTPUTS.put(name, (Class<Output>) cls);
+                        outputs.put(name, (Class<Output>) cls);
                     }
                     if (Input.class.isAssignableFrom(cls)) {
-                        INPUTS.put(name, (Class<Input>) cls);
+                        inputs.put(name, (Class<Input>) cls);
                     }
                     if (Codec.class.isAssignableFrom(cls)) {
-                        CODECS.put(name, (Class<Codec>) cls);
+                        codecs.put(name, (Class<Codec>) cls);
                     }
 
                     break;
@@ -79,7 +77,7 @@ public final class PluginRegistry {
         }
     }
 
-    public static Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
+    public Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
         if (pluginType == PluginLookup.PluginType.FILTER) {
             return getFilterClass(pluginName);
         }
@@ -97,31 +95,31 @@ public final class PluginRegistry {
 
     }
 
-    public static Class<Input> getInputClass(String name) {
-        return INPUTS.get(name);
+    public Class<Input> getInputClass(String name) {
+        return inputs.get(name);
     }
 
-    public static Class<Filter> getFilterClass(String name) {
-        return FILTERS.get(name);
+    public Class<Filter> getFilterClass(String name) {
+        return filters.get(name);
     }
 
-    public static Class<Codec> getCodecClass(String name) {
-        return CODECS.get(name);
+    public Class<Codec> getCodecClass(String name) {
+        return codecs.get(name);
     }
 
-    public static Class<Output> getOutputClass(String name) {
-        return OUTPUTS.get(name);
+    public Class<Output> getOutputClass(String name) {
+        return outputs.get(name);
     }
 
-    public static Codec getCodec(String name, Configuration configuration, Context context) {
-        if (name != null && CODECS.containsKey(name)) {
-            return instantiateCodec(CODECS.get(name), configuration, context);
+    public Codec getCodec(String name, Configuration configuration, Context context) {
+        if (name != null && codecs.containsKey(name)) {
+            return instantiateCodec(codecs.get(name), configuration, context);
         }
         return null;
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
-    private static Codec instantiateCodec(Class clazz, Configuration configuration, Context context) {
+    private Codec instantiateCodec(Class clazz, Configuration configuration, Context context) {
         try {
             Constructor<Codec> constructor = clazz.getConstructor(Configuration.class, Context.class);
             return constructor.newInstance(configuration, context);
