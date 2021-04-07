@@ -43,6 +43,11 @@ fieldReferenceLiteral
   ;
 
 [float]
+
+NOTE: In Logstash 7.x and older `["foo"]` is considered a field reference and isn't treated as a single element array.
+This might cause confusion in conditional e.g `[message] in ["foo", "bar"]` vs `[message] in ["foo"]`.
+We do not recommend using names with quotes such as `"\"foo\""` since the `["foo"]` behavior might change in the future.
+
 [[formal-grammar-field-reference]]
 ==== Field Reference (Event APIs)
 
