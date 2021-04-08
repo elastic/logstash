@@ -42,7 +42,6 @@ shared_examples "logstash uninstall" do |logstash|
         expect(logstash).to have_installed?("logstash-filter-qatest")
 
         result = logstash.run_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
-        # expect(result.stdout).to match(/^Uninstalling logstash-filter-qatest/)
         expect(logstash).not_to have_installed?("logstash-filter-qatest")
       end
     end
