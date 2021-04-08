@@ -18,6 +18,7 @@
 require "logstash/json"
 require "manticore"
 require 'logstash/util/manticore_ssl_config_helper'
+require 'logstash/util/password'
 
 module LogStash module Modules class KibanaClient
   include LogStash::Util::Loggable
