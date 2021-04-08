@@ -37,21 +37,41 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Registry for built-in Java plugins (not installed via logstash-plugin)
- */
+ * Registry for built-in Java plugins (not installed via logstash-plugin).
+ * This is singleton ofr two reasons:
+ * <ul>
+ *  <li>it's a registry so no need for multiple instances</li>
+ *  <li>the Reflections library used need to run in single thread during discovery phase</li>
+ * </ul>
+ * */
 public final class PluginRegistry {
 
     private final Map<String, Class<Input>> inputs = new HashMap<>();
     private final Map<String, Class<Filter>> filters = new HashMap<>();
     private final Map<String, Class<Output>> outputs = new HashMap<>();
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
+    private static final Object lock = new Object();
+    private static PluginRegistry instance;
 
-    public PluginRegistry() {
+    private PluginRegistry() {
         discoverPlugins();
+    }
+
+    public static PluginRegistry getInstance() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new PluginRegistry();
+                }
+            }
+        }
+        return instance;
     }
     
     @SuppressWarnings("unchecked")
     private void discoverPlugins() {
+        // the constructor of Reflection must be called only by one thread, else there is a
+        // risk that the first thread that completes close the Zip files for the others.
         Reflections reflections = new Reflections("org.logstash.plugins");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
         for (final Class<?> cls : annotated) {

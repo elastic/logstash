@@ -82,7 +82,7 @@ public final class PluginFactoryExt extends RubyBasicObject
     }
 
     public PluginFactoryExt(final Ruby runtime, final RubyClass metaClass) {
-        this(runtime, metaClass, new PluginLookup(new PluginRegistry()));
+        this(runtime, metaClass, new PluginLookup(PluginRegistry.getInstance()));
     }
 
     PluginFactoryExt(final Ruby runtime, final RubyClass metaClass, PluginResolver pluginResolver) {
