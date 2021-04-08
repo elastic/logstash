@@ -35,7 +35,8 @@ def elasticsearch(options = {})
     "path.data" => temporary_path_data,
 
     "xpack.monitoring.collection.enabled" => true,
-    "xpack.security.enabled" => true
+    "xpack.security.enabled" => true,
+    "action.destructive_requires_name" => false
   }
   settings = default_settings.merge(options.fetch(:settings, {}))
   settings_arguments = settings.collect { |k, v| "-E#{k}=#{v}" }
