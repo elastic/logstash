@@ -18,6 +18,7 @@
 java_import "org.logstash.secret.store.SecretStoreExt"
 
 require_relative 'lazy_singleton'
+require_relative 'password'
 
 module ::LogStash::Util::SubstitutionVariables
 
