@@ -31,6 +31,10 @@ describe "CLI > logstash-keystore" do
     @logstash = @fixture.get_service("logstash")
   end
 
+  after do
+    FileUtils.rm_f File.join(@logstash.logstash_home, 'config', 'logstash.keystore')
+  end
+
   context 'create' do
 
     before do
@@ -50,10 +54,6 @@ describe "CLI > logstash-keystore" do
     before do
       keystore = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "logstash.keystore"))
       FileUtils.cp keystore, File.join(@logstash.logstash_home, 'config')
-    end
-
-    after do
-      FileUtils.rm_f File.join(@logstash.logstash_home, 'config', 'logstash.keystore')
     end
 
     it "works" do
