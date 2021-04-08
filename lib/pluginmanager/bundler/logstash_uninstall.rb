@@ -37,7 +37,7 @@ module Bundler
     # To be uninstalled the candidate gems need to be standalone.
     def dependants_gems(gem_name)
       builder = Dsl.new
-      builder.eval_gemfile("original gemfile", File.read(gemfile_path))
+      builder.eval_gemfile(::File.join(::File.dirname(gemfile_path), "original gemfile"), File.read(gemfile_path))
       definition = builder.to_definition(lockfile_path, {})
 
       definition.specs
@@ -66,7 +66,7 @@ module Bundler
 
       gemfile = LogStash::Gemfile.new(file).load
       gemfile.remove(gem_name)
-      builder.eval_gemfile("gemfile to changes", gemfile.generate)
+      builder.eval_gemfile(::File.join(::File.dirname(gemfile_path), "gemfile to changes"), gemfile.generate)
 
       definition = builder.to_definition(lockfile_path, {})
       definition.lock(lockfile_path)
