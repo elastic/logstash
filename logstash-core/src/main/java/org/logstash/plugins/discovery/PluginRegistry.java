@@ -51,7 +51,7 @@ public final class PluginRegistry {
     private final Map<String, Class<Output>> outputs = new HashMap<>();
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
     private static final Object lock = new Object();
-    private static PluginRegistry instance;
+    private static volatile PluginRegistry instance;
 
     private PluginRegistry() {
         discoverPlugins();
