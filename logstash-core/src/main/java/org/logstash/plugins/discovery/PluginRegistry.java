@@ -50,22 +50,22 @@ public final class PluginRegistry {
     private final Map<String, Class<Filter>> filters = new HashMap<>();
     private final Map<String, Class<Output>> outputs = new HashMap<>();
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
-    private static final Object lock = new Object();
-    private static volatile PluginRegistry instance;
+    private static final Object LOCK = new Object();
+    private static volatile PluginRegistry INSTANCE;
 
     private PluginRegistry() {
         discoverPlugins();
     }
 
     public static PluginRegistry getInstance() {
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new PluginRegistry();
+        if (INSTANCE == null) {
+            synchronized (LOCK) {
+                if (INSTANCE == null) {
+                    INSTANCE = new PluginRegistry();
                 }
             }
         }
-        return instance;
+        return INSTANCE;
     }
     
     @SuppressWarnings("unchecked")
