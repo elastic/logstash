@@ -85,9 +85,9 @@ Here is an example distributor pattern configuration.
   config.string: |
     input { beats { port => 5044 } }
     output {
-        if [type] == apache {
+        if [type] == "apache" {
           pipeline { send_to => weblogs }
-        } else if [type] == system {
+        } else if [type] == "system" {
           pipeline { send_to => syslog }
         } else {
           pipeline { send_to => fallback }
