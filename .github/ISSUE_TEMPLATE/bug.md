@@ -12,6 +12,8 @@ visit the [forums](https://discuss.elastic.co/c/logstash).  Please also
 check your OS is [supported](https://www.elastic.co/support/matrix#show_os).
 If it is not, the issue is likely to be closed.
 
+Logstash Plugins are located in a different organization: [logstash-plugins](https://github.com/logstash-plugins). For bugs on specific Logstash plugins, for example, if Redis Output has a defect, please open it in the respective Redis Output repository.
+
 For security vulnerabilities please only send reports to security@elastic.co.
 See https://www.elastic.co/community/security for more information.
 
