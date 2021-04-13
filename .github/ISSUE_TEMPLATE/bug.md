@@ -20,7 +20,7 @@ Please fill in the following details to help us reproduce the bug:
 
 **Logstash version** (`bin/logstash --version`):
 
-**Plugins installed**: []
+**Plugins installed**: (`bin/logstash-plugin list --verbose`)
 
 **JVM version** (`java -version`):
 
@@ -40,5 +40,4 @@ time to look at it.
  3.
 
 **Provide logs (if relevant)**:
-
 
