@@ -31,7 +31,7 @@ Please fill in the following details to help us reproduce the bug:
 **Steps to reproduce**:
 
 Please include a *minimal* but *complete* recreation of the problem,
-including (e.g.) index creation, mappings, settings, query etc.  The easier
+including (e.g.) pipeline definition(s), settings, locale, etc.  The easier
 you make for us to reproduce it, the more likely that somebody will take the
 time to look at it.
 
@@ -40,4 +40,3 @@ time to look at it.
  3.
 
 **Provide logs (if relevant)**:
-
