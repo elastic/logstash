@@ -18,7 +18,7 @@ See https://www.elastic.co/community/security for more information.
 Please fill in the following details to help us reproduce the bug:
 -->
 
-**Logstash version** (`bin/elasticsearch --version`):
+**Logstash version** (`bin/logstash --version`):
 
 **Plugins installed**: []
 
