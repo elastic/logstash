@@ -328,6 +328,16 @@ describe LogStash::Config::Mixin do
       end
     end
 
+    # Config AST handles number-like nodes as having a numeric value,
+    # and instantiates plugins without first converting them. We need to
+    # ensure that the config DSL maps these to their stringified counterpart
+    context 'when instantiated with a number literal password' do
+      it_behaves_like 'protected password' do
+        let(:secret) { '12345' }
+        let(:instance_params) { { 'password' => 12345 } }
+      end
+    end
+
     context 'when instantiated with an environment variable placeholder' do
       it_behaves_like 'protected password' do
         let(:instance_params) { { "password" => '${PLACEHOLDER}'} }
