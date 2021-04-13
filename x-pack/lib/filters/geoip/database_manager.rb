@@ -106,7 +106,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def check_age
-    days_without_update = (Date.today - Time.at(@metadata.updated_at).to_date).to_i
+    days_without_update = (::Date.today - ::Time.at(@metadata.updated_at).to_date).to_i
 
     case
     when days_without_update >= 30
