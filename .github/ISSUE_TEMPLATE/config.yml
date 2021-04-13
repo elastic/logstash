@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Question
-    url: https://discuss.elastic.co/c/elasticsearch
+    url: https://discuss.elastic.co/c/logstash
     about: Ask (and answer) questions here.
   - name: Security Vulnerability
     url: https://www.elastic.co/community/security
