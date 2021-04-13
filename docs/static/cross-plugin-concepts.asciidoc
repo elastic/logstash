@@ -20,3 +20,7 @@ You can use this functionality to define an environment variable with
 multiple whitespace-delimited URIs and use it for the options above.
 
 **Example**
+
+```
+ES_HOSTS="es1.example.com es2.example.com:9201 es3.example.com:9201"
+```
