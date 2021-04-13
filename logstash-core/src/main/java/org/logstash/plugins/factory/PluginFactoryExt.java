@@ -20,6 +20,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.PluginLookup;
+import org.logstash.plugins.discovery.PluginRegistry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,7 +82,7 @@ public final class PluginFactoryExt extends RubyBasicObject
     }
 
     public PluginFactoryExt(final Ruby runtime, final RubyClass metaClass) {
-        this(runtime, metaClass, PluginLookup::lookup);
+        this(runtime, metaClass, new PluginLookup(PluginRegistry.getInstance()));
     }
 
     PluginFactoryExt(final Ruby runtime, final RubyClass metaClass, PluginResolver pluginResolver) {
