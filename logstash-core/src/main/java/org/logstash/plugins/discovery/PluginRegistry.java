@@ -20,6 +20,7 @@
 
 package org.logstash.plugins.discovery;
 
+import org.logstash.plugins.AliasRegistry;
 import org.logstash.plugins.PluginLookup;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
@@ -52,18 +53,18 @@ public final class PluginRegistry {
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
     private static final Object LOCK = new Object();
     private static volatile PluginRegistry INSTANCE;
+    private final AliasRegistry aliasRegistry;
 
-    private PluginRegistry() {
-        //order is important here, alias is used by lookup in discoverPlugins
-//        configurePluginAliases();
+    private PluginRegistry(AliasRegistry aliasRegistry) {
+        this.aliasRegistry = aliasRegistry;
         discoverPlugins();
     }
 
-    public static PluginRegistry getInstance() {
+    public static PluginRegistry getInstance(AliasRegistry aliasRegistry) {
         if (INSTANCE == null) {
             synchronized (LOCK) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PluginRegistry();
+                    INSTANCE = new PluginRegistry(aliasRegistry);
                 }
             }
         }
@@ -109,8 +110,8 @@ public final class PluginRegistry {
         final Map<String, Class<T>> aliasesToAdd = new HashMap<>();
         for (Map.Entry<String, Class<T>> e : pluginCache.entrySet()) {
             final String realPluginName = e.getKey();
-            if (PluginLookup.isAliased(realPluginName)) {
-                final String alias = PluginLookup.aliasFromOriginal(realPluginName);
+            if (aliasRegistry.isAliased(realPluginName)) {
+                final String alias = aliasRegistry.aliasFromOriginal(realPluginName);
                 if (!inputs.containsKey(alias)) {
                     // no real plugin with same alias name was found
                     aliasesToAdd.put(alias, e.getValue());

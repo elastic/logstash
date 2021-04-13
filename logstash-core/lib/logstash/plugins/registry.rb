@@ -123,6 +123,7 @@ module LogStash module Plugins
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
+      @alias_registry = Java::org.logstash.plugins.AliasRegistry.new
     end
 
     def setup!
@@ -197,7 +198,7 @@ module LogStash module Plugins
     # plugin with the appropriate type.
     def legacy_lookup(type, plugin_name)
       begin
-        has_alias = org.logstash.plugins.PluginLookup.alias?(plugin_name)
+        has_alias = @alias_registry.alias?(plugin_name)
         path = "logstash/#{type}s/#{plugin_name}"
 
         klass = begin
@@ -208,7 +209,7 @@ module LogStash module Plugins
             raise
           end
           alias_name = plugin_name
-          plugin_name = org.logstash.plugins.PluginLookup.original_from_alias(plugin_name)
+          plugin_name = @alias_registry.original_from_alias(plugin_name)
           logger.debug("Plugin name #{alias_name} is aliased as #{plugin_name}")
           path = "logstash/#{type}s/#{plugin_name}"
           begin
@@ -316,7 +317,7 @@ module LogStash module Plugins
       (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) &&
-            klass.config_name == org.logstash.plugins.PluginLookup.resolve_alias(name))
+            klass.config_name == @alias_registry.resolve_alias(name))
     end
 
     def add_plugin(type, name, klass)
