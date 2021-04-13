@@ -16,9 +16,7 @@ These plugins and options support this functionality:
 * <<plugins-outputs-elasticsearch-hosts,Elasticsearch output plugin - `hosts`>>
 * <<plugins-filters-elasticsearch-hosts,Elasticsearch filter plugin - `hosts`>>
 
-For example, users use this functionality to define an environment variable with
-multiple whitespace-delimited URIs to use it for the options above, e.g.:
+You can use this functionality to define an environment variable with
+multiple whitespace-delimited URIs and use it for the options above.
 
-```
-ES_HOSTS="es1.example.com es2.example.com:9201 es3.example.com:9201"
-```
+**Example**
