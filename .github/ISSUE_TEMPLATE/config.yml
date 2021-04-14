@@ -6,3 +6,6 @@ contact_links:
   - name: Security Vulnerability
     url: https://www.elastic.co/community/security
     about: Send security vulnerability reports to security@elastic.co.
+  - name: Plugin Issue
+    url: https://github.com/logstash-plugins
+    about: Plugins for Logstash do the heavy lifting when it comes to integrating with a variety of external technologies and services. If your issue has to do with a specific plugin, please file it in the appropriate repository. 
