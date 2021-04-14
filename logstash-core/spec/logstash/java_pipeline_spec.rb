@@ -199,6 +199,15 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  describe "aliased plugin instantiation" do
+    it "should create the pipeline as if it's using the original plugin" do
+      alias_registry = Java::org.logstash.plugins.AliasRegistry.new({"alias_input" => "generator"})
+      LogStash::PLUGIN_REGISTRY = LogStash::Plugins::Registry.new alias_registry
+      pipeline = mock_java_pipeline_from_string("input { alias_input { count => 1 } } output { null {} }")
+      expect(pipeline.ephemeral_id).to_not be_nil
+      pipeline.close
+    end
+  end
 
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055

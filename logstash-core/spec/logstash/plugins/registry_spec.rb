@@ -34,13 +34,21 @@ class LogStash::Inputs::NewPlugin < LogStash::Inputs::Base
 end
 
 describe LogStash::Plugins::Registry do
-  let(:registry) { described_class.new }
+  let(:alias_registry) { nil }
+  let(:registry) { described_class.new alias_registry }
 
   context "when loading installed plugins" do
+    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({"alias_std_input" => "stdin"}) }
     let(:plugin) { double("plugin") }
+#     let(:registry) { described_class.new alias_registry }
 
     it "should return the expected class" do
       klass = registry.lookup("input", "stdin")
+      expect(klass).to eq(LogStash::Inputs::Stdin)
+    end
+
+    it "should load an aliased ruby plugin" do
+      klass = registry.lookup("input", "alias_std_input")
       expect(klass).to eq(LogStash::Inputs::Stdin)
     end
 
@@ -56,9 +64,16 @@ describe LogStash::Plugins::Registry do
   end
 
   context "when loading code defined plugins" do
+    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({"alias_input" => "new_plugin"}) }
+
     it "should return the expected class" do
       klass = registry.lookup("input", "dummy")
       expect(klass).to eq(LogStash::Inputs::Dummy)
+    end
+
+    it "should return the expected class also for aliased plugins" do
+      klass = registry.lookup("input", "alias_input")
+      expect(klass).to eq(LogStash::Inputs::NewPlugin)
     end
   end
 

@@ -113,7 +113,7 @@ module LogStash module Plugins
 
     attr_reader :hooks
 
-    def initialize
+    def initialize(alias_registry = nil)
       @mutex = Mutex.new
       # We need a threadsafe class here because we may perform
       # get/set operations concurrently despite the fact we don't use
@@ -123,7 +123,7 @@ module LogStash module Plugins
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
-      @alias_registry = Java::org.logstash.plugins.AliasRegistry.new
+      @alias_registry = alias_registry ? alias_registry : Java::org.logstash.plugins.AliasRegistry.new
     end
 
     def setup!
