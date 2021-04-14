@@ -438,11 +438,12 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (10.7.1-java)
+    logstash-integration-kafka (10.7.4-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-mixin-deprecation_logger_support (~> 1.0)
       manticore (>= 0.5.4, < 1.0.0)
       stud (>= 0.0.22, < 0.1.0)
     logstash-integration-rabbitmq (7.2.0-java)
@@ -457,6 +458,8 @@ GEM
       aws-sdk-v1 (>= 1.61.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+    logstash-mixin-deprecation_logger_support (1.0.0-java)
+      logstash-core (>= 5.0.0)
     logstash-mixin-ecs_compatibility_support (1.1.0-java)
       logstash-core (>= 6.0.0)
     logstash-mixin-http_client (7.0.0)
@@ -478,7 +481,7 @@ GEM
       elastic-app-search (~> 7.8.0)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-elasticsearch (10.8.2-java)
+    logstash-output-elasticsearch (10.8.6-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
@@ -540,7 +543,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snappy (= 0.0.12)
       webhdfs
-    logstash-patterns-core (4.3.0)
+    logstash-patterns-core (4.3.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     lru_redux (1.1.0)
     mail (2.6.6)
