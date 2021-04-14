@@ -20,11 +20,23 @@ See https://www.elastic.co/community/security for more information.
 Please fill in the following details to help us reproduce the bug:
 -->
 
-**Logstash version** (`bin/logstash --version`):
+**Logstash information**:
+
+Please include the following information:
+
+1. Logstash version (e.g. `bin/logstash --version`)
+2. Logstash installation source (e.g. built from source, with a package manager: DEB/RPM, expanded from tar or zip archive, docker)
+3. How is Logstash being run (e.g. as a service/service manager: systemd, upstart, etc. Via command line, docker/kubernetes)
 
 **Plugins installed**: (`bin/logstash-plugin list --verbose`)
 
-**JVM version** (`java -version`):
+**JVM** (e.g. `java -version`):
+
+If the affected version of Logstash is 7.9 (or earlier), or if it is NOT using the bundled JDK or using the 'no-jdk' version in 7.10 (or higher), please provide the following information:
+
+1. JVM version (`java -version`)
+2. JVM installation source (e.g. from the Operating System's package manager, from source, etc).
+3. Value of the `JAVA_HOME` environment variable if set.
 
 **OS version** (`uname -a` if on a Unix-like system):
 
