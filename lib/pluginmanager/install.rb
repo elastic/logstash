@@ -70,7 +70,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify_remote!(gems) if !local? && verify?
+      gems = verify_remote!(gems) if !local? && verify?
     end
 
     check_for_integrations(gems)
@@ -123,11 +123,26 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Check if the specified gems contains
   # the logstash `metadata`
   def verify_remote!(gems)
+    gems_swap = {}
     options = { :rubygems_source => gemfile.gemset.sources }
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
       next if validate_plugin(plugin, version, options)
+      # if the plugin is alias fallback to the original name
+      if plugin == "logstash-input-elastic_agent"
+        aliased_plugin = "logstash-input-beats"
+        if validate_plugin(aliased_plugin, version, options)
+          puts "Remapping alias #{plugin} to #{aliased_plugin}"
+          gems_swap[plugin] = aliased_plugin
+          next
+        end
+      end
       signal_error("Installation aborted, verification failed for #{plugin} #{version}")
+    end
+
+    # substitute in gems the list the alias plugin with the original
+    gems.collect do |plugin, version|
+      [gems_swap.fetch(plugin, plugin), version]
     end
   end
 

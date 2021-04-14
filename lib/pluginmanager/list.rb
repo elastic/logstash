@@ -34,9 +34,15 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
 
     signal_error("No plugins found") if filtered_specs.empty?
 
+    installed_plugin_names = filtered_specs.collect {|spec| spec.name}
+
     filtered_specs.sort_by{|spec| spec.name}.each do |spec|
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
+      if spec.name == "logstash-input-beats"
+        alias_plugin = "logstash-input-elastic_agent"
+        line += " ==> #{alias_plugin}" unless installed_plugin_names.include?(alias_plugin)
+      end
       puts(line)
       if spec.metadata.fetch("logstash_group", "") == "integration"
         integration_plugins = spec.metadata.fetch("integration_plugins", "").split(",")
