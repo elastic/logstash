@@ -292,7 +292,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.1.0-java)
+    logstash-input-beats (6.1.2-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -325,7 +325,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       stud (~> 0.0.22)
-    logstash-input-file (4.2.3)
+    logstash-input-file (4.2.4)
       addressable
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (~> 3.0)
@@ -376,10 +376,10 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-redis (3.6.0)
+    logstash-input-redis (3.6.1)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      redis (~> 4)
+      redis (>= 4.0.1, < 5)
     logstash-input-s3 (3.5.0)
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
@@ -421,7 +421,7 @@ GEM
       public_suffix (~> 3)
       stud (>= 0.0.22, < 0.1)
       twitter (= 6.2.0)
-    logstash-input-udp (3.4.0)
+    logstash-input-udp (3.4.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.1)
