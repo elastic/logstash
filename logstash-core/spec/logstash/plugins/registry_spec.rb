@@ -38,7 +38,7 @@ describe LogStash::Plugins::Registry do
   let(:registry) { described_class.new alias_registry }
 
   context "when loading installed plugins" do
-    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({"alias_std_input" => "stdin"}) }
+    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({["input", "alias_std_input"] => "stdin"}) }
     let(:plugin) { double("plugin") }
 
     it "should return the expected class" do
@@ -63,7 +63,7 @@ describe LogStash::Plugins::Registry do
   end
 
   context "when loading code defined plugins" do
-    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({"alias_input" => "new_plugin"}) }
+    let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({["input", "alias_input"] => "new_plugin"}) }
 
     it "should return the expected class" do
       klass = registry.lookup("input", "dummy")

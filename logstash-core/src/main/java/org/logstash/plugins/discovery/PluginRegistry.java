@@ -23,7 +23,6 @@ package org.logstash.plugins.discovery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.AliasRegistry;
-import org.logstash.plugins.PluginLookup;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
@@ -31,12 +30,14 @@ import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Output;
+import org.logstash.plugins.PluginLookup.PluginType;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -104,46 +105,47 @@ public final class PluginRegistry {
         }
 
         // after loaded all plugins, check if aliases has to be provided
-        addAliasedPlugins(filters);
-        addAliasedPlugins(outputs);
-        addAliasedPlugins(inputs);
-        addAliasedPlugins(codecs);
+        addAliasedPlugins(PluginType.FILTER, filters);
+        addAliasedPlugins(PluginType.OUTPUT, outputs);
+        addAliasedPlugins(PluginType.INPUT, inputs);
+        addAliasedPlugins(PluginType.CODEC, codecs);
     }
 
-    private <T> void addAliasedPlugins(Map<String, Class<T>> pluginCache) {
+    private <T> void addAliasedPlugins(PluginType type, Map<String, Class<T>> pluginCache) {
         final Map<String, Class<T>> aliasesToAdd = new HashMap<>();
         for (Map.Entry<String, Class<T>> e : pluginCache.entrySet()) {
             final String realPluginName = e.getKey();
-            if (aliasRegistry.isAliased(realPluginName)) {
-                final String alias = aliasRegistry.aliasFromOriginal(realPluginName);
-                if (!inputs.containsKey(alias)) {
-                    // no real plugin with same alias name was found
-                    aliasesToAdd.put(alias, e.getValue());
+                final Optional<String> alias = aliasRegistry.aliasFromOriginal(type, realPluginName);
+                if (alias.isPresent()) {
+                    final String aliasName = alias.get();
+                    if (!pluginCache.containsKey(aliasName)) {
+                        // no real plugin with same alias name was found
+                        aliasesToAdd.put(aliasName, e.getValue());
+                    }
                 }
-            }
         }
         for (Map.Entry<String, Class<T>> e : aliasesToAdd.entrySet()) {
             pluginCache.put(e.getKey(), e.getValue());
         }
     }
 
-    public Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
-        if (aliasRegistry.isAlias(pluginName)) {
+    public Class<?> getPluginClass(PluginType pluginType, String pluginName) {
+        if (aliasRegistry.isAlias(pluginType, pluginName)) {
             final String typeStr = pluginType.name().toLowerCase();
             LOGGER.info("Plugin {} is aliased as {}", typeStr + "-" + pluginName,
-                    typeStr + "-" + aliasRegistry.originalFromAlias(pluginName));
+                    typeStr + "-" + aliasRegistry.originalFromAlias(pluginType, pluginName));
         }
 
-        if (pluginType == PluginLookup.PluginType.FILTER) {
+        if (pluginType == PluginType.FILTER) {
             return getFilterClass(pluginName);
         }
-        if (pluginType == PluginLookup.PluginType.OUTPUT) {
+        if (pluginType == PluginType.OUTPUT) {
             return getOutputClass(pluginName);
         }
-        if (pluginType == PluginLookup.PluginType.INPUT) {
+        if (pluginType == PluginType.INPUT) {
             return getInputClass(pluginName);
         }
-        if (pluginType == PluginLookup.PluginType.CODEC) {
+        if (pluginType == PluginType.CODEC) {
             return getCodecClass(pluginName);
         }
 
