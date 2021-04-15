@@ -87,10 +87,10 @@ module LogStash module Filters module Geoip class DownloadManager
     LogStash::Util::Tar.extract(zip_path, temp_dir)
     logger.debug("extract database to ", :path => temp_dir)
 
-    ::Dir.children(temp_dir).each do |path|
-      path = ::File.join(temp_dir, path)
+    ::Dir.each_child(temp_dir) do |file|
+      path = ::File.join(temp_dir, file)
 
-      if !::File.directory?(path) && database_name_ext.eql?(::File.basename(path))
+      if !::File.directory?(path) && database_name_ext.eql?(file)
         FileUtils.cp(path, new_database_path)
       else
         FileUtils.cp_r(path, @vendor_path)
