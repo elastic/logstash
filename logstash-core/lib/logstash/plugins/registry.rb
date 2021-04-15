@@ -200,12 +200,12 @@ module LogStash module Plugins
         path = "logstash/#{type}s/#{plugin_name}"
 
         klass = begin
-          namespace_lookup(type, plugin_name)
+          namespace_lookup!(type, plugin_name)
         rescue UnknownPlugin => e
           # Plugin not registered. Try to load it.
           begin
             require path
-            namespace_lookup(type, plugin_name)
+            namespace_lookup!(type, plugin_name)
           rescue LoadError => e
             logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
             raise
@@ -269,7 +269,6 @@ module LogStash module Plugins
     # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
     # @return [Class] the plugin class or raises NameError
-    # @raise NameError if plugin class does not exist or is invalid
     def namespace_lookup(type, name)
       type_const = "#{type.capitalize}s"
       namespace = LogStash.const_get(type_const)
@@ -277,10 +276,13 @@ module LogStash module Plugins
       # namespace.constants is the shallow collection of all constants symbols in namespace
       # note that below namespace.const_get(c) should never result in a NameError since c is from the constants collection
       klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), name) }
-      klass = klass_sym && namespace.const_get(klass_sym)
+      klass_sym && namespace.const_get(klass_sym)
+    end
 
-      raise(UnknownPlugin) unless klass
-      klass
+    # @see namepace_lookup
+    # @raise NameError if plugin class does not exist or is invalid
+    def namespace_lookup!(type, name)
+      namespace_lookup(type, name) || fail(UnknownPlugin)
     end
 
     # check if klass is a valid plugin for name
