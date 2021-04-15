@@ -49,56 +49,17 @@ This section summarizes the changes in the following releases:
 ---------- DELETE FROM HERE ------------
 === Logstash Pull Requests with label v7.12.1
 
-* Fix Elasticsearch/DLQ integration test flakiness https://github.com/elastic/logstash/pull/12685[#12685]
-* Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12763[#12763]
-* Backport PR #12763 to 7.12: Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12773[#12773]
 * Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
 * Fix: logstash-keystore failing with an error https://github.com/elastic/logstash/pull/12784[#12784]
-* Backport PR #12782 to 7.12: Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12789[#12789]
-* Backport PR #12784 (#12805) to 7.12: Fix: logstash-keystore failing with an error https://github.com/elastic/logstash/pull/12804[#12804]
 * [7.12] Allow plugin manager uninstall plugin regardless of working directory (#12786) https://github.com/elastic/logstash/pull/12809[#12809]
-* Backport PR #12685 to 7.12: Fix Elasticsearch/DLQ integration test flakiness https://github.com/elastic/logstash/pull/12823[#12823]
 
-=== Logstash Commits between 7.12 and 7.12.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.12.0..7.12"
-
-a0a95c823 - (HEAD -> 7.12, upstream/7.12) Backport PR #12685 to 7.12: Fix Elasticsearch/DLQ integration test flakiness (#12823) (17 hours ago) <Karol Bucek>
-eb3e4afd7 - Deps: bump lock file for 7.12.1 (#12822) (17 hours ago) <Karol Bucek>
-c424f990f - updated distributor pattern section (#12810) (2 days ago) <Ahil PonArul>
-2abdc3f4a - Allow plugin manager uninstall plugin regardless of working directory (#12786) (#12809) (7 days ago) <kaisecheng>
-4676aa886 - Backport PR #12784 (#12805) to 7.12: Fix: logstash-keystore failing with an error (#12804) (7 days ago) <Karol Bucek>
-fb0c42d22 - Set correct permissions for /usr/share/logstash on pkg installs (#12782) (#12789) (2 weeks ago) <Andres Rodriguez>
-58dd011b1 - Build: avoid leaking memory from generate_plugins_version (#12763) (#12773) (3 weeks ago) <Karol Bucek>
-2d4468215 - Doc: Rework security update in release notes (#12768) (3 weeks ago) <Karen Metts>
-9b4e60298 - Release notes for 7.12.0 (#12683) (3 weeks ago) <Logstash Machine>
-76fc176da - Release: bump version to 7.12.1 (#12764) (3 weeks ago) <Karol Bucek>
-ec7808b3e - Doc:Add placeholder and coming tag for 7.12.0 release notes (#12762) (3 weeks ago) <Karen Metts>
-3c5c5a150 - Forwardport release notes for 7.11.1 and 7.11.2 to 7.12 branch (#12743) (3 weeks ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.12.0..7.12 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.1.1 -> 6.1.2
-logstash-filter-fingerprint: 3.2.2 -> 3.2.3
-logstash-filter-mutate: 3.5.0 -> 3.5.1
-logstash-input-beats: 6.1.0 -> 6.1.2
-logstash-input-file: 4.2.3 -> 4.2.4
-logstash-input-redis: 3.6.0 -> 3.6.1
-logstash-input-tcp: 6.0.7 -> 6.0.9
-logstash-input-udp: 3.4.0 -> 3.4.1
-logstash-integration-kafka: 10.7.1 -> 10.7.4
-logstash-mixin-deprecation_logger_support: 1.0.0 -> 1.0.0
-logstash-output-elasticsearch: 10.8.2 -> 10.8.6
-logstash-output-s3: 4.3.3 -> 4.3.4
-logstash-patterns-core: 4.3.0 -> 4.3.1
 ---------- DELETE UP TO HERE ------------
 
 ==== Plugins
 
 *Cef Codec - 6.1.2*
 
-* Added error log with full payload when something bad happens in decoding a messagehttps://github.com/logstash-plugins/logstash-codec-cef/pull/84[#84]
+* Added error log with full payload when something bad happens in decoding a message https://github.com/logstash-plugins/logstash-codec-cef/pull/84[#84]
 
 *Fingerprint Filter - 3.2.3*
 
@@ -111,9 +72,7 @@ logstash-patterns-core: 4.3.0 -> 4.3.1
 *Beats Input - 6.1.2*
 
 * [DOC] Added naming attribute to control plugin name that appears in docs, and set up framework to make attributes viable in code sample
-
-* [DOC] Enhanced ECS compatibility information for ease of use and readability
- https://github.com/logstash-plugins/logstash-input-beats/pull/413[#413]
+* [DOC] Enhanced ECS compatibility information for ease of use and readability https://github.com/logstash-plugins/logstash-input-beats/pull/413[#413]
 
 *File Input - 4.2.4*
 
@@ -126,7 +85,6 @@ logstash-patterns-core: 4.3.0 -> 4.3.1
 *Tcp Input - 6.0.9*
 
 * [DOC] Reorder options alphabetically https://github.com/logstash-plugins/logstash-input-tcp/pull/171[#171]
-
 * [DOC] better description for `tcp_keep_alive` option https://github.com/logstash-plugins/logstash-input-tcp/pull/169[#169]
 
 *Udp Input - 3.4.1*
@@ -136,26 +94,16 @@ logstash-patterns-core: 4.3.0 -> 4.3.1
 *Kafka Integration - 10.7.4*
 
 * Docs: make sure Kafka clients version is updated in docs https://github.com/logstash-plugins/logstash-integration-kafka/pull/83[#83]
-    Since **10.6.0** Kafka client was updated to **2.5.1**
-
 * Changed `decorate_events` to add also Kafka headers https://github.com/logstash-plugins/logstash-integration-kafka/pull/78[#78]
-
 * Update Jersey dependency to version 2.33 https://github.com/logstash-plugins/logstash-integration-kafka/pull/75[#75]
-
-*Deprecation_logger_support Mixin - 1.0.0*
-
-404: Not Found
 
 *Elasticsearch Output - 10.8.6*
 
 * Fixed an issue where a single over-size event being rejected by Elasticsearch would cause the entire entire batch to be retried indefinitely. The oversize event will still be retried on its own and logging has been improved to include payload sizes in this situation https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/972[#972]
 * Fixed an issue with `http_compression => true` where a well-compressed payload could fit under our outbound 20MB limit but expand beyond Elasticsearch's 100MB limit, causing bulk failures. Bulk grouping is now determined entirely by the decompressed payload size https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/823[#823]
 * Improved debug-level logging about bulk requests.
-
 * Feat: assert returned item count from _bulk https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/997[#997]
-
 * Fixed an issue where a retried request would drop "update" parameters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/800[#800]
-
 * Avoid to implicitly set deprecated type to `_doc` when connects to Elasticsearch version 7.x  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/994[#994]
 
 *S3 Output - 4.3.4*
