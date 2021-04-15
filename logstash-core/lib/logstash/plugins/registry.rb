@@ -196,6 +196,12 @@ module LogStash module Plugins
     def legacy_lookup(type, plugin_name)
       klass = load_plugin_class(type, plugin_name)
 
+      # if !klass && @alias_registry.alias?(type.to_java, plugin_name)
+      #   resolved_plugin_name = @alias_registry.original_from_alias(type.to_java, plugin_name)
+      #   logger.debug("Loading #{type} plugin #{resolved_plugin_name} via its alias #{plugin_name}...")
+      #   klass = load_plugin_class(type, resolved_plugin_name)
+      # end
+
       unless klass
         logger.error("Unable to load plugin.",
                      :type => type,
