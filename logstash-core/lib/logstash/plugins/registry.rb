@@ -26,8 +26,6 @@ module LogStash module Plugins
   class Registry
     include LogStash::Util::Loggable
 
-    class UnknownPlugin < NameError; end
-
     # Add a bit more sanity with when interacting with the rubygems'
     # specifications database, most of out code interact directly with really low level
     # components of bundler/rubygems we need to encapsulate that and this is a start.
@@ -196,36 +194,16 @@ module LogStash module Plugins
     # a plugin and will do a lookup on the namespace of the required class to find a matching
     # plugin with the appropriate type.
     def legacy_lookup(type, plugin_name)
-      begin
-        path = "logstash/#{type}s/#{plugin_name}"
+      klass = load_plugin_class(type, plugin_name)
 
-        klass = begin
-          namespace_lookup!(type, plugin_name)
-        rescue UnknownPlugin => e
-          # Plugin not registered. Try to load it.
-          begin
-            require path
-            namespace_lookup!(type, plugin_name)
-          rescue LoadError => e
-            logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
-            raise
-          end
-        end
-
-        plugin = lazy_add(type, plugin_name, klass)
-      rescue => e
-        logger.error("Problems loading a plugin with",
-                    :type => type,
-                    :name => plugin_name,
-                    :path => path,
-                    :error_message => e.message,
-                    :error_class => e.class,
-                    :error_backtrace => e.backtrace)
-
-        raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
+      unless klass
+        logger.error("Unable to load plugin.",
+                     :type => type,
+                     :name => plugin_name)
+        raise LoadError, "Unable to load the requested plugin named #{plugin_name} of type #{type}. The plugin is not installed."
       end
 
-      plugin
+      plugin = lazy_add(type, plugin_name, klass)
     end
 
     def lookup_pipeline_plugin(type, name)
@@ -268,7 +246,7 @@ module LogStash module Plugins
     # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
     # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
-    # @return [Class] the plugin class or raises NameError
+    # @return [Class,nil] the plugin class or nil
     def namespace_lookup(type, name)
       type_const = "#{type.capitalize}s"
       namespace = LogStash.const_get(type_const)
@@ -279,10 +257,24 @@ module LogStash module Plugins
       klass_sym && namespace.const_get(klass_sym)
     end
 
-    # @see namepace_lookup
-    # @raise NameError if plugin class does not exist or is invalid
-    def namespace_lookup!(type, name)
-      namespace_lookup(type, name) || fail(UnknownPlugin)
+    # load a plugin's class, or return nil if the plugin cannot be loaded.
+    # attempts to load the class purely through namespace lookup,
+    # and falls back to requiring the path of the expected plugin.
+    # @param type [String]: plugin type, such as "input", "output", "filter", "codec"
+    # @param plugin_name [String]: plugin name, such as "grok", "elasticsearch"
+    # @return [Class,nil] the plugin class, or nil
+    def load_plugin_class(type, plugin_name)
+      klass = namespace_lookup(type, plugin_name)
+
+      unless klass
+        require("logstash/#{type}s/#{plugin_name}")
+        klass = namespace_lookup(type, plugin_name)
+      end
+
+      klass
+    rescue LoadError => e
+      logger.debug("Tried to load a plugin's code, but failed.", :exception => e, :path => e.path, :type => type, :name => plugin_name)
+      nil
     end
 
     # check if klass is a valid plugin for name
