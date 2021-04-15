@@ -3,6 +3,7 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require_relative 'test_helper'
+require 'fileutils'
 require "filters/geoip/download_manager"
 
 describe LogStash::Filters::Geoip do
@@ -105,13 +106,17 @@ describe LogStash::Filters::Geoip do
       let(:copyright_path) { get_file_path('COPYRIGHT.txt') }
       let(:license_path) { get_file_path('LICENSE.txt') }
       let(:readme_path) { get_file_path('README.txt') }
+      let(:folder_path) { get_file_path('inner') }
+      let(:folder_more_path) { ::File.join(get_file_path('inner'), 'more.txt') }
+      let(:folder_less_path) { ::File.join(get_file_path('inner'), 'less.txt') }
 
-      before do
-        file_path = ::File.expand_path("./fixtures/sample", ::File.dirname(__FILE__))
+      after do
+        file_path = ::File.expand_path("./fixtures/sample.mmdb", ::File.dirname(__FILE__))
         delete_file(file_path, copyright_path, license_path, readme_path)
+        FileUtils.rm_r folder_path
       end
 
-      it "should extract database and license related files" do
+      it "should extract all files in tarball" do
         path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
         unzip_db_path = download_manager.send(:unzip, path)
 
@@ -119,9 +124,10 @@ describe LogStash::Filters::Geoip do
         expect(::File.exist?(unzip_db_path)).to be_truthy
         expect(::File.exist?(copyright_path)).to be_truthy
         expect(::File.exist?(license_path)).to be_truthy
-        expect(::File.exist?(readme_path)).to be_falsey
-
-        delete_file(unzip_db_path, copyright_path, license_path)
+        expect(::File.exist?(readme_path)).to be_truthy
+        expect(::File.directory?(folder_path)).to be_truthy
+        expect(::File.exist?(folder_more_path)).to be_truthy
+        expect(::File.exist?(folder_less_path)).to be_truthy
       end
     end
 
