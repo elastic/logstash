@@ -46,14 +46,10 @@ This section summarizes the changes in the following releases:
 [[logstash-7-12-1]]
 === Logstash 7.12.1 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v7.12.1
+==== Notable issues fixed
 
-* Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
-* Fix: logstash-keystore failing with an error https://github.com/elastic/logstash/pull/12784[#12784]
-* [7.12] Allow plugin manager uninstall plugin regardless of working directory (#12786) https://github.com/elastic/logstash/pull/12809[#12809]
-
----------- DELETE UP TO HERE ------------
+* Set correct permissions for /usr/share/logstash on (RPM, DEB) pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
+* Allow plugin manager to remove plugin regardless of the current working directory https://github.com/elastic/logstash/pull/12786[#12786]
 
 ==== Plugins
 
