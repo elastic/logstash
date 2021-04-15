@@ -201,9 +201,9 @@ describe LogStash::JavaPipeline do
 
   describe "aliased plugin instantiation" do
     it "should create the pipeline as if it's using the original plugin" do
-      alias_registry = Java::org.logstash.plugins.AliasRegistry.new({"alias_input" => "generator"})
+      alias_registry = Java::org.logstash.plugins.AliasRegistry.new({["input", "alias"] => "generator"})
       LogStash::PLUGIN_REGISTRY = LogStash::Plugins::Registry.new alias_registry
-      pipeline = mock_java_pipeline_from_string("input { alias_input { count => 1 } } output { null {} }")
+      pipeline = mock_java_pipeline_from_string("input { alias { count => 1 } } output { null {} }")
       expect(pipeline.ephemeral_id).to_not be_nil
       pipeline.close
     end
