@@ -210,7 +210,7 @@ module LogStash module Plugins
           end
           alias_name = plugin_name
           plugin_name = @alias_registry.original_from_alias(plugin_name)
-          logger.debug("Plugin name #{alias_name} is aliased as #{plugin_name}")
+#           logger.info("Plugin name #{alias_name} is aliased as #{plugin_name}")
           path = "logstash/#{type}s/#{plugin_name}"
           begin
             load_plugin_class(type, plugin_name)
