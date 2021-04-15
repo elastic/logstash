@@ -107,8 +107,8 @@ describe LogStash::Filters::Geoip do
       let(:license_path) { get_file_path('LICENSE.txt') }
       let(:readme_path) { get_file_path('README.txt') }
       let(:folder_path) { get_file_path('inner') }
-      let(:folder_more_path) { get_file_path('inner') + '/more.txt' }
-      let(:folder_less_path) { get_file_path('inner') + '/less.txt' }
+      let(:folder_more_path) { ::File.join(get_file_path('inner'), 'more.txt') }
+      let(:folder_less_path) { ::File.join(get_file_path('inner'), 'less.txt') }
 
       after do
         file_path = ::File.expand_path("./fixtures/sample.mmdb", ::File.dirname(__FILE__))

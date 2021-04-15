@@ -79,6 +79,7 @@ module LogStash module Filters module Geoip class DownloadManager
   end
 
   # extract all files and folders from .tgz to vendor directory
+  # existing files folders will be replaced
   def unzip(zip_path)
     new_database_path = zip_path[0...-(GZ_EXT.length)] + DB_EXT
     temp_dir = Stud::Temporary.pathname
