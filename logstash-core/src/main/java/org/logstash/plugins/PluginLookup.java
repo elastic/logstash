@@ -34,8 +34,6 @@ import org.logstash.RubyUtil;
 import org.logstash.plugins.discovery.PluginRegistry;
 import org.logstash.plugins.factory.PluginFactoryExt;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

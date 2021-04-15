@@ -20,6 +20,8 @@
 
 package org.logstash.plugins.discovery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.AliasRegistry;
 import org.logstash.plugins.PluginLookup;
 import co.elastic.logstash.api.Codec;
@@ -46,6 +48,8 @@ import java.util.Set;
  * </ul>
  * */
 public final class PluginRegistry {
+
+    private static final Logger LOGGER = LogManager.getLogger(PluginRegistry.class);
 
     private final Map<String, Class<Input>> inputs = new HashMap<>();
     private final Map<String, Class<Filter>> filters = new HashMap<>();
@@ -124,6 +128,12 @@ public final class PluginRegistry {
     }
 
     public Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
+        if (aliasRegistry.isAlias(pluginName)) {
+            final String typeStr = pluginType.name().toLowerCase();
+            LOGGER.info("Plugin {} is aliased as {}", typeStr + "-" + pluginName,
+                    typeStr + "-" + aliasRegistry.originalFromAlias(pluginName));
+        }
+
         if (pluginType == PluginLookup.PluginType.FILTER) {
             return getFilterClass(pluginName);
         }

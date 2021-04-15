@@ -34,6 +34,9 @@ public class AliasRegistry {
         return aliases.containsKey(pluginName);
     }
 
+    /**
+     * Dual operation of isAlias
+     * */
     public boolean isAliased(String realPluginName) {
         return aliases.containsValue(realPluginName);
     }
