@@ -242,15 +242,11 @@ module LogStash module Plugins
 
     private
     def load_plugin_class(type, plugin_name)
-      path = "logstash/#{type}s/#{plugin_name}"
-
-      klass = begin
-        namespace_lookup(type, plugin_name)
-      rescue UnknownPlugin => e
-        # Plugin not registered. Try to load it.
-        require path
-        namespace_lookup(type, plugin_name)
-      end
+      namespace_lookup(type, plugin_name)
+    rescue UnknownPlugin
+      # Plugin not registered. Try to load it.
+      require "logstash/#{type}s/#{plugin_name}"
+      namespace_lookup(type, plugin_name)
     end
 
     public
