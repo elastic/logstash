@@ -197,56 +197,47 @@ module LogStash module Plugins
     # a plugin and will do a lookup on the namespace of the required class to find a matching
     # plugin with the appropriate type.
     def legacy_lookup(type, plugin_name)
-      begin
-        has_alias = @alias_registry.alias?(type.to_java, plugin_name)
-        path = "logstash/#{type}s/#{plugin_name}"
+      klass = load_plugin_class(type, plugin_name)
 
-        klass = begin
-          load_plugin_class(type, plugin_name)
-        rescue LoadError => e
-          unless has_alias
-            logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
-            raise
-          end
-          alias_name = plugin_name
-          plugin_name = @alias_registry.original_from_alias(type.to_java, plugin_name)
-#           logger.info("Plugin name #{alias_name} is aliased as #{plugin_name}")
-          path = "logstash/#{type}s/#{plugin_name}"
-          begin
-            load_plugin_class(type, plugin_name)
-          rescue LoadError => e
-            logger.error("Tried to load aliased plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
-            raise
-          end
-        end
-
-        plugin = lazy_add(type, plugin_name, klass)
-      rescue => e
-        logger.error("Problems loading a plugin with",
-                    :type => type,
-                    :name => plugin_name,
-                    :path => path,
-                    :error_message => e.message,
-                    :error_class => e.class,
-                    :error_backtrace => e.backtrace)
-
-        raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
+      has_alias = @alias_registry.alias?(type.to_java, plugin_name)
+      if !klass && has_alias
+        resolved_plugin_name = @alias_registry.original_from_alias(type.to_java, plugin_name)
+        logger.debug("Loading #{type} plugin #{resolved_plugin_name} via its alias #{plugin_name}...")
+        klass = load_plugin_class(type, resolved_plugin_name)
       end
 
+      unless klass
+        logger.error("Unable to load plugin.", :type => type, :name => plugin_name)
+        raise LoadError, "Unable to load the requested plugin named #{plugin_name} of type #{type}. The plugin is not installed."
+      end
+
+      plugin = lazy_add(type, plugin_name, klass)
+
       if has_alias
-        @registry[key_for(type, alias_name)] = plugin
+        @registry[key_for(type, resolved_plugin_name)] = plugin
       end
 
       plugin
     end
 
+    # load a plugin's class, or return nil if the plugin cannot be loaded.
+    # attempts to load the class purely through namespace lookup,
+    # and falls back to requiring the path of the expected plugin.
+    # @param type [String]: plugin type, such as "input", "output", "filter", "codec"
+    # @param plugin_name [String]: plugin name, such as "grok", "elasticsearch"
+    # @return [Class,nil] the plugin class, or nil
     private
     def load_plugin_class(type, plugin_name)
-      namespace_lookup(type, plugin_name)
-    rescue UnknownPlugin
-      # Plugin not registered. Try to load it.
-      require "logstash/#{type}s/#{plugin_name}"
-      namespace_lookup(type, plugin_name)
+      klass = namespace_lookup(type, plugin_name)
+
+      unless klass
+        require("logstash/#{type}s/#{plugin_name}")
+        klass = namespace_lookup(type, plugin_name)
+      end
+      klass
+    rescue LoadError => e
+      logger.debug("Tried to load a plugin's code, but failed.", :exception => e, :path => e.path, :type => type, :name => plugin_name)
+      nil
     end
 
     public
@@ -290,8 +281,7 @@ module LogStash module Plugins
     # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
     # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
-    # @return [Class] the plugin class or raises NameError
-    # @raise NameError if plugin class does not exist or is invalid
+    # @return [Class,nil] the plugin class or nil
     def namespace_lookup(type, name)
       type_const = "#{type.capitalize}s"
       namespace = LogStash.const_get(type_const)
@@ -299,10 +289,7 @@ module LogStash module Plugins
       # namespace.constants is the shallow collection of all constants symbols in namespace
       # note that below namespace.const_get(c) should never result in a NameError since c is from the constants collection
       klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), type.to_java, name) }
-      klass = klass_sym && namespace.const_get(klass_sym)
-
-      raise(UnknownPlugin) unless klass
-      klass
+      klass_sym && namespace.const_get(klass_sym)
     end
 
     # check if klass is a valid plugin for name
