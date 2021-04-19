@@ -129,8 +129,8 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       puts("Validating #{[plugin, version].compact.join("-")}")
       next if validate_plugin(plugin, version, options)
       # if the plugin is alias fallback to the original name
-      if plugin == "logstash-input-elastic_agent"
-        aliased_plugin = "logstash-input-beats"
+      if LogStash::PluginManager::ALIASES.has_key?(plugin)
+        aliased_plugin = LogStash::PluginManager::ALIASES[plugin]
         if validate_plugin(aliased_plugin, version, options)
           puts "Remapping alias #{plugin} to #{aliased_plugin}"
           gems_swap[plugin] = aliased_plugin

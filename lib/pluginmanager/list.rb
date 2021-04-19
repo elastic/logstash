@@ -39,8 +39,8 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
     filtered_specs.sort_by{|spec| spec.name}.each do |spec|
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
-      if spec.name == "logstash-input-beats"
-        alias_plugin = "logstash-input-elastic_agent"
+      if LogStash::PluginManager::ALIASES.has_value?(spec.name)
+        alias_plugin = LogStash::PluginManager::ALIASES.key(spec.name)
         line += " ==> #{alias_plugin}" unless installed_plugin_names.include?(alias_plugin)
       end
       puts(line)

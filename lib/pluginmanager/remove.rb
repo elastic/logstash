@@ -32,9 +32,9 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     ##
     LogStash::Bundler.setup!({:without => [:build, :development]})
 
-    if plugin == "logstash-input-elastic_agent"
+    if LogStash::PluginManager::ALIASES.has_key?(plugin)
       unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
-        aliased_plugin = "logstash-input-beats"
+        aliased_plugin = LogStash::PluginManager::ALIASES[plugin]
         puts "Removing the alias #{plugin}, please remove the aliased plugin: #{aliased_plugin}"
         return
       end
