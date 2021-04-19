@@ -135,22 +135,19 @@ public final class PluginRegistry {
             LOGGER.info("Plugin {} is aliased as {}", typeStr + "-" + pluginName,
                     typeStr + "-" + aliasRegistry.originalFromAlias(pluginType, pluginName));
         }
-
-        if (pluginType == PluginType.FILTER) {
-            return getFilterClass(pluginName);
+        
+        switch (pluginType) {
+            case FILTER:
+                return getFilterClass(pluginName);
+            case OUTPUT:
+                return getOutputClass(pluginName);
+            case INPUT:
+                return getInputClass(pluginName);
+            case CODEC:
+                return getCodecClass(pluginName);
+            default:
+                throw new IllegalStateException("Unknown plugin type: " + pluginType);
         }
-        if (pluginType == PluginType.OUTPUT) {
-            return getOutputClass(pluginName);
-        }
-        if (pluginType == PluginType.INPUT) {
-            return getInputClass(pluginName);
-        }
-        if (pluginType == PluginType.CODEC) {
-            return getCodecClass(pluginName);
-        }
-
-        throw new IllegalStateException("Unknown plugin type: " + pluginType);
-
     }
 
     public Class<Input> getInputClass(String name) {
