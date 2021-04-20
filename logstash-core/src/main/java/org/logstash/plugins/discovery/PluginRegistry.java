@@ -20,7 +20,9 @@
 
 package org.logstash.plugins.discovery;
 
-import org.logstash.plugins.PluginLookup;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.plugins.AliasRegistry;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
@@ -28,12 +30,14 @@ import co.elastic.logstash.api.Filter;
 import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Output;
+import org.logstash.plugins.PluginLookup.PluginType;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -46,22 +50,26 @@ import java.util.Set;
  * */
 public final class PluginRegistry {
 
+    private static final Logger LOGGER = LogManager.getLogger(PluginRegistry.class);
+
     private final Map<String, Class<Input>> inputs = new HashMap<>();
     private final Map<String, Class<Filter>> filters = new HashMap<>();
     private final Map<String, Class<Output>> outputs = new HashMap<>();
     private final Map<String, Class<Codec>> codecs = new HashMap<>();
     private static final Object LOCK = new Object();
     private static volatile PluginRegistry INSTANCE;
+    private final AliasRegistry aliasRegistry;
 
-    private PluginRegistry() {
+    private PluginRegistry(AliasRegistry aliasRegistry) {
+        this.aliasRegistry = aliasRegistry;
         discoverPlugins();
     }
 
-    public static PluginRegistry getInstance() {
+    public static PluginRegistry getInstance(AliasRegistry aliasRegistry) {
         if (INSTANCE == null) {
             synchronized (LOCK) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PluginRegistry();
+                    INSTANCE = new PluginRegistry(aliasRegistry);
                 }
             }
         }
@@ -95,24 +103,48 @@ public final class PluginRegistry {
                 }
             }
         }
+
+        // after loaded all plugins, check if aliases has to be provided
+        addAliasedPlugins(PluginType.FILTER, filters);
+        addAliasedPlugins(PluginType.OUTPUT, outputs);
+        addAliasedPlugins(PluginType.INPUT, inputs);
+        addAliasedPlugins(PluginType.CODEC, codecs);
     }
 
-    public Class<?> getPluginClass(PluginLookup.PluginType pluginType, String pluginName) {
-        if (pluginType == PluginLookup.PluginType.FILTER) {
-            return getFilterClass(pluginName);
+    private <T> void addAliasedPlugins(PluginType type, Map<String, Class<T>> pluginCache) {
+        final Map<String, Class<T>> aliasesToAdd = new HashMap<>();
+        for (Map.Entry<String, Class<T>> e : pluginCache.entrySet()) {
+            final String realPluginName = e.getKey();
+            final Optional<String> alias = aliasRegistry.aliasFromOriginal(type, realPluginName);
+            if (alias.isPresent()) {
+                final String aliasName = alias.get();
+                if (!pluginCache.containsKey(aliasName)) {
+                    // no real plugin with same alias name was found
+                    aliasesToAdd.put(aliasName, e.getValue());
+                    final String typeStr = type.name().toLowerCase();
+                    LOGGER.info("Plugin {}-{} is aliased as {}-{}", typeStr, realPluginName, typeStr, aliasName);
+                }
+            }
         }
-        if (pluginType == PluginLookup.PluginType.OUTPUT) {
-            return getOutputClass(pluginName);
+        for (Map.Entry<String, Class<T>> e : aliasesToAdd.entrySet()) {
+            pluginCache.put(e.getKey(), e.getValue());
         }
-        if (pluginType == PluginLookup.PluginType.INPUT) {
-            return getInputClass(pluginName);
-        }
-        if (pluginType == PluginLookup.PluginType.CODEC) {
-            return getCodecClass(pluginName);
-        }
+    }
 
-        throw new IllegalStateException("Unknown plugin type: " + pluginType);
-
+    public Class<?> getPluginClass(PluginType pluginType, String pluginName) {
+        
+        switch (pluginType) {
+            case FILTER:
+                return getFilterClass(pluginName);
+            case OUTPUT:
+                return getOutputClass(pluginName);
+            case INPUT:
+                return getInputClass(pluginName);
+            case CODEC:
+                return getCodecClass(pluginName);
+            default:
+                throw new IllegalStateException("Unknown plugin type: " + pluginType);
+        }
     }
 
     public Class<Input> getInputClass(String name) {
