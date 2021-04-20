@@ -199,11 +199,11 @@ module LogStash module Plugins
     def legacy_lookup(type, plugin_name)
       klass = load_plugin_class(type, plugin_name)
 
-      has_alias = @alias_registry.alias?(type.to_java, plugin_name)
-      if !klass && has_alias
+      if !klass && @alias_registry.alias?(type.to_java, plugin_name)
         resolved_plugin_name = @alias_registry.original_from_alias(type.to_java, plugin_name)
         logger.debug("Loading #{type} plugin #{resolved_plugin_name} via its alias #{plugin_name}...")
         klass = load_plugin_class(type, resolved_plugin_name)
+        lazy_add(type, resolved_plugin_name, klass) if klass
       end
 
       unless klass
@@ -211,13 +211,7 @@ module LogStash module Plugins
         raise LoadError, "Unable to load the requested plugin named #{plugin_name} of type #{type}. The plugin is not installed."
       end
 
-      plugin = lazy_add(type, plugin_name, klass)
-
-      if has_alias
-        @registry[key_for(type, resolved_plugin_name)] = plugin
-      end
-
-      plugin
+      lazy_add(type, plugin_name, klass)
     end
 
     # load a plugin's class, or return nil if the plugin cannot be loaded.
