@@ -64,17 +64,6 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # calling update without requirements will remove any previous requirements
     plugins = plugins_to_update(previous_gem_specs_map)
 
-#     # remap aliased plugins to original
-#     plugins = plugins.map do |plugin|
-#                            if LogStash::PluginManager::ALIASES.has_key?(plugin)
-#                              plugin_alias = LogStash::PluginManager::ALIASES[plugin]
-#                              puts "Remapping alias #{plugin} to #{plugin_alias}"
-#                              plugin_alias
-#                            else
-#                              plugin
-#                            end
-#                          end
-
     # Skipping the major version validation when using a local cache as we can have situations
     # without internet connection.
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
