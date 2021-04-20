@@ -115,17 +115,16 @@ public final class PluginRegistry {
         final Map<String, Class<T>> aliasesToAdd = new HashMap<>();
         for (Map.Entry<String, Class<T>> e : pluginCache.entrySet()) {
             final String realPluginName = e.getKey();
-                final Optional<String> alias = aliasRegistry.aliasFromOriginal(type, realPluginName);
-                if (alias.isPresent()) {
-                    final String aliasName = alias.get();
-                    if (!pluginCache.containsKey(aliasName)) {
-                        // no real plugin with same alias name was found
-                        aliasesToAdd.put(aliasName, e.getValue());
-                        final String typeStr = pluginType.name().toLowerCase();
-                        LOGGER.info("Plugin {}-{} is aliased as {}-{}", typeStr, realPluginName, typeStr, aliasName);
-        }
-                    }
+            final Optional<String> alias = aliasRegistry.aliasFromOriginal(type, realPluginName);
+            if (alias.isPresent()) {
+                final String aliasName = alias.get();
+                if (!pluginCache.containsKey(aliasName)) {
+                    // no real plugin with same alias name was found
+                    aliasesToAdd.put(aliasName, e.getValue());
+                    final String typeStr = type.name().toLowerCase();
+                    LOGGER.info("Plugin {}-{} is aliased as {}-{}", typeStr, realPluginName, typeStr, aliasName);
                 }
+            }
         }
         for (Map.Entry<String, Class<T>> e : aliasesToAdd.entrySet()) {
             pluginCache.put(e.getKey(), e.getValue());
