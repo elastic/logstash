@@ -20,6 +20,9 @@ require_relative "../bootstrap/patches/remote_fetcher"
 
 module LogStash::PluginManager
 
+  # Defines the plugin alias, must be kept in synch with Java class org.logstash.plugins.AliasRegistry
+  ALIASES = {"logstash-input-elastic_agent" => "logstash-input-beats"}
+
   class ValidationError < StandardError; end
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
