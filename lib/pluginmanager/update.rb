@@ -111,9 +111,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
       # resolve aliases that doesn't correspond to a real gem
       plugins_to_update = plugins_arg.map do |plugin|
         if not_installed_aliases.include?(plugin)
-          plugin_alias = LogStash::PluginManager::ALIASES[plugin]
-          puts "Remapping alias #{plugin} to #{plugin_alias}"
-          plugin_alias
+          resolved_plugin = LogStash::PluginManager::ALIASES[plugin]
+          puts "Remapping alias #{plugin} to #{resolved_plugin}"
+          resolved_plugin
         else
           plugin
         end
