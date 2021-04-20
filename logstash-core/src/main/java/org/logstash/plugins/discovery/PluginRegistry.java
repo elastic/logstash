@@ -130,11 +130,6 @@ public final class PluginRegistry {
     }
 
     public Class<?> getPluginClass(PluginType pluginType, String pluginName) {
-        if (aliasRegistry.isAlias(pluginType, pluginName)) {
-            final String typeStr = pluginType.name().toLowerCase();
-            LOGGER.info("Plugin {} is aliased as {}", typeStr + "-" + pluginName,
-                    typeStr + "-" + aliasRegistry.originalFromAlias(pluginType, pluginName));
-        }
         
         switch (pluginType) {
             case FILTER:
