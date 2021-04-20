@@ -60,6 +60,15 @@ describe LogStash::Plugins::Registry do
       expect { registry.lookup("input", "new_plugin") }.to change { registry.size }.by(1)
       expect { registry.lookup("input", "new_plugin") }.not_to change { registry.size }
     end
+
+    context "when loading installed plugin that overrides an alias" do
+      let(:alias_registry) { Java::org.logstash.plugins.AliasRegistry.new({["input", "dummy"] => "new_plugin"}) }
+
+      it 'should load the concrete implementation instead of resolving the alias' do
+        klass = registry.lookup("input", "dummy")
+        expect(klass).to eq(LogStash::Inputs::Dummy)
+      end
+    end
   end
 
   context "when loading code defined plugins" do
@@ -72,6 +81,11 @@ describe LogStash::Plugins::Registry do
 
     it "should return the expected class also for aliased plugins" do
       klass = registry.lookup("input", "alias_input")
+      expect(klass).to eq(LogStash::Inputs::NewPlugin)
+    end
+
+    it "should return the expected class also for alias-targeted plugins" do
+      klass = registry.lookup("input", "new_plugin")
       expect(klass).to eq(LogStash::Inputs::NewPlugin)
     end
   end
