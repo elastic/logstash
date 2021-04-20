@@ -39,11 +39,11 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
     filtered_specs.sort_by{|spec| spec.name}.each do |spec|
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
+      puts(line)
       if LogStash::PluginManager::ALIASES.has_value?(spec.name)
         alias_plugin = LogStash::PluginManager::ALIASES.key(spec.name)
-        line += " ==> #{alias_plugin}" unless installed_plugin_names.include?(alias_plugin)
+        puts("└── #{alias_plugin} (alias)") unless installed_plugin_names.include?(alias_plugin)
       end
-      puts(line)
       if spec.metadata.fetch("logstash_group", "") == "integration"
         integration_plugins = spec.metadata.fetch("integration_plugins", "").split(",")
         integration_plugins.each_with_index do |integration_plugin, i|
