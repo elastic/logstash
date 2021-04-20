@@ -121,6 +121,9 @@ public final class PluginRegistry {
                     if (!pluginCache.containsKey(aliasName)) {
                         // no real plugin with same alias name was found
                         aliasesToAdd.put(aliasName, e.getValue());
+                        final String typeStr = pluginType.name().toLowerCase();
+                        LOGGER.info("Plugin {}-{} is aliased as {}-{}", typeStr, realPluginName, typeStr, aliasName);
+        }
                     }
                 }
         }
