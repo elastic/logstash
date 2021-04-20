@@ -128,7 +128,10 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
       next if validate_plugin(plugin, version, options)
-      # if the plugin is alias fallback to the original name
+
+      signal_usage_error("Installs of an alias doesn't require version specification --version") if version
+
+      # if the plugin is an alias then fallback to the original name
       if LogStash::PluginManager::ALIASES.has_key?(plugin)
         resolved_plugin = LogStash::PluginManager::ALIASES[plugin]
         if validate_plugin(resolved_plugin, version, options)
