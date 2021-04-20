@@ -237,7 +237,7 @@ module LogStash module Plugins
     public
     def lookup_pipeline_plugin(type, name)
       LogStash::PLUGIN_REGISTRY.lookup(type, name) do |plugin_klass, plugin_name|
-        is_a_plugin?(plugin_klass, type.to_java, plugin_name)
+        is_a_plugin_or_alias?(plugin_klass, type.to_java, plugin_name)
       end
     rescue LoadError, NameError => e
       logger.debug("Problems loading the plugin with", :type => type, :name => name)
@@ -282,20 +282,30 @@ module LogStash module Plugins
       # the namespace can contain constants which are not for plugins classes (do not respond to :config_name)
       # namespace.constants is the shallow collection of all constants symbols in namespace
       # note that below namespace.const_get(c) should never result in a NameError since c is from the constants collection
-      klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), type.to_java, name) }
+      klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), name) }
       klass_sym && namespace.const_get(klass_sym)
     end
 
     # check if klass is a valid plugin for name
     # @param klass [Class] plugin class
     # @param name [String] plugin name
-    # @param type [String] plugin type input|codec|filter|output
     # @return [Boolean] true if klass is a valid plugin for name
-    def is_a_plugin?(klass, type, name)
+    def is_a_plugin?(klass, name)
       (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) &&
-            klass.config_name == @alias_registry.resolve_alias(type.to_java, name))
+        klass.config_name == name)
+    end
+
+    # check if klass is a valid plugin for name,
+    # including alias resolution
+    def is_a_plugin_or_alias?(klass, type, plugin_name)
+      return true if is_a_plugin?(klass, plugin_name)
+
+      resolved_plugin_name = @alias_registry.resolve_alias(type, plugin_name)
+      return true if is_a_plugin?(klass, resolved_plugin_name)
+
+      false
     end
 
     def add_plugin(type, name, klass)
