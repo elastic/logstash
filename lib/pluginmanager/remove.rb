@@ -35,7 +35,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     if LogStash::PluginManager::ALIASES.has_key?(plugin)
       unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
         aliased_plugin = LogStash::PluginManager::ALIASES[plugin]
-        puts "Removing the alias #{plugin}, please remove the aliased plugin: #{aliased_plugin}"
+        puts "Cannot remove the alias #{plugin}, which is an alias for #{aliased_plugin}; if you wish to remove it, you must remove the aliased plugin instead."
         return
       end
     end
