@@ -130,10 +130,10 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       next if validate_plugin(plugin, version, options)
       # if the plugin is alias fallback to the original name
       if LogStash::PluginManager::ALIASES.has_key?(plugin)
-        aliased_plugin = LogStash::PluginManager::ALIASES[plugin]
-        if validate_plugin(aliased_plugin, version, options)
-          puts "Remapping alias #{plugin} to #{aliased_plugin}"
-          gems_swap[plugin] = aliased_plugin
+        resolved_plugin = LogStash::PluginManager::ALIASES[plugin]
+        if validate_plugin(resolved_plugin, version, options)
+          puts "Remapping alias #{plugin} to #{resolved_plugin}"
+          gems_swap[plugin] = resolved_plugin
           next
         end
       end
