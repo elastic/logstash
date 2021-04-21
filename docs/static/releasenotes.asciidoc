@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-13-0,Logstash 7.13.0>>
 * <<logstash-7-12-0,Logstash 7.12.0>>
 * <<logstash-7-11-2,Logstash 7.11.2>>
 * <<logstash-7-11-1,Logstash 7.11.1>>
@@ -41,6 +42,227 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-13-0]]
+=== Logstash 7.13.0 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v7.13.0
+
+* Switch to AdoptOpenJDK15 from OpenJDK15 https://github.com/elastic/logstash/pull/12649[#12649]
+* Geoip database service https://github.com/elastic/logstash/pull/12675[#12675]
+* GeoIP clean up database after new download https://github.com/elastic/logstash/pull/12689[#12689]
+* Backport PR #12693 to 7.x: update jdk to 11.0.10+9 https://github.com/elastic/logstash/pull/12700[#12700]
+* Backport PR #12692 to 7.x: cleanup bundler exclusions during jruby unpacking https://github.com/elastic/logstash/pull/12702[#12702]
+* [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) https://github.com/elastic/logstash/pull/12709[#12709]
+* [backport 7.x] Removed OpenJDK15 in CI matrix testing #12649 https://github.com/elastic/logstash/pull/12710[#12710]
+* Temporarly silenced an x-pack monitoring test, waiting to be fixed the root cause https://github.com/elastic/logstash/pull/12712[#12712]
+* fix broken xpack unit test of GeoIP term of service https://github.com/elastic/logstash/pull/12715[#12715]
+* [backport #12712 7.x]Temporarly silenced an x-pack monitoring test https://github.com/elastic/logstash/pull/12718[#12718]
+* Deps: update slf4j to latest 1.7.30 https://github.com/elastic/logstash/pull/12720[#12720]
+* Backport PR #12699 to 7.x: update jruby to 9.2.16.0 https://github.com/elastic/logstash/pull/12721[#12721]
+* Backport PR #12720 to 7.x: Deps: update slf4j to latest 1.7.30 https://github.com/elastic/logstash/pull/12723[#12723]
+* Deps: update log4j2 to latest and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12724[#12724]
+* change domain and endpoint of GeoIP database service https://github.com/elastic/logstash/pull/12727[#12727]
+* Backport PR #12728 to 7.x: [Build] Fix version script when VERSION_QU… https://github.com/elastic/logstash/pull/12729[#12729]
+* Backport PR #12736 to 7.x: Fix Benchmarking tool https://github.com/elastic/logstash/pull/12738[#12738]
+* Backport PR #12724 to 7.x: Deps: update log4j2 to latest and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12744[#12744]
+* internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12749[#12749]
+* Backport PR #12749 to 7.x: internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12750[#12750]
+* GeoIP database add license files https://github.com/elastic/logstash/pull/12756[#12756]
+* Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12763[#12763]
+* Backport PR #12763 to 7.x: Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12772[#12772]
+* [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) | fix broken test case of term of service (#12715) | change domain and endpoint of GeoIP database service (#12727) | GeoIP database add license file https://github.com/elastic/logstash/pull/12777[#12777]
+* Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
+* Fix: logstash-keystore failing with an error https://github.com/elastic/logstash/pull/12784[#12784]
+* plugin manager uninstall plugin regardless of working directory https://github.com/elastic/logstash/pull/12786[#12786]
+* Backport PR #12782 to 7.x: Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12788[#12788]
+* Removed static part from PluginRegistry to avoid static initializer https://github.com/elastic/logstash/pull/12799[#12799]
+* Docs: note on quoted field references https://github.com/elastic/logstash/pull/12801[#12801]
+
+=== Logstash Commits between 7.13 and 7.12.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.12.0..7.13"
+
+8a824e284 - (HEAD -> 7.13, origin/7.13) bump version for 7.13 (4 hours ago) <Kaise Cheng>
+5cd416d44 - bump version for 7.13 (4 hours ago) <Kaise Cheng>
+0bc53b4b8 - (upstream/7.x, upstream/7.13) Adapted install/uninstall/list PluginManager's command to respect the alised plugins (#12821) (#12836) (16 hours ago) <Andrea Selva>
+4086d427c - [Backport 7.x] plugin alias handling in logstash-core (#12835) (16 hours ago) <Andrea Selva>
+5644ac1c9 - updated distributor pattern section (#12813) (6 days ago) <Ry Biesemeyer>
+3c27f8ab4 - GeoIP database copy all files from .tgz alongside database (#12824) (#12826) (6 days ago) <kaisecheng>
+fab5dd8da - Backport PR #12801 to 7.x: Docs: note on quoted field references (#12817) (7 days ago) <Karol Bucek>
+5a9048c4d - Fix Date class clash when used in pipelines with Date filter and GeoIP and pin open-ssl to 0.10.5 (#12811) (#12812) (8 days ago) <Andrea Selva>
+b852daf20 - Allow plugin manager uninstall plugin regardless of working directory (#12786) (#12808) (13 days ago) <kaisecheng>
+a914a7c13 - Backport PR #12784 (#12805) to 7.x: Fix: logstash-keystore failing with an error (#12803) (13 days ago) <Karol Bucek>
+3dca252b6 - [Backport] Set correct permissions for /usr/share/logstash on pkg installs (#12788) (3 weeks ago) <Andres Rodriguez>
+965c839e7 - [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) | fix broken test case of term of service (#12715) | change domain and endpoint of GeoIP database service (#12727) | GeoIP database add license file (#12777) (4 weeks ago) <kaisecheng>
+d8055b831 - Build: avoid leaking memory from generate_plugins_version (#12763) (#12772) (4 weeks ago) <Karol Bucek>
+a197fd432 - Doc: Forwardport release notes for 7.12.0 to 7.x branch (#12770) (4 weeks ago) <Karen Metts>
+b81b053d4 - Forwardport release notes for 7.11.2 to 7.x branch  #12742 (4 weeks ago) <Karen Metts>
+6118de1a4 - Doc: Change protocol from HTTP to HTTPS  for 7.x #12730 (5 weeks ago) <Karen Metts>
+cecd774bc - internal-monitoring: use configured ssl verification mode (#12749) (#12750) (5 weeks ago) <Ry Biesemeyer>
+fafb7d310 - Backport PR #12724 to 7.x: Deps: update log4j2 to latest and ship log4j 1.2 bridge (#12744) (6 weeks ago) <Karol Bucek>
+9a4c0ea79 - Backport PR #12736 to 7.x: Fix Benchmarking tool (#12738) (6 weeks ago) <Rob Bavey>
+1066eab70 - Docs: Replace relative paths with docs-root attributes (#12719) (#12731) (6 weeks ago) <Karen Metts>
+5a24847a2 - Backport PR #12728 to 7.x: [Build] Fix version script when VERSION_QUALIFIER is empty string (#12729) (7 weeks ago) <Rob Bavey>
+01b2f1433 - Backport PR #12720 to 7.x: Deps: update slf4j to latest 1.7.30 (#12723) (7 weeks ago) <Karol Bucek>
+06bee9315 - update jruby to 9.2.16.0 (#12699) (#12721) (7 weeks ago) <João Duarte>
+87af46f16 - Temporarly silenced an x-pack monitoring test, waiting to be fixed the root cause issue #12712 (PR #12718) (7 weeks ago) <Andrea Selva>
+1fad4753c - Removed OpenJDK15 in CI matrix testing (#12710) (7 weeks ago) <Andrea Selva>
+7fee8c3a3 - cleanup bundler exclusions during jruby unpacking (#12692) (#12702) (7 weeks ago) <João Duarte>
+91b288484 - update jdk to 11.0.10+9 (#12693) (#12700) (7 weeks ago) <João Duarte>
+a61a827bb - [7x backport] Fix Elasticsearch/DLQ integration test flakiness (#12695) (8 weeks ago) <Rob Bavey>
+bc56c2068 - Add some javadocs comments to the classes Removes never used class org.logstash.execution.queue.LegacyMemoryQueueWriter (8 weeks ago) <andsel>
+a9e4ba607 - Release notes for 7.11.1 (#12674) (#12691) (9 weeks ago) <Karen Metts>
+4a42592b3 - bump 7.x branch to 7.13.0 (#12682) (9 weeks ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.12.0..7.13 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.1.1 -> 6.2.0
+logstash-filter-clone: 4.0.0 -> 4.1.1
+logstash-filter-fingerprint: 3.2.2 -> 3.2.3
+logstash-filter-mutate: 3.5.0 -> 3.5.1
+logstash-filter-syslog_pri: 3.0.5 -> 3.1.0
+logstash-input-beats: 6.1.0 -> 6.1.3
+logstash-input-file: 4.2.3 -> 4.2.4
+logstash-input-redis: 3.6.0 -> 3.6.1
+logstash-input-s3: 3.5.0 -> 3.6.0
+logstash-input-stdin: 3.2.6 -> 3.3.0
+logstash-input-syslog: 3.4.5 -> 3.5.0
+logstash-input-tcp: 6.0.7 -> 6.0.9
+logstash-input-udp: 3.4.0 -> 3.4.1
+logstash-integration-jdbc: 5.0.6 -> 5.0.7
+logstash-integration-kafka: 10.7.1 -> 10.7.4
+logstash-mixin-deprecation_logger_support: 1.0.0 -> 1.0.0
+logstash-output-elasticsearch: 10.8.2 -> 11.0.1
+logstash-output-s3: 4.3.3 -> 4.3.4
+logstash-patterns-core: 4.3.0 -> 4.3.1
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.0*
+
+* Introduce ECS Compatibility mode https://github.com/logstash-plugins/logstash-codec-cef/pull/83[#83].
+
+* Added error log with full payload when something bad happens in decoding a messagehttps://github.com/logstash-plugins/logstash-codec-cef/pull/84[#84]
+
+*Clone Filter - 4.1.1*
+
+* [Doc] Add ECS mapping table https://github.com/logstash-plugins/logstash-filter-clone/pull/25[#25]
+* [DOC] Added note that a new type field is added to the clone https://github.com/logstash-plugins/logstash-filter-clone/pull/23[#23]
+
+* Add ECS compatibility https://github.com/logstash-plugins/logstash-filter-clone/pull/24[#24]
+
+*Fingerprint Filter - 3.2.3*
+
+* [DOC] Expanded description for concatenate_sources behavior and provided examples https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/60[#60]
+
+*Mutate Filter - 3.5.1*
+
+* Fix: removed a minor optimization in case-conversion helpers that could result in a race condition in very rare and specific situations https://github.com/logstash-plugins/logstash-filter-mutate/pull/151[#151]
+
+*Syslog_pri Filter - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/9[#9] 
+
+*Beats Input - 6.1.3*
+
+* Fix: safe-guard byte buf allocation https://github.com/logstash-plugins/logstash-input-beats/pull/420[#420] 
+* Updated Jackson dependencies
+
+* [DOC] Added naming attribute to control plugin name that appears in docs, and set up framework to make attributes viable in code sample
+
+* [DOC] Enhanced ECS compatibility information for ease of use and readability
+ https://github.com/logstash-plugins/logstash-input-beats/pull/413[#413]
+
+*File Input - 4.2.4*
+
+* Fix: sincedb_write issue on Windows machines https://github.com/logstash-plugins/logstash-input-file/pull/283[#283]
+
+*Redis Input - 3.6.1*
+
+* Fix: resolve crash when commands_map is set https://github.com/logstash-plugins/logstash-input-redis/pull/86[#86]
+
+*S3 Input - 3.6.0*
+
+* Fixed unprocessed file with the same `last_modified` in ingestion. https://github.com/logstash-plugins/logstash-input-s3/pull/220[#220]
+
+* [DOC]Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-input-s3/issues/208[#208]
+
+* [DOC]Added example for `exclude_pattern` and reordered option descriptions https://github.com/logstash-plugins/logstash-input-s3/issues/204[#204]
+ 
+
+*Stdin Input - 3.3.0*
+
+* Feat: ECS support + review dependencies https://github.com/logstash-plugins/logstash-input-stdin/pull/20[#20]
+
+*Syslog Input - 3.5.0*
+
+* Feat: ECS compatibility support https://github.com/logstash-plugins/logstash-input-syslog/pull/63[#63]
+
+*Tcp Input - 6.0.9*
+
+* [DOC] Reorder options alphabetically https://github.com/logstash-plugins/logstash-input-tcp/pull/171[#171]
+
+* [DOC] better description for `tcp_keep_alive` option https://github.com/logstash-plugins/logstash-input-tcp/pull/169[#169]
+
+*Udp Input - 3.4.1*
+
+* [DOC] Fixed typo in code sample https://github.com/logstash-plugins/logstash-input-udp/pull/54[#54]
+
+*Jdbc Integration - 5.0.7*
+
+* Feat: try hard to log Java cause (chain) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/62[#62]
+
+    This allows seeing a full trace from the JDBC driver in case of connection errors. 
+
+* Refactored Lookup used in jdbc_streaming and jdbc_static to avoid code duplication. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/59[#59]
+
+*Kafka Integration - 10.7.4*
+
+* Docs: make sure Kafka clients version is updated in docs https://github.com/logstash-plugins/logstash-integration-kafka/pull/83[#83]
+    Since **10.6.0** Kafka client was updated to **2.5.1**
+
+* Changed `decorate_events` to add also Kafka headers https://github.com/logstash-plugins/logstash-integration-kafka/pull/78[#78]
+
+* Update Jersey dependency to version 2.33 https://github.com/logstash-plugins/logstash-integration-kafka/pull/75[#75]
+
+*Deprecation_logger_support Mixin - 1.0.0*
+
+404: Not Found
+
+*Elasticsearch Output - 11.0.1*
+
+* Fix: DLQ regression shipped in 11.0.0 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1012[#1012]
+* [DOC] Fixed broken link in list item https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1011[#1011]
+
+* Feat: Data stream support https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/988[#988]
+* Refactor: reviewed logging format + restored ES (initial) setup error logging
+* Feat: always check ES license https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1005[#1005]
+
+   Since Elasticsearch no longer provides an OSS artifact the plugin will no longer skip the license check on OSS Logstash. 
+
+* Fixed an issue where a single over-size event being rejected by Elasticsearch would cause the entire entire batch to be retried indefinitely. The oversize event will still be retried on its own and logging has been improved to include payload sizes in this situation https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/972[#972]
+* Fixed an issue with `http_compression => true` where a well-compressed payload could fit under our outbound 20MB limit but expand beyond Elasticsearch's 100MB limit, causing bulk failures. Bulk grouping is now determined entirely by the decompressed payload size https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/823[#823]
+* Improved debug-level logging about bulk requests.
+
+* Feat: assert returned item count from _bulk https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/997[#997]
+
+* Fixed an issue where a retried request would drop "update" parameters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/800[#800]
+
+* Avoid to implicitly set deprecated type to `_doc` when connects to Elasticsearch version 7.x  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/994[#994]
+
+*S3 Output - 4.3.4*
+
+*  [DOC] Added note about performance implications of interpolated strings in prefixes https://github.com/logstash-plugins/logstash-output-s3/pull/233[#233]
+
+*Core Patterns - 4.3.1*
+
+- Fix: incorrect syslog (priority) field name https://github.com/logstash-plugins/logstash-patterns-core/pull/303[#303]
+- Fix: missed `ciscotag` field ECS-ification (`cisco.asa.tag`) for the `CISCO_TAGGED_SYSLOG` pattern 
+
 
 [[logstash-7-12-0]]
 === Logstash 7.12.0 Release Notes
