@@ -181,6 +181,41 @@ tasks.register("configureArtifactInfo") {
     project.ext.set("stackArtifactSuffix", qualifiedVersion)
 }
 
+tasks.register("markAliasDefinitions") {
+    description "Create an hashes aliases file from original aliases yml definition"
+    inputs.file("${projectDir}/plugin_aliases.yml")
+    outputs.file("${projectDir}/plugin_aliases_hashed.yml")
+    doLast {
+        String aliases_defs = new File("${projectDir}/plugin_aliases.yml").text
+        String hash = aliases_defs.digest('SHA-256')
+        new File(projectDir, 'plugin_aliases_hashed.yml').withWriter('utf-8') { writer ->
+            writer.writeLine "#${hash}"
+            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO plugin_aliases.yml"
+            writer.write aliases_defs
+        }
+    }
+}
+
+tasks.register("copyPluginAlias", Copy) {
+    description "Copy the marked plugin_aliases.yml file to destination folders"
+    dependsOn "markAliasDefinitions"
+
+    inputs.file("${projectDir}/plugin_aliases_hashed.yml")
+    destinationDir = projectDir
+    from("plugin_aliases_hashed.yml") {
+        into "lib/pluginmanager/"
+        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
+    }
+    from("plugin_aliases_hashed.yml") {
+        into "logstash-core/src/main/resources/"
+        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
+    }
+    doLast {
+        delete "${projectDir}/plugin_aliases_hashed.yml"
+    }
+}
+
+processResources.dependsOn(copyPluginAlias)
 
 
 // Tasks
