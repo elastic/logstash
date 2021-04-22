@@ -189,7 +189,7 @@ tasks.register("markAliasDefinitions") {
         String aliases_defs = new File("${projectDir}/plugin_aliases.yml").text
         String hash = aliases_defs.digest('SHA-256')
         new File(projectDir, 'plugin_aliases_hashed.yml').withWriter('utf-8') { writer ->
-            writer.writeLine "#${hash}"
+            writer.writeLine "#CHECKSUM: ${hash}"
             writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO plugin_aliases.yml"
             writer.write aliases_defs
         }

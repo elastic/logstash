@@ -96,10 +96,10 @@ public class AliasRegistry {
             try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
                 // read the header line
                 final String header = scanner.nextLine();
-                if (!header.startsWith("#")) {
-                    throw new IllegalArgumentException("Bad header format, expected '#...' but found " + header);
+                if (!header.startsWith("#CHECKSUM:")) {
+                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
                 }
-                extractedHash = header.substring(1);
+                extractedHash = header.substring("#CHECKSUM:".length()).trim();
 
                 // read the comment
                 scanner.nextLine();
