@@ -1,0 +1,8 @@
+#2215a2e93cf4643846bfa7f79b0532cba37e860c009a1915e09fc26a202e686e
+# DON'T EDIT THIS FILE, PLEASE REFER TO plugin_aliases.yml
+input:
+  aliased_input1: beats
+  aliased_input2: tcp
+
+filter:
+  aliased_filter: json

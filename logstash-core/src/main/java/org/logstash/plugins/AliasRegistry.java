@@ -1,14 +1,27 @@
 package org.logstash.plugins;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class AliasRegistry {
+
+    private static final Logger LOGGER = LogManager.getLogger(AliasRegistry.class);
 
     private final static class PluginCoordinate {
         private final PluginType type;
@@ -37,13 +50,103 @@ public class AliasRegistry {
         }
     }
 
+    private static class AliasYamlLoader {
+
+        private String extractedHash;
+        private String yaml;
+
+        @SuppressWarnings("unchecked")
+        private Map<PluginCoordinate, String> loadAliasesDefinitions() {
+            try {
+                parseYamlFile("plugin_aliases.yml");
+            } catch (IllegalArgumentException badSyntaxExcp) {
+                LOGGER.warn("Malformed yaml file", badSyntaxExcp);
+                return Collections.emptyMap();
+            }
+
+            // calculate the hash-256
+            final String sha256Hex = DigestUtils.sha256Hex(yaml);
+            if (!sha256Hex.equals(extractedHash)) {
+                LOGGER.warn("Bad checksum value, expected {} but found {}", sha256Hex, extractedHash);
+                return Collections.emptyMap();
+            }
+
+            // decode yaml to nested maps
+            final Map<String, Map<String, String>> aliasedDescriptions;
+            try {
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                aliasedDescriptions = mapper.readValue(yaml, Map.class);
+            } catch (IOException ioex) {
+                LOGGER.error("Error decoding the yaml aliases file", ioex);
+                return Collections.emptyMap();
+            }
+
+            // convert aliases nested maps definitions to plugin alias definitions
+            final Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            defaultDefinitions.putAll(extractDefinitions(PluginType.INPUT, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.CODEC, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.FILTER, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.OUTPUT, aliasedDescriptions));
+            return defaultDefinitions;
+        }
+
+        private void parseYamlFile(String yamlResourcePath) {
+            final InputStream in = this.getClass().getClassLoader().getResourceAsStream(yamlResourcePath);
+
+            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
+                // read the header line
+                final String header = scanner.nextLine();
+                if (!header.startsWith("#")) {
+                    throw new IllegalArgumentException("Bad header format, expected '#...' but found " + header);
+                }
+                extractedHash = header.substring(1);
+
+                // read the comment
+                scanner.nextLine();
+
+                // collect all remaining lines
+                yaml = loadYamlSection(scanner).toString();
+            }
+        }
+
+        private StringBuilder loadYamlSection(Scanner scanner) {
+            final StringBuilder yaml = new StringBuilder();
+            while (true) {
+                final String line;
+                try {
+                    line = scanner.nextLine();
+                    yaml.append(line);
+                } catch (NoSuchElementException noMoreLinesEx) {
+                    break;
+                }
+                if (scanner.hasNext()) {
+                    yaml.append("\n");
+                }
+            }
+            return yaml;
+        }
+
+        private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
+                                                                 Map<String, Map<String, String>> aliasesYamlDefinitions) {
+            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            final Map<String, String> pluginDefinitions = aliasesYamlDefinitions.get(pluginType.name().toLowerCase());
+            if (pluginDefinitions == null) {
+                return Collections.emptyMap();
+            }
+            for (Map.Entry<String, String> aliasDef : pluginDefinitions.entrySet()) {
+                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasDef.getKey()), aliasDef.getValue());
+            }
+            return defaultDefinitions;
+        }
+    }
+
 
     private final Map<PluginCoordinate, String> aliases = new HashMap<>();
     private final Map<PluginCoordinate, String> reversedAliases = new HashMap<>();
 
     public AliasRegistry() {
-        Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
-        defaultDefinitions.put(new PluginCoordinate(PluginType.INPUT, "elastic_agent"), "beats");
+        final AliasYamlLoader loader = new AliasYamlLoader();
+        final Map<PluginCoordinate, String> defaultDefinitions = loader.loadAliasesDefinitions();
         configurePluginAliases(defaultDefinitions);
     }
 
