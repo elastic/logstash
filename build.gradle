@@ -183,14 +183,14 @@ tasks.register("configureArtifactInfo") {
 
 tasks.register("markAliasDefinitions") {
     description "Create an hashes aliases file from original aliases yml definition"
-    inputs.file("${projectDir}/plugin_aliases.yml")
+    inputs.file("${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml")
     outputs.file("${projectDir}/plugin_aliases_hashed.yml")
     doLast {
-        String aliases_defs = new File("${projectDir}/plugin_aliases.yml").text
+        String aliases_defs = new File("${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml").text
         String hash = aliases_defs.digest('SHA-256')
         new File(projectDir, 'plugin_aliases_hashed.yml').withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
-            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO plugin_aliases.yml"
+            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml"
             writer.write aliases_defs
         }
     }
@@ -207,7 +207,7 @@ tasks.register("copyPluginAlias", Copy) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     from("plugin_aliases_hashed.yml") {
-        into "logstash-core/src/main/resources/"
+        into "logstash-core/src/main/resources/org/logstash/plugins/"
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     doLast {

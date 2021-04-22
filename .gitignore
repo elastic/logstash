@@ -58,4 +58,4 @@ logstash-core-plugin-api/versions-gem-copy.yml
 config/logstash.keystore
 html_docs
 lib/pluginmanager/plugin_aliases.yml
-logstash-core/src/main/resources/plugin_aliases.yml
+logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml

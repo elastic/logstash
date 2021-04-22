@@ -58,7 +58,7 @@ public class AliasRegistry {
         @SuppressWarnings("unchecked")
         private Map<PluginCoordinate, String> loadAliasesDefinitions() {
             try {
-                parseYamlFile("plugin_aliases.yml");
+                parseYamlFile("org/logstash/plugins/plugin_aliases.yml");
             } catch (IllegalArgumentException badSyntaxExcp) {
                 LOGGER.warn("Malformed yaml file", badSyntaxExcp);
                 return Collections.emptyMap();
