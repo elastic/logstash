@@ -84,4 +84,15 @@ describe LogStash::PluginManager do
       expect(Gem.sources.map { |source| source }).to eq(sources)
     end
   end
+
+  describe "process alias yaml definition" do
+    let(:path) { 'spec/unit/plugin_manager/plugin_aliases.yml' }
+
+    it "should decode correctly" do
+      aliases = subject.load_aliases_definitions(path)
+      expect(aliases['logstash-input-aliased_input1']).to eq('logstash-input-beats')
+      expect(aliases['logstash-input-aliased_input2']).to eq('logstash-input-tcp')
+      expect(aliases['logstash-filter-aliased_filter']).to eq('logstash-filter-json')
+    end
+  end
 end
