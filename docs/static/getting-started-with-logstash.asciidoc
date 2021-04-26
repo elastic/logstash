@@ -30,6 +30,9 @@ ZIP, or RPM.
 Unpack the file. Do not install Logstash into a directory path that
 contains colon (:) characters.
 
+// For testing only. The release-state override must be cleared before release.
+:release-state: released
+
 include::../tab-widgets/tab-widget-code/code.asciidoc[]
 include::../tab-widgets/install-binary/widget.asciidoc[]
 
