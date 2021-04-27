@@ -100,9 +100,10 @@ describe "conditionals in filter" do
     # this setting here for the sake of minimizing change
     # but unsure if this is actually required.
 
-    s = LogStash::SETTINGS.clone
-    s.set_value("pipeline.workers", 1)
-    s
+    LogStash::SETTINGS.clone.tap do |s|
+      s.set_value("pipeline.workers", 1)
+      s.set_value("pipeline.ordered", true)
+    end
   end
 
   describe "simple" do
@@ -518,6 +519,7 @@ describe "conditionals in filter" do
       filter {
         if [type] == "original" {
           clone {
+            ecs_compatibility => disabled # rely on legacy clone plugin behaviour
             clones => ["clone"]
           }
         }
@@ -548,6 +550,7 @@ describe "conditionals in filter" do
       filter {
         if [type] == "original" {
           clone {
+            ecs_compatibility => disabled # rely on legacy clone plugin behaviour
             clones => ["clone1", "clone2"]
           }
         }
