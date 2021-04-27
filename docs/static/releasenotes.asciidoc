@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-12-1,Logstash 7.12.1>>
 * <<logstash-7-12-0,Logstash 7.12.0>>
 * <<logstash-7-11-2,Logstash 7.11.2>>
 * <<logstash-7-11-1,Logstash 7.11.1>>
@@ -41,6 +42,75 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-12-1]]
+=== Logstash 7.12.1 Release Notes
+
+==== Notable issues fixed
+
+* Set correct permissions for /usr/share/logstash on (RPM, DEB) pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
+* Allow plugin manager to remove plugin regardless of the current working directory https://github.com/elastic/logstash/pull/12786[#12786]
+
+==== Plugins
+
+*Cef Codec - 6.1.2*
+
+* Added error log with full payload when something bad happens in decoding a message https://github.com/logstash-plugins/logstash-codec-cef/pull/84[#84]
+
+*Fingerprint Filter - 3.2.3*
+
+* [DOC] Expanded description for concatenate_sources behavior and provided examples https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/60[#60]
+
+*Mutate Filter - 3.5.1*
+
+* Fix: removed a minor optimization in case-conversion helpers that could result in a race condition in very rare and specific situations https://github.com/logstash-plugins/logstash-filter-mutate/pull/151[#151]
+
+*Beats Input - 6.1.2*
+
+* [DOC] Added naming attribute to control plugin name that appears in docs, and set up framework to make attributes viable in code sample
+* [DOC] Enhanced ECS compatibility information for ease of use and readability https://github.com/logstash-plugins/logstash-input-beats/pull/413[#413]
+
+*File Input - 4.2.4*
+
+* Fix: sincedb_write issue on Windows machines https://github.com/logstash-plugins/logstash-input-file/pull/283[#283]
+
+*Redis Input - 3.6.1*
+
+* Fix: resolve crash when commands_map is set https://github.com/logstash-plugins/logstash-input-redis/pull/86[#86]
+
+*Tcp Input - 6.0.9*
+
+* [DOC] Reorder options alphabetically https://github.com/logstash-plugins/logstash-input-tcp/pull/171[#171]
+* [DOC] better description for `tcp_keep_alive` option https://github.com/logstash-plugins/logstash-input-tcp/pull/169[#169]
+
+*Udp Input - 3.4.1*
+
+* [DOC] Fixed typo in code sample https://github.com/logstash-plugins/logstash-input-udp/pull/54[#54]
+
+*Kafka Integration - 10.7.4*
+
+* Docs: make sure Kafka clients version is updated in docs https://github.com/logstash-plugins/logstash-integration-kafka/pull/83[#83]
+* Changed `decorate_events` to add also Kafka headers https://github.com/logstash-plugins/logstash-integration-kafka/pull/78[#78]
+* Update Jersey dependency to version 2.33 https://github.com/logstash-plugins/logstash-integration-kafka/pull/75[#75]
+
+*Elasticsearch Output - 10.8.6*
+
+* Fixed an issue where a single over-size event being rejected by Elasticsearch would cause the entire entire batch to be retried indefinitely. The oversize event will still be retried on its own and logging has been improved to include payload sizes in this situation https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/972[#972]
+* Fixed an issue with `http_compression => true` where a well-compressed payload could fit under our outbound 20MB limit but expand beyond Elasticsearch's 100MB limit, causing bulk failures. Bulk grouping is now determined entirely by the decompressed payload size https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/823[#823]
+* Improved debug-level logging about bulk requests.
+* Feat: assert returned item count from _bulk https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/997[#997]
+* Fixed an issue where a retried request would drop "update" parameters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/800[#800]
+* Avoid to implicitly set deprecated type to `_doc` when connects to Elasticsearch version 7.x  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/994[#994]
+
+*S3 Output - 4.3.4*
+
+*  [DOC] Added note about performance implications of interpolated strings in prefixes https://github.com/logstash-plugins/logstash-output-s3/pull/233[#233]
+
+*Core Patterns - 4.3.1*
+
+- Fix: incorrect syslog (priority) field name https://github.com/logstash-plugins/logstash-patterns-core/pull/303[#303]
+- Fix: missed `ciscotag` field ECS-ification (`cisco.asa.tag`) for the `CISCO_TAGGED_SYSLOG` pattern 
+
 
 [[logstash-7-12-0]]
 === Logstash 7.12.0 Release Notes
