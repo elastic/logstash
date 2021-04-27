@@ -55,6 +55,10 @@ include::static/advanced-pipeline.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
+// Elastic Common Schema (ECS)
+:editurl!:
+include::static/ecs-compatibility.asciidoc[]
+
 // Processing details
 
 :edit_url!:
