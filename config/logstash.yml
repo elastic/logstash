@@ -64,7 +64,7 @@
 # if there are multiple workers.
 # "false" will disable any extra processing necessary for preserving ordering.
 #
-pipeline.ordered: auto
+# pipeline.ordered: auto
 #
 # ------------ Pipeline Configuration Settings --------------
 #
