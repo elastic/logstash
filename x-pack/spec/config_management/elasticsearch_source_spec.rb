@@ -438,8 +438,10 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
         context "with one `pipeline_id` configured [#{es_version}]" do
           context "when successfully fetching a remote configuration" do
+            let(:logger_stub) { double("Logger").as_null_object }
             before :each do
               expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
+              allow_any_instance_of(described_class).to receive(:logger).and_return(logger_stub)
               allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
             end
 
@@ -452,13 +454,27 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
               expect(pipeline_config.first.pipeline_id.to_sym).to eq(pipeline_id.to_sym)
             end
 
-            it "ignores non-whitelisted and invalid settings" do
+            it "applies allowed settings and logs warning about ignored settings" do
               pipeline_config = subject.pipeline_configs
-              settings_hash = pipeline_config[0].settings.to_hash
+              pipeline_settings = pipeline_config[0].settings
 
-              expect(settings_hash["pipeline.workers"]).to eq(99)
-              expect(settings_hash["pipeline.output.workers"]).not_to eq(99)
-              expect(settings_hash["nonsensical.invalid.setting"]).to be_falsey
+              aggregate_failures do
+                # explicitly given settings
+                expect(pipeline_settings.get_setting("pipeline.workers")).to be_set.and(have_attributes(value: 99))
+                expect(pipeline_settings.get_setting("pipeline.batch.delay")).to be_set.and(have_attributes(value: 50))
+
+                # valid non-provided settings
+                expect(pipeline_settings.get_setting("queue.type")).to_not be_set
+
+                # invalid provided settings
+                %w(
+                  pipeline.output.workers
+                  nonsensical.invalid.setting
+                ).each do |invalid_setting|
+                  expect(pipeline_settings.registered?(invalid_setting)).to be false
+                  expect(logger_stub).to have_received(:warn).with(/Ignoring .+ '#{Regexp.quote(invalid_setting)}'/)
+                end
+              end
             end
           end
 
