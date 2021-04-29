@@ -91,7 +91,7 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("example") do
-      expect(subject.get("new_field")).to eq("new_value", "new_value_2")
+      expect(subject.get("new_field")).to eq(["new_value", "new_value_2"])
     end
   end
 
@@ -262,18 +262,18 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "t4" => "four") do
-      expect(subject).to include?("t4")
+      expect(subject).to include("t4")
     end
 
     sample_one("type" => "noop", "t1" => "one", "t2" => "two", "t3" => "three") do
-      expect(subject).to include?("t1")
-      expect(subject).to_not include?("t2")
-      expect(subject).to_not include?("t3")
+      expect(subject).to include("t1")
+      expect(subject).to_not include("t2")
+      expect(subject).to_not include("t3")
     end
 
     sample_one("type" => "noop", "t1" => "one", "t2" => "two") do
-      expect(subject).to include?("t1")
-      expect(subject).to_not include?("t2")
+      expect(subject).to include("t1")
+      expect(subject).to_not include("t2")
     end
   end
 
@@ -287,7 +287,7 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("tags" => "foo") do
-      expect(subject).to_not include?("tags")
+      expect(subject).to_not include("tags")
     end
   end
 
@@ -301,9 +301,9 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "t1" => {"t2" => "two", "t3" => "three"}) do
-      expect(subject).to include?("t1")
-      expect(subject).to_not include?("[t1][t2]")
-      expect(subject).to include?("[t1][t3]")
+      expect(subject).to include("t1")
+      expect(subject).to_not include("[t1][t2]")
+      expect(subject).to include("[t1][t3]")
     end
   end
 
@@ -317,12 +317,12 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "@metadata" => {"f1" => "one", "f2" => { "f3" => "three"}, "f4" => { "f5" => "five", "f6" => "six"}, "f7" => "seven"}) do
-      expect(subject.include?("[@metadata][f1]")).to be_falsey
-      expect(subject.include?("[@metadata][f2]")).to be_falsey
-      expect(subject.include?("[@metadata][f4]")).to be_truthy
-      expect(subject.include?("[@metadata][f4][f5]")).to be_falsey
-      expect(subject.include?("[@metadata][f4][f6]")).to be_truthy
-      expect(subject.include?("[@metadata][f7]")).to be_truthy
+      expect(subject).to_not include("[@metadata][f1]")
+      expect(subject).to_not include("[@metadata][f2]")
+      expect(subject).to include("[@metadata][f4]")
+      expect(subject).to_not include("[@metadata][f4][f5]")
+      expect(subject).to include("[@metadata][f4][f6]")
+      expect(subject).to include("[@metadata][f7]")
     end
   end
 
@@ -336,9 +336,9 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "@metadata" => {"f1" => "one", "f2" => { "f3" => "three"}}) do
-      expect(subject.include?("[@metadata]")).to be_truthy
-      expect(subject.include?("[@metadata][f1]")).to be_falsey
-      expect(subject.include?("[@metadata][f2]")).to be_falsey
+      expect(subject).to include("[@metadata]")
+      expect(subject).to_not include("[@metadata][f1]")
+      expect(subject).to_not include("[@metadata][f2]")
     end
   end
 
@@ -352,7 +352,7 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "t1" => ["t2", "t3"]) do
-      expect(subject).to include?("t1")
+      expect(subject).to include("t1")
       expect(subject.get("[t1][0]")).to eq("t3")
     end
   end
@@ -367,8 +367,8 @@ describe LogStash::Filters::NOOP do
     CONFIG
 
     sample_one("type" => "noop", "blackhole" => "go", "go" => "away") do
-      expect(subject).to include?("blackhole")
-      expect(subject).to_not include?("go")
+      expect(subject).to include("blackhole")
+      expect(subject).to_not include("go")
     end
   end
 
