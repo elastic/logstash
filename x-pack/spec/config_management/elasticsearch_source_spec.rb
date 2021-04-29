@@ -373,6 +373,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       {
         "pipeline.batch.delay"       => "50",
         "pipeline.workers"           => "99",
+        "pipeline.ordered"           => "false",
+        "pipeline.ecs_compatibility" => "v1",
 
         # invalid settings to be ignored...
         "pipeline.output.workers"    => "99",
@@ -462,6 +464,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                 # explicitly given settings
                 expect(pipeline_settings.get_setting("pipeline.workers")).to be_set.and(have_attributes(value: 99))
                 expect(pipeline_settings.get_setting("pipeline.batch.delay")).to be_set.and(have_attributes(value: 50))
+                expect(pipeline_settings.get_setting("pipeline.ordered")).to be_set.and(have_attributes(value: "false"))
+                expect(pipeline_settings.get_setting("pipeline.ecs_compatibility")).to be_set.and(have_attributes(value: "v1"))
 
                 # valid non-provided settings
                 expect(pipeline_settings.get_setting("queue.type")).to_not be_set
