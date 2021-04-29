@@ -368,29 +368,55 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     let(:mock_client)  { double("http_client") }
     let(:settings) { super().merge({ "xpack.management.pipeline.id" => pipeline_id }) }
     let(:config) { "input { generator {} } filter { mutate {} } output { }" }
-    let(:elasticsearch_response) { elasticsearch_8_response }
-    let(:elasticsearch_8_response) {
-      "{\"#{pipeline_id}\":{
-          \"username\":\"log.stash\",
-          \"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",
-          \"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\"},
-          \"pipeline\":\"#{config}\",
-          \"pipeline_settings\":{\"pipeline.batch.delay\":\"50\", \"pipeline.workers\":\"99\", \"pipeline.output.workers\":\"99\",  \"nonsensical.invalid.setting\":\"-9999\"}}}" }
+    let(:username) { 'log.stash' }
+    let(:pipeline_settings) do
+      {
+        "pipeline.batch.delay"       => "50",
+        "pipeline.workers"           => "99",
 
-    let(:elasticsearch_7_9_response) {
-      "{ \"docs\":[{
-          \"_index\":\".logstash\",
-          \"_type\":\"pipelines\",
-          \"_id\":\"#{pipeline_id}\",
-          \"_version\":8,
-          \"found\":true,
-          \"_source\":{
-              \"id\":\"apache\",
-              \"description\":\"Process apache logs\",
-              \"modified_timestamp\":\"2017-02-28T23:02:17.023Z\",
-              \"pipeline_metadata\":{\"version\":5,\"type\":\"logstash_pipeline\",\"username\":\"elastic\"},
-              \"pipeline\":\"#{config}\",
-              \"pipeline_settings\":{\"pipeline.workers\":\"99\", \"pipeline.output.workers\":\"99\",  \"nonsensical.invalid.setting\":\"-9999\"}}}]}" }
+        # invalid settings to be ignored...
+        "pipeline.output.workers"    => "99",
+        "nonsensical.invalid.setting"=> "-9999",
+      }
+    end
+    let(:pipeline_metadata) do
+      {
+        "version" => 5,
+        "type" => "logstash_pipeline",
+      }
+    end
+    let(:elasticsearch_response) { elasticsearch_8_response }
+    let(:elasticsearch_8_response) do
+      {
+        pipeline_id => {
+          username: username,
+          modified_timestamp: "2017-02-28T23:02:17.023Z",
+          pipeline_metadata: pipeline_metadata,
+          pipeline: config,
+          pipeline_settings: pipeline_settings,
+        }
+      }.to_json
+    end
+
+    let(:elasticsearch_7_9_response) do
+      {
+        docs: [{
+                 _index: ".logstash",
+                 _type: "pipelines",
+                 _id: pipeline_id,
+                 _version: 8,
+                 found: true,
+                 _source: {
+                   id: pipeline_id,
+                   description: "Process apache logs",
+                   modified_timestamp: "2017-02-28T23:02:17.023Z",
+                   pipeline_metadata: pipeline_metadata.merge(username: username),
+                   pipeline: config,
+                   pipeline_settings: pipeline_settings,
+                 }
+               }]
+      }.to_json
+    end
     let(:es_path) { ".logstash/_mget" }
     let(:request_body_string) { LogStash::Json.dump({ "docs" => [{ "_id" => pipeline_id }] }) }
 
