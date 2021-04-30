@@ -10,8 +10,12 @@ module GeoipHelper
     ::File.expand_path("vendor", ::File.dirname(__FILE__))
   end
 
+  def get_data_path
+    ::File.join(LogStash::SETTINGS.get_value("path.data"), "plugins", "filters", "geoip")
+  end
+
   def get_file_path(filename)
-    ::File.join(get_vendor_path, filename)
+    ::File.join(get_data_path, filename)
   end
 
   def md5(file_path)
@@ -24,6 +28,7 @@ module GeoipHelper
 
   def default_city_gz_path
     get_file_path("GeoLite2-City.tgz")
+
   end
 
   def default_asn_db_path
@@ -50,7 +55,7 @@ module GeoipHelper
     get_file_path("GeoLite2-City_20200220.mmdb")
   end
 
-  def default_cith_db_md5
+  def default_city_db_md5
     md5(default_city_db_path)
   end
 

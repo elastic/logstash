@@ -11,7 +11,7 @@ describe LogStash::Filters::Geoip do
   describe 'DownloadManager', :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
-      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata, get_vendor_path)
+      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata)
       manager
     end
     let(:logger) { double("Logger") }

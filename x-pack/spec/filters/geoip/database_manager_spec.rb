@@ -168,7 +168,7 @@ describe LogStash::Filters::Geoip do
 
     context "setup metadata" do
       let(:db_metadata) do
-        dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City", get_vendor_path)
+        dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City")
         dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
         dbm
       end

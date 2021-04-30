@@ -10,12 +10,16 @@ describe LogStash::Filters::Geoip do
 
   describe 'DatabaseMetadata', :aggregate_failures do
     let(:dbm) do
-      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City", get_vendor_path)
+      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City")
       dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
       dbm
     end
     let(:temp_metadata_path) { dbm.instance_variable_get(:@metadata_path) }
     let(:logger) { double("Logger") }
+
+    before(:each) do
+      FileUtils::mkdir_p(get_data_path)
+    end
 
     context "get all" do
       it "return multiple rows" do
@@ -73,6 +77,11 @@ describe LogStash::Filters::Geoip do
     end
 
     context "database path" do
+      before(:each) do
+        # FileUtils.cp(::File.join(get_vendor_path, 'GeoLite2-City.mmdb'), get_data_path)
+        # FileUtils.cp(::File.join(get_vendor_path, 'GeoLite2-ASN.mmdb'), get_data_path)
+      end
+
       it "return the default city database path" do
         write_temp_metadata(temp_metadata_path)
 
@@ -87,7 +96,7 @@ describe LogStash::Filters::Geoip do
 
       context "with ASN database type" do
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("ASN", get_vendor_path)
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("ASN")
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
@@ -101,7 +110,7 @@ describe LogStash::Filters::Geoip do
 
       context "with invalid database type" do
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("???", get_vendor_path)
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("???")
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
