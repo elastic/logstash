@@ -10,12 +10,12 @@ module GeoipHelper
     ::File.expand_path("vendor", ::File.dirname(__FILE__))
   end
 
-  def get_data_path
+  def get_data_dir
     ::File.join(LogStash::SETTINGS.get_value("path.data"), "plugins", "filters", "geoip")
   end
 
   def get_file_path(filename)
-    ::File.join(get_data_path, filename)
+    ::File.join(get_data_dir, filename)
   end
 
   def md5(file_path)
@@ -94,6 +94,7 @@ module GeoipHelper
   def get_metadata_database_name
     ::File.exist?(metadata_path) ? ::File.read(metadata_path).split(",").last[0..-2] : nil
   end
+
 end
 
 RSpec.configure do |c|

@@ -4,6 +4,7 @@
 
 require_relative 'test_helper'
 require "filters/geoip/database_metadata"
+require "filters/geoip/database_manager"
 require "stud/temporary"
 
 describe LogStash::Filters::Geoip do
@@ -18,7 +19,7 @@ describe LogStash::Filters::Geoip do
     let(:logger) { double("Logger") }
 
     before(:each) do
-      FileUtils::mkdir_p(get_data_path)
+      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
     end
 
     context "get all" do
@@ -71,17 +72,12 @@ describe LogStash::Filters::Geoip do
         expect(Time.now.to_i - past.to_i).to be < 100
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_cith_db_md5)
+        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_city_db_md5)
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME]).to eq(default_city_db_name)
       end
     end
 
     context "database path" do
-      before(:each) do
-        # FileUtils.cp(::File.join(get_vendor_path, 'GeoLite2-City.mmdb'), get_data_path)
-        # FileUtils.cp(::File.join(get_vendor_path, 'GeoLite2-ASN.mmdb'), get_data_path)
-      end
-
       it "return the default city database path" do
         write_temp_metadata(temp_metadata_path)
 

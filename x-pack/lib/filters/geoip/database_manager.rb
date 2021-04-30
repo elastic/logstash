@@ -26,13 +26,14 @@ require "date"
 #   while `offline` is for static database path provided by users
 
 module LogStash module Filters module Geoip class DatabaseManager
+  extend LogStash::Filters::Geoip::Util
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
   #TODO remove vendor_path
   def initialize(geoip, database_path, database_type, vendor_path)
     @geoip = geoip
-    copy_cc_data_dir
+    self.class.prepare_cc_db
     @mode = database_path.nil? ? :online : :offline
     @database_type = database_type
     @database_path = patch_database_path(database_path)
@@ -62,12 +63,12 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   public
 
-  # create data dir for geoip if directory does not exist
-  # copy CC databases to data dir if files do not exist
-  def copy_cc_data_dir
+  # create data dir, path.data, for geoip if it doesn't exist
+  # copy CC databases to data dir
+  def self.prepare_cc_db
     FileUtils::mkdir_p(get_data_dir)
     FileUtils.cp_r(::Dir.glob(::File.join(
-      LogStash::SETTINGS.get_value("path.data"), "..", "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb")),
+      LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb")),
       get_data_dir) if !::File.exist?(get_file_path(CITY_DB_NAME)) || !::File.exist?(get_file_path(ASN_DB_NAME))
   end
 
