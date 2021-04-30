@@ -13,6 +13,7 @@ require "stud/try"
 require "down"
 require "rufus/scheduler"
 require "date"
+require "concurrent"
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -26,17 +27,19 @@ require "date"
 #   while `offline` is for static database path provided by users
 
 module LogStash module Filters module Geoip class DatabaseManager
-  extend LogStash::Filters::Geoip::Util
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
+  @@instance = nil
+  @@instance_mutex = Mutex.new
+
   #TODO remove vendor_path
-  def initialize(geoip, database_path, database_type, vendor_path)
-    @geoip = geoip
+  def initialize(database_path, database_type)
     self.class.prepare_cc_db
     @mode = database_path.nil? ? :online : :offline
     @database_type = database_type
     @database_path = patch_database_path(database_path)
+    @geoip_plugins = Concurrent::Array.new
 
     if @mode == :online
       logger.info "By using `online` mode, you accepted and agreed MaxMind EULA. "\
@@ -56,12 +59,25 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
+  private_class_method :new
+
+  public
+
+  def self.instance(database_path, database_type)
+    return @@instance if @@instance
+
+    @@instance_mutex.synchronize do
+      return @@instance if @@instance
+      @@instance = new(database_path, database_type)
+    end
+
+    @@instance
+  end
+
   DEFAULT_DATABASE_FILENAME = %w{
     GeoLite2-City.mmdb
     GeoLite2-ASN.mmdb
   }.map(&:freeze).freeze
-
-  public
 
   # create data dir, path.data, for geoip if it doesn't exist
   # copy CC databases to data dir
@@ -81,6 +97,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       has_update
     rescue => e
       logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+      #TODO  only check age when using EULA
       check_age
       false
     end
@@ -92,13 +109,24 @@ module LogStash module Filters module Geoip class DatabaseManager
 
     begin
       if execute_download_job
-        @geoip.setup_filter(database_path)
+        @geoip_plugins.dup.each { |plugin| plugin.setup_filter(database_path) if plugin }
         clean_up_database
       end
     rescue DatabaseExpiryError => e
       logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
-      @geoip.terminate_filter
+
+      @geoip_plugins.dup.each { |plugin| plugin.terminate_filter if plugin }
+      @geoip_plugins.clear
     end
+  end
+
+  def register(geoip_plugin)
+    return if @geoip_plugins.member?(geoip_plugin)
+    @geoip_plugins.push(geoip_plugin)
+  end
+
+  def unregister(geoip_plugin)
+    @geoip_plugins.delete(geoip_plugin)
   end
 
   def close

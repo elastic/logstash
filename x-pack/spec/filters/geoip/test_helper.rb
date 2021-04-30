@@ -6,10 +6,6 @@ require 'spec_helper'
 require "digest"
 
 module GeoipHelper
-  def get_vendor_path
-    ::File.expand_path("vendor", ::File.dirname(__FILE__))
-  end
-
   def get_data_dir
     ::File.join(LogStash::SETTINGS.get_value("path.data"), "plugins", "filters", "geoip")
   end
@@ -28,7 +24,6 @@ module GeoipHelper
 
   def default_city_gz_path
     get_file_path("GeoLite2-City.tgz")
-
   end
 
   def default_asn_db_path

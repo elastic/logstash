@@ -13,10 +13,11 @@ describe LogStash::Filters::Geoip do
     let(:mock_download_manager)  { double("download_manager") }
     let(:mock_scheduler)  { double("scheduler") }
     let(:db_manager) do
-      manager = LogStash::Filters::Geoip::DatabaseManager.new(mock_geoip_plugin, default_city_db_path, "City", get_vendor_path)
+      manager = LogStash::Filters::Geoip::DatabaseManager.instance(default_city_db_path, "City")
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
       manager.instance_variable_set(:@scheduler, mock_scheduler)
+      manager.instance_variable_set(:@geoip_plugins, [mock_geoip_plugin])
       manager
     end
     let(:logger) { double("Logger") }
@@ -67,7 +68,6 @@ describe LogStash::Filters::Geoip do
         expect(mock_geoip_plugin).to receive(:terminate_filter).never
         expect(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
         expect(logger).to receive(:warn)
-        expect(logger).to receive(:info)
 
         db_manager.send(:check_age)
       end
@@ -186,10 +186,12 @@ describe LogStash::Filters::Geoip do
 
       after(:each) do
         ::File.delete(second_city_db_path) if ::File.exist?(second_city_db_path)
+        db_manager.instance_variable_set(:@database_path, default_city_db_path)
       end
 
       it "create metadata when file is missing" do
         db_manager.send(:setup)
+
         expect(db_manager.instance_variable_get(:@database_path)).to eql(default_city_db_path)
         expect(db_metadata.database_path).to eql(default_city_db_path)
         expect(::File.exist?(temp_metadata_path)).to be_truthy
