@@ -9,9 +9,13 @@ module LogStash module Filters
   module Geoip
     GZ_EXT = 'tgz'.freeze
     DB_EXT = 'mmdb'.freeze
-    DB_PREFIX = 'GeoLite2-'.freeze
-    CITY_DB_NAME = "#{DB_PREFIX}City.#{DB_EXT}"
-    ASN_DB_NAME = "#{DB_PREFIX}ASN.#{DB_EXT}"
+    GEOLITE = 'GeoLite2-'.freeze
+    CITY = "City".freeze
+    ASN = "ASN".freeze
+    DB_TYPES = [CITY, ASN].freeze
+    CITY_DB_NAME = "#{GEOLITE}#{CITY}.#{DB_EXT}".freeze
+    ASN_DB_NAME = "#{GEOLITE}#{ASN}.#{DB_EXT}".freeze
+    DEFAULT_DB_NAMES = [CITY_DB_NAME, ASN_DB_NAME].freeze
 
     module Util
       def get_file_path(filename)

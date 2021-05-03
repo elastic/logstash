@@ -77,7 +77,7 @@ describe LogStash::Filters::Geoip do
       it "should be false if no update" do
         original = db_manager.instance_variable_get(:@database_path)
         expect(mock_download_manager).to receive(:fetch_database).and_return([false, nil])
-        allow(mock_metadata).to receive(:save_timestamp)
+        allow(mock_metadata).to receive(:save_timestamp_database_path)
 
         expect(db_manager.send(:execute_download_job)).to be_falsey
         expect(db_manager.instance_variable_get(:@database_path)).to eq(original)
@@ -86,7 +86,7 @@ describe LogStash::Filters::Geoip do
       it "should return true if update" do
         original = db_manager.instance_variable_get(:@database_path)
         expect(mock_download_manager).to receive(:fetch_database).and_return([true, "NEW_PATH"])
-        allow(mock_metadata).to receive(:save_timestamp)
+        allow(mock_metadata).to receive(:save_timestamp_database_path)
 
         expect(db_manager.send(:execute_download_job)).to be_truthy
         expect(db_manager.instance_variable_get(:@database_path)).not_to eq(original)
@@ -119,7 +119,7 @@ describe LogStash::Filters::Geoip do
 
       it "should not call plugin setup when database is up to date" do
         allow(mock_download_manager).to receive(:fetch_database).and_return([false, nil])
-        expect(mock_metadata).to receive(:save_timestamp)
+        expect(mock_metadata).to receive(:save_timestamp_database_path)
         allow(mock_geoip_plugin).to receive(:setup_filter).never
         db_manager.send(:call, nil, nil)
       end
@@ -201,7 +201,7 @@ describe LogStash::Filters::Geoip do
       it "manager should use database path in metadata" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
         copy_city_database(second_city_db_name)
-        expect(db_metadata).to receive(:save_timestamp).never
+        expect(db_metadata).to receive(:save_timestamp_database_path).never
 
         db_manager.send(:setup)
         filename = db_manager.instance_variable_get(:@database_path).split('/').last
@@ -211,7 +211,7 @@ describe LogStash::Filters::Geoip do
       it "ignore database_path in metadata if md5 does not match" do
         write_temp_metadata(temp_metadata_path, ["City","","","INVALID_MD5",second_city_db_name])
         copy_city_database(second_city_db_name)
-        expect(db_metadata).to receive(:save_timestamp).never
+        expect(db_metadata).to receive(:save_timestamp_database_path).never
 
         db_manager.send(:setup)
         filename = db_manager.instance_variable_get(:@database_path).split('/').last

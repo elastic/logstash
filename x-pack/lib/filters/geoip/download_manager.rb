@@ -18,8 +18,7 @@ module LogStash module Filters module Geoip class DownloadManager
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
-  def initialize(database_type, metadata)
-    @database_type = database_type
+  def initialize(metadata)
     @metadata = metadata
   end
 
@@ -28,59 +27,61 @@ module LogStash module Filters module Geoip class DownloadManager
   GEOIP_ENDPOINT = "#{GEOIP_HOST}#{GEOIP_PATH}".freeze
 
   public
-  # Check available update and download it. Unzip and validate the file.
-  # return [has_update, new_database_path]
+  # Check available update and download them. Unzip and validate the file.
+  # if the download failed, valid_download return false
+  # return Array of new database path [database_type, valid_download, new_database_path]
   def fetch_database
-    has_update, database_info = check_update
-
-    if has_update
-      new_database_path = unzip download_database(database_info)
-      assert_database!(new_database_path)
-      return [true, new_database_path]
-    end
-
-    [false, nil]
-  end
-
-  def database_name
-    @database_name ||= "#{DB_PREFIX}#{@database_type}"
-  end
-
-  def database_name_ext
-    @database_name_ext ||= "#{database_name}.#{DB_EXT}"
+    check_update
+      .map do |database_type, db_info|
+        begin
+          new_database_path = unzip *download_database(database_type, db_info)
+          assert_database!(new_database_path)
+          [database_type, true, new_database_path]
+        rescue
+          [database_type, false, nil]
+        end
+      end
   end
   
   private
-  # Call infra endpoint to get md5 of latest database and verify with metadata
-  # return [has_update, server db info]
+  # Call infra endpoint to get md5 of latest databases and verify with metadata
+  # return Array of new database information [database_type, db_info]
   def check_update
     uuid = get_uuid
     res = rest_client.get("#{GEOIP_ENDPOINT}?key=#{uuid}&elastic_geoip_service_tos=agree")
     logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
 
-    dbs = JSON.parse(res.body)
-    target_db = dbs.select { |db| db['name'].eql?("#{database_name}.#{GZ_EXT}") }.first
-    has_update = @metadata.gz_md5 != target_db['md5_hash']
-    logger.info "new database version detected? #{has_update}"
+    service_resp = JSON.parse(res.body)
 
-    [has_update, target_db]
+    updated_db = DB_TYPES.map do |database_type|
+      db_info = service_resp.select { |db| db['name'].eql?("#{GEOLITE}#{database_type}.#{GZ_EXT}") }.first
+      has_update = @metadata.gz_md5(database_type) != db_info['md5_hash']
+      [database_type, has_update, db_info]
+    end
+    .select { |database_type, has_update, db_info| has_update }
+    .map { |database_type, has_update, db_info| [database_type, db_info] }
+
+    logger.info "new database version detected? #{!updated_db.empty?}"
+
+    updated_db
   end
 
-  def download_database(server_db)
+  def download_database(database_type, db_info)
     Stud.try(3.times) do
-      new_database_zip_path = get_file_path("#{database_name}_#{Time.now.to_i}.#{GZ_EXT}")
-      Down.download(server_db['url'], destination: new_database_zip_path)
-      raise "the new download has wrong checksum" if md5(new_database_zip_path) != server_db['md5_hash']
+      timestamp = Time.now.to_i
+      new_database_zip_path = get_file_path("#{GEOLITE}#{database_type}_#{timestamp}.#{GZ_EXT}")
+      Down.download(db_info['url'], destination: new_database_zip_path)
+      raise "the new download has wrong checksum" if md5(new_database_zip_path) != db_info['md5_hash']
 
       logger.debug("new database downloaded in ", :path => new_database_zip_path)
-      new_database_zip_path
+      [database_type, timestamp, new_database_zip_path]
     end
   end
 
   # extract all files and folders from .tgz to path.data directory
   # existing files folders will be replaced
-  def unzip(zip_path)
-    new_database_path = zip_path[0...-(GZ_EXT.length)] + DB_EXT
+  def unzip(type, timestamp, zip_path)
+    new_database_path = get_file_path("#{GEOLITE}#{type}_#{timestamp}.#{DB_EXT}")
     temp_dir = Stud::Temporary.pathname
 
     LogStash::Util::Tar.extract(zip_path, temp_dir)
@@ -89,7 +90,7 @@ module LogStash module Filters module Geoip class DownloadManager
     ::Dir.each_child(temp_dir) do |file|
       path = ::File.join(temp_dir, file)
 
-      if !::File.directory?(path) && database_name_ext.eql?(file)
+      if !::File.directory?(path) && "#{GEOLITE}#{type}.#{DB_EXT}".eql?(file)
         FileUtils.cp(path, new_database_path)
       else
         FileUtils.cp_r(path, get_data_dir)

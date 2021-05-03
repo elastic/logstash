@@ -65,8 +65,8 @@ module GeoipHelper
     asn = md5(default_asn_db_path)
 
     metadata = []
-    metadata << ["ASN",now,"",asn,default_asn_db_name]
-    metadata << ["City",now,"",city,default_city_db_name]
+    metadata << ["ASN",now,"",asn,default_asn_db_name,false]
+    metadata << ["City",now,"",city,default_city_db_name,false]
     metadata << row if row
     CSV.open temp_file_path, 'w' do |csv|
       metadata.each { |row| csv << row }
@@ -74,7 +74,7 @@ module GeoipHelper
   end
 
   def city2_metadata
-    ["City",Time.now.to_i,"",md5(default_city_db_path),second_city_db_name]
+    ["City",Time.now.to_i,"",md5(default_city_db_path),second_city_db_name,true]
   end
 
   def copy_city_database(filename)
