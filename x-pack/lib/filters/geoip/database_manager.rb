@@ -67,9 +67,10 @@ module LogStash module Filters module Geoip class DatabaseManager
   # copy CC databases to data dir
   def self.prepare_cc_db
     FileUtils::mkdir_p(get_data_dir)
-    FileUtils.cp_r(::Dir.glob(::File.join(
-      LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb")),
-      get_data_dir) if !::File.exist?(get_file_path(CITY_DB_NAME)) || !::File.exist?(get_file_path(ASN_DB_NAME))
+    unless ::File.exist?(get_file_path(CITY_DB_NAME)) && ::File.exist?(get_file_path(ASN_DB_NAME))
+      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
+      FileUtils.cp_r(cc_database_paths, get_data_dir)
+    end
   end
 
   def execute_download_job

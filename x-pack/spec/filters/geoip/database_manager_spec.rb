@@ -21,6 +21,10 @@ describe LogStash::Filters::Geoip do
     end
     let(:logger) { double("Logger") }
 
+    before(:each) do
+      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+    end
+
     context "patch database" do
       it "use input path" do
         path = db_manager.send(:patch_database_path, default_asn_db_path)
