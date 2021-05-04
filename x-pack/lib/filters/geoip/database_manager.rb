@@ -27,6 +27,7 @@ require "concurrent"
 #   while `offline` is for static database path provided by users
 
 module LogStash module Filters module Geoip class DatabaseManager
+  extend LogStash::Filters::Geoip::Util
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
@@ -56,44 +57,14 @@ module LogStash module Filters module Geoip class DatabaseManager
     @@instance
   end
 
-  # create data dir, path.data, for geoip if it doesn't exist
-  # copy CC databases to data dir
-  def self.prepare_cc_db
-    FileUtils::mkdir_p(get_data_dir)
-    unless ::File.exist?(get_file_path(CITY_DB_NAME)) && ::File.exist?(get_file_path(ASN_DB_NAME))
-      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
-      FileUtils.cp_r(cc_database_paths, get_data_dir)
-    end
-  end
-
-  # update timestamp when download is valid or there is no update
-  def execute_download_job
-    begin
-      updated_db = @download_manager.fetch_database
-      updated_db.each do |database_type, valid_download, new_database_path|
-        if valid_download
-          @metadata.save_timestamp_database_path(database_type, new_database_path, true)
-          @states[database_type].is_eula = true
-          @states[database_type].database_path = new_database_path
-          @states[database_type].plugins.dup.each { |plugin| plugin.setup_filter(new_database_path) if plugin }
-        end
-      end
-
-      updated_type = updated_db.map { |database_type, valid_download, new_database_path| database_type }
-      (DB_TYPES - updated_type).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
-    rescue => e
-      logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
-    ensure
-      check_age
-      clean_up_database
-    end
-
-  end
-
   # scheduler callback
   def call(job, time)
     logger.debug "scheduler runs database update check"
     execute_download_job
+  end
+
+  def database_path(database_type)
+    @states[database_type].database_path
   end
 
   def close
@@ -115,10 +86,75 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def unsubscribe_database_path(database_type, geoip_plugin)
-    @states[database_type].plugins.delete(geoip_plugin)
+    @states[database_type].plugins.delete(geoip_plugin) if geoip_plugin
+  end
+
+  # create data dir, path.data, for geoip if it doesn't exist
+  # copy CC databases to data dir
+  def self.prepare_cc_db
+    FileUtils::mkdir_p(get_data_dir)
+    unless ::File.exist?(get_file_path(CITY_DB_NAME)) && ::File.exist?(get_file_path(ASN_DB_NAME))
+      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
+      FileUtils.cp_r(cc_database_paths, get_data_dir)
+    end
   end
 
   protected
+
+  # initial metadata file and database states
+  def setup
+    self.class.prepare_cc_db
+
+    cc_city_database_path = get_file_path(CITY_DB_NAME)
+    cc_asn_database_path = get_file_path(ASN_DB_NAME)
+
+    @metadata = DatabaseMetadata.new
+    unless @metadata.exist?
+      @metadata.save_metadata(CITY, cc_city_database_path, false)
+      @metadata.save_metadata(ASN, cc_asn_database_path, false)
+    end
+
+    city_database_path = @metadata.database_path(CITY) || cc_city_database_path
+    asn_database_path = @metadata.database_path(ASN) || cc_asn_database_path
+
+    @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
+                                               Concurrent::Array.new,
+                                               city_database_path,
+                                               cc_city_database_path),
+                "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
+                                              Concurrent::Array.new,
+                                              asn_database_path,
+                                              cc_asn_database_path) }
+
+    @download_manager = DownloadManager.new(@metadata)
+  end
+
+  # update database path to the new download
+  # update timestamp when download is valid or there is no update
+  # do daily check and clean up
+  def execute_download_job
+    begin
+      updated_db = @download_manager.fetch_database
+      updated_db.each do |database_type, valid_download, new_database_path|
+        if valid_download
+          @metadata.save_metadata(database_type, new_database_path, true)
+          @states[database_type].is_eula = true
+          @states[database_type].database_path = new_database_path
+          @states[database_type].plugins.dup.each { |plugin| plugin.setup_filter(new_database_path) if plugin }
+        end
+      end
+
+      updated_type = updated_db.map { |database_type, valid_download, new_database_path| database_type }
+      (DB_TYPES - updated_type).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
+    rescue => e
+      logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+    ensure
+      check_age
+      clean_up_database
+    end
+  end
+
+  # terminate pipeline if database is expired and EULA
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
       days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
@@ -134,9 +170,11 @@ module LogStash module Filters module Geoip class DatabaseManager
           @states[database_type].plugins.dup.each { |plugin| plugin.terminate_filter if plugin }
         end
       when days_without_update >= 25
-        logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
+        if @states[database_type].is_eula
+          logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will stop the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+        end
       else
         logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
       end
@@ -154,35 +192,6 @@ module LogStash module Filters module Geoip class DatabaseManager
       logger.debug("old database #{filename} is deleted")
     end
   end
-
-  def setup
-    self.class.prepare_cc_db
-
-    cc_city_database_path = get_file_path(CITY_DB_NAME)
-    cc_asn_database_path = get_file_path(ASN_DB_NAME)
-
-    @metadata = DatabaseMetadata.new
-    unless @metadata.exist?
-      @metadata.save_timestamp_database_path(CITY, cc_city_database_path, false)
-      @metadata.save_timestamp_database_path(ASN, cc_asn_database_path, false)
-    end
-
-    city_database_path = @metadata.database_path(CITY) || cc_city_database_path
-    asn_database_path = @metadata.database_path(ASN) || cc_asn_database_path
-
-    @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY), 
-                                                        Concurrent::Array.new, 
-                                                        city_database_path,
-                                                        cc_city_database_path),
-                "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
-                                               Concurrent::Array.new,
-                                               asn_database_path,
-                                               cc_asn_database_path) }
-
-    @download_manager = DownloadManager.new(@metadata)
-  end
-
-  # class DatabaseExpiryError < StandardError; end
 
   class DatabaseState
     attr_reader :is_eula, :plugins, :database_path, :cc_database_path

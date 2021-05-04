@@ -18,7 +18,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   public
 
   # csv format: database_type, update_at, gz_md5, md5, filename, is_eula
-  def save_timestamp_database_path(database_type, database_path, is_eula)
+  def save_metadata(database_type, database_path, is_eula)
     metadata = get_metadata(database_type, false)
     metadata << [database_type, Time.now.to_i, md5(get_gz_name(database_path)), md5(database_path),
                  ::File.basename(database_path), is_eula]

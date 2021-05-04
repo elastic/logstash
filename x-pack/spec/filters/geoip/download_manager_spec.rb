@@ -12,9 +12,10 @@ describe LogStash::Filters::Geoip do
   describe 'DownloadManager', :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
-      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata)
+      manager = LogStash::Filters::Geoip::DownloadManager.new(mock_metadata)
       manager
     end
+    let(:database_type) { GeoipHelper::CITY }
     let(:logger) { double("Logger") }
 
     GEOIP_STAGING_HOST = "https://geoip.elastic.dev"
@@ -47,37 +48,34 @@ describe LogStash::Filters::Geoip do
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
-      it "should return has_update and db info when md5 does not match" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("")
+      it "should return City db info when City md5 does not match" do
+        expect(mock_metadata).to receive(:gz_md5).and_return("8d57aec1958070f01042ac1ecd8ec2ab", "a123a45d67890a2bd02e5edd680f6703c")
 
-        has_update, info = download_manager.send(:check_update)
-        expect(has_update).to be_truthy
+        updated_db = download_manager.send(:check_update)
+        expect(updated_db.size).to eql(1)
+
+        type, info = updated_db[0]
         expect(info).to have_key("md5_hash")
         expect(info).to have_key("name")
         expect(info).to have_key("provider")
         expect(info).to have_key("updated")
         expect(info).to have_key("url")
-        expect(info["name"]).to include("City")
+        expect(type).to eql(database_type)
       end
 
-      it "should return false when md5 is the same" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("89d225ac546310b1e7979502ac9ad11c")
+      it "should return empty array when md5 are the same" do
+        expect(mock_metadata).to receive(:gz_md5).and_return("8d57aec1958070f01042ac1ecd8ec2ab", "a195a73d4651a2bd02e5edd680f6703c")
 
-        has_update, info = download_manager.send(:check_update)
-        expect(has_update).to be_falsey
+        updated_db = download_manager.send(:check_update)
+        expect(updated_db.size).to eql(0)
       end
 
-      it "should return true when md5 does not match" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("bca2a8bad7e5e4013dc17343af52a841")
-
-        has_update, info = download_manager.send(:check_update)
-        expect(has_update).to be_truthy
-      end
     end
 
     context "download database" do
       let(:db_info) do
         {
+          "age" => 297221,
           "md5_hash" => md5_hash,
           "name" => filename,
           "provider" => "maxmind",
@@ -90,15 +88,17 @@ describe LogStash::Filters::Geoip do
 
       it "should raise error if md5 does not match" do
         allow(Down).to receive(:download)
-        expect{ download_manager.send(:download_database, db_info) }.to raise_error /wrong checksum/
+        expect{ download_manager.send(:download_database, database_type, db_info) }.to raise_error /wrong checksum/
       end
 
       it "should download file and return zip path" do
         expect(download_manager).to receive(:md5).and_return(md5_hash)
 
-        path = download_manager.send(:download_database, db_info)
+        type, timestamp, path = download_manager.send(:download_database, database_type, db_info)
         expect(path).to match /GeoLite2-City_\d+\.tgz/
         expect(::File.exist?(path)).to be_truthy
+        expect(type).to eql(database_type)
+        expect(timestamp).to be_a(Integer)
 
         delete_file(path)
       end
@@ -120,9 +120,10 @@ describe LogStash::Filters::Geoip do
 
       it "should extract all files in tarball" do
         path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
-        unzip_db_path = download_manager.send(:unzip, path)
+        timestamp = Time.now.to_i
+        unzip_db_path = download_manager.send(:unzip, database_type, timestamp, path)
 
-        expect(unzip_db_path).to match /\.mmdb/
+        expect(unzip_db_path).to match /#{timestamp}\.mmdb/
         expect(::File.exist?(unzip_db_path)).to be_truthy
         expect(::File.exist?(copyright_path)).to be_truthy
         expect(::File.exist?(license_path)).to be_truthy
@@ -144,31 +145,36 @@ describe LogStash::Filters::Geoip do
     end
 
     context "fetch database" do
-      it "should be false if no update" do
-        expect(download_manager).to receive(:check_update).and_return([false, {}])
-
-        has_update, new_database_path = download_manager.send(:fetch_database)
-
-        expect(has_update).to be_falsey
-        expect(new_database_path).to be_nil
-      end
-
-      it "should raise error" do
-        expect(download_manager).to receive(:check_update).and_return([true, {}])
-        expect(download_manager).to receive(:download_database).and_raise('boom')
-
-        expect { download_manager.send(:fetch_database) }.to raise_error
-      end
-
-      it "should be true if got update" do
-        expect(download_manager).to receive(:check_update).and_return([true, {}])
+      it "should return array of db which has valid download" do
+        expect(download_manager).to receive(:check_update).and_return([[GeoipHelper::ASN, {}], [GeoipHelper::CITY, {}]])
         allow(download_manager).to receive(:download_database)
-        allow(download_manager).to receive(:unzip)
+        allow(download_manager).to receive(:unzip).and_return("NEW_DATABASE_PATH")
         allow(download_manager).to receive(:assert_database!)
 
-        has_update, new_database_path = download_manager.send(:fetch_database)
+        updated_db = download_manager.send(:fetch_database)
 
-        expect(has_update).to be_truthy
+        expect(updated_db.size).to eql(2)
+        asn_type, asn_valid_download, asn_path = updated_db[0]
+        city_type, city_valid_download, city_path = updated_db[1]
+        expect(asn_valid_download).to be_truthy
+        expect(asn_path).to eql("NEW_DATABASE_PATH")
+        expect(city_valid_download).to be_truthy
+        expect(city_path).to eql("NEW_DATABASE_PATH")
+      end
+
+      it "should return array of db which has invalid download" do
+        expect(download_manager).to receive(:check_update).and_return([[GeoipHelper::ASN, {}], [GeoipHelper::CITY, {}]])
+        expect(download_manager).to receive(:download_database).and_raise('boom').at_least(:twice)
+
+        updated_db = download_manager.send(:fetch_database)
+
+        expect(updated_db.size).to eql(2)
+        asn_type, asn_valid_download, asn_path = updated_db[0]
+        city_type, city_valid_download, city_path = updated_db[1]
+        expect(asn_valid_download).to be_falsey
+        expect(asn_path).to be_nil
+        expect(city_valid_download).to be_falsey
+        expect(city_path).to be_nil
       end
     end
 

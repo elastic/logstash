@@ -66,7 +66,7 @@ describe LogStash::Filters::Geoip do
 
       it "write the current time" do
         write_temp_metadata(temp_metadata_path)
-        dbm.save_timestamp_database_path(database_type, default_city_db_path, true)
+        dbm.save_metadata(database_type, default_city_db_path, true)
 
         expect(dbm.get_metadata(database_type).size).to eq(1)
         expect(dbm.get_all.size).to eq(2)

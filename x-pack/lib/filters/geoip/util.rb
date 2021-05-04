@@ -12,7 +12,7 @@ module LogStash module Filters
     GEOLITE = 'GeoLite2-'.freeze
     CITY = "City".freeze
     ASN = "ASN".freeze
-    DB_TYPES = [CITY, ASN].freeze
+    DB_TYPES = [ASN, CITY].freeze
     CITY_DB_NAME = "#{GEOLITE}#{CITY}.#{DB_EXT}".freeze
     ASN_DB_NAME = "#{GEOLITE}#{ASN}.#{DB_EXT}".freeze
     DEFAULT_DB_NAMES = [CITY_DB_NAME, ASN_DB_NAME].freeze
