@@ -26,12 +26,14 @@ require "date"
 #   while `offline` is for static database path provided by users
 
 module LogStash module Filters module Geoip class DatabaseManager
+  extend LogStash::Filters::Geoip::Util
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
+  #TODO remove vendor_path
   def initialize(geoip, database_path, database_type, vendor_path)
-    @vendor_path = vendor_path
     @geoip = geoip
+    self.class.prepare_cc_db
     @mode = database_path.nil? ? :online : :offline
     @database_type = database_type
     @database_path = patch_database_path(database_path)
@@ -60,6 +62,16 @@ module LogStash module Filters module Geoip class DatabaseManager
   }.map(&:freeze).freeze
 
   public
+
+  # create data dir, path.data, for geoip if it doesn't exist
+  # copy CC databases to data dir
+  def self.prepare_cc_db
+    FileUtils::mkdir_p(get_data_dir)
+    unless ::File.exist?(get_file_path(CITY_DB_NAME)) && ::File.exist?(get_file_path(ASN_DB_NAME))
+      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
+      FileUtils.cp_r(cc_database_paths, get_data_dir)
+    end
+  end
 
   def execute_download_job
     begin
@@ -138,12 +150,12 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def setup
-    @metadata = DatabaseMetadata.new(@database_type, @vendor_path)
+    @metadata = DatabaseMetadata.new(@database_type)
     @metadata.save_timestamp(@database_path) unless @metadata.exist?
 
     @database_path = @metadata.database_path || @database_path
 
-    @download_manager = DownloadManager.new(@database_type, @metadata, @vendor_path)
+    @download_manager = DownloadManager.new(@database_type, @metadata)
   end
 
   class DatabaseExpiryError < StandardError
