@@ -17,7 +17,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
 
   public
 
-  # csv format: database_type, update_at, gz_md5, md5, dirname, is_eula
+  # csv format: database_type, update_at, gz_md5, dirname, is_eula
   def save_metadata(database_type, dirname, is_eula)
     metadata = get_metadata(database_type, false)
     metadata << [database_type, Time.now.to_i, md5(get_gz_path(database_type, dirname)),

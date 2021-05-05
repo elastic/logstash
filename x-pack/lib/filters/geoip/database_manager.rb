@@ -106,7 +106,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  # terminate pipeline if database is expired and EULA
+  # call expiry action if database is expired and EULA
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
       days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
@@ -124,7 +124,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       when days_without_update >= 25
         if @states[database_type].is_eula && @states[database_type].plugins.size > 0
           logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
-          "Logstash will bypass the GeoIP plugin in #{30 - days_without_update} days. "\
+          "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
         end
       else
