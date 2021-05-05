@@ -12,22 +12,30 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   include LogStash::Filters::Geoip::Util
 
   def initialize
-    @metadata_path = get_file_path("metadata.csv")
+    @metadata_path = ::File.join(get_data_dir_path, "metadata.csv")
   end
 
   public
 
-  # csv format: database_type, update_at, gz_md5, md5, filename, is_eula
-  def save_metadata(database_type, database_path, is_eula)
+  # csv format: database_type, update_at, gz_md5, md5, dirname, is_eula
+  def save_metadata(database_type, dirname, is_eula)
     metadata = get_metadata(database_type, false)
-    metadata << [database_type, Time.now.to_i, md5(get_gz_name(database_path)), md5(database_path),
-                 ::File.basename(database_path), is_eula]
+    metadata << [database_type, Time.now.to_i, md5(get_gz_path(database_type, dirname)),
+                 dirname, is_eula]
     update(metadata)
   end
 
   def update_timestamp(database_type)
     metadata = get_all.map do |row|
       row[Column::UPDATE_AT] = Time.now.to_i  if row[Column::DATABASE_TYPE].eql?(database_type)
+      row
+    end
+    update(metadata)
+  end
+
+  def reset_md5(database_type)
+    metadata = get_all.map do |row|
+      row[Column::GZ_MD5] = ""  if row[Column::DATABASE_TYPE].eql?(database_type)
       row
     end
     update(metadata)
@@ -50,11 +58,10 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     get_all.select { |row| row[Column::DATABASE_TYPE].eql?(database_type) == match }
   end
 
-  # Return database path which has valid md5
+  # Return a valid database path
   def database_path(database_type)
-    get_metadata(database_type).map { |metadata| [metadata, get_file_path(metadata[Column::FILENAME])] }
-                .select { |metadata, path| file_exist?(path) && (md5(path) == metadata[Column::MD5]) }
-                .map { |metadata, path| path }
+    get_metadata(database_type).map { |metadata| get_db_path(database_type, metadata[Column::DIRNAME]) }
+                .select { |path| file_exist?(path) }
                 .last
   end
 
@@ -73,9 +80,9 @@ module LogStash module Filters module Geoip class DatabaseMetadata
                  .last || 'false') == 'true'
   end
 
-  # Return database related filenames in .mmdb .tgz
-  def database_filenames
-    get_all.flat_map { |metadata| [ metadata[Column::FILENAME], get_gz_name(metadata[Column::FILENAME]) ] }
+  # Return all dirname
+  def dirnames
+    get_all.map { |metadata| metadata[Column::DIRNAME] }
   end
   
   def exist?
@@ -86,9 +93,8 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     DATABASE_TYPE = 0
     UPDATE_AT     = 1
     GZ_MD5        = 2
-    MD5           = 3
-    FILENAME      = 4
-    IS_EULA       = 5
+    DIRNAME       = 3
+    IS_EULA       = 4
   end
 
 end end end end

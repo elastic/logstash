@@ -29,16 +29,19 @@ module LogStash module Filters module Geoip class DownloadManager
   public
   # Check available update and download them. Unzip and validate the file.
   # if the download failed, valid_download return false
-  # return Array of new database path [database_type, valid_download, new_database_path]
+  # return Array of [database_type, valid_download, dirname, new_database_path]
   def fetch_database
+    dirname = Time.now.to_i.to_s
     check_update
       .map do |database_type, db_info|
         begin
-          new_database_path = unzip *download_database(database_type, db_info)
+          new_zip_path = download_database(database_type, dirname, db_info)
+          new_database_path = unzip(database_type, dirname, new_zip_path)
           assert_database!(new_database_path)
-          [database_type, true, new_database_path]
-        rescue
-          [database_type, false, nil]
+          [database_type, true, dirname, new_database_path]
+        rescue => e
+          logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+          [database_type, false, nil, nil]
         end
       end
   end
@@ -66,38 +69,28 @@ module LogStash module Filters module Geoip class DownloadManager
     updated_db
   end
 
-  def download_database(database_type, db_info)
+  def download_database(database_type, dirname, db_info)
     Stud.try(3.times) do
-      timestamp = Time.now.to_i
-      new_database_zip_path = get_file_path("#{GEOLITE}#{database_type}_#{timestamp}.#{GZ_EXT}")
-      Down.download(db_info['url'], destination: new_database_zip_path)
-      raise "the new download has wrong checksum" if md5(new_database_zip_path) != db_info['md5_hash']
+      FileUtils.mkdir_p(get_dir_path(dirname))
+      zip_path = get_gz_path(database_type, dirname)
 
-      logger.debug("new database downloaded in ", :path => new_database_zip_path)
-      [database_type, timestamp, new_database_zip_path]
+      Down.download(db_info['url'], destination: zip_path)
+      raise "the new download has wrong checksum" if md5(zip_path) != db_info['md5_hash']
+
+      logger.debug("new database downloaded in ", :path => zip_path)
+      zip_path
     end
   end
 
   # extract all files and folders from .tgz to path.data directory
-  # existing files folders will be replaced
-  def unzip(type, timestamp, zip_path)
-    new_database_path = get_file_path("#{GEOLITE}#{type}_#{timestamp}.#{DB_EXT}")
-    temp_dir = Stud::Temporary.pathname
+  # return dirname [String], new_database_path [String]
+  def unzip(database_type, dirname, zip_path)
+    temp_path = ::File.join(get_dir_path(dirname), database_type)
+    LogStash::Util::Tar.extract(zip_path, temp_path)
+    FileUtils.cp_r(::File.join(temp_path, '.'), get_dir_path(dirname))
+    FileUtils.rm_r(temp_path)
 
-    LogStash::Util::Tar.extract(zip_path, temp_dir)
-    logger.debug("extract database to ", :path => temp_dir)
-
-    ::Dir.each_child(temp_dir) do |file|
-      path = ::File.join(temp_dir, file)
-
-      if !::File.directory?(path) && "#{GEOLITE}#{type}.#{DB_EXT}".eql?(file)
-        FileUtils.cp(path, new_database_path)
-      else
-        FileUtils.cp_r(path, get_data_dir)
-      end
-    end
-
-    new_database_path
+    get_db_path(database_type, dirname)
   end
 
   # Make sure the path has usable database

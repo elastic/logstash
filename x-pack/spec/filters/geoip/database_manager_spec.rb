@@ -21,8 +21,9 @@ describe LogStash::Filters::Geoip do
     end
     let(:logger) { double("Logger") }
 
-    CITY = GeoipHelper::CITY
-    ASN = GeoipHelper::ASN
+    CITY = LogStash::Filters::Geoip::CITY
+    ASN = LogStash::Filters::Geoip::ASN
+    CC = LogStash::Filters::Geoip::CC
 
     before do
       db_manager
@@ -33,7 +34,7 @@ describe LogStash::Filters::Geoip do
       LogStash::Filters::Geoip::DatabaseManager.class_variable_set(:@@instance, nil)
     end
 
-    context "setup" do
+    context "initialize" do
       it "should set the initial state to cc database" do
         states = db_manager.instance_variable_get(:@states)
         expect(states[CITY].is_eula).to be_falsey
@@ -45,31 +46,26 @@ describe LogStash::Filters::Geoip do
       end
 
       context "when metadata exists" do
-        let(:db_manager) do
-          manager = LogStash::Filters::Geoip::DatabaseManager.instance
-          manager.instance_variable_set(:@download_manager, mock_download_manager)
-          manager.instance_variable_set(:@scheduler, mock_scheduler)
-          manager
+        before do
+          LogStash::Filters::Geoip::DatabaseManager.class_variable_set(:@@instance, nil)
+          LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+          FileUtils.cp_r(get_dir_path(CC), get_dir_path(second_dirname))
+          write_temp_metadata(metadata_path, city2_metadata)
         end
 
         it "should use database record in metadata" do
-          temp_metadata_path = db_manager.instance_variable_get(:@metadata).instance_variable_get(:@metadata_path)
-          write_temp_metadata(temp_metadata_path, city2_metadata)
-          copy_city_database(second_city_db_name)
-
-          db_manager.send(:setup)
-
+          db_manager = LogStash::Filters::Geoip::DatabaseManager.instance
           states = db_manager.instance_variable_get(:@states)
           expect(states[CITY].is_eula).to be_truthy
-          expect(states[CITY].database_path).to include second_city_db_name
+          expect(states[CITY].database_path).to include second_dirname
         end
       end
     end
 
     context "execute download job" do
-      let(:valid_city_fetch) { [CITY, true, second_city_db_path] }
-      let(:valid_asn_fetch) { [ASN, true, second_asn_db_path] }
-      let(:invalid_city_fetch) { [CITY, false, nil] }
+      let(:valid_city_fetch) { [CITY, true, second_dirname, second_city_db_path] }
+      let(:valid_asn_fetch) { [ASN, true, second_dirname, second_asn_db_path] }
+      let(:invalid_city_fetch) { [CITY, false, nil, nil] }
 
       context "plugin is set" do
         let(:db_manager) do
@@ -93,33 +89,33 @@ describe LogStash::Filters::Geoip do
           expect(db_manager).to receive(:clean_up_database)
 
           db_manager.send(:execute_download_job)
-          expect(db_manager.database_path(CITY)).to include second_city_db_name
-          expect(db_manager.database_path(ASN)).to include second_asn_db_name
+          expect(db_manager.database_path(CITY)).to match /#{second_dirname}\/#{default_city_db_name}/
+          expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
         end
       end
 
       it "should update single state when new downloads are partially valid" do
         expect(mock_download_manager).to receive(:fetch_database).and_return([invalid_city_fetch, valid_asn_fetch])
-        expect(mock_metadata).to receive(:save_metadata).with(ASN, second_asn_db_path, true).at_least(:once)
+        expect(mock_metadata).to receive(:save_metadata).with(ASN, second_dirname, true).at_least(:once)
         expect(mock_metadata).to receive(:update_timestamp).never
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
 
         db_manager.send(:execute_download_job)
-        expect(db_manager.database_path(CITY)).to include default_city_db_name
-        expect(db_manager.database_path(ASN)).to include second_asn_db_name
+        expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
+        expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
       end
 
       it "should update single state and single metadata timestamp when one database got update" do
         expect(mock_download_manager).to receive(:fetch_database).and_return([valid_asn_fetch])
-        expect(mock_metadata).to receive(:save_metadata).with(ASN, second_asn_db_path, true).at_least(:once)
+        expect(mock_metadata).to receive(:save_metadata).with(ASN, second_dirname, true).at_least(:once)
         expect(mock_metadata).to receive(:update_timestamp).with(CITY).at_least(:once)
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
 
         db_manager.send(:execute_download_job)
-        expect(db_manager.database_path(CITY)).to include default_city_db_name
-        expect(db_manager.database_path(ASN)).to include second_asn_db_name
+        expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
+        expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
       end
 
       it "should update metadata timestamp for the unchange (no update)" do
@@ -130,8 +126,8 @@ describe LogStash::Filters::Geoip do
         expect(db_manager).to receive(:clean_up_database)
 
         db_manager.send(:execute_download_job)
-        expect(db_manager.database_path(CITY)).to include default_city_db_name
-        expect(db_manager.database_path(ASN)).to include default_asn_db_name
+        expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
+        expect(db_manager.database_path(ASN)).to  match /#{CC}\/#{default_asn_db_name}/
       end
 
       it "should not update metadata when fetch database throw exception" do
@@ -199,30 +195,41 @@ describe LogStash::Filters::Geoip do
     end
 
     context "clean up database" do
-      let(:asn00) { get_file_path("GeoLite2-ASN_000000000.mmdb") }
-      let(:asn00gz) { get_file_path("GeoLite2-ASN_000000000.tgz") }
-      let(:city00) { get_file_path("GeoLite2-City_000000000.mmdb") }
-      let(:city00gz) { get_file_path("GeoLite2-City_000000000.tgz") }
-      let(:city44) { get_file_path("GeoLite2-City_4444444444.mmdb") }
-      let(:city44gz) { get_file_path("GeoLite2-City_4444444444.tgz") }
+      let(:dirname) { "0123456789" }
+      let(:dirname2) { "9876543210" }
+      let(:dir_path) { get_dir_path(dirname) }
+      let(:dir_path2) { get_dir_path(dirname2) }
+      let(:asn00) { get_file_path(dirname, default_asn_db_name) }
+      let(:city00) { get_file_path(dirname, default_city_db_name) }
+      let(:asn02) { get_file_path(dirname2, default_asn_db_name) }
+      let(:city02) { get_file_path(dirname2, default_city_db_name) }
+
 
       before(:each) do
-        FileUtils.mkdir_p(get_data_dir)
-        [asn00, asn00gz, city00, city00gz, city44, city44gz].each { |file_path| ::File.delete(file_path) if ::File.exist?(file_path) }
+        LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+        FileUtils.mkdir_p [dir_path, dir_path2]
       end
 
       it "should delete file which is not in metadata" do
-        FileUtils.touch [asn00, asn00gz, city00, city00gz, city44, city44gz]
-        expect(mock_metadata).to receive(:database_filenames).and_return(["GeoLite2-City_4444444444.mmdb", "GeoLite2-City_4444444444.tgz"])
+        FileUtils.touch [asn00, city00, asn02, city02]
+        expect(mock_metadata).to receive(:dirnames).and_return([dirname])
 
         db_manager.send(:clean_up_database)
 
-        [asn00, asn00gz, city00, city00gz].each { |file_path| expect(::File.exist?(file_path)).to be_falsey }
-        [default_city_db_path, default_asn_db_path, city44, city44gz].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
+        [asn02, city02].each { |file_path| expect(::File.exist?(file_path)).to be_falsey }
+        [get_dir_path(CC), asn00, city00].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
       end
     end
 
     context "subscribe database path" do
+      let(:db_manager) do
+        manager = LogStash::Filters::Geoip::DatabaseManager.instance
+        manager.instance_variable_set(:@metadata, mock_metadata)
+        manager.instance_variable_set(:@download_manager, mock_download_manager)
+        manager.instance_variable_set(:@scheduler, mock_scheduler)
+        manager
+      end
+
       it "should return user input path" do
         path = db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
         expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
@@ -231,6 +238,7 @@ describe LogStash::Filters::Geoip do
 
       it "should return database path in state if no user input" do
         expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
+        allow(db_manager).to receive(:trigger_download)
         path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
         expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
         expect(path).to eq(default_city_db_path)

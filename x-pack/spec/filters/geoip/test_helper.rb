@@ -6,12 +6,16 @@ require 'spec_helper'
 require "digest"
 
 module GeoipHelper
-  def get_data_dir
+  def get_data_dir_path
     ::File.join(LogStash::SETTINGS.get_value("path.data"), "plugins", "filters", "geoip")
   end
 
-  def get_file_path(filename)
-    ::File.join(get_data_dir, filename)
+  def get_dir_path(dirname)
+    ::File.join(get_data_dir_path, dirname)
+  end
+
+  def get_file_path(dirname, filename)
+    ::File.join(get_dir_path(dirname), filename)
   end
 
   def md5(file_path)
@@ -19,19 +23,19 @@ module GeoipHelper
   end
 
   def default_city_db_path
-    get_file_path("GeoLite2-City.mmdb")
+    ::File.join(get_data_dir_path, "CC", default_city_db_name )
   end
 
   def default_city_gz_path
-    get_file_path("GeoLite2-City.tgz")
+    ::File.join(get_data_dir_path, "CC", "GeoLite2-City.tgz" )
   end
 
   def default_asn_db_path
-    get_file_path("GeoLite2-ASN.mmdb")
+    ::File.join(get_data_dir_path, "CC", default_asn_db_name )
   end
 
   def metadata_path
-    get_file_path("metadata.csv")
+    ::File.join(get_data_dir_path, "metadata.csv")
   end
 
   def default_city_db_name
@@ -42,20 +46,20 @@ module GeoipHelper
     "GeoLite2-ASN.mmdb"
   end
 
-  def second_city_db_name
-    "GeoLite2-City_20200220.mmdb"
-  end
-
-  def second_asn_db_name
-    "GeoLite2-ASN_20200220.mmdb"
-  end
-
   def second_city_db_path
-    get_file_path(second_city_db_name)
+    ::File.join(get_data_dir_path, second_dirname, default_city_db_name )
   end
 
   def second_asn_db_path
-    get_file_path(second_asn_db_name)
+    ::File.join(get_data_dir_path, second_dirname, default_asn_db_name )
+  end
+
+  def second_dirname
+    "20200220"
+  end
+
+  def create_default_city_gz
+    ::File.open(default_city_gz_path, "w") { |f| f.write "make a non empty file" }
   end
 
   def default_city_db_md5
@@ -66,17 +70,13 @@ module GeoipHelper
     md5(default_asn_db_path)
   end
 
-  CITY = "City".freeze
-  ASN = "ASN".freeze
-
   def write_temp_metadata(temp_file_path, row = nil)
     now = Time.now.to_i
-    city = md5(default_city_db_path)
-    asn = md5(default_asn_db_path)
+    dirname = "CC"
 
     metadata = []
-    metadata << ["ASN",now,"",asn,default_asn_db_name,false]
-    metadata << ["City",now,"",city,default_city_db_name,false]
+    metadata << ["ASN",now,"",dirname,false]
+    metadata << ["City",now,"",dirname,false]
     metadata << row if row
 
     FileUtils.mkdir_p(::File.dirname(temp_file_path))
@@ -86,7 +86,7 @@ module GeoipHelper
   end
 
   def city2_metadata
-    ["City",Time.now.to_i,"",md5(default_city_db_path),second_city_db_name,true]
+    ["City",Time.now.to_i,"",second_dirname,true]
   end
 
   def copy_city_database(filename)

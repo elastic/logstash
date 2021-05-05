@@ -6,11 +6,12 @@ require_relative 'test_helper'
 require "filters/geoip/database_metadata"
 require "filters/geoip/database_manager"
 require "stud/temporary"
+require "fileutils"
 
 describe LogStash::Filters::Geoip do
 
   describe 'DatabaseMetadata', :aggregate_failures do
-    let(:database_type) { "City" }
+    let(:database_type) { LogStash::Filters::Geoip::CITY }
     let(:dbm) do
       dbm = LogStash::Filters::Geoip::DatabaseMetadata.new
       dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
@@ -21,6 +22,8 @@ describe LogStash::Filters::Geoip do
 
     before(:each) do
       LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+      create_default_city_gz
+      FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
     end
 
     context "get all" do
@@ -56,17 +59,9 @@ describe LogStash::Filters::Geoip do
     end
 
     context "save timestamp" do
-      before do
-        ::File.open(default_city_gz_path, "w") { |f| f.write "make a non empty file" }
-      end
-
-      after do
-        delete_file(default_city_gz_path)
-      end
-
       it "write the current time" do
         write_temp_metadata(temp_metadata_path)
-        dbm.save_metadata(database_type, default_city_db_path, true)
+        dbm.save_metadata(database_type, second_dirname, true)
 
         expect(dbm.get_metadata(database_type).size).to eq(1)
         expect(dbm.get_all.size).to eq(2)
@@ -77,8 +72,7 @@ describe LogStash::Filters::Geoip do
         expect(Time.now.to_i - past.to_i).to be < 100
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_city_db_md5)
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME]).to eq(default_city_db_name)
+        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eq(second_dirname)
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]).to eq("true")
       end
     end
@@ -93,7 +87,7 @@ describe LogStash::Filters::Geoip do
       it "return the last database path with valid md5" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
 
-        expect(dbm.database_path(database_type)).to eq(default_city_db_path)
+        expect(dbm.database_path(database_type)).to eq(second_city_db_path)
       end
 
       context "with ASN database type" do
@@ -129,7 +123,7 @@ describe LogStash::Filters::Geoip do
 
     context "gz md5" do
       it "should give the last gz md5" do
-        write_temp_metadata(temp_metadata_path, ["City","","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
+        write_temp_metadata(temp_metadata_path, ["City","","SOME_GZ_MD5","SOME_MD5",second_dirname])
         expect(dbm.gz_md5(database_type)).to eq("SOME_GZ_MD5")
       end
 
@@ -140,20 +134,12 @@ describe LogStash::Filters::Geoip do
 
     context "updated at" do
       it "should give the last update timestamp" do
-        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
+        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5",second_dirname,true])
         expect(dbm.updated_at(database_type)).to eq(1611690807)
       end
 
       it "should give 0 if metadata is empty" do
         expect(dbm.updated_at(database_type)).to eq(0)
-      end
-    end
-
-    context "database filenames" do
-      it "should give filename in .mmdb .tgz" do
-        write_temp_metadata(temp_metadata_path)
-        expect(dbm.database_filenames).to match_array([default_city_db_name, default_asn_db_name,
-                                                       'GeoLite2-City.tgz', 'GeoLite2-ASN.tgz'])
       end
     end
 

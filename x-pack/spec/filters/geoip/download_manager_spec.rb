@@ -15,7 +15,7 @@ describe LogStash::Filters::Geoip do
       manager = LogStash::Filters::Geoip::DownloadManager.new(mock_metadata)
       manager
     end
-    let(:database_type) { GeoipHelper::CITY }
+    let(:database_type) { LogStash::Filters::Geoip::CITY }
     let(:logger) { double("Logger") }
 
     GEOIP_STAGING_HOST = "https://geoip.elastic.dev"
@@ -85,32 +85,34 @@ describe LogStash::Filters::Geoip do
       end
       let(:md5_hash) { SecureRandom.hex }
       let(:filename) { "GeoLite2-City.tgz"}
+      let(:dirname) { "0123456789" }
 
       it "should raise error if md5 does not match" do
         allow(Down).to receive(:download)
-        expect{ download_manager.send(:download_database, database_type, db_info) }.to raise_error /wrong checksum/
+        expect{ download_manager.send(:download_database, database_type, dirname, db_info) }.to raise_error /wrong checksum/
       end
 
       it "should download file and return zip path" do
         expect(download_manager).to receive(:md5).and_return(md5_hash)
 
-        type, timestamp, path = download_manager.send(:download_database, database_type, db_info)
-        expect(path).to match /GeoLite2-City_\d+\.tgz/
-        expect(::File.exist?(path)).to be_truthy
-        expect(type).to eql(database_type)
-        expect(timestamp).to be_a(Integer)
-
-        delete_file(path)
+        new_zip_path = download_manager.send(:download_database, database_type, dirname, db_info)
+        expect(new_zip_path).to match /GeoLite2-City\.tgz/
+        expect(::File.exist?(new_zip_path)).to be_truthy
       end
     end
 
     context "unzip" do
-      let(:copyright_path) { get_file_path('COPYRIGHT.txt') }
-      let(:license_path) { get_file_path('LICENSE.txt') }
-      let(:readme_path) { get_file_path('README.txt') }
-      let(:folder_path) { get_file_path('inner') }
-      let(:folder_more_path) { ::File.join(get_file_path('inner'), 'more.txt') }
-      let(:folder_less_path) { ::File.join(get_file_path('inner'), 'less.txt') }
+      let(:dirname) { Time.now.to_i.to_s }
+      let(:copyright_path) { get_file_path(dirname, 'COPYRIGHT.txt') }
+      let(:license_path) { get_file_path(dirname, 'LICENSE.txt') }
+      let(:readme_path) { get_file_path(dirname, 'README.txt') }
+      let(:folder_path) { get_file_path(dirname, 'inner') }
+      let(:folder_more_path) { ::File.join(folder_path, 'more.txt') }
+      let(:folder_less_path) { ::File.join(folder_path, 'less.txt') }
+
+      before do
+        FileUtils.mkdir_p(get_dir_path(dirname))
+      end
 
       after do
         file_path = ::File.expand_path("./fixtures/sample.mmdb", ::File.dirname(__FILE__))
@@ -119,12 +121,11 @@ describe LogStash::Filters::Geoip do
       end
 
       it "should extract all files in tarball" do
-        path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
-        timestamp = Time.now.to_i
-        unzip_db_path = download_manager.send(:unzip, database_type, timestamp, path)
+        zip_path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
+        new_db_path = download_manager.send(:unzip, database_type, dirname, zip_path)
 
-        expect(unzip_db_path).to match /#{timestamp}\.mmdb/
-        expect(::File.exist?(unzip_db_path)).to be_truthy
+        expect(new_db_path).to match /GeoLite2-#{database_type}\.mmdb/
+        expect(::File.exist?(new_db_path)).to be_truthy
         expect(::File.exist?(copyright_path)).to be_truthy
         expect(::File.exist?(license_path)).to be_truthy
         expect(::File.exist?(readme_path)).to be_truthy
@@ -146,7 +147,8 @@ describe LogStash::Filters::Geoip do
 
     context "fetch database" do
       it "should return array of db which has valid download" do
-        expect(download_manager).to receive(:check_update).and_return([[GeoipHelper::ASN, {}], [GeoipHelper::CITY, {}]])
+        expect(download_manager).to receive(:check_update).and_return([[LogStash::Filters::Geoip::ASN, {}],
+                                                                       [LogStash::Filters::Geoip::CITY, {}]])
         allow(download_manager).to receive(:download_database)
         allow(download_manager).to receive(:unzip).and_return("NEW_DATABASE_PATH")
         allow(download_manager).to receive(:assert_database!)
@@ -154,8 +156,8 @@ describe LogStash::Filters::Geoip do
         updated_db = download_manager.send(:fetch_database)
 
         expect(updated_db.size).to eql(2)
-        asn_type, asn_valid_download, asn_path = updated_db[0]
-        city_type, city_valid_download, city_path = updated_db[1]
+        asn_type, asn_valid_download, asn_dirname, asn_path = updated_db[0]
+        city_type, city_valid_download, city_dirname, city_path = updated_db[1]
         expect(asn_valid_download).to be_truthy
         expect(asn_path).to eql("NEW_DATABASE_PATH")
         expect(city_valid_download).to be_truthy
@@ -163,7 +165,8 @@ describe LogStash::Filters::Geoip do
       end
 
       it "should return array of db which has invalid download" do
-        expect(download_manager).to receive(:check_update).and_return([[GeoipHelper::ASN, {}], [GeoipHelper::CITY, {}]])
+        expect(download_manager).to receive(:check_update).and_return([[LogStash::Filters::Geoip::ASN, {}],
+                                                                       [LogStash::Filters::Geoip::CITY, {}]])
         expect(download_manager).to receive(:download_database).and_raise('boom').at_least(:twice)
 
         updated_db = download_manager.send(:fetch_database)

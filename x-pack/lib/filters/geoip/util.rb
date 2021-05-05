@@ -16,13 +16,22 @@ module LogStash module Filters
     CITY_DB_NAME = "#{GEOLITE}#{CITY}.#{DB_EXT}".freeze
     ASN_DB_NAME = "#{GEOLITE}#{ASN}.#{DB_EXT}".freeze
     DEFAULT_DB_NAMES = [CITY_DB_NAME, ASN_DB_NAME].freeze
+    CC = "CC".freeze
 
     module Util
-      def get_file_path(filename)
-        ::File.join(get_data_dir, filename)
+      def get_db_path(database_type, dirname)
+        ::File.join(get_data_dir_path, dirname, "#{GEOLITE}#{database_type}.#{DB_EXT}")
       end
 
-      def get_data_dir
+      def get_gz_path(database_type, dirname)
+        ::File.join(get_data_dir_path, dirname, "#{GEOLITE}#{database_type}.#{GZ_EXT}")
+      end
+
+      def get_dir_path(dirname)
+        ::File.join(get_data_dir_path, dirname)
+      end
+
+      def get_data_dir_path
         ::File.join(LogStash::SETTINGS.get_value("path.data"), "plugins", "filters", "geoip")
       end
 
@@ -34,10 +43,6 @@ module LogStash module Filters
         file_exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)): ""
       end
 
-      # replace *.mmdb to *.tgz
-      def get_gz_name(filename)
-        filename[0...-(DB_EXT.length)] + GZ_EXT
-      end
     end
   end
 end end
