@@ -22,7 +22,7 @@ require "concurrent"
 #   to keep track of versions and the number of days disconnects to the endpoint.
 # Once a new database version release, DownloadManager downloads it, and GeoIP Filter uses it on-the-fly.
 # If the last update timestamp is 25 days ago, a warning message shows in the log;
-# if it was 30 days ago, the GeoIP Filter should shutdown in order to be compliant.
+# if it was 30 days ago, the GeoIP Filter should stop using EULA database in order to be compliant.
 # There are online mode and offline mode in DatabaseManager. `online` is for automatic database update
 #   while `offline` is for static database path provided by users
 
@@ -163,16 +163,16 @@ module LogStash module Filters module Geoip class DatabaseManager
       when days_without_update >= 30
         if @states[database_type].is_eula && @states[database_type].plugins.size > 0
           logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
-            "According to EULA, GeoIP plugin needs to stop in order to be compliant. "\
+            "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
             "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
             "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
             "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
-          @states[database_type].plugins.dup.each { |plugin| plugin.terminate_filter if plugin }
+          @states[database_type].plugins.dup.each { |plugin| plugin.expire_action if plugin }
         end
       when days_without_update >= 25
         if @states[database_type].is_eula && @states[database_type].plugins.size > 0
           logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
-          "Logstash will stop the GeoIP plugin in #{30 - days_without_update} days. "\
+          "Logstash will bypass the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
         end
       else

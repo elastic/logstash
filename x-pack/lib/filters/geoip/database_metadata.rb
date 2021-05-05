@@ -34,7 +34,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   end
 
   def update(metadata)
-    metadata.sort_by { |row| row[Column::DATABASE_TYPE] }
+    metadata = metadata.sort_by { |row| row[Column::DATABASE_TYPE] }
     ::CSV.open @metadata_path, 'w' do |csv|
       metadata.each { |row| csv << row }
     end
