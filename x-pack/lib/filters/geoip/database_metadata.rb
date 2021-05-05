@@ -46,7 +46,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     ::CSV.open @metadata_path, 'w' do |csv|
       metadata.each { |row| csv << row }
     end
-    logger.debug("metadata updated", :metadata => metadata)
+    logger.trace("metadata updated", :metadata => metadata)
   end
 
   def get_all
