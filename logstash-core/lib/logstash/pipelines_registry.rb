@@ -35,6 +35,19 @@ module LogStash
       end
     end
 
+    def running?
+      @lock.synchronize do
+        # not terminated and not loading
+        @loading.false? && !@pipeline.finished_execution?
+      end
+    end
+
+    def loading?
+      @lock.synchronize do
+        @loading.true?
+      end
+    end
+
     def set_loading(is_loading)
       @lock.synchronize do
         @loading.value = is_loading
@@ -76,7 +89,6 @@ module LogStash
     def remove(pipeline_id)
       @lock.synchronize do
         @states.delete(pipeline_id)
-        @locks.delete(pipeline_id)
       end
     end
 
@@ -209,6 +221,32 @@ module LogStash
       lock.unlock
     end
 
+    # Delete the pipeline that is terminated
+    # @param pipeline_id [String, Symbol] the pipeline id
+    # @return [Boolean] pipeline delete success
+    def delete_pipeline(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
+      lock.lock
+
+      state = @states.get(pipeline_id)
+
+      if state.nil?
+        logger.error("Attempted to delete a pipeline that does not exists", :pipeline_id => pipeline_id)
+        return false
+      end
+
+      if state.terminated?
+        @states.remove(pipeline_id)
+        logger.info("Removed pipeline from registry successfully", :pipeline_id => pipeline_id)
+        return true
+      else
+        logger.info("Attempted to delete a pipeline that is not terminated", :pipeline_id => pipeline_id)
+        return false
+      end
+    ensure
+      lock.unlock
+    end
+
     # @param pipeline_id [String, Symbol] the pipeline id
     # @return [Pipeline] the pipeline object or nil if none for pipeline_id
     def get_pipeline(pipeline_id)
@@ -228,7 +266,11 @@ module LogStash
 
     # @return [Hash{String=>Pipeline}]
     def running_pipelines
-      select_pipelines { |state| !state.terminated? }
+      select_pipelines { |state| state.running? }
+    end
+
+    def loading_pipelines
+      select_pipelines { |state| state.loading? }
     end
 
     # @return [Hash{String=>Pipeline}]

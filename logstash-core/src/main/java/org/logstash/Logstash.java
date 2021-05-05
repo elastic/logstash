@@ -20,17 +20,21 @@
 
 package org.logstash;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyException;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyNumeric;
+import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -58,7 +62,7 @@ public final class Logstash implements Runnable, AutoCloseable {
                     "LS_HOME environment variable must be set. This is likely a bug that should be reported."
             );
         }
-        configureNashornDeprecationSwitchForJavaAbove11();
+        installGlobalUncaughtExceptionHandler();
 
         final Path home = Paths.get(lsHome).toAbsolutePath();
         try (
@@ -66,40 +70,79 @@ public final class Logstash implements Runnable, AutoCloseable {
         ) {
             logstash.run();
         } catch (final IllegalStateException e) {
-            String errorMessage[] = null;
-            if (e.getMessage().contains("Could not load FFI Provider")) {
-                errorMessage = new String[]{
-                        "\nError accessing temp directory: " + System.getProperty("java.io.tmpdir"),
-                        "This often occurs because the temp directory has been mounted with NOEXEC or",
-                        "the Logstash user has insufficient permissions on the directory. Possible",
-                        "workarounds include setting the -Djava.io.tmpdir property in the jvm.options",
-                        "file to an alternate directory or correcting the Logstash user's permissions."
-                };
+            Throwable t = e;
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.startsWith(UNCLEAN_SHUTDOWN_PREFIX)) {
+                    t = e.getCause(); // be less verbose with uncleanShutdown's wrapping exception
+                } else if (message.contains("Could not load FFI Provider")) {
+                    message =
+                            "Error accessing temp directory: " + System.getProperty("java.io.tmpdir") +
+                                    " this often occurs because the temp directory has been mounted with NOEXEC or" +
+                                    " the Logstash user has insufficient permissions on the directory. \n" +
+                                    "Possible workarounds include setting the -Djava.io.tmpdir property in the jvm.options" +
+                                    "file to an alternate directory or correcting the Logstash user's permissions.";
+                }
             }
-            handleCriticalError(e, errorMessage);
+            handleFatalError(message, t);
         } catch (final Throwable t) {
-            handleCriticalError(t, null);
+            handleFatalError("", t);
         }
+
         System.exit(0);
     }
 
-    private static void configureNashornDeprecationSwitchForJavaAbove11() {
-        final String javaVersion = System.getProperty("java.version");
-        // match version 1.x.y, 9.x.y and 10.x.y
-        if (!javaVersion.matches("^1\\.\\d\\..*") && !javaVersion.matches("^(9|10)\\.\\d\\..*")) {
-            // Avoid Nashorn deprecation logs in JDK >= 11
-            System.setProperty("nashorn.args", "--no-deprecation-warning");
-        }
+    private static void installGlobalUncaughtExceptionHandler() {
+        Thread.setDefaultUncaughtExceptionHandler((thread, e) -> {
+            if (e instanceof Error) {
+                handleFatalError("uncaught error (in thread " + thread.getName() + ")",  e);
+            } else {
+                LOGGER.error("uncaught exception (in thread " + thread.getName() + ")", e);
+            }
+        });
     }
 
-    private static void handleCriticalError(Throwable t, String[] errorMessage) {
-        LOGGER.error(t);
-        if (errorMessage != null) {
-            for (String err : errorMessage) {
-                System.err.println(err);
-            }
+    private static void handleFatalError(String message, Throwable t) {
+        LOGGER.fatal(message, t);
+
+        if (t instanceof InternalError) {
+            halt(128);
+        } else if (t instanceof OutOfMemoryError) {
+            halt(127);
+        } else if (t instanceof StackOverflowError) {
+            halt(126);
+        } else if (t instanceof UnknownError) {
+            halt(125);
+        } else if (t instanceof IOError) {
+            halt(124);
+        } else if (t instanceof LinkageError) {
+            halt(123);
+        } else if (t instanceof Error) {
+            halt(120);
         }
+
         System.exit(1);
+    }
+
+    private static void halt(final int status) {
+        AccessController.doPrivileged(new PrivilegedHaltAction(status));
+    }
+
+    private static class PrivilegedHaltAction implements PrivilegedAction<Void> {
+
+        private final int status;
+
+        private PrivilegedHaltAction(final int status) {
+            this.status = status;
+        }
+
+        @Override
+        public Void run() {
+            // we halt to prevent shutdown hooks from running
+            Runtime.getRuntime().halt(status);
+            return null;
+        }
+
     }
 
     /**
@@ -132,11 +175,10 @@ public final class Logstash implements Runnable, AutoCloseable {
             Thread.currentThread().setContextClassLoader(ruby.getJRubyClassLoader());
             ruby.runFromMain(script, config.displayedFileName());
         } catch (final RaiseException ex) {
-            final RubyException rexep = ex.getException();
-            if (ruby.getSystemExit().isInstance(rexep)) {
-                final IRubyObject status =
-                    rexep.callMethod(ruby.getCurrentContext(), "status");
-                if (status != null && !status.isNil() && RubyNumeric.fix2int(status) != 0) {
+            final RubyException re = ex.getException();
+            if (re instanceof RubySystemExit) {
+                IRubyObject success = ((RubySystemExit) re).success_p();
+                if (!success.isTrue()) {
                     uncleanShutdown(ex);
                 }
             } else {
@@ -190,7 +232,10 @@ public final class Logstash implements Runnable, AutoCloseable {
         return resolved.toString();
     }
 
+    private static final String UNCLEAN_SHUTDOWN_PREFIX = "Logstash stopped processing because of an error: ";
+
     private static void uncleanShutdown(final Exception ex) {
-        throw new IllegalStateException("Logstash stopped processing because of an error: " + ex.getMessage(), ex);
+        throw new IllegalStateException(UNCLEAN_SHUTDOWN_PREFIX + ex.getMessage(), ex);
     }
+
 }

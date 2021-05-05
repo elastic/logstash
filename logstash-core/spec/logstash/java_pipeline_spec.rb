@@ -23,6 +23,7 @@ require_relative "../support/helpers"
 require 'support/pipeline/pipeline_helpers'
 require "stud/try"
 require 'timeout'
+require "thread"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -38,18 +39,31 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
-class DummyInputGenerator < LogStash::Inputs::Base
-  config_name "dummyinputgenerator"
+class DummyManualInputGenerator < LogStash::Inputs::Base
+  config_name "dummymanualinputgenerator"
   milestone 2
+
+  attr_accessor :keep_running
+
+  def initialize(*args)
+    super(*args)
+    @keep_running = Concurrent::AtomicBoolean.new(false)
+    @queue = nil
+  end
 
   def register
   end
 
   def run(queue)
-    queue << Logstash::Event.new while !stop?
+    @queue = queue
+    while !stop? || @keep_running.true?
+      queue << LogStash::Event.new
+      sleep(0.5)
+    end
   end
 
-  def close
+  def push_once
+    @queue << LogStash::Event.new
   end
 end
 
@@ -185,6 +199,15 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  describe "aliased plugin instantiation" do
+    it "should create the pipeline as if it's using the original plugin" do
+      alias_registry = Java::org.logstash.plugins.AliasRegistry.new({["input", "alias"] => "generator"})
+      LogStash::PLUGIN_REGISTRY = LogStash::Plugins::Registry.new alias_registry
+      pipeline = mock_java_pipeline_from_string("input { alias { count => 1 } } output { null {} }")
+      expect(pipeline.ephemeral_id).to_not be_nil
+      pipeline.close
+    end
+  end
 
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055
@@ -237,35 +260,83 @@ describe LogStash::JavaPipeline do
     end
   end
 
-  context "a crashing worker" do
+  context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
-
-    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1 } }
     let(:config) do
       <<-EOS
-      input { generator {} }
+      input { dummymanualinputgenerator {} }
       filter { dummycrashingfilter {} }
       output { dummyoutput {} }
       EOS
     end
     let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new }
+    let(:dummyinput) { DummyManualInputGenerator.new }
 
     before :each do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(DummyManualInputGenerator).to receive(:new).with(any_args).and_return(dummyinput)
+
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummymanualinputgenerator").and_return(DummyManualInputGenerator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummycrashingfilter").and_return(DummyCrashingFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-    after :each do
-      subject.shutdown
-    end
+  context "a crashing worker using memory queue" do
+    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
 
     it "does not raise in the main thread, terminates the run thread and finishes execution" do
-      expect { subject.start && subject.thread.join }.to_not raise_error
+      # first make sure we keep the input plugin in the run method for now
+      dummyinput.keep_running.make_true
+
+      expect { subject.start }.to_not raise_error
+
+      # wait until there is no more worker thread since we have a single worker that should have died
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # at this point the input plugin should have been asked to stop
+      wait(5).for {dummyinput.stop?}.to be_truthy
+
+      # allow the input plugin to exit the run method now
+      dummyinput.keep_running.make_false
+
+      # the pipeline thread should terminate normally
+      expect { subject.thread.join }.to_not raise_error
       expect(subject.finished_execution?).to be_truthy
+
+      # when the pipeline has exited, no input threads should be alive
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
     end
+  end
+
+  context "a crashing worker using persisted queue" do
+    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
+
+    it "does not raise in the main thread, terminates the run thread and finishes execution" do
+      # first make sure we keep the input plugin in the run method for now
+      dummyinput.keep_running.make_true
+
+      expect { subject.start }.to_not raise_error
+
+      # wait until there is no more worker thread since we have a single worker that should have died
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # at this point the input plugin should have been asked to stop
+      wait(5).for {dummyinput.stop?}.to be_truthy
+
+      # allow the input plugin to exit the run method now
+      dummyinput.keep_running.make_false
+
+      # the pipeline thread should terminate normally
+      expect { subject.thread.join }.to_not raise_error
+      expect(subject.finished_execution?).to be_truthy
+
+      # when the pipeline has exited, no input threads should be alive
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      expect{dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
+    end
+  end
   end
 
   describe "defaulting the pipeline workers based on thread safety" do
@@ -405,12 +476,14 @@ describe LogStash::JavaPipeline do
       eos
     }
 
-    context "output close" do
+    context "input and output close" do
       let(:pipeline) { mock_java_pipeline_from_string(test_config_without_output_workers) }
       let(:output) { pipeline.outputs.first }
+      let(:input) { pipeline.inputs.first }
 
-      it "should call close of output without output-workers" do
+      it "should call close of input and output without output-workers" do
         expect(output).to receive(:do_close).once
+        expect(input).to receive(:do_close).once
         pipeline.start
         pipeline.shutdown
       end
@@ -774,8 +847,9 @@ describe LogStash::JavaPipeline do
   end
 
   context "Periodic Flush" do
-    let(:config) do
-      <<-EOS
+    shared_examples 'it flushes correctly' do
+      let(:config) do
+        <<-EOS
       input {
         dummy_input {}
       }
@@ -785,37 +859,48 @@ describe LogStash::JavaPipeline do
       output {
         dummy_output {}
       }
-      EOS
-    end
-    let(:output) { ::LogStash::Outputs::DummyOutput.new }
-
-    before do
-      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-    end
-
-    it "flush periodically" do
-      Thread.abort_on_exception = true
-      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      Timeout.timeout(timeout) do
-        pipeline.start
+        EOS
       end
-      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(10).for do
-          # give us a bit of time to flush the events
-          output.events.empty?
-        end.to be_falsey
+      let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+      before do
+        allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+        allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+        allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+        allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       end
 
-      expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+      it "flush periodically" do
+        Thread.abort_on_exception = true
+        pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+        Timeout.timeout(timeout) do
+          pipeline.start
+        end
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          wait(10).for do
+            # give us a bit of time to flush the events
+            output.events.empty?
+          end.to be_falsey
+        end
 
-      pipeline.shutdown
+        expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+
+        pipeline.shutdown
+      end
+
+    end
+
+    it_behaves_like 'it flushes correctly'
+
+    context 'with pipeline ordered' do
+      before do
+        pipeline_settings_obj.set("pipeline.workers", 1)
+        pipeline_settings_obj.set("pipeline.ordered", true)
+      end
+      it_behaves_like 'it flushes correctly'
     end
   end
-
   context "Periodic Flush that intermittently returns nil" do
     let(:config) do
       <<-EOS

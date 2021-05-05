@@ -23,6 +23,9 @@ package org.logstash.ackedqueue;
 import java.util.List;
 import org.logstash.ackedqueue.io.LongVector;
 
+/**
+ * Carries sequence numbers and items read from queue.
+ * */
 public class SequencedList<E> {
     private final List<E> elements;
     private final LongVector seqNums;

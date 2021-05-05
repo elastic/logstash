@@ -51,27 +51,40 @@ describe "conditionals in output" do
     end
   end
 
-  before do
-    LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
-  end
-
   describe "simple" do
-    config <<-CONFIG
-      input {
-        generator {
-          message => '{"foo":{"bar"},"baz": "quux"}'
-          count => 1
-        }
+    let(:config) do <<-CONFIG
+    input {
+      generator {
+        message => '{"foo":{"bar"},"baz": "quux"}'
+        count => 1
       }
-      output {
-        if [foo] == "bar" {
-          dummynull { }
-        }
+    }
+    output {
+      if [foo] == "bar" {
+        dummynull { }
       }
+    }
     CONFIG
+    end
 
-    agent do
+    let(:pipeline) do
+      settings = ::LogStash::SETTINGS.clone
+      config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", config)
+      pipeline_config = LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, :main, config_part, settings)
+      LogStash::JavaPipeline.new(pipeline_config)
+    end
+
+    before do
+      LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
+    end
+
+    after do
+      pipeline.close
+    end
+
+    it "should not fail in pipeline run" do
       #LOGSTASH-2288, should not fail raising an exception
+      pipeline.run
     end
   end
 end

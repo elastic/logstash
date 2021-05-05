@@ -101,10 +101,6 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   If you wish to use both defaults, please use the empty string for the `-e` flag.
   The default is nil.
 
-*`--java-execution`*::
-  Specify `false` for this option to revert to the legacy Ruby execution engine instead
-  of the default Java execution engine.
-
 *`--plugin-classloaders`*::
   (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
 

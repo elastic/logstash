@@ -1,4 +1,4 @@
-dependency,dependencyUrl,licenseOverride
+dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "addressable:",https://github.com/sporkmonger/addressable,Apache-2.0
 "atomic:",http://github.com/ruby-concurrency/atomic,Apache-2.0
 "avl_tree:",https://github.com/nahi/avl_tree,BSD-2-Clause-FreeBSD
@@ -37,6 +37,7 @@ dependency,dependencyUrl,licenseOverride
 "domain_name:",https://github.com/knu/ruby-domain_name,BSD-2-Clause
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
 "edn:",https://github.com/relevance/edn-ruby,MIT
+"elastic-app-search:",https://github.com/elastic/app-search-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
@@ -64,6 +65,7 @@ dependency,dependencyUrl,licenseOverride
 "jruby-jms:",https://github.com/reidmorrison/jruby-jms,Apache-2.0
 "jruby-openssl:","https://github.com/jruby/jruby-openssl/",EPL-1.0
 "jruby-stdin-channel:","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
+"jwt:",https://github.com/jwt/ruby-jwt,MIT
 "json:",http://json-jruby.rubyforge.org/,Ruby
 "lru_redux:","https://github.com/SamSaffron/lru_redux/",MIT
 "mail:","https://github.com/mikel/mail/",MIT
@@ -114,9 +116,11 @@ dependency,dependencyUrl,licenseOverride
 "pry:",http://pryrepl.org,MIT
 "public_suffix:",https://simonecarletti.com/code/publicsuffix-ruby,MIT
 "puma:",http://puma.io,BSD-3-Clause
+"racc:",https://github.com/ruby/rake,Ruby
 "rack-protection:",http://github.com/rkh/rack-protection,MIT
 "rack:",http://rack.github.io/,MIT
 "rake:",https://github.com/ruby/rake,MIT
+"Red Hat Universal Base Image minimal:",https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8,Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf,,https://oss-dependencies.elastic.co/redhat/ubi/ubi-minimal-8-source.tar.gz
 "redis:",https://github.com/redis/redis-rb,MIT
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
@@ -139,3 +143,4 @@ dependency,dependencyUrl,licenseOverride
 "unf:",https://github.com/knu/ruby-unf,BSD-2-Clause
 "webhdfs:",https://github.com/kzk/webhdfs,Apache-2.0
 "xml-simple:",https://github.com/maik/xml-simple,BSD-2-Clause
+"down",https://github.com/janko/down,MIT

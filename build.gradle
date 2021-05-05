@@ -25,18 +25,20 @@ buildscript {
         }
     }
     dependencies {
+        classpath 'org.yaml:snakeyaml:1.17'
         classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 }
 
 plugins {
     id "de.undercouch.download" version "4.0.4"
+    id "com.dorongold.task-tree" version "1.5"
 }
 
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
-
+import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 
@@ -57,7 +59,13 @@ allprojects {
   }
 
   tasks.withType(Javadoc).configureEach {
-      options.addStringOption("Xwerror", "-quiet")
+      if (JavaVersion.current().compareTo(JavaVersion.VERSION_14) > 0) {
+          // with JDK 15 the -Xwerror undocumented feature becomes official with switch -Werror
+          options.addBooleanOption("Werror", true)
+      } else {
+          options.addBooleanOption("Xwerror", true)
+      }
+      options.addBooleanOption("Xdoclint:all,-missing", true)
       if (JavaVersion.current().compareTo(JavaVersion.VERSION_1_9) > 0) {
           options.addBooleanOption("html5", true)
       }
@@ -242,7 +250,7 @@ tasks.register("assembleTarDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
-      rake(projectDir, buildDir, 'artifact:tar')
+      rake(projectDir, buildDir, 'artifact:no_bundle_jdk_tar')
   }
 }
 
@@ -257,7 +265,7 @@ tasks.register("assembleOssTarDistribution") {
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
   doLast {
-      rake(projectDir, buildDir, 'artifact:tar_oss')
+      rake(projectDir, buildDir, 'artifact:archives_oss')
   }
 }
 
@@ -274,7 +282,7 @@ tasks.register("assembleZipDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
-      rake(projectDir, buildDir, 'artifact:zip')
+      rake(projectDir, buildDir, 'artifact:archives')
   }
 }
 
@@ -290,7 +298,7 @@ tasks.register("assembleOssZipDistribution") {
   inputs.files fileTree("${projectDir}/logstash-core/src")
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
-      rake(projectDir, buildDir, 'artifact:zip_oss')
+      rake(projectDir, buildDir, 'artifact:archives_oss')
 
   }
 }
@@ -314,8 +322,9 @@ tasks.register("unpackTarDistribution", Copy) {
   into {buildDir}
 }
 
-def qaVendorPath = "${buildDir}/qa/integration/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0"
+def qaBuildPath = "${buildDir}/qa/integration"
+def qaVendorPath = "${qaBuildPath}/vendor"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){
@@ -338,8 +347,8 @@ tasks.register("installIntegrationTestGems") {
   doLast {
       bundleWithEnv(
         projectDir, buildDir,
-        "${projectDir}/qa/integration", qaBundleBin, ['install', '--path', qaVendorPath],
-        [LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath]
+        qaBuildPath, qaBundleBin, ['install', '--path', qaVendorPath],
+        [ GEM_PATH: qaBundledGemPath, GEM_HOME: qaBundledGemPath ]
       )
   }
 }
@@ -389,9 +398,46 @@ tasks.register("copyFilebeat", Copy){
     }
 }
 
+tasks.register("checkEsSHA") {
+    dependsOn  configureArtifactInfo
+
+    description "Download ES version remote's fingerprint file"
+
+    String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
+    outputs.file("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
+
+    // find url of build artifact
+    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+    String apiResponse = artifactApiUrl.toURL().text
+    def buildUrls = new JsonSlurper().parseText(apiResponse)
+    String remoteSHA = buildUrls.package.sha_url.toURL().text
+
+    def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+    if (localESArchive.exists()) {
+        // this create a file named localESArchive with ".SHA-512" postfix
+        ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
+
+        File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
+        String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
+        def splitted = remoteSHA.split(' ')
+        String remoteSHACode = splitted[0]
+        if (localESCalculatedSHA != remoteSHACode) {
+            println "ES package calculated fingerprint is different from remote, deleting local archive"
+            delete(localESArchive)
+            delete(localESCalculatedSHA)
+        }
+    } else {
+        mkdir project.buildDir
+        // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
+        new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter {w ->
+            w << "${downloadedElasticsearchName} not yet downloaded"
+            w.close()
+        }
+    }
+}
 
 tasks.register("downloadEs", Download) {
-    dependsOn  configureArtifactInfo
+    dependsOn  = [configureArtifactInfo, checkEsSHA]
     description "Download ES Snapshot for current branch version: ${version}"
 
     String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
@@ -422,7 +468,7 @@ tasks.register("deleteLocalEs", Delete) {
     delete ('./build/elasticsearch')
 }
 
-tasks.register("copyEs", Copy){
+tasks.register("copyEs", Copy) {
     dependsOn = [downloadEs, deleteLocalEs]
     from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
     into "./build/"
@@ -430,7 +476,6 @@ tasks.register("copyEs", Copy){
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
         System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
-        delete(project.ext.elasticsearchDownloadLocation)
     }
 }
 
@@ -443,12 +488,12 @@ project(":logstash-integration-tests") {
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
         workingDir integrationTestPwd
         dependsOn installIntegrationTestGems
+        dependsOn copyEs
     }
 }
 
 tasks.register("runIntegrationTests"){
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
-    dependsOn copyEs
     dependsOn copyFilebeat
     shouldRunAfter ":logstash-core:test"
 }
@@ -509,11 +554,196 @@ bootstrap.dependsOn assemblyDeps
 // Elasticsearch doesn't yet have a build we can fetch
 // So for now we'll remove this to unblock builds, but finding a way
 // to compartimentalize failures is needed going forward
-//check.dependsOn runIntegrationTests
+//check.dependsOn runIntegrationTest
 
-Boolean oss = System.getenv('OSS').equals('true')
 
-if (!oss) {
+def selectOsType() {
+    if (project.ext.has("jdk_bundle_os")) {
+        return project.ext.jdk_bundle_os
+    }
+    String osName = System.properties['os.name']
+    switch (osName.toLowerCase()) {
+        case ~/mac os x/:
+            return "darwin"
+        case ~/windows.*/:
+            return "windows"
+        case ~/linux/:
+            return "linux"
+        default:
+            throw new IllegalArgumentException("Can't determine OS type from name: $osName")
+    }
+}
+
+def selectArch() {
+    if (project.ext.has("jdk_arch")) {
+        return project.ext.jdk_arch
+    }
+    String cpu_arch = System.properties["os.arch"]
+    switch (cpu_arch) {
+        case "amd64":
+        case "x86_64":
+            return "x86_64"
+        case "aarch64":
+        case "arm64":
+            return "arm64"
+        default:
+            throw new IllegalArgumentException("Can't handle os.arch of type $cpu_arch")
+    }
+}
+
+class JDKDetails {
+    final String revision
+    final String build
+    final String vendor
+    final int major
+    private final String osName
+    private final String extension
+    final String localPackageName
+    final String unpackedJdkName
+    private String arch
+
+    JDKDetails(versionYml, osName, jdkArch) {
+        revision = versionYml.bundled_jdk.revision
+        build = versionYml.bundled_jdk.build
+        vendor = versionYml.bundled_jdk.vendor
+        major = revision.split('\\.').first() as int
+        this.osName = osName
+
+        switch (osName) {
+            case "windows":
+                extension = "zip"
+                break
+            default:
+                extension = "tar.gz"
+        }
+        arch = parseJdkArchitecture(jdkArch)
+        unpackedJdkName = "jdk-${revision}-${osName}"
+        localPackageName = "${unpackedJdkName}-${arch}.${extension}"
+    }
+
+    String createDownloadUrl() {
+        switch (vendor) {
+            case "adoptopenjdk":
+                String releaseName = major > 8 ?
+                        "jdk-${revision}+${build}":
+                        "jdk${revision}u${build}"
+                String adoptOsName = adaptOsName(osName)
+                return "https://api.adoptopenjdk.net/v3/binary/version/${releaseName}/${adoptOsName}/${arch}/jdk/hotspot/normal/${vendor}"
+            default:
+                throw RuntimeException("Can't handle vendor: ${vendor}")
+        }
+    }
+
+    private String adaptOsName(String osName) {
+        if (osName == "darwin")
+            return "mac"
+        return osName
+    }
+
+    private String parseJdkArchitecture(String jdkArch) {
+        switch (jdkArch) {
+            case "x86_64":
+                return "x64"
+                break
+            case "arm64":
+                return "aarch64"
+                break
+            default:
+                throw RuntimeException("Can't handle CPU architechture: ${jdkArch}")
+        }
+    }
+}
+
+tasks.register("downloadJdk", Download) {
+    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
+
+    project.ext.set("versionFound", true)
+    String osName = selectOsType()
+
+    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
+    String jdkArch = selectArch()
+    def jdkDetails = new JDKDetails(versionYml, osName, jdkArch)
+
+    description "Download JDK ${jdkDetails.major}, OS: ${osName}"
+
+    // find url of build artifact
+    String artifactApiUrl = jdkDetails.createDownloadUrl()
+
+    project.ext.set("jdkURL", System.getenv("JDK_URL") ?: artifactApiUrl)
+    project.ext.set("jdkDownloadLocation", "${projectDir}/build/${jdkDetails.localPackageName}")
+    project.ext.set("jdkDirectory", "${projectDir}/build/${jdkDetails.unpackedJdkName}")
+
+    String jdkFolderName = osName == "darwin" ? "jdk.app" : "jdk"
+    project.ext.set("jdkBundlingDirectory", "${projectDir}/${jdkFolderName}")
+
+    src project.ext.jdkURL
+    onlyIfNewer true
+    overwrite false
+    inputs.file("${projectDir}/versions.yml")
+    outputs.file(project.ext.jdkDownloadLocation)
+    dest new File(project.ext.jdkDownloadLocation)
+
+    doLast {
+        mkdir project.ext.jdkBundlingDirectory
+        println "Downloaded to ${project.ext.jdkDownloadLocation}"
+    }
+}
+
+tasks.register("deleteLocalJdk", Delete) {
+    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
+    String osName = selectOsType()
+    String jdkFolderName = osName == "darwin" ? "jdk.app" : "jdk"
+    String jdkBundlingDirectory = "${projectDir}/${jdkFolderName}"
+    delete jdkBundlingDirectory
+}
+
+// Cannot use tarTree as it does not handle symlinks
+tasks.register("untarJdk", Exec) {
+    dependsOn downloadJdk
+    description = "unpack the downloaded JDK's tar.gz"
+    commandLine 'tar', 'xf', project.ext.jdkDownloadLocation, '-C', project.ext.jdkBundlingDirectory, '--strip-components', '1'
+    inputs.file(project.ext.jdkDownloadLocation)
+    outputs.dir(project.ext.jdkBundlingDirectory)
+}
+
+tasks.register("unzipJdk", Copy) {
+    dependsOn downloadJdk
+    description = "unpack the downloaded JDK's zip"
+    String rootName = null
+    from(zipTree("$project.ext.jdkDownloadLocation")) {
+        eachFile { fcd ->
+            rootName = rootName ?: fcd.relativePath.segments[0]
+            fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))
+        }
+    }
+    into project.ext.jdkBundlingDirectory
+    doLast {
+        delete "${project.ext.jdkBundlingDirectory}/$rootName"
+    }
+}
+
+tasks.register("decompressJdk") {
+    description = "unpack the downloaded JDK's (wrapper task for unzipJdk, untarJdk)"
+    String osName = selectOsType()
+    switch (osName) {
+        case "windows":
+            dependsOn ":unzipJdk"
+            break
+        default:
+            dependsOn ":untarJdk"
+    }
+}
+
+tasks.register("copyJdk", Copy) {
+    dependsOn = [decompressJdk, bootstrap]
+    description = "Download, unpack and copy the JDK"
+    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
+    doLast {
+        System.out.println "Download location is ${project.ext.jdkDownloadLocation}, Decompressing ${project.ext.jdkDirectory} to \"${project.ext.jdkBundlingDirectory}\""
+    }
+}
+
+if (System.getenv('OSS') != 'true') {
   project(":logstash-xpack") {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {

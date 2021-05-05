@@ -1,8 +1,8 @@
 [[logstash-reference]]
 = Logstash Reference
 
-include::{asciidoc-dir}/../../shared/versions/stack/{source_branch}.asciidoc[]
-include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
+include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
+include::{docs-root}/shared/attributes.asciidoc[]
 
 :include-xpack:         true
 :lang:                  en
@@ -105,7 +105,10 @@ include::static/configuration.asciidoc[]
 :edit_url!:
 include::static/security/logstash.asciidoc[]
 
-// Advanced Logstash Configurion
+:edit_url!:
+include::static/ls-to-cloud.asciidoc[]
+
+// Advanced Logstash Configuration
 
 :edit_url!:
 include::static/configuration-advanced.asciidoc[]
@@ -222,7 +225,7 @@ include::static/best-practice.asciidoc[]
 include::static/config-details.asciidoc[]
 
 :edit_url!:
-include::static/troubleshooting.asciidoc[]
+include::static/troubleshoot/troubleshooting.asciidoc[]
 
 :edit_url:
 

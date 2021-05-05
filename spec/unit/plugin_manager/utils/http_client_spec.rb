@@ -16,6 +16,7 @@
 # under the License.
 
 require "pluginmanager/utils/http_client"
+require "net/http"
 require "uri"
 
 describe LogStash::PluginManager::Utils::HttpClient do
@@ -104,9 +105,13 @@ describe LogStash::PluginManager::Utils::HttpClient do
       end
 
       context "with redirects" do
-        let(:redirect_response) { instance_double("Net::HTTP::Response", :code => "302", :headers => { "location" => "https://localhost:8888/new_path" }) }
+        let(:location) { "https://localhost:8888/new_path" }
+        let(:redirect_response) { instance_double("Net::HTTP::Response", :code => "302", :headers => { "location" => location }) }
         let(:response_ok) { instance_double("Net::HTTP::Response", :code => "200") }
 
+        before(:each) do
+          allow(redirect_response).to receive(:[]).with("location").and_return(location)
+        end
         it "follow 1 level redirect" do
           expect(mock_http).to receive(:request).with(kind_of(Net::HTTP::Head)).and_return(redirect_response)
           expect(mock_http).to receive(:request).with(kind_of(Net::HTTP::Head)).and_return(response_ok)

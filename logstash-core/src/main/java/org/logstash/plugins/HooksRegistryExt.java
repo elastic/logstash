@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * JRuby extension class that collect all the emitters and hooks
+ * */
 @JRubyClass(name = "HooksRegistry")
 public final class HooksRegistryExt extends RubyObject {
 

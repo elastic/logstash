@@ -228,24 +228,6 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
-        field-reference-parser: |+
-          (DEPRECATED) This option is no longer
-          configurable.
-
-          Use the given MODE when parsing field
-          references.
-
-          The field reference parser is used to expand
-          field references in your pipeline configs,
-          and has become more strict to better handle
-          ambiguous- and illegal-syntax inputs.
-
-          The only available MODE is:
-           - `STRICT`: parse in a strict manner; when
-             given ambiguous- or illegal-syntax input,
-             raises a runtime exception that should
-             be handled by the calling plugin.
-
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances
@@ -303,8 +285,6 @@ en:
           from starting if there are multiple workers.
           Use `false` to disable any extra processing necessary for preserving
           ordering.
-        java-execution: |+
-          Use Java execution engine.
         plugin-classloaders: |+
           (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
         pipeline-batch-size: |+
@@ -362,6 +342,21 @@ en:
           if there are still inflight events in memory.
           By default, logstash will refuse to quit until all
           received events have been pushed to the outputs.
+        ecs_compatibility: |+
+          Sets the pipeline's default value for `ecs_compatibility`,
+          a setting that is available to plugins that implement
+          an ECS Compatibility mode for use with the Elastic Common
+          Schema.
+          Possible values are:
+           - disabled (default)
+           - v1
+           - v2
+          This option allows the early opt-in (or preemptive opt-out)
+          of ECS Compatibility modes in plugins, which is scheduled to
+          be on-by-default in a future major release of Logstash.
+
+          Values other than `disabled` are currently considered BETA,
+          and may produce unintended consequences when upgrading Logstash.
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"

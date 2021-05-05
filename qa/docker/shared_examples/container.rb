@@ -11,7 +11,17 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
   context 'logstash' do
     it 'should run with the correct version' do
-      expect(exec_in_container(@container, 'logstash --version')).to match /#{version}/
+      console_out = exec_in_container(@container, 'logstash --version')
+      console_filtered = console_out.split("\n")
+            .delete_if do |line|
+              line =~ /Using JAVA_HOME defined java|Using system java: /
+            end.join
+      expect(console_filtered).to match /#{version}/
+    end
+
+    it 'should run with the bundled JDK' do
+      first_console_line = exec_in_container(@container, 'logstash --version').split("\n")[0]
+      expect(first_console_line).to match /Using bundled JDK: \/usr\/share\/logstash\/jdk/
     end
 
     it 'should be running an API server on port 9600' do
@@ -22,7 +32,11 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
   context 'container files' do
     it 'should have the correct license agreement' do
-      expect(exec_in_container(@container, 'cat /usr/share/logstash/LICENSE.txt')).to have_correct_license_agreement(flavor)
+      expect(exec_in_container(@container, 'cat /licenses/LICENSE.txt')).to have_correct_license_agreement(flavor)
+    end
+
+    it 'should have the license notices file' do
+      expect(exec_in_container(@container, 'cat /licenses/NOTICE.TXT')).to match /Notice for/
     end
 
     it 'should have the correct user' do
@@ -38,8 +52,8 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
 
     it 'should have all files owned by the logstash user' do
-      expect(exec_in_container(@container, 'find /usr/share/logstash ! -user logstash')).to be_nil
-      expect(exec_in_container(@container, 'find /usr/share/logstash -user logstash')).not_to be_nil
+      expect(exec_in_container(@container, 'find /usr/share/logstash ! -user logstash')).to be_empty
+      expect(exec_in_container(@container, 'find /usr/share/logstash -user logstash')).not_to be_empty
     end
 
     it 'should have a logstash user with uid 1000' do
@@ -56,6 +70,10 @@ shared_examples_for 'the container is configured correctly' do |flavor|
   end
 
   context 'the java process' do
+    before do
+      wait_for_logstash(@container)
+    end
+
     it 'should be running under the logstash user' do
       expect(java_process(@container, "user")).to eql 'logstash'
     end

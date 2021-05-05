@@ -22,8 +22,18 @@ rem ### 2: set java
 
 if defined JAVA_HOME (
   set JAVA="%JAVA_HOME%\bin\java.exe"
+  echo Using JAVA_HOME defined java: %JAVA_HOME%
+  if exist "%LS_HOME%\jdk" (
+    echo WARNING, using JAVA_HOME while Logstash distribution comes with a bundled JDK
+  )
 ) else (
-  for %%I in (java.exe) do set JAVA="%%~$PATH:I"
+  if exist "%LS_HOME%\jdk" (
+    set JAVA="%LS_HOME%\jdk\bin\java.exe"
+    echo "Using bundled JDK: %JAVA%""
+  ) else (
+    for %%I in (java.exe) do set JAVA="%%~$PATH:I"
+    echo "Using system java: %JAVA%"
+  )
 )
 
 if not exist %JAVA% (

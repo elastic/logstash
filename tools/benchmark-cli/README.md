@@ -14,33 +14,38 @@ which will create the output jar under `build/libs/benchmark-cli.jar`.
 
 ```bash
 $ java -cp 'benchmark-cli.jar:*' org.logstash.benchmark.cli.Main --help
-Option                           Description                                    
-------                           -----------                                    
---distribution-version <String>  The version of a Logstash build to download    
-                                   from elastic.co.                             
---elasticsearch-export <String>  Optional Elasticsearch host URL to store       
-                                   detailed results at. (default: )                       
---git-hash <String>              Either a git tree (tag/branch or commit hash), 
-                                   optionally prefixed by a Github username,    
-                                 if ran against forks.                          
-                                 E.g.                                           
-                                   'ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7',  
-                                 'user-                                         
+Option                           Description
+------                           -----------
+--config <File>                  Path to custom logstash config. Required if
+                                   testcase is set to 'custom'
+--data <File>                    Path to custom logstash data. Only if testcase
+                                   is set to 'custom'
+--distribution-version <String>  The version of a Logstash build to download
+                                   from elastic.co.
+--elasticsearch-export <String>  Optional Elasticsearch host URL to store
+                                   detailed results at. (default: )
+--git-hash <String>              Either a git tree (tag/branch or commit hash),
+                                   optionally prefixed by a Github username,
+                                 if ran against forks.
+                                 E.g.
+                                   'ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7',
+                                 'user-
                                    name#ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7'
-                                   or 'master'                                  
---local-path <String>            Path to the root of a local Logstash           
-                                   distribution.                                
-                                  E.g. `/opt/logstash`                          
---ls-batch-size <Integer>        Logstash batch size (-b argument) to           
-                                   configure. (default: 128)                    
---ls-workers <Integer>           Number of Logstash worker threads (-w          
-                                   argument) to configure. (default: 2)         
---repeat-data <Integer>          Sets how often the test's dataset should be    
-                                   run. (default: 1)                            
---testcase <String>              Currently available test cases are 'baseline'  
-                                   and 'apache'. (default: baseline)            
---workdir <File>                 Working directory to store cached files in.    
-                                   (default: ~/.logstash-benchmarks)  
+                                   or 'master'
+--local-path <String>            Path to the root of a local Logstash
+                                   distribution.
+                                  E.g. `/opt/logstash`
+--ls-batch-size <Integer>        Logstash batch size (-b argument) to
+                                   configure. (default: 128)
+--ls-workers <Integer>           Number of Logstash worker threads (-w
+                                   argument) to configure. (default: 2)
+--repeat-data <Integer>          Sets how often the test's dataset should be
+                                   run. (default: 1)
+--testcase <String>              Currently available test cases are 'baseline',
+                                   'apache' and 'custom'. (default: baseline)
+--workdir <File>                 Working directory to store cached files in.
+                                   (default: /Users/d059176/.logstash-
+                                   benchmarks) 
 ```
 
 ##### Example

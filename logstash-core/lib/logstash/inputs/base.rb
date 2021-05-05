@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/event"
+
 require "logstash/plugin"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
@@ -124,10 +124,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   def execution_context=(context)
     super
-    # There is no easy way to propage an instance variable into the codec, because the codec
-    # are created at the class level
-    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their
-    #               parent plugin's
+    # Setting the execution context after initialization is deprecated and will be removed in
+    # a future release of Logstash. While this code is no longer executed from Logstash core,
+    # we continue to propagate a set execution context to an input's codec, and rely on super's
+    # deprecation warning.
     @codec.execution_context = context
     context
   end

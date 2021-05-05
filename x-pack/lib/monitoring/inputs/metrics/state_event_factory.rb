@@ -7,7 +7,7 @@ module LogStash; module Inputs; class Metrics;
     require "logstash/config/lir_serializer"
 
     def initialize(pipeline, cluster_uuid, collection_interval = 10)
-      raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaPipeline)
+      raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::JavaPipeline)
 
       pipeline_doc = {"pipeline" => pipeline_data(pipeline)}
 

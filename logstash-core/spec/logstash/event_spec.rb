@@ -17,7 +17,7 @@
 
 require "spec_helper"
 require "logstash/util"
-require "logstash/event"
+
 require "json"
 require "java"
 

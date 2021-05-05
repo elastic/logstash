@@ -333,6 +333,31 @@ describe LogStash::Agent do
       end
     end
 
+    describe "#stop_pipeline" do
+      let(:config_string) { "input { generator { id => 'old'} } output { }" }
+      let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
+      let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
+      subject { described_class.new(agent_settings, source_loader) }
+
+      before(:each) do
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+        expect(subject.get_pipeline('main').running?).to be_truthy
+      end
+
+      after(:each) do
+        subject.shutdown
+      end
+
+      context "when agent stops the pipeline" do
+        it "should stop successfully", :aggregate_failures do
+          converge_result = subject.stop_pipeline('main')
+
+          expect(converge_result).to be_a_successful_converge
+          expect(subject.get_pipeline('main').stopped?).to be_truthy
+        end
+      end
+    end
+
     context "#started_at" do
       it "return the start time when the agent is started" do
         expect(described_class::STARTED_AT).to be_kind_of(Time)

@@ -34,9 +34,9 @@ module LogStash
       "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
+      "dead_letter_queue.flush_interval",
       "dead_letter_queue.max_bytes",
       "metric.collect",
-      "pipeline.java_execution",
       "pipeline.plugin_classloaders",
       "path.config",
       "path.dead_letter_queue",
@@ -48,6 +48,7 @@ module LogStash
       "pipeline.system",
       "pipeline.workers",
       "pipeline.ordered",
+      "pipeline.ecs_compatibility",
       "queue.checkpoint.acks",
       "queue.checkpoint.interval",
       "queue.checkpoint.writes",
@@ -83,7 +84,7 @@ module LogStash
 
     def get_setting(setting_name)
       setting = @settings[setting_name]
-      raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?
+      raise ArgumentError.new("Setting \"#{setting_name}\" doesn't exist. Please check if you haven't made a typo.") if setting.nil?
       setting
     end
 

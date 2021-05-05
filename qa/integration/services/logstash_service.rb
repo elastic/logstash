@@ -94,7 +94,7 @@ class LogstashService < Service
 
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       `cat #{Shellwords.escape(input)} | #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
     end
   end
@@ -111,7 +111,7 @@ class LogstashService < Service
   # Useful to test metrics and such
   def start_with_stdin
     puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true
       @process = build_child_process("-e", STDIN_CONFIG)
@@ -134,7 +134,7 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
@@ -245,7 +245,7 @@ class LogstashService < Service
     end
     process.io.stdout = process.io.stderr = out
 
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       if change_dir
         Dir.chdir(@logstash_home) do
           process.start

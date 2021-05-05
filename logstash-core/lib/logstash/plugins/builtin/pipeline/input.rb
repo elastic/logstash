@@ -33,6 +33,9 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
     if !listen_successful
       raise ::LogStash::ConfigurationError, "Internal input at '#{@address}' already bound! Addresses must be globally unique across pipelines."
     end
+    # add address to the plugin stats
+    metric.gauge(:address, address)
+
   end
 
   def run(queue)

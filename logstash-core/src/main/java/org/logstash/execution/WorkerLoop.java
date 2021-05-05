@@ -25,6 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.config.ir.CompiledPipeline;
 
+/**
+ * Pipeline execution worker, it's responsible to execute filters and output plugins for each {@link QueueBatch} that
+ * pull out from queue.
+ * */
 public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);

@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath 'org.yaml:snakeyaml:1.23'
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-complete:9.2.13.0"
+        classpath "org.jruby:jruby-complete:9.2.16.0"
     }
 }
 
@@ -272,10 +272,7 @@ tasks.register("downloadAndInstallJRuby", Copy) {
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
     exclude "**/stdlib/rdoc/**"
-    exclude "**/stdlib/bundler/**"
-    exclude "**/stdlib/bundler.rb"
-    exclude "**/bundler-1.16.6/**"
-    exclude "**/bundler-1.16.6.*"
+    exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"

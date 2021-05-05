@@ -29,6 +29,9 @@ import org.logstash.log.DefaultDeprecationLogger;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * Default implementation of Logstash Plugin's {@link Context}
+ * */
 public class ContextImpl implements Context {
 
     private DeadLetterQueueWriter dlqWriter;

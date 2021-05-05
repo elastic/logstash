@@ -6,20 +6,31 @@
 {% endif -%}
 
 {% if image_flavor == 'oss' -%}
-  {% set tarball = 'logstash-oss-%s.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-oss-%s-linux-$(arch).tar.gz' % (elastic_version) -%}
   {% set license = 'Apache 2.0' -%}
 {% else -%}
-  {% set tarball = 'logstash-%s.tar.gz' % elastic_version -%}
+  {% set tarball = 'logstash-%s-linux-$(arch).tar.gz' % (elastic_version) -%}
   {% set license = 'Elastic License' -%}
 {% endif -%}
 
+{% if image_flavor == 'ubi8' -%}
+  {% set base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%}
+  {% set package_manager = 'microdnf'  -%}
+  # Minimal distributions do not ship with en language packs.
+  {% set locale = 'C.UTF-8' -%}
+{% else -%}
+  {% set base_image = 'centos:7'  -%}
+  {% set package_manager = 'yum' -%}
+  {% set locale = 'en_US.UTF-8' -%}
+{% endif -%}
 
-FROM centos:7
+FROM {{ base_image }}
 
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
-RUN yum update -y && yum install -y java-11-openjdk-devel which && \
-    yum clean all
+# Minimal distributions also require findutils tar gzip (procps for integration tests)
+RUN {{ package_manager }} update -y && {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
+    {{ package_manager }} clean all
 
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \
@@ -34,8 +45,12 @@ RUN curl -Lo - {{ url_root }}/{{ tarball }} | \
     chown --recursive logstash:logstash /usr/share/logstash/ && \
     chown -R logstash:root /usr/share/logstash && \
     chmod -R g=u /usr/share/logstash && \
+    mkdir /licenses/ && \
+    mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
+    mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
     find /usr/share/logstash -type d -exec chmod g+s {} \; && \
     ln -s /usr/share/logstash /opt/logstash
+
 
 WORKDIR /usr/share/logstash
 
@@ -45,13 +60,17 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
 ADD config/pipelines.yml config/pipelines.yml
-ADD config/logstash-{{ image_flavor }}.yml config/logstash.yml
+{% if image_flavor == 'oss' -%}
+ADD config/logstash-oss.yml config/logstash.yml
+{% else -%}
+ADD config/logstash-full.yml config/logstash.yml
+{% endif -%}
 ADD config/log4j2.properties config/
 ADD pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 
-# Ensure Logstash gets a UTF-8 locale by default.
-ENV LANG='en_US.UTF-8' LC_ALL='en_US.UTF-8'
+# Ensure Logstash gets the correct locale by default.
+ENV LANG={{ locale }} LC_ALL={{ locale }}
 
 # Place the startup wrapper script.
 ADD bin/docker-entrypoint /usr/local/bin/
@@ -73,10 +92,18 @@ LABEL  org.label-schema.schema-version="1.0" \
   org.opencontainers.image.version="{{ elastic_version }}" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
   org.label-schema.vcs-url="https://github.com/elastic/logstash" \
-  license="{{ license }}" \
   org.label-schema.license="{{ license }}" \
   org.opencontainers.image.licenses="{{ license }}" \
+  org.opencontainers.image.description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
   org.label-schema.build-date={{ created_date }} \
+{% if image_flavor == 'ubi8' -%}
+  license="{{ license }}" \
+  description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
+  name="logstash" \
+  maintainer="info@elastic.co" \
+  summary="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
+  vendor="Elastic" \
+{% endif -%}
   org.opencontainers.image.created={{ created_date }}
 
 

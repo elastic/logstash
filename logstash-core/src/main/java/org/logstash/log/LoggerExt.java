@@ -39,6 +39,10 @@ import org.jruby.runtime.builtin.IRubyObject;
 import java.io.File;
 import java.net.URI;
 
+/**
+ * JRuby extension, it's part of log4j wrapping for JRuby.
+ * Wrapper log4j Logger as Ruby like class
+ * */
 @JRubyClass(name = "Logger")
 public class LoggerExt extends RubyObject {
 

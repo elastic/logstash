@@ -46,6 +46,9 @@ import java.util.function.Consumer;
 
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
+/**
+ * Java implementation of the "line" codec
+ * */
 @LogstashPlugin(name = "java_line")
 public class Line implements Codec {
 

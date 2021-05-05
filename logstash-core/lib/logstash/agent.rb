@@ -19,7 +19,6 @@ require "logstash/environment"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
 require "logstash/instrument/periodic_pollers"
-require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/config/source_loader"
 require "logstash/config/pipeline_config"
@@ -69,10 +68,12 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    # Set the global FieldReference parsing mode
-    if @settings.set?('config.field_reference.parser')
-      # TODO: i18n
-      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
+    if @settings.set?('pipeline.ecs_compatibility')
+      ecs_compatibility_value = settings.get('pipeline.ecs_compatibility')
+      if ecs_compatibility_value != 'disabled'
+        logger.warn("Setting `pipeline.ecs_compatibility` given as `#{ecs_compatibility_value}`; " +
+                    "values other than `disabled` are currently considered BETA and may have unintended consequences when upgrading minor versions of Logstash.")
+      end
     end
 
     # This is for backward compatibility in the tests
@@ -84,7 +85,9 @@ class LogStash::Agent
     end
 
     # Normalize time interval to seconds
-    @reload_interval = setting("config.reload.interval").to_seconds
+    # we can't do .to_seconds here as values under 1 seconds are rounded to 0
+    # so we get the nanos and convert to seconds instead.
+    @reload_interval = setting("config.reload.interval").to_nanos * 1e-9
 
     @collect_metric = setting("metric.collect")
 
@@ -111,9 +114,9 @@ class LogStash::Agent
 
     transition_to_running
 
-    converge_state_and_update
-
     start_webserver_if_enabled
+
+    converge_state_and_update
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -205,6 +208,15 @@ class LogStash::Agent
     logger.error("An exception happened when converging configuration", attributes)
   end
 
+  ##
+  # Shut down a pipeline and wait for it to fully stop.
+  # WARNING: Calling from `Plugin#initialize` or `Plugin#register` will result in deadlock.
+  # @param pipeline_id [String]
+  def stop_pipeline(pipeline_id)
+    action = LogStash::PipelineAction::Stop.new(pipeline_id.to_sym)
+    converge_state_with_resolved_actions([action])
+  end
+
   # Calculate the Logstash uptime in milliseconds
   #
   # @return [Integer] Uptime in milliseconds
@@ -278,6 +290,10 @@ class LogStash::Agent
     @pipelines_registry.running_pipelines
    end
 
+   def loading_pipelines
+    @pipelines_registry.loading_pipelines
+   end
+
   def non_running_pipelines
     @pipelines_registry.non_running_pipelines
   end
@@ -317,6 +333,15 @@ class LogStash::Agent
   def resolve_actions_and_converge_state(pipeline_configs)
     @convergence_lock.synchronize do
       pipeline_actions = resolve_actions(pipeline_configs)
+      converge_state(pipeline_actions)
+    end
+  end
+
+  # Beware the usage with #resolve_actions_and_converge_state
+  # Calling this method in `Plugin#register` causes deadlock.
+  # For example, resolve_actions_and_converge_state -> pipeline reload_action -> plugin register -> converge_state_with_resolved_actions
+  def converge_state_with_resolved_actions(pipeline_actions)
+    @convergence_lock.synchronize do
       converge_state(pipeline_actions)
     end
   end

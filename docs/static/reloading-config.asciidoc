@@ -54,3 +54,13 @@ a change in the config file triggers a reload (or the pipeline is restarted).
 
 In general, Logstash is not watching or monitoring any configuration files used or referenced by inputs,
 filters or outputs.
+
+[[plugins-block-reload]]
+==== Plugins that prevent automatic reloading
+
+Input and output plugins usually interact with OS resources. In some
+circumstances those resources can't be released without a restart. For this
+reason some plugins can't be simply updated and this prevents pipeline reload. 
+
+The <<plugins-inputs-stdin, stdin input>> plugin, for example, prevents
+reloading for these reasons.

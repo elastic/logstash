@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyString;
 
+/**
+ * Represents a reference to another field of the event {@link Event}
+ * */
 public final class FieldReference {
     /**
      * A custom unchecked {@link RuntimeException} that can be thrown by parsing methods when
@@ -125,6 +128,15 @@ public final class FieldReference {
             return result;
         }
         return parseToCache(reference);
+    }
+
+    public static boolean isValid(final String reference) {
+        try {
+            FieldReference.from(reference);
+            return true;
+        } catch (IllegalSyntaxException ise) {
+            return false;
+        }
     }
 
     /**

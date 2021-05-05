@@ -33,6 +33,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
+/**
+ * Java implementation of the "uuid" filter
+ * */
 @LogstashPlugin(name = "java_uuid")
 public class Uuid implements Filter {
 

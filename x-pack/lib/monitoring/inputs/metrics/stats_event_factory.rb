@@ -12,6 +12,7 @@ module LogStash; module Inputs; class Metrics;
       @snapshot = snapshot
       @metric_store = @snapshot.metric_store
       @cluster_uuid = cluster_uuid
+      @webserver_enabled = LogStash::SETTINGS.get_value("http.enabled")
     end
 
     def make(agent, extended_performance_collection=true, collection_interval=10)
@@ -124,8 +125,13 @@ module LogStash; module Inputs; class Metrics;
     end
 
     def fetch_node_stats(agent, stats)
+      if @webserver_enabled
+        http_addr = stats.get_shallow(:http_address).value
+      else
+        http_addr = nil
+      end
       @global_stats.merge({
-        "http_address" => stats.get_shallow(:http_address).value,
+        "http_address" => http_addr,
         "ephemeral_id" => agent.ephemeral_id
       })
     end

@@ -12,7 +12,13 @@ else
   VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
-IMAGE_FLAVORS ?= oss full
+ifdef DOCKER_ARCHITECTURE
+  ARCHITECTURE := $(DOCKER_ARCHITECTURE)
+else
+  ARCHITECTURE := $(shell uname -m)
+endif
+
+IMAGE_FLAVORS ?= oss full ubi8
 DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
@@ -21,14 +27,13 @@ HTTPD ?= logstash-docker-artifact-server
 FIGLET := pyfiglet -w 160 -f puffy
 
 all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
-DATE:= $(shell date -u +'%Y-%m-%dT%H:%M:%S.%sZ')
 
 lint: venv
 	flake8 tests
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts: venv dockerfile env2yaml
+build-from-local-full-artifacts: venv dockerfile env2yaml
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -46,6 +51,16 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
 	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
+	  (docker kill $(HTTPD); false);
+	-docker kill $(HTTPD)
+
+build-from-local-ubi8-artifacts: venv dockerfile env2yaml
+	docker run --rm -d --name=$(HTTPD) \
+	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	pyfiglet -f puffy -w 160 "Building: ubi8"; \
+	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -69,12 +84,13 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full
+public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full public_dockerfiles_ubi8
 
 public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
-	  -D created_date='$(DATE)' \
+	  -D created_date='$(BUILD_DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='full' \
 	  -D local_artifacts='false' \
@@ -86,8 +102,9 @@ public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 
 public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
-	  -D created_date='$(DATE)' \
+	  -D created_date='$(BUILD_DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='oss' \
 	  -D local_artifacts='false' \
@@ -96,6 +113,20 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
+	jinja2 \
+	  -D created_date='$(BUILD_DATE)' \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='ubi8' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ubi8 && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
+	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
@@ -141,8 +172,9 @@ env2yaml: golang
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	  jinja2 \
-	    -D created_date='$(DATE)' \
+	    -D created_date='$(BUILD_DATE)' \
 	    -D elastic_version='$(ELASTIC_VERSION)' \
+	    -D arch='${ARCHITECTURE}' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
 	    -D local_artifacts='true' \
