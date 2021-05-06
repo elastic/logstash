@@ -2,60 +2,33 @@
 services:
   - logstash
   - elasticsearch
-config:
-  root: |-
-    input {
-      stdin { }
+config: |-
+  input {
+    stdin { }
+  }
+
+  filter {
+    grok {
+      match => {
+        "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+      }
     }
 
-    filter {
-      grok {
-        match => {
-          "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
-        }
-      }
+    date {
+      match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
+      locale => en
+    }
+    geoip {
+      source => "clientip"
+    }
+    useragent {
+      source => "agent"
+      target => "useragent"
+    }
+  }
+  output {
+    elasticsearch {}
+  }
 
-      date {
-        match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
-        locale => en
-      }
-      geoip {
-        source => "clientip"
-      }
-      useragent {
-        source => "agent"
-        target => "useragent"
-      }
-    }
-    output {
-      elasticsearch {}
-    }
-  data_streams: |-
-    input {
-      stdin { }
-    }
-
-    filter {
-      grok {
-        match => {
-          "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
-        }
-      }
-
-      date {
-        match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
-        locale => en
-      }
-      geoip {
-        source => "clientip"
-      }
-      useragent {
-        source => "agent"
-        target => "useragent"
-      }
-    }
-    output {
-      elasticsearch { data_stream => "false"}
-    }
 input: how_sample.input
 teardown_script:

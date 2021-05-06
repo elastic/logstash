@@ -99,14 +99,6 @@ describe "Test Dead Letter Queue" do
       logstash_service.spawn_logstash("--path.settings", settings_dir)
     end
 
-    def prepare_config_string(config_string)
-      if LOGSTASH_VERSION >= '8.0'
-        config_string.gsub("output { elasticsearch {} }", "output { elasticsearch {data_stream => false} }")
-      else
-        config_string
-      end
-    end
-
     context 'with multiple pipelines' do
       let(:message) { generate_message(100)}
       let(:pipelines) {[
@@ -115,14 +107,14 @@ describe "Test Dead Letter Queue" do
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => true,
               "pipeline.batch.size" => 1,
-              "config.string" => prepare_config_string("input { generator { message => '#{message}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }")
+              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
           },
           {
               "pipeline.id" => "test2",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => false,
               "pipeline.batch.size" => 1,
-              "config.string" => prepare_config_string("input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"geoip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch {} }")
+              "config.string" => "input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"geoip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch {} }"
           }
       ]}
 
@@ -137,7 +129,7 @@ describe "Test Dead Letter Queue" do
             "pipeline.workers" => 1,
             "dead_letter_queue.enable" => true,
             "pipeline.batch.size" => 1,
-            "config.string" => prepare_config_string("
+            "config.string" => "
                 input { generator{ message => '#{message}' codec => \"json\" count => 1000 }
                         dead_letter_queue { path => \"#{dlq_dir}\" commit_offsets => true }
                 }
@@ -145,7 +137,7 @@ describe "Test Dead Letter Queue" do
                   if ([geoip]) { mutate { remove_field => [\"geoip\"] add_field => { \"mutated\" => \"true\" } } }
                   else{ mutate { add_field => { \"geoip\" => \"somewhere\" } } }
                 }
-                output { elasticsearch {} }")
+                output { elasticsearch {} }"
         }
       ]}
 
@@ -154,8 +146,7 @@ describe "Test Dead Letter Queue" do
   end
 
   context 'using logstash.yml and separate config file' do
-    let(:fixture_type) { LOGSTASH_VERSION >= '8.0' ? 'data_streams' : 'root' }
-    let(:generator_config_file) { config_to_temp_file(@fixture.config(fixture_type, { :dlq_dir => dlq_dir })) }
+    let(:generator_config_file) { config_to_temp_file(@fixture.config("root",{ :dlq_dir => dlq_dir })) }
 
     before :each do
       logstash_service.start_background_with_config_settings(generator_config_file, settings_dir)

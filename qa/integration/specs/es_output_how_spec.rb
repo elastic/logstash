@@ -18,10 +18,7 @@
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
-require_relative '../framework/helpers'
 require_relative 'spec_helper.rb'
-
-require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Elasticsearch output" do
 
@@ -38,12 +35,7 @@ describe "Test Elasticsearch output" do
   it "can ingest 37K log lines of sample apache logs" do
     logstash_service = @fixture.get_service("logstash")
     es_service = @fixture.get_service("elasticsearch")
-    if LOGSTASH_VERSION >= '8.0'
-      config_string = @fixture.config('data_streams')
-    else
-      config_string = @fixture.config
-    end
-    logstash_service.start_with_input(config_string, @fixture.input)
+    logstash_service.start_with_input(@fixture.config, @fixture.input)
     es_client = es_service.get_client
     # now we test if all data was indexed by ES, but first refresh manually
     es_client.indices.refresh
