@@ -22,6 +22,8 @@ describe LogStash::Filters::Geoip do
 
     before(:each) do
       LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+      create_default_city_gz
+      FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
     end
 
     context "get all" do
@@ -57,11 +59,6 @@ describe LogStash::Filters::Geoip do
     end
 
     context "save timestamp" do
-      before do
-        create_default_city_gz
-        FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
-      end
-
       it "write the current time" do
         write_temp_metadata(temp_metadata_path)
         dbm.save_metadata(database_type, second_dirname, true)
@@ -73,7 +70,6 @@ describe LogStash::Filters::Geoip do
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).to eq("City")
         past = metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]
         expect(Time.now.to_i - past.to_i).to be < 100
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eq(second_dirname)
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]).to eq("true")
@@ -88,10 +84,6 @@ describe LogStash::Filters::Geoip do
       end
 
       context "when the database exist" do
-        before do
-          FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
-        end
-
         it "return the last database path with valid md5" do
           write_temp_metadata(temp_metadata_path, city2_metadata)
 
