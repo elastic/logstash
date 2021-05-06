@@ -8,7 +8,7 @@ ES_HOME="$current_dir/../../../build/elasticsearch"
 
 start_es() {
   es_args=$@
-  JAVA_HOME= $ES_HOME/bin/elasticsearch -Epath.data=/tmp/ls_integration/es-data -Epath.logs=/tmp/ls_integration/es-logs $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
+  JAVA_HOME= $ES_HOME/bin/elasticsearch -Epath.data=/tmp/ls_integration/es-data -Ediscovery.type=single-node -Epath.logs=/tmp/ls_integration/es-logs $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
   count=120
   echo "Waiting for elasticsearch to respond..."
   while ! curl --silent localhost:9200 && [[ $count -ne 0 ]]; do
