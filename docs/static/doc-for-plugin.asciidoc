@@ -1,5 +1,5 @@
 [[plugin-doc]]
-=== Documenting your plugin
+=== Document your plugin
 
 Quality documentation with good examples contributes to the adoption of your plugin.
 
@@ -23,7 +23,7 @@ is built. Unique heading IDs are required to avoid duplication over multiple ver
 
 *Example*
 
-Don't hardcode a heading ID like this: `[[config_models]]`
+Don't hardcode a plugin heading ID like this: `[[config_models]]`
 
 Instead, use variables to define it:
 

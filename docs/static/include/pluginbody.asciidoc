@@ -2,7 +2,7 @@
 
 === How to write a Logstash {plugintype} plugin
 
-To develop a new {plugintype} for Logstash, you build a self-contained Ruby gem
+To develop a new {plugintype} for Logstash, build a self-contained Ruby gem
 whose source code lives in its own GitHub repository. The Ruby gem can then be
 hosted and shared on RubyGems.org. You can use the example {plugintype}
 implementation as a starting point. (If you're unfamiliar with
@@ -27,7 +27,7 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 
 ===== Use the plugin generator tool
 
-You can now create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
+You can create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
 for a new Logstash plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
 can start adding custom code to process data with Logstash.
 
