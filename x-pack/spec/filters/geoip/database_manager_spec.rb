@@ -26,12 +26,12 @@ describe LogStash::Filters::Geoip do
     CC = LogStash::Filters::Geoip::CC
 
     before do
-      db_manager
       stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', "https://somewhere.dev")
     end
 
     after do
       LogStash::Filters::Geoip::DatabaseManager.class_variable_set(:@@instance, nil)
+      delete_file(metadata_path)
     end
 
     context "initialize" do
@@ -83,7 +83,7 @@ describe LogStash::Filters::Geoip do
         it "should update states when new downloads are valid" do
           expect(mock_download_manager).to receive(:fetch_database).and_return([valid_city_fetch, valid_asn_fetch])
           expect(mock_metadata).to receive(:save_metadata).at_least(:twice)
-          expect(mock_geoip_plugin).to receive(:setup_filter).at_least(:twice)
+          expect(mock_geoip_plugin).to receive(:update_database).at_least(:twice)
           expect(mock_metadata).to receive(:update_timestamp).never
           expect(db_manager).to receive(:check_age)
           expect(db_manager).to receive(:clean_up_database)

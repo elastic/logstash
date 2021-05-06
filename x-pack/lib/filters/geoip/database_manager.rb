@@ -81,7 +81,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   protected
-  # update database path to the new download
+  # notice plugins to update database path to the new download
   # update timestamp when download is valid or there is no update
   # do daily check and clean up
   def execute_download_job
@@ -92,7 +92,7 @@ module LogStash module Filters module Geoip class DatabaseManager
           @metadata.save_metadata(database_type, dirname, true)
           @states[database_type].is_eula = true
           @states[database_type].database_path = new_database_path
-          @states[database_type].plugins.dup.each { |plugin| plugin.setup_filter(new_database_path) if plugin }
+          @states[database_type].plugins.dup.each { |plugin| plugin.update_database(new_database_path) if plugin }
         end
       end
 
@@ -133,7 +133,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  # Clean up files .mmdb, .tgz which are not mentioned in metadata and not default database
+  # Clean up directories which are not mentioned in metadata and not CC database
   def clean_up_database
     protected_dirnames = (@metadata.dirnames + [CC]).uniq
     existing_dirnames = ::Dir.children(get_data_dir_path)

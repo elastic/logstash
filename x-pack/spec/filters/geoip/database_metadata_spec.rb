@@ -22,8 +22,6 @@ describe LogStash::Filters::Geoip do
 
     before(:each) do
       LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
-      create_default_city_gz
-      FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
     end
 
     context "get all" do
@@ -59,6 +57,11 @@ describe LogStash::Filters::Geoip do
     end
 
     context "save timestamp" do
+      before do
+        create_default_city_gz
+        FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
+      end
+
       it "write the current time" do
         write_temp_metadata(temp_metadata_path)
         dbm.save_metadata(database_type, second_dirname, true)
@@ -84,10 +87,16 @@ describe LogStash::Filters::Geoip do
         expect(dbm.database_path(database_type)).to eq(default_city_db_path)
       end
 
-      it "return the last database path with valid md5" do
-        write_temp_metadata(temp_metadata_path, city2_metadata)
+      context "when the database exist" do
+        before do
+          FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
+        end
 
-        expect(dbm.database_path(database_type)).to eq(second_city_db_path)
+        it "return the last database path with valid md5" do
+          write_temp_metadata(temp_metadata_path, city2_metadata)
+
+          expect(dbm.database_path(database_type)).to eq(second_city_db_path)
+        end
       end
 
       context "with ASN database type" do
@@ -167,30 +176,58 @@ describe LogStash::Filters::Geoip do
       end
     end
 
-    # context "update timestamp" do
-    #   it "should update timestamp only" do
-    #     write_temp_metadata(temp_metadata_path)
-    #     original = dbm.get_all
-    #     sleep(2)
-    #
-    #     dbm.update_timestamp
-    #     updated = dbm.get_all
-    #
-    #     original.size.times do |i|
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).
-    #         to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]))
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT])
-    #         .not_to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]))
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5])
-    #         .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]))
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5])
-    #         .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]))
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME])
-    #         .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME]))
-    #       expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA])
-    #         .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]))
-    #     end
-    #   end
-    # end
+    context "update timestamp" do
+      it "should update timestamp only for database type" do
+        write_temp_metadata(temp_metadata_path)
+        original = dbm.get_all
+        sleep(2)
+
+        dbm.update_timestamp(database_type)
+        updated = dbm.get_all
+
+        original.size.times do |i|
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).
+            to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]))
+        end
+
+        # ASN
+        expect(original[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT])
+          .to(eq(updated[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]))
+
+        # City
+        expect(original[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT])
+          .not_to(eq(updated[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]))
+      end
+    end
+
+    context "reset md5" do
+      it "should reset md5 to empty string only" do
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","1620246514",true],
+                                                    ["City","1620246514","SOME MD5","1620246514",true] ])
+
+        dbm.reset_md5(database_type)
+        row = dbm.get_metadata(database_type).last
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to be_empty
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eql("1620246514")
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]).to be_truthy
+      end
+    end
+
+    context "dirnames" do
+      it "should reset md5 to empty string only" do
+        write_temp_metadata(temp_metadata_path, city2_metadata)
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","CC",true],
+                                                    city2_metadata ])
+
+        dirnames = dbm.dirnames
+        expect(dirnames).to match_array([second_dirname, "CC"])
+      end
+    end
   end
 end

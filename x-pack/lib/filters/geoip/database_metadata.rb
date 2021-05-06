@@ -53,7 +53,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     file_exist?(@metadata_path)? ::CSV.read(@metadata_path, headers: false) : Array.new
   end
 
-  # Give rows of metadata in default database type, or empty array
+  # Give rows of metadata that match/exclude the type
   def get_metadata(database_type, match = true)
     get_all.select { |row| row[Column::DATABASE_TYPE].eql?(database_type) == match }
   end

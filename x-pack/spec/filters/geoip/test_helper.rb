@@ -85,6 +85,13 @@ module GeoipHelper
     end
   end
 
+  def rewrite_temp_metadata(temp_file_path, metadata = [])
+    FileUtils.mkdir_p(::File.dirname(temp_file_path))
+    CSV.open temp_file_path, 'w' do |csv|
+      metadata.each { |row| csv << row }
+    end
+  end
+
   def city2_metadata
     ["City",Time.now.to_i,"",second_dirname,true]
   end
