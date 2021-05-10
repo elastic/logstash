@@ -105,25 +105,13 @@ public class AliasRegistry {
                 scanner.nextLine();
 
                 // collect all remaining lines
-                yaml = loadYamlSection(scanner).toString();
-            }
-        }
 
-        private StringBuilder loadYamlSection(Scanner scanner) {
-            final StringBuilder yaml = new StringBuilder();
-            while (true) {
-                final String line;
-                try {
-                    line = scanner.nextLine();
-                    yaml.append(line);
-                } catch (NoSuchElementException noMoreLinesEx) {
-                    break;
-                }
-                if (scanner.hasNext()) {
-                    yaml.append("\n");
-                }
+            final StringBuilder yamlBuilder = new StringBuilder();
+            scanner.useDelimiter("\\Z") // EOF, less optional trailing newline
+            if (scanner.hasNext()) {
+              yamlBuilder.append(scanner.next());
             }
-            return yaml;
+            yaml = yamlBuilder.toString();
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
