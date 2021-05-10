@@ -23,15 +23,12 @@ require_relative 'spec_helper.rb'
 
 require "logstash/devutils/rspec/spec_helper"
 
-def generate_message(number)
-  message = {}
-  number.times do |i|
-    message["field#{i}"] = "value#{i}"
-  end
-  message.to_json
-end
-
 describe "Test Dead Letter Queue" do
+
+  # template with an ip field
+  let(:template) { { "index_patterns": ["te*"], "mappings": { "properties": { "ip": { "type": "ip" }}}} }
+  # a message that is incompatible with the template
+  let(:message) { {"message": "hello", "ip": 1}.to_json }
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
@@ -45,7 +42,9 @@ describe "Test Dead Letter Queue" do
 
   before(:each) {
     IO.write(config_yaml_file, config_yaml)
-    clean_es(@fixture.get_service("elasticsearch").get_client)
+    es_client = @fixture.get_service("elasticsearch").get_client
+    clean_es(es_client)
+    es_client.perform_request("PUT", "_template/ip-template", {}, template)
   }
 
 
@@ -76,15 +75,18 @@ describe "Test Dead Letter Queue" do
       logstash_service.wait_for_logstash
       try(60) do
         begin
-          result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+          result = es_client.search(index: 'test-index', size: 0, q: '*')
         rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
           puts "Elasticsearch unavailable #{e.inspect}"
+          hits = 0
+        rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+          puts "Index not found"
           hits = 0
         end
         expect(result).to have_hits(1000)
       end
 
-      result = es_client.search(index: 'logstash-*', size: 1, q: '*')
+      result = es_client.search(index: 'test-index', size: 1, q: '*')
       s = result["hits"]["hits"][0]["_source"]
       expect(s["mutated"]).to eq("true")
     end
@@ -100,21 +102,20 @@ describe "Test Dead Letter Queue" do
     end
 
     context 'with multiple pipelines' do
-      let(:message) { generate_message(100)}
       let(:pipelines) {[
           {
               "pipeline.id" => "test",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => true,
-              "pipeline.batch.size" => 1,
-              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } filter { mutate { add_field => { \"geoip\" => \"somewhere\" } } } output { elasticsearch {} }"
+              "pipeline.batch.size" => 100,
+              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } output { elasticsearch { index => \"test-index\" } }"
           },
           {
               "pipeline.id" => "test2",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => false,
-              "pipeline.batch.size" => 1,
-              "config.string" => "input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"geoip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch {} }"
+              "pipeline.batch.size" => 100,
+              "config.string" => "input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"ip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch { index => \"test-index\" } }"
           }
       ]}
 
@@ -122,22 +123,20 @@ describe "Test Dead Letter Queue" do
     end
 
     context 'with a single pipeline' do
-      let(:message) { generate_message(100)}
       let(:pipelines) {[
         {
             "pipeline.id" => "main",
             "pipeline.workers" => 1,
             "dead_letter_queue.enable" => true,
-            "pipeline.batch.size" => 1,
+            "pipeline.batch.size" => 100,
             "config.string" => "
                 input { generator{ message => '#{message}' codec => \"json\" count => 1000 }
                         dead_letter_queue { path => \"#{dlq_dir}\" commit_offsets => true }
                 }
                 filter {
-                  if ([geoip]) { mutate { remove_field => [\"geoip\"] add_field => { \"mutated\" => \"true\" } } }
-                  else{ mutate { add_field => { \"geoip\" => \"somewhere\" } } }
+                  if ([ip]) { mutate { remove_field => [\"ip\"] add_field => { \"mutated\" => \"true\" } } }
                 }
-                output { elasticsearch {} }"
+                output { elasticsearch { index => \"test-index\" } }"
         }
       ]}
 

@@ -27,7 +27,7 @@ config: |-
     }
   }
   output {
-    elasticsearch {}
+    elasticsearch { data_stream => "false" index => "logstash-integration-test" }
   }
 
 input: how_sample.input
