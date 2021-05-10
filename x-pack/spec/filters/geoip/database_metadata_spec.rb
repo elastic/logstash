@@ -4,18 +4,23 @@
 
 require_relative 'test_helper'
 require "filters/geoip/database_metadata"
+require "filters/geoip/database_manager"
 require "stud/temporary"
 
 describe LogStash::Filters::Geoip do
 
   describe 'DatabaseMetadata', :aggregate_failures do
     let(:dbm) do
-      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City", get_vendor_path)
+      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City")
       dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
       dbm
     end
     let(:temp_metadata_path) { dbm.instance_variable_get(:@metadata_path) }
     let(:logger) { double("Logger") }
+
+    before(:each) do
+      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+    end
 
     context "get all" do
       it "return multiple rows" do
@@ -67,7 +72,7 @@ describe LogStash::Filters::Geoip do
         expect(Time.now.to_i - past.to_i).to be < 100
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_cith_db_md5)
+        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_city_db_md5)
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME]).to eq(default_city_db_name)
       end
     end
@@ -87,7 +92,7 @@ describe LogStash::Filters::Geoip do
 
       context "with ASN database type" do
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("ASN", get_vendor_path)
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("ASN")
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
@@ -101,7 +106,7 @@ describe LogStash::Filters::Geoip do
 
       context "with invalid database type" do
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("???", get_vendor_path)
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("???")
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
