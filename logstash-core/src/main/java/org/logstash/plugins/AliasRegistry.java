@@ -106,12 +106,13 @@ public class AliasRegistry {
 
                 // collect all remaining lines
 
-            final StringBuilder yamlBuilder = new StringBuilder();
-            scanner.useDelimiter("\\Z") // EOF, less optional trailing newline
-            if (scanner.hasNext()) {
-              yamlBuilder.append(scanner.next());
+                final StringBuilder yamlBuilder = new StringBuilder();
+                scanner.useDelimiter("\\Z"); // EOF, less optional trailing newline
+                if (scanner.hasNext()) {
+                    yamlBuilder.append(scanner.next());
+                }
+                yaml = yamlBuilder.toString();
             }
-            yaml = yamlBuilder.toString();
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
