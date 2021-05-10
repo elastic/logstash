@@ -492,7 +492,6 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
     logstash-output-elasticsearch (11.0.2-java)
-      cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
       manticore (>= 0.5.4, < 1.0.0)
