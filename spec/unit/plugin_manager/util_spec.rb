@@ -86,7 +86,7 @@ describe LogStash::PluginManager do
   end
 
   describe "process alias yaml definition" do
-    let(:path) { 'spec/unit/plugin_manager/plugin_aliases.yml' }
+    let(:path) { File.expand_path('plugin_aliases.yml', __dir__) }
 
     it "should decode correctly" do
       aliases = subject.load_aliases_definitions(path)

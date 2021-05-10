@@ -21,10 +21,10 @@ require_relative "../bootstrap/patches/remote_fetcher"
 
 module LogStash::PluginManager
 
-  def self.load_aliases_definitions(path = 'lib/pluginmanager/plugin_aliases.yml')
+  def self.load_aliases_definitions(path = File.expand_path('plugin_aliases.yml', __dir__))
     #this is needed to avoid the cwd but derive the path relatively to this file position
-    expanded_file_path = File.expand_path("../../" + path, __dir__)
-    content = IO.read(expanded_file_path)
+#     expanded_file_path = File.expand_path("../../" + path, __dir__)
+    content = IO.read(path)
 
     #Verify header
     header = content.lines[0]
