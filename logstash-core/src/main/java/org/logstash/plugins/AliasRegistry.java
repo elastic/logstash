@@ -107,7 +107,7 @@ public class AliasRegistry {
                 // collect all remaining lines
 
                 final StringBuilder yamlBuilder = new StringBuilder();
-                scanner.useDelimiter("\\Z"); // EOF, less optional trailing newline
+                scanner.useDelimiter("\\z"); // EOF
                 if (scanner.hasNext()) {
                     yamlBuilder.append(scanner.next());
                 }

@@ -1,4 +1,4 @@
-#CHECKSUM: 2215a2e93cf4643846bfa7f79b0532cba37e860c009a1915e09fc26a202e686e
+#CHECKSUM: abfebf8cb762136cf58d668f9d9796e77997f953da5324e4e04809befc18f0f9
 # DON'T EDIT THIS FILE, PLEASE REFER TO logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml
 input:
   aliased_input1: beats
@@ -6,3 +6,6 @@ input:
 
 filter:
   aliased_filter: json
+
+
+

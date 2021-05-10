@@ -1,2 +1,9 @@
 input:
-  elastic_agent: beats
+  aliased_input1: beats
+  aliased_input2: tcp
+
+filter:
+  aliased_filter: json
+
+
+
