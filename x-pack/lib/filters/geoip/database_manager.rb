@@ -136,7 +136,7 @@ module LogStash module Filters module Geoip class DatabaseManager
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
       end
     else
-      logger.debug("The MaxMind database hasn't updated", :days_without_update => days_without_update)
+      logger.trace("The MaxMind database hasn't updated", :days_without_update => days_without_update)
     end
   end
 
