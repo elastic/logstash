@@ -11,8 +11,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
-  def initialize(database_type, vendor_path)
-    @vendor_path = vendor_path
+  def initialize(database_type)
     @metadata_path = get_file_path("metadata.csv")
     @database_type = database_type
   end

@@ -18,8 +18,7 @@ module LogStash module Filters module Geoip class DownloadManager
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
-  def initialize(database_type, metadata, vendor_path)
-    @vendor_path = vendor_path
+  def initialize(database_type, metadata)
     @database_type = database_type
     @metadata = metadata
   end
@@ -78,7 +77,7 @@ module LogStash module Filters module Geoip class DownloadManager
     end
   end
 
-  # extract all files and folders from .tgz to vendor directory
+  # extract all files and folders from .tgz to path.data directory
   # existing files folders will be replaced
   def unzip(zip_path)
     new_database_path = zip_path[0...-(GZ_EXT.length)] + DB_EXT
@@ -93,7 +92,7 @@ module LogStash module Filters module Geoip class DownloadManager
       if !::File.directory?(path) && database_name_ext.eql?(file)
         FileUtils.cp(path, new_database_path)
       else
-        FileUtils.cp_r(path, @vendor_path)
+        FileUtils.cp_r(path, get_data_dir)
       end
     end
 
