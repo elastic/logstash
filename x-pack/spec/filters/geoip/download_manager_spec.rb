@@ -5,13 +5,14 @@
 require_relative 'test_helper'
 require 'fileutils'
 require "filters/geoip/download_manager"
+require "filters/geoip/database_manager"
 
 describe LogStash::Filters::Geoip do
 
   describe 'DownloadManager', :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
-      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata, get_vendor_path)
+      manager = LogStash::Filters::Geoip::DownloadManager.new( "City", mock_metadata)
       manager
     end
     let(:logger) { double("Logger") }
@@ -21,6 +22,7 @@ describe LogStash::Filters::Geoip do
 
     before do
       stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
+      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
     end
 
     context "rest client" do
