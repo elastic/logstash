@@ -1,0 +1,15 @@
+[[plugin-listing]]
+=== List your plugin
+
+The {logstash-ref}[Logstash Reference] is the first place {ls} users look for plugins and documentation. 
+If your plugin meets the <<plugin-acceptance,quality and acceptance guidelines>>, we may be able to list it in the guide.
+
+The plugin source and readme will continue to live in your repo, and we will direct users there. 
+
+If you would like to have your plugin included in the {logstash-ref}[Logstash Reference]: 
+
+* verify that it meets our <<plugin-acceptance,quality and acceptance guidelines>>
+* create a new https://github.com/elasticsearch/logstash/issues[issue] in the Logstash repository. 
+** Use `PluginListing: <yourpluginname>` as the title for the issue.
+** Apply the `docs` label.  
+** In the body of the issue, explain the purpose and value your plugin offers, and describe how this plugin adheres to the guidelines.
