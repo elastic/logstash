@@ -13,17 +13,17 @@ Plugins can be developed and deployed independently of the Logstash core.
 Here are some documents to guide you through the process of coding, deploying, and sharing your plugin:
 
 * Write a new plugin 
-** <<input-new-plugin,How to write a Logstash input plugin>>
-** <<codec-new-plugin,How to write a Logstash codec plugin>>
-** <<filter-new-plugin,How to write a Logstash filter plugin>>
-** <<output-new-plugin,How to write a Logstash output plugin>>
+** <<input-new-plugin>>
+** <<codec-new-plugin>>
+** <<filter-new-plugin>>
+** <<output-new-plugin>>
 ** <<community-maintainer,Community Maintainer's Guide>>
-* <<plugin-doc,Document your plugin>>
+* <<plugin-doc>>
 * <<publish-plugin>>
 * <<plugin-listing>>
 
 * Contribute a patch
-** <<contributing-patch-plugin,Contributing a Patch to a Logstash Plugin>>
+** <<contributing-patch-plugin>>
 ** <<contribute-to-core>>
 
 [discrete]

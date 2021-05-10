@@ -10,5 +10,6 @@ If you would like to have your plugin included in the {logstash-ref}[Logstash Re
 
 * verify that it meets our <<plugin-acceptance,quality and acceptance guidelines>>
 * create a new https://github.com/elasticsearch/logstash/issues[issue] in the Logstash repository. 
-Use `PluginListing: <yourpluginname>` as the title for the issue.
-Apply the `docs` label.  
+** Use `PluginListing: <yourpluginname>` as the title for the issue.
+** Apply the `docs` label.  
+** In the body of the issue, explain the purpose and value your plugin offers, and describe how this plugin adheres to the guidelines.
