@@ -30,6 +30,8 @@ FROM {{ base_image }}
 # scripts.
 # Minimal distributions also require findutils tar gzip (procps for integration tests)
 
+# on aarch64, yum does not pick the right `bind-license` package for some reason
+# here we install a specific noarch RPM.
 {% if arch == 'aarch64' -%}
 RUN for iter in {1..10}; do {{ package_manager }} install -y http://mirror.centos.org/centos/7/updates/x86_64/Packages/bind-license-9.11.4-26.P2.el7_9.5.noarch.rpm && \
     {{ package_manager }} clean all && \
