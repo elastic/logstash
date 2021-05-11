@@ -52,7 +52,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     else
       logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
-                  "please go to https://www.maxmind.com/en/geolite2/eula and understand the terms of usage."
+                  "please go to https://www.maxmind.com/en/geolite2/eula and understand the terms and conditions."
     end
   end
 
