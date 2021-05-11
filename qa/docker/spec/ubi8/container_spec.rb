@@ -21,7 +21,7 @@ describe 'A container running the ubi8 image' do
     end
 
     it 'should be based on Red Hat Enterprise Linux' do
-      expect(exec_in_container(@container, 'cat /etc/redhat-release').chomp).to match /Red Hat Enterprise Linux/
+      expect(exec_in_container(@container, 'cat /etc/redhat-release')).to match /Red Hat Enterprise Linux/
     end
   end
 end
