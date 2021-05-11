@@ -129,9 +129,14 @@ output {
 configures {ls} to select the correct ingest pipeline based on metadata
 passed in the event.
 
-If you want use a {ls} pipeline instead of ingest node to parse the data, see
-the `filter` and `output` settings in the examples under
-<<logstash-config-for-filebeat-modules>>.
+/////
+//Commenting out this section until we can update docs to use ECS-compliant.
+//fields for 7.0
+//
+//If you want use a {ls} pipeline instead of ingest node to parse the data, see
+//the `filter` and `output` settings in the examples under
+//<<logstash-config-for-filebeat-modules>>.
+/////
 --
 
 . Start {ls}, passing in the pipeline configuration file you just defined. For
