@@ -59,11 +59,13 @@ describe LogStash::Filters::Geoip do
     context "check age" do
       it "should raise error when 30 days has passed" do
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 33)).to_i)
+        expect(mock_metadata).to receive(:cc?).and_return(false)
         expect{ db_manager.send(:check_age) }.to raise_error /be compliant/
       end
 
       it "should give warning after 25 days" do
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 26)).to_i)
+        expect(mock_metadata).to receive(:cc?).and_return(false)
         expect(mock_geoip_plugin).to receive(:terminate_filter).never
         expect(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
         expect(logger).to receive(:warn)
@@ -95,6 +97,7 @@ describe LogStash::Filters::Geoip do
       it "should raise error when 30 days has passed" do
         allow(mock_download_manager).to receive(:fetch_database).and_raise("boom")
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 33)).to_i)
+        expect(mock_metadata).to receive(:cc?).and_return(false)
 
         expect{ db_manager.send(:execute_download_job) }.to raise_error /be compliant/
       end
@@ -104,16 +107,18 @@ describe LogStash::Filters::Geoip do
         allow(mock_download_manager).to receive(:fetch_database).and_raise("boom")
 
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 25)).to_i)
+        expect(mock_metadata).to receive(:cc?).and_return(false)
 
         expect(db_manager.send(:execute_download_job)).to be_falsey
       end
     end
 
     context "scheduler call" do
-      it "should call plugin termination when raise error and last update > 30 days" do
+      it "should call plugin expiry action when raise error and last update > 30 days" do
         allow(mock_download_manager).to receive(:fetch_database).and_raise("boom")
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 33)).to_i)
-        expect(mock_geoip_plugin).to receive(:terminate_filter)
+        expect(mock_metadata).to receive(:cc?).and_return(false)
+        expect(mock_geoip_plugin).to receive(:expire_action)
         db_manager.send(:call, nil, nil)
       end
 
