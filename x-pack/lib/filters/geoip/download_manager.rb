@@ -40,7 +40,7 @@ module LogStash module Filters module Geoip class DownloadManager
           assert_database!(new_database_path)
           [database_type, true, dirname, new_database_path]
         rescue => e
-          logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+          logger.error(e.message, error_details(e, logger))
           [database_type, false, nil, nil]
         end
       end

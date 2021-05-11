@@ -43,6 +43,11 @@ module LogStash module Filters
         file_exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)): ""
       end
 
+      def error_details(e, logger)
+        error_details = { :cause => e.cause }
+        error_details[:backtrace] = e.backtrace if logger.debug?
+        error_details
+      end
     end
   end
 end end

@@ -96,10 +96,10 @@ module LogStash module Filters module Geoip class DatabaseManager
         end
       end
 
-      updated_type = updated_db.map { |database_type, valid_download, new_database_path| database_type }
+      updated_type = updated_db.map { |database_type, valid_download, dirname, new_database_path| database_type }
       (DB_TYPES - updated_type).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
     rescue => e
-      logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+      logger.error(e.message, error_details(e, logger))
     ensure
       check_age
       clean_up_database
@@ -109,26 +109,24 @@ module LogStash module Filters module Geoip class DatabaseManager
   # call expiry action if database is expired and EULA
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
-      days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
+      if @states[database_type].is_eula && @states[database_type].plugins.size > 0
+        days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
 
-      case
-      when days_without_update >= 30
-        if @states[database_type].is_eula && @states[database_type].plugins.size > 0
+        case
+        when days_without_update >= 30
           logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
             "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
             "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
             "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
             "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
           @states[database_type].plugins.dup.each { |plugin| plugin.expire_action if plugin }
-        end
-      when days_without_update >= 25
-        if @states[database_type].is_eula && @states[database_type].plugins.size > 0
+        when days_without_update >= 25
           logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
-          "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
-          "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+            "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
+            "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+        else
+          logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
         end
-      else
-        logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
       end
     end
   end
@@ -176,15 +174,15 @@ module LogStash module Filters module Geoip class DatabaseManager
     if database_path.nil?
       trigger_download
 
-      logger.info "By using `online` mode, you accepted and agreed MaxMind EULA. "\
+      logger.info "By not manually configuring a database path with `database =>`, you accepted and agreed MaxMind EULA. "\
                   "For more details please visit https://www.maxmind.com/en/geolite2/eula" if @states[database_type].is_eula
 
       @states[database_type].plugins.push(geoip_plugin) unless @states[database_type].plugins.member?(geoip_plugin)
       @states[database_type].database_path
     else
-      logger.info "GeoIP plugin is in offline mode. Logstash points to static database files and will not check for update. "\
+      logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
-                  "please go to https://www.maxmind.com/en/geolite2/eula to accept and agree the terms and conditions."
+                  "please go to https://www.maxmind.com/en/geolite2/eula and understand the terms and conditions."
       database_path
     end
   end
