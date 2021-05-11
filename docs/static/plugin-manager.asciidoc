@@ -6,8 +6,7 @@
 ====
 Apple's rollout of stricter notarization requirements affected the notarization
 of the {version} {ls} artifacts. If macOS Catalina displays a dialog when you
-first run {ls} that interrupts it, you will need to take an action to allow it
-to run.
+first run {ls}, you need to take an action to allow it to run.
 To prevent Gatekeeper checks on the {ls} files, run the following command on the
 downloaded `.tar.gz` archive or the directory to which was extracted:
 [source,sh]
