@@ -118,23 +118,20 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def check_age
+    return if @metadata.cc?
+
     days_without_update = (::Date.today - ::Time.at(@metadata.updated_at).to_date).to_i
-    is_cc = @metadata.cc?
 
     case
     when days_without_update >= 30
-      unless is_cc
-        raise DatabaseExpiryError, "The MaxMind database has been used for more than 30 days. Logstash is unable to get newer version from internet. "\
-          "According to EULA, GeoIP plugin needs to stop in order to be compliant. "\
-          "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
-          "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ "
-      end
+      raise DatabaseExpiryError, "The MaxMind database has been used for more than 30 days. Logstash is unable to get newer version from internet. "\
+        "According to EULA, GeoIP plugin needs to stop in order to be compliant. "\
+        "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
+        "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ "
     when days_without_update >= 25
-      unless is_cc
-        logger.warn("The MaxMind database has been used for #{days_without_update} days without update. "\
-          "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
-          "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
-      end
+      logger.warn("The MaxMind database has been used for #{days_without_update} days without update. "\
+        "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
+        "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
     else
       logger.trace("The MaxMind database hasn't updated", :days_without_update => days_without_update)
     end
