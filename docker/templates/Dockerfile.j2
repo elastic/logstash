@@ -24,12 +24,19 @@
   {% set locale = 'en_US.UTF-8' -%}
 {% endif -%}
 
+
+{% if arch == 'aarch64' -%}
+  {% set packages = 'http://mirror.centos.org/centos/7/updates/x86_64/Packages/bind-license-9.11.4-26.P2.el7_9.5.noarch.rpm procps findutils tar gzip which shadow-utils' -%}
+{% else -%}
+  {% set packages = 'procps findutils tar gzip which shadow-utils' -%}
+{% endif -%}
+
 FROM {{ base_image }}
 
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
 # Minimal distributions also require findutils tar gzip (procps for integration tests)
-RUN {{ package_manager }} update -y && {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
+RUN {{ package_manager }} update -y && {{ package_manager }} install -y {{ packages }} && \
     {{ package_manager }} clean all
 
 # Provide a non-root user to run the process.
