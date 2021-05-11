@@ -34,6 +34,12 @@ module LogStash module Filters
       def get_gz_name(filename)
         filename[0...-(DB_EXT.length)] + GZ_EXT
       end
+
+      def error_details(e, logger)
+        error_details = { :cause => e.cause }
+        error_details[:backtrace] = e.backtrace if logger.debug?
+        error_details
+      end
     end
   end
 end end

@@ -39,7 +39,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     @database_path = patch_database_path(database_path)
 
     if @mode == :online
-      logger.info "By using `online` mode, you accepted and agreed MaxMind EULA. "\
+      logger.info "By not manually configuring a database path with `database =>`, you accepted and agreed MaxMind EULA. "\
                   "For more details please visit https://www.maxmind.com/en/geolite2/eula"
 
       setup
@@ -52,7 +52,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     else
       logger.info "GeoIP plugin is in offline mode. Logstash points to static database files and will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
-                  "please go to https://www.maxmind.com/en/geolite2/eula to accept and agree the terms and conditions."
+                  "please go to https://www.maxmind.com/en/geolite2/eula and understand the terms of usage."
     end
   end
 
@@ -80,7 +80,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       @metadata.save_timestamp(@database_path)
       has_update
     rescue => e
-      logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+      logger.error(e.message, error_details(e, logger))
       check_age
       false
     end
@@ -96,7 +96,7 @@ module LogStash module Filters module Geoip class DatabaseManager
         clean_up_database
       end
     rescue DatabaseExpiryError => e
-      logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
+      logger.error(e.message, error_details(e, logger))
       @geoip.expire_action
     end
   end
