@@ -3,25 +3,32 @@
 
 You can add your own input, codec, filter, or output plugins to Logstash. 
 
-[float]
-=== Adding plugins
+include::contrib-acceptance.asciidoc[]
 
-Plugins can be developed and deployed independently of the Logstash
-core. Here are some documents to guide you through the process of coding and
-deploying your own plugin:
+[discrete]
+[[add-plugin]]
+=== Add a plugin
 
-* <<plugin-generator,Generating a New Plugin>>
-* <<input-new-plugin,How to write a Logstash input plugin>>
-* <<codec-new-plugin,How to write a Logstash codec plugin>>
-* <<filter-new-plugin,How to write a Logstash filter plugin>>
-* <<output-new-plugin,How to write a Logstash output plugin>>
-* <<plugin-doc,Documenting your plugin>>
-* <<contributing-patch-plugin,Contributing a Patch to a Logstash Plugin>>
-* <<community-maintainer,Community Maintainer's Guide>>
-* <<submitting-plugin,Submitting a Plugin>>
+Plugins can be developed and deployed independently of the Logstash core. 
+Here are some documents to guide you through the process of coding, deploying, and sharing your plugin:
 
-[float]
-==== Plugin Shutdown APIs
+* Write a new plugin 
+** <<input-new-plugin>>
+** <<codec-new-plugin>>
+** <<filter-new-plugin>>
+** <<output-new-plugin>>
+** <<community-maintainer,Community Maintainer's Guide>>
+* <<plugin-doc>>
+* <<publish-plugin>>
+* <<plugin-listing>>
+
+* Contribute a patch
+** <<contributing-patch-plugin>>
+** <<contribute-to-core>>
+
+[discrete]
+[[shutdown-apis]]
+===== Plugin Shutdown APIs
 
 You have three options for shutting down a plugin: `stop`, `stop?`, and `close`.
 
@@ -35,13 +42,3 @@ Plugin Base class.
 
 Sample code for the plugin shutdown APIs is https://github.com/logstash-plugins/logstash-input-example/blob/master/lib/logstash/inputs/example.rb[available].
 
-[float]
-=== Extending Logstash core
-
-We also welcome contributions and bug fixes to the Logstash core feature set.
-
-Please read through our
-https://github.com/elastic/logstash/blob/master/CONTRIBUTING.md[contribution]
-guide, and the Logstash
-https://github.com/elastic/logstash/blob/master/README.md[readme]
-document.
