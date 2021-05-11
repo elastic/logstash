@@ -50,7 +50,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
       @scheduler.every('24h', self)
     else
-      logger.info "GeoIP plugin is in offline mode. Logstash points to static database files and will not check for update. "\
+      logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
                   "please go to https://www.maxmind.com/en/geolite2/eula and understand the terms of usage."
     end
@@ -127,7 +127,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       raise DatabaseExpiryError, "The MaxMind database has been used for more than 30 days. Logstash is unable to get newer version from internet. "\
         "According to EULA, GeoIP plugin needs to stop in order to be compliant. "\
         "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
-        "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ "
+        "or configure a database manually (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ "
     when days_without_update >= 25
       logger.warn("The MaxMind database has been used for #{days_without_update} days without update. "\
         "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
