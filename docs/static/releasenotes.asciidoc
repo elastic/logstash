@@ -90,8 +90,9 @@ This section summarizes the changes in the following releases:
 * Feat: try hard to log Java cause (chain) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/62[#62]
 * Refactored Lookup used in jdbc_streaming and jdbc_static to avoid code duplication. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/59[#59]
 
-*Elasticsearch Output - 11.0.1*
+*Elasticsearch Output - 11.0.2*
 
+* Validate that required functionality in Elasticsearch is available upon initial connection https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1015[#1015]
 * Fix: DLQ regression shipped in 11.0.0 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1012[#1012]
 * [DOC] Fixed broken link in list item https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1011[#1011]
 * Feat: Data stream support https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/988[#988]
