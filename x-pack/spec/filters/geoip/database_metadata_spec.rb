@@ -161,5 +161,16 @@ describe LogStash::Filters::Geoip do
       end
     end
 
+    context "is cc" do
+      it "should return true if database is CC" do
+        write_temp_metadata(temp_metadata_path)
+        expect(dbm.cc?).to be_truthy
+      end
+
+      it "should return false if database is EULA" do
+        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
+        expect(dbm.cc?).to be_falsey
+      end
+    end
   end
 end
