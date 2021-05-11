@@ -59,3 +59,5 @@ config/logstash.keystore
 html_docs
 lib/pluginmanager/plugin_aliases.yml
 logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml
+spec/unit/plugin_manager/plugin_aliases.yml
+logstash-core/src/test/resources/org/logstash/plugins/plugin_aliases.yml 
