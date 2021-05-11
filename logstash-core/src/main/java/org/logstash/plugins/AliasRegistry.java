@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
@@ -105,7 +104,6 @@ public class AliasRegistry {
                 scanner.nextLine();
 
                 // collect all remaining lines
-
                 final StringBuilder yamlBuilder = new StringBuilder();
                 scanner.useDelimiter("\\z"); // EOF
                 if (scanner.hasNext()) {
