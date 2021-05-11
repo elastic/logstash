@@ -184,12 +184,12 @@ tasks.register("configureArtifactInfo") {
 tasks.register("markAliasDefinitions") {
     description "Create an hashes aliases file from original aliases yml definition"
     inputs.file("${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml")
-    outputs.file("${projectDir}/plugin_aliases_hashed.yml")
+    outputs.file("${buildDir}/plugin_aliases_hashed.yml")
     doLast {
         String relative_path = "logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml"
         String aliases_defs = new File("${projectDir}/${relative_path}").text
         String hash = aliases_defs.digest('SHA-256')
-        new File(projectDir, 'plugin_aliases_hashed.yml').withWriter('utf-8') { writer ->
+        new File(buildDir, 'plugin_aliases_hashed.yml').withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
             writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${relative_path}"
             writer.write aliases_defs
@@ -201,18 +201,18 @@ tasks.register("copyPluginAlias", Copy) {
     description "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
-    inputs.file("${projectDir}/plugin_aliases_hashed.yml")
+    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
     destinationDir = projectDir
-    from("plugin_aliases_hashed.yml") {
+    from("${buildDir}/plugin_aliases_hashed.yml") {
         into "lib/pluginmanager/"
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
-    from("plugin_aliases_hashed.yml") {
+    from("${buildDir}/plugin_aliases_hashed.yml") {
         into "logstash-core/src/main/resources/org/logstash/plugins/"
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     doLast {
-        delete "${projectDir}/plugin_aliases_hashed.yml"
+        delete "${buildDir}/plugin_aliases_hashed.yml"
     }
 }
 
