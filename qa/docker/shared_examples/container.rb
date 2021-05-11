@@ -40,15 +40,15 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
 
     it 'should have the correct user' do
-      expect(exec_in_container(@container, 'whoami').chomp).to eql 'logstash'
+      expect(exec_in_container(@container, 'whoami')).to eql 'logstash'
     end
 
     it 'should have the correct home directory' do
-      expect(exec_in_container(@container, 'printenv HOME').chomp).to eql '/usr/share/logstash'
+      expect(exec_in_container(@container, 'printenv HOME')).to eql '/usr/share/logstash'
     end
 
     it 'should link /opt/logstash to /usr/share/logstash' do
-      expect(exec_in_container(@container, 'readlink /opt/logstash').chomp).to eql '/usr/share/logstash'
+      expect(exec_in_container(@container, 'readlink /opt/logstash')).to eql '/usr/share/logstash'
     end
 
     it 'should have all files owned by the logstash user' do
@@ -57,11 +57,11 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
 
     it 'should have a logstash user with uid 1000' do
-      expect(exec_in_container(@container, 'id -u logstash').chomp).to eql '1000'
+      expect(exec_in_container(@container, 'id -u logstash')).to eql '1000'
     end
 
     it 'should have a logstash user with gid 1000' do
-      expect(exec_in_container(@container, 'id -g logstash').chomp).to eql '1000'
+      expect(exec_in_container(@container, 'id -g logstash')).to eql '1000'
     end
 
     it 'should not have a RollingFile appender' do
