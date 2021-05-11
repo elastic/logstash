@@ -32,17 +32,23 @@ FROM {{ base_image }}
 
 {% if arch == 'aarch64' -%}
 RUN for iter in {1..10}; do {{ package_manager }} install -y http://mirror.centos.org/centos/7/updates/x86_64/Packages/bind-license-9.11.4-26.P2.el7_9.5.noarch.rpm && \
-    {{ package_manager }} clean all && exit_code=0 && break || \
-    exit_code=$? && echo "yum error: retry $iter in 10s" && {{ package_manager }} clean all && {{ package_manager }} clean metadata && sleep 10; done; \
+    {{ package_manager }} clean all && \
+    {{ package_manager }} clean metadata && \
+    exit_code=0 && break || exit_code=$? && \
+    echo "packaging error: retry $iter in 10s" && \
+    {{ package_manager }} clean all && \
+    {{ package_manager }} clean metadata && sleep 10; done; \
     (exit $exit_code)
 
 {% endif -%}
 
 RUN for iter in {1..10}; do {{ package_manager }} update -y && \
     {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
+    {{ package_manager }} clean all && \
     {{ package_manager }} clean metadata && \
-    exit_code=0 && \
-    break || exit_code=$? && echo "packaging error error: retry $iter in 10s" && \
+    exit_code=0 && break || exit_code=$? && \
+    echo "packaging error: retry $iter in 10s" && \
+    {{ package_manager }} clean all && \
     {{ package_manager }} clean metadata && sleep 10; done; \
     (exit $exit_code)
 
