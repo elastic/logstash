@@ -27,15 +27,13 @@ module LogStash::PluginManager
     #Verify header
     header = content.lines[0]
     if !header.start_with?('#CHECKSUM:')
-      puts "Bad header format, expected '#CHECKSUM: ...' but found #{header}"
-      return {}
+      raise ValidationError.new "Bad header format, expected '#CHECKSUM: ...' but found #{header}"
     end
     yaml_body = content.lines[2..-1].join
     extracted_sha = header.delete_prefix('#CHECKSUM:').chomp.strip
     sha256_hex = Digest::SHA256.hexdigest(yaml_body)
     if sha256_hex != extracted_sha
-      puts "Bad checksum value, expected #{sha256_hex} but found #{extracted_sha}"
-      return {}
+      raise ValidationError.new "Bad checksum value, expected #{sha256_hex} but found #{extracted_sha}"
     end
 
     yaml = YAML.safe_load(yaml_body) || {}
