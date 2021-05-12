@@ -35,7 +35,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     @geoip = geoip
     self.class.prepare_cc_db
     @mode = database_path.nil? ? :online : :offline
-    # @mode = :disabled # This is a temporary change.
+    @mode = :disabled # This is a temporary change.
     @database_type = database_type
     @database_path = patch_database_path(database_path)
 
