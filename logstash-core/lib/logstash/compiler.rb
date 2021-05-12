@@ -20,7 +20,7 @@ require 'logstash/compiler/lscl/lscl_grammar'
 module LogStash; class Compiler
   include ::LogStash::Util::Loggable
 
-  def self.compile_imperative(source_with_metadata, support_escapes)
+  def self.compile_imperative(source_with_metadata, string_escape_helper)
     if !source_with_metadata.is_a?(org.logstash.common.SourceWithMetadata)
       raise ArgumentError, "Expected 'org.logstash.common.SourceWithMetadata', got #{source_with_metadata.class}"
     end
@@ -32,7 +32,7 @@ module LogStash; class Compiler
       raise ConfigurationError, grammar.failure_reason
     end
 
-    config.process_escape_sequences = support_escapes
+    config.string_escape_helper = string_escape_helper
     config.compile(source_with_metadata)
   end
 end; end

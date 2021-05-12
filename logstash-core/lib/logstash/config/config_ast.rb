@@ -21,7 +21,7 @@ require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 
 module LogStash; module Config; module AST
-  PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
+  STRING_ESCAPE_HELPER = :string_escape_helper
 
   class << self
     # @api private
@@ -88,10 +88,9 @@ module LogStash; module Config; module AST
   end
 
   class Config < Node
-    def process_escape_sequences=(val)
-      set_meta(PROCESS_ESCAPE_SEQUENCES, val)
+    def string_escape_helper=(val)
+      set_meta(STRING_ESCAPE_HELPER, val)
     end
-
 
     def compile
       LogStash::Config::AST.exclusive { do_compile }
@@ -345,11 +344,9 @@ module LogStash; module Config; module AST
   end
   class String < Value
     def compile
-      if get_meta(PROCESS_ESCAPE_SEQUENCES)
-        Unicode.wrap(LogStash::Config::StringEscape.process_escapes(text_value[1...-1]))
-      else
-        Unicode.wrap(text_value[1...-1])
-      end
+      esp = get_meta(STRING_ESCAPE_HELPER) || org.logstash.common.StringEscapeHelper::DISABLED
+      value = esp.unescape(text_value[1...-1])
+      Unicode.wrap(value)
     end
   end
   class RegExp < Value

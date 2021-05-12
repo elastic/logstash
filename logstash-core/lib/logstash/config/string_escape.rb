@@ -15,30 +15,41 @@
 # specific language governing permissions and limitations
 # under the License.
 
-module LogStash; module Config; module StringEscape
+require 'concurrent/set'
+
+require_relative '../util/loggable'
+
+module LogStash; module Config; class StringEscape
+
+  include Util::Loggable
+
+  def initialize(string_escape_helper)
+    @string_escape_helper = string_escape_helper
+  end
+
+  DISABLED = new(org.logstash.common.StringEscapeHelper::DISABLED)
+  MINIMAL  = new(org.logstash.common.StringEscapeHelper::MINIMAL)
+
+  def process_escapes(input)
+    @string_escape_helper.unescape(input)
+  end
+
   class << self
+
     def process_escapes(input)
-      input.gsub(/\\./) do |value|
-        process(value)
-      end
+      log_deprecation(caller.first)
+      MINIMAL.process_escapes(input)
     end
 
     private
-    def process(value)
-      case value[1]
-      when '"', "'", "\\"
-        value[1]
-      when "n"
-        "\n"
-      when "r"
-        "\r"
-      when "t"
-        "\t"
-      when "0"
-        "\x00"
-      else
-        value
-      end
+
+    DEPRECATION_CALLSITES = Concurrent::Set.new
+    private_constant :DEPRECATION_CALLSITES
+
+    def log_deprecation(callsite)
+      return unless DEPRECATION_CALLSITES.size < 128 && DEPRECATION_CALLSITES.add?(callsite)
+
+      deprecation_logger.deprecated("#{StringEscape}#process_escapes is deprecated and will be removed in a future major release of Logstash (at `#{callsite}`)")
     end
   end
 end end end

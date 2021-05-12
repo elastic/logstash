@@ -25,7 +25,7 @@ java_import org.logstash.config.ir.DSL
 java_import org.logstash.common.SourceWithMetadata
 
 module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSCL; module AST
-  PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
+  STRING_ESCAPE_HELPER = :string_escape_helper
 
     class Node < Treetop::Runtime::SyntaxNode
     include Helpers
@@ -43,8 +43,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class Config < Node
     include Helpers
 
-    def process_escape_sequences=(val)
-      set_meta(PROCESS_ESCAPE_SEQUENCES, val)
+    def string_escape_helper=(val)
+      set_meta(STRING_ESCAPE_HELPER, val)
     end
 
     def compile(base_source_with_metadata=nil)
@@ -162,11 +162,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class String < Value
     def expr
-      value = if get_meta(PROCESS_ESCAPE_SEQUENCES)
-        ::LogStash::Config::StringEscape.process_escapes(text_value[1...-1])
-      else
-        text_value[1...-1]
-      end
+      esp = get_meta(STRING_ESCAPE_HELPER) || org.logstash.common.StringEscapeHelper::DISABLED
+      value = esp.unescape(text_value[1...-1])
       jdsl.eValue(source_meta, value)
     end
   end

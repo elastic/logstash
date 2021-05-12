@@ -26,6 +26,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.logstash.RubyUtil;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.StringEscapeHelper;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineIR;
@@ -106,7 +107,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
     }
 
     private static PipelineIR compilePipeline(SourceWithMetadata sourceWithMetadata) throws InvalidIRException {
-        return ConfigCompiler.configToPipelineIR(Collections.singletonList(sourceWithMetadata), false);
+        return ConfigCompiler.configToPipelineIR(Collections.singletonList(sourceWithMetadata), StringEscapeHelper.DISABLED);
     }
 
     private static ExecutionContextFactoryExt createExecutionContextFactory() {

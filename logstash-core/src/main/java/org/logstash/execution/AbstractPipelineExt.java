@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -52,6 +53,7 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.StringEscapeHelper;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -183,8 +185,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+        RubyString escapeSupportMode = (RubyString) getSetting(context, "config.support_escapes");
+        final StringEscapeHelper stringEscapeHelper = supportEscapes ? StringEscapeHelper.MINIMAL : StringEscapeHelper.DISABLED;
+
         try {
-            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+            lir = ConfigCompiler.configToPipelineIR(configParts, stringEscapeHelper);
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
