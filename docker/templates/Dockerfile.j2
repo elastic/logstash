@@ -47,11 +47,16 @@ RUN for iter in {1..10}; do {{ package_manager }} install -y http://mirror.cento
 RUN for iter in {1..10}; do {{ package_manager }} update -y && \
     {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
     {{ package_manager }} clean all && \
+{% if image_flavor != 'ubi8' -%}
     {{ package_manager }} clean metadata && \
+{% endif -%}
     exit_code=0 && break || exit_code=$? && \
     echo "packaging error: retry $iter in 10s" && \
     {{ package_manager }} clean all && \
-    {{ package_manager }} clean metadata && sleep 10; done; \
+{% if image_flavor != 'ubi8' -%}
+    {{ package_manager }} clean metadata && \
+{% endif -%}
+    sleep 10; done; \
     (exit $exit_code)
 
 # Provide a non-root user to run the process.
