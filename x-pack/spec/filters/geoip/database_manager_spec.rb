@@ -67,9 +67,12 @@ describe LogStash::Filters::Geoip do
         expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 26)).to_i)
         expect(mock_metadata).to receive(:cc?).and_return(false)
         expect(mock_geoip_plugin).to receive(:terminate_filter).never
-        expect(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
-        expect(logger).to receive(:warn)
-        expect(logger).to receive(:info)
+
+        if db_manager.instance_variable_get(:@mode) != :disabled
+          expect(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
+          expect(logger).to receive(:warn)
+          expect(logger).to receive(:info)
+        end
 
         db_manager.send(:check_age)
       end
