@@ -184,9 +184,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+
         RubyString escapeSupportMode = (RubyString) getSetting(context, "config.support_escapes");
-        final StringEscapeHelper stringEscapeHelper = supportEscapes ? StringEscapeHelper.MINIMAL : StringEscapeHelper.DISABLED;
+        final StringEscapeHelper stringEscapeHelper = StringEscapeHelper.forMode(escapeSupportMode.asJavaString());
 
         try {
             lir = ConfigCompiler.configToPipelineIR(configParts, stringEscapeHelper);

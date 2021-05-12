@@ -255,19 +255,33 @@ enclosed in quotes, either double or single.
 
 ===== Escape sequences
 
-By default, escape sequences are not enabled. If you wish to use escape
-sequences in quoted strings, you will need to set
-`config.support_escapes: true` in your `logstash.yml`. When `true`, quoted
-strings (double and single) will have this transformation:
+By default, escape sequences are not enabled.
+If you wish to use escape sequences in quoted strings, you will need to set `config.support_escapes` to `minimal` or `extended` in your `logstash.yml`.
 
+When `minimal`, quoted strings (double and single) will have this transformation:
+
+[cols=">m,a"]
 |===========================
 | Text | Result
-| \r   | carriage return (ASCII 13)
-| \n   | new line (ASCII 10)
-| \t   | tab (ASCII 9)
-| \\   | backslash (ASCII 92)
-| \"   | double quote (ASCII 34)
-| \'   | single quote (ASCII 39)
+
+| `\r` | carriage return (ASCII 13)
+| `\n` | new line (ASCII 10)
+| `\t` | tab (ASCII 9)
+| `\\` | backslash (ASCII 92)
+| `\"` | double quote (ASCII 34)
+| `\'` | single quote (ASCII 39)
+|===========================
+
+When `config.support_escapes` is set to `extended`, the following will apply _in addition to_ the `minimal` rules:
+
+[cols=">m,a"]
+|===========================
+| Text | Result
+
+| `\0`   | null character (ASCII 0)
+| `\xHH`   | hexadecimal codepoints `00`-`FF`
+| `\uHHHH`   | unicode codepoints `0000`-`FFFF`
+| `\uHHHHHHHH`   | unicode codepoints up to `FFFFFFFF`
 |===========================
 
 Example:

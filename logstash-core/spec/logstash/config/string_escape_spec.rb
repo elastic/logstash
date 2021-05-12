@@ -82,4 +82,26 @@ describe LogStash::Config::StringEscape do
 
     it_behaves_like 'minimal_mode'
   end
+
+  context 'in extended mode' do
+    subject(:string_escape) { described_class::EXTENDED }
+
+    extended_table = table.merge({
+                                   "\\0"         => "\0",
+                                   "\\x00"       => "\0",
+                                   "\\x20"       => " ",
+                                   '\\u0001F642' => '🙂',
+                                   '\\u13A3'     => 'Ꭳ',
+                                   '\\u000013A3' => 'Ꭳ',
+    })
+
+    extended_table.each do |input, expected|
+      context "when processing escaped sequence #{input.inspect}" do
+        let(:text) { input }
+        it "should produce #{expected.inspect}" do
+          expect(result).to be == expected
+        end
+      end
+    end
+  end
 end

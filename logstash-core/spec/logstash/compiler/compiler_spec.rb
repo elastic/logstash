@@ -53,7 +53,7 @@ describe LogStash::Compiler do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
     let(:string_escape_helper) { org.logstash.common.StringEscapeHelper.for_mode(escape_mode) }
-    let(:escape_mode) { settings.get_value("config.support_escapes") ? "minimal" : "disabled" }
+    let(:escape_mode) { settings.get_value("config.support_escapes") }
     subject(:compiled) { described_class.compile_imperative(source_with_metadata, string_escape_helper) }
 
     context "when config.support_escapes" do

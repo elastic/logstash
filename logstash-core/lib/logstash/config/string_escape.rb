@@ -29,6 +29,7 @@ module LogStash; module Config; class StringEscape
 
   DISABLED = new(org.logstash.common.StringEscapeHelper::DISABLED)
   MINIMAL  = new(org.logstash.common.StringEscapeHelper::MINIMAL)
+  EXTENDED = new(org.logstash.common.StringEscapeHelper::EXTENDED)
 
   def process_escapes(input)
     @string_escape_helper.unescape(input)
