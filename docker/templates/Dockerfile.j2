@@ -29,8 +29,35 @@ FROM {{ base_image }}
 # Install Java and the "which" command, which is needed by Logstash's shell
 # scripts.
 # Minimal distributions also require findutils tar gzip (procps for integration tests)
-RUN {{ package_manager }} update -y && {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
-    {{ package_manager }} clean all
+
+# on aarch64, yum does not pick the right `bind-license` package for some reason
+# here we install a specific noarch RPM.
+{% if arch == 'aarch64' -%}
+RUN for iter in {1..10}; do {{ package_manager }} install -y http://mirror.centos.org/centos/7/updates/x86_64/Packages/bind-license-9.11.4-26.P2.el7_9.5.noarch.rpm && \
+    {{ package_manager }} clean all && \
+    {{ package_manager }} clean metadata && \
+    exit_code=0 && break || exit_code=$? && \
+    echo "packaging error: retry $iter in 10s" && \
+    {{ package_manager }} clean all && \
+    {{ package_manager }} clean metadata && sleep 10; done; \
+    (exit $exit_code)
+
+{% endif -%}
+
+RUN for iter in {1..10}; do {{ package_manager }} update -y && \
+    {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
+    {{ package_manager }} clean all && \
+{% if image_flavor != 'ubi8' -%}
+    {{ package_manager }} clean metadata && \
+{% endif -%}
+    exit_code=0 && break || exit_code=$? && \
+    echo "packaging error: retry $iter in 10s" && \
+    {{ package_manager }} clean all && \
+{% if image_flavor != 'ubi8' -%}
+    {{ package_manager }} clean metadata && \
+{% endif -%}
+    sleep 10; done; \
+    (exit $exit_code)
 
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \

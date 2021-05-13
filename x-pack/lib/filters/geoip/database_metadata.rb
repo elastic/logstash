@@ -11,8 +11,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
-  def initialize(database_type, vendor_path)
-    @vendor_path = vendor_path
+  def initialize(database_type)
     @metadata_path = get_file_path("metadata.csv")
     @database_type = database_type
   end
@@ -57,6 +56,11 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   def updated_at
     (get_metadata.map { |metadata| metadata[Column::UPDATE_AT] }
                  .last || 0).to_i
+  end
+
+  def cc?
+    filename = get_metadata.map { |metadata| metadata[Column::FILENAME] }.last || ''
+    filename.eql?(CITY_DB_NAME) || filename.eql?(ASN_DB_NAME)
   end
 
   # Return database related filenames in .mmdb .tgz

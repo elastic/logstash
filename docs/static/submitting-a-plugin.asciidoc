@@ -1,9 +1,9 @@
-[[submitting-plugin]]
-=== Submitting your plugin to RubyGems.org and the logstash-plugins repository
+[[publish-plugin]]
+=== Publish your plugin to RubyGems.org
 
-Logstash uses http://rubygems.org[RubyGems.org] as its repository for all plugin
-artifacts. Once you have developed your new plugin, you can make it available to
-Logstash users by simply publishing it to RubyGems.org.
+Logstash uses http://rubygems.org[RubyGems.org] as its repository for all plugin artifacts. 
+After you have developed your new plugin, you can make it available to
+Logstash users by publishing it to RubyGems.org.
 
 ==== Licensing
 Logstash and all its plugins are licensed under
@@ -13,9 +13,9 @@ please make sure to have this line in your gemspec:
 
 * `s.licenses = ['Apache License (2.0)']`
 
-==== Publishing to http://rubygems.org[RubyGems.org]
+==== Publish to http://rubygems.org[RubyGems.org]
 
-To begin, you’ll need an account on RubyGems.org
+You’ll need an account on RubyGems.org
 
 * https://rubygems.org/sign_up[Sign-up for a RubyGems account].
 
@@ -49,7 +49,7 @@ bundle exec rake publish_gem
 
 [NOTE]
 ========
-Executing `rake publish_gem`:
+Execute `rake publish_gem`:
 
 . Reads the version from the gemspec file (`s.version = '0.1.0'`)
 . Checks in your local repository if a tag exists for that version. If the tag
@@ -68,40 +68,6 @@ by running:
 bin/plugin install logstash-{plugintype}-mypluginname
 ----------------------------------
 
-==== Contributing your source code to https://github.com/logstash-plugins[logstash-plugins]
-
-It is not required to contribute your source code to
-https://github.com/logstash-plugins[logstash-plugins] github organization, but
-we always welcome new plugins!
-
-==== Benefits
-
-Some of the many benefits of having your plugin in the logstash-plugins
-repository are:
-
-* **Discovery** Your plugin will appear in the {logstash-ref}[Logstash Reference],
-where Logstash users look first for plugins and documentation.
-* **Documentation** Your plugin documentation will automatically be added to the 
-{logstash-ref}[Logstash Reference].
-* **Testing** With our testing infrastructure, your plugin will be continuously
-tested against current and future releases of Logstash.  As a result, users will
-have the assurance that if incompatibilities arise, they will be quickly
-discovered and corrected.
-
-==== Acceptance Guidelines
-
-* **Code Review** Your plugin must be reviewed by members of the community for
-coherence, quality, readability, stability and security.
-* **Tests** Your plugin must contain tests to be accepted.  These tests are also
-subject to code review for scope and completeness.  It's ok if you don't know
-how to write tests -- we will guide you. We are working on publishing a guide to
-creating tests for Logstash which will make it easier.  In the meantime, you can
-refer to http://betterspecs.org/ for examples.
-
-To begin migrating your plugin to logstash-plugins, simply create a new
-https://github.com/elasticsearch/logstash/issues[issue] in
-the Logstash repository. When the acceptance guidelines are completed, we will
-facilitate the move to the logstash-plugins organization using the recommended
-https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization[github process].
-
+Where <plugintype> is `input`, `output`, `filter`, or `codec`, and
+<mypluginname> is the name of your new plugin.
 
