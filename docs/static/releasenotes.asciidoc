@@ -46,6 +46,74 @@ This section summarizes the changes in the following releases:
 [[logstash-7-13-0]]
 === Logstash 7.13.0 Release Notes
 
+* Switch to AdoptOpenJDK15 from OpenJDK15 https://github.com/elastic/logstash/pull/12649[#12649]
+* Geoip database service https://github.com/elastic/logstash/pull/12675[#12675]
+* GeoIP clean up database after new download https://github.com/elastic/logstash/pull/12689[#12689]
+* Backport PR #12693 to 7.x: update jdk to 11.0.10+9 https://github.com/elastic/logstash/pull/12700[#12700]
+* Backport PR #12692 to 7.x: cleanup bundler exclusions during jruby unpacking https://github.com/elastic/logstash/pull/12702[#12702]
+* [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) https://github.com/elastic/logstash/pull/12709[#12709]
+* [backport 7.x] Removed OpenJDK15 in CI matrix testing #12649 https://github.com/elastic/logstash/pull/12710[#12710]
+* Temporarly silenced an x-pack monitoring test, waiting to be fixed the root cause https://github.com/elastic/logstash/pull/12712[#12712]
+* fix broken xpack unit test of GeoIP term of service https://github.com/elastic/logstash/pull/12715[#12715]
+* [backport #12712 7.x]Temporarly silenced an x-pack monitoring test https://github.com/elastic/logstash/pull/12718[#12718]
+* Deps: update slf4j to latest 1.7.30 https://github.com/elastic/logstash/pull/12720[#12720]
+* Backport PR #12699 to 7.x: update jruby to 9.2.16.0 https://github.com/elastic/logstash/pull/12721[#12721]
+* Backport PR #12720 to 7.x: Deps: update slf4j to latest 1.7.30 https://github.com/elastic/logstash/pull/12723[#12723]
+* Deps: update log4j2 to latest and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12724[#12724]
+* change domain and endpoint of GeoIP database service https://github.com/elastic/logstash/pull/12727[#12727]
+* Backport PR #12728 to 7.x: [Build] Fix version script when VERSION_QU… https://github.com/elastic/logstash/pull/12729[#12729]
+* Backport PR #12736 to 7.x: Fix Benchmarking tool https://github.com/elastic/logstash/pull/12738[#12738]
+* Backport PR #12724 to 7.x: Deps: update log4j2 to latest and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12744[#12744]
+* internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12749[#12749]
+* Backport PR #12749 to 7.x: internal-monitoring: use configured ssl verification mode https://github.com/elastic/logstash/pull/12750[#12750]
+* GeoIP database add license files https://github.com/elastic/logstash/pull/12756[#12756]
+* Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12763[#12763]
+* Backport PR #12763 to 7.x: Build: avoid leaking memory from generate_plugins_version https://github.com/elastic/logstash/pull/12772[#12772]
+* [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) | fix broken test case of term of service (#12715) | change domain and endpoint of GeoIP database service (#12727) | GeoIP database add license file https://github.com/elastic/logstash/pull/12777[#12777]
+* Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12782[#12782]
+* Fix: logstash-keystore failing with an error https://github.com/elastic/logstash/pull/12784[#12784]
+* plugin manager uninstall plugin regardless of working directory https://github.com/elastic/logstash/pull/12786[#12786]
+* Backport PR #12782 to 7.x: Set correct permissions for /usr/share/logstash on pkg installs https://github.com/elastic/logstash/pull/12788[#12788]
+* Removed static part from PluginRegistry to avoid static initializer https://github.com/elastic/logstash/pull/12799[#12799]
+* Docs: note on quoted field references https://github.com/elastic/logstash/pull/12801[#12801]
+
+==== Logstash Commits between 7.13 and 7.12.0
+
+eea447ef4 - (HEAD -> 7.13, upstream/7.13, origin/7.13) bump version for 7.13.0 (#12838) (4 hours ago) <kaisecheng>
+0bc53b4b8 - Adapted install/uninstall/list PluginManager's command to respect the alised plugins (#12821) (#12836) (17 hours ago) <Andrea Selva>
+4086d427c - [Backport 7.x] plugin alias handling in logstash-core (#12835) (17 hours ago) <Andrea Selva>
+5644ac1c9 - updated distributor pattern section (#12813) (6 days ago) <Ry Biesemeyer>
+3c27f8ab4 - GeoIP database copy all files from .tgz alongside database (#12824) (#12826) (6 days ago) <kaisecheng>
+fab5dd8da - Backport PR #12801 to 7.x: Docs: note on quoted field references (#12817) (7 days ago) <Karol Bucek>
+5a9048c4d - Fix Date class clash when used in pipelines with Date filter and GeoIP and pin open-ssl to 0.10.5 (#12811) (#12812) (8 days ago) <Andrea Selva>
+b852daf20 - Allow plugin manager uninstall plugin regardless of working directory (#12786) (#12808) (13 days ago) <kaisecheng>
+a914a7c13 - Backport PR #12784 (#12805) to 7.x: Fix: logstash-keystore failing with an error (#12803) (13 days ago) <Karol Bucek>
+3dca252b6 - [Backport] Set correct permissions for /usr/share/logstash on pkg installs (#12788) (3 weeks ago) <Andres Rodriguez>
+965c839e7 - [7.x] Geoip database service (#12675) | GeoIP clean up database after new download (#12689) | fix broken test case of term of service (#12715) | change domain and endpoint of GeoIP database service (#12727) | GeoIP database add license file (#12777) (4 weeks ago) <kaisecheng>
+d8055b831 - Build: avoid leaking memory from generate_plugins_version (#12763) (#12772) (4 weeks ago) <Karol Bucek>
+a197fd432 - Doc: Forwardport release notes for 7.12.0 to 7.x branch (#12770) (4 weeks ago) <Karen Metts>
+b81b053d4 - Forwardport release notes for 7.11.2 to 7.x branch  #12742 (4 weeks ago) <Karen Metts>
+6118de1a4 - Doc: Change protocol from HTTP to HTTPS  for 7.x #12730 (5 weeks ago) <Karen Metts>
+cecd774bc - internal-monitoring: use configured ssl verification mode (#12749) (#12750) (5 weeks ago) <Ry Biesemeyer>
+fafb7d310 - Backport PR #12724 to 7.x: Deps: update log4j2 to latest and ship log4j 1.2 bridge (#12744) (6 weeks ago) <Karol Bucek>
+9a4c0ea79 - Backport PR #12736 to 7.x: Fix Benchmarking tool (#12738) (6 weeks ago) <Rob Bavey>
+1066eab70 - Docs: Replace relative paths with docs-root attributes (#12719) (#12731) (6 weeks ago) <Karen Metts>
+5a24847a2 - Backport PR #12728 to 7.x: [Build] Fix version script when VERSION_QUALIFIER is empty string (#12729) (7 weeks ago) <Rob Bavey>
+01b2f1433 - Backport PR #12720 to 7.x: Deps: update slf4j to latest 1.7.30 (#12723) (7 weeks ago) <Karol Bucek>
+06bee9315 - update jruby to 9.2.16.0 (#12699) (#12721) (7 weeks ago) <João Duarte>
+87af46f16 - Temporarly silenced an x-pack monitoring test, waiting to be fixed the root cause issue #12712 (PR #12718) (7 weeks ago) <Andrea Selva>
+1fad4753c - Removed OpenJDK15 in CI matrix testing (#12710) (7 weeks ago) <Andrea Selva>
+7fee8c3a3 - cleanup bundler exclusions during jruby unpacking (#12692) (#12702) (7 weeks ago) <João Duarte>
+91b288484 - update jdk to 11.0.10+9 (#12693) (#12700) (7 weeks ago) <João Duarte>
+a61a827bb - [7x backport] Fix Elasticsearch/DLQ integration test flakiness (#12695) (8 weeks ago) <Rob Bavey>
+bc56c2068 - Add some javadocs comments to the classes Removes never used class org.logstash.execution.queue.LegacyMemoryQueueWriter (8 weeks ago) <andsel>
+a9e4ba607 - Release notes for 7.11.1 (#12674) (#12691) (9 weeks ago) <Karen Metts>
+4a42592b3 - bump 7.x branch to 7.13.0 (#12682) (9 weeks ago) <João Duarte>
+
+
+
+
+
 === Updates to dependencies
 * Update jruby to 9.2.13.0
 * Pinned jruby-openssl version to 0.10.5 to avoid "CipherSuite" error with jruby-openssl-0.10.6
