@@ -211,7 +211,7 @@ tasks.register("installBundler") {
 tasks.register("bootstrap"){
     dependsOn installBundler
     doLast {
-      setupJruby(projectDir, buildDir.1.4)
+      setupJruby(projectDir, buildDir)
   }
 }
 
