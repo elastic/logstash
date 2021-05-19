@@ -4,6 +4,7 @@
 
 input{
 <%=
+deprecation_logger.deprecated("The Azure module has been deprecated in favor of the Beats Azure module, and may be removed in a future release. Learn more about the Beats Azure module at https://www.elastic.co/guide/en/beats/filebeat/master/filebeat-module-azure.html")
 require 'azure_module_config_generator'
 config_generator = LogStash::Azure::ConfigGenerator.new
 config_generator.generate_input(@settings)

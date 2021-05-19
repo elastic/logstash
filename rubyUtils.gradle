@@ -24,8 +24,8 @@ buildscript {
     }
     dependencies {
         classpath 'org.yaml:snakeyaml:1.23'
-        classpath "de.undercouch:gradle-download-task:3.2.0"
-        classpath "org.jruby:jruby-complete:9.2.11.1"
+        classpath "de.undercouch:gradle-download-task:4.0.4"
+        classpath "org.jruby:jruby-complete:9.2.16.0"
     }
 }
 
@@ -41,6 +41,7 @@ import org.jruby.embed.ScriptingContainer
 import java.lang.annotation.Annotation
 import java.nio.file.Files
 import java.nio.file.Paths
+
 
 ext {
     bundle = this.&bundle
@@ -207,7 +208,7 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
 
-task downloadJRuby(type: Download) {
+tasks.register("downloadJRuby", Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
@@ -218,7 +219,8 @@ task downloadJRuby(type: Download) {
 
 downloadJRuby.onlyIf { customJRubyDir == "" }
 
-task verifyFile(dependsOn: downloadJRuby, type: Verify) {
+tasks.register("verifyFile", Verify) {
+    dependsOn downloadJRuby
     description "Verify the SHA1 of the download JRuby artifact"
     inputs.file(jrubyTarPath)
     outputs.file(jrubyTarPath)
@@ -230,7 +232,7 @@ task verifyFile(dependsOn: downloadJRuby, type: Verify) {
 verifyFile.onlyIf { customJRubyDir == "" }
 verifyFile.onlyIf { doChecksum }
 
-task buildCustomJRuby(type: Exec) {
+tasks.register("buildCustomJRuby", Exec) {
     description "Build tar.gz and .jar artifacts from JRuby source directory"
     workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
     commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
@@ -243,7 +245,8 @@ task buildCustomJRuby(type: Exec) {
 
 buildCustomJRuby.onlyIf { customJRubyDir != "" }
 
-task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
+tasks.register("installCustomJRuby", Copy) {
+    dependsOn buildCustomJRuby
     description "Install custom built JRuby in the vendor directory"
     inputs.file(customJRubyTar)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -259,7 +262,8 @@ task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
 installCustomJRuby.onlyIf { customJRubyDir != "" }
 
 
-task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: Copy) {
+tasks.register("downloadAndInstallJRuby", Copy) {
+    dependsOn=[verifyFile, installCustomJRuby]
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -268,10 +272,7 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
     exclude "**/stdlib/rdoc/**"
-    exclude "**/stdlib/bundler/**"
-    exclude "**/stdlib/bundler.rb"
-    exclude "**/bundler-1.16.6/**"
-    exclude "**/bundler-1.16.6.*"
+    exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"

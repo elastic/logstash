@@ -29,8 +29,12 @@ module ServiceTester
       stdout.match(/^i | logstash | An extensible logging pipeline | package$/)
     end
 
-    def package_for(filename, base=ServiceTester::Base::LOCATION)
-      File.join(base, "#{filename}.rpm")
+    def package_extension()
+      "rpm"
+    end
+
+    def architecture_extension()
+      "x86_64"
     end
 
     def install(package, host=nil)

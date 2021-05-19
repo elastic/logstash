@@ -35,6 +35,8 @@ public final class BenchmarkMeta {
 
     private final Path configpath;
 
+    private final Path datapath;
+
     private final String version;
 
     private final LsVersionType vtype;
@@ -43,10 +45,11 @@ public final class BenchmarkMeta {
 
     private final int batchsize;
 
-    BenchmarkMeta(final String testcase, final Path configpath, final String version, final LsVersionType vtype,
+    BenchmarkMeta(final String testcase, final Path configpath, final Path datapath, final String version, final LsVersionType vtype,
                   final int workers, final int batchsize) {
         this.testcase = testcase;
         this.configpath = configpath;
+        this.datapath = datapath;
         this.version = version;
         this.vtype = vtype;
         this.workers = workers;
@@ -62,7 +65,13 @@ public final class BenchmarkMeta {
         return testcase;
     }
 
-    public Path getConfigPath() { return configpath; }
+    public Path getConfigPath() { 
+        return configpath; 
+    }
+
+    public Path getDataPath() { 
+        return datapath; 
+    }
 
     public LsVersionType getVtype() {
         return vtype;

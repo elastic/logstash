@@ -28,6 +28,9 @@ import org.apache.logging.log4j.message.SimpleMessage;
 
 import java.util.Map;
 
+/**
+ * Used in Log4j configuration.
+ * */
 public final class LogstashMessageFactory implements MessageFactory {
 
     public static final LogstashMessageFactory INSTANCE = new LogstashMessageFactory();

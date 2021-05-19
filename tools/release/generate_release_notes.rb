@@ -87,7 +87,7 @@ report << "==== Plugins\n"
 
 plugin_changes.each do |plugin, versions|
   _, type, name = plugin.split("-")
-  header = "*#{name.capitalize} #{type.capitalize}*"
+  header = "*#{name.capitalize} #{type.capitalize} - #{versions.last}*"
   start_changelog_file = Tempfile.new(plugin + 'start')
   end_changelog_file = Tempfile.new(plugin + 'end')
   changelog = `curl https://raw.githubusercontent.com/logstash-plugins/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")

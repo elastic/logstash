@@ -30,20 +30,29 @@ buildscript {
 }
 
 dependencies {
-  testCompile project(':logstash-core')
-  testCompile 'org.assertj:assertj-core:3.8.0'
-  testCompile 'junit:junit:4.12'
+  testImplementation project(':logstash-core')
+  testImplementation 'org.assertj:assertj-core:3.8.0'
+  testImplementation 'junit:junit:4.12'
 }
 
 test {
   exclude '/**'
 }
 
-task integrationTests(type: Test) {
+tasks.register("integrationTests", Test) {
   inputs.files fileTree("${projectDir}/services")
   inputs.files fileTree("${projectDir}/framework")
   inputs.files fileTree("${projectDir}/fixtures")
   inputs.files fileTree("${projectDir}/specs")
   systemProperty 'logstash.core.root.dir', projectDir.absolutePath
   include '/org/logstash/integration/RSpecTests.class'
+
+  outputs.upToDateWhen {
+    if (project.hasProperty('integrationTests.rerun')) {
+      println "Rerunning Integration Tests"
+      return false
+    } else {
+      return true
+    }
+  }
 }

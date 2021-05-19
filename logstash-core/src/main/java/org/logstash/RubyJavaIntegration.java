@@ -125,6 +125,9 @@ public final class RubyJavaIntegration {
         }
     }
 
+    /**
+     * Helper class to provide some typical Ruby methods to Java Collection class when used from Ruby
+     * */
     public static final class JavaCollectionOverride {
 
         private static final Collection<IRubyObject> NIL_COLLECTION =
@@ -223,6 +226,9 @@ public final class RubyJavaIntegration {
         }
     }
 
+    /**
+     * Helper class to provide "is_a?" method to Java Map class when use dfrom Ruby
+     * */
     public static final class JavaMapOverride {
 
         private JavaMapOverride() {

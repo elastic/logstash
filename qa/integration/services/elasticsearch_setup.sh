@@ -4,29 +4,11 @@ current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"
 
-if [ -n "${ES_VERSION+1}" ]; then
-  echo "Elasticsearch version is $ES_VERSION"
-  version=$ES_VERSION
-else
-   version=6.5.4
-fi
-
-ES_HOME=$INSTALL_DIR/elasticsearch
-
-setup_es() {
-  if [ ! -d $ES_HOME ]; then
-      local version=$1
-      download_url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$version.tar.gz
-      curl -sL $download_url > $INSTALL_DIR/elasticsearch.tar.gz
-      mkdir $ES_HOME
-      tar -xzf $INSTALL_DIR/elasticsearch.tar.gz --strip-components=1 -C $ES_HOME/.
-      rm $INSTALL_DIR/elasticsearch.tar.gz
-  fi
-}
+ES_HOME="$current_dir/../../../build/elasticsearch"
 
 start_es() {
   es_args=$@
-  $ES_HOME/bin/elasticsearch -Epath.data=/tmp/ls_integration/es-data -Epath.logs=/tmp/ls_integration/es-logs $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
+  JAVA_HOME= $ES_HOME/bin/elasticsearch -Epath.data=/tmp/ls_integration/es-data -Ediscovery.type=single-node -Epath.logs=/tmp/ls_integration/es-logs $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
   count=120
   echo "Waiting for elasticsearch to respond..."
   while ! curl --silent localhost:9200 && [[ $count -ne 0 ]]; do
@@ -38,7 +20,5 @@ start_es() {
   return 0
 }
 
-setup_install_dir
-setup_es $version
 export ES_JAVA_OPTS="-Xms512m -Xmx512m"
 start_es

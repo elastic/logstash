@@ -34,9 +34,9 @@ module LogStash
       "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
+      "dead_letter_queue.flush_interval",
       "dead_letter_queue.max_bytes",
       "metric.collect",
-      "pipeline.java_execution",
       "pipeline.plugin_classloaders",
       "path.config",
       "path.dead_letter_queue",
@@ -48,6 +48,7 @@ module LogStash
       "pipeline.system",
       "pipeline.workers",
       "pipeline.ordered",
+      "pipeline.ecs_compatibility",
       "queue.checkpoint.acks",
       "queue.checkpoint.interval",
       "queue.checkpoint.writes",
@@ -83,7 +84,7 @@ module LogStash
 
     def get_setting(setting_name)
       setting = @settings[setting_name]
-      raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?
+      raise ArgumentError.new("Setting \"#{setting_name}\" doesn't exist. Please check if you haven't made a typo.") if setting.nil?
       setting
     end
 
@@ -588,13 +589,22 @@ module LogStash
     end
 
     class TimeValue < Coercible
+      include LogStash::Util::Loggable
+
       def initialize(name, default, strict=true, &validator_proc)
-        super(name, ::Integer, default, strict, &validator_proc)
+        super(name, Util::TimeValue, default, strict, &validator_proc)
       end
 
       def coerce(value)
-        return value if value.is_a?(::Integer)
-        Util::TimeValue.from_value(value).to_nanos
+        if value.is_a?(::Integer)
+          deprecation_logger.deprecated("Integer value for `#{name}` does not have a time unit and will be interpreted in nanoseconds. " +
+                                        "Time units will be required in a future release of Logstash. " +
+                                        "Acceptable unit suffixes are: `d`, `h`, `m`, `s`, `ms`, `micros`, and `nanos`.")
+
+          return Util::TimeValue.new(value, :nanosecond)
+        end
+
+        Util::TimeValue.from_value(value)
       end
     end
 

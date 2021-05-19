@@ -24,6 +24,8 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.ym
 
 description = """Logstash End to End Benchmarking Utility"""
 version = versionMap['logstash-core']
+String jacksonVersion = versionMap['jackson']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
@@ -42,22 +44,24 @@ buildscript {
 }
 
 ext {
-  jmh = '1.18'
-  elasticsearch = '5.5.0'
+  jmh = '1.23'
+  elasticsearch = '5.6.16'
 }
 
 dependencies {
-  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
-  compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
-  compile group: 'org.apache.commons', name: 'commons-compress', version: '1.14'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
-  compile group: 'commons-io', name: 'commons-io', version: '2.5'
-  compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
-  compile group: 'org.elasticsearch.client', name: 'rest', version: elasticsearch
-  compile "org.openjdk.jmh:jmh-core:$jmh"
-  testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
-  testCompile "junit:junit:4.12"
+  implementation 'net.sf.jopt-simple:jopt-simple:5.0.3'
+  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
+  implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+  implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
+
+  implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+  implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+  implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: elasticsearch
+  implementation "org.openjdk.jmh:jmh-core:$jmh"
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.27.0'
+  testImplementation "junit:junit:4.12"
 }
 
 javadoc {
@@ -75,9 +79,9 @@ test {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
-  baseName = 'benchmark-cli'
-  classifier = null
-  version = null
+  archiveBaseName = 'benchmark-cli'
+  archiveClassifier = null
+  archiveVersion = ''
 }
 
 assemble.dependsOn shadowJar

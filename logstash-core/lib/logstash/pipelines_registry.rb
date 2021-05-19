@@ -17,40 +17,112 @@
 
 module LogStash
   class PipelineState
-    attr_reader :pipeline_id, :pipeline
+    attr_reader :pipeline_id
 
     def initialize(pipeline_id, pipeline)
       @pipeline_id = pipeline_id
       @pipeline = pipeline
-      @reloading = Concurrent::AtomicBoolean.new(false)
+      @loading = Concurrent::AtomicBoolean.new(false)
+
+      # this class uses a lock to ensure thread safe visibility.
+      @lock = Mutex.new
     end
 
     def terminated?
-      # a reloading pipeline is never considered terminated
-      @reloading.false? && @pipeline.finished_execution?
+      @lock.synchronize do
+        # a loading pipeline is never considered terminated
+        @loading.false? && @pipeline.finished_execution?
+      end
     end
 
-    def set_reloading(is_reloading)
-      @reloading.value = is_reloading
+    def running?
+      @lock.synchronize do
+        # not terminated and not loading
+        @loading.false? && !@pipeline.finished_execution?
+      end
+    end
+
+    def loading?
+      @lock.synchronize do
+        @loading.true?
+      end
+    end
+
+    def set_loading(is_loading)
+      @lock.synchronize do
+        @loading.value = is_loading
+      end
     end
 
     def set_pipeline(pipeline)
-      raise(ArgumentError, "invalid nil pipeline") if pipeline.nil?
-      @pipeline = pipeline
+      @lock.synchronize do
+        raise(ArgumentError, "invalid nil pipeline") if pipeline.nil?
+        @pipeline = pipeline
+      end
+    end
+
+    def pipeline
+      @lock.synchronize { @pipeline }
     end
   end
+
+  class PipelineStates
+
+    def initialize
+      @states = {}
+      @locks = {}
+      @lock = Mutex.new
+    end
+
+    def get(pipeline_id)
+      @lock.synchronize do
+        @states[pipeline_id]
+      end
+    end
+
+    def put(pipeline_id, state)
+      @lock.synchronize do
+        @states[pipeline_id] = state
+      end
+    end
+
+    def remove(pipeline_id)
+      @lock.synchronize do
+        @states.delete(pipeline_id)
+      end
+    end
+
+    def size
+      @lock.synchronize do
+        @states.size
+      end
+    end
+
+    def empty?
+      @lock.synchronize do
+        @states.empty?
+      end
+    end
+
+    def each_with_object(init, &block)
+      states = @lock.synchronize { @states.dup }
+      states.each_with_object(init, &block)
+    end
+
+    def get_lock(pipeline_id)
+      @lock.synchronize do
+        @locks[pipeline_id] ||= Mutex.new
+      end
+    end
+  end
+
 
   class PipelinesRegistry
     attr_reader :states
     include LogStash::Util::Loggable
 
     def initialize
-      # we leverage the semantic of the Java ConcurrentHashMap for the
-      # compute() method which is atomic; calling compute() concurrently
-      # will block until the other compute finishes so no mutex is necessary
-      # for synchronizing compute calls
-      @states = java.util.concurrent.ConcurrentHashMap.new
-      @locks = java.util.concurrent.ConcurrentHashMap.new
+      @states = PipelineStates.new
     end
 
     # Execute the passed creation logic block and create a new state upon success
@@ -62,23 +134,35 @@ module LogStash
     #
     # @return [Boolean] new pipeline creation success
     def create_pipeline(pipeline_id, pipeline, &create_block)
-      lock = get_lock(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
       lock.lock
-
       success = false
 
       state = @states.get(pipeline_id)
-      if state
-        if state.terminated?
-          success = yield
-          state.set_pipeline(pipeline)
-        else
-          logger.error("Attempted to create a pipeline that already exists", :pipeline_id => pipeline_id)
-        end
+
+      if state && !state.terminated?
+        logger.error("Attempted to create a pipeline that already exists", :pipeline_id => pipeline_id)
+        return false
+      end
+
+      if state.nil?
+        state = PipelineState.new(pipeline_id, pipeline)
+        state.set_loading(true)
         @states.put(pipeline_id, state)
+        begin
+          success = yield
+        ensure
+          state.set_loading(false)
+          @states.remove(pipeline_id) unless success
+        end
       else
-        success = yield
-        @states.put(pipeline_id, PipelineState.new(pipeline_id, pipeline)) if success
+        state.set_loading(true)
+        state.set_pipeline(pipeline)
+        begin
+          success = yield
+        ensure
+          state.set_loading(false)
+        end
       end
 
       success
@@ -92,22 +176,20 @@ module LogStash
     #
     # @yieldparam [Pipeline] the pipeline to terminate
     def terminate_pipeline(pipeline_id, &stop_block)
-      lock = get_lock(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
       lock.lock
 
       state = @states.get(pipeline_id)
       if state.nil?
         logger.error("Attempted to terminate a pipeline that does not exists", :pipeline_id => pipeline_id)
-        @states.remove(pipeline_id)
       else
         yield(state.pipeline)
-        @states.put(pipeline_id, state)
       end
     ensure
       lock.unlock
     end
 
-    # Execute the passed reloading logic block in the context of the reloading state and set new pipeline in state
+    # Execute the passed reloading logic block in the context of the loading state and set new pipeline in state
     # @param pipeline_id [String, Symbol] the pipeline id
     # @param reload_block [Block] the reloading execution logic
     #
@@ -115,26 +197,52 @@ module LogStash
     #
     # @return [Boolean] new pipeline creation success
     def reload_pipeline(pipeline_id, &reload_block)
-      lock = get_lock(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
       lock.lock
       success = false
 
       state = @states.get(pipeline_id)
+
       if state.nil?
         logger.error("Attempted to reload a pipeline that does not exists", :pipeline_id => pipeline_id)
-        @states.remove(pipeline_id)
-      else
-        state.set_reloading(true)
-        begin
-          success, new_pipeline = yield
-          state.set_pipeline(new_pipeline)
-        ensure
-          state.set_reloading(false)
-        end
-        @states.put(pipeline_id, state)
+        return false
       end
 
-    success
+      state.set_loading(true)
+      begin
+        success, new_pipeline = yield
+        state.set_pipeline(new_pipeline)
+      ensure
+        state.set_loading(false)
+      end
+
+      success
+    ensure
+      lock.unlock
+    end
+
+    # Delete the pipeline that is terminated
+    # @param pipeline_id [String, Symbol] the pipeline id
+    # @return [Boolean] pipeline delete success
+    def delete_pipeline(pipeline_id)
+      lock = @states.get_lock(pipeline_id)
+      lock.lock
+
+      state = @states.get(pipeline_id)
+
+      if state.nil?
+        logger.error("Attempted to delete a pipeline that does not exists", :pipeline_id => pipeline_id)
+        return false
+      end
+
+      if state.terminated?
+        @states.remove(pipeline_id)
+        logger.info("Removed pipeline from registry successfully", :pipeline_id => pipeline_id)
+        return true
+      else
+        logger.info("Attempted to delete a pipeline that is not terminated", :pipeline_id => pipeline_id)
+        return false
+      end
     ensure
       lock.unlock
     end
@@ -142,7 +250,7 @@ module LogStash
     # @param pipeline_id [String, Symbol] the pipeline id
     # @return [Pipeline] the pipeline object or nil if none for pipeline_id
     def get_pipeline(pipeline_id)
-      state = @states.get(pipeline_id)
+      state = @states.get(pipeline_id.to_sym)
       state.nil? ? nil : state.pipeline
     end
 
@@ -153,12 +261,16 @@ module LogStash
 
     # @return [Boolean] true if the states collection is empty.
     def empty?
-      @states.isEmpty
+      @states.empty?
     end
 
     # @return [Hash{String=>Pipeline}]
     def running_pipelines
-      select_pipelines { |state| !state.terminated? }
+      select_pipelines { |state| state.running? }
+    end
+
+    def loading_pipelines
+      select_pipelines { |state| state.loading? }
     end
 
     # @return [Hash{String=>Pipeline}]
@@ -187,12 +299,6 @@ module LogStash
         if state && (!block_given? || yield(state))
           memo[id] = state.pipeline
         end
-      end
-    end
-
-    def get_lock(pipeline_id)
-      @locks.compute_if_absent(pipeline_id) do |k|
-        java.util.concurrent.locks.ReentrantLock.new
       end
     end
   end

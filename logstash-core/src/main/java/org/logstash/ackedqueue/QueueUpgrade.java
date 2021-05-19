@@ -41,6 +41,9 @@ import org.logstash.ackedqueue.io.MmapPageIOV1;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 
+/**
+ * Exposes the {@link #upgradeQueueDirectoryToV2} method upgrade old v1 queue disk format to the new v2
+ * */
 public final class QueueUpgrade {
 
     private static final Logger LOGGER = LogManager.getLogger(QueueUpgrade.class);

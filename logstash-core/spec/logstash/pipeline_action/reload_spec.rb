@@ -26,7 +26,7 @@ describe LogStash::PipelineAction::Reload do
   let(:pipeline_id) { :main }
   let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { dummyblockinginput { id => 'new' } } output { null {} }", { "pipeline.reloadable" => true}) }
   let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
-  let(:pipeline) { mock_pipeline_from_string(pipeline_config, mock_settings("pipeline.reloadable" => true)) }
+  let(:pipeline) { mock_java_pipeline_from_string(pipeline_config, mock_settings("pipeline.reloadable" => true)) }
   let(:pipelines) { r = LogStash::PipelinesRegistry.new; r.create_pipeline(pipeline_id, pipeline) { true }; r }
   let(:agent) { double("agent") }
 

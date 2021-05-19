@@ -1,4 +1,4 @@
-chown -R logstash:logstash /usr/share/logstash
+chown -R root:root /usr/share/logstash
 chown -R logstash /var/log/logstash
 chown logstash:logstash /var/lib/logstash
 sed -i \

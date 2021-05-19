@@ -30,6 +30,9 @@ import java.util.Comparator;
 import java.util.stream.StreamSupport;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 
+/**
+ * Utility application to detect corrupted persistent queues.
+ * */
 public final class PqCheck {
 
     private static final String DEFAULT_PQ_DIR = "data/queue/main";

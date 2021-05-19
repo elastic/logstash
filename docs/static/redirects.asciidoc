@@ -1,0 +1,29 @@
+["appendix",role="exclude",id="redirects"]
+= Deleted pages
+
+The following pages have moved or been deleted.
+
+[role="exclude",id="plugins-filters-multiline"]
+=== Multiline filter plugin
+
+The <<plugins-codecs-multiline,multiline codec plugin>> replaces the multiline
+filter plugin. The multiline codec is better equipped to handle multi-worker
+pipelines and threading.
+
+Here's why. Multiline takes individual lines of text and groups them according
+to some criteria. 
+Accomplishing this operation in the filter stage is possible only if the
+pipeline has a single worker. Otherwise, chunks would end up in different
+workers, and the resulting composition would not make sense.
+
+The <<plugins-codecs-multiline,multiline codec plugin>> allows input plugins to
+create separate codec instances per “identity.” For example, each file or tcp
+connection can have its own codec instance.
+
+[role="exclude",id="alt-fb"]
+==== {filebeat} modules 
+
+If your use case involves reading files that contain multiline entries,
+{filebeat-ref}[{filebeat}] might be a better option.
+{filebeat} offers {filebeat-ref}/filebeat-modules.html[modules] for processing logs
+from many known apps, such as nginx or apache.

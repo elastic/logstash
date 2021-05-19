@@ -14,7 +14,7 @@ describe LogStash::Inputs::Metrics::StateEventFactory do
 
   let(:config) {
     config_part = org.logstash.common.SourceWithMetadata.new("local", "...", 0, 0, "input { dummyblockinginput { } } output { null { } }")
-    LogStash::Config::PipelineConfig.new("DummySource", "fake_main", [config_part], LogStash::SETTINGS)
+    Java::OrgLogstashConfigIr::PipelineConfig.new("DummySource".class, "fake_main".to_sym, [config_part], LogStash::SETTINGS)
   }
 
   let(:pipeline_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone.merge({
@@ -47,7 +47,7 @@ describe LogStash::Inputs::Metrics::StateEventFactory do
     LogStash::SETTINGS.set_value("monitoring.enabled", false)
   end
 
-  let(:pipeline) { LogStash::Pipeline.new(config) }
+  let(:pipeline) { LogStash::JavaPipeline.new(config) }
 
   subject(:sut) { described_class.new(pipeline, "funky_cluster_uuid") }
 

@@ -20,6 +20,7 @@
 
 package org.logstash.config.ir.compiler;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -49,14 +52,16 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     private static final Path SOURCE_DIR = debugDir();
 
-    private static final ISimpleCompiler COMPILER = new SimpleCompiler();
+    private static final ThreadLocal<ISimpleCompiler> COMPILER = ThreadLocal.withInitial(SimpleCompiler::new);
 
     /**
      * Global cache of runtime compiled classes to prevent duplicate classes being compiled.
      * across pipelines and workers.
      */
-    private static final Map<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
-        = new HashMap<>(5000);
+    private static final ConcurrentHashMap<ComputeStepSyntaxElement<?>, Class<? extends Dataset>> CLASS_CACHE
+        = new ConcurrentHashMap<>(100);
+
+    private static final AtomicLong DATASET_CLASS_INDEX = new AtomicLong(0);
 
     /**
      * Pattern to remove redundant {@code ;} from formatted code since {@link Formatter} does not
@@ -84,6 +89,21 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
         return new ComputeStepSyntaxElement<>(methods, fields, interfce);
     }
 
+    @VisibleForTesting
+    public static int classCacheSize() {
+        return CLASS_CACHE.size();
+    }
+
+    /*
+     * Used in a test to clean start, with class loaders wiped out into Janino compiler and cleared the cached classes.
+    * */
+    @VisibleForTesting
+    public static void cleanClassCache() {
+        synchronized (COMPILER) {
+            CLASS_CACHE.clear();
+        }
+    }
+
     private ComputeStepSyntaxElement(
         final Iterable<MethodSyntaxElement> methods,
         final ClassFields fields,
@@ -100,47 +120,42 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     @SuppressWarnings("unchecked")
     public T instantiate() {
-         try {
-             final Class<? extends Dataset> clazz = compile();
-             return (T) clazz.getConstructor(Map.class).newInstance(ctorArguments());
+        try {
+            final Class<? extends Dataset> clazz = compile();
+            return (T) clazz.getConstructor(Map.class).newInstance(ctorArguments());
         } catch (final NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
-    /**
-     * This method is NOT thread-safe, and must have exclusive access to `COMPILER`
-     * so that the resulting `ClassLoader` after each `SimpleCompiler#cook()` operation
-     * can be teed up as the parent for the next cook operation.
-     * Also note that synchronizing on `COMPILER` also protects the global CLASS_CACHE.
-     */
-
     @SuppressWarnings("unchecked")
+    /*
+     * Returns a {@link Class<? extends Dataset>} for this {@link ComputeStepSyntaxElement}, reusing an existing
+     * equivalent implementation from the global class cache when one is available, or otherwise compiling one.
+     *
+     * This method _is_ thread-safe, and uses the locking semantics of {@link ConcurrentHashMap#computeIfAbsent}.
+     * To do so, it relies on {@link #hashCode()} and {@link #equals(Object)}.
+     */
     private  Class<? extends Dataset> compile() {
-        try {
-            synchronized (COMPILER) {
-                Class<? extends Dataset> clazz = CLASS_CACHE.get(this);
-                if (clazz == null) {
-                    final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
-                    final String code = CLASS_NAME_PLACEHOLDER_REGEX.matcher(normalizedSource).replaceAll(name);
-                    if (SOURCE_DIR != null) {
-                        final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
-                        Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
-                        COMPILER.cookFile(sourceFile.toFile());
-                    } else {
-                        COMPILER.cook(code);
-                    }
-                    COMPILER.setParentClassLoader(COMPILER.getClassLoader());
-                    clazz = (Class<T>) COMPILER.getClassLoader().loadClass(
-                        String.format("org.logstash.generated.%s", name)
-                    );
-                    CLASS_CACHE.put(this, clazz);
+        return CLASS_CACHE.computeIfAbsent(this, (__)->{
+            try {
+                final ISimpleCompiler compiler = COMPILER.get();
+                final String name = String.format("CompiledDataset%d", DATASET_CLASS_INDEX.incrementAndGet());
+                final String code = CLASS_NAME_PLACEHOLDER_REGEX.matcher(normalizedSource).replaceAll(name);
+                if (SOURCE_DIR != null) {
+                    final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
+                    Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
+                    compiler.cookFile(sourceFile.toFile());
+                } else {
+                    compiler.cook(code);
                 }
-                return clazz;
+                return (Class<T>) compiler.getClassLoader().loadClass(
+                    String.format("org.logstash.generated.%s", name)
+                );
+            } catch (final CompileException | ClassNotFoundException | IOException ex) {
+                throw new IllegalStateException(ex);
             }
-        } catch (final CompileException | ClassNotFoundException | IOException ex) {
-            throw new IllegalStateException(ex);
-        }
+        });
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.QueueFactoryExt;
@@ -74,6 +75,7 @@ import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.UniversalPluginExt;
+import org.logstash.plugins.factory.ContextualizerExt;
 import org.logstash.util.UtilExt;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
 import org.logstash.plugins.factory.PluginMetricsFactoryExt;
@@ -198,6 +200,8 @@ public final class RubyUtil {
     public static final RubyClass PLUGIN_METRICS_FACTORY_CLASS;
 
     public static final RubyClass PLUGIN_FACTORY_CLASS;
+
+    public static final RubyModule PLUGIN_CONTEXTUALIZER_MODULE;
 
     public static final RubyClass LOGGER;
 
@@ -333,7 +337,7 @@ public final class RubyUtil {
         UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
         UTIL_MODULE.defineAnnotatedMethods(UtilExt.class);
         ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
-            "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
+            "AbstractDeadLetterQueueWriter", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
         ABSTRACT_DLQ_WRITER_CLASS.defineAnnotatedMethods(AbstractDeadLetterQueueWriterExt.class);
@@ -401,6 +405,7 @@ public final class RubyUtil {
         EXECUTION_CONTEXT_CLASS = setupLogstashClass(
             ExecutionContextExt::new, ExecutionContextExt.class
         );
+        EXECUTION_CONTEXT_CLASS.defineConstant("Empty", EXECUTION_CONTEXT_CLASS.newInstance(RUBY.getCurrentContext(), RUBY.getNil(), RUBY.getNil(), RUBY.getNil(), Block.NULL_BLOCK));
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
@@ -551,6 +556,8 @@ public final class RubyUtil {
             "PluginFactory", RUBY.getObject(), PluginFactoryExt::new
         );
         PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.class);
+        PLUGIN_CONTEXTUALIZER_MODULE = PLUGINS_MODULE.defineOrGetModuleUnder("Contextualizer");
+        PLUGIN_CONTEXTUALIZER_MODULE.defineAnnotatedMethods(ContextualizerExt.class);
         UNIVERSAL_PLUGIN_CLASS =
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         EVENT_DISPATCHER_CLASS =
@@ -636,4 +643,18 @@ public final class RubyUtil {
         return JavaUtil.convertJavaToRuby(RUBY, javaObject);
     }
 
+    /**
+     * Cast an IRubyObject that may be nil to a specific class
+     * @param objectOrNil an object of either type {@code <T>} or nil.
+     * @param <T> the type to cast non-nil values to
+     * @return The given value, cast to {@code <T>}, or null.
+     */
+    public static <T extends IRubyObject> T nilSafeCast(final IRubyObject objectOrNil) {
+        if (objectOrNil == null || objectOrNil.isNil()) { return null; }
+
+        @SuppressWarnings("unchecked")
+        final T objectAsCasted = (T) objectOrNil;
+
+        return objectAsCasted;
+    }
 }

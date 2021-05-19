@@ -17,6 +17,7 @@
 
 require "thread"
 require "concurrent"
+require "thwait"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
@@ -31,12 +32,15 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   attr_reader \
     :worker_threads,
+    :input_threads,
     :events_consumed,
     :events_filtered,
     :started_at,
     :thread
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
+  SECOND = 1
+  MEMORY = "memory".freeze
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
@@ -45,7 +49,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     @worker_threads = []
 
-    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
+    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
     @events_consumed = java.util.concurrent.atomic.LongAdder.new
@@ -119,20 +123,31 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @finished_run.make_false
 
     @thread = Thread.new do
+      error_log_params = ->(e) {
+        default_logging_keys(
+          :exception => e,
+          :backtrace => e.backtrace,
+          "pipeline.sources" => pipeline_source_details
+        )
+      }
+
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
         ThreadContext.put("pipeline.id", pipeline_id)
         run
         @finished_run.make_true
       rescue => e
-        close
-        pipeline_log_params = default_logging_keys(
-          :exception => e,
-          :backtrace => e.backtrace,
-          "pipeline.sources" => pipeline_source_details)
-        logger.error("Pipeline aborted due to error", pipeline_log_params)
+        logger.error("Pipeline error", error_log_params.call(e))
       ensure
+        # we must trap any exception here to make sure the following @finished_execution
+        # is always set to true regardless of any exception before in the close method call
+        begin
+          close
+        rescue => e
+          logger.error("Pipeline close error, ignoring", error_log_params.call(e))
+        end
         @finished_execution.make_true
+        @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
       end
     end
 
@@ -176,21 +191,18 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     transition_to_running
     start_flusher # Launches a non-blocking thread for flush events
-    wait_inputs
-    transition_to_stopped
+    begin
+      monitor_inputs_and_workers
+    ensure
+      transition_to_stopped
 
-    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
+      shutdown_flusher
+      shutdown_workers
 
-    shutdown_flusher
-    shutdown_workers
-
-    close
-
+      close
+    end
     @logger.debug("Pipeline has been shutdown", default_logging_keys)
-
-    # exit code
-    return 0
-  end # def run
+  end
 
   def transition_to_running
     @running.make_true
@@ -239,13 +251,12 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
       config_metric.gauge(:config_reload_automatic, settings.get("config.reload.automatic"))
-      config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
+      config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval").to_nanos)
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
       config_metric.gauge(:ephemeral_id, ephemeral_id)
       config_metric.gauge(:hash, lir.unique_hash)
       config_metric.gauge(:graph, ::LogStash::Config::LIRSerializer.serialize(lir))
-      config_metric.gauge(:cluster_uuids, resolve_cluster_uuids)
 
       pipeline_log_params = default_logging_keys(
         "pipeline.workers" => pipeline_workers,
@@ -264,11 +275,15 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # First launch WorkerLoop initialization in separate threads which concurrently
       # compiles and initializes the worker pipelines
 
+      workers_init_start = Time.now
       worker_loops = pipeline_workers.times
         .map { Thread.new { init_worker_loop } }
         .map(&:value)
+      workers_init_elapsed = Time.now - workers_init_start
 
       fail("Some worker(s) were not correctly initialized") if worker_loops.any?{|v| v.nil?}
+
+      @logger.info("Pipeline Java execution initialization time", "seconds" => workers_init_elapsed.round(2))
 
       # Once all WorkerLoop have been initialized run them in separate threads
 
@@ -276,7 +291,16 @@ module LogStash; class JavaPipeline < JavaBasePipeline
         thread = Thread.new do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           ThreadContext.put("pipeline.id", pipeline_id)
-          worker_loop.run
+          begin
+            worker_loop.run
+          rescue => e
+            # WorkerLoop.run() catches all Java Exception class and re-throws as IllegalStateException with the
+            # original exception as the cause
+            @logger.error(
+              "Pipeline worker error, the pipeline will be stopped",
+              default_logging_keys(:error => e.cause.message, :exception => e.cause.class, :backtrace => e.cause.backtrace)
+            )
+          end
         end
         @worker_threads << thread
       end
@@ -306,10 +330,45 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     end.to_a.compact
   end
 
-  def wait_inputs
-    @input_threads.each do |thread|
-      thread.join # Thread or java.lang.Thread (both have #join)
+  def monitor_inputs_and_workers
+    twait = ThreadsWait.new(*(@input_threads + @worker_threads))
+
+    loop do
+      break if @input_threads.empty?
+
+      terminated_thread = twait.next_wait
+
+      if @input_threads.delete(terminated_thread).nil?
+        # this is an abnormal worker thread termination, we need to terminate the pipeline
+
+        @worker_threads.delete(terminated_thread)
+
+        # before terminating the pipeline we need to close the inputs
+        stop_inputs
+
+        # wait 10 seconds for all input threads to terminate
+        wait_input_threads_termination(10 * SECOND) do
+          @logger.warn("Waiting for input plugin to close", default_logging_keys)
+          sleep(1)
+        end
+
+        if inputs_running? && settings.get("queue.type") == MEMORY
+          # if there are still input threads alive they are probably blocked pushing on the memory queue
+          # because no worker is present to consume from the ArrayBlockingQueue
+          # if this is taking too long we have a problem
+          wait_input_threads_termination(10 * SECOND) do
+            dropped_batch = filter_queue_client.read_batch
+            @logger.error("Dropping events to unblock input plugin", default_logging_keys(:count => dropped_batch.filteredSize)) if dropped_batch.filteredSize > 0
+          end
+        end
+
+        raise("Unable to stop input plugin(s)") if inputs_running?
+
+        break
+      end
     end
+
+    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
   end
 
   def start_inputs
@@ -346,59 +405,52 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
-        @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
-                      default_logging_keys(:plugin => plugin.class.config_name, :exception => e.message, :backtrace => e.backtrace))
+        @logger.debug(
+          "Input plugin raised exception during shutdown, ignoring it.",
+           default_logging_keys(
+             :plugin => plugin.class.config_name,
+             :exception => e.message,
+             :backtrace => e.backtrace))
         return
       end
 
       # otherwise, report error and restart
-      @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                            default_logging_keys(
-                              :plugin => plugin.inspect,
-                              :error => e.message,
-                              :exception => e.class,
-                              :stacktrace => e.backtrace.join("\n"))))
+      @logger.error(I18n.t(
+        "logstash.pipeline.worker-error-debug",
+        default_logging_keys(
+          :plugin => plugin.inspect,
+          :error => e.message,
+          :exception => e.class,
+          :stacktrace => e.backtrace.join("\n"))))
 
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
       sleep(1)
-      begin
-        plugin.do_close
-      rescue => close_exception
-        @logger.debug("Input plugin raised exception while closing, ignoring",
-                      default_logging_keys(:plugin => plugin.class.config_name, :exception => close_exception.message,
-                                           :backtrace => close_exception.backtrace))
-      end
+      close_plugin_and_ignore(plugin)
       retry
+    ensure
+      close_plugin_and_ignore(plugin)
     end
-  end # def inputworker
+  end
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
-  # @param before_stop [Proc] code block called before performing stop operation on input plugins
-  def shutdown(&before_stop)
+  # and will block until the pipeline has successfully shut down.
+  def shutdown
+    return if finished_execution?
     # shutdown can only start once the pipeline has completed its startup.
     # avoid potential race condition between the startup sequence and this
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
     # TODO: should we also check against calling shutdown multiple times concurrently?
-
-    before_stop.call if block_given?
-
     stop_inputs
-
-    # We make this call blocking, so we know for sure when the method return the shutdown is
-    # stopped
-    wait_for_workers
+    wait_for_shutdown
     clear_pipeline_metrics
-    @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
   end # def shutdown
 
-  def wait_for_workers
-    @logger.debug("Closing inputs", default_logging_keys)
-    @worker_threads.map(&:join)
-    @logger.debug("Worker closed", default_logging_keys)
+  def wait_for_shutdown
+    ShutdownWatcher.new(self).start
   end
 
   def stop_inputs
@@ -494,6 +546,19 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   private
 
+  def close_plugin_and_ignore(plugin)
+    begin
+      plugin.do_close
+    rescue => e
+      @logger.warn(
+        "plugin raised exception while closing, ignoring",
+        default_logging_keys(
+          :plugin => plugin.class.config_name,
+          :exception => e.message,
+          :backtrace => e.backtrace))
+    end
+  end
+
   # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
   def init_worker_loop
     begin
@@ -542,4 +607,18 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     false
   end
+
+  def wait_input_threads_termination(timeout_seconds, &block)
+    start = Time.now
+    seconds = 0
+    while inputs_running? && (seconds < timeout_seconds)
+      block.call
+      seconds = Time.now - start
+    end
+  end
+
+  def inputs_running?
+    @input_threads.any?(&:alive?)
+  end
+
 end; end

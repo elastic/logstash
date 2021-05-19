@@ -1,0 +1,49 @@
+[float]
+[role="xpack"]
+[[logstash-monitoring-collectors-legacy]]
+===== Collectors
+
+Collectors, as their name implies, collect things. In monitoring for Logstash, 
+collectors are just <<pipeline,Inputs>> in the same way that ordinary Logstash 
+configurations provide inputs.
+
+Like monitoring for {es}, each collector can create zero or more monitoring 
+documents. As it is currently implemented, each Logstash node runs two types of 
+collectors: one for node stats and one for pipeline stats.
+
+[options="header"]
+|=======================
+| Collector       | Data Types | Description
+| Node Stats      | `logstash_stats`
+| Gathers details about the running node, such as memory utilization and CPU
+usage (for example, `GET /_stats`).
+
+This runs on every Logstash node with monitoring enabled. One common
+failure is that Logstash directories are copied with their `path.data` directory
+included (`./data` by default), which copies the persistent UUID of the Logstash
+node along with it. As a result, it generally appears that one or more Logstash
+nodes are failing to collect monitoring data, when in fact they are all really
+misreporting as the _same_ Logstash node. Re-use `path.data` directories only 
+when upgrading Logstash, such that upgraded nodes replace the previous versions.
+| Pipeline Stats | `logstash_state`
+| Gathers details about the node's running pipelines, which powers the 
+Monitoring Pipeline UI.
+|=======================
+
+Per collection interval, which defaults to 10 seconds (`10s`), each collector is
+run. The failure of an individual collector does not impact any other collector. 
+Each collector, as an ordinary Logstash input, creates a separate Logstash event 
+in its isolated monitoring pipeline. The Logstash output then sends the data.
+
+The collection interval can be configured dynamically and you can also disable 
+data collection. For more information about the configuration options for the 
+collectors, see <<monitoring-settings-legacy>>.
+
+WARNING: Unlike {es} and {kib} monitoring, there is no 
+`xpack.monitoring.collection.enabled` setting on Logstash. You must use the 
+`xpack.monitoring.enabled` setting to enable and disable data collection. 
+
+If gaps exist in the monitoring charts in {kib}, it is typically because either 
+a collector failed or the monitoring cluster did not receive the data (for 
+example, it was being restarted). In the event that a collector fails, a logged 
+error should exist on the node that attempted to perform the collection.

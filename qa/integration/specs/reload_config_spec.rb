@@ -22,6 +22,7 @@ require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "socket"
 require "json"
+require "logstash/util"
 
 describe "Test Logstash service when config reload is enabled" do
   before(:all) {
@@ -71,7 +72,7 @@ describe "Test Logstash service when config reload is enabled" do
     
     send_data(reload_port, sample_data)
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
-      expect(IO.read(output_file2).blank?).to be false
+      expect(LogStash::Util.blank?(IO.read(output_file2))).to be false
     end
     
     # check instance metrics. It should not be reset
@@ -89,13 +90,13 @@ describe "Test Logstash service when config reload is enabled" do
     instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]
     expect(pipeline_reload_stats["successes"]).to eq(1)
     expect(pipeline_reload_stats["failures"]).to eq(0)
-    expect(pipeline_reload_stats["last_success_timestamp"].blank?).to be false
+    expect(LogStash::Util.blank?(pipeline_reload_stats["last_success_timestamp"])).to be false
     expect(pipeline_reload_stats["last_error"]).to eq(nil)
     
     expect(instance_reload_stats["successes"]).to eq(1)
     expect(instance_reload_stats["failures"]).to eq(0)
     # parse the results and validate
-    re = JSON.load(File.new(output_file2))
+    re = JSON.parse(IO.read(output_file2))
     expect(re["clientip"]).to eq("74.125.176.147")
     expect(re["response"]).to eq(200)
   end

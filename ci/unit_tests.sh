@@ -20,10 +20,10 @@ SELECTED_TEST_SUITE=$1
 
 if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java Tests"
-  ./gradlew javaTests --console=plain
+  ./gradlew javaTests --console=plain --warning-mode all
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
   echo "Running Ruby unit tests"
-  ./gradlew rubyTests --console=plain
+  ./gradlew rubyTests --console=plain --warning-mode all
 else
   echo "Running Java and Ruby unit tests"
   ./gradlew test --console=plain

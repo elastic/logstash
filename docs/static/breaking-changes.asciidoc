@@ -15,6 +15,7 @@ NOTE: Migrating directly between non-consecutive major versions (5.x to
 
 See these topics for a description of breaking changes:
 
+* <<breaking-8.0>>
 * <<breaking-7.0>>
 * <<breaking-pq>>
 * <<breaking-6.0>>
@@ -23,6 +24,22 @@ See also <<releasenotes>>.
 
 //NOTE: The notable-breaking-changes tagged regions are re-used in the
 //Installation and Upgrade Guide
+
+[[breaking-8.0]]
+=== Breaking changes in 8.0
+Here are the breaking changes for 8.0.
+
+[float]
+==== Changes in Logstash Core
+
+[float]
+[[field-reference-parser]]
+===== Field Reference parser removed
+The Field Reference parser interprets references to fields in your pipelines and
+plugins. It was configurable in 7.x, with the default set to strict to reject
+inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
+{ls} rejects ambiguous and illegal inputs as standard behavior.
+
 
 [[breaking-7.0]]
 === Breaking changes in 7.0
@@ -249,6 +266,7 @@ Changes to Logstash Core are plugin agnostic.
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
   Previously, users had to convert this to a millisecond time value themselves.
+  Note that the unit qualifier (`s`) is required.
 
 [float]
 ===== RPM/Deb package changes

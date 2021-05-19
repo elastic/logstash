@@ -18,7 +18,6 @@
 require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
-require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
 require_relative "../support/mocks_classes"
 require "fileutils"
@@ -85,7 +84,7 @@ describe LogStash::Agent do
 
       it "should delegate settings to new pipeline" do
         expect(LogStash::JavaPipeline).to receive(:new) do |arg1, arg2|
-          expect(arg1).to eq(config_string)
+          expect(arg1.to_s).to eq(config_string)
           expect(arg2.to_hash).to include(agent_args)
         end
         subject.converge_state_and_update
@@ -334,6 +333,31 @@ describe LogStash::Agent do
       end
     end
 
+    describe "#stop_pipeline" do
+      let(:config_string) { "input { generator { id => 'old'} } output { }" }
+      let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
+      let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
+      subject { described_class.new(agent_settings, source_loader) }
+
+      before(:each) do
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+        expect(subject.get_pipeline('main').running?).to be_truthy
+      end
+
+      after(:each) do
+        subject.shutdown
+      end
+
+      context "when agent stops the pipeline" do
+        it "should stop successfully", :aggregate_failures do
+          converge_result = subject.stop_pipeline('main')
+
+          expect(converge_result).to be_a_successful_converge
+          expect(subject.get_pipeline('main').stopped?).to be_truthy
+        end
+      end
+    end
+
     context "#started_at" do
       it "return the start time when the agent is started" do
         expect(described_class::STARTED_AT).to be_kind_of(Time)
@@ -546,7 +570,8 @@ describe LogStash::Agent do
 
   describe "using persisted queue" do
     it_behaves_like "all Agent tests" do
-      let(:agent_settings) { mock_settings("queue.type" => "persisted", "queue.drain" => true) }
+      let(:agent_settings) { mock_settings("queue.type" => "persisted", "queue.drain" => true,
+                                           "queue.page_capacity" => "8mb", "queue.max_bytes" => "64mb") }
     end
   end
 end

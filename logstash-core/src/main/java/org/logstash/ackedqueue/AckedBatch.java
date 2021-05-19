@@ -28,6 +28,9 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 
 import static org.logstash.RubyUtil.RUBY;
 
+/**
+ * Persistent queue batch of events collection
+ * */
 public final class AckedBatch {
     private Batch batch;
 
