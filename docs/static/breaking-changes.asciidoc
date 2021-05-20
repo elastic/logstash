@@ -33,6 +33,13 @@ Here are the breaking changes for 8.0.
 ==== Changes in Logstash Core
 
 [float]
+[[ruby-execution-engine]]
+===== Ruby Execution Engine removed
+The Execution Engine transforms pipeline definitions into executable code, and manages that code's execution.
+Since {ls} 7.0, the Java Execution Engine (JEE) has been the default, but users could still configure their installation to use the legacy Ruby Execution Engine (REE).
+The option to use REE is removed in 8.0.
+
+[float]
 [[field-reference-parser]]
 ===== Field Reference parser removed
 The Field Reference parser interprets references to fields in your pipelines and
