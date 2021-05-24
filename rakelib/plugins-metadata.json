@@ -403,6 +403,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-elastic_enterprise_search": {
+    "default-plugins": false,
+    "skip-list": false
+  },
   "logstash-integration-jdbc": {
     "default-plugins": true,
     "skip-list": false
