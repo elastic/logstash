@@ -50,22 +50,48 @@ This section summarizes the changes in the following releases:
 [[featured-7-13-0]]
 ==== New features and enhancements
 
+===== Progress toward Elastic Common Schema (ECS)
+In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS). This release builds on ECS work in previous release, and adds ECS-compatibility for these plugins:
+
+* {logstash-ref}/plugins-inputs-file.html[File input]
+* {logstash-ref}/plugins-inputs-stdin.html[Stdin input] 
+* {logstash-ref}/plugins-inputs-syslog.html[Syslog input] 
+* {logstash-ref}/plugins-codecs-cef.html[Cef codec] 
+* {logstash-ref}plugins-filters-clone.html[Clone filter]
+* {logstash-ref}/plugins-filters-geoip.html[Geoip filter] 
+* {logstash-ref}/plugins-filters-syslog_pri.html[Syslog_pri filter] 
+* {logstash-ref}/plugins-filters-tld.html[Tld filter] 
+
+ECS compatibility is off-by-default in Logstash 7.x, but will be on-by-default in Logstash 8.0.
+
+===== Elasticsearch datastreams
+The {logstash-ref}/plugins-outputs-elasticsearch.html[Elasticsearch output plugin] now supports {ref}/data-streams.html[Elasticsearch data streams]. 
+You can use the plugin to send time series datasets (such as logs, events, and metrics) as well as non-time series data to Elasticsearch.
+
+Elasticsearch data streams store append-only time series data across multiple indices while giving you a single named resource for requests. Data streams are well-suited for logs, events, metrics, and other continuously generated data.
+
+The Elasticsearch output offers {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-data-streams[data stream options] that are designed for indexing time series datasets into Elasticsearch.
+
 [[notable-7-13-0]]
 ==== Performance improvements and notable issues fixed
 
 **Logstash keystore fixes**
+
 Fixed a regression introduced in `7.11` where the `bin/logstash-keystore list` command would not list secrets from the
 logstash keystore https://github.com/elastic/logstash/pull/12784[#12784]
 
 **Potential Plugin clash fixes**
-Fixed a potential clash where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. We believe
-this only manifested in testing rather than actual pipeline https://github.com/elastic/logstash/pull/12811[#12811]
+
+Fixed a potential clash where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. 
+We believe this only manifested in testing rather than actual pipeline https://github.com/elastic/logstash/pull/12811[#12811]
 
 **Benchmark Tool fixes**
+
 Fixed a regression where the benchmarking tool was unable to run due to a change in the format of the stats API
 previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
 
 **Updates to dependencies**
+
 * Updated jruby to 9.2.16.0 https://github.com/elastic/logstash/pull/12699[#12699]
 * Updated bundled JDK to 11.0.10+9 https://github.com/elastic/logstash/pull/12693[#12693]
 * Updated log4j2 to 1.4.0 and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12724[#12724]
@@ -79,7 +105,7 @@ previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
 
 *Clone Filter - 4.1.1*
 
-* [Doc] Add ECS mapping table https://github.com/logstash-plugins/logstash-filter-clone/pull/25[#25]
+* [DOC] Add ECS mapping table https://github.com/logstash-plugins/logstash-filter-clone/pull/25[#25]
 * [DOC] Added note that a new type field is added to the clone https://github.com/logstash-plugins/logstash-filter-clone/pull/23[#23]
 * Add ECS compatibility https://github.com/logstash-plugins/logstash-filter-clone/pull/24[#24]
 
@@ -117,7 +143,7 @@ previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
 * Fix: DLQ regression shipped in 11.0.0 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1012[#1012]
 * [DOC] Fixed broken link in list item https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1011[#1011]
 * Feat: Data stream support https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/988[#988]
-* Refactor: reviewed logging format + restored ES (initial) setup error logging
+* Refactor: reviewed logging format and restored ES (initial) setup error logging
 * Feat: always check ES license https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1005[#1005]
 
 [[logstash-7-12-1]]
