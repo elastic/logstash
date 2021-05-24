@@ -35,6 +35,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     @geoip = geoip
     self.class.prepare_cc_db
     @mode = database_path.nil? ? :online : :offline
+    @mode = :disabled # This is a temporary change that turns off the database manager until it is ready for general availability.
     @database_type = database_type
     @database_path = patch_database_path(database_path)
 
@@ -49,6 +50,8 @@ module LogStash module Filters module Geoip class DatabaseManager
       # check database update periodically. trigger `call` method
       @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
       @scheduler.every('24h', self)
+    elsif @mode == :disabled
+      # The plan is to use CC database in Logstash 7.x and enable EULA database in 8
     else
       logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
