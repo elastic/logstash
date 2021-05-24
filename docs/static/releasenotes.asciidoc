@@ -56,7 +56,7 @@ Pin JDK 1.8.0.282 version in Docker image to avoid jdk bug https://github.com/el
 ==== Known issues
 
 JDK 1.8.0.292 has a race condition that impacts creating keystores.
-More information is available in the Logstash issue https://github.com/elastic/logstash/issues/12917[#12917] and the https://bugs.openjdk.java.net/browse/JDK-8266261[OpenJDK issue].
+More information is available in Logstash issue https://github.com/elastic/logstash/issues/12917[#12917] and the https://bugs.openjdk.java.net/browse/JDK-8266261[OpenJDK issue].
 
 [[logstash-6-8-15]]
 === Logstash 6.8.15 Release Notes
