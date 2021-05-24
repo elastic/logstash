@@ -57,7 +57,7 @@ In this release, we've made more Logstash plugins compatible with the Elastic Co
 * {logstash-ref}/plugins-inputs-stdin.html[Stdin input] 
 * {logstash-ref}/plugins-inputs-syslog.html[Syslog input] 
 * {logstash-ref}/plugins-codecs-cef.html[Cef codec] 
-* {logstash-ref}plugins-filters-clone.html[Clone filter]
+* {logstash-ref}/plugins-filters-clone.html[Clone filter]
 * {logstash-ref}/plugins-filters-geoip.html[Geoip filter] 
 * {logstash-ref}/plugins-filters-syslog_pri.html[Syslog_pri filter] 
 * {logstash-ref}/plugins-filters-tld.html[Tld filter] 
