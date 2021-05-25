@@ -253,11 +253,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final Event[] NULL_ARRAY = new Event[0];
 
     @SuppressWarnings("unchecked")
-    public static Event[] fromJson(String json)
-            throws IOException
-    {
+    public static Event[] fromJson(final String json) throws IOException {
         // empty/blank json string does not generate an event
-        if (json == null || json.trim().isEmpty()) {
+        if (json == null || isBlank(json)) {
             return NULL_ARRAY;
         }
 
@@ -357,6 +355,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return t != null
                 ? t.toString() + " " + hostMessageString
                 : hostMessageString;
+    }
+
+    private static boolean isBlank(final String str) {
+        final int len = str.length();
+        if (len == 0) return true;
+        for (int i = 0; i < len; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Timestamp initTimestamp(Object o) {
