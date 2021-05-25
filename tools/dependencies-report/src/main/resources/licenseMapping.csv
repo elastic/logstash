@@ -38,6 +38,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
 "edn:",https://github.com/relevance/edn-ruby,MIT
 "elastic-app-search:",https://github.com/elastic/app-search-ruby,Apache-2.0
+"elastic-workplace-search:",https://github.com/elastic/workplace-search-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
