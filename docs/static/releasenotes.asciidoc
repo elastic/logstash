@@ -85,11 +85,6 @@ logstash keystore https://github.com/elastic/logstash/pull/12784[#12784]
 Fixed a potential  interoperability issue where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. 
 We believe this only manifested in testing rather than actual pipeline https://github.com/elastic/logstash/pull/12811[#12811]
 
-**Benchmark Tool fixes**
-
-Fixed a regression where the benchmarking tool was unable to run due to a change in the format of the stats API
-previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
-
 **Updates to dependencies**
 
 * Updated jruby to 9.2.16.0 https://github.com/elastic/logstash/pull/12699[#12699]
