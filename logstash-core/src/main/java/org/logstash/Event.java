@@ -252,6 +252,12 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     private static final Event[] NULL_ARRAY = new Event[0];
 
+    /**
+     * Map a JSON string into events.
+     * @param json input string
+     * @return events
+     * @throws IOException when (JSON) parsing fails
+     */
     @SuppressWarnings("unchecked")
     public static Event[] fromJson(final String json) throws IOException {
         // empty/blank json string does not generate an event
@@ -265,21 +271,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             return new Event[] { new Event((Map<String, Object>) o) };
         }
         if (o instanceof List) { // Jackson returns an ArrayList
-            return mapFromList((List<Map<String, Object>>) o);
+            return fromList((List<Map<String, Object>>) o);
         }
 
         throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
     }
 
-    private static Event[] mapFromList(final List<Map<String, Object>> list) throws IOException {
+    private static Event[] fromList(final List<Map<String, Object>> list) throws ClassCastException {
         final int len = list.size();
         Event[] result = new Event[len];
         for (int i = 0; i < len; i++) {
-            try {
-                result[i] = new Event(list.get(i));
-            } catch (ClassCastException e) {
-                throw new IOException("incompatible json object type=" + list.get(i).getClass().getName() + " , only hash map is supported", e);
-            }
+            result[i] = new Event(list.get(i));
         }
         return result;
     }
