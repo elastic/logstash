@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
@@ -196,7 +195,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw RaiseException.from(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing");
+                throw toRubyError(context, RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", e);
             }
         }
 
@@ -234,7 +233,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw RaiseException.from(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage());
+                throw toRubyError(context, RubyUtil.GENERATOR_ERROR, e);
             }
         }
 
@@ -248,7 +247,7 @@ public final class JrubyEventExtLibrary {
             try {
                 events = Event.fromJson(value.asJavaString());
             } catch (Exception e) {
-                throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
+                throw toRubyError(context, RubyUtil.PARSER_ERROR, e);
             }
 
             if (events.length == 1) {
@@ -371,5 +370,16 @@ public final class JrubyEventExtLibrary {
             final long sequence = SEQUENCE_GENERATOR.incrementAndGet();
             return (int) (sequence ^ sequence >>> 32) + 31;
         }
+
+        private static RaiseException toRubyError(ThreadContext context, RubyClass type, Exception e) {
+            return toRubyError(context, type, e.getMessage(), e);
+        }
+
+        private static RaiseException toRubyError(ThreadContext context, RubyClass type, String message, Exception e) {
+            RaiseException ex = RaiseException.from(context.runtime, type, message);
+            ex.initCause(e);
+            return ex;
+        }
+
     }
 }
