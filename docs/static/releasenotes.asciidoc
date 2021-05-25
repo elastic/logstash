@@ -51,7 +51,7 @@ This section summarizes the changes in the following releases:
 ==== New features and enhancements
 
 ===== Progress toward Elastic Common Schema (ECS)
-In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS). This release builds on ECS work in previous release, and adds ECS-compatibility for these plugins:
+In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS). This release builds on ECS work in previous releases, and adds ECS-compatibility for these plugins:
 
 * {logstash-ref}/plugins-inputs-file.html[File input]
 * {logstash-ref}/plugins-inputs-stdin.html[Stdin input] 
@@ -101,7 +101,7 @@ previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
 
 *Cef Codec - 6.2.0*
 
-* Introduce ECS Compatibility mode https://github.com/logstash-plugins/logstash-codec-cef/pull/83[#83].
+* Introduce ECS Compatibility mode https://github.com/logstash-plugins/logstash-codec-cef/pull/83[#83]
 
 *Clone Filter - 4.1.1*
 
@@ -121,8 +121,8 @@ previously introduced https://github.com/elastic/logstash/pull/12738[#12738]
 *S3 Input - 3.6.0*
 
 * Fixed unprocessed file with the same `last_modified` in ingestion. https://github.com/logstash-plugins/logstash-input-s3/pull/220[#220]
-* [DOC]Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-input-s3/issues/208[#208]
-* [DOC]Added example for `exclude_pattern` and reordered option descriptions https://github.com/logstash-plugins/logstash-input-s3/issues/204[#204]
+* [DOC] Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-input-s3/issues/208[#208]
+* [DOC] Added example for `exclude_pattern` and reordered option descriptions https://github.com/logstash-plugins/logstash-input-s3/issues/204[#204]
 
 *Stdin Input - 3.3.0*
 
