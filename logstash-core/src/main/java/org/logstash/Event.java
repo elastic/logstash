@@ -259,22 +259,28 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             return NULL_ARRAY;
         }
 
-        Event[] result;
         Object o = JSON_MAPPER.readValue(json, Object.class);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            result = new Event[]{ new Event((Map<String, Object>)o) };
-        } else if (o instanceof List) {
-            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o; 
-            result = new Event[list.size()];
-            int i = 0;
-            for (final Map<String, Object> e : list) {
-                result[i++] = new Event(e);
-            }
-        } else {
-            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+            return new Event[] { new Event((Map<String, Object>) o) };
+        }
+        if (o instanceof List) { // Jackson returns an ArrayList
+            return mapFromList((List<Map<String, Object>>) o);
         }
 
+        throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+    }
+
+    private static Event[] mapFromList(final List<Map<String, Object>> list) throws IOException {
+        final int len = list.size();
+        Event[] result = new Event[len];
+        for (int i = 0; i < len; i++) {
+            try {
+                result[i] = new Event(list.get(i));
+            } catch (ClassCastException e) {
+                throw new IOException("incompatible json object type=" + list.get(i).getClass().getName() + " , only hash map is supported", e);
+            }
+        }
         return result;
     }
 
