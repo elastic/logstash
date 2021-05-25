@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-13-0,Logstash 7.13.0>>
 * <<logstash-7-12-1,Logstash 7.12.1>>
 * <<logstash-7-12-0,Logstash 7.12.0>>
 * <<logstash-7-11-2,Logstash 7.11.2>>
@@ -42,6 +43,103 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-13-0]]
+=== Logstash 7.13.0 Release Notes
+
+[[featured-7-13-0]]
+==== New features and enhancements
+
+===== Progress toward Elastic Common Schema (ECS)
+In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS). This release builds on ECS work in previous releases, and adds ECS-compatibility for these plugins:
+
+* {logstash-ref}/plugins-inputs-file.html[File input]
+* {logstash-ref}/plugins-inputs-stdin.html[Stdin input] 
+* {logstash-ref}/plugins-inputs-syslog.html[Syslog input] 
+* {logstash-ref}/plugins-codecs-cef.html[Cef codec] 
+* {logstash-ref}/plugins-filters-clone.html[Clone filter]
+* {logstash-ref}/plugins-filters-geoip.html[Geoip filter] 
+* {logstash-ref}/plugins-filters-syslog_pri.html[Syslog_pri filter] 
+* {logstash-ref}/plugins-filters-tld.html[Tld filter] 
+
+ECS compatibility is off-by-default in Logstash 7.x, but will be on-by-default in Logstash 8.0.
+
+===== Elasticsearch datastreams
+The {logstash-ref}/plugins-outputs-elasticsearch.html[Elasticsearch output plugin] now supports {ref}/data-streams.html[Elasticsearch data streams]. 
+You can use the plugin to send time series datasets (such as logs, events, and metrics) as well as non-time series data to Elasticsearch.
+
+Elasticsearch data streams store append-only time series data across multiple indices while giving you a single named resource for requests. Data streams are well-suited for logs, events, metrics, and other continuously generated data.
+
+The Elasticsearch output offers {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-data-streams[data stream options] that are designed for indexing time series datasets into Elasticsearch.
+
+[[notable-7-13-0]]
+==== Performance improvements and notable issues fixed
+
+**Logstash keystore fixes**
+
+Fixed a regression introduced in `7.11` where the `bin/logstash-keystore list` command would not list secrets from the
+logstash keystore https://github.com/elastic/logstash/pull/12784[#12784]
+
+**Potential Plugin interoperability fixes**
+
+Fixed a potential interoperability issue where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. 
+We believe this only manifested in testing rather than actual pipeline https://github.com/elastic/logstash/pull/12811[#12811]
+
+**Updates to dependencies**
+
+* Updated jruby to 9.2.16.0 https://github.com/elastic/logstash/pull/12699[#12699]
+* Updated bundled JDK to 11.0.10+9 https://github.com/elastic/logstash/pull/12693[#12693]
+* Updated log4j2 to 1.4.0 and ship log4j 1.2 bridge https://github.com/elastic/logstash/pull/12724[#12724]
+* Updated slf4j to 1.7.30 https://github.com/elastic/logstash/pull/12723[#12723]
+
+==== Plugins
+
+*Cef Codec - 6.2.0*
+
+* Introduce ECS Compatibility mode https://github.com/logstash-plugins/logstash-codec-cef/pull/83[#83]
+
+*Clone Filter - 4.1.1*
+
+* [DOC] Add ECS mapping table https://github.com/logstash-plugins/logstash-filter-clone/pull/25[#25]
+* [DOC] Added note that a new type field is added to the clone https://github.com/logstash-plugins/logstash-filter-clone/pull/23[#23]
+* Add ECS compatibility https://github.com/logstash-plugins/logstash-filter-clone/pull/24[#24]
+
+*Syslog_pri Filter - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/9[#9]
+
+*Beats Input - 6.1.3*
+
+* Fix: safe-guard byte buf allocation https://github.com/logstash-plugins/logstash-input-beats/pull/420[#420]
+* Updated Jackson dependencies
+
+*S3 Input - 3.6.0*
+
+* Fixed unprocessed file with the same `last_modified` in ingestion. https://github.com/logstash-plugins/logstash-input-s3/pull/220[#220]
+* [DOC] Added note that only AWS S3 is supported. No other S3 compatible storage solutions are supported. https://github.com/logstash-plugins/logstash-input-s3/issues/208[#208]
+* [DOC] Added example for `exclude_pattern` and reordered option descriptions https://github.com/logstash-plugins/logstash-input-s3/issues/204[#204]
+
+*Stdin Input - 3.3.0*
+
+* Feat: ECS support + review dependencies https://github.com/logstash-plugins/logstash-input-stdin/pull/20[#20]
+
+*Syslog Input - 3.5.0*
+
+* Feat: ECS compatibility support https://github.com/logstash-plugins/logstash-input-syslog/pull/63[#63]
+
+*Jdbc Integration - 5.0.7*
+
+* Feat: try hard to log Java cause (chain) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/62[#62]
+* Refactored Lookup used in jdbc_streaming and jdbc_static to avoid code duplication. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/59[#59]
+
+*Elasticsearch Output - 11.0.2*
+
+* Validate that required functionality in Elasticsearch is available upon initial connection https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1015[#1015]
+* Fix: DLQ regression shipped in 11.0.0 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1012[#1012]
+* [DOC] Fixed broken link in list item https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1011[#1011]
+* Feat: Data stream support https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/988[#988]
+* Refactor: reviewed logging format and restored ES (initial) setup error logging
+* Feat: always check ES license https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1005[#1005]
 
 [[logstash-7-12-1]]
 === Logstash 7.12.1 Release Notes
@@ -109,7 +207,7 @@ This section summarizes the changes in the following releases:
 *Core Patterns - 4.3.1*
 
 - Fix: incorrect syslog (priority) field name https://github.com/logstash-plugins/logstash-patterns-core/pull/303[#303]
-- Fix: missed `ciscotag` field ECS-ification (`cisco.asa.tag`) for the `CISCO_TAGGED_SYSLOG` pattern 
+- Fix: missed `ciscotag` field ECS-ification (`cisco.asa.tag`) for the `CISCO_TAGGED_SYSLOG` pattern
 
 
 [[logstash-7-12-0]]
@@ -308,12 +406,12 @@ https://github.com/logstash-plugins/logstash-input-redis/pull/84[#84]
 
 *Core Patterns - 4.3.0*
 
-With **4.3.0** we're introducing a new set of pattern definitions compliant with Elastic Common Schema (ECS), on numerous 
+With **4.3.0** we're introducing a new set of pattern definitions compliant with Elastic Common Schema (ECS), on numerous
 places patterns are capturing names prescribed by the schema or use custom namespaces that do not conflict with ECS ones.
 
 Changes are backwards compatible as much as possible and also include improvements to some of the existing patterns.
 
-Besides fields having new names, values for numeric (integer or floating point) types are usually converted to their 
+Besides fields having new names, values for numeric (integer or floating point) types are usually converted to their
 numeric representation to ease further event processing (e.g. `http.response.status_code` is now stored as an integer).
 
 NOTE: to leverage the new ECS pattern set in Logstash a grok filter upgrade to version >= 4.4.0 is required.
@@ -515,7 +613,7 @@ pick up new pipelines that match the wildcard set in
 In response to user requests, we have added Confluent schema registry support
 and new configuration options to {logstash-ref}/plugins-inputs-kafka.html[Kafka
 input] plugin version 10.6.0. Now you can configure the Kafka input plugin to
-use the Avro deserializer to retrieve data from Kafka. 
+use the Avro deserializer to retrieve data from Kafka.
 
 ==== Performance improvements and notable issues fixed
 
@@ -605,7 +703,7 @@ No high impact fixes in this release.
 * Added composable index template support for elasticsearch version 8 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/980[#980]
 * [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/975[#975]
 * [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/969[#969]
-  
+
 ==== Other changes
 
 * Databind upgraded to 2.9.10.6
@@ -656,17 +754,17 @@ options that include a bundled Java Development Kit (JDK). AdoptOpenJDK 11, the
 latest long term support (LTS) release, is the bundled version. Before Logstash
 included the JDK, users had to install a JDK before they could install Logstash.
 Logstash with AdoptOpenJDK 11 makes installation and setup easier, especially
-for first time users. 
+for first time users.
 
 **Upgrade impacts**
 
 * If you have JAVA_HOME set to use a custom JDK, Logstash will continue to use the
-JDK version you have specified. 
+JDK version you have specified.
 
 * If you are using the system's JDK (from Ubuntu/Debian/CentOS archives, for
 example) and have not set JAVA_HOME, Logstash will default to the  bundled
 version of Java after you upgrade. Set JAVA_HOME to use your system's JDK if
-that is the version you prefer. 
+that is the version you prefer.
 
 ===== Elastic Common Schema (ECS) compatibility
 
@@ -694,9 +792,9 @@ https://github.com/elastic/logstash/pull/12205[#12205]
 
 ==== Performance improvements and notable issues fixed
 
-**Java pipeline execution and management** 
+**Java pipeline execution and management**
 
-* We have addressed an issue with the aggregate filter in the Java execution. 
+* We have addressed an issue with the aggregate filter in the Java execution.
 The issue prevented events from being generated (when the amount of time for an
 aggregation event timed out), preventing a pipeline from effectively summing
 events. https://github.com/elastic/logstash/pull/12204[#12204]
@@ -704,7 +802,7 @@ events. https://github.com/elastic/logstash/pull/12204[#12204]
 * We have made pipelines more stable by calling `close` on input plugins when a pipeline is
 terminated or reloaded. https://github.com/elastic/logstash/pull/12195[#12195]
 
-**Keystore thread safety.**  
+**Keystore thread safety.**
 After a https://github.com/elastic/logstash/pull/10794[recent performance
 improvement], Logstash could fail to start reliably in certain configurations
 involving parameter expansion and multiple pipelines. Access to the shared
@@ -723,7 +821,7 @@ https://github.com/elastic/logstash/pull/12019[#12019]
 
 **Updates to dependencies**
 
-* Update jruby to 9.2.13.0 
+* Update jruby to 9.2.13.0
 * Pinned open-ssl version to 0.10.4 to avoid "Gem not found" error with
 jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
 
@@ -738,7 +836,7 @@ jruby-openssl-0.10.5 https://github.com/elastic/logstash/pull/12300[#12300]
 
 * [DOC]Replaced plugin_header file with plugin_header-integration file https://github.com/logstash-plugins/logstash-integration-kafka/pull/46[#46]
 * [DOC]Update kafka client version across kafka integration docs https://github.com/logstash-plugins/logstash-integration-kafka/pull/47[#47]
-* [DOC]Replace hard-coded kafka client and doc path version numbers with attributes to simplify doc maintenance https://github.com/logstash-plugins/logstash-integration-kafka/pull/48[#48]  
+* [DOC]Replace hard-coded kafka client and doc path version numbers with attributes to simplify doc maintenance https://github.com/logstash-plugins/logstash-integration-kafka/pull/48[#48]
 * Changed: retry sending messages only for retriable exceptions https://github.com/logstash-plugins/logstash-integration-kafka/pull/29[#27]
 * [DOC] Fixed formatting issues and made minor content edits https://github.com/logstash-plugins/logstash-integration-kafka/pull/43[#43]
 
@@ -870,7 +968,7 @@ The new JRuby release brings greater stability to its code optimizations in mult
 *Syslog Input - 3.4.4*
 
 * Refactor: avoid global side-effect + cleanup https://github.com/logstash-plugins/logstash-input-syslog/pull/62[#62]
-* avoid setting `BasicSocket.do_not_reverse_lookup` as it has side effects for others 
+* avoid setting `BasicSocket.do_not_reverse_lookup` as it has side effects for others
 
 *Jdbc Integration - 5.0.6*
 
@@ -898,7 +996,7 @@ This release is the first step toward Elastic Common Schema (ECS) support in
 output plugin>> to manage index templates that are compatible with the
 {ecs-ref}[Elastic Common Schema (ECS)]. The
 <<plugins-outputs-elasticsearch-ecs_compatibility,ECS compatibility setting>>
-in the {es} output plugin makes this possible. 
+in the {es} output plugin makes this possible.
 
 See
 {logstash-ref}/plugins-outputs-elasticsearch.html#_compatibility_with_the_elastic_common_schema_ecs[Compatibility with the Elastic Common Schema (ECS)]
@@ -911,10 +1009,10 @@ for API keys in the <<plugins-outputs-elasticsearch,{es} output plugin>> arrived
 in {ls} 7.8.0. {ls} 7.9.0 introduces support for {es} API keys in the
 <<plugins-inputs-elasticsearch,{es} input plugin>>, the
 <<plugins-filters-elasticsearch,{es} filter plugin>>, and {ls}
-<<ls-api-key-monitor,monitoring>> and <<ls-api-key-man,management>>. 
+<<ls-api-key-monitor,monitoring>> and <<ls-api-key-man,management>>.
 
 Check out <<ls-api-keys>> for more information about using API keys with {ls}
-and {es}. 
+and {es}.
 Implementation details are in https://github.com/elastic/logstash/pull/11953[#11953].
 
 ===== ARM64 support (experimental)
@@ -931,7 +1029,7 @@ We replaced the deprecated Java client library for the
 <<plugins-outputs-elastic_app_search,Elastic App Search output plugin>> with the
 Ruby client library, and expanded integration testing. These changes provide a
 foundation for expanding App Search integration and quality assurance in future
-releases. 
+releases.
 
 ===== Improvements to persistent queue (PQ)
 
@@ -949,7 +1047,7 @@ Worker threads were not correctly monitored for a worker loop exception
 resulting in a complete logstash crash upon any exception even when multiple
 pipelines are running. Now only the failed pipeline is terminated. If pipeline
 reloading is enabled, you can edit the config and have the failed pipeline
-reloaded. 
+reloaded.
 Implementation details are in
 https://github.com/elastic/logstash/pull/12019[#12019] and
 https://github.com/elastic/logstash/pull/12038[#12038].
@@ -959,7 +1057,7 @@ https://github.com/elastic/logstash/pull/12038[#12038].
 This release contains several optimizations to pipeline compilation, an
 essential step of the pipeline initialization process. These changes
 significantly improve startup and pipeline-restart performance for complex
-pipelines.  
+pipelines.
 (For technical details, check out this PR: https://github.com/elastic/logstash/pull/12060[#12060].)
 
 From our tests in three different pipelines with eight workers each, we have
@@ -1019,8 +1117,8 @@ https://github.com/elastic/logstash/pull/12034[#12034]
 
 *File Input - 4.2.1*
 
-* Fix: Skip sincedb eviction if read mode completion deletes file during flush https://github.com/logstash-plugins/logstash-input-file/pull/273[#273]  
-* Fix: Watched files performance with huge filesets https://github.com/logstash-plugins/logstash-input-file/pull/268[#268] 
+* Fix: Skip sincedb eviction if read mode completion deletes file during flush https://github.com/logstash-plugins/logstash-input-file/pull/273[#273]
+* Fix: Watched files performance with huge filesets https://github.com/logstash-plugins/logstash-input-file/pull/268[#268]
 * Updated logging to include full traces in debug (and trace) levels
 
 *Imap Input - 3.1.0*
@@ -1135,15 +1233,15 @@ You can find more information in the release notes of the respective plugins.
 We can be more flexible and responsive in supporting new JDKs and deprecating
 old ones, thanks to recent improvements to our test scripts infrastructure. This
 work and other JDK14 fixes pave the way for {ls} to support both AdoptOpenJDK 11
-and 14 in the near future. 
+and 14 in the near future.
 
 {ls} has introduced support for running on CentOS/RHEL 8.x and Ubuntu 20.04.
 We’ve added new JDK support for Zulu 11, AdoptOpenJDK 11, and
 Oracle/OpenJDK/AdoptOpenJDK 14.
 
 
-<<ls-jvm,JVM version info>> is covered in <<getting-started-with-logstash>>. 
-The complete list of supported operating systems and JVMs is available in the 
+<<ls-jvm,JVM version info>> is covered in <<getting-started-with-logstash>>.
+The complete list of supported operating systems and JVMs is available in the
 https://www.elastic.co/support/matrix[support matrix].
 
 
@@ -1157,10 +1255,10 @@ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/934[#934]
 Authentication in {es} can be done in different ways, from LDAP to SAML and
 others. User/password authentication makes sense for discrete users accessing
 {es}. For machine-to-machine communication, API key access is more common. Check out <<ls-api-keys>> for more information about using API keys with {ls}
-and {es}. 
+and {es}.
 
 Support for API keys in the {es} input and filter plugins, and the monitoring
-and management features will be added in upcoming releases. 
+and management features will be added in upcoming releases.
 
 
 ===== Proxy support for monitoring and centralized management
@@ -1170,7 +1268,7 @@ one component may not be able to directly reach out to another or to the
 Internet. {ls} plugins, such as the elasticsearch, http and SNS outputs, support
 the configuration of proxy servers. Version 7.8.0 brings proxy support to
 monitoring and central management
-https://github.com/elastic/logstash/pull/11799[#11799]. 
+https://github.com/elastic/logstash/pull/11799[#11799].
 
 Configure the proxy's URL in your `logstash.yml` file using
 "xpack.monitoring.elasticsearch.proxy" (for monitoring) or
@@ -1194,7 +1292,7 @@ module in {filebeat-ref}/filebeat-module-netflow.html[{filebeat}]. The
 {filebeat} and {metricbeat} modules are compliant with the
 {ecs-ref}/index.html[Elastic Common Schema (ECS)].
 
-[[known-pipeline-slowdown]] 
+[[known-pipeline-slowdown]]
 ==== Known issue
 
 *Performance regression.* A potential performance regression may affect
@@ -1206,7 +1304,7 @@ https://github.com/elastic/logstash/issues/12031[#12031]
 This issue seems to be affecting only big pipeline installations (that is, big
 pipeline definitions when multiple pipelines are defined). Symptoms include
 increased startup time and the appearance that Logstash is not responding to
-input events. 
+input events.
 
 If you believe this issue is affecting you, we recommended that you downgrade to
 7.6.2 while we continue to investigate and provide a resolution.
@@ -1314,7 +1412,7 @@ https://github.com/elastic/logstash/issues/12031[#12031]
 This issue seems to be affecting only big pipeline installations (that is, big
 pipeline definitions when multiple pipelines are defined). Symptoms include
 increased startup time and the appearance that Logstash is not responding to
-input events. 
+input events.
 
 If you believe this issue is affecting you, we recommended that you downgrade to
 7.6.2 while we continue to investigate and provide a resolution.
@@ -1340,12 +1438,12 @@ If you believe this issue is affecting you, we recommended that you downgrade to
 Continuing with the Logging improvements made in the past couple of releases,
 log messages have been expanded to more accurately display information about
 plugins. These changes allow users to better identify log messages with plugins
-or pipelines. 
+or pipelines.
 https://github.com/elastic/logstash/pull/11078[#11078],
 https://github.com/elastic/logstash/pull/11593[#11593],
 https://github.com/elastic/logstash/pull/11567[#11567]
 
-Changes include: 
+Changes include:
 
 * Added `plugin.name` to all log entries.
 * Added `plugin.id` and `pipeline.id` to docker images.
@@ -1362,7 +1460,7 @@ never officially documented, but it was a feature that many users relied upon.
 When the Java Execution engine was introduced, it broke the single worker
 ordering preservation. This has now been fixed with the introduction of the
 `pipeline.ordered` setting.
-https://github.com/elastic/logstash/pull/11552[#11552], 
+https://github.com/elastic/logstash/pull/11552[#11552],
 https://github.com/elastic/logstash/pull/11710[#11710]
 
 The `pipeline.ordered` setting allows three modes:
@@ -1399,7 +1497,7 @@ https://github.com/elastic/logstash/issues/12031[#12031]
 This issue seems to be affecting only big pipeline installations (that is, big
 pipeline definitions when multiple pipelines are defined). Symptoms include
 increased startup time and the appearance that Logstash is not responding to
-input events. 
+input events.
 
 If you believe this issue is affecting you, we recommended that you downgrade to
 7.6.2 while we continue to investigate and provide a resolution.
@@ -1711,7 +1809,7 @@ dependencies into a single codebase
 some slowdown in grok and you're using many more workers than cores, this update
 allows you to configure the
 https://github.com/logstash-plugins/logstash-filter-grok/blob/master/docs/index.asciidoc#timeout_scope[timeout_scope
-setting] to improve performance. https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153] 
+setting] to improve performance. https://github.com/logstash-plugins/logstash-filter-grok/pull/153[#153]
 
 *Jdbc_static Filter*
 
@@ -2118,7 +2216,7 @@ https://github.com/elastic/logstash/pull/11113[#11113]
 
 * Updates to support changes to licensing of security features.
 +
-Some Elastic Stack security features, such as encrypted communications, file and native authentication, and 
+Some Elastic Stack security features, such as encrypted communications, file and native authentication, and
 role-based access control, are now available in more subscription levels. For details, see https://www.elastic.co/subscriptions.
 
 [[logstash-7-0-1]]
@@ -2207,7 +2305,7 @@ The list combines release notes from the 7.0.0-alpha1, -alpha2, -beta1, -rc1 and
 * BUGFIX: Allow explicitly-specified Java codecs https://github.com/elastic/logstash/pull/10520[#10520]
 * Central management typeless API https://github.com/elastic/logstash/pull/10421[#10421]
 * Improve docs about using Filebeat modules with Logstash https://github.com/elastic/logstash/pull/10438[#10438]
-* Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425] 
+* Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425]
 * BUGFIX: Remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10462[#10462]
 * Update Java dependencies https://github.com/elastic/logstash/pull/10340[#10340]
 * Remove pipeline output workers setting https://github.com/elastic/logstash/pull/10358[#10358]
@@ -2264,15 +2362,15 @@ Here are the plugin changes.
 * logstash-filter-fingerprint
   - Fixed concurrent SHA fingerprinting by making the instances thread local
 * logstash-filter-geoip
-  - Removed obsolete lru_cache_size field  
+  - Removed obsolete lru_cache_size field
 * NEW: logstash-filter-http
   - Beta version of HTTP filter plugin based on @lucashenning's https://github.com/lucashenning/logstash-filter-rest[REST filter].
   - Fixed minor documentation issues https://github.com/logstash-plugins/logstash-filter-http/pull/9[#9]
-  - Minor documentation fixes  
+  - Minor documentation fixes
 * logstash-filter-jdbc_static
-  - Added info to documentation to emphasize significance of table order https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/36[36]      
+  - Added info to documentation to emphasize significance of table order https://github.com/logstash-plugins/logstash-filter-jdbc_static/pull/36[36]
 * logstash-filter-jdbc_streaming
-  - Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11] 
+  - Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11]
 * logstash-filter-json
   - Updated documentation with some clarifications and fixes
 * logstash-filter-kv
@@ -2280,7 +2378,7 @@ Here are the plugin changes.
     the pipeline. By default, timeout is a generous 30s, but can be configured or disabled entirely with the new
     `timeout_millis` and `tag_on_timeout` directives https://github.com/logstash-plugins/logstash-filter-kv/pull/79[#79]
   - Made error-handling configurable with `tag_on_failure` directive.
-* NEW: logstash-filter-memcached  
+* NEW: logstash-filter-memcached
   - Updated to 1.0.0
   - The plugin common options (e.g., `add_field`, `add_tag`, etc.) are now correctly only invoked when the plugin successfully gets one or more values from, or sets one or more values to memcached (#4)
   - Fix links to argument types in documentation (#3)
@@ -2297,7 +2395,7 @@ Here are the plugin changes.
 ===== Input plugins
 *  logstash-input-azure_event_hubs
   - Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27[#27]
-*  logstash-input-beats 
+*  logstash-input-beats
   - Removed obsolete setting congestion_threshold and target_field_for_codec
   - Changed default value of `add_hostname` to false
   - Loosen jar-dependencies manager gem dependency to allow plugin to work with JRubies that include a later version
@@ -2343,7 +2441,7 @@ Here are the plugin changes.
   - Removed obsolete `data_timeout` and `ssl_cacert` options
   - Fixed race condition where data would be accepted before queue was configured
   - Support multiple certificates per file https://github.com/logstash-plugins/logstash-input-tcp/pull/140[#140]
-  
+
 ===== Output plugins
 * logstash-output-elasticsearch
   - Remove support for parent child (still support join data type) since we don't support multiple document types any more
@@ -2380,8 +2478,8 @@ Here are the plugin changes.
 * logstash-output-tcp
   - Removed obsolete field `message_format`
   - Removed requirement to have a certificate/key pair when enabling ssl
-    
-    
+
+
 * logstash-mixin-http_client
   - Removed obsolete ssl_certificate_verify option
 
@@ -2407,7 +2505,7 @@ Here are the plugin changes.
 * BUGFIX: Allow explicitly-specified Java codecs https://github.com/elastic/logstash/pull/10520[#10520]
 * Central management typeless API https://github.com/elastic/logstash/pull/10421[#10421]
 * Improve docs about using Filebeat modules with Logstash https://github.com/elastic/logstash/pull/10438[#10438]
-* Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425] 
+* Bump JRuby to 9.2.6.0 https://github.com/elastic/logstash/pull/10425[#10425]
 * BUGFIX: Remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10462[#10462]
 
 ==== Plugins
@@ -2462,7 +2560,7 @@ Here are the plugin changes.
   - Fixed minor documentation issues https://github.com/logstash-plugins/logstash-filter-http/pull/9[#9]
   - Minor documentation fixes
 * logstash-filter-jdbc_streaming
-  - Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11] 
+  - Swap out mysql for postgresql for testing https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/pull/11[#11]
 * logstash-filter-json
   - Updated documentation with some clarifications and fixes
 * logstash-filter-memcached
@@ -2477,7 +2575,7 @@ Here are the plugin changes.
   - Fixed numeric values, optimized @target verification, cleanups and specs https://github.com/logstash-plugins/logstash-filter-split/pull/36[#36]
 *  logstash-input-azure_event_hubs
   - Updated Azure event hub library dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/27[#27]
-*  logstash-input-beats 
+*  logstash-input-beats
   - Removed obsolete setting congestion_threshold and target_field_for_codec
   - Changed default value of `add_hostname` to false
 * logstash-input-elasticsearch
