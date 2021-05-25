@@ -80,9 +80,9 @@ The Elasticsearch output offers {logstash-ref}/plugins-outputs-elasticsearch.htm
 Fixed a regression introduced in `7.11` where the `bin/logstash-keystore list` command would not list secrets from the
 logstash keystore https://github.com/elastic/logstash/pull/12784[#12784]
 
-**Potential Plugin  interoperability fixes**
+**Potential Plugin interoperability fixes**
 
-Fixed a potential  interoperability issue where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. 
+Fixed a potential interoperability issue where `logstash-filter-date` and `logstash-filter-geoip` were used in the same pipeline. 
 We believe this only manifested in testing rather than actual pipeline https://github.com/elastic/logstash/pull/12811[#12811]
 
 **Updates to dependencies**
