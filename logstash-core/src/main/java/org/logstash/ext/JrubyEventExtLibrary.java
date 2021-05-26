@@ -33,11 +33,12 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
-import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
+import org.logstash.EventFactory;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -221,10 +222,13 @@ public final class JrubyEventExtLibrary {
             return Rubyfier.deep(context.runtime, data);
         }
 
-        @JRubyMethod(name = "to_java")
-        public IRubyObject ruby_to_java(ThreadContext context)
-        {
-            return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event);
+        @Override // this will make to_java ruby return a Java event (proxy)
+        @SuppressWarnings("unchecked")
+        public <T> T toJava(final Class<T> target) {
+            if (target == Object.class || co.elastic.logstash.api.Event.class.isAssignableFrom(target)) {
+                return (T) this.event;
+            }
+            return super.toJava(target);
         }
 
         @JRubyMethod(name = "to_json", rest = true)
@@ -241,11 +245,20 @@ public final class JrubyEventExtLibrary {
         // and a json array will newFromRubyArray each element into individual Event
         // @return Array<Event> array of events
         @JRubyMethod(name = "from_json", required = 1, meta = true)
-        public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value)
-        {
+        public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value, final Block block) {
+            if (!block.isGiven()) return fromJson(context, value, EventFactory.DEFAULT);
+            return fromJson(context, value, (data) -> {
+                // LogStash::Event works fine with a Map arg (instead of a native Hash)
+                IRubyObject event = block.yield(context, RubyUtil.toRubyObject(data));
+                // event if likely a RubyEvent wrapper so we unwrap just to re-wrap later
+                return event.toJava(Event.class);
+            });
+        }
+
+        private static IRubyObject fromJson(ThreadContext context, RubyString json, EventFactory eventFactory) {
             Event[] events;
             try {
-                events = Event.fromJson(value.asJavaString());
+                events = Event.fromJson(json.asJavaString(), eventFactory);
             } catch (Exception e) {
                 throw toRubyError(context, RubyUtil.PARSER_ERROR, e);
             }
