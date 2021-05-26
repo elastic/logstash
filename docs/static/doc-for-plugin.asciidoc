@@ -156,7 +156,7 @@ Plugin documentation goes through several steps before it gets published in the
 
 Here's an overview of the workflow:
 
-* Be sure that you have signed the CLI and have all necessary approvals and sign offs.
+* Be sure that you have signed the contributor license agreement (CLA) and have all necessary approvals and sign offs.
 * Merge the pull request for your plugin (including the `index.asciidoc` file, the `changelog.md` file, and the gemspec).
 * Wait for the continuous integration build to complete successfully.
 * Publish the plugin to https://rubygems.org.
