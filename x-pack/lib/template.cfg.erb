@@ -27,6 +27,7 @@ output {
   <% if cloud_auth %>
     cloud_auth => "<%= cloud_auth %>"
   <% end %>
+    data_stream => false
     bulk_path => "<%= monitoring_endpoint %>"
     manage_template => false
     document_type => "%{[@metadata][document_type]}"
