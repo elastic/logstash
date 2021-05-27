@@ -489,6 +489,10 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
+    logstash-output-elastic_app_search (1.1.1)
+      elastic-app-search (~> 7.8.0)
+      logstash-codec-plain
+      logstash-core-plugin-api (~> 2.0)
     logstash-output-elasticsearch (11.0.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
