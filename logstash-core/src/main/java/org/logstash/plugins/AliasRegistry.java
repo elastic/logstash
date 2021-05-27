@@ -49,32 +49,76 @@ public class AliasRegistry {
         }
     }
 
-    private static class AliasYamlLoader {
+    private static class YamlWithChecksum {
 
-        private String extractedHash;
-        private String yaml;
+        static YamlWithChecksum load(final String filePath) {
+            final InputStream in = YamlWithChecksum.class.getClassLoader().getResourceAsStream(filePath);
+            if (in == null) {
+                throw new IllegalArgumentException("Can't find aliases yml definition file in jar resources: " + filePath);
+            }
+
+            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
+                // read the header line
+                final String header = scanner.nextLine();
+                if (!header.startsWith("#CHECKSUM:")) {
+                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
+                }
+                final String extractedHash = header.substring("#CHECKSUM:".length()).trim();
+
+                // read the comment
+                scanner.nextLine();
+
+                // collect all remaining lines
+                final StringBuilder yamlBuilder = new StringBuilder();
+                scanner.useDelimiter("\\z"); // EOF
+                if (scanner.hasNext()) {
+                    yamlBuilder.append(scanner.next());
+                }
+                final String yamlContents = yamlBuilder.toString();
+                return new YamlWithChecksum(yamlContents, extractedHash);
+            }
+        }
+
+        final String yamlContents;
+        final String checksumHash;
+
+        private YamlWithChecksum(final String yamlContents, final String checksumHash) {
+            this.yamlContents = yamlContents;
+            this.checksumHash = checksumHash;
+        }
 
         @SuppressWarnings("unchecked")
+        private Map<String, Map<String, String>> decodeYaml() throws IOException {
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(yamlContents, Map.class);
+        }
+
+        private String computeHashFromContent() {
+            return DigestUtils.sha256Hex(yamlContents);
+        }
+    }
+
+    private static class AliasYamlLoader {
+
         private Map<PluginCoordinate, String> loadAliasesDefinitions() {
+            final YamlWithChecksum aliasYml;
             try {
-                parseYamlFile("org/logstash/plugins/plugin_aliases.yml");
+                aliasYml = YamlWithChecksum.load("org/logstash/plugins/plugin_aliases.yml");
             } catch (IllegalArgumentException badSyntaxExcp) {
                 LOGGER.warn("Malformed yaml file", badSyntaxExcp);
                 return Collections.emptyMap();
             }
 
-            // calculate the hash-256
-            final String sha256Hex = DigestUtils.sha256Hex(yaml);
-            if (!sha256Hex.equals(extractedHash)) {
-                LOGGER.warn("Bad checksum value, expected {} but found {}", sha256Hex, extractedHash);
+            final String calculatedHash = aliasYml.computeHashFromContent();
+            if (!calculatedHash.equals(aliasYml.checksumHash)) {
+                LOGGER.warn("Bad checksum value, expected {} but found {}", calculatedHash, aliasYml.checksumHash);
                 return Collections.emptyMap();
             }
 
             // decode yaml to nested maps
             final Map<String, Map<String, String>> aliasedDescriptions;
             try {
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                aliasedDescriptions = mapper.readValue(yaml, Map.class);
+                aliasedDescriptions = aliasYml.decodeYaml();
             } catch (IOException ioex) {
                 LOGGER.error("Error decoding the yaml aliases file", ioex);
                 return Collections.emptyMap();
@@ -87,30 +131,6 @@ public class AliasRegistry {
             defaultDefinitions.putAll(extractDefinitions(PluginType.FILTER, aliasedDescriptions));
             defaultDefinitions.putAll(extractDefinitions(PluginType.OUTPUT, aliasedDescriptions));
             return defaultDefinitions;
-        }
-
-        private void parseYamlFile(String yamlResourcePath) {
-            final InputStream in = this.getClass().getClassLoader().getResourceAsStream(yamlResourcePath);
-
-            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
-                // read the header line
-                final String header = scanner.nextLine();
-                if (!header.startsWith("#CHECKSUM:")) {
-                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
-                }
-                extractedHash = header.substring("#CHECKSUM:".length()).trim();
-
-                // read the comment
-                scanner.nextLine();
-
-                // collect all remaining lines
-                final StringBuilder yamlBuilder = new StringBuilder();
-                scanner.useDelimiter("\\z"); // EOF
-                if (scanner.hasNext()) {
-                    yamlBuilder.append(scanner.next());
-                }
-                yaml = yamlBuilder.toString();
-            }
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
