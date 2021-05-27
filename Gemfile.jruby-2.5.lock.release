@@ -441,11 +441,6 @@ GEM
     logstash-input-unix (3.0.7)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-integration-elastic_enterprise_search (2.1.0)
-      elastic-app-search (~> 7.8.0)
-      elastic-workplace-search (~> 0.4.1)
-      logstash-codec-plain
-      logstash-core-plugin-api (~> 2.0)
     logstash-integration-jdbc (5.0.7)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
