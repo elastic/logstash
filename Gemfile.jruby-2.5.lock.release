@@ -768,7 +768,6 @@ DEPENDENCIES
   logstash-input-twitter
   logstash-input-udp
   logstash-input-unix
-  logstash-integration-elastic_enterprise_search
   logstash-integration-jdbc
   logstash-integration-kafka
   logstash-integration-rabbitmq
