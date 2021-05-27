@@ -778,6 +778,7 @@ DEPENDENCIES
   logstash-mixin-validator_support
   logstash-output-cloudwatch
   logstash-output-csv
+  logstash-output-elastic_app_search
   logstash-output-elasticsearch
   logstash-output-email
   logstash-output-file
