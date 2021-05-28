@@ -48,7 +48,7 @@ report << "=== Logstash #{current_release} Release Notes\n"
 
 plugin_changes = {}
 
-report <<  "---------- DELETE FROM HERE ------------"
+report <<  "---------- GENERATED CONTENT STARTS HERE ------------"
 report <<  "=== Logstash Pull Requests with label v#{current_release}\n"
 
 uri = URI.parse("https://api.github.com/search/issues?q=repo:elastic/logstash+is:pr+is:closed+label:v#{current_release}&sort=created&order=asc")
@@ -81,7 +81,7 @@ result.each do |line|
 end
 report << "Changed plugin versions:"
 plugin_changes.each {|p, v| report << "#{p}: #{v.first} -> #{v.last}" }
-report << "---------- DELETE UP TO HERE ------------\n"
+report << "---------- GENERATED CONTENT ENDS HERE ------------\n"
 
 report << "==== Plugins\n"
 
