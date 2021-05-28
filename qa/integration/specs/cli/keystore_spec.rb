@@ -42,7 +42,11 @@ describe "CLI > logstash-keystore" do
     end
 
     it "works" do
-      keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'create'], true, 'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD')
+      env = {'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD'}
+      unless ENV['BUILD_JAVA_HOME']
+        env['JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
+      end
+      keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'create'], true, env)
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
       expect(keystore_list.stderr_and_stdout).to include('Created Logstash keystore')
     end
@@ -57,7 +61,11 @@ describe "CLI > logstash-keystore" do
     end
 
     it "works" do
-      keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'list'], true, 'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD')
+      env = {'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD'}
+      unless ENV['BUILD_JAVA_HOME']
+        env['JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
+      end
+      keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'list'], true, env)
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
       expect(keystore_list.stderr_and_stdout).to include('foo') # contains foo: bar
     end
