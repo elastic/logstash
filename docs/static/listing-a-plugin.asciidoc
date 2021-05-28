@@ -10,7 +10,7 @@ If you would like to have your plugin included in the {logstash-ref}[Logstash Re
 * Title: `PluginListing: <your-plugin-name>`
 * Body:
 ** Brief description of the plugin (what it is and what it does).
-** Link to the source code.
+** Link to the plugin repository.
 ** Link the to the README.md, docs/index.asciidoc or both.
 ** Describe how your plugin meets our <<plugin-acceptance,quality and acceptance guidelines>>.
 * Labels: `docs`, `new-plugin`
