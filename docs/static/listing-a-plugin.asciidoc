@@ -11,6 +11,6 @@ If you would like to have your plugin included in the {logstash-ref}[Logstash Re
 * Body:
 ** Brief description of the plugin (what it is and what it does).
 ** Link to the plugin repository.
-** Link the to the README.md, docs/index.asciidoc or both.
+** Link to the README.md or docs/index.asciidoc.
 ** Describe how your plugin meets our <<plugin-acceptance,quality and acceptance guidelines>>.
 * Labels: `docs`, `new-plugin`
