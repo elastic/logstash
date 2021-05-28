@@ -43,7 +43,7 @@ describe "CLI > logstash-keystore" do
 
     it "works" do
       env = {'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD'}
-      unless ENV['BUILD_JAVA_HOME']
+      if ENV['BUILD_JAVA_HOME']
         env['JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
       end
       keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'create'], true, env)
