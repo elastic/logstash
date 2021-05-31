@@ -4,6 +4,7 @@
 
 require_relative "../spec_helper"
 require "stud/temporary"
+require "rspec/wait"
 
 describe "Read configuration from elasticsearch" do
   before :each do
