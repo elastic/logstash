@@ -175,17 +175,13 @@ describe LogStash::Filters::Geoip do
 
       context "cc database" do
         it "should not give warning after 25 days" do
-          expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 26)).to_i).at_least(:twice)
           expect(mock_geoip_plugin).to receive(:expire_action).never
-          allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
           expect(logger).to receive(:warn).never
 
           db_manager.send(:check_age)
         end
 
         it "should not log error when 30 days has passed" do
-          expect(mock_metadata).to receive(:updated_at).and_return((Time.now - (60 * 60 * 24 * 33)).to_i).at_least(:twice)
-          allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
           expect(logger).to receive(:error).never
           expect(mock_geoip_plugin).to receive(:expire_action).never
 

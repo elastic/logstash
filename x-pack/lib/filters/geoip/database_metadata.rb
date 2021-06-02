@@ -27,7 +27,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
 
   def update_timestamp(database_type)
     metadata = get_all.map do |row|
-      row[Column::UPDATE_AT] = Time.now.to_i  if row[Column::DATABASE_TYPE].eql?(database_type)
+      row[Column::UPDATE_AT] = Time.now.to_i if row[Column::DATABASE_TYPE].eql?(database_type)
       row
     end
     update(metadata)

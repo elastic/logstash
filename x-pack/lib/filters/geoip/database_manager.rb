@@ -63,9 +63,11 @@ module LogStash module Filters module Geoip class DatabaseManager
     city_database_path = @metadata.database_path(CITY) || cc_city_database_path
     asn_database_path = @metadata.database_path(ASN) || cc_asn_database_path
 
-    # reset md5 to allow re-download when the file is gone
+    # reset md5 to allow re-download when the file is deleted manually
     DB_TYPES.map { |type| @metadata.reset_md5(type) if @metadata.database_path(type).nil? }
 
+    @triggered = false
+    @trigger_lock = Mutex.new
     @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
                                                Concurrent::Array.new,
                                                city_database_path,
@@ -76,13 +78,11 @@ module LogStash module Filters module Geoip class DatabaseManager
                                               cc_asn_database_path) }
 
     @download_manager = DownloadManager.new(@metadata)
-
-    @trigger_download = Concurrent::AtomicBoolean.new(false)
   end
 
   protected
-  # notice plugins to update database path to the new download
-  # update timestamp when download is valid or there is no update
+  # notice plugins to use the new database path
+  # update metadata timestamp for those dbs that has no update or a valid update
   # do daily check and clean up
   def execute_download_job
     begin
@@ -145,12 +145,18 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def trigger_download
-    if @trigger_download.false? && @trigger_download.make_true
-      execute_download_job
+    unless @triggered
+      @trigger_lock.synchronize do
+        unless @triggered
+          execute_download_job
 
-      # check database update periodically. trigger `call` method
-      @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
-      @scheduler.every('24h', self)
+          # check database update periodically. trigger `call` method
+          @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
+          @scheduler.every('24h', self)
+
+          @triggered = true
+        end
+      end
     end
   end
 
@@ -160,10 +166,6 @@ module LogStash module Filters module Geoip class DatabaseManager
   def call(job, time)
     logger.debug "scheduler runs database update check"
     execute_download_job
-  end
-
-  def database_path(database_type)
-    @states[database_type].database_path
   end
 
   def close
@@ -178,7 +180,7 @@ module LogStash module Filters module Geoip class DatabaseManager
                   "For more details please visit https://www.maxmind.com/en/geolite2/eula" if @states[database_type].is_eula
 
       @states[database_type].plugins.push(geoip_plugin) unless @states[database_type].plugins.member?(geoip_plugin)
-      @states[database_type].database_path
+      @trigger_lock.synchronize { @states[database_type].database_path }
     else
       logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
                   "Keep in mind that if you are not using the database shipped with this plugin, "\
@@ -189,6 +191,10 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def unsubscribe_database_path(database_type, geoip_plugin)
     @states[database_type].plugins.delete(geoip_plugin) if geoip_plugin
+  end
+
+  def database_path(database_type)
+    @states[database_type].database_path
   end
 
   # create data dir, path.data, for geoip if it doesn't exist
