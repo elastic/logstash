@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-13-1,Logstash 7.13.1>>
 * <<logstash-7-13-0,Logstash 7.13.0>>
 * <<logstash-7-12-1,Logstash 7.12.1>>
 * <<logstash-7-12-0,Logstash 7.12.0>>
@@ -43,6 +44,51 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-13-1]]
+=== Logstash 7.13.1 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugin releases
+
+*Cef Codec - 6.2.1*
+
+* Added field mapping to docs.
+* Fixed ECS mapping of `deviceMacAddress` field.
+
+*Aggregate Filter - 2.9.2*
+
+* bugfix: remove 'default_timeout' at pipeline level (fix #112)
+* ci: update travis ci configuration
+
+*Fingerprint Filter - 3.2.4*
+
+* Fixed the error in Murmur3 with Integer https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/61[#61]
+
+*Mutate Filter - 3.5.2*
+
+* Fix: ensure that when an error occurs during registration, we use the correct i18n key to propagate the error message in a useful manner https://github.com/logstash-plugins/logstash-filter-mutate/pull/154[#154]
+
+*Ruby Filter - 3.1.7*
+
+* [DOC] Added docs to help people avoid concurrency issues (often caused by accidentally relying on shared state with global variables, constants, or unguarded overwriting of instance variables) https://github.com/logstash-plugins/logstash-filter-ruby/issues/58[#58]
+
+* Add error log backtrace to inline scripts https://github.com/logstash-plugins/logstash-filter-ruby/pull/54[#54]
+
+*Tcp Input - 6.0.10*
+
+* bumping dependency commons-io https://github.com/logstash-plugins/logstash-input-tcp/pull/174[#174]
+
+*Kafka Integration - 10.7.5*
+
+* Improved error handling in the input plugin to avoid errors 'escaping' from the plugin, and crashing the logstash
+    process https://github.com/logstash-plugins/logstash-integration-kafka/pull/87[#87]
+
+*Http Output - 5.2.5*
+
+* Reduce amount of default logging on a failed request https://github.com/logstash-plugins/logstash-output-http/pull/122[#122]
+
 
 [[logstash-7-13-0]]
 === Logstash 7.13.0 Release Notes
