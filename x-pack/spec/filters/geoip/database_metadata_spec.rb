@@ -21,7 +21,7 @@ describe LogStash::Filters::Geoip do
     let(:logger) { double("Logger") }
 
     before(:each) do
-      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+      LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
       create_default_city_gz
       FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
     end

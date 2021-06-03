@@ -23,7 +23,7 @@ describe LogStash::Filters::Geoip do
 
     before do
       stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
-      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
+      LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
     end
 
     context "rest client" do

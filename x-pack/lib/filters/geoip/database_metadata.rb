@@ -26,17 +26,22 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   end
 
   def update_timestamp(database_type)
-    metadata = get_all.map do |row|
+    update_each_row do |row|
       row[Column::UPDATE_AT] = Time.now.to_i if row[Column::DATABASE_TYPE].eql?(database_type)
       row
     end
-    update(metadata)
   end
 
   def reset_md5(database_type)
-    metadata = get_all.map do |row|
+    update_each_row do |row|
       row[Column::GZ_MD5] = ""  if row[Column::DATABASE_TYPE].eql?(database_type)
       row
+    end
+  end
+
+  def update_each_row(&block)
+    metadata = get_all.map do |row|
+      yield row
     end
     update(metadata)
   end

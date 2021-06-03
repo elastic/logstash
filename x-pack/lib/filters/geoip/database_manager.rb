@@ -50,21 +50,12 @@ module LogStash module Filters module Geoip class DatabaseManager
   private
   def initialize
     self.class.prepare_cc_db
-
     cc_city_database_path = get_db_path(CITY, CC)
     cc_asn_database_path = get_db_path(ASN, CC)
 
-    @metadata = DatabaseMetadata.new
-    unless @metadata.exist?
-      @metadata.save_metadata(CITY, CC, false)
-      @metadata.save_metadata(ASN, CC, false)
-    end
-
+    prepare_metadata
     city_database_path = @metadata.database_path(CITY) || cc_city_database_path
     asn_database_path = @metadata.database_path(ASN) || cc_asn_database_path
-
-    # reset md5 to allow re-download when the file is deleted manually
-    DB_TYPES.map { |type| @metadata.reset_md5(type) if @metadata.database_path(type).nil? }
 
     @triggered = false
     @trigger_lock = Mutex.new
@@ -81,6 +72,32 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   protected
+  # create data dir, path.data, for geoip if it doesn't exist
+  # copy CC databases to data dir
+  def self.prepare_cc_db
+    FileUtils::mkdir_p(get_data_dir_path)
+    unless ::File.exist?(get_db_path(CITY, CC)) && ::File.exist?(get_db_path(ASN, CC))
+      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
+      cc_dir_path = get_dir_path(CC)
+      FileUtils.mkdir_p(cc_dir_path)
+      FileUtils.cp_r(cc_database_paths, cc_dir_path)
+    end
+  end
+
+  def prepare_metadata
+    @metadata = DatabaseMetadata.new
+
+    unless @metadata.exist?
+      @metadata.save_metadata(CITY, CC, false)
+      @metadata.save_metadata(ASN, CC, false)
+    end
+
+    # reset md5 to allow re-download when the database directory is deleted manually
+    DB_TYPES.each { |type| @metadata.reset_md5(type) if @metadata.database_path(type).nil? }
+
+    @metadata
+  end
+
   # notice plugins to use the new database path
   # update metadata timestamp for those dbs that has no update or a valid update
   # do daily check and clean up
@@ -109,24 +126,24 @@ module LogStash module Filters module Geoip class DatabaseManager
   # call expiry action if database is expired and EULA
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
-      if @states[database_type].is_eula && @states[database_type].plugins.size > 0
-        days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
+      next if !@states[database_type].is_eula || @states[database_type].plugins.size == 0
 
-        case
-        when days_without_update >= 30
-          logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
-            "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
-            "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
-            "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
-            "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
-          @states[database_type].plugins.dup.each { |plugin| plugin.expire_action if plugin }
-        when days_without_update >= 25
-          logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
-            "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
-            "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
-        else
-          logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
-        end
+      days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
+
+      case
+      when days_without_update >= 30
+        logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
+          "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
+          "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
+          "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
+          "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
+        @states[database_type].plugins.dup.each { |plugin| plugin.expire_action if plugin }
+      when days_without_update >= 25
+        logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
+          "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
+          "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+      else
+        logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
       end
     end
   end
@@ -140,7 +157,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     (existing_dirnames - protected_dirnames).each do |dirname|
       dir_path = get_dir_path(dirname)
       FileUtils.rm_r(dir_path)
-      logger.debug("#{dir_path} is deleted")
+      logger.info("#{dir_path} is deleted")
     end
   end
 
@@ -195,18 +212,6 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def database_path(database_type)
     @states[database_type].database_path
-  end
-
-  # create data dir, path.data, for geoip if it doesn't exist
-  # copy CC databases to data dir
-  def self.prepare_cc_db
-    FileUtils::mkdir_p(get_data_dir_path)
-    unless ::File.exist?(get_db_path(CITY, CC)) && ::File.exist?(get_db_path(ASN, CC))
-      cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))
-      cc_dir_path = get_dir_path(CC)
-      FileUtils.mkdir_p(cc_dir_path)
-      FileUtils.cp_r(cc_database_paths, cc_dir_path)
-    end
   end
 
   class DatabaseState
