@@ -109,7 +109,7 @@ module LogStash module Filters module Geoip class DatabaseManager
           @metadata.save_metadata(database_type, dirname, true)
           @states[database_type].is_eula = true
           @states[database_type].database_path = new_database_path
-          @states[database_type].plugins.dup.each { |plugin| plugin.update_database(new_database_path) if plugin }
+          @states[database_type].observable.notify_all(:update, new_database_path)
         end
       end
 
@@ -126,7 +126,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   # call expiry action if database is expired and EULA
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
-      next if !@states[database_type].is_eula || @states[database_type].plugins.size == 0
+      next if !@states[database_type].is_eula || @states[database_type].observable.count_observers == 0
 
       days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
 
@@ -137,7 +137,7 @@ module LogStash module Filters module Geoip class DatabaseManager
           "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
           "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
           "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
-        @states[database_type].plugins.dup.each { |plugin| plugin.expire_action if plugin }
+        @states[database_type].observable.notify_all(:expire)
       when days_without_update >= 25
         logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
@@ -196,7 +196,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       logger.info "By not manually configuring a database path with `database =>`, you accepted and agreed MaxMind EULA. "\
                   "For more details please visit https://www.maxmind.com/en/geolite2/eula" if @states[database_type].is_eula
 
-      @states[database_type].plugins.push(geoip_plugin) unless @states[database_type].plugins.member?(geoip_plugin)
+      @states[database_type].observable.add_observer(geoip_plugin, :update_filter)
       @trigger_lock.synchronize { @states[database_type].database_path }
     else
       logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\
@@ -207,7 +207,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def unsubscribe_database_path(database_type, geoip_plugin)
-    @states[database_type].plugins.delete(geoip_plugin) if geoip_plugin
+    @states[database_type].observable.delete_observer(geoip_plugin)
   end
 
   def database_path(database_type)
@@ -215,18 +215,26 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   class DatabaseState
-    attr_reader :is_eula, :plugins, :database_path, :cc_database_path
+    attr_reader :is_eula, :observable, :database_path, :cc_database_path
     attr_writer :is_eula, :database_path
 
     # @param is_eula [Boolean]
-    # @param plugins [Concurrent::Array]
     # @param database_path [String]
     # @param cc_database_path [String]
-    def initialize(is_eula, plugins, database_path, cc_database_path)
+    def initialize(is_eula, database_path, cc_database_path)
       @is_eula = is_eula
-      @plugins = plugins
+      @observable = DatabaseObservable.new
       @database_path = database_path
       @cc_database_path = cc_database_path
+    end
+  end
+
+  class DatabaseObservable
+    include Observable
+
+    def notify_all(*args)
+      changed
+      notify_observers(*args)
     end
   end
 end end end end
