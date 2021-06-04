@@ -13,7 +13,6 @@ require "stud/try"
 require "down"
 require "rufus/scheduler"
 require "date"
-require "concurrent"
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -60,11 +59,9 @@ module LogStash module Filters module Geoip class DatabaseManager
     @triggered = false
     @trigger_lock = Mutex.new
     @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
-                                               Concurrent::Array.new,
                                                city_database_path,
                                                cc_city_database_path),
                 "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
-                                              Concurrent::Array.new,
                                               asn_database_path,
                                               cc_asn_database_path) }
 
@@ -123,7 +120,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  # call expiry action if database is expired and EULA
+  # call expiry action if Logstash use EULA database and fail to touch the endpoint for 30 days in a row
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
       next if !@states[database_type].is_eula || @states[database_type].observable.count_observers == 0
