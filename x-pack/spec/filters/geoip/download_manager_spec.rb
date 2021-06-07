@@ -23,7 +23,6 @@ describe LogStash::Filters::Geoip do
 
     before do
       stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
-      LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
     end
 
     context "rest client" do
@@ -136,6 +135,10 @@ describe LogStash::Filters::Geoip do
     end
 
     context "assert database" do
+      before do
+        copy_cc(get_dir_path("CC"))
+      end
+
       it "should raise error if file is invalid" do
         expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
       end

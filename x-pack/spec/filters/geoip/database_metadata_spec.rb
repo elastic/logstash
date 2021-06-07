@@ -20,12 +20,6 @@ describe LogStash::Filters::Geoip do
     let(:temp_metadata_path) { dbm.instance_variable_get(:@metadata_path) }
     let(:logger) { double("Logger") }
 
-    before(:each) do
-      LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
-      create_default_city_gz
-      FileUtils.cp_r(get_dir_path("CC"), get_dir_path(second_dirname))
-    end
-
     context "get all" do
       it "return multiple rows" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
@@ -77,6 +71,11 @@ describe LogStash::Filters::Geoip do
     end
 
     context "database path" do
+      before do
+        copy_cc(get_dir_path("CC"))
+        copy_cc(get_dir_path(second_dirname))
+      end
+
       it "return the default city database path" do
         write_temp_metadata(temp_metadata_path)
 

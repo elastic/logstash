@@ -109,6 +109,13 @@ module GeoipHelper
     ::File.exist?(metadata_path) ? ::File.read(metadata_path).split(",").last[0..-2] : nil
   end
 
+  def copy_cc(dir_path)
+    cc_database_paths = ::Dir.glob(::File.expand_path(
+      ::File.join("..", "..", "..", "..", "..", "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"),
+      __FILE__))
+    FileUtils.mkdir_p(dir_path)
+    FileUtils.cp_r(cc_database_paths, dir_path)
+  end
 end
 
 RSpec.configure do |c|

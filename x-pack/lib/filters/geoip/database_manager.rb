@@ -13,6 +13,7 @@ require "stud/try"
 require "down"
 require "rufus/scheduler"
 require "date"
+require "singleton"
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -29,26 +30,11 @@ module LogStash module Filters module Geoip class DatabaseManager
   extend LogStash::Filters::Geoip::Util
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
-
-  @@instance = nil
-  @@instance_mutex = Mutex.new
-
-  def self.instance
-    return @@instance if @@instance
-
-    @@instance_mutex.synchronize do
-      return @@instance if @@instance
-      @@instance = new
-    end
-
-    @@instance
-  end
-
-  private_class_method :new
+  include Singleton
 
   private
   def initialize
-    self.class.prepare_cc_db
+    prepare_cc_db
     cc_city_database_path = get_db_path(CITY, CC)
     cc_asn_database_path = get_db_path(ASN, CC)
 
@@ -71,7 +57,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   protected
   # create data dir, path.data, for geoip if it doesn't exist
   # copy CC databases to data dir
-  def self.prepare_cc_db
+  def prepare_cc_db
     FileUtils::mkdir_p(get_data_dir_path)
     unless ::File.exist?(get_db_path(CITY, CC)) && ::File.exist?(get_db_path(ASN, CC))
       cc_database_paths = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "{GeoLite2-ASN,GeoLite2-City}.mmdb"))

@@ -13,7 +13,7 @@ describe LogStash::Filters::Geoip do
     let(:mock_download_manager)  { double("download_manager") }
     let(:mock_scheduler)  { double("scheduler") }
     let(:db_manager) do
-      manager = LogStash::Filters::Geoip::DatabaseManager.instance
+      manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
       manager.instance_variable_set(:@scheduler, mock_scheduler)
@@ -31,7 +31,6 @@ describe LogStash::Filters::Geoip do
     end
 
     after do
-      LogStash::Filters::Geoip::DatabaseManager.class_variable_set(:@@instance, nil)
       delete_file(metadata_path)
     end
 
@@ -48,14 +47,11 @@ describe LogStash::Filters::Geoip do
 
       context "when metadata exists" do
         before do
-          LogStash::Filters::Geoip::DatabaseManager.class_variable_set(:@@instance, nil)
-          LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
-          FileUtils.cp_r(get_dir_path(CC), get_dir_path(second_dirname))
+          copy_cc(get_dir_path(second_dirname))
           write_temp_metadata(metadata_path, city2_metadata)
         end
 
         it "should use database record in metadata" do
-          db_manager = LogStash::Filters::Geoip::DatabaseManager.instance
           states = db_manager.instance_variable_get(:@states)
           expect(states[CITY].is_eula).to be_truthy
           expect(states[CITY].database_path).to include second_dirname
@@ -70,7 +66,7 @@ describe LogStash::Filters::Geoip do
 
       context "plugin is set" do
         let(:db_manager) do
-          manager = LogStash::Filters::Geoip::DatabaseManager.instance
+          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
           manager.instance_variable_set(:@metadata, mock_metadata)
           manager.instance_variable_set(:@download_manager, mock_download_manager)
           manager.instance_variable_set(:@scheduler, mock_scheduler)
@@ -144,7 +140,7 @@ describe LogStash::Filters::Geoip do
     context "check age" do
       context "eula database" do
         let(:db_manager) do
-          manager = LogStash::Filters::Geoip::DatabaseManager.instance
+          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
           manager.instance_variable_set(:@metadata, mock_metadata)
           manager.instance_variable_set(:@download_manager, mock_download_manager)
           manager.instance_variable_set(:@scheduler, mock_scheduler)
@@ -203,7 +199,6 @@ describe LogStash::Filters::Geoip do
 
 
       before(:each) do
-        LogStash::Filters::Geoip::DatabaseManager.send(:prepare_cc_db)
         FileUtils.mkdir_p [dir_path, dir_path2]
       end
 
@@ -219,14 +214,6 @@ describe LogStash::Filters::Geoip do
     end
 
     context "subscribe database path" do
-      let(:db_manager) do
-        manager = LogStash::Filters::Geoip::DatabaseManager.instance
-        manager.instance_variable_set(:@metadata, mock_metadata)
-        manager.instance_variable_set(:@download_manager, mock_download_manager)
-        manager.instance_variable_set(:@scheduler, mock_scheduler)
-        manager
-      end
-
       it "should return user input path" do
         path = db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
         expect(db_manager.instance_variable_get(:@states)[CITY].observable.count_observers).to eq(0)
@@ -244,7 +231,7 @@ describe LogStash::Filters::Geoip do
 
     context "unsubscribe" do
       let(:db_manager) do
-        manager = LogStash::Filters::Geoip::DatabaseManager.instance
+        manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
         manager.instance_variable_set(:@metadata, mock_metadata)
         manager.instance_variable_set(:@download_manager, mock_download_manager)
         manager.instance_variable_set(:@scheduler, mock_scheduler)
