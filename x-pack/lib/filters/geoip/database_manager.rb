@@ -111,7 +111,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     database_types.map do |database_type|
       next if !@states[database_type].is_eula || @states[database_type].observable.count_observers == 0
 
-      days_without_update = (::Date.today - ::Time.at(@metadata.updated_at(database_type)).to_date).to_i
+      days_without_update = (::Date.today - ::Time.at(@metadata.check_at(database_type)).to_date).to_i
 
       case
       when days_without_update >= 30

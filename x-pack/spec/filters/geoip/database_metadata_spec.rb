@@ -62,7 +62,7 @@ describe LogStash::Filters::Geoip do
 
         metadata = dbm.get_metadata(database_type).last
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).to eq("City")
-        past = metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]
+        past = metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]
         expect(Time.now.to_i - past.to_i).to be < 100
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eq(second_dirname)
@@ -135,11 +135,11 @@ describe LogStash::Filters::Geoip do
     context "updated at" do
       it "should give the last update timestamp" do
         write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5",second_dirname,true])
-        expect(dbm.updated_at(database_type)).to eq(1611690807)
+        expect(dbm.check_at(database_type)).to eq(1611690807)
       end
 
       it "should give 0 if metadata is empty" do
-        expect(dbm.updated_at(database_type)).to eq(0)
+        expect(dbm.check_at(database_type)).to eq(0)
       end
     end
 
@@ -188,12 +188,12 @@ describe LogStash::Filters::Geoip do
         end
 
         # ASN
-        expect(original[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT])
-          .to(eq(updated[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]))
+        expect(original[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT])
+          .to(eq(updated[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]))
 
         # City
-        expect(original[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT])
-          .not_to(eq(updated[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]))
+        expect(original[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT])
+          .not_to(eq(updated[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]))
       end
     end
 

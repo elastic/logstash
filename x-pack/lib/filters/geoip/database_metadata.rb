@@ -17,7 +17,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
 
   public
 
-  # csv format: database_type, update_at, gz_md5, dirname, is_eula
+  # csv format: database_type, check_at, gz_md5, dirname, is_eula
   def save_metadata(database_type, dirname, is_eula)
     metadata = get_metadata(database_type, false)
     metadata << [database_type, Time.now.to_i, md5(get_gz_path(database_type, dirname)),
@@ -27,7 +27,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
 
   def update_timestamp(database_type)
     update_each_row do |row|
-      row[Column::UPDATE_AT] = Time.now.to_i if row[Column::DATABASE_TYPE].eql?(database_type)
+      row[Column::CHECK_AT] = Time.now.to_i if row[Column::DATABASE_TYPE].eql?(database_type)
       row
     end
   end
@@ -75,8 +75,8 @@ module LogStash module Filters module Geoip class DatabaseMetadata
                 .last || ''
   end
 
-  def updated_at(database_type)
-    (get_metadata(database_type).map { |metadata| metadata[Column::UPDATE_AT] }
+  def check_at(database_type)
+    (get_metadata(database_type).map { |metadata| metadata[Column::CHECK_AT] }
                  .last || 0).to_i
   end
 
@@ -96,7 +96,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
 
   class Column
     DATABASE_TYPE = 0
-    UPDATE_AT     = 1
+    CHECK_AT      = 1
     GZ_MD5        = 2
     DIRNAME       = 3
     IS_EULA       = 4
