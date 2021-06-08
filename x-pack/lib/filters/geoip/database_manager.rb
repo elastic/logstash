@@ -145,18 +145,14 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def trigger_download
-    unless @triggered
-      @trigger_lock.synchronize do
-        unless @triggered
-          execute_download_job
-
-          # check database update periodically. trigger `call` method
-          @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
-          @scheduler.every('24h', self)
-
-          @triggered = true
-        end
-      end
+    return if @triggered
+    @trigger_lock.synchronize do
+      return if @triggered
+      execute_download_job
+      # check database update periodically. trigger `call` method
+      @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
+      @scheduler.every('24h', self)
+      @triggered = true
     end
   end
 
@@ -169,7 +165,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def close
-    @scheduler.every_jobs.each(&:unschedule) if @scheduler
+    @scheduler.shutdown if @scheduler
   end
 
   def subscribe_database_path(database_type, database_path, geoip_plugin)
