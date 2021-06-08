@@ -40,6 +40,56 @@ describe LogStash::PluginManager::Install do
     end
   end
 
+  context "when installs alias plugin" do
+
+    before(:each) do
+      expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+      expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+      expect(cmd).to receive(:install_gems_list!).and_return(nil)
+      expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
+      cmd.verify = true
+    end
+
+    it "should not consider as valid plugin a gem with an alias name" do
+#       expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+#       expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+#       expect(cmd).to receive(:install_gems_list!).and_return(nil)
+#       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
+#       cmd.verify = true
+
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-elastic_agent", nil, {:rubygems_source => ["https://rubygems.org"]})
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-beats", nil, {:rubygems_source => ["https://rubygems.org"]}).and_return(true)
+      cmd.execute
+    end
+
+    it "should consider as valid plugin a plugin gem with an alias name" do
+#       expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+#       expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+#       expect(cmd).to receive(:install_gems_list!).and_return(nil)
+#       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
+#       cmd.verify = true
+
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-elastic_agent", nil, {:rubygems_source => ["https://rubygems.org"]}).and_return(true)
+      expect(LogStash::PluginManager).not_to receive(:logstash_plugin?).with("logstash-input-beats", nil, {:rubygems_source => ["https://rubygems.org"]})
+
+      cmd.execute
+    end
+
+
+#     it "validate_plugin method should return false for a gem that's not a plugin" do
+#       expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+#       #       expect(cmd).to receive(:plugins_gems).and_return([["logstash-filters-aliased_filter", nil]])
+# #       expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+#       expect(cmd).to receive(:install_gems_list!).and_return(nil)
+#       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
+#       cmd.verify = true
+#
+#       res = cmd.validate_plugin([["logstash-input-elastic_agent", nil]])
+#
+#       expect(res).to be false
+#     end
+  end
+
   context "pack" do
     let(:cmd) { LogStash::PluginManager::Install.new("install my-super-pack") }
     before do
