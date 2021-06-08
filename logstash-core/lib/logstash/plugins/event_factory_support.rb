@@ -12,19 +12,18 @@ module LogStash
       end
 
       def event_factory_builder
-        Builder.new self, default_event_factory
+        EventFactoryBuilder.new default_event_factory
       end
 
-      class Builder
+      class EventFactoryBuilder
 
-        def initialize(plugin, factory)
-          @plugin = plugin
+        def initialize(factory)
           @factory = factory
         end
 
         # @return an event factory
-        def build
-          @plugin.event_factory = @factory
+        def event_factory
+          @factory
         end
 
         # @return [Builder] self
