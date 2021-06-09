@@ -40,17 +40,10 @@ namespace "compile" do
     jars_exists = File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
     #unless File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
     puts "DNADBG>> compile:logstash-core-java jar files exists? #{jars_exists}"
-    unless jars_exists
-      puts("Building logstash-core using gradle")
-      safe_system("./gradlew", "assemble")
-    end
-  end
-
-  task "plugin-aliases" do
-    puts("Coping plugin aliases using gradle")
-    safe_system("./gradlew", "copyPluginAlias")
+    puts("Building logstash-core using gradle")
+    safe_system("./gradlew", "assemble")
   end
 
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-java", "plugin-aliases"]
+  task "all" => ["grammar", "logstash-core-java"]
 end
