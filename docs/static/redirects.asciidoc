@@ -28,6 +28,12 @@ If your use case involves reading files that contain multiline entries,
 {filebeat} offers {filebeat-ref}/filebeat-modules.html[modules] for processing logs
 from many known apps, such as nginx or apache.
 
+[role="exclude",id="configuring-logstash"]
+== Monitoring Logstash
+
+See <<monitoring-logstash,Monitoring Logstash>>.
+
+
 [role="exclude",id="monitoring-with-metricbeat"]
 === Collect {ls} monitoring data with {metricbeat}
 

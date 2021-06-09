@@ -1,5 +1,5 @@
 [role="xpack"]
-[[configuring-logstash]]
+[[stack-monitoring-logstash]]
 == Monitoring {ls}
 
 Use the {stack} {monitor-features} to gain insight into the health of
