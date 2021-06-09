@@ -37,7 +37,10 @@ namespace "compile" do
   end
 
   task "logstash-core-java" do
-    unless File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
+    jars_exists = File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
+    #unless File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
+    puts "DNADBG>> compile:logstash-core-java jar files exists? #{jars_exists}"
+    unless jars_exists
       puts("Building logstash-core using gradle")
       safe_system("./gradlew", "assemble")
     end

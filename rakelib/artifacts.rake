@@ -406,9 +406,17 @@ namespace "artifact" do
   task "prepare" do
     if ENV['SKIP_PREPARE'] != "1"
       puts "DNADBG>> SKIP_PREPARE: <#{ENV['SKIP_PREPARE']}>"
+      jars_exists = File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
+      puts "DNADBG>> artifact:prepare jar files exists in logstash-core/lib/jars? #{jars_exists}"
+
+      alias_java_src_exists = File.exists?(File.join("logstash-core", "src", "main", "resources", "org", "logstash", "plugins", "plugin_aliases.yml"))
+      alias_pluginmanager_src_exists = File.exists?(File.join("lib", "pluginmanager", "plugin_aliases.yml"))
+
+      puts "DNADBG>> artifact:prepare alias.yml files exists? java src: #{alias_java_src_exists}, pluginmanager: #{alias_pluginmanager_src_exists}"
+
       Rake::Task["plugin:install-default"].enhance [:bootstrap]
-#       ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each do |task|
-      ["plugin:install-default", "artifact:clean-bundle-config"].each do |task|
+      ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each do |task|
+#       ["plugin:install-default", "artifact:clean-bundle-config"].each do |task|
         puts "DNADBG>> invoking task: #{task}"
         Rake::Task[task].invoke
         puts "DNADBG>> invoked task: #{task}"
