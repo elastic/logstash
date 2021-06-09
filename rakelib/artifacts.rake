@@ -406,7 +406,9 @@ namespace "artifact" do
   task "prepare" do
     if ENV['SKIP_PREPARE'] != "1"
       puts "DNADBG>> SKIP_PREPARE: <#{ENV['SKIP_PREPARE']}>"
-      ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each do |task|
+      Rake::Task["plugin:install-default"].enhance [:bootstrap]
+#       ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each do |task|
+      ["plugin:install-default", "artifact:clean-bundle-config"].each do |task|
         puts "DNADBG>> invoking task: #{task}"
         Rake::Task[task].invoke
         puts "DNADBG>> invoked task: #{task}"
