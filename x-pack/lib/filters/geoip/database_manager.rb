@@ -164,10 +164,6 @@ module LogStash module Filters module Geoip class DatabaseManager
     execute_download_job
   end
 
-  def close
-    @scheduler.shutdown if @scheduler
-  end
-
   def subscribe_database_path(database_type, database_path, geoip_plugin)
     if database_path.nil?
       trigger_download
