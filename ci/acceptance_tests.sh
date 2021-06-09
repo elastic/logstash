@@ -39,7 +39,7 @@ cleanup
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
-  rake artifact:rpm
+  rake artifact:rpm --trace
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
