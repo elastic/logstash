@@ -52,7 +52,7 @@ if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
-  rake artifact:deb
+  rake artifact:deb --trace
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
