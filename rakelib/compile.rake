@@ -46,6 +46,11 @@ namespace "compile" do
     end
   end
 
+  task "plugin-aliases" do
+    puts("Coping plugin aliases using gradle")
+    safe_system("./gradlew", "copyPluginAlias")
+  end
+
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-java"]
+  task "all" => ["grammar", "logstash-core-java", "plugin-aliases"]
 end
