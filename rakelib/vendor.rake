@@ -21,6 +21,8 @@ namespace "vendor" do
   end
 
   task "jruby" do |task, args|
+    jruby_vendor_exits = File.exists?(File.join("vendor", "jruby"))
+    puts "DNADBG>> vendor/jruby exists? #{jruby_vendor_exits}"
     system('./gradlew bootstrap') unless File.exists?(File.join("vendor", "jruby"))
   end # jruby
 
