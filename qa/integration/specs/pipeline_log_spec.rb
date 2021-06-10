@@ -135,7 +135,7 @@ describe "Test Logstash Pipeline id" do
     logstash_logs.each do |filename|
       file_size = File.size(File.join(temp_dir, filename))
       # should be 1KB = 1024 but due to end of line rounding the rollover goes a little bit over
-      expect(file_size).to be < 1100
+      expect(file_size).to be < 1300
     end
   end
 
