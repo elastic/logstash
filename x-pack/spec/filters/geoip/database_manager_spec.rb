@@ -70,9 +70,9 @@ describe LogStash::Filters::Geoip do
           manager.instance_variable_set(:@metadata, mock_metadata)
           manager.instance_variable_set(:@download_manager, mock_download_manager)
           manager.instance_variable_set(:@scheduler, mock_scheduler)
-          manager.instance_variable_get(:@states)[CITY].observable.add_observer(mock_geoip_plugin, :update_filter)
+          manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[CITY].is_eula = true
-          manager.instance_variable_get(:@states)[ASN].observable.add_observer(mock_geoip_plugin, :update_filter)
+          manager.instance_variable_get(:@states)[ASN].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[ASN].is_eula = true
           manager
         end
@@ -144,9 +144,9 @@ describe LogStash::Filters::Geoip do
           manager.instance_variable_set(:@metadata, mock_metadata)
           manager.instance_variable_set(:@download_manager, mock_download_manager)
           manager.instance_variable_set(:@scheduler, mock_scheduler)
-          manager.instance_variable_get(:@states)[CITY].observable.add_observer(mock_geoip_plugin, :update_filter)
+          manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[CITY].is_eula = true
-          manager.instance_variable_get(:@states)[ASN].observable.add_observer(mock_geoip_plugin, :update_filter)
+          manager.instance_variable_get(:@states)[ASN].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[ASN].is_eula = true
           manager
         end
@@ -216,16 +216,37 @@ describe LogStash::Filters::Geoip do
     context "subscribe database path" do
       it "should return user input path" do
         path = db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
-        expect(db_manager.instance_variable_get(:@states)[CITY].observable.count_observers).to eq(0)
+        expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
         expect(path).to eq(default_city_db_path)
       end
 
       it "should return database path in state if no user input" do
-        expect(db_manager.instance_variable_get(:@states)[CITY].observable.count_observers).to eq(0)
+        expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
         allow(db_manager).to receive(:trigger_download)
         path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
-        expect(db_manager.instance_variable_get(:@states)[CITY].observable.count_observers).to eq(1)
+        expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
         expect(path).to eq(default_city_db_path)
+      end
+
+      context "when eula database is expired" do
+        let(:db_manager) do
+          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
+          manager.instance_variable_set(:@download_manager, mock_download_manager)
+          manager.instance_variable_set(:@scheduler, mock_scheduler)
+          manager
+        end
+
+        before do
+          rewrite_temp_metadata(metadata_path, [city_expired_metadata])
+        end
+
+        it "should return nil" do
+          allow(mock_download_manager).to receive(:fetch_database).and_raise("boom")
+          expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
+          path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
+          expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
+          expect(path).to be_nil
+        end
       end
     end
 
@@ -235,14 +256,14 @@ describe LogStash::Filters::Geoip do
         manager.instance_variable_set(:@metadata, mock_metadata)
         manager.instance_variable_set(:@download_manager, mock_download_manager)
         manager.instance_variable_set(:@scheduler, mock_scheduler)
-        manager.instance_variable_get(:@states)[CITY].observable.add_observer(mock_geoip_plugin, :update_filter)
+        manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
         manager.instance_variable_get(:@states)[CITY].is_eula = true
         manager
       end
 
       it "should remove plugin in state" do
         db_manager.unsubscribe_database_path(CITY, mock_geoip_plugin)
-        expect(db_manager.instance_variable_get(:@states)[CITY].observable.count_observers).to eq(0)
+        expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
       end
     end
   end

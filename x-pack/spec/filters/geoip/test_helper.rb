@@ -96,6 +96,10 @@ module GeoipHelper
     ["City",Time.now.to_i,"",second_dirname,true]
   end
 
+  def city_expired_metadata
+    ["City","1220227200","","1220227200",true]
+  end
+
   def copy_city_database(filename)
     new_path = default_city_db_path.gsub(default_city_db_name, filename)
     FileUtils.cp(default_city_db_path, new_path)
