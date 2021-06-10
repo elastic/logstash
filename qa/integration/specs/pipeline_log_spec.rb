@@ -57,7 +57,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /\[logstash.javapipeline\s*\]\[#{pipeline_name}\]/).to be > 0
@@ -71,7 +71,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["config string"\]/).to be > 0
@@ -85,7 +85,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1", "-f", "#{initial_config_file}")
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
@@ -100,7 +100,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
     expect(File.exists?(pipeline_log_file)).to be true
@@ -148,7 +148,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
     expect(File.exists?(pipeline_log_file)).to be false
@@ -160,10 +160,7 @@ describe "Test Logstash Pipeline id" do
   end
 
   @private
-  def wait_logstash_process_terminate(service = nil)
-    unless service
-      service = @ls
-    end
+  def wait_logstash_process_terminate(service)
     num_retries = 100
     try(num_retries) do
       expect(service.exited?).to be(true)
