@@ -21,6 +21,7 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
+require "fileutils"
 
 describe "Test Logstash Pipeline id" do
   before(:all) {
@@ -112,6 +113,32 @@ describe "Test Logstash Pipeline id" do
     expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
   end
 
+  it "should rollover main log file when pipeline.separate_logs is enabled" do
+    pipeline_name = "custom_pipeline"
+    settings = {
+      "path.logs" => temp_dir,
+      "pipeline.id" => pipeline_name,
+      "pipeline.separate_logs" => true
+    }
+    FileUtils.mkdir_p(File.join(temp_dir, "data"))
+    data = File.join(temp_dir, "data")
+    settings = settings.merge({ "path.data" => data })
+    IO.write(File.join(temp_dir, "logstash.yml"), YAML.dump(settings))
+
+    FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
+
+    @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+    wait_logstash_process_terminate(@ls)
+
+    logstash_logs = Dir.glob("logstash-plain*.log", base: temp_dir)
+    expect(logstash_logs.size).to eq(2)
+    logstash_logs.each do |filename|
+      file_size = File.size(File.join(temp_dir, filename))
+      # should be 1KB = 1024 but due to end of line rounding the rollover goes a little bit over
+      expect(file_size).to be < 1100
+    end
+  end
+
   it "should not create separate pipelines log files if not enabled" do
     pipeline_name = "custom_pipeline"
     settings = {
@@ -133,11 +160,14 @@ describe "Test Logstash Pipeline id" do
   end
 
   @private
-  def wait_logstash_process_terminate
+  def wait_logstash_process_terminate(service = nil)
+    unless service
+      service = @ls
+    end
     num_retries = 100
     try(num_retries) do
-      expect(@ls.exited?).to be(true)
+      expect(service.exited?).to be(true)
     end
-    expect(@ls.exit_code).to be >= 0
+    expect(service.exit_code).to be >= 0
   end
 end
