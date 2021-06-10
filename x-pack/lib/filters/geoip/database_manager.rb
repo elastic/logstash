@@ -40,8 +40,8 @@ module LogStash module Filters module Geoip class DatabaseManager
     cc_asn_database_path = get_db_path(ASN, CC)
 
     prepare_metadata
-    city_database_path = resolve_database_path(CITY, cc_city_database_path)
-    asn_database_path = resolve_database_path(ASN, cc_asn_database_path)
+    city_database_path = @metadata.database_path(CITY)
+    asn_database_path = @metadata.database_path(ASN)
 
     @triggered = false
     @trigger_lock = Mutex.new
@@ -82,13 +82,6 @@ module LogStash module Filters module Geoip class DatabaseManager
     DB_TYPES.each { |type| @metadata.reset_md5(type) if @metadata.database_path(type).nil? }
 
     @metadata
-  end
-
-  def resolve_database_path(type, cc_database_path)
-    metadata_database_path = @metadata.database_path(type)
-    return metadata_database_path unless metadata_database_path.nil?
-    return nil if @metadata.is_eula(type) # when it is EULA and the database is deleted manually
-    return cc_database_path
   end
 
   # notice plugins to use the new database path

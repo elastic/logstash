@@ -48,13 +48,27 @@ describe LogStash::Filters::Geoip do
       context "when metadata exists" do
         before do
           copy_cc(get_dir_path(second_dirname))
-          write_temp_metadata(metadata_path, city2_metadata)
+          rewrite_temp_metadata(metadata_path, [city2_metadata])
         end
 
         it "should use database record in metadata" do
           states = db_manager.instance_variable_get(:@states)
           expect(states[CITY].is_eula).to be_truthy
           expect(states[CITY].database_path).to include second_dirname
+        end
+      end
+
+      context "when metadata exists but database is deleted manually" do
+        let(:db_manager) { Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+
+        before do
+          rewrite_temp_metadata(metadata_path, [city2_metadata])
+        end
+
+        it "should return metadata path" do
+          states = db_manager.instance_variable_get(:@states)
+          expect(states[CITY].is_eula).to be_truthy
+          expect(states[CITY].database_path).to be_nil
         end
       end
     end
@@ -266,5 +280,6 @@ describe LogStash::Filters::Geoip do
         expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
       end
     end
+
   end
 end
