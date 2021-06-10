@@ -29,16 +29,9 @@ namespace "compile" do
     logstash-core/lib/logstash/compiler/lscl/lscl_grammar.rb
   )
 
-  def safe_system(*args)
-    if !system(*args)
-      status = $?
-      raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
-    end
-  end
-
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    safe_system("./gradlew", "assemble")
+    sh("./gradlew assemble")
   end
 
   desc "Build everything"
