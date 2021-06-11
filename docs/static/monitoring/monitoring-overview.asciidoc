@@ -1,5 +1,5 @@
 [role="xpack"]
-[[configuring-logstash]]
+[[stack-monitoring-logstash]]
 == Monitoring {ls}
 
 Use the {stack} {monitor-features} to gain insight into the health of
@@ -16,15 +16,15 @@ For an introduction to monitoring your Elastic stack, see
 Make sure monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
-* <<monitoring-with-metricbeat, {metricbeat} collection>>. Metricbeat collects
+* <<monitoring-with-agent,{agent} collection>>. {agent} collects
 monitoring data from your {ls} instance and sends it directly to your monitoring
-cluster. The benefit of Metricbeat collection is that the monitoring
+cluster. The benefit of {agent} collection is that the monitoring
 agent remains active even if the {ls} instance does not.
 
 * <<monitoring-internal-collection-legacy,Legacy collection (deprecated)>>. 
 Legacy collectors send monitoring data to your production cluster.
 
-include::monitoring-mb.asciidoc[]
+include::monitoring-agent.asciidoc[]
 include::monitoring-internal-legacy.asciidoc[]
 include::monitoring-ui.asciidoc[]
 include::pipeline-viewer.asciidoc[]

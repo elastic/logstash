@@ -27,3 +27,15 @@ If your use case involves reading files that contain multiline entries,
 {filebeat-ref}[{filebeat}] might be a better option.
 {filebeat} offers {filebeat-ref}/filebeat-modules.html[modules] for processing logs
 from many known apps, such as nginx or apache.
+
+
+[role="exclude",id="configuring-logstash"]
+== Monitoring Logstash
+
+See <<monitoring-logstash,Monitoring Logstash>>.
+
+
+[role="exclude",id="monitoring-with-metricbeat"]
+=== Collect {ls} monitoring data with {metricbeat}
+
+<<monitoring-with-agent,Elastic Agent>> is the recommended approach for monitoring Logstash. 

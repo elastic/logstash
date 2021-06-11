@@ -18,7 +18,7 @@ is written to the <<logstash-settings-file,`path.data`>> directory when the node
 starts.
 
 Before you can use the monitoring UI,
-<<configuring-logstash, configure Logstash monitoring>>.
+<<monitoring-logstash, configure Logstash monitoring>>.
 
 For information about using the Monitoring UI, see
 {kibana-ref}/xpack-monitoring.html[{monitoring} in {kib}].
