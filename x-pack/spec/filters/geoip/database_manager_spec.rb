@@ -94,6 +94,7 @@ describe LogStash::Filters::Geoip do
         it "should update states when new downloads are valid" do
           expect(mock_download_manager).to receive(:fetch_database).and_return([valid_city_fetch, valid_asn_fetch])
           expect(mock_metadata).to receive(:save_metadata).at_least(:twice)
+          allow(mock_geoip_plugin).to receive_message_chain('execution_context.pipeline_id').and_return('pipeline_1', 'pipeline_2')
           expect(mock_geoip_plugin).to receive(:update_filter).with(:update, instance_of(String)).at_least(:twice)
           expect(mock_metadata).to receive(:update_timestamp).never
           expect(db_manager).to receive(:check_age)
@@ -176,8 +177,7 @@ describe LogStash::Filters::Geoip do
 
         it "should log error and update plugin filter when 30 days has passed" do
           expect(mock_metadata).to receive(:check_at).and_return((Time.now - (60 * 60 * 24 * 33)).to_i).at_least(:twice)
-          allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).at_least(:once).and_return(logger)
-          expect(logger).to receive(:error).at_least(:twice)
+          allow(mock_geoip_plugin).to receive_message_chain('execution_context.pipeline_id').and_return('pipeline_1', 'pipeline_2')
           expect(mock_geoip_plugin).to receive(:update_filter).with(:expire).at_least(:twice)
 
           db_manager.send(:check_age)

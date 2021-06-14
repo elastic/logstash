@@ -100,7 +100,11 @@ module LogStash module Filters module Geoip class DatabaseManager
           @states[database_type].is_eula = true
           @states[database_type].is_expired = false
           @states[database_type].database_path = new_database_path
-          @states[database_type].plugins.dup.each { |plugin| plugin.update_filter(:update, new_database_path) if plugin }
+
+          plugins = @states[database_type].plugins.dup
+          ids = plugins.map { |plugin| plugin.execution_context.pipeline_id }.sort
+          logger.info("geoip plugin will use database #{new_database_path}", :database_type => database_type, :pipeline_ids => ids)
+          plugins.each { |plugin| plugin.update_filter(:update, new_database_path) if plugin }
         end
       end
 
@@ -130,7 +134,13 @@ module LogStash module Filters module Geoip class DatabaseManager
           "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
         @states[database_type].is_expired = true
         @states[database_type].database_path = nil
-        @states[database_type].plugins.dup.each { |plugin| plugin.update_filter(:expire) if plugin }
+
+        plugins = @states[database_type].plugins.dup
+        ids = plugins.map { |plugin| plugin.execution_context.pipeline_id }.sort
+        logger.warn("geoip plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
+                    :database_type => database_type,
+                    :pipeline_ids => ids)
+        plugins.each { |plugin| plugin.update_filter(:expire) if plugin }
       when days_without_update >= 25
         logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
