@@ -159,7 +159,6 @@ describe "Test Logstash Pipeline id" do
     expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
   end
 
-  @private
   def wait_logstash_process_terminate(service)
     num_retries = 100
     try(num_retries) do
