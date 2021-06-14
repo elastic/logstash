@@ -73,7 +73,7 @@ module LogStash
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
-
+      ::Bundler.settings.set_local(:frozen, true)
       ::Bundler.reset!
       ::Bundler.setup
     end
@@ -202,6 +202,14 @@ module LogStash
       elsif options[:package]
         arguments << "package"
         arguments << "--all" if options[:all]
+      elsif options[:add_platform]
+        arguments << "lock"
+        arguments << "--add_platform"
+        arguments << options[:add_platform]
+      elsif options[:remove_platform]
+        arguments << "lock"
+        arguments << "--remove_platform"
+        arguments << options[:remove_platform]
       end
 
       arguments << "--verbose" if options[:verbose]

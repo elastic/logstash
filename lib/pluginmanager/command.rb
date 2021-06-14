@@ -37,6 +37,18 @@ class LogStash::PluginManager::Command < Clamp::Command
     end
   end
 
+
+  def normalize_platform
+    remove_platform_options = get_remove_platform_options
+    output = LogStash::Bundler.invoke!({:add_platform => 'java'})
+    output << LogStash::Bundler.invoke!(remove_platform_options) unless remove_platform_options.nil?
+  end
+
+  def get_remove_platform_options
+    running_platform = Gem.platforms.find{|plat| plat.is_a?(Gem::Platform) && plat.os=='java'}
+    {:remove_platform => running_platform.to_s} unless running_platform.nil?
+  end
+
   # Each plugin install for a gemfile create a path with a unique id.
   # we must clear what is not currently used in the 
   def remove_unused_locally_installed_gems!
