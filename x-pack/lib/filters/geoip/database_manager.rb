@@ -15,6 +15,8 @@ require "rufus/scheduler"
 require "date"
 require "singleton"
 require "concurrent"
+require "thread"
+java_import org.apache.logging.log4j.ThreadContext
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -88,6 +90,8 @@ module LogStash module Filters module Geoip class DatabaseManager
   # update metadata timestamp for those dbs that has no update or a valid update
   # do daily check and clean up
   def execute_download_job
+    ThreadContext.put("pipeline.id", nil)
+
     begin
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
