@@ -75,7 +75,7 @@ filter {
   mutate {
     # we use a "temporal" field with a predefined arbitrary known value that
     # lives only in filtering stage.
-    add_field => { "[@metadata][testField_check]" => "unknown arbitrary value" }
+    add_field => { "[@metadata][test_field_check]" => "a null value" }
 
     # we copy the field of interest into that temporal field.
     # If the field doesn't exist, copy is not executed.
@@ -146,5 +146,4 @@ performance improvement.
 No, we can’t make that guarantee. Offsets are committed to Kafka periodically. If
 writes to the PQ are slow or blocked, offsets for events that haven’t safely
 reached the PQ can be committed.
-
 
