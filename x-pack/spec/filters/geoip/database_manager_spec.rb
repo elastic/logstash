@@ -31,7 +31,7 @@ describe LogStash::Filters::Geoip do
     end
 
     after do
-      delete_file(metadata_path)
+      delete_file(metadata_path, get_dir_path(second_dirname))
     end
 
     context "initialize" do

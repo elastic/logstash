@@ -106,7 +106,7 @@ module GeoipHelper
   end
 
   def delete_file(*filepaths)
-    filepaths.map { |filepath| ::File.delete(filepath) if ::File.exist?(filepath) }
+    filepaths.map { |filepath| FileUtils.rm_r(filepath) if ::File.exist?(filepath) }
   end
 
   def get_metadata_database_name
