@@ -91,6 +91,9 @@ module LogStash module Filters module Geoip class DatabaseManager
   # do daily check and clean up
   def execute_download_job
     begin
+      pipeline_id = ThreadContext.get("pipeline.id")
+      ThreadContext.put("pipeline.id", nil)
+
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
         if valid_download
@@ -106,13 +109,14 @@ module LogStash module Filters module Geoip class DatabaseManager
         end
       end
 
-      updated_type = updated_db.map { |database_type, valid_download, dirname, new_database_path| database_type }
-      (DB_TYPES - updated_type).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
+      updated_types = updated_db.map { |database_type, valid_download, dirname, new_database_path| database_type }
+      (DB_TYPES - updated_types).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
     rescue => e
       logger.error(e.message, error_details(e, logger))
     ensure
       check_age
       clean_up_database
+      ThreadContext.put("pipeline.id", pipeline_id)
     end
   end
 
@@ -137,7 +141,7 @@ module LogStash module Filters module Geoip class DatabaseManager
         @states[database_type].database_path = nil
 
         notify_plugins(database_type, :expire) do |db_type, ids|
-          unless ids.empty? || was_expired
+          unless was_expired
             logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
               "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
               "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
