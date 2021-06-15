@@ -90,8 +90,6 @@ module LogStash module Filters module Geoip class DatabaseManager
   # update metadata timestamp for those dbs that has no update or a valid update
   # do daily check and clean up
   def execute_download_job
-    ThreadContext.put("pipeline.id", nil)
-
     begin
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -101,10 +99,10 @@ module LogStash module Filters module Geoip class DatabaseManager
           @states[database_type].is_expired = false
           @states[database_type].database_path = new_database_path
 
-          plugins = @states[database_type].plugins.dup
-          ids = plugins.map { |plugin| plugin.execution_context.pipeline_id }.sort
-          logger.info("geoip plugin will use database #{new_database_path}", :database_type => database_type, :pipeline_ids => ids)
-          plugins.each { |plugin| plugin.update_filter(:update, new_database_path) if plugin }
+          notify_plugins(database_type, :update, new_database_path) do |db_type, ids|
+            logger.info("geoip plugin will use database #{new_database_path}",
+                        :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
+          end
         end
       end
 
@@ -118,6 +116,13 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
+  def notify_plugins(database_type, action, *args)
+    plugins = @states[database_type].plugins.dup
+    ids = plugins.map { |plugin| plugin.execution_context.pipeline_id }.sort
+    yield database_type, ids
+    plugins.each { |plugin| plugin.update_filter(action, *args) if plugin }
+  end
+
   # call expiry action if Logstash use EULA database and fail to touch the endpoint for 30 days in a row
   def check_age(database_types = DB_TYPES)
     database_types.map do |database_type|
@@ -127,26 +132,28 @@ module LogStash module Filters module Geoip class DatabaseManager
 
       case
       when days_without_update >= 30
-        logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
-          "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
-          "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
-          "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
-          "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
+        was_expired = @states[database_type].is_expired
         @states[database_type].is_expired = true
         @states[database_type].database_path = nil
 
-        plugins = @states[database_type].plugins.dup
-        ids = plugins.map { |plugin| plugin.execution_context.pipeline_id }.sort
-        logger.warn("geoip plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
-                    :database_type => database_type,
-                    :pipeline_ids => ids)
-        plugins.each { |plugin| plugin.update_filter(:expire) if plugin }
+        notify_plugins(database_type, :expire) do |db_type, ids|
+          unless ids.empty? || was_expired
+            logger.error("The MaxMind database hasn't been updated from last 30 days. Logstash is unable to get newer version from internet. "\
+              "According to EULA, GeoIP plugin needs to stop using MaxMind database in order to be compliant. "\
+              "Please check the network settings and allow Logstash accesses the internet to download the latest database, "\
+              "or switch to offline mode (:database => PATH_TO_YOUR_DATABASE) to use a self-managed database "\
+              "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
+
+            logger.warn("geoip plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
+                        :database_type => db_type, :pipeline_ids => ids)
+          end
+        end
       when days_without_update >= 25
         logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
       else
-        logger.trace("The endpoint hasn't updated", :days_without_update => days_without_update)
+        logger.trace("passed age check", :days_without_update => days_without_update)
       end
     end
   end
@@ -181,6 +188,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   # scheduler callback
   def call(job, time)
     logger.debug "scheduler runs database update check"
+    ThreadContext.put("pipeline.id", nil)
     execute_download_job
   end
 

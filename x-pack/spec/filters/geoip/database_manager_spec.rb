@@ -65,7 +65,7 @@ describe LogStash::Filters::Geoip do
           rewrite_temp_metadata(metadata_path, [city2_metadata])
         end
 
-        it "should return metadata path" do
+        it "should return nil database path" do
           states = db_manager.instance_variable_get(:@states)
           expect(states[CITY].is_eula).to be_truthy
           expect(states[CITY].database_path).to be_nil
