@@ -142,6 +142,29 @@ describe "Test Logstash Pipeline id" do
     end
   end
 
+  it "rollover of pipeline log file when pipeline.separate_logs is enabled shouldn't create spurious file " do
+      pipeline_name = "custom_pipeline"
+      settings = {
+        "path.logs" => temp_dir,
+        "pipeline.id" => pipeline_name,
+        "pipeline.separate_logs" => true
+      }
+      FileUtils.mkdir_p(File.join(temp_dir, "data"))
+      data = File.join(temp_dir, "data")
+      settings = settings.merge({ "path.data" => data })
+      IO.write(File.join(temp_dir, "logstash.yml"), YAML.dump(settings))
+
+      log_definition = File.read('fixtures/logs_rollover/log4j2.properties')
+      expect(log_definition).to match(/appender\.routing\.pipeline\.policy\.size\s*=\s*1KB/)
+      FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
+
+      @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+      wait_logstash_process_terminate(@ls)
+
+      pipeline_logs = Dir.glob("pipeline*.log", base: temp_dir)
+      expect(pipeline_logs).not_to include("pipeline_${ctx:pipeline.id}.log")
+    end
+
   it "should not create separate pipelines log files if not enabled" do
     pipeline_name = "custom_pipeline"
     settings = {
