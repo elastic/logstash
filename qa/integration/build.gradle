@@ -39,8 +39,6 @@ test {
   exclude '/**'
 }
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
 tasks.register("copyProductionLog4jConfiguration", Copy) {
   description "Copy the production log4j config to be tested in QA (qa/integration/fixtures/logs_rollover)"
 

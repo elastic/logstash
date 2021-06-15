@@ -109,8 +109,8 @@ describe "Test Logstash Pipeline id" do
 
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
-    plaing_log_content = IO.read(plainlog_file)
-    expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
+    plainlog_content = IO.read(plainlog_file)
+    expect(plainlog_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
   end
 
   it "should rollover main log file when pipeline.separate_logs is enabled" do
@@ -125,6 +125,9 @@ describe "Test Logstash Pipeline id" do
     settings = settings.merge({ "path.data" => data })
     IO.write(File.join(temp_dir, "logstash.yml"), YAML.dump(settings))
 
+    log_definition = File.read('fixtures/logs_rollover/log4j2.properties')
+    expect(log_definition).to match(/appender\.rolling\.policies\.size\.size\s*=\s*1KB/)
+    expect(log_definition).to match(/appender\.rolling\.filePattern\s*=\s*.*\/logstash-plain-%d{yyyy-MM-dd}\.log/)
     FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
 
     @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
