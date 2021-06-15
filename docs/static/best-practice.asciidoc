@@ -79,20 +79,18 @@ filter {
 
     # we copy the field of interest into that temporal field.
     # If the field doesn't exist, copy is not executed.
-    copy => { "testField" => "[@metadata][testField_check]" }
+    copy => { "test_field" => "[@metadata][test_field_check]" }
   }
 
 
   # now we now if testField didn't exists, our field will have 
   # the initial arbitrary value
-  if [@metadata][testField_check] == "unknown arbitrary value" {
-
-    # just for debugging purpouses...
-    mutate { add_field => { "FIELD_DID_NOT_EXISTED" => true }}
-
+  if [@metadata][test_field_check] == "a null value" {
+    # logic to execute when [test_field] did not exist
+    mutate { add_field => { "field_did_not_exist" => true }}
   } else {
-    # just for debugging purpouses...
-    mutate { add_field => { "FIELD_DID_ALREADY_EXISTED" => true }}
+    # logic to execute when [test_field] existed
+    mutate { add_field => { "field_did_exist" => true }}
   }
 }
 -----
@@ -148,6 +146,5 @@ performance improvement.
 No, we can’t make that guarantee. Offsets are committed to Kafka periodically. If
 writes to the PQ are slow or blocked, offsets for events that haven’t safely
 reached the PQ can be committed.
-
 
 
