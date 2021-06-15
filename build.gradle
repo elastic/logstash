@@ -373,6 +373,7 @@ tasks.register("assembleOssZipDistribution") {
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
+      dependsOn copyPluginTestAlias
       dependsOn installTestGems
     }
   }
