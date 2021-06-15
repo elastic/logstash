@@ -109,6 +109,9 @@ public class PipelineRoutingAppender extends AbstractAppender {
         String key = event.getContextData().getValue("pipeline.id");
         if (key == null) {
             LOGGER.debug("Unable to find the pipeline.id in event's context data in routing appender, skip it");
+            // this prevent to create an appender when log events are not fish-tagged with pipeline.id,
+            // avoid to create log file like "pipeline_${ctx:pipeline.id}.log" which contains duplicated
+            // logs from the logstash-* files
             return null;
         }
 
