@@ -127,7 +127,6 @@ public class AliasRegistry {
             final InputStream in = AliasYamlLoader.class.getClassLoader().getResourceAsStream(filePath);
             if (in == null) {
                 LOGGER.warn("Malformed yaml file in yml definition file in jar resources: {}", filePath);
-                System.out.println("Malformed yaml file in yml definition file in jar resources: " + filePath);
                 return Collections.emptyMap();
             }
 

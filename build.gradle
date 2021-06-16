@@ -247,7 +247,7 @@ tasks.register("copyPluginTestAlias", Copy) {
 }
 
 processResources.dependsOn(copyPluginAlias)
-processTestResources.dependsOn(copyPluginTestAlias)
+tasks.findByPath(':logstash-core:processTestResources').dependsOn(copyPluginTestAlias)
 
 
 // Tasks
