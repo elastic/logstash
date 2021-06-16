@@ -124,9 +124,10 @@ public class AliasRegistry {
 
         Map<PluginCoordinate, String> loadAliasesDefinitions() {
             final String filePath = "org/logstash/plugins/plugin_aliases.yml";
-            final InputStream in = YamlWithChecksum.class.getClassLoader().getResourceAsStream(filePath);
+            final InputStream in = AliasYamlLoader.class.getClassLoader().getResourceAsStream(filePath);
             if (in == null) {
                 LOGGER.warn("Malformed yaml file in yml definition file in jar resources: {}", filePath);
+                System.out.println("Malformed yaml file in yml definition file in jar resources: " + filePath);
                 return Collections.emptyMap();
             }
 
