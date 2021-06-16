@@ -6,21 +6,19 @@ require_relative 'test_helper'
 require "filters/geoip/database_metadata"
 require "filters/geoip/database_manager"
 require "stud/temporary"
+require "fileutils"
 
 describe LogStash::Filters::Geoip do
 
   describe 'DatabaseMetadata', :aggregate_failures do
+    let(:database_type) { LogStash::Filters::Geoip::CITY }
     let(:dbm) do
-      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("City")
+      dbm = LogStash::Filters::Geoip::DatabaseMetadata.new
       dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
       dbm
     end
     let(:temp_metadata_path) { dbm.instance_variable_get(:@metadata_path) }
     let(:logger) { double("Logger") }
-
-    before(:each) do
-      LogStash::Filters::Geoip::DatabaseManager.prepare_cc_db
-    end
 
     context "get all" do
       it "return multiple rows" do
@@ -34,65 +32,68 @@ describe LogStash::Filters::Geoip do
       it "return metadata" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
 
-        city = dbm.get_metadata
+        city = dbm.get_metadata(database_type)
         expect(city.size).to eq(2)
 
-        asn = dbm.get_metadata(false)
+        asn = dbm.get_metadata("ASN")
         expect(asn.size).to eq(1)
       end
 
       it "return empty array when file is missing" do
-        metadata = dbm.get_metadata
+        metadata = dbm.get_metadata(database_type)
         expect(metadata.size).to eq(0)
       end
 
       it "return empty array when an empty file exist" do
         FileUtils.touch(temp_metadata_path)
 
-        metadata = dbm.get_metadata
+        metadata = dbm.get_metadata(database_type)
         expect(metadata.size).to eq(0)
       end
     end
 
     context "save timestamp" do
-      before do
-        ::File.open(default_city_gz_path, "w") { |f| f.write "make a non empty file" }
-      end
-
-      after do
-        delete_file(default_city_gz_path)
-      end
-
       it "write the current time" do
-        dbm.save_timestamp(default_city_db_path)
+        write_temp_metadata(temp_metadata_path)
+        dbm.save_metadata(database_type, second_dirname, true)
 
-        metadata = dbm.get_metadata.last
+        expect(dbm.get_metadata(database_type).size).to eq(1)
+        expect(dbm.get_all.size).to eq(2)
+
+        metadata = dbm.get_metadata(database_type).last
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).to eq("City")
-        past = metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::UPDATE_AT]
+        past = metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]
         expect(Time.now.to_i - past.to_i).to be < 100
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).not_to be_empty
         expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to eq(md5(default_city_gz_path))
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::MD5]).to eq(default_city_db_md5)
-        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::FILENAME]).to eq(default_city_db_name)
+        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eq(second_dirname)
+        expect(metadata[LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]).to eq("true")
       end
     end
 
     context "database path" do
+      before do
+        copy_cc(get_dir_path("CC"))
+        copy_cc(get_dir_path(second_dirname))
+      end
+
       it "return the default city database path" do
         write_temp_metadata(temp_metadata_path)
 
-        expect(dbm.database_path).to eq(default_city_db_path)
+        expect(dbm.database_path(database_type)).to eq(default_city_db_path)
       end
 
-      it "return the last database path with valid md5" do
-        write_temp_metadata(temp_metadata_path, city2_metadata)
+      context "when the database exist" do
+        it "return the last database path with valid md5" do
+          write_temp_metadata(temp_metadata_path, city2_metadata)
 
-        expect(dbm.database_path).to eq(default_city_db_path)
+          expect(dbm.database_path(database_type)).to eq(second_city_db_path)
+        end
       end
 
       context "with ASN database type" do
+        let(:database_type) { "ASN" }
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("ASN")
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
@@ -100,13 +101,14 @@ describe LogStash::Filters::Geoip do
         it "return the default asn database path" do
           write_temp_metadata(temp_metadata_path)
 
-          expect(dbm.database_path).to eq(default_asn_db_path)
+          expect(dbm.database_path(database_type)).to eq(default_asn_db_path)
         end
       end
 
       context "with invalid database type" do
+        let(:database_type) { "???" }
         let(:dbm) do
-          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new("???")
+          dbm = LogStash::Filters::Geoip::DatabaseMetadata.new
           dbm.instance_variable_set(:@metadata_path, Stud::Temporary.file.path)
           dbm
         end
@@ -114,38 +116,30 @@ describe LogStash::Filters::Geoip do
         it "return nil if md5 not matched" do
           write_temp_metadata(temp_metadata_path)
 
-          expect(dbm.database_path).to be_nil
+          expect(dbm.database_path(database_type)).to be_nil
         end
       end
     end
 
     context "gz md5" do
       it "should give the last gz md5" do
-        write_temp_metadata(temp_metadata_path, ["City","","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
-        expect(dbm.gz_md5).to eq("SOME_GZ_MD5")
+        write_temp_metadata(temp_metadata_path, ["City","","SOME_GZ_MD5","SOME_MD5",second_dirname])
+        expect(dbm.gz_md5(database_type)).to eq("SOME_GZ_MD5")
       end
 
       it "should give empty string if metadata is empty" do
-        expect(dbm.gz_md5).to eq("")
+        expect(dbm.gz_md5(database_type)).to eq("")
       end
     end
 
     context "updated at" do
       it "should give the last update timestamp" do
-        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
-        expect(dbm.updated_at).to eq(1611690807)
+        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5",second_dirname,true])
+        expect(dbm.check_at(database_type)).to eq(1611690807)
       end
 
       it "should give 0 if metadata is empty" do
-        expect(dbm.updated_at).to eq(0)
-      end
-    end
-
-    context "database filenames" do
-      it "should give filename in .mmdb .tgz" do
-        write_temp_metadata(temp_metadata_path)
-        expect(dbm.database_filenames).to match_array([default_city_db_name, default_asn_db_name,
-                                                       'GeoLite2-City.tgz', 'GeoLite2-ASN.tgz'])
+        expect(dbm.check_at(database_type)).to eq(0)
       end
     end
 
@@ -161,15 +155,69 @@ describe LogStash::Filters::Geoip do
       end
     end
 
-    context "is cc" do
-      it "should return true if database is CC" do
+    context "is eula" do
+      it "should give boolean false if database is CC" do
         write_temp_metadata(temp_metadata_path)
-        expect(dbm.cc?).to be_truthy
+        expect(dbm.is_eula(database_type)).to eq(false)
       end
 
-      it "should return false if database is EULA" do
-        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5","SOME_MD5",second_city_db_name])
-        expect(dbm.cc?).to be_falsey
+      it "should give boolean true if database is EULA" do
+        write_temp_metadata(temp_metadata_path, city2_metadata)
+        expect(dbm.is_eula(database_type)).to eq(true)
+      end
+    end
+
+    context "update timestamp" do
+      it "should update timestamp only for database type" do
+        write_temp_metadata(temp_metadata_path)
+        original = dbm.get_all
+        sleep(2)
+
+        dbm.update_timestamp(database_type)
+        updated = dbm.get_all
+
+        original.size.times do |i|
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]).
+            to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DATABASE_TYPE]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]))
+          expect(original[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA])
+            .to(eq(updated[i][LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]))
+        end
+
+        # ASN
+        expect(original[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT])
+          .to(eq(updated[0][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]))
+
+        # City
+        expect(original[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT])
+          .not_to(eq(updated[1][LogStash::Filters::Geoip::DatabaseMetadata::Column::CHECK_AT]))
+      end
+    end
+
+    context "reset md5" do
+      it "should reset md5 to empty string only" do
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","1620246514",true],
+                                                    ["City","1620246514","SOME MD5","1620246514",true] ])
+
+        dbm.reset_md5(database_type)
+        row = dbm.get_metadata(database_type).last
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::GZ_MD5]).to be_empty
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::DIRNAME]).to eql("1620246514")
+        expect(row[LogStash::Filters::Geoip::DatabaseMetadata::Column::IS_EULA]).to be_truthy
+      end
+    end
+
+    context "dirnames" do
+      it "should reset md5 to empty string only" do
+        write_temp_metadata(temp_metadata_path, city2_metadata)
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","CC",true],
+                                                    city2_metadata ])
+
+        dirnames = dbm.dirnames
+        expect(dirnames).to match_array([second_dirname, "CC"])
       end
     end
   end
