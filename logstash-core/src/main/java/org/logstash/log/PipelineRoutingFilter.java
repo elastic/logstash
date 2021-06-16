@@ -13,7 +13,7 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
 @Plugin(name = "PipelineRoutingFilter", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
 public final class PipelineRoutingFilter extends AbstractFilter {
 
-    private boolean isSeparateLogs;
+    private final boolean isSeparateLogs;
 
     /**
      * Factory method to instantiate the filter
