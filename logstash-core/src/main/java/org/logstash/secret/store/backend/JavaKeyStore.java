@@ -188,35 +188,35 @@ public final class JavaKeyStore implements SecretStore {
 
         useDefaultPass = !config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY);
 
-        if (useDefaultPass) {
-            if (existing) {
-                //read the pass
-                SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
-                if (byteChannel.size() > 1) {
-                    byteChannel.position(byteChannel.size() - 1);
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(1);
-                    byteChannel.read(byteBuffer);
-                    int size = byteBuffer.array()[0] & 0xff;
-                    if (size > 0 && byteChannel.size() >= size + 1) {
-                        byteBuffer = ByteBuffer.allocate(size);
-                        byteChannel.position(byteChannel.size() - size - 1);
-                        byteChannel.read(byteBuffer);
-                        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
-                    }
-                }
-            } else {
-                //create the pass
-                byte[] randomBytes = new byte[32];
-                new Random().nextBytes(randomBytes);
-                return SecretStoreUtil.base64EncodeToChars(randomBytes);
-            }
-        } else {
+        if (!useDefaultPass) {
             //explicit user defined pass
             //keystore passwords require ascii encoding, only base64 encode if necessary
             return asciiEncoder.canEncode(CharBuffer.wrap(plainText)) ? plainText : SecretStoreUtil.base64Encode(plainText);
         }
-        throw new SecretStoreException.AccessException(
-                String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        if (!existing) {
+            //create the pass
+            byte[] randomBytes = new byte[32];
+            new Random().nextBytes(randomBytes);
+            return SecretStoreUtil.base64EncodeToChars(randomBytes);
+        }
+        //read the pass
+        SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
+        if (byteChannel.size() == 0) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Keystore file is empty. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteChannel.position(byteChannel.size() - 1);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        byteChannel.read(byteBuffer);
+        int size = byteBuffer.array()[0] & 0xff;
+        if (size <= 0 || byteChannel.size() < size + 1) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteBuffer = ByteBuffer.allocate(size);
+        byteChannel.position(byteChannel.size() - size - 1);
+        byteChannel.read(byteBuffer);
+        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
     }
 
     private void init(SecureConfig config) throws IOException, KeyStoreException {

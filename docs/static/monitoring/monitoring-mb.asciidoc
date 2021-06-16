@@ -10,8 +10,6 @@ You can use {metricbeat} to collect data about {ls} and ship it to the
 monitoring cluster. The benefit of Metricbeat collection is that the monitoring
 agent remains active even if the {ls} instance does not. 
 
-//NOTE: The tagged regions are re-used in the Stack Overview.
-
 To collect and ship monitoring data:
 
 . <<disable-default,Disable default collection of monitoring metrics>>
@@ -23,7 +21,6 @@ To collect and ship monitoring data:
 ==== Disable default collection of {ls} monitoring metrics
 
 --
-// tag::disable-ls-collection[]
 The `monitoring` setting is in the {ls} configuration file (logstash.yml), but is
 commented out: 
 
@@ -33,7 +30,6 @@ monitoring.enabled: false
 ----------------------------------
 
 Remove the `#` at the beginning of the line to enable the setting.
-// end::disable-ls-collection[]
 
 --
 
@@ -58,7 +54,6 @@ same server as {ls}.
 . Enable the `logstash-xpack` module in {metricbeat}. +
 +
 --
-// tag::enable-ls-module[]
 To enable the default configuration in the {metricbeat} `modules.d` directory, 
 run: 
 
@@ -86,13 +81,11 @@ PS > .{backslash}metricbeat.exe modules enable logstash-xpack
 For more information, see 
 {metricbeat-ref}/configuration-metricbeat.html[Specify which modules to run] and 
 {metricbeat-ref}/metricbeat-module-beat.html[beat module]. 
-// end::enable-beat-module[]
 --
 
 . Configure the `logstash-xpack` module in {metricbeat}. +
 +
 --
-// tag::configure-beat-module[]
 The `modules.d/logstash-xpack.yml` file contains these settings:
 
 [source,yaml]
@@ -121,9 +114,7 @@ To monitor multiple {ls} instances, specify a list of hosts, for example:
 hosts: ["http://localhost:9601","http://localhost:9602","http://localhost:9603"]
 ----------------------------------
 
-// end::configure-ls-module[]
 
-// tag::remote-monitoring-user[]
 *Elastic security.* If the Elastic {security-features} are enabled, provide a user 
 ID and password so that {metricbeat} can collect metrics successfully: 
 
@@ -132,13 +123,11 @@ ID and password so that {metricbeat} can collect metrics successfully:
 
 .. Add the `username` and `password` settings to the module configuration 
 file (`logstash-xpack.yml`).
-// end::remote-monitoring-user[]
 --
 
 . Optional: Disable the system module in the {metricbeat}.
 +
 --
-// tag::disable-system-module[]
 By default, the {metricbeat-ref}/metricbeat-module-system.html[system module] is
 enabled. The information it collects, however, is not shown on the
 *Stack Monitoring* page in {kib}. Unless you want to use that information for
@@ -148,7 +137,6 @@ other purposes, run the following command:
 ----------------------------------------------------------------------
 metricbeat modules disable system
 ----------------------------------------------------------------------
-// end::disable-system-module[] 
 --
 
 . Identify where to send the monitoring data. +

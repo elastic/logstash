@@ -176,6 +176,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
     if (customJRubyDir == "") {
         api "org.jruby:jruby-complete:${jrubyVersion}"
     } else {

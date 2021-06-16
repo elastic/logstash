@@ -20,8 +20,10 @@
 
 package org.logstash.plugins.discovery;
 
+import com.google.common.base.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.logstash.plugins.AliasRegistry;
 import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Configuration;
@@ -32,6 +34,8 @@ import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Output;
 import org.logstash.plugins.PluginLookup.PluginType;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -80,7 +84,12 @@ public final class PluginRegistry {
     private void discoverPlugins() {
         // the constructor of Reflection must be called only by one thread, else there is a
         // risk that the first thread that completes close the Zip files for the others.
-        Reflections reflections = new Reflections("org.logstash.plugins");
+        // scan all .class present in package classpath
+        final ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("org.logstash.plugins"))
+                .filterInputsBy(input -> input.endsWith(".class"));
+        Reflections reflections = new Reflections(configurationBuilder);
+
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
         for (final Class<?> cls : annotated) {
             for (final Annotation annotation : cls.getAnnotations()) {
