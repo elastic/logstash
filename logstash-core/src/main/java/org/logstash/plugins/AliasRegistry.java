@@ -7,9 +7,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +25,7 @@ public class AliasRegistry {
 
     private static final Logger LOGGER = LogManager.getLogger(AliasRegistry.class);
 
-    private final static class PluginCoordinate {
+    final static class PluginCoordinate {
         private final PluginType type;
         private final String name;
 
@@ -47,16 +50,23 @@ public class AliasRegistry {
         PluginCoordinate withName(String name) {
             return new PluginCoordinate(this.type, name);
         }
+
+        @Override
+        public String toString() {
+            return "PluginCoordinate{" +
+                    "type=" + type +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        public String fullName() {
+            return "logstash-" + type.rubyLabel().toString().toLowerCase() + "-" + name;
+        }
     }
 
     private static class YamlWithChecksum {
 
-        static YamlWithChecksum load(final String filePath) {
-            final InputStream in = YamlWithChecksum.class.getClassLoader().getResourceAsStream(filePath);
-            if (in == null) {
-                throw new IllegalArgumentException("Can't find aliases yml definition file in jar resources: " + filePath);
-            }
-
+        private static YamlWithChecksum load(InputStream in) {
             try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
                 // read the header line
                 final String header = scanner.nextLine();
@@ -98,17 +108,33 @@ public class AliasRegistry {
         }
     }
 
-    private static class AliasYamlLoader {
+    static class AliasYamlLoader {
 
-        private Map<PluginCoordinate, String> loadAliasesDefinitions() {
-            final YamlWithChecksum aliasYml;
+        Map<PluginCoordinate, String> loadAliasesDefinitions(Path yamlPath) {
+            final FileInputStream in;
             try {
-                aliasYml = YamlWithChecksum.load("org/logstash/plugins/plugin_aliases.yml");
-            } catch (IllegalArgumentException badSyntaxExcp) {
-                LOGGER.warn("Malformed yaml file", badSyntaxExcp);
+                in = new FileInputStream(yamlPath.toFile());
+            } catch (FileNotFoundException e) {
+                LOGGER.warn("Can't find aliases yml definition file in in path: " + yamlPath, e);
                 return Collections.emptyMap();
             }
 
+            return loadAliasesDefinitionsFromInputStream(in);
+        }
+
+        Map<PluginCoordinate, String> loadAliasesDefinitions() {
+            final String filePath = "org/logstash/plugins/plugin_aliases.yml";
+            final InputStream in = YamlWithChecksum.class.getClassLoader().getResourceAsStream(filePath);
+            if (in == null) {
+                LOGGER.warn("Malformed yaml file in yml definition file in jar resources: {}", filePath);
+                return Collections.emptyMap();
+            }
+
+            return loadAliasesDefinitionsFromInputStream(in);
+        }
+
+        private Map<PluginCoordinate, String> loadAliasesDefinitionsFromInputStream(InputStream in) {
+            final YamlWithChecksum aliasYml = YamlWithChecksum.load(in);
             final String calculatedHash = aliasYml.computeHashFromContent();
             if (!calculatedHash.equals(aliasYml.checksumHash)) {
                 LOGGER.warn("Bad checksum value, expected {} but found {}", calculatedHash, aliasYml.checksumHash);
