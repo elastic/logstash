@@ -84,7 +84,7 @@ public final class PluginRegistry {
     private void discoverPlugins() {
         // the constructor of Reflection must be called only by one thread, else there is a
         // risk that the first thread that completes close the Zip files for the others.
-        // filter from processing all resources present in package classpath that are not classes.
+        // scan all .class present in package classpath
         final ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("org.logstash.plugins"))
                 .filterInputsBy(input -> input.endsWith(".class"));
