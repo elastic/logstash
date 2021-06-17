@@ -40,6 +40,35 @@ describe LogStash::PluginManager::Install do
     end
   end
 
+  context "when installs alias plugin" do
+
+    before(:each) do
+      # mocked to avoid validation of options
+      expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+      # used to pass indirect input to the command under test
+      expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+      # used to skip Bundler interaction
+      expect(cmd).to receive(:install_gems_list!).and_return(nil)
+      # avoid to clean gemfile folder
+      expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
+      cmd.verify = true
+    end
+
+    it "should not consider as valid plugin a gem with an alias name" do
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-elastic_agent", nil, {:rubygems_source => ["https://rubygems.org"]})
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-beats", nil, {:rubygems_source => ["https://rubygems.org"]}).and_return(true)
+
+      cmd.execute
+    end
+
+    it "should consider as valid plugin a plugin gem with an alias name" do
+      expect(LogStash::PluginManager).to receive(:logstash_plugin?).with("logstash-input-elastic_agent", nil, {:rubygems_source => ["https://rubygems.org"]}).and_return(true)
+      expect(LogStash::PluginManager).not_to receive(:logstash_plugin?).with("logstash-input-beats", nil, {:rubygems_source => ["https://rubygems.org"]})
+
+      cmd.execute
+    end
+  end
+
   context "pack" do
     let(:cmd) { LogStash::PluginManager::Install.new("install my-super-pack") }
     before do
