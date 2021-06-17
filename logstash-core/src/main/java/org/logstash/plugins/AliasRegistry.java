@@ -53,10 +53,7 @@ public class AliasRegistry {
 
         @Override
         public String toString() {
-            return "PluginCoordinate{" +
-                    "type=" + type +
-                    ", name='" + name + '\'' +
-                    '}';
+            return "PluginCoordinate{type=" + type + ", name='" + name + "'}";
         }
 
         public String fullName() {
