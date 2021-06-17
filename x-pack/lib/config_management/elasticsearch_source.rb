@@ -26,6 +26,8 @@ module LogStash
         pipeline.workers
         pipeline.batch.size
         pipeline.batch.delay
+        pipeline.ecs_compatibility
+        pipeline.ordered
         queue.type
         queue.max_bytes
         queue.checkpoint.writes
