@@ -55,7 +55,7 @@ module GeoipHelper
   end
 
   def second_dirname
-    "20200220"
+    "1582153200"
   end
 
   def create_default_city_gz
@@ -119,6 +119,14 @@ module GeoipHelper
       __FILE__))
     FileUtils.mkdir_p(dir_path)
     FileUtils.cp_r(cc_database_paths, dir_path)
+  end
+
+  def now_in_ymd
+    Time.now.strftime('%Y-%m-%d')
+  end
+
+  def second_dirname_in_ymd
+    Time.at(second_dirname.to_i).strftime('%Y-%m-%d')
   end
 end
 

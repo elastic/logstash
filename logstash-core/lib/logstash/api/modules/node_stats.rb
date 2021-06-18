@@ -40,6 +40,10 @@ module LogStash
             :os => os_payload,
             :queue => queue
           }
+
+          geoip = geoip_payload
+          payload[:geoip] = geoip unless geoip.empty?
+
           respond_with(payload, {:filter => params["filter"]})
         end
 
@@ -72,6 +76,10 @@ module LogStash
         def pipeline_payload(val = nil)
           opts = {:vertices => as_boolean(params.fetch("vertices", false))}
           @stats.pipeline(val, opts)
+        end
+
+        def geoip_payload
+          @stats.geoip
         end
       end
     end
