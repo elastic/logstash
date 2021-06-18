@@ -51,6 +51,8 @@ tasks.register("copyProductionLog4jConfiguration", Copy) {
                     'appender.rolling.policies.size.size = 1KB')
             .replace('appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}-%i.log.gz',
                     'appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}.log')
+            .replace('appender.routing.pipeline.policy.size = 100MB',
+                    'appender.routing.pipeline.policy.size = 1KB')
   }
 }
 

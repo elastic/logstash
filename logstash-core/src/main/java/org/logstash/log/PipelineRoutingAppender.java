@@ -2,6 +2,7 @@ package org.logstash.log;
 
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.AppenderControl;
@@ -107,8 +108,11 @@ public class PipelineRoutingAppender extends AbstractAppender {
     private AppenderControl getControl(LogEvent event) {
         String key = event.getContextData().getValue("pipeline.id");
         if (key == null) {
-            error("Unable to find the pipeline.id in event's context data");
-            key = "sink";
+            LOGGER.debug("Unable to find the pipeline.id in event's context data in routing appender, skip it");
+            // this prevent to create an appender when log events are not fish-tagged with pipeline.id,
+            // avoid to create log file like "pipeline_${ctx:pipeline.id}.log" which contains duplicated
+            // logs from the logstash-* files
+            return null;
         }
 
         AppenderControl appenderControl = createdAppenders.get(key);
