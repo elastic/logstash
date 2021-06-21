@@ -1,0 +1,82 @@
+[[ecs-ls]]
+=== ECS in Logstash
+
+// LS8 will ship with ECS v8, but until ECS v8 is ready we rely on ECS v1 as an approximation.
+:ls8-ecs-major-version: v1
+
+The {ecs-ref}/index.html[Elastic Common Schema (ECS)] is an open source specification, developed with support from the Elastic user community.
+ECS defines a common set of fields to be used for storing event data, such as logs and metrics, in {es}.
+With ECS, users can normalize event data to better analyze, visualize, and correlate the data represented in their events.
+
+[[ecs-compatibility]]
+==== ECS compatibility
+
+Many plugins implement an ECS-compatibility mode, which causes them to produce and manipulate events in a manner that is compatible with the Elastic Common Schema (ECS).
+
+Any plugin that supports this mode will also have an `ecs_compatibility` option, which allows you to configure which mode the individual plugin instance should operate in.
+If left unspecified for an individual plugin, the pipeline's `pipeline.ecs_compatibility` setting will be observed.
+This allows you to configure plugins to use their legacy non-ECS behavior: individually, per-pipeline, or globally.
+
+ECS Compatibility modes do not prevent you from explicitly configuring a plugin in a manner that conflicts with ECS.
+Instead, they ensure that _implicit_ configuration avoids conflicts.
+
+NOTE: Until {ls} 8.0 and the final 7.x are released, any value for `pipeline.ecs_compatibility` other than `disabled` -- _including the default value on pre-release builds_ -- are considered BETA and unsupported.
+      As we continue to release plugins with ECS Compatibility modes, having this flag set will cause upgrades to _automatically_ consume breaking changes from one snapshot to another, changing the shape of data the plugin produces.
+      If you require stability while testing against the unreleased {ls} 8, we encourage you to opt-out globally or per-pipeline as detailed below.
+
+ifeval::["{ls8-ecs-major-version}"!="v8"]
+NOTE: This pre-release branch of {ls} 8 defaults to ECS {ls8-ecs-major-version}, but by the time {ls} 8 ships, it will point to ECS v8.
+      We expect the scope of breaking changes in ECS 8 to be limited, but progress toward the definition of ECS v8 can be tracked https://github.com/elastic/ecs/issues/839[here].
+endif::[]
+
+[[ecs-optout]]
+===== Opting out of ECS
+
+In {ls} 8, these plugins are run in ECS mode by default, but you can opt out at the plugin, pipeline, or system level to maintain legacy behavior.
+This can be helpful if you have very complex pipelines that were defined pre-ECS, to allow you to either upgrade them or to avoid doing so independently of your {ls} 8.x upgrade.
+
+====== Specific plugin instance
+
+Use a plugin's `ecs_compatibility` option to override the default value on the plugin instance.
+
+For example, if you want a specific instance of the GeoIP Filter to behave without ECS compatibility, you can adjust its definition in your pipeline without affecting any other plugin instances.
+
+[source,text]
+-----
+filter {
+  geoip {
+    source => "[host][ip]"
+    ecs_compatibility => disabled
+  }
+}
+-----
+
+[[ecs-optout-pipeline]]
+====== All plugins in a given pipeline
+
+If you wish to provide a specific default value for `ecs_compatibility` to _all_ plugins in a pipeline, you can do so with the `pipeline.ecs_compatibility` setting in your pipeline definition in `config/pipelines.yml` or Central Management.
+This setting will be used unless overridden by a specific plugin instance.
+If unspecified for an individual pipeline, the global value will be used.
+
+[source,yaml,subs="attributes"]
+-----
+- pipeline.id: my-legacy-pipeline
+  path.config: "/etc/path/to/legacy-pipeline.config"
+  pipeline.ecs_compatibility: disabled
+- pipeline.id: my-ecs-pipeline
+  path.config: "/etc/path/to/ecs-pipeline.config"
+  pipeline.ecs_compatibility: {ls8-ecs-major-version}
+-----
+
+NOTE: Until the General Availability of {ls} 8.0.0, any value for `pipeline.ecs_compatibility` other than `disabled` -- including the default value `{ls8-ecs-major-version}` on this pre-release branch -- may have undesireable consequences when performing upgrades.
+      As we continue to release updated plugins with ECS-Compatibility modes, opting into them at a pipeline or process level will cause the affected plugins to silently and automatically consume breaking changes with each upgrade, which may change the shape of data your pipeline produces.
+
+[[ecs-optout-all]]
+====== All plugins in all pipelines
+
+Similarly, you can set the default value for the whole {ls} process by setting the `pipeline.ecs_compatibility` value in `config/logstash.yml`.
+
+[source,yaml]
+-----
+pipeline.ecs_compatibility: disabled
+-----

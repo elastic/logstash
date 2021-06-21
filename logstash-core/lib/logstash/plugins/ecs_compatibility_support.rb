@@ -20,11 +20,6 @@ module LogStash
             pipeline_settings = pipeline && pipeline.settings
             pipeline_settings ||= LogStash::SETTINGS
 
-            if !pipeline_settings.set?('pipeline.ecs_compatibility')
-              deprecation_logger.deprecated("Relying on default value of `pipeline.ecs_compatibility`, which may change in a future major release of Logstash. " +
-                                            "To avoid unexpected changes when upgrading Logstash, please explicitly declare your desired ECS Compatibility mode.")
-            end
-
             pipeline_settings.get_value('pipeline.ecs_compatibility').to_sym
           end
         end

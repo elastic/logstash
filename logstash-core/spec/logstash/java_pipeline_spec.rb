@@ -731,6 +731,7 @@ describe LogStash::JavaPipeline do
       config <<-CONFIG
         filter {
           clone {
+            ecs_compatibility => disabled
             clones => ["clone1", "clone2"]
           }
           mutate {
