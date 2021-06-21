@@ -84,3 +84,4 @@ goto :eof
 
 :end
 endlocal
+exit /B %ERRORLEVEL%
