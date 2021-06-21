@@ -231,8 +231,10 @@ module LogStash module Filters module Geoip class DatabaseManager
       type = row[DatabaseMetadata::Column::DATABASE_TYPE]
       @metric.namespace([:database, type.to_sym]).tap do |n|
         n.gauge(:status, @states[type].is_eula ? :healthy : :init)
-        n.gauge(:download_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME])) if @states[type].is_eula
-        n.gauge(:fail_check_in_days, time_diff_in_days(row[DatabaseMetadata::Column::CHECK_AT]))
+        if @states[type].is_eula
+          n.gauge(:download_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME]))
+          n.gauge(:fail_check_in_days, time_diff_in_days(row[DatabaseMetadata::Column::CHECK_AT]))
+        end
       end
     end
 

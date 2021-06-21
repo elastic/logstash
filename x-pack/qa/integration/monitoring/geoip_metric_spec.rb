@@ -6,13 +6,34 @@ require_relative "../spec_helper"
 require_relative "../../../../qa/integration/services/monitoring_api"
 
 describe "GeoIP database service" do
-  before :all do
+  let(:input) { "input { generator { lines => ['{\\\"host\\\": \\\"0.42.56.104\\\"}'] } } " }
+  let(:output) { "output { null {} }" }
+  let(:filter) { " " }
+  let(:config) { input + filter + output }
 
-    input = "input { generator { lines => ['{\\\"host\\\": \\\"0.42.56.104\\\"}'] } } "
-    filter = "filter { json { source => \\\"message\\\" } geoip { source => \\\"host\\\" } } "
-    output = "output { null {} }"
-    config = input + filter + output
+  context "monitoring API with geoip plugin" do
+    let(:filter) { "filter { json { source => \\\"message\\\" } geoip { source => \\\"host\\\" } } " }
 
+    it "should have geoip" do
+      start_logstash
+      api = MonitoringAPI.new
+      stats = api.node_stats
+
+      expect(stats["geoip"]).not_to be_nil
+    end
+  end
+
+  context "monitoring API without geoip plugin" do
+    it "should not have geoip" do
+      start_logstash
+      api = MonitoringAPI.new
+      stats = api.node_stats
+
+      expect(stats["geoip"]).to be_nil
+    end
+  end
+
+  def start_logstash
     @logstash_service = logstash("bin/logstash -e \"#{config}\" -w 1", {
       :belzebuth => {
         :wait_condition => /Pipelines running/, # Check for all pipeline started
@@ -21,17 +42,7 @@ describe "GeoIP database service" do
     })
   end
 
-  context "monitoring API" do
-    it "should has geoip" do
-      api = MonitoringAPI.new
-      stats = api.node_stats
-      expect(stats["geoip"]["database"]["City"]["fail_check_in_days"]).to eq(0)
-      expect(stats["geoip"]["download"]["successes"]).to eq(1)
-      expect(stats["geoip"]["download"]["status"]).to eq("succeeded")
-    end
-  end
-
-  after :all do
+  after(:each) do
     @logstash_service.stop unless @logstash_service.nil?
   end
 end
