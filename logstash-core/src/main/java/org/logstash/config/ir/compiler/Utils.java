@@ -20,6 +20,7 @@
 
 package org.logstash.config.ir.compiler;
 
+import org.jruby.RubyArray;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.Collection;
@@ -44,6 +45,19 @@ public class Utils {
     public static void filterEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
                                     List fulfilled, List unfulfilled) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {
+            if (filter.fulfilled(e)) {
+                fulfilled.add(e);
+            } else {
+                unfulfilled.add(e);
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void filterEvents(RubyArray<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
+                                    List fulfilled, List unfulfilled) {
+        for (int i=0; i<input.size(); i++) {
+            JrubyEventExtLibrary.RubyEvent e = input.eltInternal(i);
             if (filter.fulfilled(e)) {
                 fulfilled.add(e);
             } else {
