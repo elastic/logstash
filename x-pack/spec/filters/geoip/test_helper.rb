@@ -55,7 +55,7 @@ module GeoipHelper
   end
 
   def second_dirname
-    "1582153200"
+    "1582156922"
   end
 
   def create_default_city_gz
