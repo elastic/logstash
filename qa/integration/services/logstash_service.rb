@@ -18,7 +18,6 @@
 require_relative "monitoring_api"
 
 require "childprocess"
-require_relative "../patch/childprocess-modern-java"
 require "bundler"
 require "socket"
 require "tempfile"
