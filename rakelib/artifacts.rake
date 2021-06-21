@@ -507,10 +507,6 @@ namespace "artifact" do
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
-    require "childprocess/jruby/pump"
-    # TODO(ph): Cabin is closing the fd when it reach EOF, childprocess will attempt to write to it and hit an IOError.
-    # This will make a the thread dies, in 1.7.25 we had a Thread Death
-    require_relative "childprocess_patch"
 
     basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
@@ -609,7 +605,7 @@ namespace "artifact" do
         out.license = license
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
-        out.attributes[:deb_suggests] = "java8-runtime-headless" unless bundle_jdk
+        out.attributes[:deb_suggests] = ["java11-runtime-headless"] unless bundle_jdk
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"

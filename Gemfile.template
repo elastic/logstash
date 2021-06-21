@@ -12,8 +12,8 @@ gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
 gem "ruby-progressbar", "~> 1"
 gem "logstash-output-elasticsearch", ">= 10.4.2"
-gem "childprocess", "~> 0.9", :group => :build
-gem "fpm", "~> 1.3.3", :group => :build
+gem "childprocess", "~> 4", :group => :build
+gem "fpm", "~> 1.13", :group => :build
 gem "gems", "~> 1", :group => :build
 gem "octokit", "~> 4", :group => :build
 gem "rubyzip", "~> 1", :group => :build
