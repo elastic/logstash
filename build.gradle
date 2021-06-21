@@ -246,7 +246,7 @@ tasks.register("copyPluginTestAlias", Copy) {
     }
 }
 
-processResources.dependsOn(copyPluginAlias)
+tasks.findByPath(':logstash-core:processResources').dependsOn(copyPluginAlias)
 tasks.findByPath(':logstash-core:processTestResources').dependsOn(copyPluginTestAlias)
 
 
@@ -261,6 +261,13 @@ clean {
   delete "${projectDir}/qa/integration/.bundle"
   delete "${projectDir}/build/licenseReportFolders.txt"
   delete "${projectDir}/build/rubyDependencies.csv"
+
+  delete "${projectDir}/lib/pluginmanager/plugin_aliases.yml"
+  delete "${projectDir}/spec/unit/plugin_manager/plugin_aliases.yml"
+  delete "${projectDir}/logstash-core/build/resources/test/org/logstash/plugins/plugin_aliases.yml"
+  delete "${projectDir}/logstash-core/build/resources/main/org/logstash/plugins/plugin_aliases.yml"
+  delete "${projectDir}/logstash-core/src/test/resources/org/logstash/plugins/plugin_aliases.yml"
+  delete "${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml"
 }
 
 def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
