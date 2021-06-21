@@ -50,7 +50,7 @@ describe LogStash::Filters::Geoip do
         c = db_manager.instance_variable_get(:@metric).collector
         [ASN, CITY].each do |type|
           expect(c.get([:database, type.to_sym], :status, :gauge).value).to eql(:init)
-          expect(c.get([:database, type.to_sym], :fail_check_in_days, :gauge).value).to eql(0)
+          expect(c.get([:database, type.to_sym], :fail_check_in_days, :gauge).value).to be_nil
         end
         expect_initial_download_metric(c)
       end
@@ -290,7 +290,7 @@ describe LogStash::Filters::Geoip do
       def expect_healthy_database_metric(c)
         expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:init)
         expect(c.get([:database, CITY.to_sym], :download_at, :gauge).value).to be_nil
-        expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to eql(0)
+        expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to be_nil
       end
     end
 
