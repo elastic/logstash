@@ -1,42 +1,29 @@
+require 'logstash/util/thread_safe_attributes'
+
 module LogStash
   module Plugins
     module EventFactorySupport
 
-      def event_factory
-        @event_factory ||= default_event_factory
-      end
-      attr_writer :event_factory
+      include LogStash::Util::ThreadSafeAttributes
 
-      def default_event_factory
-        DefaultEventFactory::INSTANCE
+
+      lazy_init_attr :event_factory do
+        create_event_factory
       end
 
-      def event_factory_builder
-        EventFactoryBuilder.new default_event_factory
+      lazy_init_attr :targeted_event_factory do
+        raise ArgumentError.new('config.target not present') unless respond_to?(:target)
+        target.nil? ? event_factory : TargetedEventFactory(event_factory, target)
       end
 
-      class EventFactoryBuilder
+      private
 
-        def initialize(factory)
-          @factory = factory
-        end
-
-        # @return an event factory
-        def event_factory
-          @factory
-        end
-
-        # @return [Builder] self
-        def with_target(target)
-          unless target.nil?
-            @factory = TargetedEventFactory.new(@factory, target)
-          end
-          self
-        end
-
+      # @private Internal API
+      def create_event_factory
+        BasicEventFactory::INSTANCE
       end
 
-      class DefaultEventFactory
+      class BasicEventFactory
         INSTANCE = new
 
         # @param payload [Hash]
@@ -46,7 +33,7 @@ module LogStash
         end
 
       end
-      private_constant :DefaultEventFactory
+      private_constant :BasicEventFactory
 
       class TargetedEventFactory
 
