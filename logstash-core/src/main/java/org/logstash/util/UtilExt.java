@@ -23,6 +23,7 @@ package org.logstash.util;
 import org.jruby.RubyThread;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -41,6 +42,13 @@ public class UtilExt {
         // even if thread is dead the RubyThread instance might stick around while the Java thread
         // instance already could have been garbage collected - let's return nil for dead meat :
         return javaThread == null ? context.nil : context.runtime.newFixnum(javaThread.getId());
+    }
+
+    @JRubyMethod(module = true) // JRuby.reference(target).synchronized { ... }
+    public static IRubyObject synchronize(final ThreadContext context, IRubyObject self, IRubyObject target, Block block) {
+        synchronized (target) {
+            return block.yieldSpecific(context);
+        }
     }
 
 }
