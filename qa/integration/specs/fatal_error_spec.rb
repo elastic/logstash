@@ -28,10 +28,19 @@ describe "uncaught exception" do
     @logstash = @fixture.get_service("logstash")
   end
 
-  after(:each) { @logstash.teardown }
+  after(:each) do
+    @logstash.teardown
+    FileUtils.rm_rf(temp_dir)
+  end
 
   let(:timeout) { 90 } # seconds
   let(:temp_dir) { Stud::Temporary.directory("logstash-error-test") }
+  let(:logs_dir) { File.join(temp_dir, "logs") }
+
+  # ensure PQ data is isolated.
+  # We crash before ACK-ing events, so we need to make sure we don't
+  # leave those un-ACK'd events in the queue to poison a subsequent test.
+  let(:data_dir) { File.join(temp_dir, "data") }
 
   it "halts LS on fatal error" do
     config = "input { generator { count => 1 message => 'a fatal error' } } "
@@ -42,7 +51,7 @@ describe "uncaught exception" do
 
     expect(@logstash.exit_code).to be 120
 
-    log_file = "#{temp_dir}/logstash-plain.log"
+    log_file = "#{logs_dir}/logstash-plain.log"
     expect( File.exists?(log_file) ).to be true
     expect( File.read(log_file) ).to match /\[FATAL\]\[org.logstash.Logstash.*?java.lang.AssertionError: a fatal error/m
   end
@@ -55,13 +64,16 @@ describe "uncaught exception" do
 
     expect(@logstash.exit_code).to be 0 # normal exit
 
-    log_file = "#{temp_dir}/logstash-plain.log"
+    log_file = "#{logs_dir}/logstash-plain.log"
     expect( File.exists?(log_file) ).to be true
     expect( File.read(log_file) ).to match /\[ERROR\]\[org.logstash.Logstash.*?uncaught exception \(in thread .*?java.io.EOFException: unexpected/m
   end
 
   def spawn_logstash_and_wait_for_exit!(config, timeout)
-    @logstash.spawn_logstash('-w', '1', '--path.logs', temp_dir, '-e', config)
+    @logstash.spawn_logstash('--pipeline.workers=1',
+                             '--path.logs', logs_dir,
+                             '--path.data', data_dir,
+                             '--config.string', config)
 
     time = Time.now
     while (Time.now - time) < timeout
