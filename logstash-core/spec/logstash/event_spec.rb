@@ -314,12 +314,8 @@ describe LogStash::Event do
       end
     end
 
-    it "should raise TypeError on nil string" do
-      expect{LogStash::Event.from_json(nil)}.to raise_error TypeError
-    end
-
     it "should consistently handle nil" do
-      expect{LogStash::Event.from_json(nil)}.to raise_error # TypeError
+      expect{LogStash::Event.from_json(nil)}.to raise_error(TypeError)
       expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error # java.lang.ClassCastException
     end
 
