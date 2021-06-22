@@ -17,33 +17,26 @@
 
 module LogStash
   module Util
+    # @api internal
     module ThreadSafeAttributes
 
-      def self.included(base)
-        base.extend ClassMethods
-      end
-
-      module ClassMethods
-
-        def lazy_init_attr(attribute, &block)
-          raise ArgumentError.new("invalid attribute name: #{attribute}") unless attribute.match? /^[_A-Za-z]\w*$/
-          raise ArgumentError.new('no block given') unless block_given?
-          var_name = "@#{attribute}".to_sym
-          send(:define_method, attribute.to_sym) do
-            if instance_variable_defined?(var_name)
-              instance_variable_get(var_name)
-            else
-              LogStash::Util.synchronize(self) do
-                if instance_variable_defined?(var_name)
-                  instance_variable_get(var_name)
-                else
-                  instance_variable_set(var_name, instance_eval(&block))
-                end
+      # Thread-safe lazy initialized attribute with a given (variable) name.
+      def lazy_init_attr(attribute, variable: "@#{attribute}".to_sym, &block)
+        raise ArgumentError.new("invalid attribute name: #{attribute}") unless attribute.match? /^[_A-Za-z]\w*$/
+        raise ArgumentError.new('no block given') unless block_given?
+        send(:define_method, attribute.to_sym) do
+          if instance_variable_defined?(variable)
+            instance_variable_get(variable)
+          else
+            LogStash::Util.synchronize(self) do
+              if instance_variable_defined?(variable)
+                instance_variable_get(variable)
+              else
+                instance_variable_set(variable, instance_eval(&block))
               end
             end
           end
         end
-
       end
 
     end

@@ -4,21 +4,29 @@ module LogStash
   module Plugins
     module EventFactorySupport
 
-      include LogStash::Util::ThreadSafeAttributes
+      extend LogStash::Util::ThreadSafeAttributes
 
+      # The event_factory method is effectively final and should not be re-defined by plugins.
+      #
+      # @return an event factory object with a `new_event(Hash)` API
+      # @since LS 7.14
+      lazy_init_attr(:event_factory, variable: :@_event_factory) { create_event_factory }
 
-      lazy_init_attr :event_factory do
-        create_event_factory
-      end
-
-      lazy_init_attr :targeted_event_factory do
-        raise ArgumentError.new('config.target not present') unless respond_to?(:target)
+      # The `targeted_event_factory` method is effectively final and should not be re-defined.
+      # If the plugin defines a `target => ...` option than this method will return a factory
+      # that respects the set target, otherwise (no target) returns {#event_factory}.
+      #
+      # @return an event factory object with a `new_event(Hash)` API
+      # @since LS 7.14
+      lazy_init_attr :targeted_event_factory, variable: :@_targeted_event_factory do
+        raise ArgumentError.new('config(:target) not present') unless respond_to?(:target)
         target.nil? ? event_factory : TargetedEventFactory(event_factory, target)
       end
 
       private
 
-      # @private Internal API
+      # @api private
+      # @since LS 7.14
       def create_event_factory
         BasicEventFactory::INSTANCE
       end
@@ -28,7 +36,7 @@ module LogStash
 
         # @param payload [Hash]
         # @return [LogStash::Event]
-        def new_event(payload)
+        def new_event(payload = {})
           LogStash::Event.new(payload)
         end
 
@@ -44,7 +52,7 @@ module LogStash
 
         # @param payload [Hash]
         # @return [LogStash::Event]
-        def new_event(payload)
+        def new_event(payload = {})
           @delegate.new_event(@target => payload)
         end
 
