@@ -25,7 +25,8 @@ NOTE: Until {ls} 8.0 and the final 7.x are released, any value for `pipeline.ecs
 
 ifeval::["{ls8-ecs-major-version}"!="v8"]
 NOTE: ECS `v8` will be the default in the GA release of {ls} 8.0.0, and will be available at or before the final minor release of {ls} 7.
-      We expect the scope of breaking changes in ECS 8 to be limited, but progress toward the definition of ECS v8 can be tracked https://github.com/elastic/ecs/issues/839[here].
+      We expect the scope of breaking changes in ECS 8 to be limited.
+      We are https://github.com/elastic/ecs/issues/839[tracking progress toward ECS v8] in a GitHub issue.
 endif::[]
 
 [[ecs-configuration]]
