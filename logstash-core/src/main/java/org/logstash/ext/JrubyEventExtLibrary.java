@@ -33,6 +33,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -222,13 +223,9 @@ public final class JrubyEventExtLibrary {
             return Rubyfier.deep(context.runtime, data);
         }
 
-        @Override // this will make to_java ruby return a Java event (proxy)
-        @SuppressWarnings("unchecked")
-        public <T> T toJava(final Class<T> target) {
-            if (target == Object.class || co.elastic.logstash.api.Event.class.isAssignableFrom(target)) {
-                return (T) this.event;
-            }
-            return super.toJava(target);
+        @JRubyMethod(name = "to_java")
+        public IRubyObject ruby_to_java(ThreadContext context) {
+            return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event);
         }
 
         @JRubyMethod(name = "to_json", rest = true)
@@ -250,8 +247,7 @@ public final class JrubyEventExtLibrary {
             return fromJson(context, value, (data) -> {
                 // LogStash::Event works fine with a Map arg (instead of a native Hash)
                 IRubyObject event = block.yield(context, RubyUtil.toRubyObject(data));
-                // event if likely a RubyEvent wrapper so we unwrap just to re-wrap later
-                return event.toJava(Event.class);
+                return ((RubyEvent) event).getEvent(); // we unwrap just to re-wrap later
             });
         }
 
