@@ -102,7 +102,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       pipeline_id = ThreadContext.get("pipeline.id")
       ThreadContext.put("pipeline.id", nil)
 
-      @metric.namespace([:download]).gauge(:status, :checking)
+      update_download_status(:checking)
 
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -131,7 +131,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     ensure
       check_age
       clean_up_database
-      set_download_metric(success_cnt)
+      update_download_metric(success_cnt)
 
       ThreadContext.put("pipeline.id", pipeline_id)
     end
@@ -244,7 +244,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  def set_download_metric(success_cnt)
+  def update_download_metric(success_cnt)
     @metric.namespace([:download]).tap do |n|
       n.gauge(:last_check_at, Time.now.iso8601)
 
@@ -256,6 +256,10 @@ module LogStash module Filters module Geoip class DatabaseManager
         n.gauge(:status, :failed)
       end
     end
+  end
+
+  def update_download_status(status)
+    @metric.namespace([:download]).gauge(:status, status)
   end
 
   public
