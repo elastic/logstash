@@ -91,7 +91,7 @@ module LogStash
     # @option options [Array] :without  Exclude gems that are part of the specified named group (default: [:development])
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def invoke!(options = {})
-      options = {:max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
+      options = {:silence_root_warning => false, :max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
                  :jobs => 12, :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
@@ -128,6 +128,7 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
+      ENV["BUNDLE_SILENCE_ROOT_WARNING"] = options[:silence_root_warning].to_s
 
       if !debug?
         # Will deal with transient network errors
@@ -174,6 +175,16 @@ module LogStash
     def execute_bundler(options)
       ::Bundler.reset!
       ::Bundler::CLI.start(bundler_arguments(options))
+    end
+
+    def specific_platform
+      ::Gem.platforms.find {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
+    end
+
+    def normalize_platform
+      output = LogStash::Bundler.invoke!({:add_platform => 'java', :silence_root_warning => true})
+      remove_platform_options = {:remove_platform => specific_platform.to_s, :silence_root_warning => true} unless specific_platform.nil?
+      output << LogStash::Bundler.invoke!(remove_platform_options) unless remove_platform_options.nil?
     end
 
     def debug?

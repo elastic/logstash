@@ -54,7 +54,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     signal_error("This plugin has not been previously installed") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
 
     exit(1) unless ::Bundler::LogstashUninstall.uninstall!(plugin)
-    normalize_platform
+    LogStash::Bundler.normalize_platform
     remove_unused_locally_installed_gems!
   rescue => exception
     report_exception("Operation aborted, cannot remove plugin", exception)

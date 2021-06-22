@@ -93,6 +93,9 @@ module Bundler
 
           builder.eval_gemfile("bundler file", gemfile.generate())
           definition = builder.to_definition(lockfile_path, {})
+          # Remove the specific platform, and leave the generic platform
+          specific_platform = LogStash::Bundler.specific_platform
+          definition.remove_platform(specific_platform) unless specific_platform.nil?
           definition.lock(lockfile_path)
           gemfile.save
         rescue => e

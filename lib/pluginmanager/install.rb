@@ -202,10 +202,11 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options[:without] = [] if development?
     bundler_options[:rubygems_source] = gemfile.gemset.sources
     bundler_options[:local] = true if local?
+    bundler_options[:silence_root_warning] = true
     output = nil
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(bundler_options)
-      output << normalize_platform
+      output << LogStash::Bundler.normalize_platform
     end
     puts("Installation successful")
   rescue => exception
