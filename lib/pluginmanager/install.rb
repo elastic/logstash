@@ -206,7 +206,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     output = nil
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(bundler_options)
-      output << LogStash::Bundler.normalize_platform
+      output << LogStash::Bundler.genericize_platform
     end
     puts("Installation successful")
   rescue => exception

@@ -83,7 +83,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     options[:silence_root_warning] = true
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(options)
-      output << LogStash::Bundler.normalize_platform
+      output << LogStash::Bundler.genericize_platform
     end
 
     # We currently dont removed unused gems from the logstash installation

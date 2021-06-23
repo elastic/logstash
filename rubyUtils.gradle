@@ -155,7 +155,7 @@ void setupJruby(File projectDir, File buildDir) {
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
         jruby.runScriptlet("LogStash::Bundler.invoke!")
-        jruby.runScriptlet("LogStash::Bundler.normalize_platform")
+        jruby.runScriptlet("LogStash::Bundler.genericize_platform")
     }
 }
 
