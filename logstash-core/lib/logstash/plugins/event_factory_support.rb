@@ -20,7 +20,7 @@ module LogStash
       # @since LS 7.14
       lazy_init_attr :targeted_event_factory, variable: :@_targeted_event_factory do
         raise ArgumentError.new('config(:target) not present') unless respond_to?(:target)
-        target.nil? ? event_factory : TargetedEventFactory(event_factory, target)
+        target.nil? ? event_factory : TargetedEventFactory.new(event_factory, target)
       end
 
       private
@@ -53,7 +53,9 @@ module LogStash
         # @param payload [Hash]
         # @return [LogStash::Event]
         def new_event(payload = {})
-          @delegate.new_event(@target => payload)
+          event = @delegate.new_event
+          event.set(@target, payload)
+          event
         end
 
       end
