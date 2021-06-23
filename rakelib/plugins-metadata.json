@@ -158,6 +158,7 @@
   },
   "logstash-filter-json": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-filter-kv": {
