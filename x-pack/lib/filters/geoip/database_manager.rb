@@ -15,6 +15,7 @@ require "rufus/scheduler"
 require "date"
 require "singleton"
 require "concurrent"
+require "time"
 require "thread"
 java_import org.apache.logging.log4j.ThreadContext
 
@@ -37,6 +38,11 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   private
   def initialize
+    @triggered = false
+    @trigger_lock = Mutex.new
+  end
+
+  def setup
     prepare_cc_db
     cc_city_database_path = get_db_path(CITY, CC)
     cc_asn_database_path = get_db_path(ASN, CC)
@@ -45,8 +51,6 @@ module LogStash module Filters module Geoip class DatabaseManager
     city_database_path = @metadata.database_path(CITY)
     asn_database_path = @metadata.database_path(ASN)
 
-    @triggered = false
-    @trigger_lock = Mutex.new
     @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
                                                Concurrent::Array.new,
                                                city_database_path,
@@ -57,6 +61,8 @@ module LogStash module Filters module Geoip class DatabaseManager
                                               cc_asn_database_path) }
 
     @download_manager = DownloadManager.new(@metadata)
+
+    initialize_metrics
   end
 
   protected
@@ -90,9 +96,13 @@ module LogStash module Filters module Geoip class DatabaseManager
   # update metadata timestamp for those dbs that has no update or a valid update
   # do daily check and clean up
   def execute_download_job
+    success_cnt = 0
+
     begin
       pipeline_id = ThreadContext.get("pipeline.id")
       ThreadContext.put("pipeline.id", nil)
+
+      update_download_status(:updating)
 
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -106,16 +116,23 @@ module LogStash module Filters module Geoip class DatabaseManager
             logger.info("geoip plugin will use database #{new_database_path}",
                         :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
           end
+
+          success_cnt += 1
         end
       end
 
       updated_types = updated_db.map { |database_type, valid_download, dirname, new_database_path| database_type }
-      (DB_TYPES - updated_types).each { |unchange_type| @metadata.update_timestamp(unchange_type) }
+      (DB_TYPES - updated_types).each do |unchange_type|
+        @metadata.update_timestamp(unchange_type)
+        success_cnt += 1
+      end
     rescue => e
       logger.error(e.message, error_details(e, logger))
     ensure
       check_age
       clean_up_database
+      update_download_metric(success_cnt)
+
       ThreadContext.put("pipeline.id", pipeline_id)
     end
   end
@@ -132,7 +149,9 @@ module LogStash module Filters module Geoip class DatabaseManager
     database_types.map do |database_type|
       next unless @states[database_type].is_eula
 
-      days_without_update = (::Date.today - ::Time.at(@metadata.check_at(database_type)).to_date).to_i
+      metadata = @metadata.get_metadata(database_type).last
+      check_at = metadata[DatabaseMetadata::Column::CHECK_AT].to_i
+      days_without_update = time_diff_in_days(check_at)
 
       case
       when days_without_update >= 30
@@ -152,14 +171,32 @@ module LogStash module Filters module Geoip class DatabaseManager
                         :database_type => db_type, :pipeline_ids => ids)
           end
         end
+
+        database_status = :expired
       when days_without_update >= 25
         logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
+        database_status = :to_be_expired
       else
         logger.trace("passed age check", :days_without_update => days_without_update)
+        database_status = :up_to_date
+      end
+
+      @metric.namespace([:database, database_type.to_sym]).tap do |n|
+        n.gauge(:status, database_status)
+        n.gauge(:last_updated_at, unix_time_to_iso8601(metadata[DatabaseMetadata::Column::DIRNAME]))
+        n.gauge(:fail_check_in_days, days_without_update)
       end
     end
+  end
+
+  def time_diff_in_days(timestamp)
+    (::Date.today - ::Time.at(timestamp.to_i).to_date).to_i
+  end
+
+  def unix_time_to_iso8601(timestamp)
+    Time.at(timestamp.to_i).iso8601
   end
 
   # Clean up directories which are not mentioned in metadata and not CC database
@@ -179,12 +216,50 @@ module LogStash module Filters module Geoip class DatabaseManager
     return if @triggered
     @trigger_lock.synchronize do
       return if @triggered
+      setup
       execute_download_job
       # check database update periodically. trigger `call` method
       @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
       @scheduler.every('24h', self)
       @triggered = true
     end
+  end
+
+  def initialize_metrics
+    metadatas = @metadata.get_all
+    metadatas.each do |row|
+      type = row[DatabaseMetadata::Column::DATABASE_TYPE]
+      @metric.namespace([:database, type.to_sym]).tap do |n|
+        n.gauge(:status, @states[type].is_eula ? :up_to_date : :init)
+        if @states[type].is_eula
+          n.gauge(:last_updated_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME]))
+          n.gauge(:fail_check_in_days, time_diff_in_days(row[DatabaseMetadata::Column::CHECK_AT]))
+        end
+      end
+    end
+
+    @metric.namespace([:download_stats]).tap do |n|
+      check_at = metadatas.map { |row| row[DatabaseMetadata::Column::CHECK_AT].to_i }.max
+      n.gauge(:last_checked_at, unix_time_to_iso8601(check_at))
+    end
+  end
+
+  def update_download_metric(success_cnt)
+    @metric.namespace([:download_stats]).tap do |n|
+      n.gauge(:last_checked_at, Time.now.iso8601)
+
+      if success_cnt == DB_TYPES.size
+        n.increment(:successes, 1)
+        n.gauge(:status, :succeeded)
+      else
+        n.increment(:failures, 1)
+        n.gauge(:status, :failed)
+      end
+    end
+  end
+
+  def update_download_status(status)
+    @metric.namespace([:download_stats]).gauge(:status, status)
   end
 
   public
@@ -221,6 +296,10 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def database_path(database_type)
     @states[database_type].database_path
+  end
+
+  def metric=(metric)
+    @metric = metric
   end
 
   class DatabaseState
