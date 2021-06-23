@@ -80,7 +80,12 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
     options[:local] = true if local?
-    output = LogStash::Bundler.invoke!(options)
+    options[:silence_root_warning] = true
+    Bundler.settings.temporary({:frozen => false}) do
+      output = LogStash::Bundler.invoke!(options)
+      output << LogStash::Bundler.normalize_platform
+    end
+
     # We currently dont removed unused gems from the logstash installation
     # see: https://github.com/elastic/logstash/issues/6339
     # output = LogStash::Bundler.invoke!(:clean => true)
