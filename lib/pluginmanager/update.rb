@@ -81,6 +81,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
     options[:local] = true if local?
     options[:silence_root_warning] = true
+    output=nil
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(options)
       output << LogStash::Bundler.genericize_platform

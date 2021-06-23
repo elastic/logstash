@@ -31,13 +31,13 @@ describe "CLI operation" do
   config = ServiceTester.configuration
   config.servers.each do |address|
     logstash = ServiceTester::Artifact.new(address, config.lookup[address])
-    it_behaves_like "logstash version", logstash
-    it_behaves_like "logstash install", logstash
-    it_behaves_like "logstash list", logstash
-    it_behaves_like "logstash uninstall", logstash
-    it_behaves_like "logstash remove", logstash
+    # it_behaves_like "logstash version", logstash
+    # it_behaves_like "logstash install", logstash
+    # it_behaves_like "logstash list", logstash
+    # it_behaves_like "logstash uninstall", logstash
+    # it_behaves_like "logstash remove", logstash
     it_behaves_like "logstash update", logstash
-    it_behaves_like "integration plugins compatible", logstash
+    # it_behaves_like "integration plugins compatible", logstash
 #    it_behaves_like "logstash generate", logstash
   end
 end

@@ -30,7 +30,7 @@ describe LogStash::PluginManager::Update do
 
   it "pass all gem sources to the bundle update command" do
     sources = cmd.gemfile.gemset.sources
-    expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(:update => [], :rubygems_source => sources)
+    expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(:update => [], :silence_root_warning=>true, :rubygems_source => sources)
     cmd.execute
   end
 
@@ -42,7 +42,7 @@ describe LogStash::PluginManager::Update do
       expect(cmd.gemfile).to receive(:find).with(plugin).and_return(plugin)
       expect(cmd.gemfile).to receive(:save).and_return(nil)
       expect(cmd).to receive(:plugins_to_update).and_return([plugin])
-      expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(:update => [plugin], :rubygems_source => sources).and_return(nil)
+      expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(:update => [plugin], :silence_root_warning=>true, :rubygems_source => sources).and_return(nil)
     end
 
     it "skips version verification when ask for it" do
