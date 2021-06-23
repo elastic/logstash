@@ -133,7 +133,7 @@ module LogStash
         end
 
         def geoip
-          service.get_shallow(:geoip)
+          service.get_shallow(:geoip_download_manager)
         rescue
           {}
         end

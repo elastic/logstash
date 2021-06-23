@@ -42,7 +42,7 @@ module LogStash
           }
 
           geoip = geoip_payload
-          payload[:geoip] = geoip unless geoip.empty? || geoip[:download][:status].value.nil?
+          payload[:geoip_download_manager] = geoip unless geoip.empty? || geoip[:download_stats][:status].value.nil?
 
           respond_with(payload, {:filter => params["filter"]})
         end

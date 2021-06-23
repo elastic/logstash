@@ -19,7 +19,7 @@ describe "GeoIP database service" do
       api = MonitoringAPI.new
       stats = api.node_stats
 
-      expect(stats["geoip"]).not_to be_nil
+      expect(stats["geoip_download_manager"]).not_to be_nil
     end
   end
 
@@ -29,7 +29,7 @@ describe "GeoIP database service" do
       api = MonitoringAPI.new
       stats = api.node_stats
 
-      expect(stats["geoip"]).to be_nil
+      expect(stats["geoip_download_manager"]).to be_nil
     end
   end
 

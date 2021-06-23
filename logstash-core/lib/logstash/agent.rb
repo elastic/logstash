@@ -562,19 +562,19 @@ class LogStash::Agent
     begin
       require_relative ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip", "database_manager")
       database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
-      database_manager.metric = metric.namespace([:geoip]).tap do |n|
+      database_manager.metric = metric.namespace([:geoip_download_manager]).tap do |n|
         db = n.namespace([:database])
         [:ASN, :City].each do  |database_type|
           db_type = db.namespace([database_type])
           db_type.gauge(:status, nil)
-          db_type.gauge(:download_at, nil)
+          db_type.gauge(:last_updated_at, nil)
           db_type.gauge(:fail_check_in_days, 0)
         end
 
-        dl = n.namespace([:download])
+        dl = n.namespace([:download_stats])
         dl.increment(:successes, 0)
         dl.increment(:failures, 0)
-        dl.gauge(:last_check_at, nil)
+        dl.gauge(:last_checked_at, nil)
         dl.gauge(:status, nil)
       end
     rescue LoadError => e

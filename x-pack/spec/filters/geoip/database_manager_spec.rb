@@ -96,16 +96,16 @@ describe LogStash::Filters::Geoip do
       end
 
       def expect_second_database_metric(c)
-        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:healthy)
-        expect(c.get([:database, CITY.to_sym], :download_at, :gauge).value).to match /2020-02-20/
+        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:up_to_date)
+        expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to match /2020-02-20/
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to eql(0)
       end
 
       def expect_initial_download_metric(c)
-        expect(c.get([:download], :successes, :counter).value).to eql(0)
-        expect(c.get([:download], :failures, :counter).value).to eql(0)
-        expect(c.get([:download], :last_check_at, :gauge).value).to match /#{now_in_ymd}/
-        expect(c.get([:download], :status, :gauge).value).to be_nil
+        expect(c.get([:download_stats], :successes, :counter).value).to eql(0)
+        expect(c.get([:download_stats], :failures, :counter).value).to eql(0)
+        expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
+        expect(c.get([:download_stats], :status, :gauge).value).to be_nil
       end
     end
 
@@ -205,15 +205,15 @@ describe LogStash::Filters::Geoip do
       end
       
       def expect_download_metric_success(c)
-        expect(c.get([:download], :last_check_at, :gauge).value).to match /#{now_in_ymd}/
-        expect(c.get([:download], :successes, :counter).value).to eql(1)
-        expect(c.get([:download], :status, :gauge).value).to eql(:succeeded)
+        expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
+        expect(c.get([:download_stats], :successes, :counter).value).to eql(1)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(:succeeded)
       end
 
       def expect_download_metric_fail(c)
-        expect(c.get([:download], :last_check_at, :gauge).value).to match /#{now_in_ymd}/
-        expect(c.get([:download], :failures, :counter).value).to eql(1)
-        expect(c.get([:download], :status, :gauge).value).to eql(:failed)
+        expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
+        expect(c.get([:download_stats], :failures, :counter).value).to eql(1)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(:failed)
       end
     end
 
@@ -283,13 +283,13 @@ describe LogStash::Filters::Geoip do
 
       def expect_database_metric(c, status, download_at, days)
         expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(status)
-        expect(c.get([:database, CITY.to_sym], :download_at, :gauge).value).to match /#{download_at}/
+        expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to match /#{download_at}/
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to eql(days)
       end
 
       def expect_healthy_database_metric(c)
         expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:init)
-        expect(c.get([:database, CITY.to_sym], :download_at, :gauge).value).to be_nil
+        expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to be_nil
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to be_nil
       end
     end

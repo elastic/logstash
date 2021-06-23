@@ -102,7 +102,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       pipeline_id = ThreadContext.get("pipeline.id")
       ThreadContext.put("pipeline.id", nil)
 
-      update_download_status(:checking)
+      update_download_status(:updating)
 
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -180,12 +180,12 @@ module LogStash module Filters module Geoip class DatabaseManager
         database_status = :to_be_expired
       else
         logger.trace("passed age check", :days_without_update => days_without_update)
-        database_status = :healthy
+        database_status = :up_to_date
       end
 
       @metric.namespace([:database, database_type.to_sym]).tap do |n|
         n.gauge(:status, database_status)
-        n.gauge(:download_at, unix_time_to_iso8601(metadata[DatabaseMetadata::Column::DIRNAME]))
+        n.gauge(:last_updated_at, unix_time_to_iso8601(metadata[DatabaseMetadata::Column::DIRNAME]))
         n.gauge(:fail_check_in_days, days_without_update)
       end
     end
@@ -230,23 +230,23 @@ module LogStash module Filters module Geoip class DatabaseManager
     metadatas.each do |row|
       type = row[DatabaseMetadata::Column::DATABASE_TYPE]
       @metric.namespace([:database, type.to_sym]).tap do |n|
-        n.gauge(:status, @states[type].is_eula ? :healthy : :init)
+        n.gauge(:status, @states[type].is_eula ? :up_to_date : :init)
         if @states[type].is_eula
-          n.gauge(:download_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME]))
+          n.gauge(:last_updated_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME]))
           n.gauge(:fail_check_in_days, time_diff_in_days(row[DatabaseMetadata::Column::CHECK_AT]))
         end
       end
     end
 
-    @metric.namespace([:download]).tap do |n|
+    @metric.namespace([:download_stats]).tap do |n|
       check_at = metadatas.map { |row| row[DatabaseMetadata::Column::CHECK_AT].to_i }.max
-      n.gauge(:last_check_at, unix_time_to_iso8601(check_at))
+      n.gauge(:last_checked_at, unix_time_to_iso8601(check_at))
     end
   end
 
   def update_download_metric(success_cnt)
-    @metric.namespace([:download]).tap do |n|
-      n.gauge(:last_check_at, Time.now.iso8601)
+    @metric.namespace([:download_stats]).tap do |n|
+      n.gauge(:last_checked_at, Time.now.iso8601)
 
       if success_cnt == DB_TYPES.size
         n.increment(:successes, 1)
@@ -259,7 +259,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def update_download_status(status)
-    @metric.namespace([:download]).gauge(:status, status)
+    @metric.namespace([:download_stats]).gauge(:status, status)
   end
 
   public
