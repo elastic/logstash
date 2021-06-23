@@ -291,7 +291,7 @@ Gets runtime stats about each Logstash pipeline.
 Gets runtime stats about config reload successes and failures.
 <<os-stats,`os`>>::
 Gets runtime stats about cgroups when Logstash is running in a container.
-<<geoip-database-stats,`geoip`>>::
+<<geoip-database-stats,`geoip_download_manager`>>::
 Gets stats for databases used with the <<plugins-filters-geoip, Geoip filter plugin>>.
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
@@ -695,10 +695,10 @@ You can monitor stats for the geoip databases used with the <<plugins-filters-ge
 
 [source,js]
 --------------------------------------------------
-curl -XGET 'localhost:9600/_node/stats/geoip?pretty'
+curl -XGET 'localhost:9600/_node/stats/geoip_download_manager?pretty'
 --------------------------------------------------
 
-For more info, see <<plugins-filters-geoip, Geoip filter plugin>>.
+For more info, see <<plugins-filters-geoip-metrics,Database Metrics>> in the Geoip filter plugin docs. 
 
 [[hot-threads-api]]
 === Hot Threads API
