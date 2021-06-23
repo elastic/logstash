@@ -17,29 +17,41 @@
  * under the License.
  */
 
+package org.logstash.plugins;
 
-package co.elastic.logstash.api;
+import co.elastic.logstash.api.Event;
+import co.elastic.logstash.api.EventFactory;
+import org.logstash.ConvertedMap;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 
 /**
- * A factory for events.
+ * A basic {@link EventFactory} implementation for plugins.
+ *
+ * @see #INSTANCE
+ * @since Logstash 7.14
  */
-@FunctionalInterface
-public interface EventFactory {
+public class BasicEventFactory implements EventFactory {
 
     /**
-     * @return New and empty event.
+     * An event factory instance.
      */
-    default Event newEvent() {
-        return newEvent(Collections.emptyMap());
+    public static final EventFactory INSTANCE = new BasicEventFactory();
+
+    protected BasicEventFactory() { /* avoid direct instantiation */ }
+
+    @Override
+    public Event newEvent() {
+        return new org.logstash.Event();
     }
 
-    /**
-     * @param data Map from which the new event should copy its data.
-     * @return     New event copied from the supplied map data.
-     */
-    Event newEvent(final Map<? extends Serializable, Object> data);
+    @Override
+    public Event newEvent(Map<? extends Serializable, Object> data) {
+        if (data instanceof ConvertedMap) {
+            return new org.logstash.Event((ConvertedMap) data);
+        }
+        return new org.logstash.Event(data);
+    }
+
 }

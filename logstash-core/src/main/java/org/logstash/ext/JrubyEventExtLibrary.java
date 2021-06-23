@@ -23,6 +23,9 @@ package org.logstash.ext;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import co.elastic.logstash.api.EventFactory;
+
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -37,13 +40,14 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
-import org.logstash.EventFactory;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
+import org.logstash.plugins.BasicEventFactory;
 
 public final class JrubyEventExtLibrary {
 
@@ -243,7 +247,7 @@ public final class JrubyEventExtLibrary {
         // @return Array<Event> array of events
         @JRubyMethod(name = "from_json", required = 1, meta = true)
         public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value, final Block block) {
-            if (!block.isGiven()) return fromJson(context, value, EventFactory.DEFAULT);
+            if (!block.isGiven()) return fromJson(context, value, BasicEventFactory.INSTANCE);
             return fromJson(context, value, (data) -> {
                 // LogStash::Event works fine with a Map arg (instead of a native Hash)
                 IRubyObject event = block.yield(context, RubyUtil.toRubyObject(data));

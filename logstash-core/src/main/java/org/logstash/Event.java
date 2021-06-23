@@ -20,6 +20,7 @@
 
 package org.logstash;
 
+import co.elastic.logstash.api.EventFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +30,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.plugins.BasicEventFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -263,7 +265,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
      * @throws IOException when (JSON) parsing fails
      */
     public static Event[] fromJson(final String json) throws IOException {
-        return fromJson(json, EventFactory.DEFAULT);
+        return fromJson(json, BasicEventFactory.INSTANCE);
     }
 
     /**
@@ -283,7 +285,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Object o = parseJson(json);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            return new Event[] { factory.newEvent((Map<String, Object>) o) };
+            // NOTE: we need to assume the factory returns org.logstash.Event impl
+            return new Event[] { (Event) factory.newEvent((Map<? extends Serializable, Object>) o) };
         }
         if (o instanceof List) { // Jackson returns an ArrayList
             return fromList((List<Map<String, Object>>) o, factory);
@@ -296,7 +299,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final int len = list.size();
         Event[] result = new Event[len];
         for (int i = 0; i < len; i++) {
-            result[i] = factory.newEvent(list.get(i));
+            result[i] = (Event) factory.newEvent(list.get(i));
         }
         return result;
     }
