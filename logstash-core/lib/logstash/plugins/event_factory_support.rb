@@ -46,6 +46,8 @@ module LogStash
       class TargetedEventFactory
 
         def initialize(inner, target)
+          fail(ArgumentError, "invalid EventFactory `#{inner}`") unless inner.respond_to?(:new_event)
+          fail(ArgumentError, "invalid target field reference `#{target}`") unless org.logstash.FieldReference.isValid(target)
           @delegate = inner
           @target = target
         end
