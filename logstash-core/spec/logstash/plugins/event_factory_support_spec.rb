@@ -113,6 +113,21 @@ describe LogStash::Plugins::EventFactorySupport do
           end
 
         end
+
+        context 'from_json (integration)' do
+
+          let(:json) { '[ {"foo": "bar"}, { "baz": { "a": 1 } } ]' }
+
+          let(:options) { super().merge('target' => 'internal') }
+
+          it 'works' do
+            events = LogStash::Event.from_json(json) { |data| targeted_event_factory.new_event(data) }
+            expect( events.size ).to eql 2
+            expect( events[0].get('[internal]') ).to eql 'foo' => 'bar'
+            expect( events[1].get('[internal]') ).to eql 'baz' => { 'a' => 1 }
+          end
+
+        end
       end
 
     end
