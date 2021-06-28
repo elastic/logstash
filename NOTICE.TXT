@@ -414,14 +414,14 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: aws-eventstream-1.1.0
+Notice for: aws-eventstream-1.1.1
 ----------
 
 AWS SDK for Ruby
 Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 ==========
-Notice for: aws-sdk-core-2.11.540
+Notice for: aws-sdk-core-2.11.632
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -629,7 +629,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-resources-2.11.540
+Notice for: aws-sdk-resources-2.11.632
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -853,7 +853,7 @@ distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 ANY KIND, either express or implied. See the License for the specific
 language governing permissions and limitations under the License.
 ==========
-Notice for: aws-sdk-2.11.540
+Notice for: aws-sdk-2.11.632
 ----------
 
 Copyright 2011-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -869,7 +869,7 @@ distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 ANY KIND, either express or implied. See the License for the specific
 language governing permissions and limitations under the License.
 ==========
-Notice for: aws-sigv4-1.2.1
+Notice for: aws-sigv4-1.2.3
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -1077,7 +1077,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: bindata-2.4.7
+Notice for: bindata-2.4.10
 ----------
 
 Copyright (C) 2007-2012 Dion Mendel. All rights reserved.
@@ -3987,7 +3987,7 @@ The Apache Software Foundation (http://www.apache.org/).
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: concurrent-ruby-1.1.6
+Notice for: concurrent-ruby-1.1.9
 ----------
 
 Copyright (c) Jerry D'Antonio -- released under the MIT license.
@@ -4013,7 +4013,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. 
 
 ==========
-Notice for: dalli-2.7.10
+Notice for: dalli-2.7.11
 ----------
 
 Copyright (c) Peter M. Goldstein, Mike Perham
@@ -4121,7 +4121,7 @@ This file is generated from the Public Suffix List
 https://mozilla.org/MPL/2.0/
 
 ==========
-Notice for: dotenv-2.7.5
+Notice for: dotenv-2.7.6
 ----------
 
 Copyright (c) 2012 Brandon Keepers
@@ -4277,7 +4277,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: ffi-1.13.1
+Notice for: ffi-1.15.3
 ----------
 
 source: https://github.com/ffi/ffi/blob/1.9.23/LICENSE
@@ -4596,7 +4596,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ==========
-Notice for: http-cookie-1.0.3
+Notice for: http-cookie-1.0.4
 ----------
 
 source: https://github.com/sparklemotion/http-cookie/blob/v1.0.3/LICENSE.txt
@@ -4759,7 +4759,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: jar-dependencies-0.4.0
+Notice for: jar-dependencies-0.4.1
 ----------
 
 source: https://github.com/mkristian/jar-dependencies/blob/0.3.12/MIT-LICENSE
@@ -5207,7 +5207,7 @@ LICENSE applicable to this library:
 Apache License 2.0 see http://www.apache.org/licenses/LICENSE-2.0
 
 ==========
-Notice for: jruby-openssl-0.10.4
+Notice for: jruby-openssl-0.10.7
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.10.4/LICENSE.txt
@@ -5329,7 +5329,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: manticore-0.6.4
+Notice for: manticore-0.7.0
 ----------
 
 source: https://github.com/cheald/manticore/blob/v0.6.1/LICENSE.txt
@@ -5356,7 +5356,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: march_hare-4.2.0
+Notice for: march_hare-4.3.0
 ----------
 
 source: https://github.com/ruby-amqp/march_hare/blob/v3.1.1/LICENSE
@@ -5503,7 +5503,7 @@ terms of Ruby’s licence or the Simplified BSD licence.
 * Portions copyright 2004 Mauricio Julio Fernández Pradier.
 
 ==========
-Notice for: msgpack-1.3.3
+Notice for: msgpack-1.4.2
 ----------
 
 source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
@@ -5522,7 +5522,7 @@ source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
   See the License for the specific language governing permissions and
   limitations under the License.
 ==========
-Notice for: multi_json-1.14.1
+Notice for: multi_json-1.15.0
 ----------
 
 source: https://github.com/intridea/multi_json/blob/v1.13.1/LICENSE.md
@@ -5660,7 +5660,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: nokogiri-1.10.9
+Notice for: nokogiri-1.11.7
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
@@ -7379,7 +7379,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==========
-Notice for: pleaserun-0.0.31
+Notice for: pleaserun-0.0.32
 ----------
 
 Copyright 2014 Jordan Sissel contributors.
@@ -7502,6 +7502,33 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+==========
+Notice for: racc-1.5.2
+----------
+
+Copyright (C) 2019 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
 
 ==========
 Notice for: rack-protection-1.5.5
@@ -7726,7 +7753,7 @@ THE SOFTWARE.
 
 
 ==========
-Notice for: sequel-5.34.0
+Notice for: sequel-5.45.0
 ----------
 
 Copyright (c) 2007-2008 Sharon Rosner
@@ -8287,7 +8314,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-data-1.2020.1
+Notice for: tzinfo-data-1.2021.1
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -8311,7 +8338,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-2.0.2
+Notice for: tzinfo-2.0.4
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -8409,7 +8436,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: xml-simple-1.1.5
+Notice for: xml-simple-1.1.8
 ----------
 
 Readme.md: 
