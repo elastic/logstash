@@ -20,6 +20,7 @@
 
 package org.logstash;
 
+import co.elastic.logstash.api.EventFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +30,12 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.plugins.BasicEventFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -253,30 +254,53 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final Event[] NULL_ARRAY = new Event[0];
 
     @SuppressWarnings("unchecked")
-    public static Event[] fromJson(String json)
-            throws IOException
-    {
+    private static Object parseJson(final String json) throws IOException {
+        return JSON_MAPPER.readValue(json, Object.class);
+    }
+
+    /**
+     * Map a JSON string into events.
+     * @param json input string
+     * @return events
+     * @throws IOException when (JSON) parsing fails
+     */
+    public static Event[] fromJson(final String json) throws IOException {
+        return fromJson(json, BasicEventFactory.INSTANCE);
+    }
+
+    /**
+     * Map a JSON string into events.
+     * @param json input string
+     * @param factory event factory
+     * @return events
+     * @throws IOException when (JSON) parsing fails
+     */
+    @SuppressWarnings("unchecked")
+    public static Event[] fromJson(final String json, final EventFactory factory) throws IOException {
         // empty/blank json string does not generate an event
-        if (json == null || json.trim().isEmpty()) {
+        if (json == null || isBlank(json)) {
             return NULL_ARRAY;
         }
 
-        Event[] result;
-        Object o = JSON_MAPPER.readValue(json, Object.class);
+        Object o = parseJson(json);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            result = new Event[]{ new Event((Map<String, Object>)o) };
-        } else if (o instanceof List) {
-            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o; 
-            result = new Event[list.size()];
-            int i = 0;
-            for (final Map<String, Object> e : list) {
-                result[i++] = new Event(e);
-            }
-        } else {
-            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+            // NOTE: we need to assume the factory returns org.logstash.Event impl
+            return new Event[] { (Event) factory.newEvent((Map<? extends Serializable, Object>) o) };
+        }
+        if (o instanceof List) { // Jackson returns an ArrayList
+            return fromList((List<Map<String, Object>>) o, factory);
         }
 
+        throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+    }
+
+    private static Event[] fromList(final List<Map<String, Object>> list, final EventFactory factory) {
+        final int len = list.size();
+        Event[] result = new Event[len];
+        for (int i = 0; i < len; i++) {
+            result[i] = (Event) factory.newEvent(list.get(i));
+        }
         return result;
     }
 
@@ -357,6 +381,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return t != null
                 ? t.toString() + " " + hostMessageString
                 : hostMessageString;
+    }
+
+    private static boolean isBlank(final String str) {
+        final int len = str.length();
+        if (len == 0) return true;
+        for (int i = 0; i < len; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Timestamp initTimestamp(Object o) {

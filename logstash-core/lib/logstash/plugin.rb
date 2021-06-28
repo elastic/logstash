@@ -18,6 +18,7 @@
 require "logstash/config/mixin"
 require "logstash/plugins/ecs_compatibility_support"
 require "concurrent"
+require "logstash/plugins/event_factory_support"
 require "securerandom"
 
 require_relative 'plugin_metadata'
@@ -31,6 +32,7 @@ class LogStash::Plugin
 
   include LogStash::Config::Mixin
   include LogStash::Plugins::ECSCompatibilitySupport
+  include LogStash::Plugins::EventFactorySupport
 
   # Disable or enable metric logging for this specific plugin instance
   # by default we record all the metrics we can, but you can disable metrics collection
