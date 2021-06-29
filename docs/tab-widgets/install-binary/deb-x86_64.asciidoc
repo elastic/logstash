@@ -18,7 +18,7 @@ sudo dpkg -i logstash-{version}-amd64.deb
 
 ["source","sh",subs="attributes"]
 ------------------------------------------------
-curl -L -O https://artifacts.elastic.co/downloads/logstash-{version}-amd64.deb
+curl -L -O https://artifacts.elastic.co/downloads/logstash-{version}-arm64.deb
 sudo dpkg -i logstash-{version}-arm64.deb
 ------------------------------------------------
 
