@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-13-3,Logstash 7.13.3>>
 * <<logstash-7-13-2,Logstash 7.13.2>>
 * <<logstash-7-13-1,Logstash 7.13.1>>
 * <<logstash-7-13-0,Logstash 7.13.0>>
@@ -45,6 +46,56 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-13-3]]
+=== Logstash 7.13.3 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.13.3
+
+* Backport PR #13008 to 7.13: Fix UBI source URL https://github.com/elastic/logstash/pull/13012[#13012]
+
+=== Logstash Commits between 7.13 and 7.13.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.13.2..7.13"
+
+5e907b77a - (HEAD -> 7.13, origin/7.13) Update patch plugin versions in gemfile lock for 7.13.3 (#13027) (6 hours ago) <Logstash Machine>
+f3b1ff0bc - Backport PR #13008 to 7.13: Fix UBI source URL (#13012) (7 days ago) <Rob Bavey>
+02b981f04 - Doc: Add tip for checking for existing field (#12988) (2 weeks ago) <Karen Metts>
+0998be3aa - bump to 7.13.3 (#12983) (2 weeks ago) <kaisecheng>
+f24cf2740 - Release notes draft for 7.13.2 (#12981) (2 weeks ago) <Logstash Machine>
+55e1f324c - Doc: Remove unused tagged regions (#12980) (3 weeks ago) <Karen Metts>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.13.2..7.13 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.1 -> 6.2.2
+logstash-codec-multiline: 3.0.10 -> 3.0.11
+logstash-filter-xml: 4.1.1 -> 4.1.2
+logstash-input-beats: 6.1.3 -> 6.1.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.2*
+
+* Fixed invalid Field Reference that could occur when ECS mode was enabled and the CEF field `fileHash` was parsed.
+* Added expanded mapping for numbered `deviceCustom*` and `deviceCustom*Label` fields so that all now include numbers 1 through 15.
+
+*Multiline Codec - 3.0.11*
+
+* Fix: avoid long thread sleeps on codec close https://github.com/logstash-plugins/logstash-codec-multiline/pull/67[#67]
+
+*Xml Filter - 4.1.2*
+
+* [DOC] Updated docs to correct name of parse_options config option https://github.com/logstash-plugins/logstash-filter-xml/pull/75[#75]
+
+*Beats Input - 6.1.5*
+
+* Changed jar dependencies to reflect newer versions https://github.com/logstash-plugins/logstash-input-http/pull/425[#425]
+
+* Fix: reduce error logging on connection resets https://github.com/logstash-plugins/logstash-input-beats/pull/424[#424]
+
 
 [[logstash-7-13-2]]
 === Logstash 7.13.2 Release Notes
