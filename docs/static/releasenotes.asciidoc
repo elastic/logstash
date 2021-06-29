@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-17,Logstash 6.8.17>>
 * <<logstash-6-8-16,Logstash 6.8.16>>
 * <<logstash-6-8-15,Logstash 6.8.15>>
 * <<logstash-6-8-14,Logstash 6.8.14>>
@@ -47,6 +48,127 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-17]]
+=== Logstash 6.8.17 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.17
+
+=== Logstash Commits between 6.8 and 6.8.16
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.16..6.8"
+
+fd3d0a8ed - (HEAD -> 6.8, origin/6.8) Update patch plugin versions in gemfile lock for 6.8.17 (#13026) (4 hours ago) <Logstash Machine>
+fd5fd63df - Release: bump version to 6.8.17 (#12926) (5 weeks ago) <Andrea Selva>
+8dd39ef96 - Created release notes for v6.8.16 (#12922) (5 weeks ago) <Andrea Selva>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.16..6.8 *.release"
+Changed plugin versions:
+logstash-codec-multiline: 3.0.10 -> 3.0.11
+logstash-filter-aggregate: 2.9.1 -> 2.9.2
+logstash-filter-fingerprint: 3.2.1 -> 3.2.4
+logstash-filter-kv: 4.4.0 -> 4.4.1
+logstash-filter-metrics: 4.0.6 -> 4.0.7
+logstash-filter-ruby: 3.1.5 -> 3.1.7
+logstash-filter-sleep: 3.0.6 -> 3.0.7
+logstash-input-file: 4.1.17 -> 4.1.18
+logstash-input-http: 3.3.5 -> 3.3.7
+logstash-input-snmp: 1.2.2 -> 1.2.7
+logstash-input-sqs: 3.1.2 -> 3.1.3
+logstash-input-syslog: 3.4.3 -> 3.4.5
+logstash-output-cloudwatch: 3.0.8 -> 3.0.9
+logstash-output-http: 5.2.4 -> 5.2.5
+logstash-output-lumberjack: 3.1.7 -> 3.1.8
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Multiline Codec*
+
+* Fix: avoid long thread sleeps on codec close [#67](https://github.com/logstash-plugins/logstash-codec-multiline/pull/67)
+
+*Aggregate Filter*
+
+* bugfix: remove 'default_timeout' at pipeline level (fix #112)
+* ci: update travis ci configuration
+
+*Fingerprint Filter*
+
+* Fixed the error in Murmur3 with Integer [#61](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/61)
+
+* [DOC] Expanded description for concatenate_sources behavior and provided examples [#60](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/60)
+
+* Fixed lack of consistent fingerprints on Hash/Map objects [#55](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/55)
+
+*Kv Filter*
+
+* Fixed issue where a `field_split_pattern` containing a literal backslash failed to match correctly [#87](https://github.com/logstash-plugins/logstash-filter-kv/issues/87)
+
+*Metrics Filter*
+
+* Fixed typo in documentation
+
+*Ruby Filter*
+
+* [DOC] Added docs to help people avoid concurrency issues (often caused by accidentally relying on shared state with global variables, constants, or unguarded overwriting of instance variables) [#58](https://github.com/logstash-plugins/logstash-filter-ruby/issues/58)
+
+* Add error log backtrace to inline scripts [#54](https://github.com/logstash-plugins/logstash-filter-ruby/pull/54)
+
+*Sleep Filter*
+
+* Changed Fixnum to Integer. Fixnum was deprecated in ruby 2.4. [#10](https://github.com/logstash-plugins/logstash-filter-sleep/pull/10)
+
+*File Input*
+
+* Fix: release watched files on completion (in read-mode) [#271](https://github.com/logstash-plugins/logstash-input-file/pull/271)
+
+*Http Input*
+
+* Feat: improved error handling/logging/unwraping [#133](https://github.com/logstash-plugins/logstash-input-http/pull/133)
+ 
+* Fixes a regression introduced in 3.1.0's migration to the Netty back-end that broke some users'
+   browser-based workflows. When an instance of this plugin that is configured to require Basic
+   authentication receives a request that does not include authentication, it now appropriately
+   includes an `WWW-Authenticate` header in its `401 Unauthorized` response, allowing the browser
+   to collect credentials before retrying the request.
+
+*Snmp Input*
+
+* Added integration tests to ensure SNMP server and IPv6 connections [#87](https://github.com/logstash-plugins/logstash-input-snmp/pull/87)
+
+* Docs: example on setting IPv6 hosts [#89](https://github.com/logstash-plugins/logstash-input-snmp/pull/89)
+
+* Updated snmp4j library to v2.8.4 [#86](https://github.com/logstash-plugins/logstash-input-snmp/pull/86)
+
+* Fixed: support SNMPv3 multiple identical security name with different credentials [#84](https://github.com/logstash-plugins/logstash-input-snmp/pull/84)
+
+* Fixed: multithreading problem when using multiple snmp inputs with multiple v3 credentials [#80](https://github.com/logstash-plugins/logstash-input-snmp/pull/80)
+
+*Sqs Input*
+
+* Fix: retry networking errors (with backoff) [#57](https://github.com/logstash-plugins/logstash-input-sqs/pull/57)
+
+*Syslog Input*
+
+* Added support for listening on IPv6 addresses
+
+* Refactor: avoid global side-effect + cleanup [#62](https://github.com/logstash-plugins/logstash-input-syslog/pull/62)
+    * avoid setting `BasicSocket.do_not_reverse_lookup` as it has side effects for others 
+
+*Cloudwatch Output*
+
+- Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 [#18](https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/18)
+
+*Http Output*
+
+* Reduce amount of default logging on a failed request [#122](https://github.com/logstash-plugins/logstash-output-http/pull/122)
+
+*Lumberjack Output*
+
+* Fix: dropped usage of SHUTDOWN event deprecated since Logstash 5.0 [#31](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/31)
+
 
 [[logstash-6-8-16]]
 === Logstash 6.8.16 Release Notes
