@@ -7,14 +7,7 @@
             aria-selected="false"
             aria-controls="go-tab-install-kube"
             id="go-install-kube">
-      Linux X86_64
-    </button>
-    <button role="tab"
-            aria-selected="true"
-            aria-controls="java-tab-install-kube"
-            id="java-install-kube"
-            tabindex="-1">
-      Linux AARCH64
+      Linux
     </button>
     <button role="tab"
             aria-selected="false"
@@ -35,28 +28,14 @@
             aria-controls="php-tab-install-kube"
             id="php-install-kube"
             tabindex="-1">
-      DEB X86_64
-    </button>
-    <button role="tab"
-            aria-selected="false"
-            aria-controls="python-tab-install-kube"
-            id="python-install-kube"
-            tabindex="-1">
-      DEB AARCH64
+      DEB
     </button>
     <button role="tab"
             aria-selected="false"
             aria-controls="ruby-tab-install-kube"
             id="ruby-install-kube"
             tabindex="-1">
-      RPM X86_64
-    </button>
-    <button role="tab"
-            aria-selected="false"
-            aria-controls="ruby-tab-install-kube"
-            id="ruby-install-kube"
-            tabindex="-1">
-      RPM AARCH64
+      RPM
     </button>
   </div>
   <div tabindex="0"
@@ -66,17 +45,7 @@
        hidden="">
 ++++
 
-include::linux-x86_64.asciidoc[]
-
-++++
-  </div>
-  <div tabindex="0"
-       role="tabpanel"
-       id="java-tab-install-kube"
-       aria-labelledby="java-install-kube">
-++++
-
-include::linux-aarch64.asciidoc[]
+include::linux.asciidoc[]
 
 ++++
   </div>
@@ -109,7 +78,7 @@ include::windows.asciidoc[]
        hidden="">
 ++++
 
-include::deb-x86_64.asciidoc[]
+include::deb.asciidoc[]
 
 ++++
   </div>
@@ -120,29 +89,16 @@ include::deb-x86_64.asciidoc[]
        hidden="">
 ++++
 
-include::deb-aarch64.asciidoc[]
+include::rpm.asciidoc[]
 
 ++++
   </div>
   <div tabindex="0"
        role="tabpanel"
-       id="ruby-tab-install-kube"
-       aria-labelledby="ruby-install-kube"
+       id="net-tab-install-kube"
+       aria-labelledby="net-install-kube"
        hidden="">
 ++++
-
-include::rpm-x86_64.asciidoc[]
-
-++++
-  </div>
-  <div tabindex="0"
-       role="tabpanel"
-       id="ruby-tab-install-kube"
-       aria-labelledby="ruby-install-kube"
-       hidden="">
-++++
-
-include::rpm-aarch64.asciidoc[]
 
 ++++
   </div>
