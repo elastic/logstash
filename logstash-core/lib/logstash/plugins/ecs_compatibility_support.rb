@@ -7,11 +7,8 @@ module LogStash
                                         :attr_accessor => false)
       end
 
-      MUTEX = Mutex.new
-      private_constant :MUTEX
-
       def ecs_compatibility
-        @_ecs_compatibility || MUTEX.synchronize do
+        @_ecs_compatibility || LogStash::Util.synchronize(self) do
           @_ecs_compatibility ||= begin
             # use config_init-set value if present
             break @ecs_compatibility unless @ecs_compatibility.nil?
