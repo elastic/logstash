@@ -26,7 +26,6 @@ import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -56,12 +55,11 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @JRubyMethod(name="initialize")
     public IRubyObject initialize(final ThreadContext context, final IRubyObject filter, final IRubyObject id) {
-        this.id = (RubyString) id;
         this.filter = filter;
         filterClass = filter.getSingletonClass().getRealClass();
         filterMethod = filterClass.searchMethod(FILTER_METHOD_NAME);
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) filter.callMethod(context, "metric");
-        initMetrics(this.id.asJavaString(), namespacedMetric);
+        initMetrics(id.asJavaString(), namespacedMetric);
         flushes = filter.respondsTo("flush");
         return this;
     }
@@ -75,7 +73,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
         filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");
         filterClass = configNameDouble.getType();
-        id = RUBY.newString(UUID.randomUUID().toString());
+        this.setId(filter.getRuntime().getCurrentContext(), UUID.randomUUID().toString());
         return this;
     }
 
@@ -121,9 +119,9 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     @Override
     @SuppressWarnings({"rawtypes"})
     protected RubyArray doMultiFilter(final RubyArray batch) {
-        final IRubyObject pluginId = this.getId();
-        org.apache.logging.log4j.ThreadContext.put("plugin.id", pluginId.toString());
         try {
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
+
             return (RubyArray) filterMethod.call(
                     RUBY.getCurrentContext(), filter, filterClass, FILTER_METHOD_NAME, batch);
         } finally {

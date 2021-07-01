@@ -46,7 +46,8 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
 
     protected AbstractNamespacedMetricExt metricEvents;
 
-    protected RubyString id;
+    protected String id;
+    private transient RubyString idString;
 
     protected LongCounter eventMetricOut;
 
@@ -60,7 +61,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
 
     protected void initMetrics(final String id, final AbstractNamespacedMetricExt namespacedMetric) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        this.id = RubyString.newString(context.runtime, id);
+        this.setId(context, id);
         synchronized(namespacedMetric.getMetric()) {
             metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
             eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
@@ -120,9 +121,18 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
 
     protected abstract IRubyObject getConfigName(ThreadContext context);
 
-    @JRubyMethod(name = "id")
-    public IRubyObject getId() {
+    public String getId() {
         return id;
+    }
+
+    void setId(ThreadContext context, String id) {
+        this.id = id;
+        this.idString = (RubyString) RubyString.newString(context.runtime, id).freeze(context);
+    }
+
+    @JRubyMethod(name = "id")
+    public IRubyObject id() {
+        return idString == null ? getRuntime().getNil() : idString;
     }
 
     @JRubyMethod(name = "multi_filter")

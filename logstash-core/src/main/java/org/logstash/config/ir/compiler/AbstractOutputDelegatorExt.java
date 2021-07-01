@@ -51,7 +51,8 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
     private AbstractNamespacedMetricExt metricEvents;
 
-    private RubyString id;
+    private String id;
+    private transient RubyString idString;
 
     private LongCounter eventMetricOut;
 
@@ -90,9 +91,18 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         return getConfigName(context);
     }
 
-    @JRubyMethod(name = "id")
-    public IRubyObject getId() {
+    public String getId() {
         return id;
+    }
+
+    private void setId(ThreadContext context, String id) {
+        this.id = id;
+        this.idString = (RubyString) RubyString.newString(context.runtime, id).freeze(context);
+    }
+
+    @JRubyMethod(name = "id")
+    public IRubyObject id() {
+        return idString == null ? getRuntime().getNil() : idString;
     }
 
     @JRubyMethod
@@ -125,9 +135,9 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
     }
 
     protected void initMetrics(final String id, final AbstractMetricExt metric) {
-        this.metric = metric;
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        this.id = RubyString.newString(context.runtime, id);
+        this.setId(context, id);
+        this.metric = metric;
         synchronized (metric) {
             namespacedMetric = metric.namespace(context, context.runtime.newSymbol(id));
             metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
