@@ -36,7 +36,7 @@ class LogStash::PluginManager::Command < Clamp::Command
       $stderr.puts(output)
     end
   end
-  
+
   # Each plugin install for a gemfile create a path with a unique id.
   # we must clear what is not currently used in the 
   def remove_unused_locally_installed_gems!
