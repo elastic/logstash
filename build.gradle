@@ -530,6 +530,7 @@ tasks.register("downloadEs", Download) {
     onlyIfNewer true
     retries 3
     inputs.file("${projectDir}/versions.yml")
+//    inputs.file("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
     outputs.file(project.ext.elasticsearchDownloadLocation)
     dest new File(project.ext.elasticsearchDownloadLocation)
 
@@ -551,6 +552,7 @@ tasks.register("copyEs", Copy) {
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
         System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
+//        delete(project.ext.elasticsearchDownloadLocation)
     }
 }
 
@@ -563,12 +565,12 @@ project(":logstash-integration-tests") {
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
         workingDir integrationTestPwd
         dependsOn installIntegrationTestGems
-        dependsOn copyEs
     }
 }
 
 tasks.register("runIntegrationTests"){
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
+    dependsOn copyEs
     dependsOn copyFilebeat
     shouldRunAfter ":logstash-core:test"
 }
