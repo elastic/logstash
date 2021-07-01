@@ -100,6 +100,8 @@ class LogStash::Agent
     @instance_reload_metric = metric.namespace([:stats, :reloads])
     initialize_agent_metrics
 
+    initialize_geoip_database_metrics(metric)
+
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
     dispatcher.fire(:after_initialize)
@@ -553,6 +555,30 @@ class LogStash::Agent
     @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
       n.increment(:successes)
       n.gauge(:last_success_timestamp, action_result.executed_at)
+    end
+  end
+
+  def initialize_geoip_database_metrics(metric)
+    begin
+      require_relative ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip", "database_manager")
+      database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
+      database_manager.metric = metric.namespace([:geoip_download_manager]).tap do |n|
+        db = n.namespace([:database])
+        [:ASN, :City].each do  |database_type|
+          db_type = db.namespace([database_type])
+          db_type.gauge(:status, nil)
+          db_type.gauge(:last_updated_at, nil)
+          db_type.gauge(:fail_check_in_days, 0)
+        end
+
+        dl = n.namespace([:download_stats])
+        dl.increment(:successes, 0)
+        dl.increment(:failures, 0)
+        dl.gauge(:last_checked_at, nil)
+        dl.gauge(:status, nil)
+      end
+    rescue LoadError => e
+      @logger.trace("DatabaseManager is not in classpath")
     end
   end
 end # class LogStash::Agent

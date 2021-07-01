@@ -281,6 +281,10 @@ module LogStash
       }
     end
 
+    def inspect
+      "<#{self.class.name}(#{name}): #{value.inspect}" + (@value_is_set ? '' : ' (DEFAULT)') + ">"
+    end
+
     def ==(other)
       self.to_hash == other.to_hash
     end

@@ -1,16 +1,31 @@
 package org.logstash.plugins;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class AliasRegistry {
 
-    private final static class PluginCoordinate {
+    private static final Logger LOGGER = LogManager.getLogger(AliasRegistry.class);
+
+    final static class PluginCoordinate {
         private final PluginType type;
         private final String name;
 
@@ -35,6 +50,124 @@ public class AliasRegistry {
         PluginCoordinate withName(String name) {
             return new PluginCoordinate(this.type, name);
         }
+
+        @Override
+        public String toString() {
+            return "PluginCoordinate{type=" + type + ", name='" + name + "'}";
+        }
+
+        public String fullName() {
+            return "logstash-" + type.rubyLabel().toString().toLowerCase() + "-" + name;
+        }
+    }
+
+    private static class YamlWithChecksum {
+
+        private static YamlWithChecksum load(InputStream in) {
+            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
+                // read the header line
+                final String header = scanner.nextLine();
+                if (!header.startsWith("#CHECKSUM:")) {
+                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
+                }
+                final String extractedHash = header.substring("#CHECKSUM:".length()).trim();
+
+                // read the comment
+                scanner.nextLine();
+
+                // collect all remaining lines
+                final StringBuilder yamlBuilder = new StringBuilder();
+                scanner.useDelimiter("\\z"); // EOF
+                if (scanner.hasNext()) {
+                    yamlBuilder.append(scanner.next());
+                }
+                final String yamlContents = yamlBuilder.toString();
+                return new YamlWithChecksum(yamlContents, extractedHash);
+            }
+        }
+
+        final String yamlContents;
+        final String checksumHash;
+
+        private YamlWithChecksum(final String yamlContents, final String checksumHash) {
+            this.yamlContents = yamlContents;
+            this.checksumHash = checksumHash;
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<String, Map<String, String>> decodeYaml() throws IOException {
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(yamlContents, Map.class);
+        }
+
+        private String computeHashFromContent() {
+            return DigestUtils.sha256Hex(yamlContents);
+        }
+    }
+
+    static class AliasYamlLoader {
+
+        Map<PluginCoordinate, String> loadAliasesDefinitions(Path yamlPath) {
+            final FileInputStream in;
+            try {
+                in = new FileInputStream(yamlPath.toFile());
+            } catch (FileNotFoundException e) {
+                LOGGER.warn("Can't find aliases yml definition file in in path: " + yamlPath, e);
+                return Collections.emptyMap();
+            }
+
+            return loadAliasesDefinitionsFromInputStream(in);
+        }
+
+        Map<PluginCoordinate, String> loadAliasesDefinitions() {
+            final String filePath = "org/logstash/plugins/plugin_aliases.yml";
+            final InputStream in = AliasYamlLoader.class.getClassLoader().getResourceAsStream(filePath);
+            if (in == null) {
+                LOGGER.warn("Malformed yaml file in yml definition file in jar resources: {}", filePath);
+                return Collections.emptyMap();
+            }
+
+            return loadAliasesDefinitionsFromInputStream(in);
+        }
+
+        private Map<PluginCoordinate, String> loadAliasesDefinitionsFromInputStream(InputStream in) {
+            final YamlWithChecksum aliasYml = YamlWithChecksum.load(in);
+            final String calculatedHash = aliasYml.computeHashFromContent();
+            if (!calculatedHash.equals(aliasYml.checksumHash)) {
+                LOGGER.warn("Bad checksum value, expected {} but found {}", calculatedHash, aliasYml.checksumHash);
+                return Collections.emptyMap();
+            }
+
+            // decode yaml to nested maps
+            final Map<String, Map<String, String>> aliasedDescriptions;
+            try {
+                aliasedDescriptions = aliasYml.decodeYaml();
+            } catch (IOException ioex) {
+                LOGGER.error("Error decoding the yaml aliases file", ioex);
+                return Collections.emptyMap();
+            }
+
+            // convert aliases nested maps definitions to plugin alias definitions
+            final Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            defaultDefinitions.putAll(extractDefinitions(PluginType.INPUT, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.CODEC, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.FILTER, aliasedDescriptions));
+            defaultDefinitions.putAll(extractDefinitions(PluginType.OUTPUT, aliasedDescriptions));
+            return defaultDefinitions;
+        }
+
+        private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
+                                                                 Map<String, Map<String, String>> aliasesYamlDefinitions) {
+            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            final Map<String, String> pluginDefinitions = aliasesYamlDefinitions.get(pluginType.name().toLowerCase());
+            if (pluginDefinitions == null) {
+                return Collections.emptyMap();
+            }
+            for (Map.Entry<String, String> aliasDef : pluginDefinitions.entrySet()) {
+                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasDef.getKey()), aliasDef.getValue());
+            }
+            return defaultDefinitions;
+        }
     }
 
 
@@ -42,8 +175,8 @@ public class AliasRegistry {
     private final Map<PluginCoordinate, String> reversedAliases = new HashMap<>();
 
     public AliasRegistry() {
-        Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
-        defaultDefinitions.put(new PluginCoordinate(PluginType.INPUT, "elastic_agent"), "beats");
+        final AliasYamlLoader loader = new AliasYamlLoader();
+        final Map<PluginCoordinate, String> defaultDefinitions = loader.loadAliasesDefinitions();
         configurePluginAliases(defaultDefinitions);
     }
 

@@ -55,6 +55,10 @@ include::static/advanced-pipeline.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
+// Elastic Common Schema (ECS)
+:editurl!:
+include::static/ecs-compatibility.asciidoc[]
+
 // Processing details
 
 :edit_url!:
@@ -238,31 +242,35 @@ include::static/codec.asciidoc[]
 include::static/filter.asciidoc[]
 include::static/output.asciidoc[]
 
-// Plugin doc guidelines
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/doc-for-plugin.asciidoc
-include::static/doc-for-plugin.asciidoc[]
-
-// Contributing a Patch to a Logstash Plugin
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-patch.asciidoc
-include::static/contributing-patch.asciidoc[]
-
 // Logstash Community Maintainer Guide
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/maintainer-guide.asciidoc
+:edit_url!: 
 include::static/maintainer-guide.asciidoc[]
 
 // A space is necessary here ^^^
 
+// Plugin doc guidelines
+
+:edit_url: 
+include::static/doc-for-plugin.asciidoc[]
+
 // Submitting a Plugin
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
-include::static/submitting-a-plugin.asciidoc[]
+:edit_url!: 
+include::static/submitting-a-plugin.asciidoc[] 
+
+:edit_url!:
+include::static/listing-a-plugin.asciidoc[]
+
+:edit_url!: 
+include::static/contributing-patch.asciidoc[]
+
+:edit_url!:
+include::static/contribute-core.asciidoc[]
 
 // Contributing to Logstash - JAVA EDITION
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-java-plugin.asciidoc
+:edit_url: 
 include::static/contributing-java-plugin.asciidoc[]
 
 // Glossary of Terms

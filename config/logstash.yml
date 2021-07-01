@@ -64,7 +64,23 @@
 # if there are multiple workers.
 # "false" will disable any extra processing necessary for preserving ordering.
 #
-pipeline.ordered: auto
+# pipeline.ordered: auto
+#
+# Sets the pipeline's default value for `ecs_compatibility`, a setting that is
+# available to plugins that implement an ECS Compatibility mode for use with
+# the Elastic Common Schema.
+# Possible values are:
+# - disabled
+# - v1 (default)
+# - v2
+# CAVEAT: use of this configuration for anything other than `disabled` -- including
+# the default value -- is considered BETA until the General Availability of
+# Logstash 8.0.0. As we continue to release updated plugins with ECS-Compatibility
+# modes, opting into them at a pipeline or process level will cause you to
+# automatically consume breaking changes with each upgrade, which may change the
+# shape of data your pipeline produces.
+#
+# pipeline.ecs_compatibility: v1
 #
 # ------------ Pipeline Configuration Settings --------------
 #

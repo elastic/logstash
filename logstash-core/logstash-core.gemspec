@@ -49,7 +49,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp", "~> 0.6" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1"
@@ -74,7 +74,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
   # xpack geoip database service
-  gem.add_development_dependency 'logstash-filter-geoip', '~> 7.1' # package hierarchy change
+  gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
   gem.add_dependency 'faraday' #(MIT license)
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
   gem.add_dependency 'tzinfo-data' #(MIT license)

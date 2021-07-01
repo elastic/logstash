@@ -57,3 +57,8 @@ logstash-core/versions-gem-copy.yml
 logstash-core-plugin-api/versions-gem-copy.yml
 config/logstash.keystore
 html_docs
+lib/pluginmanager/plugin_aliases.yml
+logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml
+spec/unit/plugin_manager/plugin_aliases.yml
+logstash-core/src/test/resources/org/logstash/plugins/plugin_aliases.yml
+qa/integration/fixtures/logs_rollover/log4j2.properties

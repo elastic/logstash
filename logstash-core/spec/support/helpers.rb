@@ -16,6 +16,7 @@
 # under the License.
 
 require "stud/task"
+require "rspec/wait"
 
 def silence_warnings
   warn_level = $VERBOSE

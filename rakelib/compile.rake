@@ -29,18 +29,10 @@ namespace "compile" do
     logstash-core/lib/logstash/compiler/lscl/lscl_grammar.rb
   )
 
-  def safe_system(*args)
-    if !system(*args)
-      status = $?
-      raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
-    end
-  end
-
   task "logstash-core-java" do
-    unless File.exists?(File.join("logstash-core", "lib", "jars", "logstash-core.jar"))
-      puts("Building logstash-core using gradle")
-      safe_system("./gradlew", "assemble")
-    end
+    puts("Building logstash-core using gradle")
+    # this expansion is necessary to use the path separators of the hosting OS
+    sh(File.join(".", "gradlew"), "assemble")
   end
 
   desc "Build everything"

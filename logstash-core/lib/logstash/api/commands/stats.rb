@@ -132,6 +132,12 @@ module LogStash
           HotThreadsReport.new(self, options)
         end
 
+        def geoip
+          service.get_shallow(:geoip_download_manager)
+        rescue
+          {}
+        end
+
         private
         def plugins_stats_report(pipeline_id, extended_pipeline, opts={})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
