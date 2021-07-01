@@ -89,7 +89,8 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
-    protected void doRegister(ThreadContext context) {
+    protected IRubyObject doRegister(ThreadContext context) {
+        return context.nil;
     }
 
     @Override

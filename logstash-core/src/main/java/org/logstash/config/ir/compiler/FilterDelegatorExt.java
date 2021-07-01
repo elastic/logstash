@@ -81,9 +81,8 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
         super(runtime, metaClass);
     }
 
-    @Override
-    protected void doRegister(final ThreadContext context) {
-        filter.callMethod(context, "register");
+    protected IRubyObject registerImpl(final ThreadContext context) {
+        return filter.callMethod(context, "register");
     }
 
     @Override
@@ -117,6 +116,16 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
+    public IRubyObject doRegister(final ThreadContext context) {
+        try {
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
+            return registerImpl(context);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
+    }
+
+    @Override
     @SuppressWarnings({"rawtypes"})
     protected RubyArray doMultiFilter(final RubyArray batch) {
         try {
@@ -133,18 +142,16 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
         try {
             org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
-
             return filter.callMethod(context, "flush", options);
         } finally {
             org.apache.logging.log4j.ThreadContext.remove("plugin.id");
         }
     }
 
-    @Override // do_close
+    @Override
     public IRubyObject doClose(final ThreadContext context) {
         try {
             org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
-
             return doCloseImpl(context);
         } finally {
             org.apache.logging.log4j.ThreadContext.remove("plugin.id");

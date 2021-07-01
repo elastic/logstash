@@ -77,7 +77,7 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
         return context.nil;
     }
 
-    protected abstract void doRegister(final ThreadContext context);
+    protected abstract IRubyObject doRegister(final ThreadContext context);
 
     @JRubyMethod
     public IRubyObject close(final ThreadContext context) {
