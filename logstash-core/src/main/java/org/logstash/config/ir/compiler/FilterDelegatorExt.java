@@ -131,7 +131,24 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @Override
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
-        return filter.callMethod(context, "flush", options);
+        try {
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
+
+            return filter.callMethod(context, "flush", options);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
+    }
+
+    @Override // do_close
+    public IRubyObject doClose(final ThreadContext context) {
+        try {
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
+
+            return doCloseImpl(context);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
     }
 
     @Override
