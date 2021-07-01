@@ -108,7 +108,12 @@ OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     @Override
     protected void close(final ThreadContext context) {
-        strategy.doClose(context);
+        try {
+            org.apache.logging.log4j.ThreadContext.put("plugin.id", getId());
+            strategy.doClose(context);
+        } finally {
+            org.apache.logging.log4j.ThreadContext.remove("plugin.id");
+        }
     }
 
     @Override
