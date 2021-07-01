@@ -10,6 +10,7 @@ gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
 gem "ruby-progressbar", "~> 1"
+gem "http_parser.rb", "0.6.0" # logstash#13046
 gem "logstash-output-elasticsearch", ">= 10.4.2"
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1.13", :group => :build
