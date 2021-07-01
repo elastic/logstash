@@ -12,7 +12,9 @@ describe "GeoIP database service" do
   let(:config) { input + filter + output }
 
   context "monitoring API with geoip plugin" do
-    let(:filter) { "filter { json { source => \\\"message\\\" } geoip { source => \\\"host\\\" } } " }
+    let(:filter) do
+      "filter { json { source => \\\"message\\\" } geoip { source => \\\"host\\\" target => \\\"geoip\\\" } } "
+    end
 
     it "should have geoip" do
       start_logstash
