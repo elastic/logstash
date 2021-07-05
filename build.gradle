@@ -41,6 +41,7 @@ apply from: "rubyUtils.gradle"
 import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import org.logstash.gradle.tooling.StackVersionSelector
 
 allprojects {
   group = 'org.logstash'
@@ -163,17 +164,12 @@ tasks.register("configureArtifactInfo") {
         version = "$version-$versionQualifier"
     }
 
-    def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
-    String apiResponse = artifactVersionsApi.toURL().text
+    def versionSelector = new StackVersionSelector(artifactVersionsApi)
+    String qualifiedVersion = versionSelector.selectClosestVersion(version)
 
-    def dlVersions = new JsonSlurper().parseText(apiResponse)
-    String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
-    if (qualifiedVersion == null) {
-        throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
-    }
     // find latest reference to last build
     String buildsListApi = "${artifactVersionsApi}/${qualifiedVersion}/builds/"
-    apiResponse = buildsListApi.toURL().text
+    def apiResponse = buildsListApi.toURL().text
     def dlBuilds = new JsonSlurper().parseText(apiResponse)
     def stackBuildVersion = dlBuilds["builds"][0]
 
