@@ -3,11 +3,6 @@ package org.logstash.gradle.tooling
 import org.junit.Test
 import org.junit.Before
 
-import static org.junit.Assert.assertEquals
-import static org.junit.Assert.assertFalse
-import static org.junit.Assert.assertNull
-import static org.junit.Assert.assertTrue
-
 class StackVersionSelectorTest {
 
     def versionsFixture = [
@@ -32,5 +27,41 @@ class StackVersionSelectorTest {
     @Test
     void "selectClosestInList should return the exact match when present"() {
         assert "7.14.0" == sut.selectClosestInList("7.14.0", versionsFixture)
+    }
+
+    @Test
+    void "selectClosestInList should return the previous closest version when exact match is not present"() {
+        assert "7.14.0" == sut.selectClosestInList("7.15.0", versionsFixture)
+    }
+
+    @Test
+    void "selectClosestInList should return the greatest version when the version is greater than the max"() {
+        assert "8.0.0-SNAPSHOT" == sut.selectClosestInList("8.0.0", versionsFixture)
+    }
+
+    @Test
+    void "versionComparator tests"() {
+        def versionComparator = new StackVersionSelector.VersionComparator()
+        assert -1 == versionComparator.compare("7.1.0", "7.2.1")
+        assert 1 == versionComparator.compare("7.2.1", "7.1.0")
+
+        assert 1 == versionComparator.compare("7.1.0", "7.1.0-SNAPSHOT")
+
+        assert 1 == versionComparator.compare("7.2.1-SNAPSHOT", "7.1.0-SNAPSHOT")
+
+        assert 1 == versionComparator.compare("7.2.1-SNAPSHOT", "7.1.0")
+
+        assert 1 == versionComparator.compare("7.2.1", "7.1.0-SNAPSHOT")
+
+        assert 1 == versionComparator.compare("8.0.0-alpha1", "7.1.0-SNAPSHOT")
+
+        assert 1 == versionComparator.compare("8.0.0-alpha1", "8.0.0-SNAPSHOT")
+
+        assert 1 == versionComparator.compare("8.0.0-rc1", "8.0.0-alpha2")
+
+        assert 1 == versionComparator.compare("8.0.0", "8.0.0-alpha2")
+
+        assert 1 == versionComparator.compare("8.0.0", "8.0.0-SNAPSHOT")
+
     }
 }
