@@ -6,7 +6,6 @@ import groovy.json.JsonSlurper
 class StackVersionSelector {
 
     private final String artifactVersionsApi
-    private final def versionComparator = new VersionComparator()
 
     public StackVersionSelector(String artifactVersionsApi) {
         this.artifactVersionsApi = artifactVersionsApi
@@ -15,12 +14,12 @@ class StackVersionSelector {
     def selectClosestVersion(String version) {
         String apiResponse = artifactVersionsApi.toURL().text
         def dlVersions = new JsonSlurper().parseText(apiResponse)
-        List<String> versions = dlVersions['versions']
+        List<StackVersion> versions = dlVersions['versions'].collect {s -> StackVersion.asVersion(s)}
 
         def versionQualifier = System.getenv('VERSION_QUALIFIER')
         def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
 
-        String qualifiedVersion = selectClosestInList(isReleaseBuild ? version : "${version}-SNAPSHOT", versions)
+        String qualifiedVersion = selectClosestInList(StackVersion.asVersion(isReleaseBuild ? version : "${version}-SNAPSHOT"), versions)
         if (qualifiedVersion == null) {
             throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
         }
@@ -41,9 +40,9 @@ class StackVersionSelector {
      *  8.0.0-rc2
      *  8.0.0
      * */
-    protected def selectClosestInList(String version, List<String> availableVersions) {
+    protected def selectClosestInList(StackVersion version, List<StackVersion> availableVersions) {
         for (int index = 0; index < availableVersions.size(); index++) {
-            String currentVersion = availableVersions[index]
+            StackVersion currentVersion = availableVersions[index]
             if (currentVersion == version) {
                 return currentVersion
             }
@@ -51,8 +50,7 @@ class StackVersionSelector {
                 // last version
                 return currentVersion
             }
-            if (versionComparator.compare(currentVersion, version) == -1 &&
-                    versionComparator.compare(availableVersions[index + 1], version) == 1) {
+            if (currentVersion < version && version < availableVersions[index + 1]) {
                 // 7.14.0 < 7.15.0 < 8.0.0-SNAPSHOT and 7.15.0 is not yet released
                 return currentVersion
             }
@@ -60,52 +58,60 @@ class StackVersionSelector {
         throw new IllegalStateException("Never reach this point")
     }
 
-    static class VersionComparator implements Comparator<String> {
-        private static final List<String> VERSION_SUFFIX_ORDER = ["SNAPSHOT", "alpha1", "alpha2", "rc1", "rc2"]
 
-        /**
-         * @return  1 s > t,
-         *          0 s == t,
-         *         -1 s < t
-         * */
+    static class StackVersion implements Comparable<StackVersion> {
+        final String version
+        final String suffix
+        final def comparator = comparator()
+
+        StackVersion(String fullVersion) {
+            def splits = fullVersion.split("-")
+            version = splits[0]
+            if (splits.length == 2) {
+                suffix = splits[1]
+            }
+        }
+
+        def static asVersion(String v) {
+            new StackVersion(v)
+        }
+
+        @Override
+        String toString() {
+            suffix != null ? "$version-$suffix" : version
+        }
+
+        static Comparator<StackVersion> comparator() {
+            Comparator.comparing({sv -> sv.version})
+                    .thenComparing({sv -> sv.suffix}, new SuffixComparator())
+        }
+
+        @Override
+        int compareTo(StackVersion other) {
+            comparator.compare(this, other)
+        }
+    }
+
+    static class SuffixComparator implements Comparator<String> {
+
+        private static final List<String> VERSION_SUFFIX_ORDER = ["SNAPSHOT", "alpha1", "alpha2", "rc1", "rc2", "<GA>"]
+
         @Override
         int compare(String s, String t) {
-            if (!s.contains("-") && !t.contains("-"))
-                // no SNAPSHOT version, compare directly
-                return s <=> t
-            if (s.contains("-") && t.contains("-")) {
-                //both have a -SNAPSHOT or -alpha1 etc
-                String swd = s.split("-")[0]
-                String twd = t.split("-")[0]
-                if (swd == twd) {
-                    //for example 8.0.0-SNAPSHOT vs 8.0.0-alpha1
-                    String sSuffix = s.split("-")[1]
-                    String tSuffix = t.split("-")[1]
-                    int sSuffixOrder = VERSION_SUFFIX_ORDER.indexOf(sSuffix)
-                    int tSuffixOrder = VERSION_SUFFIX_ORDER.indexOf(tSuffix)
-                    if (sSuffixOrder < 0)
-                        throw new IllegalArgumentException("Found illegal version suffix for $s: [$sSuffix]")
-                    if (tSuffixOrder < 0)
-                        throw new IllegalArgumentException("Found illegal version suffix for $t: [$tSuffix]")
+            if (s == null)
+                s = "<GA>"
+            if (t == null)
+                t = "<GA>"
 
-                    return sSuffixOrder <=> tSuffixOrder
-                }
-                // different -SNAPSHOT versions, compare jus the version part
-                return swd <=> twd
-            }
-            // one between s and t has -SNAPSHOT
-            String swd = s.split("-")[0]
-            String twd = t.split("-")[0]
-            if (swd == twd) {
-                //both are same version
-                if (s.contains("-"))
-                    // the one with -SNAPSHOT has lower priority
-                    return -1
-                else
-                    return 1
-            }
+            //for example 8.0.0-SNAPSHOT vs 8.0.0-alpha1
+            int sSuffixOrder = VERSION_SUFFIX_ORDER.indexOf(s)
+            int tSuffixOrder = VERSION_SUFFIX_ORDER.indexOf(t)
+            if (sSuffixOrder < 0)
+                throw new IllegalArgumentException("Found illegal version suffix: [$s]")
+            if (tSuffixOrder < 0)
+                throw new IllegalArgumentException("Found illegal version suffix: [$t]")
 
-            return swd <=> twd
+            return sSuffixOrder <=> tSuffixOrder
         }
     }
 }
