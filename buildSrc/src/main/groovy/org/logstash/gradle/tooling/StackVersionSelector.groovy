@@ -75,15 +75,13 @@ class StackVersionSelector {
 
         @Override
         int compareTo(Version version) {
-            if (major == version.major) {
-                if (minor == version.minor) {
-                    return patch <=> version.patch
-                } else {
-                    return minor <=> version.minor
-                }
-            } else {
+            if (major != version.major) {
                 return major <=> version.major
             }
+            if (minor != version.minor) {
+                return minor <=> version.minor
+            }
+            return patch <=> version.patch
         }
 
         @Override
