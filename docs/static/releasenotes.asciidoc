@@ -57,7 +57,7 @@ No user-facing changes in Logstash core.
 *Cef Codec - 6.2.2*
 
 * Fixed invalid Field Reference that could occur when ECS mode was enabled and the CEF field `fileHash` was parsed.
-* Added expanded mapping for numbered `deviceCustom*` and `deviceCustom*Label` fields so that all now include numbers 1 through 15. [#89](https://github.com/logstash-plugins/logstash-codec-cef/pull/89)
+* Added expanded mapping for numbered `deviceCustom*` and `deviceCustom*Label` fields so that all now include numbers 1 through 15. https://github.com/logstash-plugins/logstash-codec-cef/pull/89[#89]
 
 *Multiline Codec - 3.0.11*
 
