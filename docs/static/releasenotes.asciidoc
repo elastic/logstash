@@ -69,7 +69,7 @@ No user-facing changes in Logstash core.
 
 *Beats Input - 6.1.5*
 
-* Changed jar dependencies to reflect newer versions https://github.com/logstash-plugins/logstash-input-http/pull/425[#425]
+* Changed jar dependencies to reflect newer versions https://github.com/logstash-plugins/logstash-input-beats/pull/425[#425]
 * Fix: reduce error logging on connection resets https://github.com/logstash-plugins/logstash-input-beats/pull/424[#424]
 
 [[logstash-7-13-2]]
