@@ -49,6 +49,8 @@ class StackVersionSelectorTest {
 
         assert asVersion("7.1.0") > asVersion("7.1.0-SNAPSHOT")
 
+        assert asVersion("7.9.0") < asVersion("7.10.0")
+
         assert asVersion("7.2.1-SNAPSHOT") > asVersion("7.1.0-SNAPSHOT")
 
         assert asVersion("7.2.1-SNAPSHOT") > asVersion("7.1.0")

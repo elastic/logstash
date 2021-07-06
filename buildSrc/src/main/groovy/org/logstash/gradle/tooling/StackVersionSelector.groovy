@@ -58,15 +58,48 @@ class StackVersionSelector {
         throw new IllegalStateException("Never reach this point")
     }
 
+    static class Version implements Comparable<Version> {
+
+        final int major
+        final int minor
+        final int patch
+        private final String original
+
+        Version(String v) {
+            original = v
+            def splits = v.split("\\.")
+            major = splits[0] as int
+            minor = splits[1] as int
+            patch = splits[2] as int
+        }
+
+        @Override
+        int compareTo(Version version) {
+            if (major == version.major) {
+                if (minor == version.minor) {
+                    return patch <=> version.patch
+                } else {
+                    return minor <=> version.minor
+                }
+            } else {
+                return major <=> version.major
+            }
+        }
+
+        @Override
+        String toString() {
+            original
+        }
+    }
 
     static class StackVersion implements Comparable<StackVersion> {
-        final String version
+        final Version version
         final String suffix
         final def comparator = comparator()
 
         StackVersion(String fullVersion) {
             def splits = fullVersion.split("-")
-            version = splits[0]
+            version = new Version(splits[0])
             if (splits.length == 2) {
                 suffix = splits[1]
             }
