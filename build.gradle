@@ -167,7 +167,7 @@ tasks.register("configureArtifactInfo") {
     def versionSelector = new StackVersionSelector(artifactVersionsApi)
     String qualifiedVersion = versionSelector.selectClosestVersion(version)
     if (qualifiedVersion != version) {
-        println "WARN version $version not yet published, swith automatically to $qualifiedVersion"
+        println "WARN version $version does not yet exist or has not been published, switching to $qualifiedVersion"
     }
 
     // find latest reference to last build

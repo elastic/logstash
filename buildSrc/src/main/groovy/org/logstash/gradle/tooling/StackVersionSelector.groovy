@@ -21,7 +21,7 @@ class StackVersionSelector {
 
         String qualifiedVersion = selectClosestInList(StackVersion.asVersion(isReleaseBuild ? version : "${version}-SNAPSHOT"), versions)
         if (qualifiedVersion == null) {
-            throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
+            throw new GradleException("Could not find Elastic Stack version ($version) in the artifact api (${artifactVersionsApi})")
         }
         qualifiedVersion
     }
