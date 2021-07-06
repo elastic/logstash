@@ -44,27 +44,25 @@ class StackVersionSelectorTest {
 
     @Test
     void "compare StackVersion tests"() {
-        def versionComparator = StackVersionSelector.StackVersion.comparator()
+        assert asVersion("7.1.0") < asVersion("7.2.1")
+        assert asVersion("7.2.1") > asVersion("7.1.0")
 
-        assert -1 == versionComparator.compare(asVersion("7.1.0"), asVersion("7.2.1"))
-        assert 1 == versionComparator.compare(asVersion("7.2.1"), asVersion("7.1.0"))
+        assert asVersion("7.1.0") > asVersion("7.1.0-SNAPSHOT")
 
-        assert 1 == versionComparator.compare(asVersion("7.1.0"), asVersion("7.1.0-SNAPSHOT"))
+        assert asVersion("7.2.1-SNAPSHOT") > asVersion("7.1.0-SNAPSHOT")
 
-        assert 1 == versionComparator.compare(asVersion("7.2.1-SNAPSHOT"), asVersion("7.1.0-SNAPSHOT"))
+        assert asVersion("7.2.1-SNAPSHOT") > asVersion("7.1.0")
 
-        assert 1 == versionComparator.compare(asVersion("7.2.1-SNAPSHOT"), asVersion("7.1.0"))
+        assert asVersion("7.2.1") > asVersion("7.1.0-SNAPSHOT")
 
-        assert 1 == versionComparator.compare(asVersion("7.2.1"), asVersion("7.1.0-SNAPSHOT"))
+        assert asVersion("8.0.0-alpha1") > asVersion("7.1.0-SNAPSHOT")
 
-        assert 1 == versionComparator.compare(asVersion("8.0.0-alpha1"), asVersion("7.1.0-SNAPSHOT"))
+        assert asVersion("8.0.0-alpha1") > asVersion("8.0.0-SNAPSHOT")
 
-        assert 1 == versionComparator.compare(asVersion("8.0.0-alpha1"), asVersion("8.0.0-SNAPSHOT"))
+        assert asVersion("8.0.0-rc1") > asVersion("8.0.0-alpha2")
 
-        assert 1 == versionComparator.compare(asVersion("8.0.0-rc1"), asVersion("8.0.0-alpha2"))
+        assert asVersion("8.0.0") > asVersion("8.0.0-alpha2")
 
-        assert 1 == versionComparator.compare(asVersion("8.0.0"), asVersion("8.0.0-alpha2"))
-
-        assert 1 == versionComparator.compare(asVersion("8.0.0"), asVersion("8.0.0-SNAPSHOT"))
+        assert asVersion("8.0.0") > asVersion("8.0.0-SNAPSHOT")
     }
 }
