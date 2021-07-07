@@ -218,14 +218,15 @@ public final class PluginFactoryExt extends RubyBasicObject
         final PluginLookup.PluginClass pluginClass = pluginResolver.resolve(type, name);
         if (pluginClass.language() == PluginLookup.PluginLanguage.RUBY) {
 
-            final Map<String, Object> newArgs = new HashMap<>(args);
-            newArgs.put("id", id);
+            final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
+            rubyArgs.replace(context, args);
+            rubyArgs.put("id", id); // auto converts String -> RubyString
+
             final RubyClass klass = (RubyClass) pluginClass.klass();
             final ExecutionContextExt executionCntx = executionContextFactory.create(
                     context, RubyUtil.RUBY.newString(id), klass.callMethod(context, "config_name")
             );
-            final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
-            rubyArgs.putAll(newArgs);
+
             if (type == PluginLookup.PluginType.OUTPUT) {
                 return new OutputDelegatorExt(context.runtime, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS).initialize(
                         context,
