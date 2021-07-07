@@ -21,11 +21,12 @@
 package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.common.SourceWithMetadata;
 
-import java.util.UUID;
+import java.util.Random;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -53,8 +54,16 @@ public final class RubyIntegration {
 
     }
 
+    /**
+     * Generates a plugin id.
+     * @return a (random) generated plugin identifier
+     */
     public static String generatePluginId() {
-        return UUID.randomUUID().toString();
+        // similar to UUID.randomUUID() but fast - we do not need "secure" random ids
+        byte[] randomBytes = new byte[16];
+        new Random().nextBytes(randomBytes); // seeded from System.nanoTime()
+        // for improved log readability we limit the HEX string to a shorter length
+        return new DigestUtils("MD5").digestAsHex(randomBytes).substring(0, 16);
     }
 
 }
