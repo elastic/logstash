@@ -62,7 +62,7 @@ module LogStash
       response = run(cmd, debug)
 
       unless response.success?
-        raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}"
+        raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}, stdout: #{response.stdout}"
       end
       response
     end
