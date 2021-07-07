@@ -432,13 +432,12 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat"/*, Download*/) {
+tasks.register("downloadFilebeat") {
     dependsOn  configureArtifactInfo
     description "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
-//    outputs.file(project.ext.filebeatDownloadLocation)
 
     doLast {
         download {
@@ -485,7 +484,6 @@ tasks.register("checkEsSHA") {
     dependsOn  configureArtifactInfo
 
     description "Download ES version remote's fingerprint file"
-//  outputs.file("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
 
     doLast {
         String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
@@ -509,16 +507,15 @@ tasks.register("checkEsSHA") {
             if (localESCalculatedSHA != remoteSHACode) {
                 println "ES package calculated fingerprint is different from remote, deleting local archive"
                 delete(localESArchive)
-                delete(localESCalculatedSHA)
             }
-        } else {
+        }/* else {
             mkdir project.buildDir
             // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
             new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter { w ->
                 w << "${downloadedElasticsearchName} not yet downloaded"
                 w.close()
             }
-        }
+        }*/
     }
 }
 
@@ -527,7 +524,6 @@ tasks.register("downloadEs") {
     description "Download ES Snapshot for current branch version: ${version}"
 
     inputs.file("${projectDir}/versions.yml")
-//    outputs.file(project.ext.elasticsearchDownloadLocation)
 
     doLast {
         download {
@@ -557,7 +553,7 @@ tasks.register("deleteLocalEs", Delete) {
     delete ('./build/elasticsearch')
 }
 
-tasks.register("copyEs"/*, Copy*/) {
+tasks.register("copyEs") {
     dependsOn = [downloadEs, deleteLocalEs]
     doLast {
         println "copyEs executing.."
@@ -567,8 +563,8 @@ tasks.register("copyEs"/*, Copy*/) {
         }
 
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
-        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
+        println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
+        println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
