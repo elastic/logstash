@@ -473,9 +473,8 @@ tasks.register("copyFilebeat") {
         copy {
             from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
             into "./build/"
-
-            file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         }
+        file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         System.out.println "Unzipped ${project.ext.filebeatDownloadLocation} to ./build/filebeat"
         System.out.println "Deleting ${project.ext.filebeatDownloadLocation}"
         delete(project.ext.filebeatDownloadLocation)
@@ -561,13 +560,15 @@ tasks.register("deleteLocalEs", Delete) {
 tasks.register("copyEs"/*, Copy*/) {
     dependsOn = [downloadEs, deleteLocalEs]
     doLast {
+        println "copyEs executing.."
         copy {
             from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
             into "./build/"
-            file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
-            System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-            System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
         }
+
+        file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
+        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
+        System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
