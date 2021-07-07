@@ -39,8 +39,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
+
+import static org.logstash.config.ir.compiler.RubyIntegration.generatePluginId;
 
 /**
  * The plain codec accepts input bytes as events with no decoding beyond the application of a specified
@@ -77,7 +78,7 @@ public class Plain implements Codec {
      */
     public Plain(final String id, final Configuration configuration, final Context context) {
         this(context, configuration.get(CHARSET_CONFIG), configuration.get(FORMAT_CONFIG),
-                (id != null && !id.isEmpty()) ? id : UUID.randomUUID().toString());
+                (id != null && !id.isEmpty()) ? id : generatePluginId());
     }
     /**
      * @param configuration Logstash Configuration
@@ -136,6 +137,6 @@ public class Plain implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new Plain(context, charset.name(), format, UUID.randomUUID().toString());
+        return new Plain(context, charset.name(), format, null);
     }
 }

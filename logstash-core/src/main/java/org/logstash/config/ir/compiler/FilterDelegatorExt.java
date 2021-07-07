@@ -34,8 +34,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
-import java.util.UUID;
-
 import static org.logstash.RubyUtil.RUBY;
 
 @JRubyClass(name = "FilterDelegator")
@@ -73,7 +71,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
         filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");
         filterClass = configNameDouble.getType();
-        this.setId(filter.getRuntime().getCurrentContext(), UUID.randomUUID().toString());
+        this.setId(filter.getRuntime().getCurrentContext(), RubyIntegration.generatePluginId());
         return this;
     }
 

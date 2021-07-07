@@ -284,11 +284,11 @@ public final class PluginFactoryExt extends RubyBasicObject
         final Optional<String> unprocessedId;
         if (source == null) {
             unprocessedId = extractId(() -> extractIdFromArgs(args),
-                                      this::generateUUID);
+                                      PluginFactoryExt::generatePluginId);
         } else {
             unprocessedId = extractId(() -> extractIdFromLIR(source),
                                       () -> extractIdFromArgs(args),
-                                      () -> generateUUIDForCodecs(type));
+                                      () -> generateCodecId(type));
         }
 
         return unprocessedId
@@ -328,13 +328,13 @@ public final class PluginFactoryExt extends RubyBasicObject
         }
     }
 
-    private Optional<String> generateUUID() {
-        return Optional.of(UUID.randomUUID().toString());
+    private static Optional<String> generatePluginId() {
+        return Optional.of(RubyIntegration.generatePluginId());
     }
 
-    private Optional<String> generateUUIDForCodecs(final PluginLookup.PluginType pluginType) {
+    private static Optional<String> generateCodecId(final PluginLookup.PluginType pluginType) {
         if (pluginType == PluginLookup.PluginType.CODEC) {
-            return generateUUID();
+            return generatePluginId();
         }
         return Optional.empty();
     }

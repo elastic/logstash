@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static org.logstash.config.ir.compiler.RubyIntegration.generatePluginId;
+
 /**
  * Java implementation of the "dots" codec
  * */
@@ -45,11 +47,11 @@ public class Dots implements Codec {
     private final String id;
 
     public Dots(final String id, final Configuration configuration, final Context context) {
-        this((id != null && !id.isEmpty()) ? id : UUID.randomUUID().toString());
+        this((id != null && !id.isEmpty()) ? id : generatePluginId());
     }
 
     public Dots(final Configuration configuration, final Context context) {
-        this(UUID.randomUUID().toString());
+        this(generatePluginId());
     }
 
     private Dots(String id) {
@@ -73,7 +75,7 @@ public class Dots implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new Dots(UUID.randomUUID().toString());
+        return new Dots(generatePluginId());
     }
 
     @Override
