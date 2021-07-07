@@ -285,21 +285,21 @@ public final class PluginFactoryExt extends RubyBasicObject
         final Optional<String> unprocessedId;
         if (source == null) {
             unprocessedId = extractId(() -> extractIdFromArgs(args),
-                                      PluginFactoryExt::generatePluginId);
+                                      () -> generatePluginId(type));
         } else {
             unprocessedId = extractId(() -> extractIdFromLIR(source),
                                       () -> extractIdFromArgs(args),
-                                      () -> generateCodecId(type));
+                                      () -> generatePluginId(type));
         }
 
         return unprocessedId
                 .map(configVariables::expand)
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
-                .orElse(null);
+                .get();
     }
 
-    private Optional<String> extractId(final IdExtractor... extractors) {
+    private static Optional<String> extractId(final IdExtractor... extractors) {
         for (IdExtractor extractor : extractors) {
             final Optional<String> extracted = extractor.extract();
             if (extracted.isPresent()) {
@@ -314,11 +314,7 @@ public final class PluginFactoryExt extends RubyBasicObject
         Optional<String> extract();
     }
 
-    private Optional<String> extractIdFromArgs(final Map<String, ?> args) {
-        if (!args.containsKey("id")) {
-            return Optional.empty();
-        }
-
+    private static Optional<String> extractIdFromArgs(final Map<String, ?> args) {
         final Object explicitId = args.get("id");
         if (explicitId instanceof String) {
             return Optional.of((String) explicitId);
@@ -329,15 +325,8 @@ public final class PluginFactoryExt extends RubyBasicObject
         }
     }
 
-    private static Optional<String> generatePluginId() {
+    private static Optional<String> generatePluginId(final PluginLookup.PluginType type) {
         return Optional.of(RubyIntegration.generatePluginId());
-    }
-
-    private static Optional<String> generateCodecId(final PluginLookup.PluginType pluginType) {
-        if (pluginType == PluginLookup.PluginType.CODEC) {
-            return generatePluginId();
-        }
-        return Optional.empty();
     }
 
     private Optional<String> extractIdFromLIR(final SourceWithMetadata source) {
@@ -345,7 +334,7 @@ public final class PluginFactoryExt extends RubyBasicObject
                 .filter(v -> v.getSourceWithMetadata() != null
                         && v.getSourceWithMetadata().equalsWithoutText(source))
                 .findFirst()
-                .map(Vertex::getId);
+                .map(Vertex::getExplicitId);
     }
 
     ExecutionContextFactoryExt getExecutionContextFactory() {
