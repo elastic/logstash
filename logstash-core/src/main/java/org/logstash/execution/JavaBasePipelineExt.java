@@ -67,8 +67,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
     }
 
     @JRubyMethod(required = 4)
-    public JavaBasePipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
-        throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
+    public JavaBasePipelineExt initialize(final ThreadContext context, final IRubyObject[] args) {
         initialize(context, args[0], args[1], args[2]);
         lirExecution = new CompiledPipeline(
             lir,

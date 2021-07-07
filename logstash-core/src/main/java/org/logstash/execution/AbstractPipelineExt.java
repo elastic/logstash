@@ -46,6 +46,7 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
@@ -148,19 +149,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod
     public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
-        final IRubyObject rubyLogger)
-        throws NoSuchAlgorithmException {
+        final IRubyObject rubyLogger) {
         reporter = new PipelineReporterExt(
             context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
         configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
-        configHash = context.runtime.newString(
-            Hex.encodeHexString(
-                MessageDigest.getInstance("SHA1").digest(configString.getBytes())
-            )
-        );
+        configHash = context.runtime.newString(Hex.encodeHexString(digestString(configString)));
         settings = pipelineSettings.callMethod(context, "settings");
         final IRubyObject id = getSetting(context, "pipeline.id");
         if (id.isNil()) {
@@ -189,6 +185,19 @@ public class AbstractPipelineExt extends RubyBasicObject {
             throw new IllegalArgumentException(iirex);
         }
         return this;
+    }
+
+    private static byte[] digestString(final RubyString content) {
+        final MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException ex) {
+            throw new AssertionError(ex);
+        }
+
+        final ByteList bytes = content.getByteList();
+        digest.update(bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getRealSize());
+        return digest.digest();
     }
 
     /**
