@@ -19,7 +19,6 @@ require "logstash/config/mixin"
 require "logstash/plugins/ecs_compatibility_support"
 require "concurrent"
 require "logstash/plugins/event_factory_support"
-require "securerandom"
 
 require_relative 'plugin_metadata'
 
@@ -76,7 +75,7 @@ class LogStash::Plugin
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
-    @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+    @params["id"] ||= LogStash::Plugins::PluginFactory.generate_plugin_id
   end
 
   # Return a uniq ID for this plugin configuration, by default

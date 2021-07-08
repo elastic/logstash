@@ -82,6 +82,11 @@ public final class PluginFactoryExt extends RubyBasicObject
         return filterDelegatorClass.newInstance(context, filterInstance, id, Block.NULL_BLOCK);
     }
 
+    @JRubyMethod(name = "generate_plugin_id", meta = true)
+    public static IRubyObject generate_plugin_id(final ThreadContext context, final IRubyObject recv) {
+        return context.runtime.newString(RubyIntegration.generatePluginId());
+    }
+
     public PluginFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         this(runtime, metaClass, new PluginLookup(PluginRegistry.getInstance(new AliasRegistry())));
     }
