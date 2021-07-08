@@ -507,10 +507,16 @@ describe LogStash::JavaPipeline do
       pipeline.close
     end
 
-    it "should use LIR provided IDs" do
-      expect(pipeline.inputs.first.id).to eq(pipeline.lir.input_plugin_vertices.first.id)
-      expect(pipeline.filters.first.id).to eq(pipeline.lir.filter_plugin_vertices.first.id)
-      expect(pipeline.outputs.first.id).to eq(pipeline.lir.output_plugin_vertices.first.id)
+    it "should generate plugin ids" do
+      input_id = pipeline.inputs.first.id
+      filter_id = pipeline.filters.first.id
+      output_id = pipeline.outputs.first.id
+      [ input_id, filter_id, output_id ].each do |plugin_id|
+        expect(plugin_id).to match /([0-9]|[a-f])+/
+      end
+      expect( input_id ).to_not eq filter_id
+      expect( input_id ).to_not eq output_id
+      expect( output_id ).to_not eq filter_id
     end
   end
 

@@ -411,8 +411,8 @@ describe LogStash::Plugin do
     context "when the id is not provided provided" do
       subject { plugin.new(config) }
 
-      it "return a human readable ID" do
-        expect(subject.id).to match(/^simple_plugin_/)
+      it "generates an id" do
+        expect(subject.id).to match /([0-9]|[a-f])+/
       end
     end
   end
