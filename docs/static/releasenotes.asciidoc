@@ -51,22 +51,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-13-4]]
 === Logstash 7.13.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.13.4
-
-=== Logstash Commits between 7.13 and 7.13.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.13.3..7.13"
-
-573ddc8f1 - (HEAD -> 7.13, origin/7.13) bump version to 7.13.4 (#13039) (2 days ago) <João Duarte>
-a0aa50dea - Release notes for 7.13.3 (#13031) (2 days ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.13.3..7.13 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+No user-facing changes in Logstash core.
 
 [[logstash-7-13-3]]
 === Logstash 7.13.3 Release Notes
