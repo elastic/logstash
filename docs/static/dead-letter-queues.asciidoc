@@ -267,7 +267,18 @@ the mapping issue is resolved.
 [[dlq-size]]
 ==== Track dead letter queue size
 
-ToDo: Add info on how to track size before it becomes a problem
+Monitor the size of the dead letter queue before it becomes a problem.
+By checking it periodically, you can determine the maximum queue size that makes sense for each pipeline. 
+
+The size of the DLQ for each pipeline is available in the node stats API.
+
+[source,txt]
+-----
+pipelines.${pipeline_id}.dead_letter_queue.queue_size_in_bytes.
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
 
 [[dlq-clear]]
 ==== Clear the dead letter queue
@@ -277,4 +288,11 @@ The dead letter queue cannot be cleared with the upstream pipeline running.
 The dead letter queue is a directory of pages. 
 To clear it, stop the pipeline and delete location/<file-name>.
 
-When the pipeline will create a new dead letter queue when it starts again.
+[source,txt]
+-----
+${path.data}/dead_letter_queue/${pipeline_id}
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
+The pipeline creates a new dead letter queue when it starts again.
