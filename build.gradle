@@ -158,27 +158,31 @@ tasks.register("configureArchitecture") {
 
 tasks.register("configureArtifactInfo") {
     dependsOn configureArchitecture
-    def versionQualifier = System.getenv('VERSION_QUALIFIER')
-    if (versionQualifier) {
-        version = "$version-$versionQualifier"
+    description "Set the url to download stack artifacts for select stack version"
+
+    doLast {
+        def versionQualifier = System.getenv('VERSION_QUALIFIER')
+        if (versionQualifier) {
+            version = "$version-$versionQualifier"
+        }
+
+        def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
+        String apiResponse = artifactVersionsApi.toURL().text
+
+        def dlVersions = new JsonSlurper().parseText(apiResponse)
+        String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
+        if (qualifiedVersion == null) {
+            throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
+        }
+        // find latest reference to last build
+        String buildsListApi = "${artifactVersionsApi}/${qualifiedVersion}/builds/"
+        apiResponse = buildsListApi.toURL().text
+        def dlBuilds = new JsonSlurper().parseText(apiResponse)
+        def stackBuildVersion = dlBuilds["builds"][0]
+
+        project.ext.set("artifactApiVersionedBuildUrl", "${artifactVersionsApi}/${qualifiedVersion}/builds/${stackBuildVersion}")
+        project.ext.set("stackArtifactSuffix", qualifiedVersion)
     }
-
-    def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
-    String apiResponse = artifactVersionsApi.toURL().text
-
-    def dlVersions = new JsonSlurper().parseText(apiResponse)
-    String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
-    if (qualifiedVersion == null) {
-        throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
-    }
-    // find latest reference to last build
-    String buildsListApi = "${artifactVersionsApi}/${qualifiedVersion}/builds/"
-    apiResponse = buildsListApi.toURL().text
-    def dlBuilds = new JsonSlurper().parseText(apiResponse)
-    def stackBuildVersion = dlBuilds["builds"][0]
-
-    project.ext.set("artifactApiVersionedBuildUrl", "${artifactVersionsApi}/${qualifiedVersion}/builds/${stackBuildVersion}")
-    project.ext.set("stackArtifactSuffix", qualifiedVersion)
 }
 
 abstract class SignAliasDefinitionsTask extends DefaultTask {
@@ -428,31 +432,32 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat", Download) {
+tasks.register("downloadFilebeat") {
     dependsOn  configureArtifactInfo
     description "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
-
-    String downloadedFilebeatName = "filebeat-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("beatsArchitecture")}"
-    project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
-
-    // find url of build artifact
-    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
-    String apiResponse = artifactApiUrl.toURL().text
-    def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-    project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
-    project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-
-    src project.ext.filebeatSnapshotUrl
-    onlyIfNewer true
     inputs.file("${projectDir}/versions.yml")
-    outputs.file(project.ext.filebeatDownloadLocation)
-    dest new File(project.ext.filebeatDownloadLocation)
-    retries 3
+
     doLast {
+        download {
+            String downloadedFilebeatName = "filebeat-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("beatsArchitecture")}"
+            project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
+
+            // find url of build artifact
+            String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
+            String apiResponse = artifactApiUrl.toURL().text
+            def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
+            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+
+            src project.ext.filebeatSnapshotUrl
+            onlyIfNewer true
+
+            dest new File(project.ext.filebeatDownloadLocation)
+            retries 3
+        }
         System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
     }
 }
@@ -461,11 +466,13 @@ tasks.register("deleteLocalFilebeat", Delete) {
     delete ('./build/filebeat')
 }
 
-tasks.register("copyFilebeat", Copy){
+tasks.register("copyFilebeat") {
     dependsOn = [downloadFilebeat, deleteLocalFilebeat]
-    from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
-    into "./build/"
     doLast {
+        copy {
+            from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
+            into "./build/"
+        }
         file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         System.out.println "Unzipped ${project.ext.filebeatDownloadLocation} to ./build/filebeat"
         System.out.println "Deleting ${project.ext.filebeatDownloadLocation}"
@@ -478,63 +485,65 @@ tasks.register("checkEsSHA") {
 
     description "Download ES version remote's fingerprint file"
 
-    String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
-    outputs.file("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
+    doLast {
+        String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
 
-    // find url of build artifact
-    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-    String apiResponse = artifactApiUrl.toURL().text
-    def buildUrls = new JsonSlurper().parseText(apiResponse)
-    String remoteSHA = buildUrls.package.sha_url.toURL().text
 
-    def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-    if (localESArchive.exists()) {
-        // this create a file named localESArchive with ".SHA-512" postfix
-        ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
+        // find url of build artifact
+        String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+        String apiResponse = artifactApiUrl.toURL().text
+        def buildUrls = new JsonSlurper().parseText(apiResponse)
+        String remoteSHA = buildUrls.package.sha_url.toURL().text
 
-        File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
-        String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
-        def splitted = remoteSHA.split(' ')
-        String remoteSHACode = splitted[0]
-        if (localESCalculatedSHA != remoteSHACode) {
-            println "ES package calculated fingerprint is different from remote, deleting local archive"
-            delete(localESArchive)
-            delete(localESCalculatedSHA)
-        }
-    } else {
-        mkdir project.buildDir
-        // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
-        new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter {w ->
-            w << "${downloadedElasticsearchName} not yet downloaded"
-            w.close()
-        }
+        def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+        if (localESArchive.exists()) {
+            // this create a file named localESArchive with ".SHA-512" postfix
+            ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
+
+            File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
+            String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
+            def splitted = remoteSHA.split(' ')
+            String remoteSHACode = splitted[0]
+            if (localESCalculatedSHA != remoteSHACode) {
+                println "ES package calculated fingerprint is different from remote, deleting local archive"
+                delete(localESArchive)
+            }
+        }/* else {
+            mkdir project.buildDir
+            // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
+            new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter { w ->
+                w << "${downloadedElasticsearchName} not yet downloaded"
+                w.close()
+            }
+        }*/
     }
 }
 
-tasks.register("downloadEs", Download) {
+tasks.register("downloadEs") {
     dependsOn  = [configureArtifactInfo, checkEsSHA]
     description "Download ES Snapshot for current branch version: ${version}"
 
-    String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
-    project.ext.set("unpackedElasticsearchName", "elasticsearch-${project.ext.get("stackArtifactSuffix")}")
-
-    // find url of build artifact
-    String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-    String apiResponse = artifactApiUrl.toURL().text
-    def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-    project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
-    project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-
-    src project.ext.elasticsearchSnapshotURL
-    onlyIfNewer true
-    retries 3
     inputs.file("${projectDir}/versions.yml")
-//    inputs.file("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
-    outputs.file(project.ext.elasticsearchDownloadLocation)
-    dest new File(project.ext.elasticsearchDownloadLocation)
 
     doLast {
+        download {
+            String downloadedElasticsearchName = "elasticsearch-${project.ext.get("stackArtifactSuffix")}-${project.ext.get("esArchitecture")}"
+            project.ext.set("unpackedElasticsearchName", "elasticsearch-${project.ext.get("stackArtifactSuffix")}")
+
+            // find url of build artifact
+            String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
+            String apiResponse = artifactApiUrl.toURL().text
+            def buildUrls = new JsonSlurper().parseText(apiResponse)
+
+            project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
+            project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+
+            src project.ext.elasticsearchSnapshotURL
+            onlyIfNewer true
+            retries 3
+            dest new File(project.ext.elasticsearchDownloadLocation)
+        }
+
         System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
     }
 }
@@ -544,15 +553,18 @@ tasks.register("deleteLocalEs", Delete) {
     delete ('./build/elasticsearch')
 }
 
-tasks.register("copyEs", Copy) {
+tasks.register("copyEs") {
     dependsOn = [downloadEs, deleteLocalEs]
-    from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
-    into "./build/"
     doLast {
+        println "copyEs executing.."
+        copy {
+            from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
+            into "./build/"
+        }
+
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
-        System.out.println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        System.out.println "Deleting ${project.ext.elasticsearchDownloadLocation}"
-//        delete(project.ext.elasticsearchDownloadLocation)
+        println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
+        println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
