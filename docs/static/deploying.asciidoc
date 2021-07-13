@@ -235,11 +235,6 @@ transit.
 [float]
 ==== Resiliency and Recovery
 
-When Logstash consumes from Kafka, persistent queues should be enabled and will
-add transport resiliency to mitigate the need for reprocessing during Logstash
-node failures. In this context, it’s recommended to use the default persistent
-queue disk allocation size `queue.max_bytes: 1GB`.
-
 If Kafka is configured to retain data for an extended period of time, data can
 be reprocessed from Kafka in the case of disaster recovery and reconciliation.
 
