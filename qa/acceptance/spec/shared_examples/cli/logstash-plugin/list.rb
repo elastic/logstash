@@ -30,7 +30,7 @@ shared_examples "logstash list" do |logstash|
     end
 
     let(:plugin_name) { /logstash-(?<type>\w+)-(?<name>\w+)/ }
-    let(:plugin_name_with_version) { /#{plugin_name}\s\(\d+\.\d+.\d+(.\w+)?\)/ }
+    let(:plugin_name_with_version) { /(\s*[├└]──\s*)?#{plugin_name}\s(\(\d+\.\d+.\d+(.\w+)?\)|\(alias\))/ }
 
     context "without a specific plugin" do
       it "display a list of plugins" do
@@ -61,7 +61,7 @@ shared_examples "logstash list" do |logstash|
           # ~~~
           if match[:type] == 'integration'
             while line = stdout.gets
-              match = line.match(/^(?: [├└]── )#{plugin_name}$/)
+              match = line.match(/^(?: [├└]──\s+)#{plugin_name}$/)
               expect(match).to_not be_nil
               break if line.start_with?(' └')
             end
