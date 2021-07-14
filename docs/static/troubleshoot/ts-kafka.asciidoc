@@ -1,7 +1,7 @@
 [[ts-kafka]] 
 ==== Kafka issues and solutions
  
-[float] 
+[discrete] 
 [[ts-kafka-timeout]] 
 ===== Kafka session timeout issues (input)
 
@@ -85,7 +85,23 @@ to increasing the timeout value. Increasing the timeout is your only option if t
 client’s issues are caused by periodically stalling outputs. Check logs for
 evidence of stalling outputs, such as `ES output logging status 429`.
 
-[float] 
+[discrete]
+[[ts-schema-registry]]
+===== Kafka input plugin crashes when using schema registry
+
+By default, the kafka input plugin checks connectivity and validates the schema registry during plugin registration before events are processed. 
+In some circumstances, this process may fail when it tries to validate an authenticated schema registry, causing the plugin to crash.
+
+The plugin offers a `schema_registry_validation` setting to change the default behavior. 
+This setting allows the plugin to skip validation during registration, which allows the plugin to continue and events to be processed. 
+See the <<plugins-inputs-kafka-schema_registry_validation,kafka input plugin documentation>> for more information about the plugin and other configuration options. 
+
+NOTE: An incorrectly configured schema registry will still stop the plugin from processing events.
+
+NOTE: The default setting of `auto` is the best option for most circumstances and should not need to be changed.
+
+
+[discrete] 
 [[ts-kafka-many-offset-commits]] 
 ===== Large number of offset commits (input)
 
@@ -110,7 +126,7 @@ idle between receiving bursts of events). Increasing the value set for
 this scenario. For example, raising it by 10x will lead to 10x fewer offset commits.
 
 
-[float] 
+[discrete] 
 [[ts-kafka-codec-errors-input]] 
 ===== Codec Errors in Kafka Input (before Plugin Version 6.3.4 only) 
 
