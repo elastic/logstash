@@ -87,7 +87,7 @@ evidence of stalling outputs, such as `ES output logging status 429`.
 
 [discrete]
 [[ts-schema-registry]]
-===== Kafka input plugin crashes when using schema registry (input)
+===== Kafka input plugin crashes when using schema registry
 
 By default, the kafka input plugin checks connectivity and validates the schema registry during plugin registration before events are processed. 
 In some circumstances, this process may fail when it tries to validate an authenticated schema registry, causing the plugin to crash.
