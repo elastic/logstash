@@ -22,9 +22,7 @@ package org.logstash;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -65,11 +63,6 @@ public final class FieldReference {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     /**
-     * Holds all existing {@link FieldReference} instances for de-duplication.
-     */
-    private static final Map<FieldReference, FieldReference> DEDUP = new HashMap<>(64);
-
-    /**
      * The tokenizer that will be used when parsing field references
      */
     private static final StrictTokenizer TOKENIZER = new StrictTokenizer();
@@ -78,7 +71,7 @@ public final class FieldReference {
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
      */
     public static final FieldReference TIMESTAMP_REFERENCE =
-        deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD));
+            new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD);
 
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
@@ -179,22 +172,6 @@ public final class FieldReference {
     }
 
     /**
-     * De-duplicates instances using {@link FieldReference#DEDUP}. This method must be
-     * {@code synchronized} since we are running non-atomic get-put sequence on
-     * {@link FieldReference#DEDUP}.
-     * @param parsed FieldReference to de-duplicate
-     * @return De-duplicated FieldReference
-     */
-    private static synchronized FieldReference deduplicate(final FieldReference parsed) {
-        FieldReference ret = DEDUP.get(parsed);
-        if (ret == null) {
-            DEDUP.put(parsed, parsed);
-            ret = parsed;
-        }
-        return ret;
-    }
-
-    /**
      * Effective hashcode implementation using knowledge of field types.
      * @param key Key Field
      * @param path Path Field
@@ -209,15 +186,6 @@ public final class FieldReference {
         }
         hash = prime * hash + key.hashCode();
         return prime * hash + type;
-    }
-
-    private static FieldReference parseToCache(final String reference) {
-        FieldReference result = parse(reference);
-        if (CACHE.size() < 10_000) {
-            result = deduplicate(result);
-            CACHE.put(reference, result);
-        }
-        return result;
     }
 
     private static FieldReference parse(final CharSequence reference) {
