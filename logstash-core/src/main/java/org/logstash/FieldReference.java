@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.util.concurrent.ConcurrentHashMap;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.jruby.RubyString;
 
 /**
@@ -81,17 +83,29 @@ public final class FieldReference {
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
+    private static final int CACHE_MAXIMUM_SIZE = 10_000;
+
     /**
      * Cache of all existing {@link FieldReference} by their {@link RubyString} source.
      */
-    private static final Map<RubyString, FieldReference> RUBY_CACHE =
-        new ConcurrentHashMap<>(64, 0.2F, 1);
+    private static final LoadingCache<RubyString, FieldReference> RUBY_CACHE = CacheBuilder.newBuilder()
+            .maximumSize(CACHE_MAXIMUM_SIZE)
+            .build(new CacheLoader<RubyString, FieldReference>() {
+                public FieldReference load(RubyString key) {
+                    return parse(key);
+                }
+            });
 
     /**
      * Cache of all existing {@link FieldReference} by their {@link String} source.
      */
-    private static final Map<String, FieldReference> CACHE =
-        new ConcurrentHashMap<>(64, 0.2F, 1);
+    private static final LoadingCache<String, FieldReference> CACHE = CacheBuilder.newBuilder()
+            .maximumSize(CACHE_MAXIMUM_SIZE)
+            .build(new CacheLoader<String, FieldReference>() {
+                public FieldReference load(String key) {
+                    return parse(key);
+                }
+            });
 
     private final String[] path;
 
@@ -113,21 +127,15 @@ public final class FieldReference {
     }
 
     public static FieldReference from(final RubyString reference) {
-        // atomicity between the get and put is not important
-        final FieldReference result = RUBY_CACHE.get(reference);
-        if (result != null) {
-            return result;
+        FieldReference result = RUBY_CACHE.getIfPresent(reference);
+        if (result == null) {
+            result = RUBY_CACHE.getUnchecked(reference.newFrozen());
         }
-        return RUBY_CACHE.computeIfAbsent(reference.newFrozen(), ref -> from(ref.asJavaString()));
+        return result;
     }
 
-    public static FieldReference from(final String reference) {
-        // atomicity between the get and put is not important
-        final FieldReference result = CACHE.get(reference);
-        if (result != null) {
-            return result;
-        }
-        return parseToCache(reference);
+    public static FieldReference from(final String reference) throws IllegalSyntaxException {
+        return CACHE.getUnchecked(reference);
     }
 
     public static boolean isValid(final String reference) {
