@@ -215,7 +215,7 @@ public final class FieldReference {
     private static FieldReference parse(final CharSequence reference) {
         final List<String> path = TOKENIZER.tokenize(reference);
 
-        final String key = path.remove(path.size() - 1).intern();
+        final String key = path.remove(path.size() - 1);
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
             return METADATA_PARENT_REFERENCE;
