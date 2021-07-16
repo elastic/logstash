@@ -51,7 +51,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-13-4]]
 === Logstash 7.13.4 Release Notes
 
-==== Performance improvements and notable issues fixed
+==== Notable issues fixed
 
 **Geoip**
 
