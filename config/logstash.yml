@@ -70,17 +70,17 @@
 # available to plugins that implement an ECS Compatibility mode for use with
 # the Elastic Common Schema.
 # Possible values are:
-# - disabled
-# - v1 (default)
-# - v2
-# CAVEAT: use of this configuration for anything other than `disabled` -- including
-# the default value -- is considered BETA until the General Availability of
+# - disabled (default)
+# - v1
+# - v8
+# CAVEAT: use of this configuration for anything other than `disabled`
+# is considered BETA until the General Availability of
 # Logstash 8.0.0. As we continue to release updated plugins with ECS-Compatibility
 # modes, opting into them at a pipeline or process level will cause you to
 # automatically consume breaking changes with each upgrade, which may change the
 # shape of data your pipeline produces.
 #
-# pipeline.ecs_compatibility: v1
+# pipeline.ecs_compatibility: disabled
 #
 # ------------ Pipeline Configuration Settings --------------
 #
