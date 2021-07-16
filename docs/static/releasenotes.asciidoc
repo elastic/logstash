@@ -51,7 +51,10 @@ This section summarizes the changes in the following releases:
 [[logstash-7-13-4]]
 === Logstash 7.13.4 Release Notes
 
-No user-facing changes in Logstash core.
+==== Performance improvements and notable issues fixed
+
+**Geoip**
+Fixed a bug that sometimes happened when multiple pipelines with GeoIP filter tries to update the local database file. #13072
 
 [[logstash-7-13-3]]
 === Logstash 7.13.3 Release Notes
