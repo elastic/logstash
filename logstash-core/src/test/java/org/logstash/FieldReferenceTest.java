@@ -20,42 +20,29 @@
 
 package org.logstash;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import org.hamcrest.CoreMatchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
 
-    @SuppressWarnings("unchecked")
     @Before
-    public void clearParsingCache() throws Exception {
-        final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
-        cache.clear();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Before
-    public void clearDedupCache() throws Exception  {
-        final Field cacheField = FieldReference.class.getDeclaredField("DEDUP");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
-        cache.clear();
+    @After
+    public void clearParsingCache() {
+        FieldReference.CACHE.cleanUp();
+        FieldReference.RUBY_CACHE.cleanUp();
     }
 
     @Test
-    public void deduplicatesTimestamp() throws Exception {
+    public void deduplicatesTimestamp() {
         assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
     }
 
@@ -68,18 +55,25 @@ public final class FieldReferenceTest {
         );
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
-        final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
-        final int initial = cache.size();
-        for (int i = 0; i < 10_001 - initial; ++i) {
+    public void testCacheUpperBound() {
+        final int initial = (int) FieldReference.CACHE.size();
+        for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE - initial + 10; ++i) {
             FieldReference.from(String.format("[array][%d]", i));
         }
-        assertThat(cache.size(), CoreMatchers.is(10_000));
+        final int cacheSize = (int) FieldReference.CACHE.size();
+        assertThat(cacheSize, lessThanOrEqualTo(FieldReference.CACHE_MAXIMUM_SIZE));
+        assertThat(cacheSize, greaterThan(FieldReference.CACHE_MAXIMUM_SIZE / 2));
+    }
+
+    @Test
+    public void testRubyCacheUpperBound() {
+        for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE + 100; ++i) {
+            FieldReference.from(RubyUtil.RUBY.newString(String.format("[ruby_array][%d]", i)));
+        }
+        final int cacheSize = (int) FieldReference.RUBY_CACHE.size();
+        assertThat(cacheSize, lessThanOrEqualTo(FieldReference.CACHE_MAXIMUM_SIZE));
+        assertThat(cacheSize, greaterThan(FieldReference.CACHE_MAXIMUM_SIZE / 2));
     }
 
     @Test

@@ -23,11 +23,14 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.jruby.RubyString;
+import org.jruby.runtime.Helpers;
 
 /**
  * Represents a reference to another field of the event {@link Event}
@@ -76,12 +79,12 @@ public final class FieldReference {
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
-    private static final int CACHE_MAXIMUM_SIZE = 10_000;
+    static final int CACHE_MAXIMUM_SIZE = 10_000;
 
     /**
      * Cache of all existing {@link FieldReference} by their {@link RubyString} source.
      */
-    private static final LoadingCache<RubyString, FieldReference> RUBY_CACHE = CacheBuilder.newBuilder()
+    static final LoadingCache<RubyString, FieldReference> RUBY_CACHE = CacheBuilder.newBuilder()
             .maximumSize(CACHE_MAXIMUM_SIZE)
             .build(new CacheLoader<RubyString, FieldReference>() {
                 public FieldReference load(RubyString key) {
@@ -92,7 +95,7 @@ public final class FieldReference {
     /**
      * Cache of all existing {@link FieldReference} by their {@link String} source.
      */
-    private static final LoadingCache<String, FieldReference> CACHE = CacheBuilder.newBuilder()
+    static final LoadingCache<String, FieldReference> CACHE = CacheBuilder.newBuilder()
             .maximumSize(CACHE_MAXIMUM_SIZE)
             .build(new CacheLoader<String, FieldReference>() {
                 public FieldReference load(String key) {
@@ -122,22 +125,38 @@ public final class FieldReference {
     public static FieldReference from(final RubyString reference) {
         FieldReference result = RUBY_CACHE.getIfPresent(reference);
         if (result == null) {
-            result = RUBY_CACHE.getUnchecked(reference.newFrozen());
+            try {
+                result = RUBY_CACHE.get(reference.newFrozen());
+            } catch (ExecutionException|UncheckedExecutionException e) {
+                unwrapAndThrow(e);
+            }
         }
         return result;
     }
 
     public static FieldReference from(final String reference) throws IllegalSyntaxException {
-        return CACHE.getUnchecked(reference);
+        try {
+            return CACHE.get(reference);
+        } catch (ExecutionException|UncheckedExecutionException e) {
+            unwrapAndThrow(e); return null; // return never happens
+        }
     }
 
     public static boolean isValid(final String reference) {
         try {
-            FieldReference.from(reference);
+            CACHE.get(reference);
             return true;
-        } catch (IllegalSyntaxException ise) {
-            return false;
+        } catch (ExecutionException|UncheckedExecutionException e) {
+            if (e.getCause() instanceof IllegalSyntaxException) return false;
+            unwrapAndThrow(e); return false; // return never happens
         }
+    }
+
+    private static void unwrapAndThrow(final Exception e) throws IllegalSyntaxException {
+        if (e.getCause() != null) {
+            Helpers.throwException(e.getCause());
+        }
+        Helpers.throwException(e);
     }
 
     /**
