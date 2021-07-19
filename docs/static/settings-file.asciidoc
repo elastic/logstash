@@ -118,14 +118,10 @@ increasing this number to better utilize machine processing power.
 a|
 Set the pipeline event ordering.Valid options are:
 
-* `auto`
-* `true`
-* `false`
-
-`auto` will  automatically enable ordering if the `pipeline.workers` setting is also set to `1`.
-`true` will enforce ordering on the pipeline and prevent logstash from starting
+* `auto`. Automatically enables ordering if the `pipeline.workers` setting is also set to `1`.
+* `true`. Enforces ordering on the pipeline and prevent logstash from starting
 if there are multiple workers.
-`false` will disable the processing required to preserve order. Ordering will not be
+* `false`. Disables the processing required to preserve order. Ordering will not be
 guaranteed, but you save the processing cost of preserving order.
 
 | `auto`
