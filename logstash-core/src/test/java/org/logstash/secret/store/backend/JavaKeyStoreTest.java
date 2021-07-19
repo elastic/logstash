@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.LogstashJavaCompat;
 import org.logstash.secret.SecretIdentifier;
@@ -70,8 +69,6 @@ public class JavaKeyStoreTest {
     private final static String EXTERNAL_TEST_WRITE = "test_external_write";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     private JavaKeyStore keyStore;
     private char[] keyStorePath;
     private SecureConfig withDefaultPassConfig;
@@ -210,9 +207,8 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when ever it wants to.
      */
-    @Test
+    @Test(expected = SecretStoreException.class)
     public void notLogstashKeystore() throws Exception {
-        thrown.expect(SecretStoreException.class);
         SecureConfig altConfig = new SecureConfig();
         Path altPath = folder.newFolder().toPath().resolve("alt.not.a.logstash.keystore");
         try (OutputStream out = Files.newOutputStream(altPath)) {
@@ -229,9 +225,8 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when ever it wants to.
      */
-    @Test
+    @Test(expected = SecretStoreException.LoadException.class)
     public void notLogstashKeystoreNoMarker() throws Exception {
-        thrown.expect(SecretStoreException.LoadException.class);
         withDefinedPassConfig.add("keystore.file", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
         new JavaKeyStore().load(withDefinedPassConfig);
     }
@@ -313,9 +308,8 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when ever it wants to
      */
-    @Test
+    @Test(expected = SecretStoreException.AccessException.class)
     public void tamperedKeystore() throws Exception {
-        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
@@ -332,9 +326,8 @@ public class JavaKeyStoreTest {
      *
      * @throws IOException when it goes boom.
      */
-    @Test
-    public void testAlreadyCreated() throws IOException {
-        thrown.expect(SecretStoreException.AlreadyExistsException.class);
+    @Test(expected = SecretStoreException.AlreadyExistsException.class)
+    public void testAlreadyCreated() {
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.file", keyStorePath.clone());
         new JavaKeyStore().create(secureConfig);
@@ -362,9 +355,8 @@ public class JavaKeyStoreTest {
         }
     }
 
-    @Test
+    @Test(expected = SecretStoreException.LoadException.class)
     public void testDelete() throws IOException {
-        thrown.expect(SecretStoreException.LoadException.class);
         Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
         SecureConfig altConfig = new SecureConfig();
         altConfig.add("keystore.file", altPath.toString().toCharArray());
@@ -383,9 +375,8 @@ public class JavaKeyStoreTest {
      *
      * @throws IOException when ever it wants to
      */
-    @Test
+    @Test(expected = SecretStoreException.CreateException.class)
     public void testEmptyNotAllowedOnCreate() throws IOException {
-        thrown.expect(SecretStoreException.CreateException.class);
         Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
         SecureConfig altConfig = new SecureConfig();
         altConfig.add("keystore.file", altPath.toString().toCharArray());
@@ -398,9 +389,8 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when ever it wants to
      */
-    @Test
+    @Test(expected = SecretStoreException.AccessException.class)
     public void testEmptyNotAllowedOnExisting() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
         Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
         SecureConfig altConfig = new SecureConfig();
         altConfig.add("keystore.file", altPath.toString().toCharArray());
@@ -583,18 +573,16 @@ public class JavaKeyStoreTest {
         keyStore.purgeSecret(id);
     }
 
-    @Test
+    @Test(expected = SecretStoreException.LoadException.class)
     public void testLoadNotCreated() throws IOException {
-        thrown.expect(SecretStoreException.LoadException.class);
         Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.file", altPath.toString().toCharArray());
         new JavaKeyStore().load(secureConfig.clone());
     }
 
-    @Test
+    @Test(expected = SecretStoreException.LoadException.class)
     public void testNoPathDefined() {
-        thrown.expect(SecretStoreException.LoadException.class);
         new JavaKeyStore().load(new SecureConfig());
     }
 
@@ -687,9 +675,8 @@ public class JavaKeyStoreTest {
      *
      * @throws Exception when ever it wants to
      */
-    @Test
-    public void wrongPassword() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
+    @Test(expected = SecretStoreException.AccessException.class)
+    public void wrongPassword() {
         withDefinedPassConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
         new JavaKeyStore().load(withDefinedPassConfig);
     }

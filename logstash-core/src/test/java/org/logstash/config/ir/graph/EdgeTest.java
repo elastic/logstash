@@ -24,8 +24,8 @@ import org.junit.Test;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class EdgeTest {
     @Test

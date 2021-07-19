@@ -19,47 +19,40 @@
 
 package org.logstash.util;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.*;
 
 public class CloudSettingAuthTest {
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void testThrowExceptionWhenGivenStringWithoutSeparatorOrPassword() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("foobarbaz");
+        assertArgumentError("Cloud Auth username and password format should be \"<username>:<password>\".", () -> {
+            new CloudSettingAuth("foobarbaz");
+        });
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutPassword() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("foo:");
+        assertArgumentError("Cloud Auth username and password format should be \"<username>:<password>\".", () -> {
+            new CloudSettingAuth("foo:");
+        });
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutUsername() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth(":bar");
+        assertArgumentError("Cloud Auth username and password format should be \"<username>:<password>\".", () -> {
+            new CloudSettingAuth(":bar");
+        });
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWhichIsEmpty() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("");
+        assertArgumentError("Cloud Auth username and password format should be \"<username>:<password>\".", () -> {
+            new CloudSettingAuth("");
+        });
     }
 
     @Test
@@ -74,6 +67,11 @@ public class CloudSettingAuthTest {
         assertEquals("frodo", sut.getUsername());
         assertEquals("baggins", sut.getPassword().getValue());
         assertEquals("frodo:<password>", sut.toString());
+    }
+
+    private void assertArgumentError(final String withMessage, final ThrowingRunnable runnable) {
+        org.jruby.exceptions.ArgumentError e = assertThrows(org.jruby.exceptions.ArgumentError.class, runnable);
+        assertEquals(withMessage, e.getException().getMessage().toString());
     }
 
 }

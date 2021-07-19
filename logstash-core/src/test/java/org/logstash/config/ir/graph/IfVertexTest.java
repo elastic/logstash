@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.logstash.config.ir.InvalidIRException;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.config.ir.IRHelpers.*;
 
 public class IfVertexTest {

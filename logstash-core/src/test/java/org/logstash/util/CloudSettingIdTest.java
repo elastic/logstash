@@ -20,19 +20,16 @@
 package org.logstash.util;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.*;
 
 public class CloudSettingIdTest {
 
     private String input = "foobar:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy";
     private CloudSettingId sut;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -61,40 +58,41 @@ public class CloudSettingIdTest {
     public void testThrowExceptionWhenMalformedValueIsGiven() {
         String[] raw = new String[] {"first", "second"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
-
-        new CloudSettingId(encoded);
+        assertArgumentError("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".", () -> {
+            new CloudSettingId(encoded);
+        });
     }
 
     @Test
     public void testThrowExceptionWhenAtLeatOneSegmentIsEmpty() {
         String[] raw = new String[] {"first", "", "third"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
-
-        new CloudSettingId(encoded);
+        assertArgumentError("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".", () -> {
+            new CloudSettingId(encoded);
+        });
     }
 
     @Test
     public void testThrowExceptionWhenElasticSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "undefined", "my-kibana"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.");
-
-        new CloudSettingId(encoded);
+        assertArgumentError("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.", () -> {
+            new CloudSettingId(encoded);
+        });
     }
 
     @Test
     public void testThrowExceptionWhenKibanaSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "my-elastic-cluster", "undefined"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.");
+        assertArgumentError("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.", () -> {
+            new CloudSettingId(encoded);
+        });
+    }
 
-        new CloudSettingId(encoded);
+    private void assertArgumentError(final String withMessage, final ThrowingRunnable runnable) {
+        org.jruby.exceptions.ArgumentError e = assertThrows(org.jruby.exceptions.ArgumentError.class, runnable);
+        assertEquals(withMessage, e.getException().getMessage().toString());
     }
 
     // without a label

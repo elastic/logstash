@@ -38,6 +38,8 @@ import org.junit.Test;
 import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 /**
  * Tests for {@link JrubyEventExtLibrary.RubyEvent}.
  */
@@ -90,7 +92,7 @@ public final class JrubyEventExtLibraryTest {
         try {
             event.ruby_set_field(context, key, value);
         } catch (RuntimeError rubyRuntimeError) {
-            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
+            assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
             return;
         }
         Assert.fail("expected ruby RuntimeError was not thrown.");
@@ -106,7 +108,7 @@ public final class JrubyEventExtLibraryTest {
         try {
             event.ruby_set_field(context, key, value);
         } catch (RuntimeError rubyRuntimeError) {
-            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
+            assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
             return;
         }
         Assert.fail("expected ruby RuntimeError was not thrown.");

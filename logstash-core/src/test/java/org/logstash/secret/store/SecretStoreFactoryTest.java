@@ -22,7 +22,6 @@ package org.logstash.secret.store;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.backend.JavaKeyStore;
@@ -49,9 +48,6 @@ public class SecretStoreFactoryTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private static final SecretStoreFactory secretStoreFactory = SecretStoreFactory.fromEnvironment();
 
     @Test
@@ -63,9 +59,8 @@ public class SecretStoreFactoryTest {
         validateMarker(secretStore);
     }
 
-    @Test
+    @Test(expected = SecretStoreException.ImplementationNotFoundException.class)
     public void testAlternativeImplementationInvalid() {
-        thrown.expect(SecretStoreException.ImplementationNotFoundException.class);
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.classname", "junk".toCharArray());
         SecretStore secretStore = secretStoreFactory.load(secureConfig);
@@ -138,9 +133,8 @@ public class SecretStoreFactoryTest {
     /**
      * Ensures that load failure is the correct type.
      */
-    @Test
+    @Test(expected = SecretStoreException.LoadException.class)
     public void testErrorLoading() {
-        thrown.expect(SecretStoreException.LoadException.class);
         //default implementation requires a path
         secretStoreFactory.load(new SecureConfig());
     }
