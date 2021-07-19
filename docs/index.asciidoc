@@ -3,6 +3,7 @@
 
 include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
 include::{docs-root}/shared/attributes.asciidoc[]
+include::./include/attributes-ls.asciidoc[]
 
 :include-xpack:         true
 :lang:                  en

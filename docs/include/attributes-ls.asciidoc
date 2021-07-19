@@ -1,0 +1,2 @@
+:ecs-default:   Any value in {logstash-ref}/logstash-settings-file.html[`logstash.yml`] for pipeline.ecs_compatibility other than disabled is considered BETA and unsupported until Logstash 8.0 and the final 7.x version are released. Having this pipeline level flag set will cause even patch-level upgrades to automatically consume breaking changes in the upgraded plugins, changing the shape of data the plugin produces.
+
