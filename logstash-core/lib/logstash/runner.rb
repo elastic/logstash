@@ -73,6 +73,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "node.name",
     :default => LogStash::SETTINGS.get_default("node.name")
 
+  option ["--dev"], :flag,
+         I18n.t("logstash.runner.flag.dev"),
+         :attribute_name => "dev",
+         :default => LogStash::SETTINGS.get_default("dev")
+
   # Config Settings
   option ["-f", "--path.config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),

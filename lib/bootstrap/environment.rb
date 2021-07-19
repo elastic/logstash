@@ -81,7 +81,12 @@ end
 # defined and exposing the LogStash::Runner#main instance method which will be called with the current ARGV
 # currently lib/logstash/runner.rb and lib/pluginmanager/main.rb are called using this.
 if $0 == __FILE__
-  LogStash::Bundler.setup!({:without => [:build, :development]})
+  puts "The args are #{ARGV}"
+  bundler_options = {:without => [:build, :development]}
+  if ARGV.include?("--dev")
+    bundler_options[:dev_mode] = true
+  end
+  LogStash::Bundler.setup!(bundler_options)
   require_relative "patches/jar_dependencies"
 
   require ARGV.shift

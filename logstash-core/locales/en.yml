@@ -269,6 +269,7 @@ en:
           enabled by default.
         http_host: Web API binding host
         http_port: Web API http port
+        dev: Dev mode
         pipeline-id: |+
           Sets the ID of the pipeline.
         pipeline-workers: |+

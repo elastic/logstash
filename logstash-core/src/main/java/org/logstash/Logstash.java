@@ -36,6 +36,8 @@ import org.jruby.RubyException;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -176,15 +178,23 @@ public final class Logstash implements Runnable, AutoCloseable {
             ruby.runFromMain(script, config.displayedFileName());
         } catch (final RaiseException ex) {
             final RubyException re = ex.getException();
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+
             if (re instanceof RubySystemExit) {
                 IRubyObject success = ((RubySystemExit) re).success_p();
                 if (!success.isTrue()) {
                     uncleanShutdown(ex);
                 }
-            } else {
+            }
+            else {
+                System.out.println("Normal unclaen");
+                if )ex.getMessage().contains("ProductionError"){
+    
+                }
                 uncleanShutdown(ex);
             }
         } catch (final IOException ex) {
+            System.out.println("IOexepetiosn ");
             uncleanShutdown(ex);
         }
     }
