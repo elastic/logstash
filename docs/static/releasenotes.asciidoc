@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
 * <<logstash-7-13-2,Logstash 7.13.2>>
 * <<logstash-7-13-1,Logstash 7.13.1>>
@@ -46,6 +47,15 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-13-4]]
+=== Logstash 7.13.4 Release Notes
+
+==== Notable issues fixed
+
+**Geoip**
+
+Fixed an issue that sometimes happened when multiple pipelines with GeoIP filter tried to update the local database file https://github.com/elastic/logstash/issues/13072[#13072]
 
 [[logstash-7-13-3]]
 === Logstash 7.13.3 Release Notes
