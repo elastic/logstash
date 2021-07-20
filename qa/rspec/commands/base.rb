@@ -70,6 +70,7 @@ module ServiceTester
         cmd = run_command_in_path("bin/logstash-plugin list --verbose", host)
         search_token ="#{plugin_name} (#{version})"
       end
+
       plugins_list = cmd.stdout.split("\n")
       plugins_list.include?(search_token)
     end

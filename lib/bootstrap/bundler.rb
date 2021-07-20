@@ -73,7 +73,6 @@ module LogStash
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
-      puts "dev mode!" if options[:dev_mode]
       ::Bundler.settings.set_local(:frozen, true) unless options[:dev_mode]
       ::Bundler.reset!
       ::Bundler.setup
@@ -129,6 +128,8 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
+      # This env setting avoids the warning given when bundler is run as root, as is required
+      # to update plugins when logstash is run as a service
       ENV["BUNDLE_SILENCE_ROOT_WARNING"] = options[:silence_root_warning].to_s
 
       if !debug?

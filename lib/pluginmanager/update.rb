@@ -82,6 +82,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     options[:local] = true if local?
     options[:silence_root_warning] = true
     output=nil
+    # Unfreeze the bundle when updating gems
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(options)
       output << LogStash::Bundler.genericize_platform

@@ -204,6 +204,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options[:local] = true if local?
     bundler_options[:silence_root_warning] = true
     output = nil
+    # Unfreeze the bundle when installing gems
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(bundler_options)
       output << LogStash::Bundler.genericize_platform
