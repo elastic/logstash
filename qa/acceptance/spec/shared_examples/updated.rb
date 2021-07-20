@@ -39,6 +39,8 @@ RSpec.shared_examples "updated" do |logstash|
     expect(logstash).to be_installed
     # starts the service to be sure it runs after the upgrade
     logstash.start_service
-    expect(logstash).to be_running
+    Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+      expect(logstash).to be_running
+    end
   end
 end

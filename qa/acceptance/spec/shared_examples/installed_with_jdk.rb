@@ -41,7 +41,10 @@ RSpec.shared_examples "installable_with_jdk" do |logstash|
 
   it "is running on #{logstash.hostname}" do
     logstash.start_service
-    expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+
+    Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+      expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+    end
     logstash.stop_service
   end
 
