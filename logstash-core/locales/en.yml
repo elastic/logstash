@@ -350,7 +350,7 @@ en:
           Possible values are:
            - disabled (default)
            - v1
-           - v2
+           - v8
           This option allows the early opt-in (or preemptive opt-out)
           of ECS Compatibility modes in plugins, which is scheduled to
           be on-by-default in a future major release of Logstash.
