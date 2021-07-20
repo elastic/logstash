@@ -30,7 +30,7 @@ import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 public final class FieldReferenceTest {
 
@@ -43,7 +43,8 @@ public final class FieldReferenceTest {
 
     @Test
     public void deduplicatesTimestamp() {
-        assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
+        assertSame(FieldReference.TIMESTAMP_REFERENCE, FieldReference.from("@timestamp"));
+        assertSame(FieldReference.from("@timestamp"), FieldReference.from("[@timestamp]"));
     }
 
     @Test
@@ -59,7 +60,7 @@ public final class FieldReferenceTest {
     public void testCacheUpperBound() {
         final int initial = (int) FieldReference.CACHE.size();
         for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE - initial + 10; ++i) {
-            FieldReference.from(String.format("[array][%d]", i));
+            assertNotNull( FieldReference.from(String.format("[array][%d]", i)) );
         }
         final int cacheSize = (int) FieldReference.CACHE.size();
         assertThat(cacheSize, lessThanOrEqualTo(FieldReference.CACHE_MAXIMUM_SIZE));
@@ -69,7 +70,7 @@ public final class FieldReferenceTest {
     @Test
     public void testRubyCacheUpperBound() {
         for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE + 100; ++i) {
-            FieldReference.from(RubyUtil.RUBY.newString(String.format("[ruby_array][%d]", i)));
+            FieldReference.from(RubyUtil.RUBY.newString(String.format("[some_stuff][%d]", i)));
         }
         final int cacheSize = (int) FieldReference.RUBY_CACHE.size();
         assertThat(cacheSize, lessThanOrEqualTo(FieldReference.CACHE_MAXIMUM_SIZE));
