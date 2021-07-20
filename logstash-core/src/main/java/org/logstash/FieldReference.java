@@ -20,6 +20,7 @@
 
 package org.logstash;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,10 +31,10 @@ import java.util.stream.Collectors;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.jruby.RubyString;
 import org.jruby.runtime.Helpers;
+import org.jruby.util.collections.ConcurrentWeakHashMap;
 
 /**
  * Represents a reference to another field of the event {@link Event}
@@ -79,7 +80,7 @@ public final class FieldReference {
     // the trick here is that there has to be another strong reference to the FieldReference instance in the map
     // (either referenced directly e.g. from the compiled pipeline or through the caches)
     // NOTE: while de-duplication seems redundant, the compiled pipeline bits rely on having the same instance returned
-    static final ConcurrentMap<FieldReference, FieldReference> DEDUP = new MapMaker().weakKeys().weakValues().makeMap();
+    static final ConcurrentMap<FieldReference, WeakReference<FieldReference>> DEDUP = new ConcurrentWeakHashMap<>(64);
 
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
@@ -226,11 +227,13 @@ public final class FieldReference {
      * @return De-duplicated FieldReference
      */
     private static FieldReference deduplicate(final FieldReference parsed) {
-        FieldReference ref = DEDUP.get(parsed);
+        WeakReference<FieldReference> ref = DEDUP.get(parsed);
         if (ref == null) {
-            ref = DEDUP.computeIfAbsent(parsed, (key) -> key);
+            WeakReference<FieldReference> prev;
+            prev = DEDUP.putIfAbsent(parsed, ref = new WeakReference<>(parsed));
+            if (prev != null) ref = prev;
         }
-        return ref;
+        return ref.get();
     }
 
     private static FieldReference parse(final CharSequence reference) {
