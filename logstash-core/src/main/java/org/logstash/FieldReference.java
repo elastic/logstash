@@ -23,11 +23,14 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.jruby.RubyString;
 import org.jruby.runtime.Helpers;
@@ -71,13 +74,21 @@ public final class FieldReference {
     private static final StrictTokenizer TOKENIZER = new StrictTokenizer();
 
     /**
+     * Holds all existing {@link FieldReference} instances for de-duplication.
+     */
+    // the trick here is that there has to be another strong reference to the FieldReference instance in the map
+    // (either referenced directly e.g. from the compiled pipeline or through the caches)
+    // NOTE: while de-duplication seems redundant, the compiled pipeline bits rely on having the same instance returned
+    static final ConcurrentMap<FieldReference, FieldReference> DEDUP = new MapMaker().weakKeys().weakValues().makeMap();
+
+    /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
      */
     public static final FieldReference TIMESTAMP_REFERENCE =
-            new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD);
+            deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD));
 
     private static final FieldReference METADATA_PARENT_REFERENCE =
-        new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
+            deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT));
 
     static final int CACHE_MAXIMUM_SIZE = 10_000;
 
@@ -88,7 +99,7 @@ public final class FieldReference {
             .maximumSize(CACHE_MAXIMUM_SIZE)
             .build(new CacheLoader<RubyString, FieldReference>() {
                 public FieldReference load(RubyString key) {
-                    return parse(key);
+                    return deduplicate(parse(key));
                 }
             });
 
@@ -99,7 +110,7 @@ public final class FieldReference {
             .maximumSize(CACHE_MAXIMUM_SIZE)
             .build(new CacheLoader<String, FieldReference>() {
                 public FieldReference load(String key) {
-                    return parse(key);
+                    return deduplicate(parse(key));
                 }
             });
 
@@ -205,6 +216,21 @@ public final class FieldReference {
         }
         hash = prime * hash + key.hashCode();
         return prime * hash + type;
+    }
+
+    /**
+     * De-duplicates instances using {@link FieldReference#DEDUP}.
+     *
+     * {@link FieldReference#DEDUP}.
+     * @param parsed FieldReference to de-duplicate
+     * @return De-duplicated FieldReference
+     */
+    private static FieldReference deduplicate(final FieldReference parsed) {
+        FieldReference ref = DEDUP.get(parsed);
+        if (ref == null) {
+            ref = DEDUP.computeIfAbsent(parsed, (key) -> key);
+        }
+        return ref;
     }
 
     private static FieldReference parse(final CharSequence reference) {
