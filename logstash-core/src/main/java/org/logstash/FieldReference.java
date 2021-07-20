@@ -53,17 +53,17 @@ public final class FieldReference {
 
     /**
      * This type indicates that the referenced that is the metadata of an {@link Event} found in
-     * {@link Event#metadata}.
+     * {@link Event#getMetadata()}.
      */
     public static final int META_PARENT = 0;
 
     /**
-     * This type indicates that the referenced data must be looked up from {@link Event#metadata}.
+     * This type indicates that the referenced data must be looked up from {@link Event#getMetadata()}.
      */
     public static final int META_CHILD = 1;
 
     /**
-     * This type indicates that the referenced data must be looked up from {@link Event#data}.
+     * This type indicates that the referenced data must be looked up from {@link Event#getData()}.
      */
     private static final int DATA_CHILD = -1;
 
@@ -200,6 +200,14 @@ public final class FieldReference {
     @Override
     public int hashCode() {
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        List<String> fullPath = new ArrayList<>(Arrays.asList(path));
+        fullPath.add(key);
+        return getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                '{' + fullPath.stream().collect(Collectors.joining(".")) + '}';
     }
 
     /**
