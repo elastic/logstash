@@ -49,12 +49,15 @@ module ServiceTester
         stdout = cmd.stdout
       end
       running = stdout.match(/#{package} start\/running/)
-      pid = stdout.match(/#{package} start\/running, process (\d*)/).captures[0]
-      at(hosts, {in: :serial}) do |host|
-        cmd = sudo_exec!("ps ax | grep #{pid}")
-        stdout = cmd.stdout
+      if running
+        pid = stdout.match(/#{package} start\/running, process (\d*)/).captures[0]
+        at(hosts, {in: :serial}) do |host|
+          cmd = sudo_exec!("ps ax | grep #{pid}")
+          stdout = cmd.stdout
+        end
+        running = (running && stdout.match(/#{jdk_path}/))
       end
-      (running && stdout.match(/#{jdk_path}/))
+      running
     end
 
     def service_manager(service, action, host=nil)
