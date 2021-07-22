@@ -7,21 +7,33 @@ Event is the main object that encapsulates data flow internally in {ls} and prov
 Typically, this API is used in plugins and in a Ruby filter to retrieve data and use it for transformations.
 Event objects contain the original data sent to {ls} and any additional fields created during {ls}'s filter stages.
 
-==== Creating new Events with `Event.new`
+[[event-api-event-factory]]
+==== Creating new Events with `EventFactory`
 
+Beginning with {ls} 7.14, the `EventFactory` is the preferred method of creating Events.
+An `EventFactory` is made available to plugins with the `Plugin#event_factory` API.
+
+NOTE: Plugins that need to run on older versions of Logstash can use the https://github.com/logstash-plugins/logstash-mixin-event_support[Event Support mixin], which provides a fallback implementation when run on older {ls} releases.
+
+NOTE: Prior to {ls} 7.14, events were created directly with `LogStash::Event.new`.
+      This direct usage is deprecated and may not continue to work in future releases of {ls}.
+
+===== `EventFactory#new_event`
+
+The plugin APIs provide an `event_factory` method, which provides an `EventFactory`.
 
 To create a new `Event` object, simply:
 
 [source,ruby]
 ---------------------------------
-  event = LogStash::Event.new
+  event = event_factory.new_event
 ---------------------------------
 
 If you wish for the event to be pre-constructed with data, you may pass a ruby Hash:
 
 [source,ruby]
 ---------------------------------
-  event = LogStash::Event.new("message" => "hello, world!")
+  event = event_factory.new_event("message" => "hello, world!")
 ---------------------------------
 
 [float]

@@ -136,7 +136,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
   def run(queue)
     Stud.interval(@interval) do
-      event = LogStash::Event.new("message" => @message, "host" => @host)
+      event = event_factory.new_event("message" => @message, "host" => @host)
       decorate(event)
       queue << event
     end # loop
@@ -191,7 +191,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
   def decode(data)
     @lines.decode(data) do |line|
       replace = { "message" => line["message"].to_s + @append }
-      yield LogStash::Event.new(replace)
+      yield event_factory.new_event(replace)
     end
   end # def decode
 
@@ -522,7 +522,7 @@ ifndef::blockcodec[]
   def decode(data)
     @lines.decode(data) do |line|
       replace = { "message" => line["message"].to_s + @append }
-      yield LogStash::Event.new(replace)
+      yield event_factory.new_event(replace)
     end
   end # def decode
 ----------------------------------
@@ -579,7 +579,7 @@ The {pluginname} input plugin has the following `run` Method:
 ----------------------------------
   def run(queue)
     Stud.interval(@interval) do
-      event = LogStash::Event.new("message" => @message, "host" => @host)
+      event = event_factory.new_event("message" => @message, "host" => @host)
       decorate(event)
       queue << event
     end # loop
@@ -696,6 +696,20 @@ codec by including code similar to this:
 For more examples of output plugins, see the https://github.com/logstash-plugins?query=logstash-output[logstash-plugin github repository].
 
 endif::receive_method[]
+
+ifdef::event_factory_method[]
+
+===== `event_factory` Method
+
+Beginning with {ls} 7.14, we introduced an <<event-api-event-factory>> and deprecated direct access to `LogStash::Event.new`.
+A plugin's `EventFactory` can be accessed with the `event_factory` method, and can be used to create new events.
+
+===== `targeted_event_factory` Method
+
+Similarly, plugins that provide a `target` option can get a targeted `EventFactory` using the `targeted_event_factory` method.
+A targeted event factory will create events by setting the target field to the provided mapping instead of populating root-level fields.
+
+ifdef::event_factory_method[]
 
 ===== `logger` Method
 
