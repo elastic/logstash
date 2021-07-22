@@ -1,5 +1,5 @@
 [[persistent-queues]]
-=== Persistent Queues
+=== Persistent queues (PQ)
 
 By default, Logstash uses in-memory bounded queues between pipeline stages
 (inputs → pipeline workers) to buffer events. The size of these in-memory
