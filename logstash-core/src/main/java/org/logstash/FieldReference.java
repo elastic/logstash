@@ -89,7 +89,7 @@ public final class FieldReference {
             deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD));
 
     private static final FieldReference METADATA_PARENT_REFERENCE =
-            deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT));
+            new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
     static final int CACHE_MAXIMUM_SIZE = 10_000;
 
