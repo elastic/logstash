@@ -78,31 +78,29 @@ public final class FieldReferenceTest {
         assertThat(cacheSize, greaterThan(FieldReference.CACHE_MAXIMUM_SIZE / 2));
     }
 
-//    @Test
-//    public void testDeduplicationWithWeakRefs() {
-//        for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE; ++i) {
-//            assertNotNull( FieldReference.from(String.format("[dedup][%d]", i)) );
-//        }
-//
-//        // NOTE: weak refs are hard to test - we just loosely assert map is not growing "too much"
-//
-//        // deduplication logic should not grow map indefinitely :
-//        System.gc();
-//        for (int i = 0; i < 10_000; ++i) {
-//            assertNotNull( FieldReference.from(String.format("[dedup1][%d]", i)) );
-//        }
-//        System.gc();
-//        for (int i = 0; i < 100_000; ++i) {
-//            assertNotNull( FieldReference.from(String.format("[dedup2][%d]", i)) );
-//        }
-//        System.gc(); System.gc();
-//        for (int i = 0; i < 1_000_000; ++i) { // TODO: depends on the heap size / gc used
-//            assertNotNull( FieldReference.from(String.format("[dedup3][%d]", i)) );
-//        }
-//        System.gc(); System.gc();
-//
-//        assertThat(FieldReference.DEDUP.size(), lessThan(1_000_000));
-//    }
+    @Test
+    public void testDeduplicationWithWeakRefs() {
+        for (int i = 0; i < FieldReference.CACHE_MAXIMUM_SIZE; ++i) {
+            assertNotNull( FieldReference.from(String.format("[dedup][%d]", i)) );
+        }
+
+        // NOTE: weak refs are hard to test - we just loosely assert map is not growing "too much"
+
+        for (int i = 0; i < 10_000; ++i) {
+            assertNotNull( FieldReference.from(String.format("[dedup1][%d]", i)) );
+        }
+        System.gc();
+        for (int i = 0; i < 100_000; ++i) {
+            assertNotNull( FieldReference.from(String.format("[dedup2][%d]", i)) );
+        }
+        System.gc();
+        for (int i = 0; i < 1_000_000; ++i) { // TODO: depends on the heap size / gc used
+            assertNotNull( FieldReference.from(String.format("[dedup3][%d]", i)) );
+        }
+        System.gc();
+
+        assertThat(FieldReference.DEDUP.size(), lessThan(1_000_000));
+    }
 
     @Test
     public void testParseSingleBareField() throws Exception {
