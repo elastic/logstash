@@ -43,7 +43,15 @@ shared_examples "logstash update" do |logstash|
       it "has executed successfully" do
         cmd = logstash.run_command_in_path("bin/logstash-plugin update --no-verify #{plugin_name}")
         expect(cmd.stdout).to match(/Updating #{plugin_name}/)
+        expect(logstash).to have_installed?(plugin_name, "0.1.1")
         expect(logstash).not_to have_installed?(plugin_name, previous_version)
+        expect(logstash).not_to be_running
+        logstash.start_service
+        Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+          expect(logstash).to be_running
+        end
+        logstash.stop_service
+
       end
     end
 
@@ -51,6 +59,13 @@ shared_examples "logstash update" do |logstash|
       it "has executed successfully" do
         logstash.run_command_in_path("bin/logstash-plugin update --no-verify")
         expect(logstash).to have_installed?(plugin_name, "0.1.1")
+        expect(logstash).not_to be_running
+        logstash.start_service
+        Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+          expect(logstash).to be_running
+        end
+        logstash.stop_service
+
       end
     end
   end

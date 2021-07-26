@@ -43,6 +43,14 @@ shared_examples "logstash remove" do |logstash|
 
         result = logstash.run_command_in_path("bin/logstash-plugin remove logstash-filter-qatest")
         expect(logstash).not_to have_installed?("logstash-filter-qatest")
+        expect(logstash).not_to be_running
+
+        logstash.start_service
+        Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+          expect(logstash).to be_running
+        end
+        logstash.stop_service
+
       end
     end
   end
