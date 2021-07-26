@@ -48,16 +48,12 @@ d176e608b - Enable javadoc lint only for files that contains javadoc comments, a
 b47cdc33e - add ssl verification_mode to env2yaml (11 months ago) <Drew Boswell>
 7df8a660e - Drop dependency:bundler task (#12017) (1 year, 1 month ago) <João Duarte>
 d8b50deff - update bundler to 2.x (#11994) (1 year, 1 month ago) <João Duarte>
-* 386c263a7 - Fix: rounded to 1 second in nanos to avoid random NaN error (1 year, 2 months ago) <andsel>
-* 6a727ca16 - [BUILD]Fix: chaining of GRADLE_OPTS (#11878) (1 year, 2 months ago) <Andrea Selva>
-* fb8108e63 - Fix: missed 'set' to assign environment variable and log it (#11869) (1 year, 2 months ago) <Andrea Selva>
 62454c667 - Remove obsolete setting from Elasticsearch integration test (#11873) (1 year, 3 months ago) <Rob Bavey>
 fa2fb6cfa - Fix: condition to check environment variable was inverted (#11865) (1 year, 3 months ago) <Andrea Selva>
 d35677aef - Fail fast when integration test fixtures cannot be setup. (#11855) (1 year, 3 months ago) <Rob Bavey>
 d522a7cb3 - bring back unicode trimmer for LogStash::Util (#11712) (1 year, 4 months ago) <João Duarte>
 fc0ced570 - Fixed time format that introduced flaky tests depending on time (1 year, 5 months ago) <andsel>
 3695580b9 - Adaptations to internal collector to send data directly to monitoring cluster Close 11573 (1 year, 5 months ago) <andsel>
-* 80a91f9a7 - fix java filter unit test link (1 year, 6 months ago) <Fabien Baligand>
 c9b09bb36 - Remove NodeStats#mem_payload (#9051) (1 year, 7 months ago) <Ioana Tagirta>
 71eed80d3 - Fixes to JMH launch after upgrade to Gradle 5 (1 year, 7 months ago) <andsel>
 e807a9e03 - Update gradle wrapper to 5.6.4 (#11389) (1 year, 8 months ago) <João Duarte>
