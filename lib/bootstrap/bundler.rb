@@ -179,13 +179,13 @@ module LogStash
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
-    def specific_platform
+    def specific_platforms
       ::Gem.platforms.find {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
     end
 
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java', :silence_root_warning => true})
-      remove_platform_options = {:remove_platform => specific_platform.to_s, :silence_root_warning => true} unless specific_platform.nil?
+      remove_platform_options = {:remove_platform => specific_platforms.to_s, :silence_root_warning => true} unless specific_platforms.nil?
       output << LogStash::Bundler.invoke!(remove_platform_options) unless remove_platform_options.nil? || output.nil?
     end
 
