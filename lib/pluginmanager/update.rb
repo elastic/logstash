@@ -85,7 +85,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # Unfreeze the bundle when updating gems
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(options)
-      output << LogStash::Bundler.genericize_platform
+      output << LogStash::Bundler.genericize_platform unless output.nil?
     end
 
     # We currently dont removed unused gems from the logstash installation
