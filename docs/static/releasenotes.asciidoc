@@ -15,7 +15,7 @@ This section summarizes the changes in the following releases:
 
 [[ruby-engine]]
 ===== Ruby Execution Engine removed
-The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins writtenin either Ruby or Java.
+The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
 Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
 
 [[utf-16]]
