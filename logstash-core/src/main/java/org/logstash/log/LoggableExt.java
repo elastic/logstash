@@ -35,8 +35,8 @@ import static org.logstash.log.SlowLoggerExt.toLong;
 
 /**
  * JRuby extension, it's part of log4j wrapping for JRuby.
- * */
-@JRubyModule(name = "Loggable")
+ */
+@JRubyModule(name = "LogStash::Util::Loggable")
 public final class LoggableExt {
 
     private LoggableExt() {
@@ -67,7 +67,7 @@ public final class LoggableExt {
         return self.getMetaClass().callMethod(context, "deprecation_logger");
     }
 
-    private static String log4jName(final RubyModule self) {
+    static String log4jName(final RubyModule self) {
         String name;
         if (self.getBaseName() == null) { // anonymous module/class
             RubyModule real = self;

@@ -40,16 +40,16 @@ import java.io.File;
 import java.net.URI;
 
 /**
- * JRuby extension, it's part of log4j wrapping for JRuby.
- * Wrapper log4j Logger as Ruby like class
- * */
-@JRubyClass(name = "Logger")
+ * JRuby extension, that wraps a (native) log4j2 logger.
+ * Provides a Ruby logger interface for Logstash.
+ */
+@JRubyClass(name = "LogStash::Logging::Logger")
 public class LoggerExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
     private static final Object CONFIG_LOCK = new Object();
-    private Logger logger;
+    Logger logger;
 
     public LoggerExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -57,106 +57,206 @@ public class LoggerExt extends RubyObject {
 
     @JRubyMethod
     public LoggerExt initialize(final ThreadContext context, final IRubyObject loggerName) {
-        logger = LogManager.getLogger(loggerName.asJavaString());
+        initializeLogger(loggerName.asJavaString());
         return this;
     }
 
+    void initializeLogger(final String name) {
+        this.logger = LogManager.getLogger(name);
+    }
+
+    /**
+     * {@code logger.trace?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "trace?")
     public RubyBoolean isTrace(final ThreadContext context) {
         return logger.isTraceEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.debug?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "debug?")
     public RubyBoolean isDebug(final ThreadContext context) {
         return logger.isDebugEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.info?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "info?")
     public RubyBoolean isInfo(final ThreadContext context) {
         return logger.isInfoEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.error?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "error?")
     public RubyBoolean isError(final ThreadContext context) {
         return logger.isErrorEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.warn?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "warn?")
     public RubyBoolean isWarn(final ThreadContext context) {
         return logger.isWarnEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.fatal?}
+     * @param context JRuby context
+     * @return true/false
+     */
     @JRubyMethod(name = "fatal?")
     public RubyBoolean isFatal(final ThreadContext context) {
         return logger.isDebugEnabled() ? context.tru : context.fals;
     }
 
+    /**
+     * {@code logger.trace(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject trace(final IRubyObject msg) {
         logger.trace(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.trace(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject trace(final IRubyObject msg, final IRubyObject data) {
         if (logger.isTraceEnabled()) logger.trace(msg.toString(), data);
         return this;
     }
 
+    /**
+     * {@code logger.debug(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject debug(final IRubyObject msg) {
         logger.debug(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.debug(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject debug(final IRubyObject msg, final IRubyObject data) {
         if (logger.isDebugEnabled()) logger.debug(msg.toString(), data);
         return this;
     }
 
+    /**
+     * {@code logger.info(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject info(final IRubyObject msg) {
         logger.info(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.info(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject info(final IRubyObject msg, final IRubyObject data) {
         if (logger.isInfoEnabled()) logger.info(msg.toString(), data);
         return this;
     }
 
+    /**
+     * {@code logger.warn(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject warn(final IRubyObject msg) {
         logger.warn(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.warn(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject warn(final IRubyObject msg, final IRubyObject data) {
         logger.warn(msg.toString(), data);
         return this;
     }
 
+    /**
+     * {@code logger.error(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject error(final IRubyObject msg) {
         logger.error(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.error(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject error(final IRubyObject msg, final IRubyObject data) {
         logger.error(msg.toString(), data);
         return this;
     }
 
+    /**
+     * {@code logger.fatal(msg)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject fatal(final IRubyObject msg) {
         logger.fatal(msg.asString());
         return this;
     }
 
+    /**
+     * {@code logger.fatal(msg, data)}
+     * @param msg a message to log (will be `to_s` converted)
+     * @param data additional contextual data to be logged
+     * @return self
+     */
     @JRubyMethod
     public IRubyObject fatal(final IRubyObject msg, final IRubyObject data) {
         logger.fatal(msg.toString(), data);
