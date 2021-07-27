@@ -61,6 +61,11 @@ public class LoggerExt extends RubyObject {
         return this;
     }
 
+    @JRubyMethod(name = "trace?")
+    public RubyBoolean isTrace(final ThreadContext context) {
+        return logger.isTraceEnabled() ? context.tru : context.fals;
+    }
+
     @JRubyMethod(name = "debug?")
     public RubyBoolean isDebug(final ThreadContext context) {
         return logger.isDebugEnabled() ? context.tru : context.fals;
@@ -86,68 +91,75 @@ public class LoggerExt extends RubyObject {
         return logger.isDebugEnabled() ? context.tru : context.fals;
     }
 
-    @JRubyMethod(name = "trace?")
-    public RubyBoolean isTrace(final ThreadContext context) {
-        return logger.isDebugEnabled() ? context.tru : context.fals;
-    }
-
-    @JRubyMethod(name = "debug", required = 1, optional = 1)
-    public IRubyObject rubyDebug(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.debug(args[0].asJavaString(), args[1]);
-        } else {
-            logger.debug(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject trace(final IRubyObject msg) {
+        if (logger.isTraceEnabled()) logger.trace(msg.asJavaString());
         return this;
     }
 
-    @JRubyMethod(name = "warn", required = 1, optional = 1)
-    public IRubyObject rubyWarn(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.warn(args[0].asJavaString(), args[1]);
-        } else {
-            logger.warn(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject trace(final IRubyObject msg, final IRubyObject data) {
+        if (logger.isTraceEnabled()) logger.trace(msg.asJavaString(), data);
         return this;
     }
 
-    @JRubyMethod(name = "info", required = 1, optional = 1)
-    public IRubyObject rubyInfo(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.info(args[0].asJavaString(), args[1]);
-        } else {
-            logger.info(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject debug(final IRubyObject msg) {
+        if (logger.isDebugEnabled()) logger.debug(msg.asJavaString());
         return this;
     }
 
-    @JRubyMethod(name = "error", required = 1, optional = 1)
-    public IRubyObject rubyError(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.error(args[0].asJavaString(), args[1]);
-        } else {
-            logger.error(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject debug(final IRubyObject msg, final IRubyObject data) {
+        if (logger.isDebugEnabled()) logger.debug(msg.asJavaString(), data);
         return this;
     }
 
-    @JRubyMethod(name = "fatal", required = 1, optional = 1)
-    public IRubyObject rubyFatal(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.fatal(args[0].asJavaString(), args[1]);
-        } else {
-            logger.fatal(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject info(final IRubyObject msg) {
+        if (logger.isInfoEnabled()) logger.info(msg.asJavaString());
         return this;
     }
 
-    @JRubyMethod(name = "trace", required = 1, optional = 1)
-    public IRubyObject rubyTrace(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length > 1) {
-            logger.trace(args[0].asJavaString(), args[1]);
-        } else {
-            logger.trace(args[0].asJavaString());
-        }
+    @JRubyMethod
+    public IRubyObject info(final IRubyObject msg, final IRubyObject data) {
+        if (logger.isInfoEnabled()) logger.info(msg.asJavaString(), data);
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject warn(final IRubyObject msg) {
+        logger.warn(msg.asJavaString());
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject warn(final IRubyObject msg, final IRubyObject data) {
+        logger.warn(msg.asJavaString(), data);
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject error(final IRubyObject msg) {
+        logger.error(msg.asJavaString());
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject error(final IRubyObject msg, final IRubyObject data) {
+        logger.error(msg.asJavaString(), data);
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject fatal(final IRubyObject msg) {
+        logger.fatal(msg.asJavaString());
+        return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject fatal(final IRubyObject msg, final IRubyObject data) {
+        logger.fatal(msg.asJavaString(), data);
         return this;
     }
 
