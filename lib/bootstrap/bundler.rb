@@ -73,7 +73,7 @@ module LogStash
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
-      ::Bundler.settings.set_local(:frozen, true) unless options[:logstash_dev]
+      ::Bundler.settings.set_local(:frozen, true) unless options[:allow_gemfile_changes]
       ::Bundler.reset!
       ::Bundler.setup
     end
@@ -180,7 +180,7 @@ module LogStash
     end
 
     def specific_platforms
-      ::Gem.platforms.find {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
+      ::Gem.platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
     end
 
     def genericize_platform

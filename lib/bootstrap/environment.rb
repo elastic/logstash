@@ -83,8 +83,8 @@ end
 if $0 == __FILE__
   bundler_options = {:without => [:build, :development]}
   ## Check for dev flags - this needs to be done before the runner is invoked to set bundler options
-  if ARGV.include?("--dev")
-    bundler_options[:logstash_dev] = true
+  if ARGV.include?("--enable-local-plugin-development")
+    bundler_options[:allow_gemfile_changes] = true
   end
   LogStash::Bundler.setup!(bundler_options)
   require_relative "patches/jar_dependencies"

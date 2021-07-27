@@ -269,7 +269,10 @@ en:
           enabled by default.
         http_host: Web API binding host
         http_port: Web API http port
-        dev: Dev mode
+        enable-local-plugin-development: |+
+          Allow Gemfile to be manipulated directly to facilitate simpler local plugin development.
+          This is an advanced setting, intended only for use by logstash developers, and should
+          not be used in production.
         pipeline-id: |+
           Sets the ID of the pipeline.
         pipeline-workers: |+
