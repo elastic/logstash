@@ -65,18 +65,11 @@ class LogStash::Plugin
   end
 
   def initialize(params={})
-    @logger = self.logger
-    @deprecation_logger = self.deprecation_logger
-    # need to access settings statically because plugins are initialized in config_ast with no context.
-    settings = LogStash::SETTINGS
-    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn").to_nanos,
-                                    settings.get("slowlog.threshold.info").to_nanos,
-                                    settings.get("slowlog.threshold.debug").to_nanos,
-                                    settings.get("slowlog.threshold.trace").to_nanos)
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+    __initialize_logging # after id is generated
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -191,4 +184,24 @@ class LogStash::Plugin
   def execution_context
     @execution_context || LogStash::ExecutionContext::Empty
   end
+
+  # override Loggable (self.class.logger) delegating methods :
+
+  attr_reader :logger
+  attr_reader :deprecation_logger
+  attr_reader :slow_logger
+
+  private
+
+  def __initialize_logging
+    @logger = self.class.logger
+    @deprecation_logger = self.class.deprecation_logger
+    # need to access settings statically because plugins are initialized in config_ast with no context.
+    settings = LogStash::SETTINGS
+    @slow_logger = self.class.slow_logger(settings.get("slowlog.threshold.warn").to_nanos,
+                                          settings.get("slowlog.threshold.info").to_nanos,
+                                          settings.get("slowlog.threshold.debug").to_nanos,
+                                          settings.get("slowlog.threshold.trace").to_nanos)
+  end
+
 end # class LogStash::Plugin
