@@ -22,7 +22,25 @@ Placeholder for alpha2 release notes
 [[logstash-8-0-0-alpha1]]
 === Logstash 8.0.0-alpha1 Release Notes
 
+==== Breaking changes
+
+**Drop of Ruby Execution Engine**
+The Java Execution Engine has been the default engine since Logstash 7.0, and is capable of using plugins written
+in either Ruby or Java, removing the Ruby Execution Engine will not affect our ability to run existing pipelines. (#12517)
+
+**Support for UTF-16**
+ Add the support for UTF-16 and other multi-byte-character when reading log files. (#9702)
+
+**Field Reference parser removed**
+The Field Reference parser by default was STRICT in version 7. This configuration is removed permanently.
+Logstash keeps the behaviour as if the default setting, which interprets references to fields in your pipelines and plugins,
+and rejects inputs that are either ambiguous or illegal. (#12466)
+
 ==== New features and enhancements
+
+**Adds option to pass custom data to the benchmark CLI**
+Adds another flag to the Benckmark CLI to allow passing a data file to the custom test case.
+This allows to run the Benchmark CLI in a custom test case with a custom config and a custom dataset. (#12437)
 
 ==== Plugin releases
 
@@ -53,7 +71,6 @@ fa2fb6cfa - Fix: condition to check environment variable was inverted (#11865) (
 d35677aef - Fail fast when integration test fixtures cannot be setup. (#11855) (1 year, 3 months ago) <Rob Bavey>
 d522a7cb3 - bring back unicode trimmer for LogStash::Util (#11712) (1 year, 4 months ago) <João Duarte>
 fc0ced570 - Fixed time format that introduced flaky tests depending on time (1 year, 5 months ago) <andsel>
-3695580b9 - Adaptations to internal collector to send data directly to monitoring cluster Close 11573 (1 year, 5 months ago) <andsel>
 c9b09bb36 - Remove NodeStats#mem_payload (#9051) (1 year, 7 months ago) <Ioana Tagirta>
 71eed80d3 - Fixes to JMH launch after upgrade to Gradle 5 (1 year, 7 months ago) <andsel>
 e807a9e03 - Update gradle wrapper to 5.6.4 (#11389) (1 year, 8 months ago) <João Duarte>
