@@ -206,10 +206,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     # Unfreeze the bundle when installing gems
     Bundler.settings.temporary({:frozen => false}) do
       output = LogStash::Bundler.invoke!(bundler_options)
-      output << LogStash::Bundler.genericize_platform
+      output << LogStash::Bundler.genericize_platform.to_s
     end
     puts("Installation successful")
   rescue => exception
+    puts exception
+    puts exception.backtrace
     gemfile.restore!
     report_exception("Installation Aborted", exception)
   ensure

@@ -95,7 +95,6 @@ module LogStash
                  :jobs => 12, :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
-
       ::Gem.clear_paths
       ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
       ::Gem.paths = ENV
@@ -185,8 +184,10 @@ module LogStash
 
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
-      remove_platform_options = {:remove_platform => specific_platforms.to_s} unless specific_platforms.nil?
-      output << LogStash::Bundler.invoke!(remove_platform_options) unless remove_platform_options.nil? || output.nil?
+      specific_platforms.each do |platform|
+        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+      end
+      output
     end
 
     def debug?
@@ -198,7 +199,6 @@ module LogStash
     # @return [Array<String>] Bundler::CLI.start string arguments array
     def bundler_arguments(options = {})
       arguments = []
-
       if options[:install]
         arguments << "install"
         arguments << "--clean" if options[:clean]
@@ -226,7 +226,6 @@ module LogStash
       end
 
       arguments << "--verbose" if options[:verbose]
-
       arguments.flatten
     end
 
