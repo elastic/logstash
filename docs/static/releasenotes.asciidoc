@@ -36,4 +36,6 @@ inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 We have added another flag to the Benckmark CLI to allow passing a data file with previously captured data to the custom test case.
 This feature allows users to run the Benchmark CLI in a custom test case with a custom config and a custom dataset. https://github.com/elastic/logstash/pull/12437[#12437]
 
+==== Plugin releases
+Plugins align with release 7.14.0
 
