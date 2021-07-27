@@ -193,7 +193,7 @@ class LogStash::Plugin
   private
 
   def __initialize_logging
-    @logger = self.class.logger
+    @logger = LogStash::Logging::PluginLogger.new(self)
     @deprecation_logger = self.class.deprecation_logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
