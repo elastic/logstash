@@ -80,7 +80,6 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
     options[:local] = true if local?
-    options[:silence_root_warning] = true
     output=nil
     # Unfreeze the bundle when updating gems
     Bundler.settings.temporary({:frozen => false}) do
