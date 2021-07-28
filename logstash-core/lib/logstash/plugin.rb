@@ -203,4 +203,12 @@ class LogStash::Plugin
                                           settings.get("slowlog.threshold.trace").to_nanos)
   end
 
+  # TODO do we want to keep this around due plugin specs mocking logger through the class.logger call?!
+  # 
+  # @override LogStash::Util::Loggable.logger
+  # @private
+  # def self.logger(plugin = nil)
+  #   plugin.nil? ? super() : LogStash::Logging::PluginLogger.new(plugin)
+  # end
+
 end # class LogStash::Plugin
