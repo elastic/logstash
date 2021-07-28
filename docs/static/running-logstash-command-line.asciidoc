@@ -223,5 +223,17 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   as the log4j logging configuration. This can also be set through the LS_SETTINGS_DIR environment variable.
   The default is the `config` directory under Logstash home.
 
+*`--enable-local-plugin-development`*::
+[NOTE]
+====
+This flag is for Logstash developers only, and should not need to be set by end users.
+====
+This flag enables a developer to update their local Gemfile, without running into issues caused by a
+frozen lockfile. This flag would typically be used when developing/testing plugins locally
+
+
+
+
+
 *`-h, --help`*::
   Print help
