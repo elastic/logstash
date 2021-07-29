@@ -4,7 +4,6 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-6-8-18,Logstash 6.8.18>>
-* <<logstash-6-8-18,Logstash 6.8.18>>
 * <<logstash-6-8-17,Logstash 6.8.17>>
 * <<logstash-6-8-16,Logstash 6.8.16>>
 * <<logstash-6-8-15,Logstash 6.8.15>>
@@ -54,31 +53,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-18]]
 === Logstash 6.8.18 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.18
-
-=== Logstash Commits between 6.8 and 6.8.17
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.17..6.8"
-
-da4ba0c39 - (HEAD -> 6.8, origin/6.8) Doc: Add placeholder for release notes (#13110) (12 minutes ago) <Karen Metts>
-253c59db5 - bump version to 6.8.18 (#13040) (3 weeks ago) <João Duarte>
-6477c5f03 - Release notes for 6.8.17 (#13032) (3 weeks ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.17..6.8 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
-
-[[logstash-6-8-18]]
-=== Logstash 6.8.18 Release Notes
-
-coming[6.8.18]
-
-==== Plugins
-
+No user-facing changes.
 
 [[logstash-6-8-17]]
 === Logstash 6.8.17 Release Notes
