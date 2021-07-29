@@ -129,6 +129,8 @@ module LogStash
       ::Bundler.settings.set_local(:force, options[:force])
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
+      # Note: Using an `ENV` here, as ::Bundler.settings.set_local(:silence_root_warning, true)
+      # does not work (set_global *does*, but that seems too drastic a change)
       ENV["BUNDLE_SILENCE_ROOT_WARNING"] = "true"
 
       if !debug?
