@@ -34,8 +34,8 @@ shared_examples "logstash update" do |logstash|
     before do
       logstash.run_command_in_path("bin/logstash-plugin install --no-verify --version #{previous_version} #{plugin_name}")
       logstash.run_command_in_path("bin/logstash-plugin list")
-      # Logstash won't update when we have a pinned version in the gemfile so we remove them
       expect(logstash).to have_installed?(plugin_name, previous_version)
+      # Logstash won't update when we have a pinned version in the gemfile so we remove them
       logstash.replace_in_gemfile(',[[:space:]]"0.1.0"', "")
     end
 

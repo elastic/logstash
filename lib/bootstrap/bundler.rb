@@ -129,16 +129,16 @@ module LogStash
       ::Bundler.settings.set_local(:force, options[:force])
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
-      # Note: Using an `ENV` here, as ::Bundler.settings.set_local(:silence_root_warning, true)
+      # Note: Using an `ENV` here because ::Bundler.settings.set_local(:silence_root_warning, true)
       # does not work (set_global *does*, but that seems too drastic a change)
-      ENV["BUNDLE_SILENCE_ROOT_WARNING"] = "true"
-
-      if !debug?
-        # Will deal with transient network errors
-        execute_bundler_with_retry(options)
-      else
-        options[:verbose] = true
-        execute_bundler(options)
+      with_env("BUNDLE_SILENCE_ROOT_WARNING" => "true") do
+        if !debug?
+          # Will deal with transient network errors
+          execute_bundler_with_retry(options)
+        else
+          options[:verbose] = true
+          execute_bundler(options)
+        end
       end
     end
 
@@ -231,7 +231,16 @@ module LogStash
       arguments.flatten
     end
 
-   # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
+    def with_env(modifications)
+      backup_env = ENV.to_hash
+      ENV.replace(backup_env.merge(modifications))
+
+      yield
+    ensure
+      ENV.replace(backup_env)
+    end
+
+    # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
     # @param [Proc] the code block to execute
     # @return [String, Exception] the captured $stdout string and any trapped exception or nil if none
     def capture_stdout(&block)
