@@ -45,12 +45,9 @@ shared_examples "logstash install" do |logstash|
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-dns")
             expect(logstash).not_to be_running
-            logstash.start_service
-            Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+            with_running_logstash_service(logstash) do
               expect(logstash).to be_running
             end
-            logstash.stop_service
-
           end
         end
 
@@ -60,12 +57,9 @@ shared_examples "logstash install" do |logstash|
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-qatest")
             expect(logstash).not_to be_running
-            logstash.start_service
-            Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+            with_running_logstash_service(logstash) do
               expect(logstash).to be_running
             end
-            logstash.stop_service
-
           end
 
           it "successfully install the plugin when verification is disabled" do
@@ -73,35 +67,27 @@ shared_examples "logstash install" do |logstash|
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-qatest")
             expect(logstash).not_to be_running
-            logstash.start_service
-            Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+            with_running_logstash_service(logstash) do
               expect(logstash).to be_running
             end
-            logstash.stop_service
-
           end
 
           it "fails when installing a non logstash plugin" do
             command = logstash.run_command_in_path("bin/logstash-plugin install  bundler")
             expect(command).not_to install_successfully
             expect(logstash).not_to be_running
-            logstash.start_service
-            Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+            with_running_logstash_service(logstash) do
               expect(logstash).to be_running
             end
-            logstash.stop_service
-
           end
 
           it "allow to install a specific version" do
             command = logstash.run_command_in_path("bin/logstash-plugin install --no-verify --version 0.1.0 logstash-filter-qatest")
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-qatest", "0.1.0")
-            logstash.start_service
-            Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+            with_running_logstash_service(logstash) do
               expect(logstash).to be_running
             end
-            logstash.stop_service
           end
         end
       end
@@ -110,12 +96,9 @@ shared_examples "logstash install" do |logstash|
         it "fails to install and report an error" do
           command = logstash.run_command_in_path("bin/logstash-plugin install --no-verify logstash-output-impossible-plugin")
           expect(command.stderr).to match(/Plugin not found, aborting/)
-          logstash.start_service
-          Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+          with_running_logstash_service(logstash) do
             expect(logstash).to be_running
           end
-          logstash.stop_service
-
         end
       end
     end

@@ -26,10 +26,8 @@ RSpec.shared_examples "runnable" do |logstash|
   end
 
   it "is running on #{logstash.hostname}" do
-    logstash.start_service
-    Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
+    with_running_logstash_service(logstash) do
       expect(logstash).to be_running
     end
-    logstash.stop_service
   end
 end
