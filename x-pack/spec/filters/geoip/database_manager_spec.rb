@@ -33,12 +33,34 @@ describe LogStash::Filters::Geoip do
 
       it "use CC license database as default" do
         path = db_manager.send(:patch_database_path, "")
-        expect(path).to eq(default_city_db_path)
+        expect(path).to eq(vendor_city_db_path)
       end
 
       it "failed when default database is missing" do
         expect(db_manager).to receive(:file_exist?).and_return(false, false)
         expect { db_manager.send(:patch_database_path, "") }.to raise_error /I looked for/
+      end
+    end
+
+    context "get database path" do
+      context "config static path" do
+        let(:db_manager) do
+          LogStash::Filters::Geoip::DatabaseManager.new(mock_geoip_plugin, default_asn_db_path, "ASN", get_vendor_path)
+        end
+
+        it "use input path" do
+          expect(db_manager.database_path).to eq(default_asn_db_path)
+        end
+      end
+
+      context "config nothing" do
+        let(:db_manager) do
+          LogStash::Filters::Geoip::DatabaseManager.new(mock_geoip_plugin, nil, "City", get_vendor_path)
+        end
+
+        it "use CC license database as default" do
+          expect(db_manager.database_path).to eq(vendor_city_db_path)
+        end
       end
     end
 
@@ -224,5 +246,6 @@ describe LogStash::Filters::Geoip do
         expect(filename).to match /#{default_city_db_name}/
       end
     end
+
   end
 end

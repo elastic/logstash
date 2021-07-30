@@ -36,7 +36,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     @mode = database_path.nil? ? :online : :offline
     @mode = :disabled # This is a temporary change that turns off the database manager until it is ready for general availability.
     @database_type = database_type
-    @database_path = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "GeoLite2-#{database_type}.mmdb")).first
+    @database_path = patch_database_path(database_path)
 
     if @mode == :online
       logger.info "By not manually configuring a database path with `database =>`, you accepted and agreed MaxMind EULA. "\
@@ -115,7 +115,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   # return a valid database path or default database path
   def patch_database_path(database_path)
     return database_path if file_exist?(database_path)
-    return database_path if database_path = get_file_path("#{DB_PREFIX}#{@database_type}.#{DB_EXT}") and file_exist?(database_path)
+    return database_path if database_path = ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "GeoLite2-#{@database_type}.mmdb")).first and file_exist?(database_path)
     raise "You must specify 'database => ...' in your geoip filter (I looked for '#{database_path}')"
   end
 

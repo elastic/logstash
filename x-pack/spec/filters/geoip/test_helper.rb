@@ -18,6 +18,14 @@ module GeoipHelper
     ::File.join(get_data_dir, filename)
   end
 
+  def vendor_asn_db_path
+    ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "GeoLite2-ASN.mmdb")).first
+  end
+
+  def vendor_city_db_path
+    ::Dir.glob(::File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "**", "GeoLite2-City.mmdb")).first
+  end
+
   def md5(file_path)
     ::File.exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)) : ''
   end
