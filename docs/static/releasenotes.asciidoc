@@ -58,25 +58,43 @@ This section summarizes the changes in the following releases:
 [[agent-7-14-0]]
 ===== Elastic Agent input plugin
 
-WIP
+The {ls} <<plugins-inputs-elastic_agent,Elastic Agent input plugin>> is now available to coincide with Elastic Agent's general availability. 
+The new plugin is based on the <<plugins-inputs-beats,Beats input plugin>>, and will seem familiar to users who have been using the Beats input.
 
 [[entsearch-7-14-0]]
 ===== Elastic Enterprise Search integration
 
-WIP
+The new <<plugins-outputs-elastic_workplace_search,Elastic Workplace Search>> plugin is available as part of the <<plugins-integrations-elastic_enterprise_search,Elastic Enterprise Search integration>> and is bundled with {ls} 7.14.0. 
+The output plugins in this integration send events from {ls} to https://www.elastic.co/enterprise-search[Elastic Enterprise Search].
 
 [[geoip-7-14-0]]
-===== MaxMind GeoIP
+===== MaxMind GeoIP database changes
 
-WIP
+MaxMind, the company that provides the GeoIP databases that {ls} uses, has changed their licensing. 
+Logstash has made changes to the core product and the <<plugins-filters-geoip,GeoIP filter plugin>> to support these changes and to help you manage your geoip databases and updates. 
+See <<plugins-filters-geoip-database_license>> and <<plugins-filters-geoip-database_auto>> for more details.
+
+<<plugins-filters-geoip-metrics,Geoip database metrics>> are now available in /node/stats API.
 
 [[ecs-7-14-0]]
 ===== Progress toward Elastic Common Schema (ECS)
-In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS).
+In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS):
+
+* <<plugins-codecs-json_lines,json_lines codec>>
+* <<plugins-filters-csv,csv filter>>
+* <<plugins-filters-fingerprint,fingerprint filter>>
+* <<plugins-filters-jdbc_static,jdbc_static filter>>
+* <<plugins-filters-json,json filter>>
+* <<plugins-filters-translate,translate filter>>
+* <<plugins-filters-useragent,useragent filter>>
+* <<plugins-inputs-file,file input>>
+* <<plugins-inputs-http,http input>>
+* <<plugins-inputs-jdbc,jdbc input>>
+* <<plugins-inputs-tcp,tcp input>>
 
 Values for `pipeline.ordered` and `pipeline.ecs_compatibility` settings are now supported for Logstash Central Management in Kibana. https://github.com/elastic/logstash/pull/12861[#12861]
 
-WIP
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
 
 [[notable-7-14-0]]
 ==== Performance improvements and notable issues fixed
@@ -198,8 +216,6 @@ the input does not follow the schema. https://github.com/logstash-plugins/logsta
 *Elastic_enterprise_search Integration - 2.1.2*
 
 * New for 7.14.0
-
-
 
 *Kafka Integration - 10.8.1*
 
