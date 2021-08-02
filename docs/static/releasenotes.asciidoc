@@ -90,6 +90,7 @@ In this release, we've made more Logstash plugins compatible with the Elastic Co
 * <<plugins-inputs-file,file input>>
 * <<plugins-inputs-http,http input>>
 * <<plugins-inputs-jdbc,jdbc input>>
+* <<plugins-inputs-s3,s3 input>>
 * <<plugins-inputs-tcp,tcp input>>
 
 Values for `pipeline.ordered` and `pipeline.ecs_compatibility` settings are now supported for Logstash Central Management in Kibana. https://github.com/elastic/logstash/pull/12861[#12861]
