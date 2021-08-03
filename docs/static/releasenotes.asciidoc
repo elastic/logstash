@@ -53,10 +53,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-18]]
 === Logstash 6.8.18 Release Notes
 
-coming[6.8.18]
-
-==== Plugins
-
+No user-facing changes.
 
 [[logstash-6-8-17]]
 === Logstash 6.8.17 Release Notes
