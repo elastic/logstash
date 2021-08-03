@@ -91,7 +91,7 @@ In this release, we've made more Logstash plugins compatible with the Elastic Co
 * <<plugins-inputs-s3,s3 input>>
 * <<plugins-inputs-tcp,tcp input>>
 
-Values for `pipeline.ordered` and `pipeline.ecs_compatibility` settings are now supported for Logstash Central Management in Kibana. https://github.com/elastic/logstash/pull/12861[#12861]
+When a pipeline defined in Logstash Central Management in Kibana provides either `pipeline.ordered` or `pipeline.ecs_compatibility`, those settings are now propagated to the pipeline https://github.com/elastic/logstash/pull/12861[#12861]
 
 Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
 
@@ -101,7 +101,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 * GeoIP DatabaseManager has been updated to ensure that only one instance manages the database and one scheduler downloads the database to prevent duplicate download. https://github.com/elastic/logstash/pull/12862[#12862]
 * Geoip database metrics are available in /node/stats API https://github.com/elastic/logstash/pull/13004[#13004]
 * Fix: Windows `logstash.bat` not setting exit code https://github.com/elastic/logstash/pull/12948[#12948]
-* Fix to log4j configuration that prevented the rollover of logstash-plain.log works when the log per pipeline (`pipeline.separate_logs`) is enabled.
+* Fix to log4j configuration issue that prevented the rollover of logstash-plain.log when the log per pipeline (`pipeline.separate_logs`) is enabled.
 Fixes https://github.com/elastic/logstash/issues/12921[#12921]. https://github.com/elastic/logstash/pull/12964[#12964]
 
 **Updates to dependencies**
