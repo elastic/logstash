@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
 * <<logstash-7-13-2,Logstash 7.13.2>>
@@ -47,6 +48,193 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-14-0]]
+=== Logstash 7.14.0 Release Notes
+
+[[featured-7-14-0]]
+==== New features and enhancements
+
+[[agent-7-14-0]]
+===== Elastic Agent input plugin
+
+The {ls} <<plugins-inputs-elastic_agent,Elastic Agent input plugin>> is now available to coincide with Elastic Agent's general availability. 
+The new plugin is based on the <<plugins-inputs-beats,Beats input plugin>>, and will seem familiar to users who have been using the Beats input.
+
+[[entsearch-7-14-0]]
+===== Elastic Enterprise Search integration
+
+The new <<plugins-outputs-elastic_workplace_search,Elastic Workplace Search>> plugin is available as part of the <<plugins-integrations-elastic_enterprise_search,Elastic Enterprise Search integration>> and is bundled with {ls} 7.14.0. 
+The output plugins in this integration send events from {ls} to https://www.elastic.co/enterprise-search[Elastic Enterprise Search].
+
+[[geoip-7-14-0]]
+===== MaxMind GeoIP database changes
+
+MaxMind, the company that provides the GeoIP databases that {ls} uses, has changed their licensing. 
+Logstash has made changes to the core product and the <<plugins-filters-geoip,GeoIP filter plugin>> to support these changes and to help you manage your geoip databases and updates. 
+See <<plugins-filters-geoip-database_license>> and <<plugins-filters-geoip-database_auto>> for more details.
+
+<<plugins-filters-geoip-metrics,Geoip database metrics>> are now available in /node/stats API.
+
+[[ecs-7-14-0]]
+===== Progress toward Elastic Common Schema (ECS)
+In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS):
+
+* <<plugins-filters-csv,csv filter>>
+* <<plugins-filters-fingerprint,fingerprint filter>>
+* <<plugins-filters-jdbc_static,jdbc_static filter>>
+* <<plugins-filters-json,json filter>>
+* <<plugins-filters-useragent,useragent filter>>
+* <<plugins-inputs-file,file input>>
+* <<plugins-inputs-http,http input>>
+* <<plugins-inputs-jdbc,jdbc input>>
+* <<plugins-inputs-s3,s3 input>>
+* <<plugins-inputs-tcp,tcp input>>
+
+When a pipeline defined in Logstash Central Management in Kibana provides either `pipeline.ordered` or `pipeline.ecs_compatibility`, those settings are now propagated to the pipeline https://github.com/elastic/logstash/pull/12861[#12861]
+
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
+
+[[notable-7-14-0]]
+==== Performance improvements and notable issues fixed
+
+* GeoIP DatabaseManager has been updated to ensure that only one instance manages the database and one scheduler downloads the database to prevent duplicate download. https://github.com/elastic/logstash/pull/12862[#12862]
+* Geoip database metrics are available in /node/stats API https://github.com/elastic/logstash/pull/13004[#13004]
+* Fix: Windows `logstash.bat` not setting exit code https://github.com/elastic/logstash/pull/12948[#12948]
+* Fix to log4j configuration issue that prevented the rollover of logstash-plain.log when the log per pipeline (`pipeline.separate_logs`) is enabled.
+Fixes https://github.com/elastic/logstash/issues/12921[#12921]. https://github.com/elastic/logstash/pull/12964[#12964]
+
+**Updates to dependencies**
+
+* Update bundled JDK to 11.0.11+9 https://github.com/elastic/logstash/pull/12881[#12881]
+* Update JRuby to 9.2.19.0 https://github.com/elastic/logstash/pull/12989[#12989]
+
+[[plugins-7-14-0]]
+==== Plugins
+
+*Csv Filter - 3.1.1*
+
+* Refactor: unified ECS target + validate field reference https://github.com/logstash-plugins/logstash-filter-csv/pull/86[#86]
+
+* Add ECS support https://github.com/logstash-plugins/logstash-filter-csv/pull/85[#85]
+
+* [DOC] Fixed formatting to improve readability https://github.com/logstash-plugins/logstash-filter-csv/pull/84[#84]
+
+*Fingerprint Filter - 3.3.2*
+
+* [DOC] Clarify behavior when key is set https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/65[#65]. 
+
+* Force encoding to UTF-8 when concatenating sources to generate fingerprint https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/64[#64]
+
+* Add ECS compatibility https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/62[#62]
+
+*Geoip Filter - 7.2.2*
+
+* [DOC] Add documentation for database auto-update behavior and database metrics https://github.com/logstash-plugins/logstash-filter-geoip/pull/187[#187]
+
+* Republish the gem due to missing jars in 7.2.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/186[#186]
+
+*Json Filter - 3.2.0*
+
+* Feat: check target is set in ECS mode https://github.com/logstash-plugins/logstash-filter-json/pull/49[#49]
+* Refactor: logging improvements to print event details in debug mode
+
+*Useragent Filter - 3.3.1*
+
+* Fix: invalid 3.3.0 release which did not package correctly https://github.com/logstash-plugins/logstash-filter-useragent/pull/71[#71]
+
+* Feat: support ECS mode when setting UA fields https://github.com/logstash-plugins/logstash-filter-useragent/pull/68[#68]
+ 
+* Fix: capture os major version + update UA regexes https://github.com/logstash-plugins/logstash-filter-useragent/pull/69[#69]
+
+* Plugin no longer sets the `[build]` UA version field which is not implemented and was always `""`.
+* Fix: `target => [field]` configuration, which wasn't working previously
+
+*Azure_event_hubs Input - 1.3.0*
+
+* Add EventHub `user properties` in `@metadata` object https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/66[#66]
+
+*Beats Input - 6.1.6*
+
+* [DOC] Applied more attributes to manage plugin name in doc content, and implemented conditional text processing. https://github.com/logstash-plugins/logstash-input-http/pull/423[#423]
+
+*File Input - 4.3.1*
+
+* Add extra safety to `chown` call in `atomic_write`, avoiding plugin crashes and falling back to a 
+`non_atomic_write` in the event of failure https://github.com/logstash-plugins/logstash-input-file/pull/295[#295]
+* Refactor: unify event updates to happen in one place https://github.com/logstash-plugins/logstash-input-file/pull/297[#297]
+* Test: Actually retry tests on `RSpec::Expectations::ExpectationNotMetError` and retry instead of relying on timeout
+https://github.com/logstash-plugins/logstash-input-file/pull/297[#297]
+
+* Add ECS Compatibility Mode https://github.com/logstash-plugins/logstash-input-file/pull/291[#291]
+
+*Http Input - 3.4.1*
+
+* Changed jar dependencies to reflect newer versions https://github.com/logstash-plugins/logstash-input-http/pull/140[#140]
+
+* Add ECS support, mapping Http header to ECS compatible fields https://github.com/logstash-plugins/logstash-input-http/pull/137[#137]
+
+*Redis Input - 3.7.0*
+
+* Fix: better (Redis) exception handling https://github.com/logstash-plugins/logstash-input-redis/pull/89[#89]
+* Test: start running integration specs on CI
+
+*S3 Input - 3.7.0*
+
+* Add ECS support. https://github.com/logstash-plugins/logstash-input-s3/pull/228[#228]
+* Fix missing file in cutoff time change. https://github.com/logstash-plugins/logstash-input-s3/pull/224[#224]
+
+*Tcp Input - 6.2.0*
+
+* Added ECS Compatibility Mode https://github.com/logstash-plugins/logstash-input-tcp/pull/165[#165]
+* When operating in an ECS Compatibility mode, metadata about the connection on which we are receiving data is nested in well-named fields under `[@metadata][input][tcp]` instead of at the root level.
+* Fix: source address is no longer missing when a proxy is present
+
+* Changed jar dependencies to reflect newer versions https://github.com/logstash-plugins/logstash-input-http/pull/179[#179]
+
+* Feat: improve SSL error logging/unwrapping https://github.com/logstash-plugins/logstash-input-tcp/pull/178[#178]
+* Fix: the plugin will no longer have a side effect of adding the Bouncy-Castle security provider at runtime  
+
+*Jdbc Integration - 5.1.4*
+
+* [DOC] Update filter-jdbc_static doc to describe ECS compatibility https://github.com/logstash-plugins/logstash-integration-jdbc/pull/79[#79]
+
+* Improve robustness when handling errors from `sequel` library in jdbc static and streaming
+filters https://github.com/logstash-plugins/logstash-integration-jdbc/pull/78[#78]
+
+*  Fix `prepared_statement_bind_values` in streaming filter to resolve nested event's fields https://github.com/logstash-plugins/logstash-integration-jdbc/pull/76[#76]
+
+* [DOC] Changed docs to indicate that logstash-jdbc-static requires local_table https://github.com/logstash-plugins/logstash-integration-jdbc/pull/56[#56]. Fixes https://github.com/logstash-plugins/logstash-integration-jdbc/issues/55[#55].
+
+* Added `target` option to JDBC input, allowing the row columns to target a specific field instead of being expanded 
+at the root of the event. This allows the input to play nicer with the Elastic Common Schema when 
+the input does not follow the schema. https://github.com/logstash-plugins/logstash-integration-jdbc/issues/69[#69]
+    
+* Added `target` to JDBC filter static `local_lookups` to verify it is properly valued when ECS is enabled. https://github.com/logstash-plugins/logstash-integration-jdbc/issues/71[#71]
+
+*Elastic_enterprise_search Integration - 2.1.2*
+
+* New for 7.14.0
+
+*Kafka Integration - 10.8.1*
+
+* [DOC] Removed a setting recommendation that is no longer applicable for Kafka 2.0+ https://github.com/logstash-plugins/logstash-integration-kafka/pull/99[#99]
+
+* Added config setting to enable schema registry validation to be skipped when an authentication scheme unsupported by the validator is used https://github.com/logstash-plugins/logstash-integration-kafka/pull/97[#97]
+
+* Fix: Correct the settings to allow basic auth to work properly, either by setting `schema_registry_key/secret` or embedding username/password in the
+url https://github.com/logstash-plugins/logstash-integration-kafka/pull/94[#94]
+
+*Rabbitmq Integration - 7.3.0*
+
+* Refactor: logging improvements https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/47[#47]
+** integrated MarchHare logging to be part of Logstash's log instead of using std-err
+** normalized logging format on (Ruby) errors
+
+*Ecs_compatibility_support Mixin - 1.3.0*
+
+* Feat: introduce a target check helper https://github.com/logstash-plugins/logstash-mixin-ecs_compatibility_support/pull/6[#6] 
+
 
 [[logstash-7-13-4]]
 === Logstash 7.13.4 Release Notes
