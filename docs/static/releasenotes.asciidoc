@@ -80,12 +80,10 @@ See <<plugins-filters-geoip-database_license>> and <<plugins-filters-geoip-datab
 ===== Progress toward Elastic Common Schema (ECS)
 In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS):
 
-* <<plugins-codecs-json_lines,json_lines codec>>
 * <<plugins-filters-csv,csv filter>>
 * <<plugins-filters-fingerprint,fingerprint filter>>
 * <<plugins-filters-jdbc_static,jdbc_static filter>>
 * <<plugins-filters-json,json filter>>
-* <<plugins-filters-translate,translate filter>>
 * <<plugins-filters-useragent,useragent filter>>
 * <<plugins-inputs-file,file input>>
 * <<plugins-inputs-http,http input>>
