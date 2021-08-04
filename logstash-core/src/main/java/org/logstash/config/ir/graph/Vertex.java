@@ -20,6 +20,7 @@
 
 package org.logstash.config.ir.graph;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.logstash.common.SourceWithMetadata;
@@ -224,7 +225,8 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         // they have no source metadata. This might also be used in the future by alternate config languages which are
         // willing to take the hit.
         if (this.getSourceWithMetadata() != null) {
-            generatedId = Util.digest(this.graph.uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash());
+            final String uniqueString = this.graph.uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash();
+            generatedId = Util.shortDigest(uniqueString.getBytes(StandardCharsets.UTF_8));
         } else {
             generatedId = this.uniqueHash();
         }

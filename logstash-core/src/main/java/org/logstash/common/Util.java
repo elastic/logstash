@@ -20,6 +20,8 @@
 
 package org.logstash.common;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +41,14 @@ public class Util {
         MessageDigest digest = defaultMessageDigest();
         byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
         return bytesToHexString(hash);
+    }
+
+    /**
+     * Generates a short digest from bytes.
+     * @return a hex digest string (16 characters long)
+     */
+    public static String shortDigest(final byte[] bytes) { // using MD5 for speed
+        return new DigestUtils("MD5").digestAsHex(bytes).substring(0, 16);
     }
 
     public static String bytesToHexString(byte[] bytes) {

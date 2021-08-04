@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.Util;
 
 import java.util.Random;
 
@@ -63,7 +64,7 @@ public final class RubyIntegration {
         byte[] randomBytes = new byte[16];
         new Random().nextBytes(randomBytes); // seeded from System.nanoTime()
         // for improved log readability we limit the HEX string to a shorter length
-        return new DigestUtils("MD5").digestAsHex(randomBytes).substring(0, 16);
+        return Util.shortDigest(randomBytes);
     }
 
 }

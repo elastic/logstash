@@ -294,7 +294,7 @@ public final class PluginFactoryExt extends RubyBasicObject
         } else {
             unprocessedId = extractId(() -> extractIdFromLIR(source),
                                       () -> extractIdFromArgs(args),
-                                      () -> generatePluginId(type));
+                                      () -> generatePluginId(type)); // codecs might fall through down here
         }
 
         return unprocessedId
@@ -339,7 +339,7 @@ public final class PluginFactoryExt extends RubyBasicObject
                 .filter(v -> v.getSourceWithMetadata() != null
                         && v.getSourceWithMetadata().equalsWithoutText(source))
                 .findFirst()
-                .map(Vertex::getExplicitId);
+                .map(Vertex::getId); // explicit id if set by user or generates one based on AST
     }
 
     ExecutionContextFactoryExt getExecutionContextFactory() {
