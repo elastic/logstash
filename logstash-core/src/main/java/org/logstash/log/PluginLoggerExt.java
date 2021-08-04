@@ -57,11 +57,11 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject trace(final IRubyObject msg) {
         if (logger.isTraceEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.trace(msg.asString());
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
@@ -69,11 +69,11 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject trace(final IRubyObject msg, final IRubyObject data) {
         if (logger.isTraceEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.trace(msg.toString(), data);
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
@@ -81,11 +81,11 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject debug(final IRubyObject msg) {
         if (logger.isDebugEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.debug(msg.asString());
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
@@ -93,11 +93,11 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject debug(final IRubyObject msg, final IRubyObject data) {
         if (logger.isDebugEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.debug(msg.toString(), data);
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
@@ -105,11 +105,11 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject info(final IRubyObject msg) {
         if (logger.isInfoEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.info(msg.asString());
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
@@ -117,79 +117,90 @@ public class PluginLoggerExt extends LoggerExt {
     @Override
     public IRubyObject info(final IRubyObject msg, final IRubyObject data) {
         if (logger.isInfoEnabled()) {
-            org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+            boolean didSet = setPluginId(pluginId);
 
             logger.info(msg.toString(), data);
 
-            org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+            removePluginId(didSet);
         }
         return this;
     }
 
     @Override
     public IRubyObject warn(final IRubyObject msg) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.warn(msg.asString());
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
     }
 
     @Override
     public IRubyObject warn(final IRubyObject msg, final IRubyObject data) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.warn(msg.toString(), data);
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
     }
 
     @Override
     public IRubyObject error(final IRubyObject msg) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.error(msg.asString());
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
     }
 
     @Override
     public IRubyObject error(final IRubyObject msg, final IRubyObject data) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.error(msg.toString(), data);
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
     }
 
     @Override
     public IRubyObject fatal(final IRubyObject msg) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.fatal(msg.asString());
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
     }
 
     @Override
     public IRubyObject fatal(final IRubyObject msg, final IRubyObject data) {
-        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        boolean didSet = setPluginId(pluginId);
 
         logger.fatal(msg.toString(), data);
 
-        org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
+        removePluginId(didSet);
 
         return this;
+    }
+
+    private static boolean setPluginId(final String pluginId) {
+        boolean found = org.apache.logging.log4j.ThreadContext.containsKey(PLUGIN_ID_KEY);
+        if (found) return false;
+        org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
+        return false;
+    }
+
+    private static void removePluginId(final boolean didSet) {
+        if (didSet) org.apache.logging.log4j.ThreadContext.remove(PLUGIN_ID_KEY);
     }
 
 }
