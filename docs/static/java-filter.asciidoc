@@ -217,7 +217,7 @@ constructor at instantiation time.
 
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
 The example filter plugin includes an
-https://github.com/logstash-plugins/logstash-filter-java_filter_example/blob/master/src/test/java/org/logstash/javaapi/JavaFilterExampleTest.java)[example
+https://github.com/logstash-plugins/logstash-filter-java_filter_example/blob/master/src/test/java/org/logstashplugins/JavaFilterExampleTest.java[example
 unit test] that you can use as a template for your own.
 
 
