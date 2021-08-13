@@ -25,7 +25,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.17'
+        classpath 'org.yaml:snakeyaml:1.29'
         classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 }
