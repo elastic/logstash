@@ -29,11 +29,23 @@ See also <<releasenotes>>.
 === Breaking changes in 8.0
 Here are the breaking changes for 8.0.
 
-[float]
+[discrete]
+[[bc-core]]
 ==== Changes in Logstash Core
 
-[float]
-[[field-reference-parser]]
+[discrete]
+[[bc-ruby-engine]]
+===== Ruby Execution Engine removed
+The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
+Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
+
+[discrete]
+[[bc-utf-16]]
+===== Support for UTF-16
+We have added support for UTF-16 and other multi-byte-character when reading log files. https://github.com/elastic/logstash/pull/9702[#9702]
+
+[discrete]
+[[bc-field-ref-parser]]
 ===== Field Reference parser removed
 The Field Reference parser interprets references to fields in your pipelines and
 plugins. It was configurable in 7.x, with the default set to strict to reject
@@ -47,13 +59,13 @@ inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 Here are the breaking changes for {ls} 7.0. 
 
 // tag::notable-breaking-changes[]
-[float]
+[discrete]
 ==== Changes in Logstash Core
 
 These changes can affect any instance of Logstash that uses impacted features.
 Changes to Logstash Core are plugin agnostic.
 
-[float]
+[discrete]
 [[java-exec-default]]
 ===== Java execution engine enabled by default
 
@@ -69,7 +81,7 @@ change. If you notice different behaviors that might be related, please
 https://github.com/elastic/logstash/issues[open a GitHub issue] to let us
 know.
 
-[float]
+[discrete]
 [[beats-ecs]]
 ===== Beats conform to the Elastic Common Schema (ECS)
 
@@ -86,7 +98,7 @@ Beats/ECS change is influencing the data reaching existing indices.
 See the *{beats} Platform Reference* for more information on
 {beats-ref}/upgrading-6-to-7.html#enable-ecs-compatibility[Beats and ECS].
 
-[float]
+[discrete]
 [[field-ref-strict]]
 ===== Field Reference parser is more strict
 
@@ -125,7 +137,7 @@ logstash-7.0.0 % echo "hello"| bin/logstash -e 'filter { mutate { replace => { "
 -----
 
   
-[float]
+[discrete]
 ==== Changes in Logstash Plugins
 
 With 7.0.0, we have taken the opportunity to upgrade a number of bundled plugins
@@ -139,7 +151,7 @@ NOTE: The majority of the changes to plugins are the removal of previously-depre
 and now-obsolete options. Please ensure that your pipeline
 configurations do not use these removed options before upgrading.
 
-[float]
+[discrete]
 ===== Codec Plugins
 
 Here are the breaking changes for codec plugins.
@@ -153,7 +165,7 @@ Here are the breaking changes for codec plugins.
 
 * Changed decoding of application_id to implement RFC6759; the format changes from a pair of colon-separated ids (e.g. `0:40567`) to a variable number of double-dot-separated ids (e.g. `0..12356..40567`).
 
-[float]
+[discrete]
 ===== Filter Plugins
 
 Here are the breaking changes for filter plugins.
@@ -170,7 +182,7 @@ Here are the breaking changes for filter plugins.
 
 * Removed obsolete `ssl_certificate_verify` option
 
-[float]
+[discrete]
 ===== Input Plugins
 
 Here are the breaking changes for  input plugins.
@@ -202,7 +214,7 @@ for the full list of changed names.
 * Removed obsolete `data_timeout` option
 * Removed obsolete `ssl_cacert` option
 
-[float]
+[discrete]
 ===== Output Plugins
 
 Here are the breaking changes for output plugins.
@@ -255,33 +267,33 @@ for information and instructions.
 
 Here are the breaking changes for 6.0. 
 
-[float]
+[discrete]
 ==== Changes in Logstash Core
 
 These changes can affect any instance of Logstash that uses impacted features.
 Changes to Logstash Core are plugin agnostic.
 
-[float]
+[discrete]
 ===== Application Settings
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
   Previously, users had to convert this to a millisecond time value themselves.
   Note that the unit qualifier (`s`) is required.
 
-[float]
+[discrete]
 ===== RPM/Deb package changes
 
 * For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
   or the files will not be loaded.
 
-[float]
+[discrete]
 ===== Command Line Interface behavior
 
 * The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and
   `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
 * Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
 
-[float]
+[discrete]
 ===== List of plugins bundled with Logstash
 
 The following plugins were removed from the default bundle based on usage data. You can still install these plugins manually:
