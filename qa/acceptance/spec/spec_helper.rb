@@ -57,11 +57,15 @@ SpecsHelper.configure(selected_boxes)
 
 puts "[Acceptance specs] running on #{ServiceTester.configuration.hosts}" if !selected_boxes.empty?
 
-def with_running_logstash_service(logstash)
+def with_running_logstash_service(logstash, jdk_path=nil)
   begin
     logstash.start_service
     Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
-      expect(logstash).to be_running
+      if jdk_path
+        expect(logstash).to be_running_with(jdk_path)
+      else
+        expect(logstash).to be_running
+      end
     end
 
     yield
