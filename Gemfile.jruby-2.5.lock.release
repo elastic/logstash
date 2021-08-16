@@ -93,12 +93,12 @@ GEM
     elastic-app-search (7.8.0)
       jwt (>= 1.5, < 3.0)
     elastic-workplace-search (0.4.1)
-    elasticsearch (7.14.0)
-      elasticsearch-api (= 7.14.0)
-      elasticsearch-transport (= 7.14.0)
-    elasticsearch-api (7.14.0)
+    elasticsearch (7.13.3)
+      elasticsearch-api (= 7.13.3)
+      elasticsearch-transport (= 7.13.3)
+    elasticsearch-api (7.13.3)
       multi_json
-    elasticsearch-transport (7.14.0)
+    elasticsearch-transport (7.13.3)
       faraday (~> 1)
       multi_json
     equalizer (0.0.11)
