@@ -36,7 +36,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'org.yaml:snakeyaml:1.17'
+    classpath 'org.yaml:snakeyaml:1.29'
     classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
   }
 }
