@@ -34,8 +34,6 @@ def start_container(image, options={})
   container
 end
 
-
-
 def wait_for_logstash(container)
   Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
     expect(container.exec(['curl', '-s', 'http://localhost:9600/_node'])[0][0]).not_to be_empty
