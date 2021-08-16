@@ -76,6 +76,12 @@ See <<plugins-filters-geoip-database_license>> and <<plugins-filters-geoip-datab
 
 <<plugins-filters-geoip-metrics,Geoip database metrics>> are now available in /node/stats API.
 
+[[arm64-7-14-0]]
+===== aarch64 (ARM64) support
+
+Aarch64 (ARM64) support for 64-bit ARM architectures is now generally available (GA) with the same set of distributions as x86_64.
+Check out the https://www.elastic.co/downloads/logstash[{ls} download page] to download the latest. 
+
 [[ecs-7-14-0]]
 ===== Progress toward Elastic Common Schema (ECS)
 In this release, we've made more Logstash plugins compatible with the Elastic Common Schema (ECS):
@@ -585,7 +591,7 @@ settings don't apply to JVM 14 and above.
 This feature is available for any setting in the `jvm.options` file, and aligns
 more closely with the {es} implementation of jvm settings.
 
-===== ARM64 support for Linux (beta)
+===== Aarch64 (ARM64) support for Linux (beta)
 
 Support for 64-bit ARM architectures on Linux is now in beta, with downloadable artifacts and docker images available.
 
@@ -1304,7 +1310,7 @@ Check out <<ls-api-keys>> for more information about using API keys with {ls}
 and {es}.
 Implementation details are in https://github.com/elastic/logstash/pull/11953[#11953].
 
-===== ARM64 support (experimental)
+===== Aarch64 (ARM64) support (experimental)
 
 {ls} runs on arm machines! We have tested {ls} against arm64, and we are looking
 to make docker and other images available soon.
