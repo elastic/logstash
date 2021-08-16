@@ -210,8 +210,6 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     end
     puts("Installation successful")
   rescue => exception
-    puts exception
-    puts exception.backtrace
     gemfile.restore!
     report_exception("Installation Aborted", exception)
   ensure
