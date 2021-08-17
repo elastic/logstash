@@ -33,16 +33,22 @@ shared_examples "logstash update" do |logstash|
 
     before do
       logstash.run_command_in_path("bin/logstash-plugin install --no-verify --version #{previous_version} #{plugin_name}")
+      logstash.run_command_in_path("bin/logstash-plugin list")
+      expect(logstash).to have_installed?(plugin_name, previous_version)
       # Logstash won't update when we have a pinned version in the gemfile so we remove them
       logstash.replace_in_gemfile(',[[:space:]]"0.1.0"', "")
-      expect(logstash).to have_installed?(plugin_name, previous_version)
     end
 
     context "update a specific plugin" do
       it "has executed successfully" do
         cmd = logstash.run_command_in_path("bin/logstash-plugin update --no-verify #{plugin_name}")
         expect(cmd.stdout).to match(/Updating #{plugin_name}/)
+        expect(logstash).to have_installed?(plugin_name, "0.1.1")
         expect(logstash).not_to have_installed?(plugin_name, previous_version)
+        expect(logstash).not_to be_running
+        with_running_logstash_service(logstash) do
+          expect(logstash).to be_running
+        end
       end
     end
 
@@ -50,6 +56,10 @@ shared_examples "logstash update" do |logstash|
       it "has executed successfully" do
         logstash.run_command_in_path("bin/logstash-plugin update --no-verify")
         expect(logstash).to have_installed?(plugin_name, "0.1.1")
+        expect(logstash).not_to be_running
+        with_running_logstash_service(logstash) do
+          expect(logstash).to be_running
+        end
       end
     end
   end
