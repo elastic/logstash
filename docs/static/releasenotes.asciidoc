@@ -4,8 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-7-15-0,Logstash 7.15.0>>
-* <<logstash-7-15-0,Logstash 7.15.0>>
-* <<logstash-7-14-0,Logstash 7.14.1>>
+* <<logstash-7-14-1,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
@@ -66,6 +65,7 @@ This section summarizes the changes in the following releases:
 * Added faraday-* and ruby2_keywords notices to licences list https://github.com/elastic/logstash/pull/13126[#13126]
 * [backport 7.x] Added faraday-* and ruby2_keywords notices to licences list (#13126) https://github.com/elastic/logstash/pull/13128[#13128]
 * Update Snakeyaml version to 1.29 https://github.com/elastic/logstash/pull/13129[#13129]
+
 * Backport PR #13015 to 7.15: Bundler: freeze lockfile on run, and "nor… https://github.com/elastic/logstash/pull/13141[#13141]
 * Backport PR #13005 to 7.15 update fpm to allow pkg creation on jdk11+… https://github.com/elastic/logstash/pull/13145[#13145]
 * Backport PR #13146 to 7.15: Remove dependency:bundler task https://github.com/elastic/logstash/pull/13148[#13148]
@@ -77,13 +77,62 @@ Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit -
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff 7.14..7.15 *.release"
 Changed plugin versions:
+=======
+
+=== Logstash Commits between 7.15 and 7.14.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14.0..7.15"
+
+10e3cc0b7 - (HEAD -> 7.15, origin/7.15) [backport 7.15] Update Snakeyaml version to 1.29 (#13129) (#13135) (23 hours ago) <Andrea Selva>
+63c6eeb34 - Deps: bump lock for 7.15.0 (#13125) (25 hours ago) <Karol Bucek>
+b59e97c99 - Release notes for 7.14.0 (#13133) (4 days ago) <Karen Metts>
+84dbf3e31 - [backport 7.x] Added faraday-* and ruby2_keywords notices to licences list (#13126) (#13128) (4 days ago) <Andrea Selva>
+af82b3c87 - Backport Docs: fix java filter unit test link (#13123) (7 days ago) <Karol Bucek>
+725799d20 - Doc: Enhance and expand DLQ docs 7.x (#13099) (4 weeks ago) <Karen Metts>
+e0908f55a - Doc: Fix typo and adjust keystore text 7.x #13095 (4 weeks ago) <Karen Metts>
+e779535ae - doc: add pipeline.ecs_compatibility docs (#12421) (#13091) (4 weeks ago) <Ry Biesemeyer>
+05a826a58 - Forward port of 7.13.4 release notes to 7.x (#13086) (4 weeks ago) <Andrea Selva>
+fb98ca807 - Doc: Add kafka schema registry setting to troubleshooting (#13077) (5 weeks ago) <Karen Metts>
+3c5f7d5e9 - Backport PR #13071 to 7.x: [Test] Fix Unix acceptance tests (#13074) (5 weeks ago) <Rob Bavey>
+f33522f52 - [backport 7.x]Move retrieval of Stack version from Gradle's configuration to execution (#13042) (#13066) (5 weeks ago) <Andrea Selva>
+09bdd51b2 - Doc: Include Windows and Unix commands to run basic pipeline (#13062) (6 weeks ago) <Karen Metts>
+aa71171f7 - Release notes for 7.13.3 (#13031) (#13057) (6 weeks ago) <Karen Metts>
+49c04d7e5 - Docs: keep elastic_app_search output meta-data (#13048) (#13054) (6 weeks ago) <Karol Bucek>
+0ac470f3c - Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) (#13053) (6 weeks ago) <Andrea Selva>
+ed73015d9 - bump version to 7.15.0 (#13035) (7 weeks ago) <João Duarte>
+2ce40ced1 - Emergency revert to make bump `7.15.0` (#13037) (7 weeks ago) <Andrea Selva>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.14.0..7.15 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.2 -> 6.2.3
+logstash-codec-collectd: 3.0.8 -> 3.1.0
+logstash-codec-edn: 3.0.6 -> 3.1.0
+logstash-codec-edn_lines: 3.0.6 -> 3.1.0
+logstash-codec-fluent: 3.3.0 -> 3.4.0
+logstash-codec-graphite: 3.0.5 -> 3.0.6
+logstash-codec-json: 3.0.5 -> 3.1.0
+logstash-codec-json_lines: 3.0.6 -> 3.1.0
+logstash-codec-line: 3.0.8 -> 3.1.1
+logstash-codec-msgpack: 3.0.7 -> 3.1.0
+logstash-codec-multiline: 3.0.11 -> 3.1.0
+logstash-codec-netflow: 4.2.1 -> 4.2.2
+logstash-codec-plain: 3.0.6 -> 3.1.0
+logstash-filter-elasticsearch: 3.9.3 -> 3.9.4
+logstash-filter-kv: 4.4.1 -> 4.5.0
+logstash-filter-translate: 3.2.3 -> 3.3.0
+logstash-input-beats: 6.1.6 -> 6.2.0
+logstash-input-elasticsearch: 4.9.1 -> 4.9.2
+logstash-input-file: 4.3.1 -> 4.4.0
+logstash-input-heartbeat: 3.0.7 -> 3.1.1
+logstash-input-s3: 3.7.0 -> 3.8.0
+logstash-input-stdin: 3.3.0 -> 3.4.0
+logstash-input-udp: 3.4.1 -> 3.5.0
+logstash-integration-jdbc: 5.1.4 -> 5.1.5
+logstash-mixin-event_support: 1.0.1 -> 1.0.1
+logstash-output-udp: 3.1.0 -> 3.2.0
+>>>>>>> Update release notes for 7.15.0
 ---------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
-[[logstash-7-15-0]]
-=== Logstash 7.15.0 Release Notes
-coming[7.15.0]
 
 [[featured-7-15-0]]
 ==== New features and enhancements
@@ -93,6 +142,133 @@ coming[7.15.0]
 
 [[plugins-7-15-0]]
 ==== Plugins
+
+*Cef Codec - 6.2.3*
+
+* Feat: event_factory support https://github.com/logstash-plugins/logstash-codec-cef/pull/94[#94]
+
+*Collectd Codec - 3.1.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-collectd/pull/31[#31]
+
+*Edn Codec - 3.1.0*
+
+* Feat: target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-edn/pull/6[#6]
+
+*Edn_lines Codec - 3.1.0*
+
+*  Feat: target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/6[#6]
+
+*Fluent Codec - 3.4.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-fluent/pull/27[#27]
+* Fix: decoding of time's nano-second precision
+
+*Graphite Codec - 3.0.6*
+
+* Feat: added event-factory support https://github.com/logstash-plugins/logstash-codec-graphite/pull/7[#7]
+
+*Json Codec - 3.1.0*
+
+* Feat: event `target => namespace` support (for ECS) https://github.com/logstash-plugins/logstash-codec-json/pull/37[#37]
+* Refactor: dropped support for old Logstash versions (< 6.0)
+* Fix: json parsing compatibility (when parsing blank strings) + freeze event.original value https://github.com/logstash-plugins/logstash-codec-json/pull/38[#38]
+
+*Json_lines Codec - 3.1.0*
+
+* Feat: event `target => namespace` support (ECS) https://github.com/logstash-plugins/logstash-codec-json_lines/pull/41[#41]
+* Refactor: dropped support for old Logstash versions (< 6.0)
+
+*Line Codec - 3.1.1*
+
+* [DOC] Add ECS compatibility info https://github.com/logstash-plugins/logstash-codec-line/pull/19[#19]
+
+* Feat: ECS + event_factory support https://github.com/logstash-plugins/logstash-codec-line/pull/18[#18]
+
+*Msgpack Codec - 3.1.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-msgpack/pull/13[#13]
+* Fix: decoding to create a fallback event when msg-pack unpacking fails
+
+*Multiline Codec - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-multiline/pull/69[#69]
+
+*Netflow Codec - 4.2.2*
+
+* Feat: leverage event_factory support https://github.com/logstash-plugins/logstash-codec-netflow/pull/195[#195]
+* Test: remove redundant asserts (to get the CI green)
+
+*Plain Codec - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-plain/pull/10[#10]
+
+*Elasticsearch Filter - 3.9.4*
+
+* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization`
+header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
+https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+* Fix: default setting for `hosts` not working (since 3.7.0) GH-147
+* Fix: mutating @hosts variable which leads to issues with multiple worker threads GH-129
+
+*Kv Filter - 4.5.0*
+
+* Feat: check that target is set in ECS mode https://github.com/logstash-plugins/logstash-filter-kv/pull/96[#96]
+
+*Translate Filter - 3.3.0*
+
+* Feat: added ECS compatibility mode https://github.com/logstash-plugins/logstash-filter-translate/pull/89[#89]
+* deprecated `destination` option in favor of `target` to better align with other plugins
+* deprecated `field` option in favor of `source` to better align with other plugins
+* when ECS compatibility is enabled, default behaviour is an in-place translation
+* Fix: improved error handling - do not rescue potentially fatal (JVM) errors
+
+*Beats Input - 6.2.0*
+
+* ECS compatibility enablement: Adds alias to support upcoming ECS v8 with the existing ECS v1 implementation
+
+* [DOC] Remove limitations topic and link https://github.com/logstash-plugins/logstash-input-http/pull/428[#428]
+
+*Elasticsearch Input - 4.9.2*
+
+* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization`
+header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
+https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
+
+*File Input - 4.4.0*
+
+* Add support for ECS v8 https://github.com/logstash-plugins/logstash-input-file/pull/301[#301]
+
+*Heartbeat Input - 3.1.1*
+
+* Docs: added information on ECS v8 support https://github.com/logstash-plugins/logstash-input-heartbeat/pull/19[#19]
+
+* Added new `sequence` setting to manage the type of sequence generator and added ECS
+compatibility behavior https://github.com/logstash-plugins/logstash-input-heartbeat/pull/18[#18]
+
+*S3 Input - 3.8.0*
+
+* Add ECS v8 support.
+
+*Stdin Input - 3.4.0*
+
+* Add ECS v8 support as alias of v1 implementation
+
+*Udp Input - 3.5.0*
+
+* Added ECS v8 support as an alias to the ECS v1 implementation
+
+*Jdbc Integration - 5.1.5*
+
+* Refined ECS support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
+* Uses shared `target` guidance when ECS compatibility is enabled
+* Uses Logstash's EventFactory instead of instantiating events directly
+
+*Event_support Mixin - 1.0.1*
+
+*Udp Output - 3.2.0*
+
+* Added field reference support in `port` https://github.com/logstash-plugins/logstash-output-udp/pull/13[#13]
 
 [[logstash-7-14-1]]
 === Logstash 7.14.1 Release Notes
