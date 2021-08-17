@@ -26,3 +26,8 @@ gem "logstash-devutils", "~> 2", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
+
+# hopefully temporary - till 7.14.1 is released (31.8.2021)
+gem 'elasticsearch', '7.14.1.pre'
+gem 'elasticsearch-api', '7.14.1.pre'
+gem 'elasticsearch-transport', '7.14.1.pre'
