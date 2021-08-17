@@ -62,9 +62,6 @@ This section summarizes the changes in the following releases:
 * [backport 7.x] Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) https://github.com/elastic/logstash/pull/13053[#13053]
 * Backport PR #13071 to 7.x: [Test] Fix Unix acceptance tests https://github.com/elastic/logstash/pull/13074[#13074]
 * Backport PR #12421 to 7.x: doc: add pipeline.ecs_compatibility docs https://github.com/elastic/logstash/pull/13091[#13091]
-* Added faraday-* and ruby2_keywords notices to licences list https://github.com/elastic/logstash/pull/13126[#13126]
-* [backport 7.x] Added faraday-* and ruby2_keywords notices to licences list (#13126) https://github.com/elastic/logstash/pull/13128[#13128]
-* Update Snakeyaml version to 1.29 https://github.com/elastic/logstash/pull/13129[#13129]
 
 * Backport PR #13015 to 7.15: Bundler: freeze lockfile on run, and "nor… https://github.com/elastic/logstash/pull/13141[#13141]
 * Backport PR #13005 to 7.15 update fpm to allow pkg creation on jdk11+… https://github.com/elastic/logstash/pull/13145[#13145]
@@ -83,24 +80,11 @@ Changed plugin versions:
 
 Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14.0..7.15"
 
-10e3cc0b7 - (HEAD -> 7.15, origin/7.15) [backport 7.15] Update Snakeyaml version to 1.29 (#13129) (#13135) (23 hours ago) <Andrea Selva>
-63c6eeb34 - Deps: bump lock for 7.15.0 (#13125) (25 hours ago) <Karol Bucek>
-b59e97c99 - Release notes for 7.14.0 (#13133) (4 days ago) <Karen Metts>
-84dbf3e31 - [backport 7.x] Added faraday-* and ruby2_keywords notices to licences list (#13126) (#13128) (4 days ago) <Andrea Selva>
-af82b3c87 - Backport Docs: fix java filter unit test link (#13123) (7 days ago) <Karol Bucek>
+10e3cc0b7 - [backport 7.15] Update Snakeyaml version to 1.29 (#13129) (#13135) (23 hours ago) <Andrea Selva>
 725799d20 - Doc: Enhance and expand DLQ docs 7.x (#13099) (4 weeks ago) <Karen Metts>
-e0908f55a - Doc: Fix typo and adjust keystore text 7.x #13095 (4 weeks ago) <Karen Metts>
 e779535ae - doc: add pipeline.ecs_compatibility docs (#12421) (#13091) (4 weeks ago) <Ry Biesemeyer>
-05a826a58 - Forward port of 7.13.4 release notes to 7.x (#13086) (4 weeks ago) <Andrea Selva>
 fb98ca807 - Doc: Add kafka schema registry setting to troubleshooting (#13077) (5 weeks ago) <Karen Metts>
-3c5f7d5e9 - Backport PR #13071 to 7.x: [Test] Fix Unix acceptance tests (#13074) (5 weeks ago) <Rob Bavey>
-f33522f52 - [backport 7.x]Move retrieval of Stack version from Gradle's configuration to execution (#13042) (#13066) (5 weeks ago) <Andrea Selva>
-09bdd51b2 - Doc: Include Windows and Unix commands to run basic pipeline (#13062) (6 weeks ago) <Karen Metts>
-aa71171f7 - Release notes for 7.13.3 (#13031) (#13057) (6 weeks ago) <Karen Metts>
-49c04d7e5 - Docs: keep elastic_app_search output meta-data (#13048) (#13054) (6 weeks ago) <Karol Bucek>
 0ac470f3c - Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) (#13053) (6 weeks ago) <Andrea Selva>
-ed73015d9 - bump version to 7.15.0 (#13035) (7 weeks ago) <João Duarte>
-2ce40ced1 - Emergency revert to make bump `7.15.0` (#13037) (7 weeks ago) <Andrea Selva>
 
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff v7.14.0..7.15 *.release"
