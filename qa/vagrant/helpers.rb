@@ -46,7 +46,7 @@ module LogStash
     end
 
     def self.fetch_config
-      machines = CommandExecutor.run!("vagrant status").stdout.split("\n").select { |l| l.include?("running") }.map { |r| r.split(' ')[0]}
+      machines = CommandExecutor.run!("vagrant status --machine-readable").stdout.split("\n").select { |l| l.include?("state,running") }.map { |r| r.split(',')[1]}
       CommandExecutor.run!("vagrant ssh-config #{machines.join(' ')}")
     end
 

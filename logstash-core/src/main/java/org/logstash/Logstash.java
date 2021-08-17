@@ -32,8 +32,10 @@ import java.security.PrivilegedAction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
+import org.jruby.RubyClass;
 import org.jruby.RubyException;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyStandardError;
 import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -73,7 +75,8 @@ public final class Logstash implements Runnable, AutoCloseable {
             Throwable t = e;
             String message = e.getMessage();
             if (message != null) {
-                if (message.startsWith(UNCLEAN_SHUTDOWN_PREFIX)) {
+                if (message.startsWith(UNCLEAN_SHUTDOWN_PREFIX) ||
+                    message.startsWith(MUTATED_GEMFILE_ERROR)) {
                     t = e.getCause(); // be less verbose with uncleanShutdown's wrapping exception
                 } else if (message.contains("Could not load FFI Provider")) {
                     message =
@@ -176,6 +179,15 @@ public final class Logstash implements Runnable, AutoCloseable {
             ruby.runFromMain(script, config.displayedFileName());
         } catch (final RaiseException ex) {
             final RubyException re = ex.getException();
+
+            // If this is a production error this signifies an issue with the Gemfile, likely
+            // that a logstash developer has made changes to their local Gemfile for plugin
+            // development, etc. If this is the case, exit with a warning giving remediating
+            // information for Logstash devs.
+            if (isProductionError(re)){
+                bundlerStartupError(ex);
+            }
+
             if (re instanceof RubySystemExit) {
                 IRubyObject success = ((RubySystemExit) re).success_p();
                 if (!success.isTrue()) {
@@ -187,6 +199,15 @@ public final class Logstash implements Runnable, AutoCloseable {
         } catch (final IOException ex) {
             uncleanShutdown(ex);
         }
+    }
+
+    // Tests whether the RubyException is of type `Bundler::ProductionError`
+    private boolean isProductionError(RubyException re){
+        if (re instanceof RubyStandardError){
+            RubyClass metaClass = re.getMetaClass();
+            return (metaClass.getName().equals("Bundler::ProductionError"));
+        }
+        return false;
     }
 
     @Override
@@ -233,6 +254,14 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     private static final String UNCLEAN_SHUTDOWN_PREFIX = "Logstash stopped processing because of an error: ";
+    private static final String MUTATED_GEMFILE_ERROR = "Logstash was unable to start due to an unexpected Gemfile change.\n" +
+            "If you are a user, this is a bug.\n" +
+            "If you are a logstash developer, please try restarting logstash with the " +
+            "`--enable-local-plugin-development` flag set.";
+
+    private static void bundlerStartupError(final Exception ex){
+        throw new IllegalStateException(MUTATED_GEMFILE_ERROR);
+    }
 
     private static void uncleanShutdown(final Exception ex) {
         throw new IllegalStateException(UNCLEAN_SHUTDOWN_PREFIX + ex.getMessage(), ex);

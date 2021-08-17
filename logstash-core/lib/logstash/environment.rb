@@ -69,6 +69,7 @@ module LogStash
             Setting::String.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
+            Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
            Setting::Boolean.new("http.enabled", true),
             Setting::String.new("http.host", "127.0.0.1"),
