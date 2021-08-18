@@ -73,6 +73,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "node.name",
     :default => LogStash::SETTINGS.get_default("node.name")
 
+  option ["--enable-local-plugin-development"], :flag,
+         I18n.t("logstash.runner.flag.enable-local-plugin-development"),
+         :attribute_name => "enable-local-plugin-development",
+         :default => LogStash::SETTINGS.get_default("enable-local-plugin-development")
+
   # Config Settings
   option ["-f", "--path.config"], "CONFIG_PATH",
     I18n.t("logstash.runner.flag.config"),

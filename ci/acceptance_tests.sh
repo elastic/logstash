@@ -27,6 +27,7 @@ QA_DIR="$PWD/qa"
 
 # Always run the halt, even if the test times out or an exit is sent
 cleanup() {
+
   cd $QA_DIR
   bundle check || bundle install
   bundle exec rake qa:vm:halt
@@ -39,6 +40,7 @@ cleanup
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:rpm
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
@@ -52,6 +54,7 @@ if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:deb
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
@@ -65,6 +68,7 @@ elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
 elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
   echo "Building Logstash artifacts"
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:all
 
   echo "Acceptance: Installing dependencies"
