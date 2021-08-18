@@ -21,7 +21,6 @@ require_relative "./commands/redhat"
 require_relative "./commands/suse"
 require_relative "./commands/centos/centos-6"
 require_relative "./commands/oel/oel-6"
-require_relative "./commands/ubuntu/ubuntu-1604"
 require_relative "./commands/suse/sles-11"
 
 require "forwardable"
@@ -131,11 +130,7 @@ module ServiceTester
       case type
       when "debian"
         if host.start_with?("ubuntu")
-          if host == "ubuntu-1604"
-            return Ubuntu1604Commands.new
-          else
-            return UbuntuCommands.new
-          end
+          return UbuntuCommands.new
         else
           return DebianCommands.new
         end
