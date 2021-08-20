@@ -29,17 +29,19 @@ String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
-  jcenter()
+//  jcenter()
 }
 
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
+//    jcenter()
+    gradlePluginPortal()
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.29'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+//    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
   }
 }
 
