@@ -187,20 +187,23 @@ tasks.register("configureArtifactInfo") {
 
 abstract class SignAliasDefinitionsTask extends DefaultTask {
 
-    String registryPath = "logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml"
-    String hashedFileName = 'plugin_aliases_hashed.yml'
+    /**
+     * Relative path to the AliasRegistry.yml file to use, relative to project's root
+     * */
+    @Input
+    String registryPath
 
-    @InputFile
-    File aliasPath = project.file("${project.projectDir}/${registryPath}")
-
+    /**
+     * Full file path to the file containing the marked AliasRegistry file
+     * */
     @OutputFile
-    File hashedFile = project.file("${project.buildDir}/${hashedFileName}")
+    File hashedFile
 
     @TaskAction
     def sign() {
         String aliases_defs = new File("${project.projectDir}/${registryPath}").text
         String hash = aliases_defs.digest('SHA-256')
-        new File(project.buildDir, hashedFileName).withWriter('utf-8') { writer ->
+        hashedFile.withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
             writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
             writer.write aliases_defs
@@ -210,44 +213,72 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
 
 tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file from original aliases yml definition"
+    registryPath = 'logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml'
+    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file for testing aliases yml definition"
     registryPath = 'logstash-core/src/test/resources/org/logstash/plugins/AliasRegistry.yml'
-    hashedFileName = 'plugin_aliases_hashed_test.yml'
+    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
 tasks.register("copyPluginAlias", Copy) {
     description "Copy the marked plugin_aliases.yml file to destination folders"
+    dependsOn = [copyPluginAlias_ruby, copyPluginAlias_java]
+}
+
+tasks.register("copyPluginAlias_ruby", Copy) {
+    description "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
-    destinationDir = projectDir
-    from("${buildDir}/plugin_aliases_hashed.yml") {
-        into "lib/pluginmanager/"
+
+    from(markAliasDefinitions.hashedFile) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
-    from("${buildDir}/plugin_aliases_hashed.yml") {
-        into "logstash-core/src/main/resources/org/logstash/plugins/"
-        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
-    }
+    into "lib/pluginmanager/"
 }
 
-tasks.register("copyPluginTestAlias", Copy) {
+tasks.register("copyPluginAlias_java", Copy) {
+    description "Copy the marked plugin_aliases.yml file to destination folders"
+    dependsOn "markAliasDefinitions"
+
+    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+
+    from(markAliasDefinitions.hashedFile) {
+        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
+    }
+    into "logstash-core/src/main/resources/org/logstash/plugins/"
+}
+
+tasks.register("copyPluginTestAlias") {
     description "Copy the marked test plugin_aliases.yml file to destination folders"
+    dependsOn = [copyPluginTestAlias_ruby, copyPluginTestAlias_java]
+}
+
+tasks.register("copyPluginTestAlias_ruby", Copy) {
+    description "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
+    dependsOn "markTestAliasDefinitions"
+
+    inputs.file(markTestAliasDefinitions.hashedFile)
+
+    from(markTestAliasDefinitions.hashedFile) {
+        rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
+    }
+    into "spec/unit/plugin_manager/"
+}
+
+tasks.register("copyPluginTestAlias_java", Copy) {
+    description "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
-    destinationDir = projectDir
-    from("${buildDir}/plugin_aliases_hashed_test.yml") {
-        into "spec/unit/plugin_manager/"
+
+    from(markTestAliasDefinitions.hashedFile) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
-    from("${buildDir}/plugin_aliases_hashed_test.yml") {
-        into "logstash-core/src/test/resources/org/logstash/plugins/"
-        rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
-    }
+    into "logstash-core/src/test/resources/org/logstash/plugins/"
 }
 
 tasks.findByPath(':logstash-core:processResources').dependsOn(copyPluginAlias)
@@ -576,11 +607,11 @@ project(":logstash-integration-tests") {
         systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
         workingDir integrationTestPwd
-        dependsOn installIntegrationTestGems
+        dependsOn = [installIntegrationTestGems/*, copyPluginTestAlias*/]
     }
 }
 
-tasks.register("runIntegrationTests"){
+tasks.register("runIntegrationTests") {
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
     dependsOn copyEs
     dependsOn copyFilebeat
