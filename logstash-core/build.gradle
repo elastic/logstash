@@ -25,8 +25,7 @@ import org.yaml.snakeyaml.Yaml
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
 
 description = """Logstash Core Java"""
-version = versionMap['logstash-core']
-String jrubyVersion = versionMap['jruby']['version']
+
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 
@@ -61,7 +60,10 @@ tasks.register("javadocJar", Jar) {
 
 tasks.register("copyRuntimeLibs", Copy) {
     into project.file('lib/jars/')
-    from configurations.compileClasspath, configurations.runtimeClasspath
+    // NOTE: it's important not to copy compile-only dependencies (jruby.jar)
+    from configurations.runtimeClasspath {
+        exclude { it.file.name == 'jruby.jar' }
+    }
 }
 
 // copy jar file into the gem lib dir but without the version number in filename
@@ -152,7 +154,6 @@ idea {
 }
 
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
-def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
@@ -178,9 +179,10 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
     if (customJRubyDir == "") {
-        api "org.jruby:jruby-complete:${jrubyVersion}"
+        // jruby-core.jar
+        compile files("../vendor/jruby/lib/jruby.jar")
     } else {
-        api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
+        compile files(customJRubyDir + "/lib/jruby.jar")
     }
     implementation group: 'com.google.guava', name: 'guava', version: '24.1.1-jre'
     // WARNING: DO NOT UPGRADE "google-java-format"
