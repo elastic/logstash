@@ -40,9 +40,9 @@ RSpec.shared_examples "installable_with_jdk" do |logstash|
   end
 
   it "is running on #{logstash.hostname}" do
-    logstash.start_service
-    expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
-    logstash.stop_service
+    with_running_logstash_service(logstash, "/usr/share/logstash/jdk/bin/java") do
+      expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+    end
   end
 
   it "is removable on #{logstash.hostname}" do

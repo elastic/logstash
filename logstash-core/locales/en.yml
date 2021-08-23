@@ -269,6 +269,13 @@ en:
           enabled by default.
         http_host: Web API binding host
         http_port: Web API http port
+        enable-local-plugin-development: |+
+          Allow Gemfile to be manipulated directly
+          to facilitate simpler local plugin
+          development.
+          This is an advanced setting, intended
+          only for use by Logstash developers,
+          and should not be used in production.
         pipeline-id: |+
           Sets the ID of the pipeline.
         pipeline-workers: |+
@@ -350,7 +357,7 @@ en:
           Possible values are:
            - disabled (default)
            - v1
-           - v2
+           - v8
           This option allows the early opt-in (or preemptive opt-out)
           of ECS Compatibility modes in plugins, which is scheduled to
           be on-by-default in a future major release of Logstash.

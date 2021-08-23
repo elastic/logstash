@@ -1,7 +1,18 @@
 [[dead-letter-queues]]
-=== Dead Letter Queues (DLQ)
+=== Dead letter queues (DLQ)
 
-The dead letter queue (DLQ) can provide another layer of data resilience. 
+The dead letter queue (DLQ) is designed as a place to temporarily write events that cannot be processed. 
+The DLQ gives you flexibility to investigate problematic events without blocking the pipeline or losing the events. 
+Your pipeline keeps flowing, and the immediate problem is averted.
+But those events still need to be addressed.  
+
+You can <<es-proc-dlq,process events from the DLQ>> with the <<plugins-inputs-dead_letter_queue,`dead_letter_queue` input plugin>> .
+
+Processing events does not delete items from the queue, and the DLQ sometimes needs attention.
+See <<dlq-size>> and <<dlq-clear>> for more info. 
+
+[[dead-letter-how]]
+==== How the dead letter queue works
 
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
@@ -44,6 +55,9 @@ The response body can include metadata indicating that one or more specific
 actions in the bulk request could not be performed, along with an HTTP-style
 status code per entry to indicate why the action could not be performed.
 If the DLQ is configured, individual indexing failures are routed there.
+
+Even if you regularly process events, events remain in the dead letter queue.
+The dead letter queue requires <<dlq-clear,manual intervention>> to clear it. 
 
 [[configuring-dlq]]
 ==== Configuring {ls} to use dead letter queues
@@ -250,3 +264,35 @@ output {
 <3> The clean event is sent to Elasticsearch, where it can be indexed because
 the mapping issue is resolved.
 
+[[dlq-size]]
+==== Track dead letter queue size
+
+Monitor the size of the dead letter queue before it becomes a problem.
+By checking it periodically, you can determine the maximum queue size that makes sense for each pipeline. 
+
+The size of the DLQ for each pipeline is available in the node stats API.
+
+[source,txt]
+-----
+pipelines.${pipeline_id}.dead_letter_queue.queue_size_in_bytes.
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
+
+[[dlq-clear]]
+==== Clear the dead letter queue
+
+The dead letter queue cannot be cleared with the upstream pipeline running. 
+
+The dead letter queue is a directory of pages. 
+To clear it, stop the pipeline and delete location/<file-name>.
+
+[source,txt]
+-----
+${path.data}/dead_letter_queue/${pipeline_id}
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
+The pipeline creates a new dead letter queue when it starts again.

@@ -428,6 +428,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-output-elastic_app_search": {
+    "default-plugins": false,
+    "skip-list": true
+  },
   "logstash-output-elasticsearch": {
     "default-plugins": true,
     "core-specs": true,

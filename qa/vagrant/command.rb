@@ -62,7 +62,7 @@ module LogStash
       response = run(cmd, debug)
 
       unless response.success?
-        raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}"
+        raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}, stdout: #{response.stdout}"
       end
       response
     end
@@ -71,7 +71,7 @@ module LogStash
 
     def self.reporter(io, wait_thr, &block)
       Thread.new(io, wait_thr) do |_io, _wait_thr|
-        while (_wait_thr.status == "run")
+        while (_wait_thr.status == "run" || _wait_thr.status == "sleep")
           begin
             c = _io.read(1)
             block.call(c) if c

@@ -130,6 +130,22 @@ guaranteed, but you save the processing cost of preserving order.
 
 | `auto`
 
+| `pipeline.ecs_compatibility`
+a|
+Sets the pipeline's default value for `ecs_compatibility`, a setting that is available to plugins that implement an ECS compatibility mode for use with the Elastic Common Schema.
+Possible values are:
+
+* `disabled`
+* `v1`
+* `v8`
+
+This option allows the <<ecs-ls,early opt-in (or preemptive opt-out) of ECS compatibility>> modes in plugins,
+which is scheduled to be on-by-default in a future major release of {ls}.
+
+Values other than `disabled` are currently considered BETA, and may produce unintended consequences when upgrading {ls}.
+
+| `disabled`
+
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
   config files are read from the directory in alphabetical order.
