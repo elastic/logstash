@@ -17,8 +17,6 @@
  * under the License.
  */
 
-import java.nio.file.Files
-import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's main versions.yml file
@@ -60,7 +58,6 @@ tasks.register("javadocJar", Jar) {
 
 tasks.register("copyRuntimeLibs", Copy) {
     into project.file('lib/jars/')
-    // NOTE: it's important not to copy compile-only dependencies (jruby.jar)
     from configurations.runtimeClasspath {
         exclude { it.file.name == 'jruby.jar' }
     }
