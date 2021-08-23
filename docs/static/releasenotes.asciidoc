@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-15-0,Logstash 7.15.0>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
@@ -48,6 +49,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-15-0]]
+=== Logstash 7.15.0 Release Notes
+coming[7.15.0]
+
+[[featured-7-15-0]]
+==== New features and enhancements
+
+[[notable-7-15-0]]
+==== Performance improvements and notable issues fixed
+
+[[plugins-7-15-0]]
+==== Plugins
 
 [[logstash-7-14-0]]
 === Logstash 7.14.0 Release Notes
