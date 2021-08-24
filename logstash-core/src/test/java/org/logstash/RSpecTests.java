@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.assertj.core.util.Files;
+import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,6 +51,15 @@ public final class RSpecTests {
         });
     }
 
+    static {
+        final String root = Files.currentFolder().getParent(); // CWD: logstash-core
+        //Logstash.initRubyConfig()
+        final RubyInstanceConfig config = new RubyInstanceConfig();
+        config.setCurrentDirectory(root);
+        config.setJRubyHome(Paths.get(root, "vendor", "jruby").toString());
+        Ruby.newInstance(config); // initialize global (RubyUtil.RUBY) runtime
+    }
+
     @Parameter(0)
     public String description;
 
@@ -57,9 +68,7 @@ public final class RSpecTests {
 
     @Test
     public void rspecTests() throws Exception {
-        final String root = Files.currentFolder().getParent();
         RubyUtil.RUBY.getENV().put("IS_JUNIT_RUN", "true");
-        RubyUtil.RUBY.setCurrentDirectory(root);
         RubyUtil.RUBY.getGlobalVariables().set(
             "$JUNIT_ARGV",
             Rubyfier.deep(
@@ -67,7 +76,7 @@ public final class RSpecTests {
                     "-fd", "--pattern", specGlob
                 ))
         );
-        final Path rspec = Paths.get(root, "lib/bootstrap/rspec.rb");
+        final Path rspec = Paths.get(RubyUtil.RUBY.getCurrentDirectory(), "lib/bootstrap/rspec.rb");
         final IRubyObject result = RubyUtil.RUBY.executeScript(
             new String(java.nio.file.Files.readAllBytes(rspec), StandardCharsets.UTF_8),
             rspec.toFile().getAbsolutePath()
