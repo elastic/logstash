@@ -89,6 +89,7 @@ configurations.archives {
 }
 
 tasks.register("javaTests", Test) {
+    dependsOn ':bootstrap'
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
