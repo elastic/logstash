@@ -22,15 +22,36 @@ package org.logstash.config.ir;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.assertj.core.util.Files;
+import org.jruby.Ruby;
 import org.jruby.RubyHash;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
 import org.junit.BeforeClass;
+import org.logstash.Logstash;
 import org.logstash.RubyUtil;
 
-import static org.logstash.RubyUtil.RUBY;
-
 public abstract class RubyEnvTestCase {
+
+    private static final Path LS_HOME;
+
+    static {
+        Path root;
+        if (System.getProperty("logstash.core.root.dir") == null) {
+            // make sure we work from IDE as well as when run with Gradle
+            root = Paths.get("");
+            if (root.endsWith("logstash-core")) { // ./gradlew
+                root = root.getParent();
+            }
+        } else {
+            root = Paths.get(System.getProperty("logstash.core.root.dir"));
+        }
+        LS_HOME = root;
+
+        final String cwd = Files.currentFolder().toString(); // keep work-dir as is
+        // initialize global (RubyUtil.RUBY) runtime :
+        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
+    }
 
     @BeforeClass
     public static void before() {
@@ -44,15 +65,14 @@ public abstract class RubyEnvTestCase {
     private static void ensureLoadpath() {
         final LoadService loader = RubyUtil.RUBY.getLoadService();
         if (loader.findFileForLoad("logstash/compiler").library == null) {
+            final String gems = LS_HOME.
+                    resolve("vendor").resolve("bundle").resolve("jruby").resolve("2.5.0").
+                    toFile().getAbsolutePath();
             final RubyHash environment = RubyUtil.RUBY.getENV();
-            final Path root = Paths.get(
-                System.getProperty("logstash.core.root.dir", "")
-            ).toAbsolutePath();
-            final String gems = root.getParent().resolve("vendor").resolve("bundle")
-                .resolve("jruby").resolve("2.5.0").toFile().getAbsolutePath();
             environment.put("GEM_HOME", gems);
             environment.put("GEM_PATH", gems);
-            loader.addPaths(root.resolve("lib").toFile().getAbsolutePath());
+            Path logstashCore = LS_HOME.resolve("logstash-core");
+            loader.addPaths(logstashCore.resolve("lib").toFile().getAbsolutePath());
         }
     }
 }
