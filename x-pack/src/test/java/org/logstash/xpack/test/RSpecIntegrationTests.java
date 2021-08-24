@@ -7,6 +7,8 @@
 
 package org.logstash.xpack.test;
 
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,6 +17,12 @@ public class RSpecIntegrationTests extends RSpecTests {
     @Override
     protected List<String> rspecArgs() {
         return Arrays.asList("-fd", "qa/integration");
+    }
+
+    @Test
+    @Override
+    public void rspecTests() throws Exception {
+        super.rspecTests();
     }
 
 }
