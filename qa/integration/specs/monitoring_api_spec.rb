@@ -125,7 +125,8 @@ describe "Test Monitoring API" do
       expect(result).not_to be_nil
       expect(result["loggers"].size).to be > 0
       #default
-      logging_get_assert logstash_service, "INFO", "TRACE"
+      logging_get_assert logstash_service, "INFO", "TRACE",
+                         skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
 
       #root logger - does not apply to logger.slowlog
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
@@ -164,13 +165,14 @@ describe "Test Monitoring API" do
 
   private
 
-  def logging_get_assert(logstash_service, logstash_level, slowlog_level)
+  def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: false)
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do | k, v |
+      next if k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
-        expect(v).to eq(logstash_level)
+        expect(v).to eq(logstash_level), "logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
       elsif k.start_with? "slowlog"
-        expect(v).to eq(slowlog_level)
+        expect(v).to eq(slowlog_level), "logger '#{k}' has logging level: #{v} expected: #{slowlog_level}"
       end
     end
   end
