@@ -150,9 +150,9 @@ describe "Test Monitoring API" do
       result["loggers"].each do | k, v |
         #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
         if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
-          expect(v).to eq("ERROR")
+          expect(v).to eq("ERROR"), "logger '#{k}' has logging level: #{v} expected: ERROR"
         else
-          expect(v).to eq("INFO")
+          expect(v).to eq("INFO"), "logger '#{k}' has logging level: #{v} expected: INFO"
         end
       end
 
@@ -176,7 +176,7 @@ describe "Test Monitoring API" do
   end
 
   def logging_put_assert(result)
-    expect(result["acknowledged"]).to be(true)
+    expect(result['acknowledged']).to be(true), "result not acknowledged, got: #{result.inspect}"
   end
 
 end
