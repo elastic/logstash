@@ -53,11 +53,8 @@ public final class RSpecTests {
 
     static {
         final String root = Files.currentFolder().getParent(); // CWD: logstash-core
-        //Logstash.initRubyConfig()
-        final RubyInstanceConfig config = new RubyInstanceConfig();
-        config.setCurrentDirectory(root);
-        config.setJRubyHome(Paths.get(root, "vendor", "jruby").toString());
-        Ruby.newInstance(config); // initialize global (RubyUtil.RUBY) runtime
+        // initialize global (RubyUtil.RUBY) runtime :
+        Ruby.newInstance(Logstash.initRubyConfig(Paths.get(root)));
     }
 
     @Parameter(0)
