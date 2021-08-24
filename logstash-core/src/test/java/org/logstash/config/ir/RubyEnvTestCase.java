@@ -40,11 +40,11 @@ public abstract class RubyEnvTestCase {
         if (System.getProperty("logstash.core.root.dir") == null) {
             // make sure we work from IDE as well as when run with Gradle
             root = Paths.get("");
-            if (root.endsWith("logstash-core")) { // ./gradlew
-                root = root.getParent();
-            }
         } else {
             root = Paths.get(System.getProperty("logstash.core.root.dir"));
+        }
+        if (root.endsWith("logstash-core")) { // ./gradlew
+            root = root.getParent();
         }
         LS_HOME = root;
 
