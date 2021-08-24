@@ -63,10 +63,8 @@ public final class JrubyTimestampExtLibraryTest {
     @Test
     public void testConstructFromRubyDateTime() {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject now =
-            context.runtime.evalScriptlet("require 'date'\nDateTime.now.to_time.utc");
-        final JrubyTimestampExtLibrary.RubyTimestamp t =
-            newRubyTimestamp(context, new IRubyObject[]{now});
+        final IRubyObject now = RubyTime.newTime(context.runtime, System.currentTimeMillis());
+        final JrubyTimestampExtLibrary.RubyTimestamp t = newRubyTimestamp(context, new IRubyObject[]{now});
         Assertions.assertThat(
             Math.abs(
                 t.ruby_time(context).to_f().getDoubleValue() - now.convertToFloat().getDoubleValue()
