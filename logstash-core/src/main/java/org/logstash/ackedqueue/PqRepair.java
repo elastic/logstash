@@ -63,13 +63,13 @@ public final class PqRepair {
             );
         }
         final Map<Integer, Path> pageFiles = new HashMap<>();
-        try (final DirectoryStream<Path> pfs = Files.newDirectoryStream(path, "page.*")) {
+        try (final DirectoryStream<Path> pfs = Files.newDirectoryStream(path, "page.{[0-9]*,head}")) {
             pfs.forEach(p -> pageFiles.put(
                 Integer.parseInt(p.getFileName().toString().substring("page.".length())), p)
             );
         }
         final Map<Integer, Path> checkpointFiles = new HashMap<>();
-        try (final DirectoryStream<Path> cpfs = Files.newDirectoryStream(path, "checkpoint.*")) {
+        try (final DirectoryStream<Path> cpfs = Files.newDirectoryStream(path, "checkpoint.{[0-9]*,head}")) {
             cpfs.forEach(
                 c -> {
                     final String cpFilename = c.getFileName().toString();
