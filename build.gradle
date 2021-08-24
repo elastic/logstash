@@ -872,9 +872,11 @@ if (System.getenv('OSS') != 'true') {
   }
 }
 
- tasks.register("runXPackUnitTests"){
-   dependsOn ":logstash-xpack:rubyTests"
+ tasks.register("runXPackUnitTests") {
+     dependsOn copyPluginTestAlias
+     dependsOn ":logstash-xpack:rubyTests"
  }
  tasks.register("runXPackIntegrationTests"){
-   dependsOn ":logstash-xpack:rubyIntegrationTests"
+     dependsOn copyPluginTestAlias
+     dependsOn ":logstash-xpack:rubyIntegrationTests"
  }
