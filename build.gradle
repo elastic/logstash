@@ -32,7 +32,7 @@ buildscript {
 
 plugins {
     id "de.undercouch.download" version "4.0.4"
-    id "com.dorongold.task-tree" version "1.5"
+    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 apply plugin: 'de.undercouch.download'
@@ -607,7 +607,7 @@ project(":logstash-integration-tests") {
         systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
         workingDir integrationTestPwd
-        dependsOn = [installIntegrationTestGems/*, copyPluginTestAlias*/]
+        dependsOn = [installIntegrationTestGems, copyProductionLog4jConfiguration]
     }
 }
 
