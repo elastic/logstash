@@ -165,7 +165,7 @@ describe "Test Monitoring API" do
 
   private
 
-  def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: false)
+  def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do | k, v |
       next if k.eql?(skip)
