@@ -150,7 +150,10 @@ describe "Test Monitoring API" do
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
 
     result = logstash_service.monitoring_api.logging_get
+    puts "CAN_CONFIGURE_LOGGING:"
+    pp result
     result["loggers"].each do | k, v |
+      puts "> CAN_CONFIGURE_LOGGING: #{k} -> #{v.inspect}"
       #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
       if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
         expect(v).to eq("ERROR"), "logger '#{k}' has logging level: #{v} expected: ERROR"
