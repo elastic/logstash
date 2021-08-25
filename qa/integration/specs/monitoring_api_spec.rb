@@ -46,7 +46,7 @@ describe "Test Monitoring API" do
     try(max_retry) do
       # event_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.event_stats rescue nil
-      expect(result).not_to be_nil; pp result
+      expect(result).not_to be_nil
       expect(result["in"]).to eq(number_of_events)
     end
   end
@@ -149,18 +149,8 @@ describe "Test Monitoring API" do
     #deprecation package loggers
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
 
-    result = logstash_service.monitoring_api.logging_get
-    puts "CAN_CONFIGURE_LOGGING:"
-    pp result
-    result["loggers"].each do | k, v |
-      puts "> CAN_CONFIGURE_LOGGING: #{k} -> #{v.inspect}"
-      #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
-      if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
-        expect(v).to eq("ERROR"), "logger '#{k}' has logging level: #{v} expected: ERROR"
-      else
-        expect(v).to eq("INFO"), "logger '#{k}' has logging level: #{v} expected: INFO"
-      end
-    end
+    logging_put_assert logstash_service.monitoring_api.logging_get
+    logging_get_assert logstash_service, "ERROR", "ERROR"
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
