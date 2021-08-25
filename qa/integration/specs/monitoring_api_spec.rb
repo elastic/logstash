@@ -149,7 +149,6 @@ describe "Test Monitoring API" do
     #deprecation package loggers
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
 
-    logging_put_assert logstash_service.monitoring_api.logging_get
     logging_get_assert logstash_service, "ERROR", "ERROR"
 
     # all log levels should be reset to original values
