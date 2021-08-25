@@ -170,9 +170,9 @@ describe "Test Monitoring API" do
     result["loggers"].each do | k, v |
       next if k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
-        expect(v).to eq(logstash_level), "logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
+        expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
       elsif k.start_with? "slowlog"
-        expect(v).to eq(slowlog_level), "logger '#{k}' has logging level: #{v} expected: #{slowlog_level}"
+        expect(v).to eq(slowlog_level), "slowlog logger '#{k}' has logging level: #{v} expected: #{slowlog_level}"
       end
     end
   end
