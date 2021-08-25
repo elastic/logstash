@@ -1,6 +1,12 @@
 [[ls-to-ls]]
 === Logstash-to-Logstash Communication
 
+++++
+<titleabbrev>Lumberjack Output to Beats Input (deprecated)</titleabbrev>
+++++
+
+deprecated[7.0, It is no longer recommended to use this method for Logstash to Logstash communication. Best practice is to use the HTTP Output Plugin and HTTP Input Plugin for this communication ]
+
 You can set up communication between two Logstash machines by connecting the Lumberjack output to the Beats input. You may need this configuration if the data path crosses network or firewall boundaries, for example. If you don't have a compelling need for Logstash-to-Logstash communication, then don't implement it.
 
 If you are looking for information on connecting multiple pipelines within one
