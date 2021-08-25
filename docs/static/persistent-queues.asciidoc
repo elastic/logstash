@@ -77,6 +77,45 @@ queue.type: persisted
 queue.max_bytes: 4gb 
 -----
 
+[[working-with-pqs]]
+==== Working with persistent queues
+
+[[troubleshooting-pqs]]
+===== Troubleshooting persistent queues
+
+//If you see an error message resembling this one, you likely have a persistent queue problem.
+//:message=>"java.io.IOException: Page file size is too small to hold elements
+// Here are some tips to help you identify and resolve the problem.
+ 
+[[draining-pqs]]
+===== Draining the queue
+
+//From https://www.elastic.co/guide/en/logstash/6.8/upgrading-logstash-pqs.html#drain-pq
+
+/////
+To drain the queue:
+
+    In the logstash.yml file, set queue.drain: true.
+    Restart Logstash for this setting to take effect.
+    Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
+
+When the queue is empty:
+
+    Complete the upgrade.
+    Restart Logstash.
+/////
+
+[[pqcheck]]
+===== `pqcheck` utility
+
+
+
+[[pqrepair]]
+===== `pqrepair` utility
+
+
+
+
 [[persistent-queues-architecture]]
 ==== How persistent queues work
 
