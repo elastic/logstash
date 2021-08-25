@@ -43,10 +43,10 @@ describe "Test Monitoring API" do
     logstash_service.wait_for_logstash
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # event_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.event_stats rescue nil
-      expect(result).not_to be_nil
+      expect(result).not_to be_nil; pp result
       expect(result["in"]).to eq(number_of_events)
     end
   end
@@ -56,7 +56,7 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -69,7 +69,7 @@ describe "Test Monitoring API" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -89,7 +89,7 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -119,12 +119,11 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # monitoring api can fail if the subsystem isn't ready
       result = logstash_service.monitoring_api.logging_get rescue nil
       expect(result).not_to be_nil
       expect(result["loggers"].size).to be > 0
-      sleep(0.1)
     end
 
     #default
