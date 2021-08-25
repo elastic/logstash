@@ -149,7 +149,14 @@ describe "Test Monitoring API" do
     #deprecation package loggers
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
 
-    logging_get_assert logstash_service, "ERROR", "ERROR"
+    result = logstash_service.monitoring_api.logging_get
+    result["loggers"].each do | k, v |
+      next if k.eql?("logstash.agent")
+      #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
+      if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
+        expect(v).to eq("ERROR")
+      end
+    end
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
