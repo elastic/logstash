@@ -46,7 +46,7 @@ POST /_security/api_key
   "name": "logstash_host001", <1>
   "role_descriptors": {
     "logstash_writer": { <2>
-      "cluster": ["monitor", "manage_ilm", "read_ilm"],
+      "cluster": ["monitor", "manage_ilm"],
       "index": [
         {
           "names": ["logstash-*"],
