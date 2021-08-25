@@ -168,7 +168,7 @@ describe "Test Monitoring API" do
   def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do | k, v |
-      next if k.eql?(skip)
+      next if !k.empty? && k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
         expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
       elsif k.start_with? "slowlog"
