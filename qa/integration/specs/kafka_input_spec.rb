@@ -22,7 +22,7 @@ require "rspec/wait"
 require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Kafka Input" do
-  let(:num_retries) { 60 }
+  let(:num_retries) { 90 }
   let(:num_events) { 37 }
 
   before(:all) {
@@ -37,9 +37,11 @@ describe "Test Kafka Input" do
     unless @fixture.nil?
       logstash_service = @fixture.get_service("logstash")
       logstash_service.start_background(@fixture.config)
+      sleep(0.5)
 
       try(num_retries) do
-        expect(@fixture.output_exists?).to be true
+        output = @fixture.actual_output
+        expect(@fixture.output_exists?).to be(true), "output file: #{output.inspect} does not exist"
       end
 
       try(num_retries) do
