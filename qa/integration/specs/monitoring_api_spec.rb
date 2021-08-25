@@ -124,43 +124,45 @@ describe "Test Monitoring API" do
       result = logstash_service.monitoring_api.logging_get rescue nil
       expect(result).not_to be_nil
       expect(result["loggers"].size).to be > 0
-      #default
-      logging_get_assert logstash_service, "INFO", "TRACE",
-                         skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
-
-      #root logger - does not apply to logger.slowlog
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
-      logging_get_assert logstash_service, "WARN", "TRACE"
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-      logging_get_assert logstash_service, "INFO", "TRACE"
-
-      #package logger
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
-      expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
-      logging_get_assert logstash_service, "INFO", "TRACE"
-
-      #parent package loggers
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
-
-      #deprecation package loggers
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
-
-      result = logstash_service.monitoring_api.logging_get
-      result["loggers"].each do | k, v |
-        #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
-        if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
-          expect(v).to eq("ERROR"), "logger '#{k}' has logging level: #{v} expected: ERROR"
-        else
-          expect(v).to eq("INFO"), "logger '#{k}' has logging level: #{v} expected: INFO"
-        end
-      end
-
-      # all log levels should be reset to original values
-      logging_put_assert logstash_service.monitoring_api.logging_reset
-      logging_get_assert logstash_service, "INFO", "TRACE"
+      sleep(0.1)
     end
+
+    #default
+    logging_get_assert logstash_service, "INFO", "TRACE",
+                       skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
+
+    #root logger - does not apply to logger.slowlog
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
+    logging_get_assert logstash_service, "WARN", "TRACE"
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
+    logging_get_assert logstash_service, "INFO", "TRACE"
+
+    #package logger
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
+    expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
+    expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("INFO")
+
+    #parent package loggers
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
+
+    #deprecation package loggers
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+
+    result = logstash_service.monitoring_api.logging_get
+    result["loggers"].each do | k, v |
+      #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
+      if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
+        expect(v).to eq("ERROR"), "logger '#{k}' has logging level: #{v} expected: ERROR"
+      else
+        expect(v).to eq("INFO"), "logger '#{k}' has logging level: #{v} expected: INFO"
+      end
+    end
+
+    # all log levels should be reset to original values
+    logging_put_assert logstash_service.monitoring_api.logging_reset
+    logging_get_assert logstash_service, "INFO", "TRACE"
   end
 
   private
