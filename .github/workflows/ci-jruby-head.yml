@@ -1,9 +1,16 @@
 name: JRuby Head CI
 
-on: [push, pull_request]
+on: [pull_request] # [push, pull_request]
 
-#env:
-#  JAVA_OPTS: '-XX:+TieredCompilation -XX:TieredStopAtLevel=1'
+env:
+  JAVA_OPTS: >-
+    -Djava.awt.headless=true
+    -Dfile.encoding=UTF-8
+    -Djava.security.egd=file:/dev/urandom
+
+  JRUBY_OPTS: >-
+    -Xcompile.invokedynamic=true
+    -Xjit.threshold=0
 
 jobs:
 
@@ -25,10 +32,10 @@ jobs:
           cache: 'gradle'
       - name: bootstrap
         run: ./gradlew bootstrap installTestGems
-      - name: run java unit tests
-        run: ./gradlew :logstash-core:javaTests
-      - name: run ruby unit tests
-        run: ./gradlew :logstash-core:rubyTests
+      - name: run java (unit) tests
+        run: ./gradlew javaTests --console=plain
+      - name: run ruby (unit) tests
+        run: ./gradlew rubyTests --console=plain
 
 #  integration-tests:
 #    runs-on: ubuntu-latest
