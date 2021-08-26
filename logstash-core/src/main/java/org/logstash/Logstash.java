@@ -212,7 +212,7 @@ public final class Logstash implements Runnable, AutoCloseable {
                                                      final String jrubyHome,
                                                      final String... args) {
         final RubyInstanceConfig config = new RubyInstanceConfig();
-        config.setCurrentDirectory(currentDir);
+        if (currentDir != null) config.setCurrentDirectory(currentDir);
         config.setJRubyHome(jrubyHome);
         config.processArguments(args);
         return config;
