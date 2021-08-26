@@ -51,12 +51,12 @@ public final class RSpecTests {
             }
         } else {
             root = Paths.get(System.getProperty("logstash.core.root.dir"));
-            root = root.getParent();
+            root = root.toAbsolutePath().getParent();
         }
 
         final String cwd = org.assertj.core.util.Files.currentFolder().toString(); // keep work-dir as is
         // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
+        Ruby.newInstance(Logstash.initRubyConfig(root, null, new String[0]));
     }
 
     @Test
