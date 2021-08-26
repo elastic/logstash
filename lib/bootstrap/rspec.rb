@@ -27,11 +27,18 @@ require "logstash/environment"
   $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
 end
 
+puts "$LOAD_PATH: "
+$LOAD_PATH.each { |p| puts "> #{p}" }
+
 require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'
 
-RSpec.world.reset # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
+RSpec.clear_examples # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
+
+puts "ARGV: #{ARGV.inspect}"
+puts "$JUNIT_ARGV: #{$JUNIT_ARGV.inspect}"
+puts "runner run: #{ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV}"
 
 status = RSpec::Core::Runner.run(ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV).to_i
 if ENV["IS_JUNIT_RUN"]
