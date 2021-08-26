@@ -11,6 +11,16 @@ env:
   JRUBY_OPTS: >-
     -Xcompile.invokedynamic=true
     -Xjit.threshold=0
+    -J-Xmx1g
+
+  GRADLE_OPTS: >-
+    -Xmx2g
+    -Dorg.gradle.jvmargs=-Xmx2g
+    -Dorg.gradle.daemon=false
+    -Dorg.gradle.logging.level=info
+    -Dfile.encoding=UTF-8
+
+  SPEC_OPTS: "--order rand --format documentation"
 
 jobs:
 
@@ -30,10 +40,13 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: 'gradle'
+
       - name: bootstrap
         run: ./gradlew bootstrap installTestGems
+
       - name: run java (unit) tests
         run: ./gradlew javaTests --console=plain
+
       - name: run ruby (unit) tests
         run: ./gradlew rubyTests --console=plain
 
