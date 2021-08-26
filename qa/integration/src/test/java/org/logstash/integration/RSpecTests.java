@@ -41,11 +41,22 @@ import org.logstash.Rubyfier;
 public final class RSpecTests {
 
     static {
-        // CWD: qa/integration
-        final File cwd = org.assertj.core.util.Files.currentFolder(); // CWD: qa/integration
-        final String root = cwd.getParentFile().getParent();
+        Path root;
+        if (System.getProperty("logstash.core.root.dir") == null) {
+            // make sure we work from IDE as well as when run with Gradle
+            root = Paths.get("").toAbsolutePath();
+            // CWD: qa/integration
+            if (root.endsWith("integration")) {
+                root = root.getParent().getParent();
+            }
+        } else {
+            root = Paths.get(System.getProperty("logstash.core.root.dir"));
+            root = root.getParent();
+        }
+
+        final String cwd = org.assertj.core.util.Files.currentFolder().toString(); // keep work-dir as is
         // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(Paths.get(root), cwd.toString(), new String[0]));
+        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
     }
 
     @Test

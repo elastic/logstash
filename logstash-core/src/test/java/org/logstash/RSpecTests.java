@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Runs the Logstash RSpec suit.
  */
 @RunWith(Parameterized.class)
-public final class RSpecTests {
+public class RSpecTests {
 
     @Parameters(name="{0}")
     public static Collection<Object[]> data() {
@@ -51,10 +51,24 @@ public final class RSpecTests {
         });
     }
 
-    static {
-        final String root = Files.currentFolder().getParent(); // CWD: logstash-core
+    private static final Path LS_HOME;
+
+    static { // TODO: DRY-OUT!
+        Path root;
+        if (System.getProperty("logstash.core.root.dir") == null) {
+            // make sure we work from IDE as well as when run with Gradle
+            root = Paths.get("");
+        } else {
+            root = Paths.get(System.getProperty("logstash.core.root.dir"));
+        }
+        if (root.endsWith("logstash-core")) { // ./gradlew
+            root = root.getParent();
+        }
+        LS_HOME = root;
+
+        final String cwd = Files.currentFolder().toString(); // keep work-dir as is
         // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(Paths.get(root)));
+        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
     }
 
     @Parameter(0)
@@ -73,7 +87,7 @@ public final class RSpecTests {
                     "-fd", "--pattern", specGlob
                 ))
         );
-        final Path rspec = Paths.get(RubyUtil.RUBY.getCurrentDirectory(), "lib/bootstrap/rspec.rb");
+        final Path rspec = LS_HOME.resolve("lib").resolve("bootstrap").resolve("rspec.rb");
         final IRubyObject result = RubyUtil.RUBY.executeScript(
             new String(java.nio.file.Files.readAllBytes(rspec), StandardCharsets.UTF_8),
             rspec.toFile().getAbsolutePath()
