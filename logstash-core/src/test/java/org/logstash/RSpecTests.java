@@ -22,11 +22,9 @@ package org.logstash;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.jruby.Ruby;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,27 +37,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Runs the Logstash RSpec suit.
  */
 @RunWith(Parameterized.class)
-public class RSpecTests {
-
-    private static final Path LS_HOME;
-
-    static {
-        Path root;
-        if (System.getProperty("logstash.core.root.dir") == null) {
-            // make sure we work from IDE as well as when run with Gradle
-            root = Paths.get("");
-        } else {
-            root = Paths.get(System.getProperty("logstash.core.root.dir"));
-        }
-        root = root.toAbsolutePath();
-        if (root.endsWith("logstash-core")) { // ./gradlew
-            root = root.getParent();
-        }
-        LS_HOME = root;
-
-        // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root));
-    }
+public class RSpecTests extends RubyTestBase {
 
     @Parameters(name="{0}")
     public static Collection<Object[]> data() {
