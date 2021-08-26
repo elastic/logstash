@@ -43,17 +43,9 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class RSpecTests {
 
-    @Parameters(name="{0}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "compliance", "spec/compliance/**/*_spec.rb"},
-                { "core tests", "spec/unit/**/*_spec.rb,logstash-core/spec/**/*_spec.rb" }
-        });
-    }
-
     private static final Path LS_HOME;
 
-    static { // TODO: DRY-OUT!
+    static {
         Path root;
         if (System.getProperty("logstash.core.root.dir") == null) {
             // make sure we work from IDE as well as when run with Gradle
@@ -67,9 +59,19 @@ public class RSpecTests {
         }
         LS_HOME = root;
 
-        // NOTE: work-dir needs to change to run parameterized "core tests" and "compliance"
         // initialize global (RubyUtil.RUBY) runtime :
         Ruby.newInstance(Logstash.initRubyConfig(root));
+    }
+
+    @Parameters(name="{0}")
+    public static Collection<Object[]> data() {
+        final Path compliance = LS_HOME.resolve("spec/compliance/**/*_spec.rb");
+        final Path lsUnitSpec = LS_HOME.resolve("spec/unit/**/*_spec.rb");
+        final Path lsCoreSpec = LS_HOME.resolve("logstash-core/spec/**/*_spec.rb");
+        return Arrays.asList(new Object[][] {
+                { "compliance", compliance.toString() },
+                { "core tests", lsUnitSpec.toString() + ',' + lsCoreSpec.toString() }
+        });
     }
 
     @Parameter(0)
