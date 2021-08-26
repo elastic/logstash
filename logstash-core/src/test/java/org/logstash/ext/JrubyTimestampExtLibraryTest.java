@@ -30,13 +30,14 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 
 /**
  * Tests for {@link JrubyTimestampExtLibrary}.
  */
-public final class JrubyTimestampExtLibraryTest {
+public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
 
     @Test
     public void testConstructorNew() {

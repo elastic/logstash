@@ -21,37 +21,14 @@
 package org.logstash.config.ir;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-import org.assertj.core.util.Files;
-import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.runtime.load.LoadService;
 import org.junit.BeforeClass;
-import org.logstash.Logstash;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
-public abstract class RubyEnvTestCase {
-
-    private static final Path LS_HOME;
-
-    static {
-        Path root;
-        if (System.getProperty("logstash.core.root.dir") == null) {
-            // make sure we work from IDE as well as when run with Gradle
-            root = Paths.get("");
-        } else {
-            root = Paths.get(System.getProperty("logstash.core.root.dir"));
-        }
-        if (root.endsWith("logstash-core")) { // ./gradlew
-            root = root.getParent();
-        }
-        LS_HOME = root;
-
-        final String cwd = Files.currentFolder().toString(); // keep work-dir as is
-        // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
-    }
+public abstract class RubyEnvTestCase extends RubyTestBase {
 
     @BeforeClass
     public static void before() {
