@@ -24,7 +24,7 @@ env:
 
 jobs:
 
-  maven-test:
+  logstash-unit-tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,22 +49,4 @@ jobs:
 
       - name: run ruby (unit) tests
         run: ./gradlew rubyTests --console=plain
-
-#  integration-tests:
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#
-#    steps:
-#      - name: checkout
-#        uses: actions/checkout@v2
-#      - name: set up java
-#        uses: actions/setup-java@v2
-#        with:
-#          java-version: 11
-#          distribution: 'temurin'
-#          cache: 'gradle'
-#      - name: bootstrap
-#        run: ./gradlew bootstrap
-
 
