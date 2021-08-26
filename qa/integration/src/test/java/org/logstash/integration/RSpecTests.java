@@ -55,12 +55,20 @@ public final class RSpecTests {
         }
 
         final String cwd = org.assertj.core.util.Files.currentFolder().toString(); // keep work-dir as is
+
+        System.out.println("0CWD: " + cwd);
+        System.out.println("root: " + root);
+
         // initialize global (RubyUtil.RUBY) runtime :
         Ruby.newInstance(Logstash.initRubyConfig(root, null, new String[0]));
     }
 
     @Test
     public void rspecTests() throws Exception {
+        System.out.println("1CWD: " + Paths.get("").toAbsolutePath());
+        System.out.println("RUBY.getCurrentDirectory: " + RubyUtil.RUBY.getCurrentDirectory());
+        
+
         RubyUtil.RUBY.getGlobalVariables().set(
             "$JUNIT_ARGV", Rubyfier.deep(RubyUtil.RUBY, Arrays.asList(
                 "-fd", "--pattern", System.getProperty("org.logstash.integration.specs", "specs/**/*_spec.rb")
