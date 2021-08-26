@@ -26,9 +26,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.assertj.core.util.Files;
 import org.jruby.Ruby;
-import org.jruby.RubyInstanceConfig;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,12 +63,9 @@ public class RSpecTests {
 
     @Parameters(name="{0}")
     public static Collection<Object[]> data() {
-        final Path compliance = LS_HOME.resolve("spec/compliance/**/*_spec.rb");
-        final Path lsUnitSpec = LS_HOME.resolve("spec/unit/**/*_spec.rb");
-        final Path lsCoreSpec = LS_HOME.resolve("logstash-core/spec/**/*_spec.rb");
         return Arrays.asList(new Object[][] {
-                { "compliance", compliance.toString() },
-                { "core tests", lsUnitSpec.toString() + ',' + lsCoreSpec.toString() }
+                { "compliance", "spec/compliance/**/*_spec.rb" },
+                { "core tests", "spec/unit/**/*_spec.rb" + ',' + "logstash-core/spec/**/*_spec.rb" }
         });
     }
 
