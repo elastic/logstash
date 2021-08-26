@@ -61,14 +61,15 @@ public class RSpecTests {
         } else {
             root = Paths.get(System.getProperty("logstash.core.root.dir"));
         }
+        root = root.toAbsolutePath();
         if (root.endsWith("logstash-core")) { // ./gradlew
             root = root.getParent();
         }
         LS_HOME = root;
 
-        final String cwd = Files.currentFolder().toString(); // keep work-dir as is
+        // NOTE: work-dir needs to change to run parameterized "core tests" and "compliance"
         // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root.toAbsolutePath(), cwd, new String[0]));
+        Ruby.newInstance(Logstash.initRubyConfig(root));
     }
 
     @Parameter(0)
