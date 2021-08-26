@@ -36,9 +36,12 @@ require 'ci/reporter/rake/rspec_loader'
 
 RSpec.clear_examples # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
 
+require 'jruby'
+puts "Dir.pwd #{Dir.pwd}"
+puts "JRuby.runtime.current_directory: #{JRuby.runtime.current_directory}"
+puts "LogStash::Environment::LOGSTASH_HOME: #{LogStash::Environment::LOGSTASH_HOME}"
 puts "ARGV: #{ARGV.inspect}"
 puts "$JUNIT_ARGV: #{$JUNIT_ARGV.inspect}"
-puts "runner run: #{ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV}"
 
 status = RSpec::Core::Runner.run(ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV).to_i
 if ENV["IS_JUNIT_RUN"]
