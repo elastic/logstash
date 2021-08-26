@@ -15,12 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
+puts "1 $LOAD_PATH: "
+$LOAD_PATH.each { |path| puts "> #{path}" }
+
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
 require "logstash-core"
 require "logstash/environment"
 
 $LOAD_PATH.unshift(File.join(LogStash::Environment::LOGSTASH_CORE, "spec"))
+
+puts "2 $LOAD_PATH: "
+$LOAD_PATH.each { |path| puts "> #{path}" }
 
 require "rspec/core"
 require "rspec"
