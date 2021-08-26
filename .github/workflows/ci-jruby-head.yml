@@ -1,0 +1,50 @@
+name: JRuby Head CI
+
+on: [push, pull_request]
+
+#env:
+#  JAVA_OPTS: '-XX:+TieredCompilation -XX:TieredStopAtLevel=1'
+
+jobs:
+
+  maven-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [11]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: set up java ${{ matrix.java-version }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: 'gradle'
+      - name: bootstrap
+        run: ./gradlew bootstrap installTestGems
+      - name: run java unit tests
+        run: ./gradlew :logstash-core:javaTests
+      - name: run ruby unit tests
+        run: ./gradlew :logstash-core:rubyTests
+
+#  integration-tests:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@v2
+#      - name: set up java
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: 11
+#          distribution: 'temurin'
+#          cache: 'gradle'
+#      - name: bootstrap
+#        run: ./gradlew bootstrap
+
+
