@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-14-1,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
@@ -48,6 +49,85 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-14-1]]
+=== Logstash 7.14.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.14.1
+
+* Bump plugins for 7.14.1 release https://github.com/elastic/logstash/pull/13162[#13162]
+* Test: better logging reconfiguration asserts https://github.com/elastic/logstash/pull/13164[#13164]
+
+=== Logstash Commits between 7.14 and 7.14.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14.0..7.14"
+
+1e8ea0491 - (HEAD -> 7.14, origin/7.14) Backport #13164: Test: improve monitoring api logging asserts (#13171) (70 minutes ago) <Karol Bucek>
+23933cc7d - Bump plugins for 7.14.1 release (#13162) (2 days ago) <Andrea Selva>
+82595e28a - Doc: Add aarch64 support to 7.14.0 release notes (#13132) (10 days ago) <Karen Metts>
+63c76e52f - Backport Docs: fix java filter unit test link (#13124) (2 weeks ago) <Karol Bucek>
+773bf6707 - Release notes for 7.14.0 (#13089) (3 weeks ago) <Logstash Machine>
+d78e19611 - Bump 7.14.1 (#13116) (3 weeks ago) <Ry Biesemeyer>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.14.0..7.14 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.2 -> 6.2.3
+logstash-codec-graphite: 3.0.5 -> 3.0.6
+logstash-codec-netflow: 4.2.1 -> 4.2.2
+logstash-filter-elasticsearch: 3.9.3 -> 3.9.5
+logstash-input-elasticsearch: 4.9.1 -> 4.9.3
+logstash-integration-jdbc: 5.1.4 -> 5.1.5
+logstash-mixin-event_support: 1.0.1 -> 1.0.1
+logstash-output-elasticsearch: 11.0.2 -> 11.0.3
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.3*
+
+* Feat: event_factory support https://github.com/logstash-plugins/logstash-codec-cef/pull/94[#94]
+
+*Graphite Codec - 3.0.6*
+
+* Feat: added event-factory support https://github.com/logstash-plugins/logstash-codec-graphite/pull/7[#7]
+
+*Netflow Codec - 4.2.2*
+
+* Feat: leverage event_factory support https://github.com/logstash-plugins/logstash-codec-netflow/pull/195[#195]
+* Test: remove redundant asserts (to get the CI green)
+
+*Elasticsearch Filter - 3.9.5*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/151[#151]
+
+* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization` 
+    header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
+    https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+* Fix: default setting for `hosts` not working (since 3.7.0) GH-147
+* Fix: mutating @hosts variable which leads to issues with multiple worker threads GH-129
+
+*Elasticsearch Input - 4.9.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/156[#156]
+
+* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization` 
+    header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
+    https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
+
+*Jdbc Integration - 5.1.5*
+
+* Refined ECS support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
+* Uses shared `target` guidance when ECS compatibility is enabled
+* Uses Logstash's EventFactory instead of instantiating events directly
+
+*Event_support Mixin - 1.0.1*
+
+*Elasticsearch Output - 11.0.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1032[#1032]
+
 
 [[logstash-7-14-0]]
 === Logstash 7.14.0 Release Notes
