@@ -22,7 +22,7 @@ require "rspec/wait"
 require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Kafka Input" do
-  let(:num_retries) { 90 }
+  let(:num_retries) { 60 }
   let(:num_events) { 37 }
 
   before(:all) {
