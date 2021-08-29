@@ -39,13 +39,15 @@ describe "Test Kafka Input" do
       logstash_service.start_background(@fixture.config)
       sleep(0.5)
 
+      # output { file { path => "kafka_input.output" } } is LS_HOME relative
+      file_output = File.join(logstash_service.logstash_home, @fixture.actual_output)
+
       try(num_retries) do
-        output = @fixture.actual_output
-        expect(@fixture.output_exists?).to be(true), "output file: #{output.inspect} does not exist"
+        expect(File.exists?(file_output)).to be(true), "output file: #{file_output.inspect} does not exist"
       end
 
       try(num_retries) do
-        count = File.foreach(@fixture.actual_output).inject(0) {|c, _| c+1}
+        count = File.foreach(file_output).inject(0) {|c, _| c+1}
         expect(count).to eq(num_events)
       end
     end
