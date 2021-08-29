@@ -154,6 +154,8 @@ idea {
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
 
 dependencies {
+    compile files("../vendor/jruby/lib/jruby.jar") // jruby-core.jar
+
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
@@ -176,12 +178,6 @@ dependencies {
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    if (customJRubyDir == "") {
-        // jruby-core.jar
-        compile files("../vendor/jruby/lib/jruby.jar")
-    } else {
-        compile files(customJRubyDir + "/lib/jruby.jar")
-    }
     implementation group: 'com.google.guava', name: 'guava', version: '24.1.1-jre'
     // WARNING: DO NOT UPGRADE "google-java-format"
     // later versions require GPL licensed code in javac-shaded that is
