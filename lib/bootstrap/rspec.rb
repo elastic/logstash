@@ -27,21 +27,11 @@ require "logstash/environment"
   $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
 end
 
-puts "$LOAD_PATH: "
-$LOAD_PATH.each { |p| puts "> #{p}" }
-
 require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'
 
 RSpec.clear_examples # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
-
-require 'jruby'
-puts "Dir.pwd #{Dir.pwd}"
-puts "JRuby.runtime.current_directory: #{JRuby.runtime.current_directory}"
-puts "LogStash::Environment::LOGSTASH_HOME: #{LogStash::Environment::LOGSTASH_HOME}"
-puts "ARGV: #{ARGV.inspect}"
-puts "$JUNIT_ARGV: #{$JUNIT_ARGV.inspect}"
 
 status = RSpec::Core::Runner.run(ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV).to_i
 if ENV["IS_JUNIT_RUN"]
