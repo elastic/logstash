@@ -11,9 +11,6 @@ export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 export OSS=true
 
-# TODO: temp
-export SPEC_OPTS="$SPEC_OPTS -e Kafka"
-
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
