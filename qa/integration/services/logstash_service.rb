@@ -138,9 +138,6 @@ class LogstashService < Service
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
       @process.environment['LS_JAVA_HOME'] = java_home
-
-      puts "Logstash env: #{@process.environment.inspect}"
-
       @process.io.inherit!
       @process.start
       puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
@@ -157,10 +154,6 @@ class LogstashService < Service
       args << feature_config_dir
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
-
-    args << "--log.level"
-    args << 'debug'
-
     puts "Starting Logstash: #{@logstash_bin} #{args} (pwd: #{Dir.pwd})"
     ChildProcess.build(@logstash_bin, *args)
   end
