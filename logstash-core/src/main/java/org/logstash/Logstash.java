@@ -197,20 +197,32 @@ public final class Logstash implements Runnable, AutoCloseable {
         ruby.tearDown(false);
     }
 
+    /**
+     * Initialize a runtime configuration.
+     * @param lsHome the LOGSTASH_HOME
+     * @param args extra arguments (ARGV) to process
+     * @return a runtime configuration instance
+     */
     public static RubyInstanceConfig initRubyConfig(final Path lsHome,
                                                     final String... args) {
-        return initRubyConfig(lsHome.toString(), safePath(lsHome, "vendor", "jruby"), args);
+        return initRubyConfigImpl(lsHome.toString(), safePath(lsHome, "vendor", "jruby"), args);
     }
 
+    /**
+     * Initialize a runtime configuration.
+     * @param lsHome the LOGSTASH_HOME
+     * @param args extra arguments (ARGV) to process
+     * @return a runtime configuration instance
+     */
     public static RubyInstanceConfig initRubyConfig(final Path lsHome,
                                                     final String currentDir,
                                                     final String... args) {
-        return initRubyConfig(currentDir, safePath(lsHome, "vendor", "jruby"), args);
+        return initRubyConfigImpl(currentDir, safePath(lsHome, "vendor", "jruby"), args);
     }
 
-    private static RubyInstanceConfig initRubyConfig(final String currentDir,
+    private static RubyInstanceConfig initRubyConfigImpl(final String currentDir,
                                                      final String jrubyHome,
-                                                     final String... args) {
+                                                     final String[] args) {
         final RubyInstanceConfig config = new RubyInstanceConfig();
         if (currentDir != null) config.setCurrentDirectory(currentDir);
         config.setJRubyHome(jrubyHome);
