@@ -24,9 +24,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.logstash.RubyTestBase;
+
 import static org.junit.Assert.*;
 
-public class CloudSettingIdTest {
+public class CloudSettingIdTest extends RubyTestBase {
 
     private String input = "foobar:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy";
     private CloudSettingId sut;

@@ -23,9 +23,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.logstash.RubyTestBase;
+
 import static org.junit.Assert.*;
 
-public class CloudSettingAuthTest {
+public class CloudSettingAuthTest extends RubyTestBase {
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
