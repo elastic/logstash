@@ -20,7 +20,6 @@
 
 package org.logstash.integration;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,22 +41,17 @@ public final class RSpecTests {
 
     static {
         Path root;
-        if (System.getProperty("logstash.core.root.dir") == null) {
+        if (System.getProperty("logstash.root.dir") == null) {
             // make sure we work from IDE as well as when run with Gradle
-            root = Paths.get("").toAbsolutePath();
-            // CWD: qa/integration
-            if (root.endsWith("integration")) {
-                root = root.getParent().getParent();
-            }
+            root = Paths.get("").toAbsolutePath(); // LS_HOME/qa/integration
+            if (root.endsWith("integration")) root = root.getParent().getParent();
         } else {
-            root = Paths.get(System.getProperty("logstash.core.root.dir"));
-            root = root.toAbsolutePath().getParent();
+            root = Paths.get(System.getProperty("logstash.root.dir")).toAbsolutePath();
         }
 
-        final String cwd = org.assertj.core.util.Files.currentFolder().toString(); // keep work-dir as is
-
-        System.out.println("0CWD: " + cwd);
-        System.out.println("root: " + root);
+        if (!root.resolve("versions.yml").toFile().exists()) {
+            throw new AssertionError("versions.yml not found is logstash root dir: " + root);
+        }
 
         // initialize global (RubyUtil.RUBY) runtime :
         Ruby.newInstance(Logstash.initRubyConfig(root, null, new String[0]));
@@ -65,10 +59,6 @@ public final class RSpecTests {
 
     @Test
     public void rspecTests() throws Exception {
-        System.out.println("1CWD: " + Paths.get("").toAbsolutePath());
-        System.out.println("RUBY.getCurrentDirectory: " + RubyUtil.RUBY.getCurrentDirectory());
-        
-
         RubyUtil.RUBY.getGlobalVariables().set(
             "$JUNIT_ARGV", Rubyfier.deep(RubyUtil.RUBY, Arrays.asList(
                 "-fd", "--pattern", System.getProperty("org.logstash.integration.specs", "specs/**/*_spec.rb")

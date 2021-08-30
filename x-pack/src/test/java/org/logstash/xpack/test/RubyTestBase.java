@@ -18,9 +18,11 @@
  */
 
 
-package org.logstash;
+package org.logstash.xpack.test;
 
 import org.jruby.Ruby;
+import org.logstash.Logstash;
+import org.logstash.RubyUtil;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,7 +42,7 @@ public abstract class RubyTestBase {
         if (System.getProperty("logstash.root.dir") == null) {
             // make sure we work from IDE as well as when run with Gradle
             root = Paths.get("").toAbsolutePath();
-            if (root.endsWith("logstash-core")) root = root.getParent();
+            if (root.endsWith("x-pack")) root = root.getParent();
         } else {
             root = Paths.get(System.getProperty("logstash.root.dir")).toAbsolutePath();
         }

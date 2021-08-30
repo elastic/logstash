@@ -47,7 +47,7 @@ tasks.register("rubyTests", Test) {
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecTests.class'
 }
 
@@ -59,6 +59,6 @@ tasks.register("rubyIntegrationTests", Test) {
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
 }
