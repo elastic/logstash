@@ -23,6 +23,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.core:jackson-databind:",https://github.com/FasterXML/jackson-databind,Apache-2.0
 "com.fasterxml.jackson.core:jackson-core:",https://github.com/FasterXML/jackson-core,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
+"com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
 "com.google.code.findbugs:jsr305:",http://findbugs.sourceforge.net,Apache-2.0
 "com.google.errorprone:error_prone_annotations:",https://github.com/google/error-prone,Apache-2.0
@@ -95,8 +96,10 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "nio4r:","https://github.com/socketry/nio4r",MIT
 "nokogiri:","http://nokogiri.org/",MIT
 "openssl_pkcs8_pure:",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
+"org.apache.logging.log4j:log4j-1.2-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-core:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.apache.logging.log4j:log4j-jcl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-slf4j-impl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.codehaus.janino:commons-compiler:",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.janino:janino:",https://github.com/janino-compiler/janino,BSD-3-Clause
