@@ -40,8 +40,7 @@ apply from: "rubyUtils.gradle"
 import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
-import java.nio.file.Files
-import java.nio.file.Paths
+import org.logstash.gradle.tooling.ListProjectDependencies
 
 allprojects {
   group = 'org.logstash'
@@ -119,30 +118,8 @@ subprojects {
         }
     }
 
-    tasks.register("generateLicenseReport") {
+    tasks.register("generateLicenseReport", ListProjectDependencies) {
         outputs.dir "${buildDir}/reports/dependency-license"
-        doLast {
-            // collect all project's dependencies
-            Set<Dependency> moduleDeps = new HashSet<>()
-            moduleDeps.addAll(project.configurations.implementation.getAllDependencies())
-            moduleDeps.addAll(project.configurations.runtimeClasspath.getAllDependencies())
-            moduleDeps.addAll(project.configurations.runtimeOnly.getAllDependencies())
-
-            def depsInGAV = moduleDeps.collect {dep ->
-                "${dep.group}:${dep.name}:${dep.version}"
-            }
-
-            // output in a CSV to be read by dependencies-report tool
-            String reportFolder = "${buildDir}/reports/dependency-license"
-            Files.createDirectories(Paths.get(reportFolder))
-            def licensesFile = new File("${reportFolder}/licenses.csv")
-            licensesFile.withWriter('utf-8') { writer ->
-                writer.writeLine '"artifact","moduleUrl","moduleLicense","moduleLicenseUrl",'
-                depsInGAV.each { s ->
-                    writer.writeLine "\"$s\",,,,"
-                }
-            }
-        }
     }
 }
 
@@ -631,11 +608,14 @@ tasks.register("generateLicenseReportInputs") {
         StringBuilder licenseReportFolders = new StringBuilder()
         subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true' }.each { s ->
             s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
-                licenseReportFolders.append(t3.outputs.files.asPath + "\n")
+                licenseReportFolders.append(t3.reportDir.toString() + "\n")
             }
         }
 
         if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
+            if (!project.getBuildDir().exists()) {
+                project.getBuildDir().mkdirs()
+            }
             def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
             def licenseReportFolder = new File(licenseReportPath)
             licenseReportFolder.delete()

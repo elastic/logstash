@@ -1,0 +1,25 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+}
+
+//apply plugin: 'groovy'
+//apply plugin: 'idea'
+//
+//repositories {
+//    mavenCentral()
+//    gradlePluginPortal()
+//}
+//
+//dependencies {
+//    compile localGroovy()
+//    compile gradleApi()
+//}

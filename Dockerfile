@@ -45,6 +45,7 @@ ADD spec /opt/logstash/spec
 ADD qa /opt/logstash/qa
 ADD lib /opt/logstash/lib
 ADD pkg /opt/logstash/pkg
+ADD buildSrc /opt/logstash/buildSrc
 ADD tools /opt/logstash/tools
 ADD logstash-core /opt/logstash/logstash-core
 ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
