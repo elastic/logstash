@@ -54,7 +54,7 @@ public final class RSpecTests {
         }
 
         // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root, null, new String[0]));
+        Ruby.newInstance(Logstash.initRubyConfig(root, null  /* qa/integration */, new String[0]));
     }
 
     @Test
