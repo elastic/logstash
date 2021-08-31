@@ -27,16 +27,17 @@ version = versionMap['logstash-core']
 
 repositories {
   mavenCentral()
+  jcenter()
 }
 
 buildscript {
   repositories {
     mavenCentral()
-    gradlePluginPortal()
+    jcenter()
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.29'
-    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
   }
 }
 
