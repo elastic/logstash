@@ -8,7 +8,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.artifacts.Dependency
 
 import java.nio.file.Files
-import java.nio.file.Paths
 
 class ListProjectDependencies extends DefaultTask {
 
