@@ -53,8 +53,14 @@ public final class RSpecTests {
             throw new AssertionError("versions.yml not found is logstash root dir: " + root);
         }
 
-        // initialize global (RubyUtil.RUBY) runtime :
-        Ruby.newInstance(Logstash.initRubyConfig(root, null  /* qa/integration */, new String[0]));
+        initializeGlobalRuntime(root);
+    }
+
+    private static Ruby initializeGlobalRuntime(final Path root) {
+        String[] args = new String[] { "--disable-did_you_mean" };
+        Ruby runtime = Ruby.newInstance(Logstash.initRubyConfig(root, null /* qa/integration */, args));
+        if (runtime != RubyUtil.RUBY) throw new AssertionError("runtime already initialized");
+        return runtime;
     }
 
     @Test
