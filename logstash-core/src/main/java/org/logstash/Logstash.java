@@ -38,6 +38,8 @@ import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import javax.annotation.Nullable;
+
 /**
  * Logstash Main Entrypoint.
  */
@@ -205,7 +207,7 @@ public final class Logstash implements Runnable, AutoCloseable {
      */
     public static RubyInstanceConfig initRubyConfig(final Path lsHome,
                                                     final String... args) {
-        return initRubyConfigImpl(lsHome.toString(), safePath(lsHome, "vendor", "jruby"), args);
+        return initRubyConfigImpl(lsHome, safePath(lsHome, "vendor", "jruby"), args);
     }
 
     /**
@@ -217,14 +219,15 @@ public final class Logstash implements Runnable, AutoCloseable {
     public static RubyInstanceConfig initRubyConfig(final Path lsHome,
                                                     final Path currentDir,
                                                     final String... args) {
-        return initRubyConfigImpl(currentDir.toString(), safePath(lsHome, "vendor", "jruby"), args);
+
+        return initRubyConfigImpl(currentDir, safePath(lsHome, "vendor", "jruby"), args);
     }
 
-    private static RubyInstanceConfig initRubyConfigImpl(final String currentDir,
+    private static RubyInstanceConfig initRubyConfigImpl(@Nullable final Path currentDir,
                                                      final String jrubyHome,
                                                      final String[] args) {
         final RubyInstanceConfig config = new RubyInstanceConfig();
-        if (currentDir != null) config.setCurrentDirectory(currentDir);
+        if (currentDir != null) config.setCurrentDirectory(currentDir.toString());
         config.setJRubyHome(jrubyHome);
         config.processArguments(args);
         return config;
