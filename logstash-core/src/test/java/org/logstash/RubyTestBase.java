@@ -55,7 +55,7 @@ public abstract class RubyTestBase {
 
     static Ruby initializeGlobalRuntime(final Path currentDir) {
         String[] args = new String[] { "--disable-did_you_mean" };
-        Ruby runtime = Ruby.newInstance(Logstash.initRubyConfig(LS_HOME, currentDir.toString(), args));
+        Ruby runtime = Ruby.newInstance(Logstash.initRubyConfig(LS_HOME, currentDir, args));
         if (runtime != RubyUtil.RUBY) throw new AssertionError("runtime already initialized");
         return runtime;
     }
