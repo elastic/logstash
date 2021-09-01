@@ -318,3 +318,6 @@
 #xpack.management.elasticsearch.ssl.verification_mode: certificate
 #xpack.management.elasticsearch.sniffing: false
 #xpack.management.logstash.poll_interval: 5s
+
+# X-Pack GeoIP plugin
+#xpack.geoip.download.endpoint: "https://geoip.elastic.co/v1/database"
