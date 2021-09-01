@@ -23,6 +23,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.core:jackson-databind:",https://github.com/FasterXML/jackson-databind,Apache-2.0
 "com.fasterxml.jackson.core:jackson-core:",https://github.com/FasterXML/jackson-core,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
+"com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
 "com.google.code.findbugs:jsr305:",http://findbugs.sourceforge.net,Apache-2.0
 "com.google.errorprone:error_prone_annotations:",https://github.com/google/error-prone,Apache-2.0
@@ -44,6 +45,14 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "equalizer:",https://github.com/dkubb/equalizer,MIT
 "faraday:",https://github.com/lostisland/faraday,MIT
+"faraday-em_http",https://github.com/lostisland/faraday,MIT
+"faraday-em_synchrony",https://github.com/lostisland/faraday,MIT
+"faraday-excon",https://github.com/lostisland/faraday,MIT
+"faraday-httpclient",https://github.com/lostisland/faraday,MIT
+"faraday-net_http",https://github.com/lostisland/faraday,MIT
+"faraday-net_http_persistent",https://github.com/lostisland/faraday,MIT
+"faraday-patron",https://github.com/lostisland/faraday,MIT
+"faraday-rack",https://github.com/lostisland/faraday,MIT
 "ffi:",https://github.com/ffi/ffi,BSD-3-CLAUSE
 "filesize:",https://github.com/dominikh,MIT
 "gelfd2:",https://github.com/ptqa/gelfd2,Apache-2.0
@@ -87,8 +96,10 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "nio4r:","https://github.com/socketry/nio4r",MIT
 "nokogiri:","http://nokogiri.org/",MIT
 "openssl_pkcs8_pure:",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
+"org.apache.logging.log4j:log4j-1.2-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-core:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.apache.logging.log4j:log4j-jcl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-slf4j-impl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.codehaus.janino:commons-compiler:",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.janino:janino:",https://github.com/janino-compiler/janino,BSD-3-Clause
@@ -124,6 +135,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "Red Hat Universal Base Image minimal:",https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8,Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf,,https://oss-dependencies.elastic.co/red-hat-universal-base-image-minimal/8/ubi-minimal-8-source.tar.gz
 "redis:",https://github.com/redis/redis-rb,MIT
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
+"ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
 "rufus-scheduler:",http://github.com/jmettraux/rufus-scheduler,MIT
 "semantic_logger:",https://github.com/rocketjob/semantic_logger,Apache-2.0

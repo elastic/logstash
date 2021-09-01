@@ -25,8 +25,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.17'
-        classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
+        classpath 'org.yaml:snakeyaml:1.29'
     }
 }
 
@@ -41,6 +40,7 @@ apply from: "rubyUtils.gradle"
 import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import org.logstash.gradle.tooling.ListProjectDependencies
 
 allprojects {
   group = 'org.logstash'
@@ -117,15 +117,9 @@ subprojects {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        implementation "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
-    }
 
-    apply plugin: 'com.github.jk1.dependency-license-report'
-
-    licenseReport {
-        renderer = new com.github.jk1.license.render.CsvReportRenderer()
-        configurations = ['compile', 'runtime']
+    tasks.register("generateLicenseReport", ListProjectDependencies) {
+        outputs.dir "${buildDir}/reports/dependency-license"
     }
 }
 
@@ -609,22 +603,27 @@ tasks.register("generateLicenseReport", JavaExec) {
 tasks.register("generateLicenseReportInputs") {
     dependsOn subprojects.generateLicenseReport
 
-    // write location of all license reports for subprojects containing artifacts that are distributed to single file
-    StringBuilder licenseReportFolders = new StringBuilder()
-    subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true'}.each { s ->
-        s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
-            licenseReportFolders.append(t3.outputs.files.asPath + "\n")
+    doLast {
+        // write location of all license reports for subprojects containing artifacts that are distributed to single file
+        StringBuilder licenseReportFolders = new StringBuilder()
+        subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true' }.each { s ->
+            s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
+                licenseReportFolders.append(t3.reportDir.toString() + "\n")
+            }
         }
-    }
 
-    if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
-        def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
-        def licenseReportFolder = new File(licenseReportPath)
-        licenseReportFolder.delete()
-        licenseReportFolder = new File(licenseReportPath)
-        licenseReportFolder.createNewFile()
-        if (licenseReportFolder.canWrite()) {
-            licenseReportFolder.text = licenseReportFolders.toString()
+        if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
+            if (!project.getBuildDir().exists()) {
+                project.getBuildDir().mkdirs()
+            }
+            def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
+            def licenseReportFolder = new File(licenseReportPath)
+            licenseReportFolder.delete()
+            licenseReportFolder = new File(licenseReportPath)
+            licenseReportFolder.createNewFile()
+            if (licenseReportFolder.canWrite()) {
+                licenseReportFolder.text = licenseReportFolders.toString()
+            }
         }
     }
 }

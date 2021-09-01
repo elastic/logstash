@@ -31,9 +31,9 @@ RSpec.shared_examples "installable" do |logstash|
   end
 
   it "is running on #{logstash.hostname}" do
-    logstash.start_service
-    expect(logstash).to be_running
-    logstash.stop_service
+    with_running_logstash_service(logstash) do
+      expect(logstash).to be_running
+    end
   end
 
   it "is removable on #{logstash.hostname}" do
