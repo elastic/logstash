@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-14-1,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
 * <<logstash-7-13-3,Logstash 7.13.3>>
@@ -48,6 +49,50 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-14-1]]
+=== Logstash 7.14.1 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugin releases
+
+*Cef Codec - 6.2.3*
+
+* Added event_factory support to standardize Event creation https://github.com/logstash-plugins/logstash-codec-cef/pull/94[#94]
+
+*Graphite Codec - 3.0.6*
+
+* Added event_factory support to standardize Event creation https://github.com/logstash-plugins/logstash-codec-graphite/pull/7[#7]
+
+*Netflow Codec - 4.2.2*
+
+* Added event_factory support to standardize Event creation https://github.com/logstash-plugins/logstash-codec-netflow/pull/195[#195]
+* tests: remove redundant asserts
+
+*Elasticsearch Filter - 3.9.5*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/151[#151]
+* Fix: a regression (in LS 7.14.0) where `user`/`password` credentials set by the user wasn't passed to Elasticsearch,
+due to the missed `Authorization` HTTP header.
+https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+* Fix: default setting for `hosts` not working (since 3.7.0) https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+* Fix: concurrency problem when multiple workers interacted mutating the `hosts` setting https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+
+*Elasticsearch Input - 4.9.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/156[#156]
+* Fix: a regression (in LS 7.14.0) where `user`/`password` credentials set by the user wasn't passed to Elasticsearch,
+due to the missed `Authorization` HTTP header.
+https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
+
+*Jdbc Integration - 5.1.5*
+
+* Refined ECS support and added event_factory support to standardize Event creation https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
+
+*Elasticsearch Output - 11.0.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1032[#1032]
 
 [[logstash-7-14-0]]
 === Logstash 7.14.0 Release Notes
