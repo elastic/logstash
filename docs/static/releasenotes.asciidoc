@@ -147,7 +147,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 *Beats Input - 6.2.0*
 
 * ECS compatibility enablement: Adds alias to support upcoming ECS v8 with the existing ECS v1 implementation
-* [DOC] Remove limitations topic and link https://github.com/logstash-plugins/logstash-input-http/pull/428[#428]
+* [DOC] Remove limitations topic and link https://github.com/logstash-plugins/logstash-input-beats/pull/428[#428]
 
 *File Input - 4.4.0*
 
