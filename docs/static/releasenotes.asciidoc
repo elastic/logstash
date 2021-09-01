@@ -54,75 +54,34 @@ This section summarizes the changes in the following releases:
 [[logstash-7-15-0]]
 === Logstash 7.15.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.15.0
-
-* doc: add pipeline.ecs_compatibility docs https://github.com/elastic/logstash/pull/12421[#12421]
-* Fix LS benchmarking tool to work with releases >= 7.10.0 https://github.com/elastic/logstash/pull/13052[#13052]
-* [backport 7.x] Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) https://github.com/elastic/logstash/pull/13053[#13053]
-* Backport PR #13071 to 7.x: [Test] Fix Unix acceptance tests https://github.com/elastic/logstash/pull/13074[#13074]
-* Backport PR #12421 to 7.x: doc: add pipeline.ecs_compatibility docs https://github.com/elastic/logstash/pull/13091[#13091]
-
-* Backport PR #13015 to 7.15: Bundler: freeze lockfile on run, and "nor… https://github.com/elastic/logstash/pull/13141[#13141]
-* Backport PR #13005 to 7.15 update fpm to allow pkg creation on jdk11+… https://github.com/elastic/logstash/pull/13145[#13145]
-* Backport PR #13146 to 7.15: Remove dependency:bundler task https://github.com/elastic/logstash/pull/13148[#13148]
-
-=== Logstash Commits between 7.15 and 7.14
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14..7.15"
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff 7.14..7.15 *.release"
-Changed plugin versions:
-=======
-
-=== Logstash Commits between 7.15 and 7.14.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14.0..7.15"
-
-10e3cc0b7 - [backport 7.15] Update Snakeyaml version to 1.29 (#13129) (#13135) (23 hours ago) <Andrea Selva>
-725799d20 - Doc: Enhance and expand DLQ docs 7.x (#13099) (4 weeks ago) <Karen Metts>
-e779535ae - doc: add pipeline.ecs_compatibility docs (#12421) (#13091) (4 weeks ago) <Ry Biesemeyer>
-fb98ca807 - Doc: Add kafka schema registry setting to troubleshooting (#13077) (5 weeks ago) <Karen Metts>
-0ac470f3c - Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) (#13053) (6 weeks ago) <Andrea Selva>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.14.0..7.15 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.2 -> 6.2.3
-logstash-codec-collectd: 3.0.8 -> 3.1.0
-logstash-codec-edn: 3.0.6 -> 3.1.0
-logstash-codec-edn_lines: 3.0.6 -> 3.1.0
-logstash-codec-fluent: 3.3.0 -> 3.4.0
-logstash-codec-graphite: 3.0.5 -> 3.0.6
-logstash-codec-json: 3.0.5 -> 3.1.0
-logstash-codec-json_lines: 3.0.6 -> 3.1.0
-logstash-codec-line: 3.0.8 -> 3.1.1
-logstash-codec-msgpack: 3.0.7 -> 3.1.0
-logstash-codec-multiline: 3.0.11 -> 3.1.0
-logstash-codec-netflow: 4.2.1 -> 4.2.2
-logstash-codec-plain: 3.0.6 -> 3.1.0
-logstash-filter-elasticsearch: 3.9.3 -> 3.9.4
-logstash-filter-kv: 4.4.1 -> 4.5.0
-logstash-filter-translate: 3.2.3 -> 3.3.0
-logstash-input-beats: 6.1.6 -> 6.2.0
-logstash-input-elasticsearch: 4.9.1 -> 4.9.2
-logstash-input-file: 4.3.1 -> 4.4.0
-logstash-input-heartbeat: 3.0.7 -> 3.1.1
-logstash-input-s3: 3.7.0 -> 3.8.0
-logstash-input-stdin: 3.3.0 -> 3.4.0
-logstash-input-udp: 3.4.1 -> 3.5.0
-logstash-integration-jdbc: 5.1.4 -> 5.1.5
-logstash-mixin-event_support: 1.0.1 -> 1.0.1
-logstash-output-udp: 3.1.0 -> 3.2.0
->>>>>>> Update release notes for 7.15.0
----------- GENERATED CONTENT ENDS HERE ------------
-
 [[featured-7-15-0]]
 ==== New features and enhancements
 
+[[ecs-7-15-0]]
+===== Progress toward Elastic Common Schema (ECS)
+
+In this release, we continued our efforts towards Elastic Common Schema (ECS):
+
+* <<plugins-codecs-collectd,collectd codec>> added `target` support
+* <<plugins-codecs-edn,edn codec>> added `target` support
+* <<plugins-codecs-edn_lines,edn_lines codec>> added `target` support
+* <<plugins-codecs-fluent,fluent codec>> added `target` support
+* <<plugins-codecs-json,json codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-json_lines,json_lines codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-line,line codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-msgpack,msgpack codec>> added `target` support
+* <<plugins-codecs-multiline,multiline codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-plain,plain codec>> added `target` support and `ecs_compatibility`
+* <<plugins-filters-translate,translate filter>> supports `ecs_compatibility`
+* <<plugins-inputs-heartbeat,heartbeat input>> supports `ecs_compatibility`
+
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
+
 [[notable-7-15-0]]
 ==== Performance improvements and notable issues fixed
+
+* Updated Bundler to latest version https://github.com/elastic/logstash/pull/13141[#13141]
+* There's a new developer-only flag (`--enable-local-plugin-development`) to facilitate local plugin development
 
 [[plugins-7-15-0]]
 ==== Plugins
