@@ -12,7 +12,7 @@ import java.nio.file.Files
 class ListProjectDependencies extends DefaultTask {
 
     @Input
-    String report = 'licenses.csv' //project.file("${project.buildDir}/reports/dependency-license/licenses.csv")
+    String report = 'licenses.csv'
 
     @OutputFile
     File reportFile = project.file("${project.buildDir}/reports/dependency-license/" + report)
