@@ -127,10 +127,6 @@ logstash-output-udp: 3.1.0 -> 3.2.0
 [[plugins-7-15-0]]
 ==== Plugins
 
-*Cef Codec - 6.2.3*
-
-* Feat: event_factory support https://github.com/logstash-plugins/logstash-codec-cef/pull/94[#94]
-
 *Collectd Codec - 3.1.0*
 
 * Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-collectd/pull/31[#31]
@@ -148,14 +144,9 @@ logstash-output-udp: 3.1.0 -> 3.2.0
 * Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-fluent/pull/27[#27]
 * Fix: decoding of time's nano-second precision
 
-*Graphite Codec - 3.0.6*
-
-* Feat: added event-factory support https://github.com/logstash-plugins/logstash-codec-graphite/pull/7[#7]
-
 *Json Codec - 3.1.0*
 
 * Feat: event `target => namespace` support (for ECS) https://github.com/logstash-plugins/logstash-codec-json/pull/37[#37]
-* Refactor: dropped support for old Logstash versions (< 6.0)
 * Fix: json parsing compatibility (when parsing blank strings) + freeze event.original value https://github.com/logstash-plugins/logstash-codec-json/pull/38[#38]
 
 *Json_lines Codec - 3.1.0*
@@ -178,22 +169,9 @@ logstash-output-udp: 3.1.0 -> 3.2.0
 
 * Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-multiline/pull/69[#69]
 
-*Netflow Codec - 4.2.2*
-
-* Feat: leverage event_factory support https://github.com/logstash-plugins/logstash-codec-netflow/pull/195[#195]
-* Test: remove redundant asserts (to get the CI green)
-
 *Plain Codec - 3.1.0*
 
 * Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-plain/pull/10[#10]
-
-*Elasticsearch Filter - 3.9.4*
-
-* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization`
-header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
-https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
-* Fix: default setting for `hosts` not working (since 3.7.0) GH-147
-* Fix: mutating @hosts variable which leads to issues with multiple worker threads GH-129
 
 *Kv Filter - 4.5.0*
 
@@ -202,22 +180,13 @@ https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
 *Translate Filter - 3.3.0*
 
 * Feat: added ECS compatibility mode https://github.com/logstash-plugins/logstash-filter-translate/pull/89[#89]
-* deprecated `destination` option in favor of `target` to better align with other plugins
-* deprecated `field` option in favor of `source` to better align with other plugins
-* when ECS compatibility is enabled, default behaviour is an in-place translation
+  - when ECS compatibility is enabled, default behaviour is an in-place translation
 * Fix: improved error handling - do not rescue potentially fatal (JVM) errors
 
 *Beats Input - 6.2.0*
 
 * ECS compatibility enablement: Adds alias to support upcoming ECS v8 with the existing ECS v1 implementation
-
 * [DOC] Remove limitations topic and link https://github.com/logstash-plugins/logstash-input-http/pull/428[#428]
-
-*Elasticsearch Input - 4.9.2*
-
-* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization`
-header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
-https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
 
 *File Input - 4.4.0*
 
@@ -226,7 +195,6 @@ https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
 *Heartbeat Input - 3.1.1*
 
 * Docs: added information on ECS v8 support https://github.com/logstash-plugins/logstash-input-heartbeat/pull/19[#19]
-
 * Added new `sequence` setting to manage the type of sequence generator and added ECS
 compatibility behavior https://github.com/logstash-plugins/logstash-input-heartbeat/pull/18[#18]
 
@@ -241,12 +209,6 @@ compatibility behavior https://github.com/logstash-plugins/logstash-input-heartb
 *Udp Input - 3.5.0*
 
 * Added ECS v8 support as an alias to the ECS v1 implementation
-
-*Jdbc Integration - 5.1.5*
-
-* Refined ECS support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
-* Uses shared `target` guidance when ECS compatibility is enabled
-* Uses Logstash's EventFactory instead of instantiating events directly
 
 *Event_support Mixin - 1.0.1*
 
