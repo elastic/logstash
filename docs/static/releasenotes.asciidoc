@@ -4,6 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-7-15-0,Logstash 7.15.0>>
+* <<logstash-7-15-0,Logstash 7.15.0>>
 * <<logstash-7-14-0,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
@@ -50,6 +51,35 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-15-0]]
+=== Logstash 7.15.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.15.0
+
+* doc: add pipeline.ecs_compatibility docs https://github.com/elastic/logstash/pull/12421[#12421]
+* Fix LS benchmarking tool to work with releases >= 7.10.0 https://github.com/elastic/logstash/pull/13052[#13052]
+* [backport 7.x] Fix LS benchmarking tool to work with releases >= 7.10.0 (#13052) https://github.com/elastic/logstash/pull/13053[#13053]
+* Backport PR #13071 to 7.x: [Test] Fix Unix acceptance tests https://github.com/elastic/logstash/pull/13074[#13074]
+* Backport PR #12421 to 7.x: doc: add pipeline.ecs_compatibility docs https://github.com/elastic/logstash/pull/13091[#13091]
+* Added faraday-* and ruby2_keywords notices to licences list https://github.com/elastic/logstash/pull/13126[#13126]
+* [backport 7.x] Added faraday-* and ruby2_keywords notices to licences list (#13126) https://github.com/elastic/logstash/pull/13128[#13128]
+* Update Snakeyaml version to 1.29 https://github.com/elastic/logstash/pull/13129[#13129]
+* Backport PR #13015 to 7.15: Bundler: freeze lockfile on run, and "nor… https://github.com/elastic/logstash/pull/13141[#13141]
+* Backport PR #13005 to 7.15 update fpm to allow pkg creation on jdk11+… https://github.com/elastic/logstash/pull/13145[#13145]
+* Backport PR #13146 to 7.15: Remove dependency:bundler task https://github.com/elastic/logstash/pull/13148[#13148]
+
+=== Logstash Commits between 7.15 and 7.14
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.14..7.15"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.14..7.15 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-15-0]]
 === Logstash 7.15.0 Release Notes
