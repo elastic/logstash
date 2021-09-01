@@ -126,7 +126,6 @@ module LogStash module Filters module Geoip class DownloadManager
 
     download_uri = service_endpoint.dup
     download_uri.path = "/#{url}"
-    download_uri.query = ""
     download_uri.to_s
   end
 
