@@ -196,7 +196,7 @@ public class PluginLoggerExt extends LoggerExt {
         boolean found = org.apache.logging.log4j.ThreadContext.containsKey(PLUGIN_ID_KEY);
         if (found) return false;
         org.apache.logging.log4j.ThreadContext.put(PLUGIN_ID_KEY, pluginId);
-        return false;
+        return true;
     }
 
     private static void removePluginId(final boolean didSet) {
