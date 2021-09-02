@@ -83,7 +83,9 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 * Updated Bundler to latest version https://github.com/elastic/logstash/pull/13141[#13141]
   - Bundler 2.2.26 brings along improvements and bug fixes for Logstash's dependency resolution
   - We plan to continue being up-to-date with latest Bundler and/or RubyGems in the future
-* There's a new developer-only flag (`--enable-local-plugin-development`) to facilitate local plugin development
+* We've added a new developer-only <<command-line-flags,command line flag>> (`--enable-local-plugin-development`) to facilitate local plugin development. 
+This flag enables developers to update their local Gemfile without running into issues caused by a frozen lockfile. 
+End users should not need this flag.
 
 [[plugins-7-15-0]]
 ==== Plugins
