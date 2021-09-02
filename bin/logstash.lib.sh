@@ -14,6 +14,7 @@
 # The following env var will be used by this script if set:
 #   LS_GEM_HOME and LS_GEM_PATH to overwrite the path assigned to GEM_HOME and GEM_PATH
 #   LS_JAVA_OPTS to append extra options to the JVM options provided by logstash
+#   LS_JAVA_HOME to point to the java home (takes precedence over JAVA_HOME)
 #   JAVA_HOME to point to the java home
 
 unset CDPATH
@@ -90,7 +91,17 @@ setup_java() {
   if [ -z "$JAVACMD" ]; then
     setup_bundled_jdk_part
     JAVACMD_TEST=`command -v java`
-    if [ -n "$JAVA_HOME" ]; then
+    if [ -n "$LS_JAVA_HOME" ]; then
+      echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}"
+      if [ -x "$LS_JAVA_HOME/bin/java" ]; then
+        JAVACMD="$LS_JAVA_HOME/bin/java"
+        if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
+          echo "WARNING, using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK"
+        fi
+      else
+        echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable"
+      fi
+    elif [ -n "$JAVA_HOME" ]; then
       echo "Using JAVA_HOME defined java: ${JAVA_HOME}"
       if [ -x "$JAVA_HOME/bin/java" ]; then
         JAVACMD="$JAVA_HOME/bin/java"
@@ -112,7 +123,7 @@ setup_java() {
   fi
 
   if [ ! -x "$JAVACMD" ]; then
-    echo "could not find java; set JAVA_HOME or ensure java is in PATH"
+    echo "could not find java; set LS_JAVA_HOME or ensure java is in PATH"
     exit 1
   fi
 
