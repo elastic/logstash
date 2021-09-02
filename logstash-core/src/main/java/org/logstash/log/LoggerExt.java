@@ -30,6 +30,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -333,6 +334,16 @@ public class LoggerExt extends RubyObject {
                 loggerContext.updateLoggers();
             }
         }
+    }
+
+    /**
+     * Retrieve this logger's name.
+     * @param context current context
+     * @return the name
+     */
+    @JRubyMethod(name = "name")
+    public RubyString name(final ThreadContext context) {
+        return context.runtime.newString(logger.getName());
     }
 
 }
