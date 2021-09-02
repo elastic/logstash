@@ -197,5 +197,27 @@ describe LogStash::Filters::Geoip do
         expect(download_manager.send(:download_url, GEOIP_STAGING_ENDPOINT)).to eq(GEOIP_STAGING_ENDPOINT)
       end
     end
+
+    context "service endpoint" do
+      before do
+        allow(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
+      end
+
+      it "should give xpack setting" do
+        uri = download_manager.send(:service_endpoint)
+        expect(uri.to_s).to match /#{GEOIP_STAGING_ENDPOINT}/
+      end
+
+      context "empty xpack config" do
+        before do
+          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.download.endpoint").and_return(nil)
+        end
+
+        it "should give default endpoint" do
+          uri = download_manager.send(:service_endpoint)
+          expect(uri.to_s).to match /#{LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT}/
+        end
+      end
+    end
   end
 end
