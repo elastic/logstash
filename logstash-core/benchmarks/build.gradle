@@ -28,6 +28,7 @@ String jrubyVersion = versionMap['jruby']['version']
 
 repositories {
   mavenCentral()
+  jcenter()
 }
 
 buildscript {
