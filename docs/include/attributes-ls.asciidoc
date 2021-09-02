@@ -1,8 +1,10 @@
 /////
- These settings control attributes in the LSR only. 
-They correspond to the VPR settings in logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
-When we update one, we must update settings in the other location
+These settings control attributes for Logstash core content 
+in the Logstash Reference (LSR) only.
+ 
+Shared attributes for the plugin docs (in the LSR and VPR) should
+go in /docs/include/attributes-lsplugins.asciidoc instead 
+with a corresponding change to the VPR settings in 
+logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
 /////
-
-:ecs-default:   Any value in {logstash-ref}/logstash-settings-file.html[`logstash.yml`] for pipeline.ecs_compatibility other than disabled is considered BETA and unsupported until Logstash 8.0 and the final 7.x version are released. Having this pipeline level flag set will cause even patch-level upgrades to automatically consume breaking changes in the upgraded plugins, changing the shape of data the plugin produces.
 
