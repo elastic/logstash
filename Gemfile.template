@@ -4,8 +4,7 @@
 source "https://rubygems.org"
 gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
-gem "atomic", "~> 1"
-gem "builder", "~> 3"
+
 gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
@@ -17,6 +16,7 @@ gem "gems", "~> 1", :group => :build
 gem "octokit", "~> 4", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
+
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
