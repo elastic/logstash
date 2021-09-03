@@ -92,24 +92,24 @@ setup_java() {
     setup_bundled_jdk_part
     JAVACMD_TEST=`command -v java`
     if [ -n "$LS_JAVA_HOME" ]; then
-      echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}"
+      echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}."
       if [ -x "$LS_JAVA_HOME/bin/java" ]; then
         JAVACMD="$LS_JAVA_HOME/bin/java"
         if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-          echo "WARNING, using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK"
+          echo "WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK."
         fi
       else
-        echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable"
+        echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable."
       fi
     elif [ -n "$JAVA_HOME" ]; then
       echo "Using JAVA_HOME defined java: ${JAVA_HOME}"
       if [ -x "$JAVA_HOME/bin/java" ]; then
         JAVACMD="$JAVA_HOME/bin/java"
         if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-          echo "WARNING, using JAVA_HOME while Logstash distribution comes with a bundled JDK"
+          echo "WARNING: Using JAVA_HOME while Logstash distribution comes with a bundled JDK."
         fi
       else
-        echo "Invalid JAVA_HOME, doesn't contain bin/java executable"
+        echo "Invalid JAVA_HOME, doesn't contain bin/java executable."
       fi
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
       echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
@@ -123,7 +123,7 @@ setup_java() {
   fi
 
   if [ ! -x "$JAVACMD" ]; then
-    echo "could not find java; set LS_JAVA_HOME or ensure java is in PATH"
+    echo "Could not find java; set LS_JAVA_HOME or ensure java is in PATH."
     exit 1
   fi
 
