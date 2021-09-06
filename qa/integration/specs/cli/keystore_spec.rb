@@ -44,7 +44,7 @@ describe "CLI > logstash-keystore" do
     it "works" do
       env = {'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD'}
       if ENV['BUILD_JAVA_HOME']
-        env['JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
+        env['LS_JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
       end
       keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'create'], true, env)
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
@@ -63,7 +63,7 @@ describe "CLI > logstash-keystore" do
     it "works" do
       env = {'LOGSTASH_KEYSTORE_PASS' => 'PaSSWD'}
       if ENV['BUILD_JAVA_HOME']
-        env['JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
+        env['LS_JAVA_HOME'] = ENV['BUILD_JAVA_HOME']
       end
       keystore_list = @logstash.run_cmd(['bin/logstash-keystore', 'list'], true, env)
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
