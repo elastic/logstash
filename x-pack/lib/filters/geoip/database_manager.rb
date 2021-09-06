@@ -304,7 +304,7 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def metric
     # Fallback when testing plugin and no metric collector are correctly configured.
-    @metric.nil? ? LogStash::Instrument::NamespacedNullMetric.new: @metric
+    @metric ||= LogStash::Instrument::NamespacedNullMetric.new
   end
 
   class DatabaseState
