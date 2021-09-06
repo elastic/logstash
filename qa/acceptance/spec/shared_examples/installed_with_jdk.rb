@@ -23,6 +23,7 @@ RSpec.shared_examples "installable_with_jdk" do |logstash|
 
   before(:all) do
     #unset to force it using bundled JDK to run LS
+    logstash.run_command("unset LS_JAVA_HOME")
     logstash.run_command("unset JAVA_HOME")
   end
 
