@@ -32,6 +32,7 @@ if defined LS_JAVA_HOME (
   if exist "%LS_HOME%\jdk" (
     echo WARNING: Using JAVA_HOME while Logstash distribution comes with a bundled JDK.
   )
+  echo DEPRECATION: Using JAVA_HOME, please configure LS_JAVA_HOME instead.
 ) else (
   if exist "%LS_HOME%\jdk" (
     set JAVA="%LS_HOME%\jdk\bin\java.exe"
