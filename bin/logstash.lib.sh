@@ -111,7 +111,7 @@ setup_java() {
       else
         echo "Invalid JAVA_HOME, doesn't contain bin/java executable."
       fi
-      echo "DEPRECATION: Using JAVA_HOME, please configure LS_JAVA_HOME instead."
+      echo "DEPRECATION: The use of JAVA_HOME is now deprecated and will be removed starting from 8.0. Please configure LS_JAVA_HOME instead."
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
       echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
       JAVACMD="${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java"
