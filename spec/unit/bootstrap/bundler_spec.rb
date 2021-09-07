@@ -125,6 +125,28 @@ describe LogStash::Bundler do
           expect(subject).not_to include('--clean')
         end
       end
+
+      context 'with ecs_compatibility' do
+        let(:options) { { :update => 'logstash-integration-jdbc' } }
+
+        it "should allow to update dependencies" do
+          expect(subject).to include('logstash-mixin-ecs_compatibility_support', 'logstash-integration-jdbc')
+
+          subject.each do |gem_name|
+            dep = ::Gem::Dependency.new(gem_name)
+            expect(dep.type).to eq(:runtime)
+          end
+        end
+
+        it "should not include core lib" do
+          expect(subject).not_to include('logstash-core', 'logstash-core-plugin-api')
+        end
+
+        it "should raise error when fetcher failed" do
+          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [StandardError.new("boom")]])
+          expect { subject }.to raise_error(StandardError)
+        end
+      end
     end
 
     context "when only specifying clean" do
