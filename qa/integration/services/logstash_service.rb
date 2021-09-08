@@ -118,10 +118,10 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
       java_home = java.lang.System.getProperty('java.home')
-      @process.environment['JAVA_HOME'] = java_home
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.start
       wait_for_logstash
-      puts "Logstash started with PID #{@process.pid}, JAVA_HOME: #{java_home}" if alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if alive?
     end
   end
 
@@ -137,10 +137,10 @@ class LogstashService < Service
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
-      @process.environment['JAVA_HOME'] = java_home
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.io.inherit!
       @process.start
-      puts "Logstash started with PID #{@process.pid}, JAVA_HOME: #{java_home}" if @process.alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
     end
   end
 
