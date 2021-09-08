@@ -14,7 +14,7 @@ shared_examples_for 'the container is configured correctly' do |flavor|
       console_out = exec_in_container(@container, 'logstash --version')
       console_filtered = console_out.split("\n")
             .delete_if do |line|
-              line =~ /Using LS_JAVA_HOME defined java|Using JAVA_HOME defined java|Using system java: /
+              line =~ /Using LS_JAVA_HOME defined java|Using system java: /
             end.join
       expect(console_filtered).to match /#{version}/
     end
