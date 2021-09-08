@@ -26,13 +26,12 @@ buildscript {
     }
     dependencies {
         classpath 'org.yaml:snakeyaml:1.29'
-        classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 }
 
 plugins {
     id "de.undercouch.download" version "4.0.4"
-    id "com.dorongold.task-tree" version "1.5"
+    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 apply plugin: 'de.undercouch.download'
@@ -41,6 +40,7 @@ apply from: "rubyUtils.gradle"
 import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import org.logstash.gradle.tooling.ListProjectDependencies
 
 allprojects {
   group = 'org.logstash'
@@ -117,15 +117,9 @@ subprojects {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        implementation "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
-    }
 
-    apply plugin: 'com.github.jk1.dependency-license-report'
-
-    licenseReport {
-        renderer = new com.github.jk1.license.render.CsvReportRenderer()
-        configurations = ['compile', 'runtime']
+    tasks.register("generateLicenseReport", ListProjectDependencies) {
+        outputs.dir "${buildDir}/reports/dependency-license"
     }
 }
 
@@ -187,20 +181,23 @@ tasks.register("configureArtifactInfo") {
 
 abstract class SignAliasDefinitionsTask extends DefaultTask {
 
-    String registryPath = "logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml"
-    String hashedFileName = 'plugin_aliases_hashed.yml'
+    /**
+     * Relative path to the AliasRegistry.yml file to use, relative to project's root
+     * */
+    @Input
+    String registryPath
 
-    @InputFile
-    File aliasPath = project.file("${project.projectDir}/${registryPath}")
-
+    /**
+     * Full file path to the file containing the marked AliasRegistry file
+     * */
     @OutputFile
-    File hashedFile = project.file("${project.buildDir}/${hashedFileName}")
+    File hashedFile
 
     @TaskAction
     def sign() {
         String aliases_defs = new File("${project.projectDir}/${registryPath}").text
         String hash = aliases_defs.digest('SHA-256')
-        new File(project.buildDir, hashedFileName).withWriter('utf-8') { writer ->
+        hashedFile.withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
             writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
             writer.write aliases_defs
@@ -210,44 +207,72 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
 
 tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file from original aliases yml definition"
+    registryPath = 'logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml'
+    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file for testing aliases yml definition"
     registryPath = 'logstash-core/src/test/resources/org/logstash/plugins/AliasRegistry.yml'
-    hashedFileName = 'plugin_aliases_hashed_test.yml'
+    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
 tasks.register("copyPluginAlias", Copy) {
     description "Copy the marked plugin_aliases.yml file to destination folders"
+    dependsOn = [copyPluginAlias_ruby, copyPluginAlias_java]
+}
+
+tasks.register("copyPluginAlias_ruby", Copy) {
+    description "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
-    destinationDir = projectDir
-    from("${buildDir}/plugin_aliases_hashed.yml") {
-        into "lib/pluginmanager/"
+
+    from(markAliasDefinitions.hashedFile) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
-    from("${buildDir}/plugin_aliases_hashed.yml") {
-        into "logstash-core/src/main/resources/org/logstash/plugins/"
-        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
-    }
+    into "lib/pluginmanager/"
 }
 
-tasks.register("copyPluginTestAlias", Copy) {
+tasks.register("copyPluginAlias_java", Copy) {
+    description "Copy the marked plugin_aliases.yml file to destination folders"
+    dependsOn "markAliasDefinitions"
+
+    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+
+    from(markAliasDefinitions.hashedFile) {
+        rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
+    }
+    into "logstash-core/src/main/resources/org/logstash/plugins/"
+}
+
+tasks.register("copyPluginTestAlias") {
     description "Copy the marked test plugin_aliases.yml file to destination folders"
+    dependsOn = [copyPluginTestAlias_ruby, copyPluginTestAlias_java]
+}
+
+tasks.register("copyPluginTestAlias_ruby", Copy) {
+    description "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
+    dependsOn "markTestAliasDefinitions"
+
+    inputs.file(markTestAliasDefinitions.hashedFile)
+
+    from(markTestAliasDefinitions.hashedFile) {
+        rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
+    }
+    into "spec/unit/plugin_manager/"
+}
+
+tasks.register("copyPluginTestAlias_java", Copy) {
+    description "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
-    destinationDir = projectDir
-    from("${buildDir}/plugin_aliases_hashed_test.yml") {
-        into "spec/unit/plugin_manager/"
+
+    from(markTestAliasDefinitions.hashedFile) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
-    from("${buildDir}/plugin_aliases_hashed_test.yml") {
-        into "logstash-core/src/test/resources/org/logstash/plugins/"
-        rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
-    }
+    into "logstash-core/src/test/resources/org/logstash/plugins/"
 }
 
 tasks.findByPath(':logstash-core:processResources').dependsOn(copyPluginAlias)
@@ -576,11 +601,11 @@ project(":logstash-integration-tests") {
         systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
         workingDir integrationTestPwd
-        dependsOn installIntegrationTestGems
+        dependsOn = [installIntegrationTestGems, copyProductionLog4jConfiguration]
     }
 }
 
-tasks.register("runIntegrationTests"){
+tasks.register("runIntegrationTests") {
     dependsOn tasks.getByPath(":logstash-integration-tests:integrationTests")
     dependsOn copyEs
     dependsOn copyFilebeat
@@ -609,22 +634,27 @@ tasks.register("generateLicenseReport", JavaExec) {
 tasks.register("generateLicenseReportInputs") {
     dependsOn subprojects.generateLicenseReport
 
-    // write location of all license reports for subprojects containing artifacts that are distributed to single file
-    StringBuilder licenseReportFolders = new StringBuilder()
-    subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true'}.each { s ->
-        s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
-            licenseReportFolders.append(t3.outputs.files.asPath + "\n")
+    doLast {
+        // write location of all license reports for subprojects containing artifacts that are distributed to single file
+        StringBuilder licenseReportFolders = new StringBuilder()
+        subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true' }.each { s ->
+            s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
+                licenseReportFolders.append(t3.reportDir.toString() + "\n")
+            }
         }
-    }
 
-    if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
-        def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
-        def licenseReportFolder = new File(licenseReportPath)
-        licenseReportFolder.delete()
-        licenseReportFolder = new File(licenseReportPath)
-        licenseReportFolder.createNewFile()
-        if (licenseReportFolder.canWrite()) {
-            licenseReportFolder.text = licenseReportFolders.toString()
+        if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
+            if (!project.getBuildDir().exists()) {
+                project.getBuildDir().mkdirs()
+            }
+            def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
+            def licenseReportFolder = new File(licenseReportPath)
+            licenseReportFolder.delete()
+            licenseReportFolder = new File(licenseReportPath)
+            licenseReportFolder.createNewFile()
+            if (licenseReportFolder.canWrite()) {
+                licenseReportFolder.text = licenseReportFolders.toString()
+            }
         }
     }
 }
