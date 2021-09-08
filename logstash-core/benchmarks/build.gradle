@@ -28,17 +28,16 @@ String jrubyVersion = versionMap['jruby']['version']
 
 repositories {
   mavenCentral()
-  jcenter()
 }
 
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
+    gradlePluginPortal()
   }
   dependencies {
     classpath 'org.yaml:snakeyaml:1.29'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
   }
 }
 

@@ -61,7 +61,7 @@ clean {
 }
 
 tasks.register("integrationTests", Test) {
-  dependsOn "copyProductionLog4jConfiguration"
+  dependsOn copyProductionLog4jConfiguration
 
   inputs.files fileTree("${projectDir}/services")
   inputs.files fileTree("${projectDir}/framework")
