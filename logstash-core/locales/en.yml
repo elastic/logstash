@@ -120,6 +120,9 @@ en:
           bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash --help
+      invalid-settings: >-
+        Your settings are invalid.
+        Reason: %{error}
       invalid-configuration: >-
         The given configuration is invalid. Reason: %{error}
       missing-configuration: >-
@@ -406,3 +409,14 @@ en:
         quiet: |+
           Set the log level to info.
           DEPRECATED: use --log.level=info instead.
+    settings:
+      deprecation:
+        set: >-
+          The setting `%{deprecated_alias}` is a deprecated alias for `%{canonical_name}`
+          and will be removed in a future release of Logstash. Please use %{canonical_name} instead
+        queried: >-
+          The value of setting `%{canonical_name}` has been queried by its deprecated alias `%{deprecated_alias}`.
+          Code should be updated to query `%{canonical_name}` instead
+        ambiguous: >-
+          Both `%{canonical_name}` and its deprecated alias `%{deprecated_alias}` have been set.
+          Please only set `%{canonical_name}`

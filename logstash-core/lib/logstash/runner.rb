@@ -328,7 +328,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
 
-    @settings.validate_all
+    validate_settings! or return 1
     @dispatcher.fire(:before_bootstrap_checks)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
@@ -461,6 +461,14 @@ class LogStash::Runner < Clamp::StrictCommand
      logger.info("Log4j configuration path used is: #{config_file.path}")
      log_config = File.open(config_file.absolute_path).read
      (log_config =~ /^[^#]+script\.language\s*=\s*JavaScript/) != nil
+  end
+
+  def validate_settings!
+    @settings.validate_all
+    true
+  rescue => e
+    $stderr.puts(I18n.t("logstash.runner.invalid-settings", :error => e.message))
+    return false
   end
 
   def show_version
