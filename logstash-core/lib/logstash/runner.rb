@@ -215,20 +215,20 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "config.reload.interval",
     :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
-  option ["--http.enabled"], "ENABLED",
-         I18n.t("logstash.runner.flag.http_enabled"),
-         :attribute_name => 'http.enabled',
-         :default => LogStash::SETTINGS.get_default('http.enabled')
+  option ["--api.enabled"], "ENABLED",
+    I18n.t("logstash.runner.flag.api_enabled"),
+    :attribute_name => 'api.enabled',
+    :default => LogStash::SETTINGS.get_default('api.enabled')
 
-  option ["--http.host"], "HTTP_HOST",
-    I18n.t("logstash.runner.flag.http_host"),
-    :attribute_name => "http.host",
-    :default => LogStash::SETTINGS.get_default("http.host")
+  option ["--api.http.host"], "HTTP_HOST",
+    I18n.t("logstash.runner.flag.api_http_host"),
+    :attribute_name => "api.http.host",
+    :default => LogStash::SETTINGS.get_default("api.http.host")
 
-  option ["--http.port"], "HTTP_PORT",
-    I18n.t("logstash.runner.flag.http_port"),
-    :attribute_name => "http.port",
-    :default => LogStash::SETTINGS.get_default("http.port")
+  option ["--api.http.port"], "HTTP_PORT",
+    I18n.t("logstash.runner.flag.api_http_port"),
+    :attribute_name => "api.http.port",
+    :default => LogStash::SETTINGS.get_default("api.http.port")
 
   option ["--log.format"], "FORMAT",
     I18n.t("logstash.runner.flag.log_format"),
@@ -252,6 +252,18 @@ class LogStash::Runner < Clamp::StrictCommand
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
+
+  deprecated_option ["--http.enabled"], :flag,
+    I18n.t("logstash.runner.flag.http_enabled"),
+    :new_flag => "api.enabled", :passthrough => true # use settings to disambiguate
+
+  deprecated_option ["--http.host"], "HTTP_HOST",
+    I18n.t("logstash.runner.flag.http_host"),
+    :new_flag => "api.http.host", :passthrough => true # use settings to disambiguate
+
+  deprecated_option ["--http.port"], "HTTP_PORT",
+    I18n.t("logstash.runner.flag.http_port"),
+    :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.

@@ -63,9 +63,9 @@ class LogStash::Agent
     @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
-    @http_host = setting("http.host")
-    @http_port = setting("http.port")
-    @http_environment = setting("http.environment")
+    @http_host = setting("api.http.host")
+    @http_port = setting("api.http.port")
+    @http_environment = setting("api.environment")
     # Generate / load the persistent uuid
     id
 
@@ -434,10 +434,10 @@ class LogStash::Agent
   end
 
   def start_webserver_if_enabled
-    if @settings.get_value("http.enabled")
+    if @settings.get_value("api.enabled")
       start_webserver
     else
-      @logger.info("HTTP API is disabled (`http.enabled=false`); webserver will not be started.")
+      @logger.info("HTTP API is disabled (`api.enabled=false`); webserver will not be started.")
     end
   end
 
