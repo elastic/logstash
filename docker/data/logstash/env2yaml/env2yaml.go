@@ -48,6 +48,10 @@ func squashSetting(setting string) string {
 // return the canonical setting name. eg. 'pipeline.unsafe_shutdown'
 func normalizeSetting(setting string) (string, error) {
 	valid_settings := []string{
+		"api.enabled",
+		"api.http.host",
+		"api.http.port",
+		"api.environment",
 		"node.name",
 		"path.data",
 		"pipeline.id",
@@ -80,9 +84,10 @@ func normalizeSetting(setting string) (string, error) {
 		"dead_letter_queue.max_bytes",
 		"dead_letter_queue.flush_interval",
 		"path.dead_letter_queue",
-		"http.host",
-		"http.port",
-		"http.enabled",
+		"http.enabled",     // DEPRECATED: prefer `api.enabled`
+		"http.environment", // DEPRECATED: prefer `api.environment`
+		"http.host",        // DEPRECATED: prefer `api.http.host`
+		"http.port",        // DEPRECATED: prefer `api.http.port`
 		"log.level",
 		"log.format",
 		"modules",

@@ -207,10 +207,13 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   How frequently to poll the configuration location for changes. The default value is "3s".
   Note that the unit qualifier (`s`) is required.
 
-*`--http.host HTTP_HOST`*::
+*`--api-enabled ENABLED`*::
+  The HTTP API is enabled by default, but can be disabled by passing `false` to this option.
+
+*`--api.http.host HTTP_HOST`*::
   Web API binding host. This option specifies the bind address for the metrics REST endpoint. The default is "127.0.0.1".
 
-*`--http.port HTTP_PORT`*::
+*`--api.http.port HTTP_PORT`*::
   Web API http port. This option specifies the bind port for the metrics REST endpoint. The default is 9600-9700.
   This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
 

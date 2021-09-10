@@ -235,13 +235,21 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | The directory path where the data files will be stored for the dead-letter queue.
 | `path.data/dead_letter_queue`
 
-| `http.host`
-| The bind address for the metrics REST endpoint.
+| `api.enabled`
+|  The HTTP API is enabled by default. It can be disabled, but features that rely on it will not work as intended.
+| `true`
+
+| `api.environment`
+| The API returns the provided string as a part of its response. Setting your environment may help to disambiguate between similarly-named nodes in production vs test environments.
+| `production`
+
+| `api.http.host`
+| The bind address for the HTTP API endpoint.
 | `"127.0.0.1"`
 
-| `http.port`
-| The bind port for the metrics REST endpoint.
-| `9600`
+| `api.http.port`
+| The bind port for the HTTP API endpoint.
+| `9600-9700`
 
 | `log.level`
 a|

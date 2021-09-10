@@ -77,9 +77,9 @@ en:
         Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       cant_bind_to_port: |-
-        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --http.port option."
+        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --api.http.port option."
       cant_bind_to_port_in_range: |-
-        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logstash with the --http.port option."
+        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logstash with the --api.http.port option."
       hot_threads:
         title: |-
           ::: {%{hostname}}
@@ -270,8 +270,18 @@ en:
         http_enabled: |+
           Can be used to disable the Web API, which is
           enabled by default.
-        http_host: Web API binding host
-        http_port: Web API http port
+          DEPRECATED: use `--api.enabled=false`
+        http_host: |+
+          Web API binding host
+          DEPRECATED: use `--api.http.host=IP`
+        http_port: |+
+          Web API http port
+          DEPRECATED: use `--api.http.port=PORT`
+        api_enabled: |+
+          Can be used to disable the Web API, which is
+          enabled by default.
+        api_http_host: Web API binding host
+        api_http_port: Web API http port
         enable-local-plugin-development: |+
           Allow Gemfile to be manipulated directly
           to facilitate simpler local plugin
