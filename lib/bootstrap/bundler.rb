@@ -206,12 +206,13 @@ module LogStash
 
       # get the array of dependencies which are eligible to update. Bundler unlock these gems in update process
       # exclude the gems which are not in lock file. They should not be part of unlock gems.
-      # The core libs are not expected to update when user do plugins update
+      # The core libs, logstash-core logstash-core-plugin-api, are not expected to update when user do plugins update
+      # constraining the transitive dependency updates to only those Logstash maintain
       unlock_libs = plugin_names.map { |plugin_name| fetch_plugin_dependencies(plugin_name) }
                                 .flatten.uniq
-                                .select { |lib_name| lockfile_gems.include?(lib_name) }
+                                .select { |lib_name| lockfile_gems.include?(lib_name) && lib_name =~ /^logstash-mixin-.*$/ }
 
-      unlock_libs + plugin_names - %w[logstash-core logstash-core-plugin-api]
+      unlock_libs + plugin_names
     end
 
     # get all dependencies of a single plugin, considering all versions >= current

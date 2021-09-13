@@ -127,14 +127,17 @@ describe LogStash::Bundler do
       end
 
       context 'with ecs_compatibility' do
-        let(:options) { { :update => 'logstash-integration-jdbc' } }
+        let(:plugin_name) { 'logstash-integration-jdbc' }
+        let(:options) { { :update => plugin_name } }
 
         it "also update dependencies" do
-          expect(bundler_arguments).to include('logstash-mixin-ecs_compatibility_support', 'logstash-integration-jdbc')
+          expect(bundler_arguments).to include('logstash-mixin-ecs_compatibility_support', plugin_name)
 
-          bundler_arguments.each do |gem_name|
+          mixin_libs = bundler_arguments - ["update", plugin_name]
+          mixin_libs.each do |gem_name|
             dep = ::Gem::Dependency.new(gem_name)
             expect(dep.type).to eq(:runtime)
+            expect(gem_name).to start_with('logstash-mixin-')
           end
         end
 
