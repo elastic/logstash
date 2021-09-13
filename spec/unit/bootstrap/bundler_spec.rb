@@ -127,7 +127,7 @@ describe LogStash::Bundler do
       end
 
       context 'with ecs_compatibility' do
-        let(:plugin_name) { 'logstash-integration-jdbc' }
+        let(:plugin_name) { 'logstash-output-elasticsearch' }
         let(:options) { { :update => plugin_name } }
 
         it "also update dependencies" do

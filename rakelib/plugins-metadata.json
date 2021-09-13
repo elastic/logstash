@@ -410,7 +410,6 @@
   },
   "logstash-integration-jdbc": {
     "default-plugins": true,
-    "core-specs": true,
     "skip-list": false
   },
   "logstash-integration-kafka": {
