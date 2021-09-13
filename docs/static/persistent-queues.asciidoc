@@ -3,13 +3,8 @@
 
 A {ls} persistent queue helps protect against data loss during abnormal termination by storing the in-flight message queue to disk.
 
-[[pq-benefits-limitations]]
-==== Persistent queue benefits and limitations
-
 [[persistent-queues-benefits]]
-===== Benefits
-
-Persistent queues:
+==== Benefits of persistent queues
 
 * Provide an at-least-once delivery guarantee against message loss during
 a normal shutdown and when Logstash is terminated abnormally. If Logstash
@@ -28,7 +23,7 @@ NOTE: Persistent queues are disabled by default.
 To enable them, check out <<configuring-persistent-queues>>.
 
 [[persistent-queues-limitations]]
-===== Limitations of persistent queues
+==== Limitations of persistent queues
 
 Persistent queues do not solve these problems:
 
@@ -47,15 +42,10 @@ To configure persistent queues, specify options in the Logstash <<logstash-setti
 `path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`.
 `queue.type`:: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled (default: `queue.type: memory`).
 `path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
-`queue.checkpoint.writes`:: Controls when the checkpoint file gets updated. 
-See <<durability-persistent-queues>>.
-To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is
-written. Keep in mind that disk writes have a resource cost. Setting this value
-to `1` ensure maximum durability, but can severely impact performance.
 `queue.page_capacity`:: The maximum size of a queue page in bytes. The queue data consists of append-only files called "pages". The default size is 64mb. Changing this value is unlikely to have performance benefits.
 `queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 // Technically, I know, this isn't "maximum number of events" it's really maximum number of events not yet read by the pipeline worker. We only use this for testing and users generally shouldn't be setting this.
-`queue.max_events`::  The maximum number of events that are allowed in the queue. The default is 0 (unlimited).
+`queue.max_events`:: The maximum number of events that are allowed in the queue. The default is 0 (unlimited).
 `queue.max_bytes`:: The total capacity of the queue in number of bytes. The
 default is 1024mb (1gb). Make sure the capacity of your disk drive is greater
 than the value you specify here.
@@ -65,9 +55,40 @@ require much buffering, you can set `queue.max_bytes` to a smaller value, such
 as 10mb.
 A smaller value produces smaller queues and improves queue performance. 
 
-If both `queue.max_events` and 
-`queue.max_bytes` are specified, Logstash uses whichever criteria is reached
-first. See <<backpressure-persistent-queue>> for behavior when these queue limits are reached.
+`queue.checkpoint.acks`:: Sets the number of acked events before forcing a checkpoint. 
+Default is `1024`. Set to `0` for unlimited.
+`queue.checkpoint.writes`:: Sets the maximum number of written events before a forced checkpoint. 
+Default is `1024`. Set to `0` for unlimited.
++
+To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is
+written. Keep in mind that disk writes have a resource cost. Setting this value
+to `1` ensures maximum durability, but can severely impact performance.
+See <<durability-persistent-queues>> to better understand the trade-offs.
+`queue.checkpoint.interval`:: Sets the interval in milliseconds when a checkpoint is forced on the head page.
+Default is `1000`. Set to `0` to eliminate periodic checkpoints.
+
+[[pq-config-notes]]
+==== Configuration notes
+
+Your ideal queue configuration requires finding the right balance between
+your performance and data protection needs. 
+If you optimize for performance, you may increase your risk of losing data.
+If you optimize for data protection, you may impact performance. 
+
+[[pq-size]]
+===== Queue size
+You can control queue size with the `queue.max_events` and  `queue.max_bytes` settings.
+If both settings are specified, Logstash uses whichever criteria is reached
+first. 
+See <<backpressure-persistent-queue>> for behavior when queue limits are
+reached.
+
+[[pq-lower-max_bytes]]
+===== Smaller queue size
+If you are using persistent queues to protect against data loss, but don't
+require much buffering, you can set `queue.max_bytes` to a smaller value, such
+as 10mb.
+A smaller value produces smaller queues and improves queue performance.
 
 *Sample configuration*
 
@@ -77,43 +98,87 @@ queue.type: persisted
 queue.max_bytes: 4gb 
 -----
 
-[[working-with-pqs]]
-==== Working with persistent queues
+[[pq-fewer-checkpoints]]
+===== Fewer checkpoints
+
+Setting `queue.checkpoint.writes` and `queue.checkpoint.acks` to `0` may
+yield maximum performance, but may have potential impact on durability.
+
+In a situation where Logstash is terminated or there is a hardware-level
+failure, any data that has not been checkpointed, is lost. 
+See <<durability-persistent-queues>> to better understand the trade-offs.
 
 [[troubleshooting-pqs]]
-===== Troubleshooting persistent queues
+==== Troubleshooting persistent queues
 
-//If you see an error message resembling this one, you likely have a persistent queue problem.
-//:message=>"java.io.IOException: Page file size is too small to hold elements
-// Here are some tips to help you identify and resolve the problem.
- 
-[[draining-pqs]]
-===== Draining the queue
+If you see an error message similar to this one, you likely have a persistent queue problem.
 
-//From https://www.elastic.co/guide/en/logstash/6.8/upgrading-logstash-pqs.html#drain-pq
+```
+message=>"java.io.IOException: Page file size is too small to hold elements
+```
 
-/////
-To drain the queue:
+This error indicates that the head page (the oldest in a folder and the one with lowest page id) has a size < 18 bytes, the size of a page header.
 
-    In the logstash.yml file, set queue.drain: true.
-    Restart Logstash for this setting to take effect.
-    Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
-When the queue is empty:
+To resolve the issue: 
 
-    Complete the upgrade.
-    Restart Logstash.
-/////
+. Identify the queue (or queues) that may be corrupt.
+. Stop Logstash.
+. Run `pqrepair <path>` for each of the corrupted queues.
 
 [[pqcheck]]
 ===== `pqcheck` utility
 
+Run the `pqcheck` utility to identify which persistent queue--or queues--have been corrupted. 
 
+////
+//Info to add:
+* run from where? Can you run at the folder level (or pass a path) and have it search multiple queues at once? 
+* any additional parameters (either required or optional)?
+* what form does the feedback take
+* include sample? 
 
-[[pqrepair]]
-===== `pqrepair` utility
+////
 
+[source,txt]
+-----
+pqcheck 
+-----
 
+ [[pqrepair]]
+ ===== `pqrepair` utility
+
+[source,txt]
+-----
+pqrepair <queue-folder> 
+-----
+
+The `pqrepair` utility tries to remove corrupt queue segments to bring the queue back into working order. 
+
+It starts searching from the folder where is launched and looks for `data/queue/main`.
+
+NOTE: The queue may lose some data in this operation.
+
+//?? Pass the path to the folder of a queue, for example in the user context could be /var/lib/logstash/router.
+
+////
+//Info to add:
+* run from where
+* any additional parameters (that are required or optional)?
+* what form does the feedback take
+* include sample? 
+
+////
+
+ 
+[[draining-pqs]]
+===== Draining the queue
+
+To drain the persistent queue:
+
+. In the logstash.yml file, et queue.drain: true.
+. Restart Logstash for this setting to take effect.
+. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
 
 [[persistent-queues-architecture]]
@@ -140,9 +205,9 @@ configured filters and outputs. For example, if you have only one output,
 Elasticsearch, an event is ACKed when the Elasticsearch output has successfully
 sent this event to Elasticsearch. 
 
-During a normal shutdown (*CTRL+C* or SIGTERM), Logstash will stop reading
-from the queue and will finish processing the in-flight events being processed
-by the filters and outputs. Upon restart, Logstash will resume processing the
+During a normal shutdown (*CTRL+C* or SIGTERM), Logstash stops reading
+from the queue and finishes processing the in-flight events being processed
+by the filters and outputs. Upon restart, Logstash resumes processing the
 events in the persistent queue as well as accepting new events from inputs.
 
 If Logstash is abnormally terminated, any in-flight events will not have been
@@ -195,7 +260,7 @@ Second, the queue records details about itself (pages, acknowledgements, etc) in
 
 When recording a checkpoint, Logstash:
 
-* Calls fsync on the head page.
+* Calls `fsync` on the head page.
 * Atomically writes to disk the current state of the queue.
 
 The process of checkpointing is atomic, which means any update to the file is saved if successful.
@@ -207,7 +272,7 @@ lost.
 You can force Logstash to checkpoint more frequently by setting
 `queue.checkpoint.writes`. This setting specifies the maximum number of events
 that may be written to disk before forcing a checkpoint. The default is 1024. To
-ensure maximum durability and avoid losing data in the persistent queue, you can
+ensure maximum durability and avoid data loss in the persistent queue, you can
 set `queue.checkpoint.writes: 1` to force a checkpoint after each event is
 written. Keep in mind that disk writes have a resource cost. Setting this value
 to `1` can severely impact performance. 
