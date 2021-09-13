@@ -136,11 +136,6 @@
     "core-specs": true,
     "skip-list": false
   },
-  "logstash-integration-jdbc": {
-    "default-plugins": true,
-    "core-specs": true,
-    "skip-list": false
-  },
   "logstash-filter-grok": {
     "default-plugins": true,
     "skip-list": false
@@ -415,6 +410,7 @@
   },
   "logstash-integration-jdbc": {
     "default-plugins": true,
+    "core-specs": true,
     "skip-list": false
   },
   "logstash-integration-kafka": {
