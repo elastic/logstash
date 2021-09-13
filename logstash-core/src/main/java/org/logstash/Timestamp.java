@@ -78,7 +78,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
         this.instant = instant;
     }
 
-    @Deprecated // use Timestamp#getInstant()
+    /**
+     * @deprecated This method returns JodaTime which is deprecated in favor of JDK Instant.
+     *   * <p> Use {@link Timestamp#toInstant()} instead. </p>
+     */
+    @Deprecated
     public org.joda.time.DateTime getTime() {
         if (time == null) {
             time = new org.joda.time.DateTime(instant.toEpochMilli(), org.joda.time.DateTimeZone.UTC);
@@ -102,12 +106,16 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
         return instant.toEpochMilli();
     }
 
-    // returns the fraction of a second as microseconds from 0 to 999,999; not the number of microseconds since epoch
+    /**
+     * @return the fraction of a second as microseconds from 0 to 999,999; not the number of microseconds since epoch
+     */
     public long usec() {
         return instant.getNano() / 1000;
     }
 
-    // returns the fraction of a second as nanoseconds from 0 to 999,999,999; not the number of nanoseconds since epoch
+    /**
+     * @return the fraction of a second as nanoseconds from 0 to 999,999,999; not the number of nanoseconds since epoch
+     */
     public long nsec() {
         return instant.getNano();
     }

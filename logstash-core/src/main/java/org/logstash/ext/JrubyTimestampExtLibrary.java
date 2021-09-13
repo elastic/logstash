@@ -102,7 +102,10 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "time")
         public RubyTime ruby_time(ThreadContext context)
         {
-            return RubyTime.newTimeFromNanoseconds(context.runtime, epochNanos());
+            final org.joda.time.DateTime milliPrecise = org.joda.time.Instant.ofEpochMilli(this.timestamp.toEpochMilli()).toDateTime();
+            final long excessNanos = Math.floorMod(this.timestamp.nsec(), 1_000_000L);
+
+            return RubyTime.newTime(context.runtime, milliPrecise, excessNanos);
         }
 
         @JRubyMethod(name = "to_i")
@@ -114,7 +117,11 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "to_f")
         public IRubyObject ruby_to_f(ThreadContext context)
         {
-            return RubyFloat.newFloat(context.runtime, epochNanos() / 1_000_000_000d);
+            final java.time.Instant instant = this.timestamp.toInstant();
+
+            final double epochSecondsWithNanos = instant.getEpochSecond() + (instant.getNano() / 1_000_000_000d);
+
+            return RubyFloat.newFloat(context.runtime, epochSecondsWithNanos);
         }
 
         @JRubyMethod(name = "to_s")
@@ -308,21 +315,6 @@ public final class JrubyTimestampExtLibrary {
                 context, "-",
                 val instanceof RubyTimestamp ? ((RubyTimestamp)val).ruby_time(context) : val
             );
-        }
-
-        /**
-         * Returns the number of nanoseconds since the unix epoch.
-         *
-         * This value is only sensible for the years 1678-2262 CE.
-         *
-         * @return
-         */
-        private long epochNanos() {
-            final java.time.Instant instant = this.timestamp.toInstant();
-            final long epochSecond = instant.getEpochSecond();
-            final long extraNanos = instant.getNano();
-
-            return (epochSecond * 1_000_000_000) + extraNanos;
         }
 
         private int compare(final ThreadContext context, final IRubyObject other) {
