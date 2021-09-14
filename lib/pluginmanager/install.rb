@@ -74,6 +74,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     end
 
     check_for_integrations(gems)
+    update_logstash_mixin_dependencies(gems)
     install_gems_list!(gems)
     remove_unused_locally_installed_gems!
     remove_unused_integration_overlaps!
@@ -173,6 +174,20 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
 
   def plugins_gems
     version ? [plugins_arg << version] : plugins_arg.map { |plugin| [plugin, nil] }
+  end
+
+  def update_logstash_mixin_dependencies(install_list)
+    return if !verify? || preserve? || development? || local?
+
+    puts "Resolving mixin dependencies"
+    LogStash::Bundler.invoke!
+    plugins = LogStash::Bundler.consolidate_dependencies(install_list.map { |arr| arr[0] }, false)
+
+    if plugins.size > 0
+      puts "Updating mixin dependencies #{plugins.join(', ')}"
+      options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
+      LogStash::Bundler.invoke!(options)
+    end
   end
 
   # install_list will be an array of [plugin name, version, options] tuples, version it

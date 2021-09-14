@@ -198,7 +198,7 @@ module LogStash
 
     # @param plugin_names [Array] logstash plugin names that are going to update
     # @return [Array] gem names that plugins depend on, including logstash plugins
-    def consolidate_dependencies(plugin_names)
+    def consolidate_dependencies(plugin_names, with_plugin_name = true)
       plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
 
       # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
@@ -212,7 +212,8 @@ module LogStash
                                 .flatten.uniq
                                 .select { |lib_name| lockfile_gems.include?(lib_name) && lib_name =~ /^logstash-mixin-.*$/ }
 
-      unlock_libs + plugin_names
+      return unlock_libs + plugin_names if with_plugin_name
+      return unlock_libs
     end
 
     # get all dependencies of a single plugin, considering all versions >= current
@@ -220,7 +221,8 @@ module LogStash
     # @return [Array] gem names that plugin depends on
     def fetch_plugin_dependencies(plugin_name)
       old_spec = ::Gem::Specification.find_all_by_name(plugin_name).last
-      dep = ::Gem::Dependency.new(plugin_name, ">= #{old_spec.version}")
+      require_version = old_spec ? ">= #{old_spec.version}": nil
+      dep = ::Gem::Dependency.new(plugin_name, require_version)
       new_specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
 
       raise(errors.first.error) if errors.length > 0

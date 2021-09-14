@@ -26,7 +26,7 @@ describe LogStash::PluginManager::Install do
     let(:sources) { ["https://rubygems.org", "http://localhost:9292"] }
 
     before(:each) do
-      expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+      expect(cmd).to receive(:validate_cli_options!).at_least(:once).and_return(nil)
       expect(cmd).to receive(:plugins_gems).and_return([["dummy", nil]])
       expect(cmd).to receive(:install_gems_list!).and_return(nil)
       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
