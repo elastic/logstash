@@ -46,7 +46,7 @@ GEM
       atomic (~> 1.1)
     avro (1.10.2)
       multi_json (~> 1)
-    aws-eventstream (1.1.1)
+    aws-eventstream (1.2.0)
     aws-sdk (2.11.632)
       aws-sdk-resources (= 2.11.632)
     aws-sdk-core (2.11.632)
@@ -57,7 +57,7 @@ GEM
     aws-sdk-v1 (1.67.0)
       json (~> 1.4)
       nokogiri (~> 1)
-    aws-sigv4 (1.2.4)
+    aws-sigv4 (1.4.0)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
     backports (3.21.0)
@@ -87,7 +87,7 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.7.6)
-    down (5.2.3)
+    down (5.2.4)
       addressable (~> 2.8)
     edn (1.1.1)
     elastic-app-search (7.8.0)
@@ -233,7 +233,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-de_dot (1.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-dissect (1.2.0)
+    logstash-filter-dissect (1.2.1)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
     logstash-filter-dns (3.1.4)
@@ -276,7 +276,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
-    logstash-filter-mutate (3.5.2)
+    logstash-filter-mutate (3.5.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-prune (3.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -432,7 +432,7 @@ GEM
       logstash-filter-grok (>= 4.4.0)
       logstash-mixin-ecs_compatibility_support (~> 1.1)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.2.0-java)
+    logstash-input-tcp (6.2.1-java)
       jruby-openssl (>= 0.10.2, < 0.12)
       logstash-codec-json
       logstash-codec-json_lines
@@ -514,7 +514,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.0.3-java)
+    logstash-output-elasticsearch (11.0.5-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
       manticore (>= 0.7.1, < 1.0.0)
@@ -533,7 +533,7 @@ GEM
     logstash-output-http (5.2.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 6.0.0, < 8.0.0)
-    logstash-output-lumberjack (3.1.8)
+    logstash-output-lumberjack (3.1.9)
       jls-lumberjack (>= 0.0.26)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
@@ -600,7 +600,7 @@ GEM
     mustermann (1.0.3)
     naught (1.1.0)
     nio4r (2.5.8-java)
-    nokogiri (1.12.3-java)
+    nokogiri (1.12.4-java)
       racc (~> 1.4)
     numerizer (0.1.1)
     octokit (4.21.0)
@@ -657,7 +657,7 @@ GEM
       faraday (> 0.8, < 2.0)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.47.0)
+    sequel (5.48.0)
     simple_oauth (0.3.1)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -697,7 +697,8 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    xml-simple (1.1.8)
+    xml-simple (1.1.9)
+      rexml
 
 PLATFORMS
   java
@@ -801,6 +802,7 @@ DEPENDENCIES
   logstash-mixin-aws
   logstash-mixin-deprecation_logger_support
   logstash-mixin-ecs_compatibility_support
+  logstash-mixin-event_support
   logstash-mixin-http_client
   logstash-mixin-validator_support
   logstash-output-cloudwatch
