@@ -676,8 +676,8 @@ Put the date calculation in a field so that you can use the field reference in a
 
 *Example* 
 
-This statement won't work: 
-// This counter example is formatted to be subdued to help users avoid copy/paste errors
+Using sprintf time format directly to add a field based on ingestion time won't work: 
+// This counter example is formatted to be understated to help users avoid following a bad example 
 
 ```
 if "%{+HH}:%{+mm}" < "15:30" {
