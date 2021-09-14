@@ -104,6 +104,23 @@ module LogStash
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
   SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
 
+  SETTINGS.on_post_process do |settings|
+    # Configure Logstash logging facility. This needs to be done as early as possible to
+    # make sure the logger has the correct settings tnd the log level is correctly defined.
+    java.lang.System.setProperty("ls.logs", settings.get("path.logs"))
+    java.lang.System.setProperty("ls.log.format", settings.get("log.format"))
+    java.lang.System.setProperty("ls.log.level", settings.get("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", settings.get("pipeline.separate_logs").to_s)
+    unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = ::File.join(settings.get("path.settings"), "log4j2.properties")
+
+      # Windows safe way to produce a file: URI.
+      file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
+      LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
+    end
+    # override log level that may have been introduced from a custom log4j config file
+    LogStash::Logging::Logger::configure_logging(settings.get("log.level"))
+  end
 
   SETTINGS.on_post_process do |settings|
     # If the data path is overridden but the queue path isn't recompute the queue path
