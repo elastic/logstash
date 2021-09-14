@@ -510,32 +510,10 @@ doesn't exist versus a field that's simply false. The expression `if [foo]` retu
 
 For more complex examples, see <<using-conditionals, Using Conditionals>>.
 
-[discrete]
-[[date-math]]
-===== Date math in conditionals
+NOTE: Sprintf date/time format in conditionals is not currently supported. 
+A workaround using the `@metadata` field is available. 
+See <<date-time>> for more details and an example.
 
-Date math in conditionals is not currently supported, but a workaround is available. 
-Put the date calculation in a field so that you can use the field reference in a conditional. 
-
-*Example* 
-
-This statement won't work: 
-
-`if "%{+HH}:%{+mm}" < "15:30" {`
-
-This workaround gives you the intended results:
-
-[source,js]
-----------------------------------
-mutate {
-  add_field => {"[@metadata][short_time]" => "%{+HH}:%{+mm}"}
-  }
-if [@metadata][short_time] < "15:30" {
-  mutate {
-    add_field => {"string_compare" => "%{+HH}:%{+mm} is before 15:30"}
-    }
-    }
-----------------------------------
 
 [discrete]
 [[metadata]]
@@ -669,7 +647,7 @@ Pipeline main started
 That's it!  No extra fields in the output, and a cleaner config file because you
 do not have to delete a "timestamp" field after conversion in the `date` filter.
 
-Another use case is the https://github.com/logstash-plugins/logstash-input-couchdb_changesCouchDB[Changes input plugin]. 
+Another use case is the https://github.com/logstash-plugins/logstash-input-couchdb_changes[CouchDB Changes input plugin]. 
 This plugin automatically captures CouchDB document field metadata into the
 `@metadata` field within the input plugin itself.  When the events pass through
 to be indexed by Elasticsearch, the Elasticsearch output plugin allows you to
@@ -687,6 +665,37 @@ output {
     protocol => "http"
   }
 }
+----------------------------------
+
+[discrete]
+[[date-time]]
+===== sprintf date/time format in conditionals
+
+Sprintf date/time format in conditionals is not currently supported, but a workaround is available. 
+Put the date calculation in a field so that you can use the field reference in a conditional. 
+
+*Example* 
+
+This statement won't work: 
+// This counter example is formatted to be subdued to help users avoid copy/paste errors
+
+```
+if "%{+HH}:%{+mm}" < "15:30" {
+  add_field => {"string_compare" => "%{+HH}:%{+mm} is before 15:30"}
+```
+
+This workaround gives you the intended results:
+
+[source,js]
+----------------------------------
+mutate {
+  add_field => {"[@metadata][short_time]" => "%{+HH}:%{+mm}"}
+  }
+if [@metadata][short_time] < "15:30" {
+  mutate {
+    add_field => {"string_compare" => "%{+HH}:%{+mm} is before 15:30"}
+    }
+    }
 ----------------------------------
 
 [[environment-variables]]
