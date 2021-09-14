@@ -28,6 +28,7 @@ describe LogStash::PluginManager::Install do
     before(:each) do
       expect(cmd).to receive(:validate_cli_options!).at_least(:once).and_return(nil)
       expect(cmd).to receive(:plugins_gems).and_return([["dummy", nil]])
+      expect(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
       expect(cmd).to receive(:install_gems_list!).and_return(nil)
       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
       cmd.verify = true
@@ -47,6 +48,7 @@ describe LogStash::PluginManager::Install do
       expect(cmd).to receive(:validate_cli_options!).and_return(nil)
       # used to pass indirect input to the command under test
       expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+      expect(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
       # used to skip Bundler interaction
       expect(cmd).to receive(:install_gems_list!).and_return(nil)
       # avoid to clean gemfile folder
@@ -73,6 +75,7 @@ describe LogStash::PluginManager::Install do
     let(:cmd) { LogStash::PluginManager::Install.new("install my-super-pack") }
     before do
       expect(cmd).to receive(:plugins_arg).and_return(["my-super-pack"]).at_least(:once)
+      allow(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
     end
 
     it "reports `FileNotFoundError` exception" do
@@ -91,19 +94,6 @@ describe LogStash::PluginManager::Install do
       expect(LogStash::PluginManager::InstallStrategyFactory).to receive(:create).with(["my-super-pack"]).and_raise(StandardError)
       expect(cmd).to receive(:report_exception).with(/Something went wrong when installing/, be_kind_of(StandardError))
       cmd.execute
-    end
-  end
-
-  context "update mixin dependencies" do
-    let(:cmd) { LogStash::PluginManager::Install.new("install") }
-
-    it "invoke update command" do
-      install_list = [["logstash-integration-jdbc", "5.1.5"]]
-      ecs_gem_name = "logstash-mixin-ecs_compatibility_support"
-      dep = [ecs_gem_name]
-      allow(LogStash::Bundler).to receive(:invoke!).and_call_original
-      allow(LogStash::Bundler).to receive(:invoke!).with(a_hash_including(:update => dep)).and_return(true)
-      expect(cmd.send(:update_logstash_mixin_dependencies, install_list)).to include(ecs_gem_name)
     end
   end
 end
