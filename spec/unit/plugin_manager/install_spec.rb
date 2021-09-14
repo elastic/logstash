@@ -93,4 +93,17 @@ describe LogStash::PluginManager::Install do
       cmd.execute
     end
   end
+
+  context "update mixin dependencies" do
+    let(:cmd) { LogStash::PluginManager::Install.new("install") }
+
+    it "invoke update command" do
+      install_list = [["logstash-integration-jdbc", "5.1.5"]]
+      ecs_gem_name = "logstash-mixin-ecs_compatibility_support"
+      dep = [ecs_gem_name]
+      allow(LogStash::Bundler).to receive(:invoke!).and_call_original
+      allow(LogStash::Bundler).to receive(:invoke!).with(a_hash_including(:update => dep)).and_return(true)
+      expect(cmd.send(:update_logstash_mixin_dependencies, install_list)).to include(ecs_gem_name)
+    end
+  end
 end

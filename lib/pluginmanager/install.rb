@@ -188,6 +188,8 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
       LogStash::Bundler.invoke!(options)
     end
+
+    plugins
   end
 
   # install_list will be an array of [plugin name, version, options] tuples, version it
