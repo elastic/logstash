@@ -291,7 +291,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def unsubscribe_database_path(database_type, geoip_plugin)
-    @states[database_type].plugins.delete(geoip_plugin) if geoip_plugin
+    @states[database_type].plugins.delete(geoip_plugin) if geoip_plugin && @states
   end
 
   def database_path(database_type)

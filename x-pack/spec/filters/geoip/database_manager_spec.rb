@@ -378,5 +378,13 @@ describe LogStash::Filters::Geoip do
       end
     end
 
+    context "shutdown" do
+      let(:db_manager) { manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+
+      it "should unsubscribe gracefully" do
+        db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
+        expect { db_manager.unsubscribe_database_path(CITY, mock_geoip_plugin) }.not_to raise_error
+      end
+    end
   end
 end
