@@ -180,7 +180,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     return if !verify? || preserve? || development? || local?
 
     puts "Resolving mixin dependencies"
-    LogStash::Bundler.invoke!
+    LogStash::Bundler.setup!
     plugins = LogStash::Bundler.consolidate_dependencies(install_list.map { |arr| arr[0] }, false)
 
     if plugins.size > 0
