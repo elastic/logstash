@@ -54,6 +54,14 @@ inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 {ls} rejects ambiguous and illegal inputs as standard behavior.
 // end::notable-breaking-changes[]
 
+[discrete]
+[[bc-java-home]]
+===== Removed support for JAVA_HOME
+Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
+In the `8.x` release, users should set the value of `LS_JAVA_HOME` to their preferred JDK path if they
+wish to use something other than the bundled JDK. The value of `JAVA_HOME` will be ignored.
+
+
 [[breaking-7.0]]
 === Breaking changes in 7.0
 
