@@ -3,81 +3,26 @@
 
 coming[8.0.0]
 
-* <<logstash-8-0-0,Logstash 8.0.0>>
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+[[logstash-8-0-0-alpha2]]
+=== Logstash 8.0.0-alpha2 Release Notes
 
-[[logstash-8-0-0]]
-=== Logstash 8.0.0 Release Notes
+==== Breaking changes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.0.0
-
-* Remove unused NodeStats#mem_payload https://github.com/elastic/logstash/pull/9051[#9051]
-* Central management typeless API https://github.com/elastic/logstash/pull/10421[#10421]
-* remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10431[#10431]
-* cleanup rake tasks and default plugin list https://github.com/elastic/logstash/pull/10509[#10509]
-* update to send api version 6 https://github.com/elastic/logstash/pull/10518[#10518]
-* Update monitoring HTTP end point https://github.com/elastic/logstash/pull/10528[#10528]
-* monitoring: bump to system_api_version 7 https://github.com/elastic/logstash/pull/10535[#10535]
-* move download setup code inside the downloadEs task https://github.com/elastic/logstash/pull/10547[#10547]
-* make monitoring specs resilient to internal api number changes https://github.com/elastic/logstash/pull/10552[#10552]
-* correctly handle unexecuted downloadEs task https://github.com/elastic/logstash/pull/10555[#10555]
-* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10560[#10560]
-* Refactoring of LIR serializer and exposing pipeline metrics https://github.com/elastic/logstash/pull/10561[#10561]
-* monitoring: bump to system_api_version 7 https://github.com/elastic/logstash/pull/10562[#10562]
-* Enhance GET _node/stats/pipelines API for Metricbeat monitoring https://github.com/elastic/logstash/pull/10576[#10576]
-*  Enhance `GET /` API for Metricbeat https://github.com/elastic/logstash/pull/10589[#10589]
-* Update JRuby and Java prerequisites https://github.com/elastic/logstash/pull/10604[#10604]
-* Collect and expose codec metrics https://github.com/elastic/logstash/pull/10614[#10614]
-* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
-* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
-* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
-* Refactor Gradle wrappers around Ruby operations https://github.com/elastic/logstash/pull/10642[#10642]
-* [DOCS] Adds tagged region for notable breaking changes https://github.com/elastic/logstash/pull/10654[#10654]
-* download exact version artifact for release build otherwise download snapshot https://github.com/elastic/logstash/pull/10664[#10664]
-* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
-* Corrects the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
-* Correct settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
-* Correction on Java execution in docs on command-line arguments https://github.com/elastic/logstash/pull/10710[#10710]
-* Clarify that Java codecs work only with Java inputs and outputs https://github.com/elastic/logstash/pull/10716[#10716]
-* Include G1 in JVM heap metrics https://github.com/elastic/logstash/pull/10728[#10728]
-* JRuby resolv.rb leak https://github.com/elastic/logstash/pull/10734[#10734]
-
-=== Logstash Commits between master and 8.0.0-alpha1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.0-alpha1..master"
-
-827bbd927 - (HEAD -> master, origin/master) fix geoip external DB shutdown nil exception (#13224) (4 hours ago) <kaisecheng>
-d51afe54d - Removed JAVA_HOME using only LS_JAVA_HOME (#13214) (10 hours ago) <Andrea Selva>
-3ffdb9911 - Deprecate JAVA_HOME preferring LS_JAVA_HOME (#13207) (7 days ago) <Andrea Selva>
-728289e86 - Switched to Gradle 7 (#13184) (7 days ago) <Andrea Selva>
-6ed2eea89 - Added rexml notice to license list (#13209) (8 days ago) <Andrea Selva>
-979ea21c5 - Introduce LS_JAVA_HOME environment variable (#13204) (9 days ago) <Andrea Selva>
-8073b0c35 - Add beta tag to pipeline viewer docs (#13167) (10 days ago) <Mat Schaffer>
-fe9f16e94 - Deps: drop old and unused gem dependencies (#13157) (13 days ago) <Karol Bucek>
-c0c2473f1 - Update logstash_releases.json with 7.14.1 (#13193) (13 days ago) <Andrea Selva>
-9fd3b6118 - Introduce explicit dependencies (#13183) (13 days ago) <Andrea Selva>
-d2237578d - Feature/remove gradle license report plugin (#13182) (2 weeks ago) <Andrea Selva>
-ebb9e04d1 - Update bundled JDK to 11.0.12+7 (#13185) (2 weeks ago) <Andrea Selva>
-85abb95d9 - add the missing logstash config supported by env2yaml for docker (#13178) (2 weeks ago) <kaisecheng>
-51fad3f56 - Test: improve monitoring api logging asserts (#13164) (3 weeks ago) <Karol Bucek>
-a4712291d - Refactor: avoid global mutex on ecs_compatibility (#13036) (3 weeks ago) <Karol Bucek>
-7d8a716cf - Update releases list (#13149) (4 weeks ago) <Andrea Selva>
-4707cbd94 - Bundler: freeze lockfile on run, and "normalize" platform on plugin changes (#13015) (4 weeks ago) <Rob Bavey>
-771844c07 - Doc: Move shared region tags for breaking changes to 8.0.0 content (#13131) (4 weeks ago) <Karen Metts>
-a7f6c01a3 - Update Snakeyaml version to 1.29 (#13129) (4 weeks ago) <Andrea Selva>
-b7416cad3 - Doc: Add breaking changes to breaking changes page (#13130) (5 weeks ago) <Karen Metts>
-542dce81a - Added faraday-* and ruby2_keywords notices to licences list (#13126) (5 weeks ago) <Andrea Selva>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.0.0-alpha1..master *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+[[java-home]]
+===== Removed support for JAVA_HOME
+Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
+In the `8.x` release, users should set the value of `LS_JAVA_HOME` to their preferred JDK path if they
+wish to use something other than the bundled JDK. The value of `JAVA_HOME` will be ignored.
 
 ==== Plugins
+
+==== Plugin releases
+Plugins align with release 7.15.0
 
 [[logstash-8-0-0-alpha1]]
 === Logstash 8.0.0-alpha1 Release Notes
@@ -104,7 +49,7 @@ inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 
 **Option to pass custom data to the benchmark CLI**
 
-We have added another flag to the Benckmark CLI to allow passing a data file with previously captured data to the custom test case.
+We have added another flag to the Benchmark CLI to allow passing a data file with previously captured data to the custom test case.
 This feature allows users to run the Benchmark CLI in a custom test case with a custom config and a custom dataset. https://github.com/elastic/logstash/pull/12437[#12437]
 
 ==== Plugin releases
