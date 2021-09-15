@@ -54,9 +54,9 @@ This section summarizes the changes in the following releases:
 [[logstash-7-14-2]]
 === Logstash 7.14.2 Release Notes
 
-==== Performance improvements and notable issues fixed
+==== Logstash core
 
-**Updates to dependencies**
+===== Updates to dependencies
 
 * Updated bundled JDK to 11.0.12+7 https://github.com/elastic/logstash/pull/13185[#13185]
 
@@ -68,7 +68,7 @@ This section summarizes the changes in the following releases:
 
 *Mutate Filter - 3.5.3*
 
-* [DOC]: Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
+* [DOC] Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
 
 *Tcp Input - 6.2.1*
 
@@ -77,12 +77,12 @@ This section summarizes the changes in the following releases:
 
 *Elasticsearch Output - 11.0.5*
 
-* Fixed post-register actions, such as ILM setup, when Elasticsearch status change from unhealthy to healthy,  https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1035[#1035]
+* Fixed post-register actions, such as ILM setup, when Elasticsearch status change from unhealthy to healthy https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1035[#1035]
 * [DOC] Clarify that `http_compression` applies to _requests_, and remove noise about _response_ decompression https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1000[#1000]
 
 *Lumberjack Output - 3.1.9*
 
-* [DOC]: specified the policy selection of host from `hosts` setting [32](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32)
+* [DOC] Specified the policy selection of host from `hosts` setting https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32[#32]
 
 
 [[logstash-7-14-1]]
