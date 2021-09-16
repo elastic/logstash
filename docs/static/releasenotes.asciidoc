@@ -5,8 +5,22 @@ coming[8.0.0]
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+[[logstash-8-0-0-alpha2]]
+=== Logstash 8.0.0-alpha2 Release Notes
+
+==== Breaking changes
+
+[[java-home-breaking-change]]
+===== Removed support for JAVA_HOME
+Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
+In the `8.x` release, users should set the value of `LS_JAVA_HOME` to the path of their preferred JDK if they
+wish to use a version other than the bundled JDK. The value of `JAVA_HOME` will be ignored.
+
+==== Plugin releases
+Plugins align with release 7.15.0
 
 [[logstash-8-0-0-alpha1]]
 === Logstash 8.0.0-alpha1 Release Notes
@@ -33,9 +47,8 @@ inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 
 **Option to pass custom data to the benchmark CLI**
 
-We have added another flag to the Benckmark CLI to allow passing a data file with previously captured data to the custom test case.
+We have added another flag to the Benchmark CLI to allow passing a data file with previously captured data to the custom test case.
 This feature allows users to run the Benchmark CLI in a custom test case with a custom config and a custom dataset. https://github.com/elastic/logstash/pull/12437[#12437]
 
 ==== Plugin releases
 Plugins align with release 7.14.0
-
