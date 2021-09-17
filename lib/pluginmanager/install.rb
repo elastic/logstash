@@ -176,8 +176,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     version ? [plugins_arg << version] : plugins_arg.map { |plugin| [plugin, nil] }
   end
 
+  def local_gem?
+    plugins_arg.any? { |plugin_arg| LogStash::PluginManager.plugin_file?(plugin_arg) }
+  end
+
   def update_logstash_mixin_dependencies(install_list)
-    return if !verify? || preserve? || development? || local?
+    return if !verify? || preserve? || development? || local? || local_gem?
 
     puts "Resolving mixin dependencies"
     LogStash::Bundler.setup!
