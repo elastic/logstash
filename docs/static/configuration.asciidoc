@@ -688,14 +688,20 @@ This workaround gives you the intended results:
 
 [source,js]
 ----------------------------------
-mutate {
-  add_field => {"[@metadata][short_time]" => "%{+HH}:%{+mm}"}
+filter {
+  mutate{ 
+     add_field => {
+      "[@metadata][time]" => "%{+HH}:%{+mm}"
+     }
   }
-if [@metadata][short_time] < "15:30" {
-  mutate {
-    add_field => {"string_compare" => "%{+HH}:%{+mm} is before 15:30"}
+  if [@metadata][time] < "16:30" {
+    mutate {
+      add_field => {
+        "string_compare" => "%{+HH}:%{+mm} is before 16:30"
+      }
     }
-    }
+  }
+}
 ----------------------------------
 
 [[environment-variables]]
