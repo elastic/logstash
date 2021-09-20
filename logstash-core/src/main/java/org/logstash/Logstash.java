@@ -26,8 +26,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,24 +126,8 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     private static void halt(final int status) {
-        AccessController.doPrivileged(new PrivilegedHaltAction(status));
-    }
-
-    private static class PrivilegedHaltAction implements PrivilegedAction<Void> {
-
-        private final int status;
-
-        private PrivilegedHaltAction(final int status) {
-            this.status = status;
-        }
-
-        @Override
-        public Void run() {
-            // we halt to prevent shutdown hooks from running
-            Runtime.getRuntime().halt(status);
-            return null;
-        }
-
+        // we halt to prevent shutdown hooks from running
+        Runtime.getRuntime().halt(status);
     }
 
     /**
