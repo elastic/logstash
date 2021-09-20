@@ -86,6 +86,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 * We've added a new developer-only <<command-line-flags,command line flag>> (`--enable-local-plugin-development`) to facilitate local plugin development. 
 This flag enables developers to update their local Gemfile without running into issues caused by a frozen lockfile. 
 End users should not need this flag.
+* Fixed the shutdown error with the usage of external GeoIP database
 
 [[plugins-7-15-0]]
 ==== Plugins
