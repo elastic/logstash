@@ -6,7 +6,7 @@ A {ls} persistent queue helps protect against data loss during abnormal terminat
 [[persistent-queues-benefits]]
 ==== Benefits of persistent queues
 
-* Provide an at-least-once delivery guarantee against message loss during
+* Try to provide an at-least-once delivery guarantee against message loss during
 a normal shutdown and when Logstash is terminated abnormally. If Logstash
 is restarted while events are in-flight, Logstash attempts to deliver
 messages stored in the persistent queue until delivery succeeds at least once.
@@ -176,7 +176,7 @@ NOTE: The queue may lose some data in this operation.
 
 To drain the persistent queue:
 
-. In the logstash.yml file, et queue.drain: true.
+. In the `logstash.yml` file, set `queue.drain: true`.
 . Restart Logstash for this setting to take effect.
 . Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
@@ -215,6 +215,8 @@ ACKed and will be reprocessed by filters and outputs when Logstash is
 restarted. Logstash processes events in batches, so it is possible
 that for any given batch, some of that batch may have been successfully
 completed, but not recorded as ACKed, when an abnormal termination occurs.
+
+NOTE: If you override the default behavior by setting `drain.queue: true`, Logstash reads from the queue until it is emptied. 
 
 For more details specific behaviors of queue writes and acknowledgement, see 
 <<durability-persistent-queues>>.
