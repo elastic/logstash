@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-19,Logstash 6.8.19>>
 * <<logstash-6-8-18,Logstash 6.8.18>>
 * <<logstash-6-8-17,Logstash 6.8.17>>
 * <<logstash-6-8-16,Logstash 6.8.16>>
@@ -49,6 +50,11 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-19]]
+=== Logstash 6.8.19 Release Notes
+
+No user-facing changes.
 
 [[logstash-6-8-18]]
 === Logstash 6.8.18 Release Notes
