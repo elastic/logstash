@@ -6,19 +6,14 @@ A {ls} persistent queue helps protect against data loss during abnormal terminat
 [[persistent-queues-benefits]]
 ==== Benefits of persistent queues
 
-A persistent queues (PQ):
+A persistent queue (PQ):
 
 * Helps protect against message loss during a normal shutdown and when Logstash
 is terminated abnormally. 
 If Logstash is restarted while events are in-flight,
 Logstash attempts to deliver messages stored in the persistent queue until
-delivery succeeds at least once.
-Note that data may be lost if an abnormal shutdown occurs before the checkpoint file has been committed.  
+delivery succeeds at least once.  
 * Can absorb bursts of events without needing an external buffering mechanism like Redis or Apache Kafka.
-* Can be useful for Logstash deployments that need large buffers.
-Instead of deploying and managing a message broker, such as Redis, RabbitMQ, or
-Apache Kafka, to facilitate a buffered publish-subscriber model, you can enable
-persistent queues to buffer events on disk and remove the message broker.
 * Can be useful for Logstash deployments that need large buffers.
 You can enable persistent queues to buffer events on disk in a buffered publish-subscriber model without a message broker such as Redis, RabbitMQ, or
 Apache Kafka). 
@@ -33,6 +28,7 @@ Persistent queues do not solve these problems:
 
 * Input plugins that do not use a request-response protocol cannot be protected from data loss. Tcp, udp, zeromq push+pull, and many other inputs do not have a mechanism to acknowledge receipt to the sender. 
 (Plugins such as beats and http, which *do* have an acknowledgement capability, are well protected by this queue.)
+* Data may be lost if an abnormal shutdown occurs before the checkpoint file has been committed.
 * A persistent queue does not handle permanent machine failures such as disk corruption, disk failure, and machine loss. 
 The data persisted to disk is not replicated.
 
@@ -104,7 +100,7 @@ A smaller value produces smaller queues and improves queue performance.
 [source, yaml]
 -----
 queue.type: persisted
-queue.max_bytes: 4gb 
+queue.max_bytes: 10mb 
 -----
 
 [[pq-fewer-checkpoints]]
@@ -140,44 +136,78 @@ To resolve the issue:
 
 Run the `pqcheck` utility to identify which persistent queue--or queues--have been corrupted. 
 
-////
-//Info to add:
-* run from where? Can you run at the folder level (or pass a path) and have it search multiple queues at once? 
-* any additional parameters (either required or optional)?
-* what form does the feedback take
-* include sample? 
-
-////
+From LOGSTASH_HOME, run:
 
 [source,txt]
 -----
-pqcheck 
+bin/pqcheck <queue_folder>
 -----
 
- [[pqrepair]]
- ===== `pqrepair` utility
+where `<queue_folder>` is the fully qualified path to the persistent queue location.
+
+*Sample with healthy page file*
+[source,txt]
+-----
+ubuntu@bigger:/usr/share/logstash$ bin/pqcheck /var/lib/logstash/queue/main/
+Using bundled JDK: /usr/share/logstash/jdk
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+Checking queue dir: /var/lib/logstash/queue/main
+checkpoint.1, fully-acked: NO, page.1 size: 67108864
+pageNum=1, firstUnackedPageNum=0, firstUnackedSeqNum=239675, minSeqNum=239675,  elementCount=218241, isFullyAcked=no <1> <2>
+checkpoint.head, fully-acked: NO, page.2 size: 67108864
+pageNum=2, firstUnackedPageNum=0, firstUnackedSeqNum=457916, minSeqNum=457916, elementCount=11805, isFullyAcked=no
+checkpoint.0, fully-acked: NO,<2> page.0 size: 67108864 
+pageNum=0, firstUnackedPageNum=0, firstUnackedSeqNum=176126, minSeqNum=1, elementCount=239674, isFullyAcked=no
+-----
+<1> Numbers indicate message sequence, number of items inside each page file, number of elements in the page, and how far has Logstash progressed through the page file.
+<2> Checkpoints may show `fully-acked: NO` or `fully-acked: YES`.
+After all elements in the page file have been read (events ingested), the status of `fully-acked` will go from `NO` to `YES`.
+
+*Sample with corrupted page file*
 
 [source,txt]
 -----
-pqrepair <queue-folder> 
+bin/pqcheck /var/lib/logstash/queue/main/
+Using bundled JDK: /usr/share/logstash/jdk
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+Checking queue dir: /var/lib/logstash/queue/main
+checkpoint.head, fully-acked: NO, page.2 size: NOT FOUND <1>
+pageNum=2, firstUnackedPageNum=2, firstUnackedSeqNum=534041, minSeqNum=457916, elementCount=76127, isFullyAcked=no
 -----
+<1> `NOT FOUND` is an indication of a corrupted page file.
+
+If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
+
+
+[[pqrepair]]
+===== `pqrepair` utility
 
 The `pqrepair` utility tries to remove corrupt queue segments to bring the queue back into working order. 
-
 It starts searching from the folder where is launched and looks for `data/queue/main`.
 
 NOTE: The queue may lose some data in this operation.
 
-//?? Pass the path to the folder of a queue, for example in the user context could be /var/lib/logstash/router.
+From LOGSTASH_HOME, run:
 
-////
-//Info to add:
-* run from where
-* any additional parameters (that are required or optional)?
-* what form does the feedback take
-* include sample? 
+[source,txt]
+-----
+bin/pqrepair <queue_folder>
+-----
 
-////
+where `<queue_folder>` is the fully qualified path to the persistent queue location.
+
+There is no output if the utility runs properly.  
+
+The `pqrepair` utility requires write access to the folder. 
+Folder permissions may cause problems when Logstash is run as a service.
+In this situation, use `sudo`.
+
+[source,txt]
+-----
+/usr/share/logstash$ sudo -u logstash bin/pqrepair /var/lib/logstash/queue/main/
+-----
+
+After you run `pqrepair`, restart Logstash to verify that the repair operation was successful. 
 
  
 [[draining-pqs]]
@@ -225,7 +255,7 @@ restarted. Logstash processes events in batches, so it is possible
 that for any given batch, some of that batch may have been successfully
 completed, but not recorded as ACKed, when an abnormal termination occurs.
 
-NOTE: If you override the default behavior by setting `drain.queue: true`, Logstash reads from the queue until it is emptied. 
+NOTE: If you override the default behavior by setting `drain.queue: true`, Logstash reads from the queue until it is emptied--even after a controlled shutdown. 
 
 For more details specific behaviors of queue writes and acknowledgement, see 
 <<durability-persistent-queues>>.
