@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-14-2,Logstash 7.14.2>>
 * <<logstash-7-14-1,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
 * <<logstash-7-13-4,Logstash 7.13.4>>
@@ -49,6 +50,40 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-14-2]]
+=== Logstash 7.14.2 Release Notes
+
+==== Logstash core
+
+===== Updates to dependencies
+
+* Updated bundled JDK to 11.0.12+7 https://github.com/elastic/logstash/pull/13185[#13185]
+
+==== Plugin releases
+
+*Dissect Filter - 1.2.1*
+
+* [DOC] Added note to clarify notation for dot or nested fields https://github.com/logstash-plugins/logstash-filter-dissect/pull/76[#76]
+
+*Mutate Filter - 3.5.3*
+
+* [DOC] Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
+
+*Tcp Input - 6.2.1*
+
+* Restore functionality to properly read encrypted (legacy) OpenSSL PKCS#5v1.5 keys from Bouncy-Castle security provider
+https://github.com/logstash-plugins/logstash-input-tcp/pull/181[#181]
+
+*Elasticsearch Output - 11.0.5*
+
+* Fixed post-register actions, such as ILM setup, when Elasticsearch status change from unhealthy to healthy https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1035[#1035]
+* [DOC] Clarify that `http_compression` applies to _requests_, and remove noise about _response_ decompression https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1000[#1000]
+
+*Lumberjack Output - 3.1.9*
+
+* [DOC] Specified the policy selection of host from `hosts` setting https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32[#32]
+
 
 [[logstash-7-14-1]]
 === Logstash 7.14.1 Release Notes
