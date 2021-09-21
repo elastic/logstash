@@ -6,10 +6,14 @@ A {ls} persistent queue helps protect against data loss during abnormal terminat
 [[persistent-queues-benefits]]
 ==== Benefits of persistent queues
 
-* Try to provide an at-least-once delivery guarantee against message loss during
-a normal shutdown and when Logstash is terminated abnormally. If Logstash
-is restarted while events are in-flight, Logstash attempts to deliver
-messages stored in the persistent queue until delivery succeeds at least once.
+A persistent queues (PQ):
+
+* Helps protect against message loss during a normal shutdown and when Logstash
+is terminated abnormally. 
+If Logstash is restarted while events are in-flight,
+Logstash attempts to deliver messages stored in the persistent queue until
+delivery succeeds at least once.
+Note that data may be lost if an abnormal shutdown occurs before the checkpoint file has been committed.  
 * Can absorb bursts of events without needing an external buffering mechanism like Redis or Apache Kafka.
 * Can be useful for Logstash deployments that need large buffers.
 Instead of deploying and managing a message broker, such as Redis, RabbitMQ, or
@@ -46,9 +50,9 @@ To configure persistent queues, specify options in the Logstash <<logstash-setti
 `queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 // Technically, I know, this isn't "maximum number of events" it's really maximum number of events not yet read by the pipeline worker. We only use this for testing and users generally shouldn't be setting this.
 `queue.max_events`:: The maximum number of events that are allowed in the queue. The default is 0 (unlimited).
-`queue.max_bytes`:: The total capacity of the queue in number of bytes. The
-default is 1024mb (1gb). Make sure the capacity of your disk drive is greater
-than the value you specify here.
+`queue.max_bytes`:: The total capacity of _each queue_ in number of bytes. The
+default is 1024mb (1gb). 
+The cumulative value (total of `queue.max.bytes` for _all_ queues) should be lower than the capacity of your disk. 
 +
 TIP: If you are using persistent queues to protect against data loss, but don't
 require much buffering, you can set `queue.max_bytes` to a smaller value, such
@@ -70,8 +74,7 @@ Default is `1000`. Set to `0` to eliminate periodic checkpoints.
 [[pq-config-notes]]
 ==== Configuration notes
 
-Your ideal queue configuration requires finding the right balance between
-your performance and data protection needs. 
+Every situation and environment is different, and the "ideal" configuration varies.
 If you optimize for performance, you may increase your risk of losing data.
 If you optimize for data protection, you may impact performance. 
 
