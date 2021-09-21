@@ -181,6 +181,7 @@ compatibility behavior https://github.com/logstash-plugins/logstash-input-heartb
 
 * Added field reference support in `port` https://github.com/logstash-plugins/logstash-output-udp/pull/13[#13]
 
+
 [[logstash-7-14-2]]
 === Logstash 7.14.2 Release Notes
 
