@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-15-0,Logstash 7.15.0>>
 * <<logstash-7-14-2,Logstash 7.14.2>>
 * <<logstash-7-14-1,Logstash 7.14.1>>
 * <<logstash-7-14-0,Logstash 7.14.0>>
@@ -50,6 +51,136 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-15-0]]
+=== Logstash 7.15.0 Release Notes
+
+[[featured-7-15-0]]
+==== New features and enhancements
+
+[[ecs-7-15-0]]
+===== Progress toward Elastic Common Schema (ECS)
+
+In this release, we continued our efforts towards Elastic Common Schema (ECS):
+
+* <<plugins-codecs-collectd,collectd codec>> added `target` support
+* <<plugins-codecs-edn,edn codec>> added `target` support
+* <<plugins-codecs-edn_lines,edn_lines codec>> added `target` support
+* <<plugins-codecs-fluent,fluent codec>> added `target` support
+* <<plugins-codecs-json,json codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-json_lines,json_lines codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-line,line codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-msgpack,msgpack codec>> added `target` support
+* <<plugins-codecs-multiline,multiline codec>> added `target` support and `ecs_compatibility`
+* <<plugins-codecs-plain,plain codec>> added `target` support and `ecs_compatibility`
+* <<plugins-filters-translate,translate filter>> supports `ecs_compatibility`
+* <<plugins-inputs-heartbeat,heartbeat input>> supports `ecs_compatibility`
+
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
+
+[[notable-7-15-0]]
+==== Performance improvements and notable issues fixed
+
+* Updated Bundler to latest version https://github.com/elastic/logstash/pull/13141[#13141]
+  - Bundler 2.2.26 brings along improvements and bug fixes for Logstash's dependency resolution
+  - We plan to continue being up-to-date with latest Bundler and/or RubyGems in the future
+* We've added a new developer-only <<command-line-flags,command line flag>> (`--enable-local-plugin-development`) to facilitate local plugin development.
+This flag enables developers to update their local Gemfile without running into issues caused by a frozen lockfile.
+End users should not need this flag.
+* Fixed the shutdown error with the usage of external GeoIP database
+
+[[plugins-7-15-0]]
+==== Plugins
+
+*Collectd Codec - 3.1.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-collectd/pull/31[#31]
+
+*Edn Codec - 3.1.0*
+
+* Feat: target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-edn/pull/6[#6]
+
+*Edn_lines Codec - 3.1.0*
+
+*  Feat: target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-edn_lines/pull/6[#6]
+
+*Fluent Codec - 3.4.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-fluent/pull/27[#27]
+* Fix: decoding of time's nano-second precision
+
+*Json Codec - 3.1.0*
+
+* Feat: event `target => namespace` support (for ECS) https://github.com/logstash-plugins/logstash-codec-json/pull/37[#37]
+* Fix: json parsing compatibility (when parsing blank strings) + freeze event.original value https://github.com/logstash-plugins/logstash-codec-json/pull/38[#38]
+
+*Json_lines Codec - 3.1.0*
+
+* Feat: event `target => namespace` support (ECS) https://github.com/logstash-plugins/logstash-codec-json_lines/pull/41[#41]
+* Refactor: dropped support for old Logstash versions (< 6.0)
+
+*Line Codec - 3.1.1*
+
+* [DOC] Add ECS compatibility info https://github.com/logstash-plugins/logstash-codec-line/pull/19[#19]
+
+* Feat: ECS + event_factory support https://github.com/logstash-plugins/logstash-codec-line/pull/18[#18]
+
+*Msgpack Codec - 3.1.0*
+
+* Feat: added target configuration + event-factory support https://github.com/logstash-plugins/logstash-codec-msgpack/pull/13[#13]
+* Fix: decoding to create a fallback event when msg-pack unpacking fails
+
+*Multiline Codec - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-multiline/pull/69[#69]
+
+*Plain Codec - 3.1.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-codec-plain/pull/10[#10]
+
+*Kv Filter - 4.5.0*
+
+* Feat: check that target is set in ECS mode https://github.com/logstash-plugins/logstash-filter-kv/pull/96[#96]
+
+*Translate Filter - 3.3.0*
+
+* Feat: added ECS compatibility mode https://github.com/logstash-plugins/logstash-filter-translate/pull/89[#89]
+  - when ECS compatibility is enabled, default behaviour is an in-place translation
+* Fix: improved error handling - do not rescue potentially fatal (JVM) errors
+
+*Beats Input - 6.2.0*
+
+* ECS compatibility enablement: Adds alias to support upcoming ECS v8 with the existing ECS v1 implementation
+* [DOC] Remove limitations topic and link https://github.com/logstash-plugins/logstash-input-beats/pull/428[#428]
+
+*File Input - 4.4.0*
+
+* Add support for ECS v8 https://github.com/logstash-plugins/logstash-input-file/pull/301[#301]
+
+*Heartbeat Input - 3.1.1*
+
+* Docs: added information on ECS v8 support https://github.com/logstash-plugins/logstash-input-heartbeat/pull/19[#19]
+* Added new `sequence` setting to manage the type of sequence generator and added ECS
+compatibility behavior https://github.com/logstash-plugins/logstash-input-heartbeat/pull/18[#18]
+
+*S3 Input - 3.8.0*
+
+* Add ECS v8 support.
+
+*Stdin Input - 3.4.0*
+
+* Add ECS v8 support as alias of v1 implementation
+
+*Udp Input - 3.5.0*
+
+* Added ECS v8 support as an alias to the ECS v1 implementation
+
+*Event_support Mixin - 1.0.1*
+
+*Udp Output - 3.2.0*
+
+* Added field reference support in `port` https://github.com/logstash-plugins/logstash-output-udp/pull/13[#13]
+
 
 [[logstash-7-14-2]]
 === Logstash 7.14.2 Release Notes
@@ -128,6 +259,7 @@ https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/153[#153]
 *Elasticsearch Output - 11.0.3*
 
 * Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1032[#1032]
+
 
 [[logstash-7-14-0]]
 === Logstash 7.14.0 Release Notes
