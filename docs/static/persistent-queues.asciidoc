@@ -50,9 +50,15 @@ To configure persistent queues, specify options in the Logstash <<logstash-setti
 `queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 // Technically, I know, this isn't "maximum number of events" it's really maximum number of events not yet read by the pipeline worker. We only use this for testing and users generally shouldn't be setting this.
 `queue.max_events`:: The maximum number of events that are allowed in the queue. The default is 0 (unlimited).
-`queue.max_bytes`:: The total capacity of _each queue_ in number of bytes. The
-default is 1024mb (1gb). 
-The cumulative value (total of `queue.max.bytes` for _all_ queues) should be lower than the capacity of your disk. 
+`queue.max_bytes`:: The total capacity of _each queue_ in number of bytes. 
+Unless overridden in `pipelines.yml` or central management, each persistent
+queue will be sized at the value of `queue.max_bytes` specified in
+`logstash.yml`. 
+The default is 1024mb (1gb).
++
+Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues.
+The total of `queue.max.bytes` for _all_ queues should be
+lower than the capacity of your disk. 
 +
 TIP: If you are using persistent queues to protect against data loss, but don't
 require much buffering, you can set `queue.max_bytes` to a smaller value, such
