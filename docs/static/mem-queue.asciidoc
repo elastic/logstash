@@ -1,0 +1,10 @@
+[[memory-queue]]
+=== Memory queue
+
+By default, Logstash uses in-memory bounded queues between pipeline stages
+(inputs → pipeline workers) to buffer events. The size of these in-memory
+queues is fixed and not configurable. If Logstash experiences a temporary
+machine failure, the contents of the in-memory queue will be lost. Temporary machine
+failures are scenarios where Logstash or its host machine are terminated
+abnormally but are capable of being restarted. 
+
