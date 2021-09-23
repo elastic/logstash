@@ -176,8 +176,9 @@ pageNum=2, firstUnackedPageNum=2, firstUnackedSeqNum=534041, minSeqNum=457916, e
 -----
 <1> `NOT FOUND` is an indication of a corrupted page file.
 
-If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
+NOTE: If the queue shows `fully-acked: YES` and 0 bytes, you can safely delete the file.  
 
+If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
 
 [[pqrepair]]
 ===== `pqrepair` utility
