@@ -23,6 +23,8 @@ package org.logstash.config.ir;
 import java.nio.file.Path;
 
 import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.load.LibrarySearcher;
 import org.jruby.runtime.load.LoadService;
 import org.junit.BeforeClass;
 import org.logstash.RubyTestBase;
@@ -41,7 +43,8 @@ public abstract class RubyEnvTestCase extends RubyTestBase {
      */
     private static void ensureLoadpath() {
         final LoadService loader = RubyUtil.RUBY.getLoadService();
-        if (loader.findFileForLoad("logstash/compiler").library == null) {
+        final LibrarySearcher librarySearcher = new LibrarySearcher(loader);
+        if (librarySearcher.findLibraryForLoad("logstash/compiler") == null) {
             final String gems = LS_HOME.
                     resolve("vendor").resolve("bundle").resolve("jruby").resolve("2.5.0").
                     toFile().getAbsolutePath();

@@ -305,14 +305,21 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
 
 tasks.register("installBundler") {
     dependsOn assemblyDeps
-    outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
+    outputs.files file("${projectDir}/vendor/bundle/jruby/2.6.0/bin/bundle")
     doLast {
-      gem(projectDir, buildDir, "bundler", "~> 2", "${projectDir}/vendor/bundle/jruby/2.5.0")
+      gem(projectDir, buildDir, "bundler", "~> 2", "${projectDir}/vendor/bundle/jruby/2.6.0")
+  }
+}
+
+tasks.register("installRake") {
+    dependsOn assemblyDeps
+    doLast {
+      gem(projectDir, buildDir, "rake", "~> 13", "${projectDir}/vendor/bundle/jruby/2.6.0")
   }
 }
 
 tasks.register("bootstrap"){
-    dependsOn installBundler
+    dependsOn assemblyDeps
     doLast {
       setupJruby(projectDir, buildDir)
   }
@@ -321,9 +328,9 @@ tasks.register("bootstrap"){
 
 tasks.register("installDefaultGems") {
     dependsOn bootstrap
-  doLast {
-      rake(projectDir, buildDir, 'plugin:install-default')
-  }
+    doLast {
+        rake(projectDir, buildDir, 'plugin:install-default')
+    }
 }
 
 tasks.register("installTestGems") {
@@ -428,7 +435,7 @@ tasks.register("unpackTarDistribution", Copy) {
 
 def qaBuildPath = "${buildDir}/qa/integration"
 def qaVendorPath = "${qaBuildPath}/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0".toString()
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.6.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){

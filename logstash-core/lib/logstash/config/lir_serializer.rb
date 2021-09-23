@@ -71,13 +71,13 @@ module LogStash;
     end
     
     def vertex_type(v)
-      if v.java_kind_of?(org.logstash.config.ir.graph.PluginVertex)
+      if v.kind_of?(org.logstash.config.ir.graph.PluginVertex)
         :plugin
-      elsif v.java_kind_of?(org.logstash.config.ir.graph.IfVertex)
+      elsif v.kind_of?(org.logstash.config.ir.graph.IfVertex)
         :if
-      elsif v.java_kind_of?(org.logstash.config.ir.graph.QueueVertex)
+      elsif v.kind_of?(org.logstash.config.ir.graph.QueueVertex)
         :queue
-      elsif v.java_kind_of?(org.logstash.config.ir.graph.SeparatorVertex)
+      elsif v.kind_of?(org.logstash.config.ir.graph.SeparatorVertex)
         :separator
       else
         raise "Unexpected vertex type! #{v}"
@@ -121,7 +121,7 @@ module LogStash;
       edges.each do |e|
         if vertex_type(e.to) == :separator
           e.to.getOutgoingEdges.each do |outgoing|
-            if e.java_kind_of?(org.logstash.config.ir.graph.BooleanEdge)
+            if e.kind_of?(org.logstash.config.ir.graph.BooleanEdge)
               edges_with_separators_removed << edge(org.logstash.config.ir.graph.BooleanEdge.new(e.edgeType, e.from, outgoing.to))
             else
               edges_with_separators_removed << edge(org.logstash.config.ir.graph.PlainEdge.factory.make(e.from, outgoing.to))
@@ -143,7 +143,7 @@ module LogStash;
         "id" => e.id
       }
       
-      if e.java_kind_of?(org.logstash.config.ir.graph.BooleanEdge)
+      if e.kind_of?(org.logstash.config.ir.graph.BooleanEdge)
         e_json["when"] = e.edge_type
         e_json["type"] = "boolean"
       else
