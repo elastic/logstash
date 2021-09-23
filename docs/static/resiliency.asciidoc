@@ -1,6 +1,28 @@
 [[resiliency]]
 == Data resiliency
 
+
+/////
+What happens when the queue is full?
+Input plugins push data into the queue, and filters pull out. If the queue (persistent or memory) is full then the input plugin thread blocks.
+
+See handling backpressure topic. Relocate this info for better visibility? 
+/////
+
+
+/////
+Settings in logstash.yml and pipelines.yml can interract in unintuitive ways
+
+A setting on a pipeline in pipelines.yml takes precedence, falling back to the value in logstash.yml if there is no setting present for the specific pipeline, falling back to the default if there is no value present in logstash.yml
+
+^^ This is true for any setting in both logstash.yml and pipelines.yml, but seems to trip people up in PQs.  Other queues, too? 
+/////
+
+
+//ToDo: Add MQ to discussion (for compare/constrast), even thought it's not really considered a "resiliency feature". Messaging will need to be updated. 
+
+
+
 As data flows through the event processing pipeline, Logstash may encounter
 situations that prevent it from delivering events to the configured
 output. For example, the data might contain unexpected data types, or
