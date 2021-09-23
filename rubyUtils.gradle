@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath 'org.yaml:snakeyaml:1.29'
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-complete:9.2.20.1"
+        classpath "org.jruby:jruby-complete:9.3.2.0"
     }
 }
 
@@ -139,7 +139,7 @@ void buildGem(File projectDir, File buildDir, String gemspec) {
 void rake(File projectDir, File buildDir, String task) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
-        jruby.runScriptlet("require 'rake'")
+        jruby.runScriptlet("require 'rake'; require 'time'")
         jruby.runScriptlet("""
                 rake = Rake.application
                 rake.init
@@ -168,7 +168,7 @@ void setupJruby(File projectDir, File buildDir) {
 Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block) {
     def jruby = new ScriptingContainer()
     def env = jruby.environment
-    def gemDir = "${projectDir}/vendor/bundle/jruby/2.5.0".toString()
+    def gemDir = "${projectDir}/vendor/bundle/jruby/2.6.0".toString()
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()

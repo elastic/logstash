@@ -112,7 +112,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def expr_attributes
       # Turn attributes into a hash map
       self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
-        if v.java_kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
+        if v.kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
           [k, v.get]
         else
           [k,v]
@@ -347,7 +347,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def jconvert(sexpr)
       raise "jconvert cannot handle nils!" if sexpr.nil?
 
-      if sexpr.java_kind_of?(Java::OrgLogstashConfigIrExpression::Expression)
+      if sexpr.kind_of?(Java::OrgLogstashConfigIrExpression::Expression)
         return sexpr
       end
 

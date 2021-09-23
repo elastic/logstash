@@ -13,8 +13,8 @@ bundled_jdk:
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
 jruby:
-  version: 9.2.20.1
-  sha1: 7f45f8a3d53d5f19f69952014abcb542b2670846
+  version: 9.3.2.0
+  sha1: c01175b959753883fa0dc6a73d9efa2c9eec4465
 
 # jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby
 #jruby-runtime-override:
