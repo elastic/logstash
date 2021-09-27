@@ -7,10 +7,8 @@
 LS_RUNTIME_JAVA:
   - java8
   - openjdk11
-  - openjdk14
+  - openjdk16
   - adoptopenjdk11
-  - adoptopenjdk14
-  - adoptopenjdk15
+  - adoptopenjdk16
   - zulu11
-  - zulu14
-  - zulu15
+  - zulu16

@@ -14,8 +14,7 @@
 # The following env var will be used by this script if set:
 #   LS_GEM_HOME and LS_GEM_PATH to overwrite the path assigned to GEM_HOME and GEM_PATH
 #   LS_JAVA_OPTS to append extra options to the JVM options provided by logstash
-#   LS_JAVA_HOME to point to the java home (takes precedence over JAVA_HOME)
-#   (deprecated) JAVA_HOME to point to the java home
+#   LS_JAVA_HOME to point to the java home
 
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
@@ -101,17 +100,6 @@ setup_java() {
       else
         echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable."
       fi
-    elif [ -n "$JAVA_HOME" ]; then
-      echo "Using JAVA_HOME defined java: ${JAVA_HOME}"
-      if [ -x "$JAVA_HOME/bin/java" ]; then
-        JAVACMD="$JAVA_HOME/bin/java"
-        if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-          echo "WARNING: Using JAVA_HOME while Logstash distribution comes with a bundled JDK."
-        fi
-      else
-        echo "Invalid JAVA_HOME, doesn't contain bin/java executable."
-      fi
-      echo "DEPRECATION: The use of JAVA_HOME is now deprecated and will be removed starting from 8.0. Please configure LS_JAVA_HOME instead."
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
       echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
       JAVACMD="${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java"
