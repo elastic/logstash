@@ -61,7 +61,7 @@ describe LogStash::PluginManager do
     let(:plugin)  { "foo" }
     let(:version) { "9.0.0.0" }
 
-    let(:sources) { ["https://rubygems.org"] }
+    let(:sources) { ["https://rubygems.org", "http://source.02"] }
     let(:options) { {:rubygems_source => sources} }
 
     let(:gemset)  { double("gemset") }
