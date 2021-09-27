@@ -121,6 +121,7 @@ func normalizeSetting(setting string) (string, error) {
 		"xpack.management.elasticsearch.ssl.truststore.password",
 		"xpack.management.elasticsearch.ssl.keystore.path",
 		"xpack.management.elasticsearch.ssl.keystore.password",
+		"xpack.geoip.download.endpoint",
 		"cloud.id",
 		"cloud.auth",
 	}

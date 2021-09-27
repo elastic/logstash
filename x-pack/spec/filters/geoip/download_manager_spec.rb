@@ -22,7 +22,7 @@ describe LogStash::Filters::Geoip do
     GEOIP_STAGING_ENDPOINT = "#{GEOIP_STAGING_HOST}#{LogStash::Filters::Geoip::DownloadManager::GEOIP_PATH}"
 
     before do
-      stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
+      allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.download.endpoint").and_return(GEOIP_STAGING_ENDPOINT)
     end
 
     context "rest client" do
@@ -40,7 +40,7 @@ describe LogStash::Filters::Geoip do
 
     context "check update" do
       before(:each) do
-        expect(download_manager).to receive(:get_uuid).and_return(SecureRandom.uuid)
+        expect(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint",
                            :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
                            :status => 200)
@@ -184,5 +184,40 @@ describe LogStash::Filters::Geoip do
       end
     end
 
+    context "download url" do
+      before do
+        allow(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
+      end
+
+      it "should give a path with hostname when input is a filename" do
+        expect(download_manager.send(:download_url, "GeoLite2-ASN.tgz")).to match /#{GEOIP_STAGING_HOST}/
+      end
+
+      it "should give a unmodified path when input has scheme" do
+        expect(download_manager.send(:download_url, GEOIP_STAGING_ENDPOINT)).to eq(GEOIP_STAGING_ENDPOINT)
+      end
+    end
+
+    context "service endpoint" do
+      before do
+        allow(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
+      end
+
+      it "should give xpack setting" do
+        uri = download_manager.send(:service_endpoint)
+        expect(uri.to_s).to match /#{GEOIP_STAGING_ENDPOINT}/
+      end
+
+      context "empty xpack config" do
+        before do
+          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.download.endpoint").and_return(nil)
+        end
+
+        it "should give default endpoint" do
+          uri = download_manager.send(:service_endpoint)
+          expect(uri.to_s).to match /#{LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT}/
+        end
+      end
+    end
   end
 end
