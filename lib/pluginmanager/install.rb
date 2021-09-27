@@ -185,15 +185,16 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
 
     puts "Resolving mixin dependencies"
     LogStash::Bundler.setup!
-    plugins = LogStash::Bundler.consolidate_dependencies(install_list.map { |arr| arr[0] }, false)
+    plugins_to_update = install_list.map(&:first)
+    unlock_dependencies = LogStash::Bundler.expand_logstash_mixin_dependencies(plugins_to_update) - plugins_to_update
 
-    if plugins.size > 0
-      puts "Updating mixin dependencies #{plugins.join(', ')}"
-      options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
+    if unlock_dependencies.any?
+      puts "Updating mixin dependencies #{unlock_dependencies.join(', ')}"
+      options = {:update => unlock_dependencies, :rubygems_source => gemfile.gemset.sources}
       LogStash::Bundler.invoke!(options)
     end
 
-    plugins
+    unlock_dependencies
   end
 
   # install_list will be an array of [plugin name, version, options] tuples, version it

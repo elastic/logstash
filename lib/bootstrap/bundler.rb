@@ -198,7 +198,7 @@ module LogStash
 
     # @param plugin_names [Array] logstash plugin names that are going to update
     # @return [Array] gem names that plugins depend on, including logstash plugins
-    def consolidate_dependencies(plugin_names, with_plugin_name = true)
+    def expand_logstash_mixin_dependencies(plugin_names)
       plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
 
       # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
@@ -208,12 +208,12 @@ module LogStash
       # exclude the gems which are not in lock file. They should not be part of unlock gems.
       # The core libs, logstash-core logstash-core-plugin-api, are not expected to update when user do plugins update
       # constraining the transitive dependency updates to only those Logstash maintain
-      unlock_libs = plugin_names.map { |plugin_name| fetch_plugin_dependencies(plugin_name) }
-                                .flatten.uniq
-                                .select { |lib_name| lockfile_gems.include?(lib_name) && lib_name =~ /^logstash-mixin-.*$/ }
+      unlock_libs = plugin_names.flat_map { |plugin_name| fetch_plugin_dependencies(plugin_name) }
+                                .uniq
+                                .select { |lib_name| lockfile_gems.include?(lib_name) }
+                                .select { |lib_name| lib_name.start_with?("logstash-mixin-") }
 
-      return unlock_libs + plugin_names if with_plugin_name
-      return unlock_libs
+      unlock_libs + plugin_names
     end
 
     # get all dependencies of a single plugin, considering all versions >= current
@@ -227,11 +227,11 @@ module LogStash
 
       raise(errors.first.error) if errors.length > 0
 
-      new_specs.map do |arr|
-        arr[0].dependencies
-              .select { |spec| spec.type == :runtime }
-              .map { |spec| spec.name }
-      end.flatten.uniq
+      new_specs.map { |spec, source| spec }
+               .flat_map(&:dependencies)
+               .select {|spec| spec.type == :runtime }
+               .map(&:name)
+               .uniq
     end
 
     # build Bundler::CLI.start arguments array from the given options hash
@@ -248,7 +248,7 @@ module LogStash
         end
       elsif options[:update]
         arguments << "update"
-        arguments << consolidate_dependencies(options[:update])
+        arguments << expand_logstash_mixin_dependencies(options[:update])
         arguments << "--local" if options[:local]
       elsif options[:clean]
         arguments << "clean"
