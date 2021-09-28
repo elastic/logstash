@@ -13,6 +13,7 @@ require "zlib"
 require "stud/try"
 require "down"
 require "fileutils"
+require 'uri'
 
 module LogStash module Filters module Geoip class DownloadManager
   include LogStash::Util::Loggable
@@ -50,9 +51,8 @@ module LogStash module Filters module Geoip class DownloadManager
   # Call infra endpoint to get md5 of latest databases and verify with metadata
   # return Array of new database information [database_type, db_info]
   def check_update
-    uuid = get_uuid
-    res = rest_client.get("#{GEOIP_ENDPOINT}?key=#{uuid}&elastic_geoip_service_tos=agree")
-    logger.debug("check update", :endpoint => GEOIP_ENDPOINT, :response => res.status)
+    res = rest_client.get(service_endpoint)
+    logger.debug("check update", :endpoint => service_endpoint.to_s, :response => res.status)
 
     service_resp = JSON.parse(res.body)
 
@@ -74,7 +74,10 @@ module LogStash module Filters module Geoip class DownloadManager
       FileUtils.mkdir_p(get_dir_path(dirname))
       zip_path = get_gz_path(database_type, dirname)
 
-      Down.download(db_info['url'], destination: zip_path)
+      actual_url = download_url(db_info['url'])
+      logger.debug? && logger.debug("download #{actual_url}")
+
+      Down.download(actual_url, destination: zip_path)
       raise "the new download has wrong checksum" if md5(zip_path) != db_info['md5_hash']
 
       logger.debug("new database downloaded in ", :path => zip_path)
@@ -105,7 +108,25 @@ module LogStash module Filters module Geoip class DownloadManager
     end
   end
 
-  def get_uuid
+  def uuid
     @uuid ||= ::File.read(::File.join(LogStash::SETTINGS.get("path.data"), "uuid"))
   end
+
+  def service_endpoint
+    return @service_endpoint if @service_endpoint
+
+    uri = URI(LogStash::SETTINGS.get("xpack.geoip.download.endpoint") || GEOIP_ENDPOINT)
+    uri.query = "key=#{uuid}&elastic_geoip_service_tos=agree"
+    @service_endpoint = uri
+  end
+
+  def download_url(url)
+    uri = URI(url)
+    return url if uri.scheme
+
+    download_uri = service_endpoint.dup
+    download_uri.path = "/#{url}"
+    download_uri.to_s
+  end
+
 end end end end
