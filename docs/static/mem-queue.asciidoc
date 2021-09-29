@@ -30,6 +30,8 @@ Memory queue size is not configured directly.
 Multiply the `pipeline.batch.size` and `pipeline.workers` values to get the size of the memory queue.
 This value is called the "inflight count." 
 
+See <<tuning-logstash>> for more info on the effects of adjusting `pipeline.batch.size` and `pipeline.workers`.
+
 [[backpressure-mem-queue]]
 ==== Back pressure
 
@@ -38,14 +40,4 @@ flowing into Logstash.
 This mechanism helps Logstash control the rate of data flow at the input stage
 without overwhelming outputs like Elasticsearch.
 
-ToDo: Is the next paragraph accurate for MQ? 
-
 Each input handles back pressure independently. 
-For example, when the
-<<plugins-inputs-beats,beats input>> encounters back pressure, it no longer
-accepts new connections.
-It waits until the queue has space to accept more events. 
-After the filter and output stages finish processing existing
-events in the queue and ACKs them, Logstash automatically starts accepting new
-events.
-
