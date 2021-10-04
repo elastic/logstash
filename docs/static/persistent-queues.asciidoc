@@ -53,8 +53,7 @@ The total of `queue.max.bytes` for _all_ queues should be
 lower than the capacity of your disk. 
 +
 TIP: If you are using persistent queues to protect against data loss, but don't
-require much buffering, you can set `queue.max_bytes` to a smaller value, such
-as 10mb.
+require much buffering, you can set `queue.max_bytes` to a smaller value.
 A smaller value produces smaller queues and improves queue performance. 
 
 `queue.checkpoint.acks`:: Sets the number of acked events before forcing a checkpoint. 
@@ -87,9 +86,8 @@ reached.
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
 If you are using persistent queues to protect against data loss, but don't
-require much buffering, you can set `queue.max_bytes` to a smaller value, such
-as 10mb.
-A smaller value produces smaller queues and improves queue performance.
+require much buffering, you can set `queue.max_bytes` to a smaller value.
+A smaller value may produce smaller queues and improves queue performance.
 
 *Sample configuration*
 
@@ -112,7 +110,7 @@ See <<durability-persistent-queues>> to better understand the trade-offs.
 [[troubleshooting-pqs]]
 ==== Troubleshooting persistent queues
 
-Symptoms of persistent queue problems include {ls} or pipelines not starting successfully, accompanied by an error message similar to this one.
+Symptoms of persistent queue problems include {ls} or one or more pipelines not starting successfully, accompanied by an error message similar to this one.
 
 ```
 message=>"java.io.IOException: Page file size is too small to hold elements
@@ -130,7 +128,7 @@ To resolve the issue:
 [[pqcheck]]
 ===== `pqcheck` utility
 
-The `pqcheck` utility helps you identify which persistent queue--or queues--have been corrupted. 
+Run the `pqcheck` utility to identify which persistent queue--or queues--have been corrupted. 
 
 From LOGSTASH_HOME, run:
 
@@ -140,6 +138,24 @@ bin/pqcheck <queue_folder>
 -----
 
 where `<queue_folder>` is the fully qualified path to the persistent queue location.
+
+The `pqcheck utility` reads through the checkpoint files in the given directory and outputs information about the current state of those files. 
+The utility outputs this information for each checkpoint file:
+
+* Filename
+* Whether or not the page file has been fully acknowledged.
+A fully acknowledged page file indicates that all events have been read and processed.
+* Page number
+* Size of the page file. A page file with a size of 0 results in the output `NOT FOUND`. 
+In this case, run `pqrepair` against the specified queue directory. 
+* Page number
+* First unacknowledged page number (only relevant in the head checkpoint)
+* First unacknowledged event sequence number in the page
+* First event sequence number in the page
+* Number of events in the page
+* Whether or not the page has been fully acknowledged
+
+
 
 *Sample with healthy page file*
 [source,txt]
