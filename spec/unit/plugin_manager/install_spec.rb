@@ -26,8 +26,9 @@ describe LogStash::PluginManager::Install do
     let(:sources) { ["https://rubygems.org", "http://localhost:9292"] }
 
     before(:each) do
-      expect(cmd).to receive(:validate_cli_options!).and_return(nil)
+      expect(cmd).to receive(:validate_cli_options!).at_least(:once).and_return(nil)
       expect(cmd).to receive(:plugins_gems).and_return([["dummy", nil]])
+      expect(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
       expect(cmd).to receive(:install_gems_list!).and_return(nil)
       expect(cmd).to receive(:remove_unused_locally_installed_gems!).and_return(nil)
       cmd.verify = true
@@ -47,6 +48,7 @@ describe LogStash::PluginManager::Install do
       expect(cmd).to receive(:validate_cli_options!).and_return(nil)
       # used to pass indirect input to the command under test
       expect(cmd).to receive(:plugins_gems).and_return([["logstash-input-elastic_agent", nil]])
+      expect(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
       # used to skip Bundler interaction
       expect(cmd).to receive(:install_gems_list!).and_return(nil)
       # avoid to clean gemfile folder
@@ -73,6 +75,7 @@ describe LogStash::PluginManager::Install do
     let(:cmd) { LogStash::PluginManager::Install.new("install my-super-pack") }
     before do
       expect(cmd).to receive(:plugins_arg).and_return(["my-super-pack"]).at_least(:once)
+      allow(cmd).to receive(:update_logstash_mixin_dependencies).and_return(nil)
     end
 
     it "reports `FileNotFoundError` exception" do

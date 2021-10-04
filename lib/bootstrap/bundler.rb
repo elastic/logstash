@@ -196,6 +196,44 @@ module LogStash
       ENV["DEBUG"]
     end
 
+    # @param plugin_names [Array] logstash plugin names that are going to update
+    # @return [Array] gem names that plugins depend on, including logstash plugins
+    def expand_logstash_mixin_dependencies(plugin_names)
+      plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
+
+      # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
+      lockfile_gems = ::Bundler::definition.specs.to_a.map { |stub_spec| stub_spec.name }.to_set
+
+      # get the array of dependencies which are eligible to update. Bundler unlock these gems in update process
+      # exclude the gems which are not in lock file. They should not be part of unlock gems.
+      # The core libs, logstash-core logstash-core-plugin-api, are not expected to update when user do plugins update
+      # constraining the transitive dependency updates to only those Logstash maintain
+      unlock_libs = plugin_names.flat_map { |plugin_name| fetch_plugin_dependencies(plugin_name) }
+                                .uniq
+                                .select { |lib_name| lockfile_gems.include?(lib_name) }
+                                .select { |lib_name| lib_name.start_with?("logstash-mixin-") }
+
+      unlock_libs + plugin_names
+    end
+
+    # get all dependencies of a single plugin, considering all versions >= current
+    # @param plugin_name [String] logstash plugin name
+    # @return [Array] gem names that plugin depends on
+    def fetch_plugin_dependencies(plugin_name)
+      old_spec = ::Gem::Specification.find_all_by_name(plugin_name).last
+      require_version = old_spec ? ">= #{old_spec.version}": nil
+      dep = ::Gem::Dependency.new(plugin_name, require_version)
+      new_specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+
+      raise(errors.first.error) if errors.length > 0
+
+      new_specs.map { |spec, source| spec }
+               .flat_map(&:dependencies)
+               .select {|spec| spec.type == :runtime }
+               .map(&:name)
+               .uniq
+    end
+
     # build Bundler::CLI.start arguments array from the given options hash
     # @param option [Hash] the invoke! options hash
     # @return [Array<String>] Bundler::CLI.start string arguments array
@@ -210,7 +248,7 @@ module LogStash
         end
       elsif options[:update]
         arguments << "update"
-        arguments << options[:update]
+        arguments << expand_logstash_mixin_dependencies(options[:update])
         arguments << "--local" if options[:local]
       elsif options[:clean]
         arguments << "clean"
