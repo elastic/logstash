@@ -1,5 +1,7 @@
 [[resiliency]]
-== Data resiliency
+== Queues and data resiliency
+
+By default, Logstash uses <<memory-queue,in-memory bounded queues>> between pipeline stages (inputs → pipeline workers) to buffer events. 
 
 As data flows through the event processing pipeline, Logstash may encounter
 situations that prevent it from delivering events to the configured
