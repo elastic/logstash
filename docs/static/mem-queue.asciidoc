@@ -26,7 +26,7 @@ TIP: Consider using <<persistent-queues,persistent queues>> to avoid these limit
 ==== Memory queue size
 
 Memory queue size is not configured directly.
-It is defined by the number of events, which can vary greatly depending on the event payload. 
+It is defined by the number of events, the size of which can vary greatly depending on the event payload. 
 
 The maximum number of events that can be held in each memory queue is equal to
 the value of `pipeline.batch.size` multiplied by the value of
