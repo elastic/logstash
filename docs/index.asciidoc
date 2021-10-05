@@ -180,6 +180,9 @@ include::static/filebeat-modules.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/resiliency.asciidoc
 include::static/resiliency.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/mem-queue.asciidoc
+include::static/mem-queue.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/persistent-queues.asciidoc
 include::static/persistent-queues.asciidoc[]
 
