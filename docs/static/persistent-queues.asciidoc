@@ -142,7 +142,7 @@ where `<queue_folder>` is the fully qualified path to the persistent queue locat
 The `pqcheck utility` reads through the checkpoint files in the given directory and outputs information about the current state of those files. 
 The utility outputs this information for each checkpoint file:
 
-* Filename
+* Page file name
 * Whether or not the page file has been fully acknowledged.
 A fully acknowledged page file indicates that all events have been read and processed.
 * Page number
@@ -155,28 +155,35 @@ In this case, run `pqrepair` against the specified queue directory.
 * Number of events in the page
 * Whether or not the page has been fully acknowledged
 
-
-
 *Sample with healthy page file*
+
+This sample represents a healthy queue with three page files. 
+In this sample, Logstash is currently writing to `page.2` as referenced by
+`checkpoint.head`.
+Logstash is reading from `page.0` as referenced by `checkpoint.0`.
+
 [source,txt]
 -----
 ubuntu@bigger:/usr/share/logstash$ bin/pqcheck /var/lib/logstash/queue/main/
 Using bundled JDK: /usr/share/logstash/jdk
 OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
 Checking queue dir: /var/lib/logstash/queue/main
-checkpoint.1, fully-acked: NO, page.1 size: 67108864
-pageNum=1, firstUnackedPageNum=0, firstUnackedSeqNum=239675, minSeqNum=239675,  elementCount=218241, isFullyAcked=no <1> <2>
+checkpoint.1, fully-acked: NO, page.1 size: 67108864 
+  pageNum=1, firstUnackedPageNum=0, firstUnackedSeqNum=239675, minSeqNum=239675,
+  elementCount=218241, isFullyAcked=no 
 checkpoint.head, fully-acked: NO, page.2 size: 67108864
-pageNum=2, firstUnackedPageNum=0, firstUnackedSeqNum=457916, minSeqNum=457916, elementCount=11805, isFullyAcked=no
-checkpoint.0, fully-acked: NO,<2> page.0 size: 67108864 
-pageNum=0, firstUnackedPageNum=0, firstUnackedSeqNum=176126, minSeqNum=1, elementCount=239674, isFullyAcked=no
+  pageNum=2, firstUnackedPageNum=0, firstUnackedSeqNum=457916, minSeqNum=457916, elementCount=11805, isFullyAcked=no
+checkpoint.0, fully-acked: NO, page.0 size: 67108864  <1>
+  pageNum=0, firstUnackedPageNum=0, firstUnackedSeqNum=176126, minSeqNum=1,
+  elementCount=239674, isFullyAcked=no <2>
 -----
-<1> Numbers indicate message sequence, number of items inside each page file, number of elements in the page, and how far has Logstash progressed through the page file.
-<2> Checkpoints may show `fully-acked: NO` or `fully-acked: YES`.
-After all elements in the page file have been read (events ingested), the status of `fully-acked` will go from `NO` to `YES`.
+<1> Represents `checkpoint.0`, which refers to the page file `page.0`, and has a size of `67108864`. 
+<2> Continuing for `checkpoint.0`, these lines indicate that the page number is `0`, the first unacknowledged event is number `176126`, there are `239674` events in the page file, the first event in this page file is event number `1`, and the page file has not been fully acknowledged. That is, there are still events left in the page file that need to be ingested.
+
 
 *Sample with corrupted page file*
 
+If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
 [source,txt]
 -----
 bin/pqcheck /var/lib/logstash/queue/main/
@@ -184,13 +191,12 @@ Using bundled JDK: /usr/share/logstash/jdk
 OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
 Checking queue dir: /var/lib/logstash/queue/main
 checkpoint.head, fully-acked: NO, page.2 size: NOT FOUND <1>
-pageNum=2, firstUnackedPageNum=2, firstUnackedSeqNum=534041, minSeqNum=457916, elementCount=76127, isFullyAcked=no
+  pageNum=2, firstUnackedPageNum=2, firstUnackedSeqNum=534041, minSeqNum=457916,
+  elementCount=76127, isFullyAcked=no
 -----
-<1> `NOT FOUND` is an indication of a corrupted page file.
+<1> `NOT FOUND` is an indication of a corrupted page file. Run `pqrepair` against the specified queue directory.
 
-NOTE: If the queue shows `fully-acked: YES` and 0 bytes, you can safely delete the file.  
-
-If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
+NOTE: If the queue shows `fully-acked: YES` and 0 bytes, you can safely delete the file. 
 
 [[pqrepair]]
 ===== `pqrepair` utility
