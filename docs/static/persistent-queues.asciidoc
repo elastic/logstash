@@ -142,10 +142,10 @@ where `<queue_directory>` is the fully qualified path to the persistent queue lo
 The `pqcheck utility` reads through the checkpoint files in the given directory and outputs information about the current state of those files. 
 The utility outputs this information for each checkpoint file:
 
-* Page file name
+* Checkpoint file name
 * Whether or not the page file has been fully acknowledged.
 A fully acknowledged page file indicates that all events have been read and processed.
-* Page number
+* Page file name that the checkpoint file is referencing
 * Size of the page file. A page file with a size of 0 results in the output `NOT FOUND`. 
 In this case, run `pqrepair` against the specified queue directory. 
 * Page number
