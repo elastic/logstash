@@ -116,28 +116,28 @@ Symptoms of persistent queue problems include {ls} or one or more pipelines not 
 message=>"java.io.IOException: Page file size is too small to hold elements
 ```
 
-This error indicates that the head page (the oldest in a folder and the one with lowest page id) has a size < 18 bytes, the size of a page header.
+This error indicates that the head page (the oldest in a directory and the one with lowest page id) has a size < 18 bytes, the size of a page header.
 
 
-To resolve the issue: 
+To research and resolve the issue: 
 
-. Identify the queue (or queues) that may be corrupt.
-. Stop Logstash.
+. Identify the queue (or queues) that may be corrupt by checking log files, or running the `pqcheck` utility.
+. Stop Logstash, and wait for it to shut down. 
 . Run `pqrepair <path>` for each of the corrupted queues.
 
 [[pqcheck]]
 ===== `pqcheck` utility
 
-Run the `pqcheck` utility to identify which persistent queue--or queues--have been corrupted. 
+ the `pqcheck` utility to identify which persistent queue--or queues--have been corrupted. 
 
 From LOGSTASH_HOME, run:
 
 [source,txt]
 -----
-bin/pqcheck <queue_folder>
+bin/pqcheck <queue_directory>
 -----
 
-where `<queue_folder>` is the fully qualified path to the persistent queue location.
+where `<queue_directory>` is the fully qualified path to the persistent queue location.
 
 The `pqcheck utility` reads through the checkpoint files in the given directory and outputs information about the current state of those files. 
 The utility outputs this information for each checkpoint file:
@@ -183,7 +183,8 @@ checkpoint.0, fully-acked: NO, page.0 size: 67108864  <1>
 
 *Sample with corrupted page file*
 
-If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue folder.
+If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue directory.
+
 [source,txt]
 -----
 bin/pqcheck /var/lib/logstash/queue/main/
@@ -202,7 +203,7 @@ NOTE: If the queue shows `fully-acked: YES` and 0 bytes, you can safely delete t
 ===== `pqrepair` utility
 
 The `pqrepair` utility tries to remove corrupt queue segments to bring the queue back into working order. 
-It starts searching from the folder where is launched and looks for `data/queue/main`.
+It starts searching from the directory where is launched and looks for `data/queue/main`.
 
 NOTE: The queue may lose some data in this operation.
 
@@ -210,14 +211,14 @@ From LOGSTASH_HOME, run:
 
 [source,txt]
 -----
-bin/pqrepair <queue_folder>
+bin/pqrepair <queue_directory>
 -----
 
-where `<queue_folder>` is the fully qualified path to the persistent queue location.
+where `<queue_directory>` is the fully qualified path to the persistent queue location.
 
 There is no output if the utility runs properly.  
 
-The `pqrepair` utility requires write access to the folder. 
+The `pqrepair` utility requires write access to the directory. 
 Folder permissions may cause problems when Logstash is run as a service.
 In this situation, use `sudo`.
 
