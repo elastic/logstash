@@ -95,9 +95,6 @@ include::static/logging.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
-include::static/setup/setting-up-xpack.asciidoc[]
-
 // Upgrading Logstash
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/upgrading.asciidoc
