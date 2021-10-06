@@ -7,7 +7,6 @@ require "logstash/util/loggable"
 require_relative "util"
 require_relative "database_metadata"
 require "logstash-filter-geoip_jars"
-require "faraday"
 require "json"
 require "zlib"
 require "stud/try"
@@ -26,6 +25,19 @@ module LogStash module Filters module Geoip class DownloadManager
   GEOIP_HOST = "https://geoip.elastic.co".freeze
   GEOIP_PATH = "/v1/database".freeze
   GEOIP_ENDPOINT = "#{GEOIP_HOST}#{GEOIP_PATH}".freeze
+
+  class BadResponseCodeError < Error
+    attr_reader :response_code, :response_body
+
+    def initialize(response_code, response_body)
+      @response_code = response_code
+      @response_body = response_body
+    end
+
+    def message
+      "GeoIP service response code '#{response_code}', body '#{response_body}'"
+    end
+  end
 
   public
   # Check available update and download them. Unzip and validate the file.
@@ -52,7 +64,11 @@ module LogStash module Filters module Geoip class DownloadManager
   # return Array of new database information [database_type, db_info]
   def check_update
     res = rest_client.get(service_endpoint)
-    logger.debug("check update", :endpoint => service_endpoint.to_s, :response => res.status)
+    logger.debug("check update", :endpoint => service_endpoint.to_s, :response => res.code)
+
+    if res.code < 200 || res.code > 299
+      raise BadResponseCodeError.new(res.code, res.body)
+    end
 
     service_resp = JSON.parse(res.body)
 
@@ -102,10 +118,7 @@ module LogStash module Filters module Geoip class DownloadManager
   end
 
   def rest_client
-    @client ||= Faraday.new do |conn|
-      conn.use Faraday::Response::RaiseError
-      conn.adapter :net_http
-    end
+    @client ||= Manticore::Client.new(request_timeout: 15, connect_timeout: 5)
   end
 
   def uuid

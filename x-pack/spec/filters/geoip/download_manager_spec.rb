@@ -26,17 +26,18 @@ describe LogStash::Filters::Geoip do
     end
 
     # this is disabled until https://github.com/elastic/logstash/issues/13261 is solved
-    xcontext "rest client" do
-  
+    context "rest client" do
+
       it "can call endpoint" do
         conn = download_manager.send(:rest_client)
         res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
-        expect(res.status).to eq(200)
+        expect(res.code).to eq(200)
       end
 
       it "should raise error when endpoint response 4xx" do
-        conn = download_manager.send(:rest_client)
-        expect { conn.get("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree") }.to raise_error /404/
+        bad_uri = URI("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
+        expect(download_manager).to receive(:service_endpoint).and_return(bad_uri).twice
+        expect { download_manager.send(:check_update) }.to raise_error(LogStash::Filters::Geoip::DownloadManager::BadResponseCodeError, /404/)
       end
     end
 
@@ -45,7 +46,7 @@ describe LogStash::Filters::Geoip do
         expect(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint",
                            :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
-                           :status => 200)
+                           :code => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
