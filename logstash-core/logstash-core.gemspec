@@ -76,7 +76,6 @@ Gem::Specification.new do |gem|
 
   # xpack geoip database service
   gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
-  gem.add_dependency 'faraday' #(MIT license)
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
   gem.add_dependency 'tzinfo-data' #(MIT license)
   gem.add_dependency 'rufus-scheduler' #(MIT license)
