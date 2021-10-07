@@ -57,6 +57,7 @@ func normalizeSetting(setting string) (string, error) {
 		"pipeline.batch.delay",
 		"pipeline.unsafe_shutdown",
 		"pipeline.ecs_compatibility",
+		"pipeline.ordered",
 		"pipeline.plugin_classloaders",
 		"pipeline.separate_logs",
 		"path.config",
