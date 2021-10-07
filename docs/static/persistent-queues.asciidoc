@@ -234,7 +234,8 @@ After you run `pqrepair`, restart Logstash to verify that the repair operation w
 ===== Draining the queue
 
 You may encounter situations where you want to drain the queue.
-Examples include:  
+Examples include:
+
 * Pausing new ingestion. There may be situations where you want to stop new ingestion, but still keep a backlog of data. 
 * PQ repair. You can drain the queue to route to a different PQ while repairing an old one.
 * Data or workflow migration. If you are moving off a disk/hardware and/or migrating to a new data flow, you may want to drain the existing queue.
