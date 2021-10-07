@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-15-1,Logstash 7.15.1>>
 * <<logstash-7-15-0,Logstash 7.15.0>>
 * <<logstash-7-14-2,Logstash 7.14.2>>
 * <<logstash-7-14-1,Logstash 7.14.1>>
@@ -51,6 +52,135 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-15-1]]
+=== Logstash 7.15.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.15.1
+
+* geoip integrate air-gapped bootstrap script https://github.com/elastic/logstash/pull/13104[#13104]
+* add the missing logstash config supported by env2yaml for docker https://github.com/elastic/logstash/pull/13178[#13178]
+* Update bundled JDK to 11.0.12+7 https://github.com/elastic/logstash/pull/13185[#13185]
+* [backport 7.15]Update bundled JDK to 11.0.12+7 (#13185) https://github.com/elastic/logstash/pull/13188[#13188]
+* improve release note to avoid overwriting https://github.com/elastic/logstash/pull/13192[#13192]
+* [7.15] add the missing logstash config supported by env2yaml for docker (#13178) https://github.com/elastic/logstash/pull/13200[#13200]
+* unlock ecs_compatibility_support version in plugin update https://github.com/elastic/logstash/pull/13218[#13218]
+* fix geoip with external DB shutdown error https://github.com/elastic/logstash/pull/13224[#13224]
+* [7.15] geoip integrate air-gapped bootstrap script (#13104) https://github.com/elastic/logstash/pull/13252[#13252]
+* [7.15] avoid duplication of heading and index entry in release notes (#13192) https://github.com/elastic/logstash/pull/13255[#13255]
+* [7.15] update golang image to 1.17.1(#13260) (#13260) https://github.com/elastic/logstash/pull/13263[#13263]
+* [7.x] unlock ecs_compatibility_support version in plugin update (#13218) https://github.com/elastic/logstash/pull/13268[#13268]
+* Fix plugin manager test that fail to fetch dependency  https://github.com/elastic/logstash/pull/13270[#13270]
+* replace Faraday with Manticore to get rid of jruby-openssl verification error https://github.com/elastic/logstash/pull/13273[#13273]
+* [7.15] Replace Faraday to Manticore to get rid of jruby-openssl verification error of Let's Encrypt cross-signed DST Root CA X3 (#13273) https://github.com/elastic/logstash/pull/13280[#13280]
+* Backport PR #13209 to 7.15: Added rexml notice to license list https://github.com/elastic/logstash/pull/13287[#13287]
+* fix plugin installation script https://github.com/elastic/logstash/pull/13289[#13289]
+
+=== Logstash Commits between 7.15 and 7.15.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.15.0..7.15"
+
+a017de912 - (HEAD -> 7.15, origin/7.15) fix plugin installation script (#13289) (#13291) (84 minutes ago) <kaisecheng>
+bc4ef846b - Added rexml notice to license list (#13209) (#13287) (4 hours ago) <Karol Bucek>
+a762ed146 - Deps: bump gem lock file (for 7.15.1) (#13286) (5 hours ago) <Karol Bucek>
+ea68fb190 - Doc: Rework PQ content (#13285) (14 hours ago) <Karen Metts>
+dbdaa02cb - Doc: Remove outdated info and folder (#13283) (21 hours ago) <Karen Metts>
+d1982c11d - Replace Faraday to Manticore to get rid of jruby-openssl verification error of Let's Encrypt cross-signed DST Root CA X3 (#13273) (#13280) (27 hours ago) <kaisecheng>
+6a3264027 - Doc: Add topic and expand info for in-memory queue (#13277) (2 days ago) <Karen Metts>
+68dc01d3a - Fix plugin manager test that fail to fetch dependency (#13270) (#13272) (2 days ago) <kaisecheng>
+fad1a94df - unlock ecs_compatibility_support version in plugin update (#13218) (#13269) (3 days ago) <kaisecheng>
+0fd589fd0 - Doc: Add shared attribute for messaging ecs default info (#13266) (6 days ago) <Karen Metts>
+b63e414a4 - update golang image to 1.17.1(#13260) (#13263) (6 days ago) <kaisecheng>
+c11a3e94f - avoid duplication of heading and index entry in release notes (#13192) (#13255) (8 days ago) <kaisecheng>
+e34d860ae - geoip integrate air-gapped bootstrap script (#13104) (#13252) (9 days ago) <kaisecheng>
+2b4b4d71c - Backport PR#13248 to 7.15: Fix kafka download link for integration tests (#13249) (10 days ago) <Rob Bavey>
+becc37e42 - add the missing logstash config supported by env2yaml for docker (#13178) (#13200) (10 days ago) <kaisecheng>
+ff2cd6f8c - Update bundled JDK to 11.0.12+7 (#13185) (#13188) (10 days ago) <Andrea Selva>
+28ab19f34 - bump 7.15.1 (#13238) (2 weeks ago) <kaisecheng>
+be5059496 - Doc: Add note and example for date math in conditionals (#13243) (2 weeks ago) <Karen Metts>
+1db20d36a - Release notes for 7.15.0 (#13139) (2 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.15.0..7.15 *.release"
+Changed plugin versions:
+logstash-codec-fluent: 3.4.0 -> 3.4.1
+logstash-codec-multiline: 3.1.0 -> 3.1.1
+logstash-filter-dissect: 1.2.0 -> 1.2.1
+logstash-filter-elasticsearch: 3.9.4 -> 3.9.5
+logstash-filter-geoip: 7.2.2 -> 7.2.3
+logstash-filter-mutate: 3.5.2 -> 3.5.4
+logstash-input-elasticsearch: 4.9.2 -> 4.9.3
+logstash-input-http: 3.4.1 -> 3.4.2
+logstash-input-snmp: 1.2.7 -> 1.2.8
+logstash-input-tcp: 6.2.0 -> 6.2.1
+logstash-output-elasticsearch: 11.0.2 -> 11.0.5
+logstash-output-lumberjack: 3.1.8 -> 3.1.9
+logstash-output-s3: 4.3.4 -> 4.3.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Fluent Codec - 3.4.1*
+
+* Fix: handle multiple PackForward-encoded messages in a single payload https://github.com/logstash-plugins/logstash-codec-fluent/pull/28[#28]
+
+*Multiline Codec - 3.1.1*
+
+* Fix: avoid reusing per-identity codec instances for differing identities. Removes a very minor optimization so that stateful codecs like CSV can work reliably https://github.com/logstash-plugins/logstash-codec-multiline/pull/70[#70]
+
+*Dissect Filter - 1.2.1*
+
+* [DOC] Added note to clarify notation for dot or nested fields https://github.com/logstash-plugins/logstash-filter-dissect/pull/76[#76]
+
+*Elasticsearch Filter - 3.9.5*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/151[#151]
+
+*Geoip Filter - 7.2.3*
+
+* [DOC] Add documentation for bootstrapping air-gapped environment for database auto-update https://github.com/logstash-plugins/logstash-filter-geoip/pull/189[#189]
+
+*Mutate Filter - 3.5.4*
+
+* DOC: In 'replace' documentation, mention 'add' behavior https://github.com/logstash-plugins/logstash-filter-mutate/pull/155[#155]
+* DOC: Add warning about #27 https://github.com/logstash-plugins/logstash-filter-mutate/pull/101[#101]
+
+* DOC: Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
+
+*Elasticsearch Input - 4.9.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/156[#156]
+
+*Http Input - 3.4.2*
+
+* Docs: added `v8` as an acceptible value for `ecs_compatibility`
+
+*Snmp Input - 1.2.8*
+
+* Fixed interval handling to only sleep off the _remainder_ of the interval (if any), and to log a helpful warning when crawling the hosts takes longer than the configured interval https://github.com/logstash-plugins/logstash-input-snmp/issues/61[#61]
+
+*Tcp Input - 6.2.1*
+
+* Fix: restore logic to add the Bouncy-Castle security provider at runtime https://github.com/logstash-plugins/logstash-input-tcp/pull/181[#181]
+* required to properly read encrypted (legacy) OpenSSL PKCS#5v1.5 keys
+
+*Elasticsearch Output - 11.0.5*
+
+* Fixed running post-register action when Elasticsearch status change from unhealthy to healthy https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1035[#1035]
+
+* [DOC] Clarify that `http_compression` applies to _requests_, and remove noise about _response_ decompression https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1000[#1000]
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1032[#1032]
+
+*Lumberjack Output - 3.1.9*
+
+* Docs: specified the policity selection of host from `hosts` setting [32](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32)
+
+*S3 Output - 4.3.5*
+
+*  Feat: cast true/false values for additional_settings https://github.com/logstash-plugins/logstash-output-s3/pull/241[#241]
+
 
 [[logstash-7-15-0]]
 === Logstash 7.15.0 Release Notes
