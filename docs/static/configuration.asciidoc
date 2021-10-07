@@ -718,7 +718,6 @@ filter {
 ==== Overview
 
 * You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
-* Environment variable references are only supported in plugin configuration, not in {logstash-ref}/event-dependent-configuration.html#conditionals[conditionals].
 * At Logstash startup, each reference will be replaced by the value of the environment variable.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
@@ -726,6 +725,10 @@ filter {
 environment variable is undefined.
 * You can add environment variable references in any plugin option type : string, number, boolean, array, or hash.
 * Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
+
+NOTE: Environment variable references are only supported in plugin configuration, not in {logstash-ref}/event-dependent-configuration.html#conditionals[conditionals]. A workaround for this limitation is to add a new event field with the value
+of the environment variable and use that new field in the conditional.
+
 
 ==== Examples
 
