@@ -718,6 +718,7 @@ filter {
 ==== Overview
 
 * You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
+* Environment variable references are only supported in plugin configuration, not in the filter/output conditionals.
 * At Logstash startup, each reference will be replaced by the value of the environment variable.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
