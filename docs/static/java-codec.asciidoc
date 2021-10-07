@@ -239,7 +239,7 @@ responsible for returning the buffer to write mode via either
 `byteBuffer.clear()` or `byteBuffer.compact()` before resuming writes. In the
 example above, the `decode` method simply splits the incoming byte stream on the
 specified delimiter. A production-grade codec such as
-https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
+https://github.com/elastic/logstash/blob/main/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
 would not make the simplifying assumption that the end of the supplied byte
 stream corresponded with the end of an event.
 
@@ -306,7 +306,7 @@ an UUID.
 
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
 The example codec plugin includes an 
-https://github.com/logstash-plugins/logstash-codec-java_codec_example/blob/master/src/test/java/org/logstash/javaapi/JavaCodecExampleTest.java[example unit
+https://github.com/logstash-plugins/logstash-codec-java_codec_example/blob/main/src/test/java/org/logstash/javaapi/JavaCodecExampleTest.java[example unit
 test] that you can use as a template for your own.
 
 // Pulls in shared section about Packaging and Deploying

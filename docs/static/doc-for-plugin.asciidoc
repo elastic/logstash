@@ -184,7 +184,7 @@ For more asciidoc formatting tips, see the excellent reference at
 https://github.com/elastic/docs#asciidoc-guide.
 
 For tips on contributing and changelog guidelines, see
-https://github.com/elastic/logstash/blob/master/CONTRIBUTING.md#logstash-plugin-changelog-guidelines[CONTRIBUTING.md].
+https://github.com/elastic/logstash/blob/main/CONTRIBUTING.md#logstash-plugin-changelog-guidelines[CONTRIBUTING.md].
 
 For general information about contributing, see
 {logstash-ref}/contributing-to-logstash.html[Contributing to Logstash].
