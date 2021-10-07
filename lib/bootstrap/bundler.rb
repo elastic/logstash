@@ -17,6 +17,7 @@
 
 require "fileutils"
 require "stringio"
+require 'set'
 
 module LogStash
   module Bundler
