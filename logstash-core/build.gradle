@@ -21,7 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's master versions.yml file
+// fetch version from Logstash's main versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
 
 description = """Logstash Core Java"""
