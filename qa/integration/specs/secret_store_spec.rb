@@ -55,7 +55,8 @@ describe "Test that Logstash" do
   let(:settings_dir) {Stud::Temporary.directory}
   let(:settings) {{"pipeline.id" => "${pipeline.id}"}}
 
-  it "expands secret store variables from config" do
+  # disable test temporarily until https://github.com/elastic/logstash/issues/13281 is fixed
+  xit "expands secret store variables from config" do
     test_env["TEST_ENV_PATH"] = test_path
     test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
     @logstash.env_variables = test_env
