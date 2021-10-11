@@ -63,9 +63,6 @@ class LogStash::Agent
     @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
-    @http_host = setting("api.http.host")
-    @http_port = setting("api.http.port")
-    @http_environment = setting("api.environment")
     # Generate / load the persistent uuid
     id
 
@@ -82,6 +79,9 @@ class LogStash::Agent
                     "values other than `disabled` are currently considered BETA and may have unintended consequences when upgrading minor versions of Logstash.")
       end
     end
+
+    # Initialize, but do not start the webserver.
+    @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
@@ -443,8 +443,6 @@ class LogStash::Agent
 
   def start_webserver
     @webserver_control_lock.synchronize do
-      options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
-      @webserver = LogStash::WebServer.new(@logger, self, options)
       @webserver_thread = Thread.new(@webserver) do |webserver|
         LogStash::Util.set_thread_name("Api Webserver")
         webserver.run
@@ -454,7 +452,7 @@ class LogStash::Agent
 
   def stop_webserver
     @webserver_control_lock.synchronize do
-      if @webserver
+      if @webserver_thread
         @webserver.stop
         if @webserver_thread.join(5).nil?
           @webserver_thread.kill

@@ -31,6 +31,28 @@ module LogStash
     DEFAULT_PORTS = (9600..9700).freeze
     DEFAULT_ENVIRONMENT = 'production'.freeze
 
+    def self.from_settings(logger, agent, settings)
+      options = {}
+      options[:http_host] = settings.get('api.http.host')
+      options[:http_ports] = settings.get('api.http.port')
+      options[:http_environment] = settings.get('api.environment')
+
+
+      logger.debug("Initializing API WebServer",
+                   "api.http.host"        => settings.get("api.http.host"),
+                   "api.http.port"        => settings.get("api.http.port"),
+                   "api.environment"      => settings.get("api.environment"))
+
+      new(logger, agent, options)
+    end
+
+    ##
+    # @param logger [Logger]
+    # @param agent [Agent]
+    # @param options [Hash{Symbol=>Object}]
+    # @option :http_host [String]
+    # @option :http_ports [Enumerable[Integer]]
+    # @option :http_environment [String]
     def initialize(logger, agent, options={})
       @logger = logger
       @agent = agent
@@ -38,32 +60,25 @@ module LogStash
       @http_ports = options[:http_ports] || DEFAULT_PORTS
       @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
       @running = Concurrent::AtomicBoolean.new(false)
+
+      # wrap any output that puma could generate into a wrapped logger
+      # use the puma namespace to override STDERR, STDOUT in that scope.
+      Puma::STDERR.logger = logger
+      Puma::STDOUT.logger = logger
+
+      @app = LogStash::Api::RackApp.app(logger, agent, http_environment)
     end
 
     def run
-      logger.debug("Starting puma")
+      logger.debug("Starting API WebServer (puma)")
 
       stop # Just in case
 
       running!
 
-      http_ports.each_with_index do |port, idx|
-        begin
-          if running?
-            @port = port
-            logger.debug("Trying to start WebServer", :port => @port)
-            start_webserver(@port)
-          else
-            break # we are closing down the server so just get out of the loop
-          end
-        rescue Errno::EADDRINUSE
-          if http_ports.count == 1
-            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
-          elsif idx == http_ports.count-1
-            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
-          end
-        end
-      end
+      bind_to_available_port # and block...
+
+      logger.debug("API WebServer has stopped running")
     end
 
     def running!
@@ -83,29 +98,40 @@ module LogStash
       @server.stop(true) if @server
     end
 
-    def start_webserver(port)
-      # wrap any output that puma could generate into a wrapped logger
-      # use the puma namespace to override STDERR, STDOUT in that scope.
-      Puma::STDERR.logger = logger
-      Puma::STDOUT.logger = logger
+    private
 
+    def _init_server
       io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
-
-      app = LogStash::Api::RackApp.app(logger, agent, http_environment)
-
       events = ::Puma::Events.new(io_wrapped_logger, io_wrapped_logger)
 
-      @server = ::Puma::Server.new(app, events)
-      @server.add_tcp_listener(http_host, port)
-
-      logger.info("Successfully started Logstash API endpoint", :port => port)
-
-      set_http_address_metric("#{http_host}:#{port}")
-
-      @server.run.join
+      ::Puma::Server.new(@app, events)
     end
 
-    private
+    def bind_to_available_port
+      http_ports.each_with_index do |candidate_port, idx|
+        begin
+          break unless running?
+
+          @server = _init_server
+
+          logger.debug("Trying to start API WebServer", :port => candidate_port)
+          @server.add_tcp_listener(http_host, candidate_port)
+
+          @port = candidate_port
+          logger.info("Successfully started Logstash API endpoint", :port => candidate_port)
+          set_http_address_metric("#{http_host}:#{candidate_port}")
+
+          break
+        rescue Errno::EADDRINUSE
+          if http_ports.count == 1
+            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
+          elsif idx == http_ports.count-1
+            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
+          end
+        end
+      end
+    end
+
     def set_http_address_metric(value)
       return unless @agent.metric
       @agent.metric.gauge([], :http_address, value)
