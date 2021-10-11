@@ -24,11 +24,8 @@ require "thread"
 
 module LogStash
   class WebServer
-    extend Forwardable
 
-    attr_reader :logger, :status, :config, :options, :runner, :binder, :events, :http_host, :http_ports, :http_environment, :agent
-
-    def_delegator :@runner, :stats
+    attr_reader :logger, :config, :http_host, :http_ports, :http_environment, :agent
 
     DEFAULT_HOST = "127.0.0.1".freeze
     DEFAULT_PORTS = (9600..9700).freeze
@@ -40,8 +37,6 @@ module LogStash
       @http_host = options[:http_host] || DEFAULT_HOST
       @http_ports = options[:http_ports] || DEFAULT_PORTS
       @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
-      @options = {}
-      @status = nil
       @running = Concurrent::AtomicBoolean.new(false)
     end
 
