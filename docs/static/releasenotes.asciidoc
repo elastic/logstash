@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-20,Logstash 6.8.20>>
 * <<logstash-6-8-19,Logstash 6.8.19>>
 * <<logstash-6-8-18,Logstash 6.8.18>>
 * <<logstash-6-8-17,Logstash 6.8.17>>
@@ -50,6 +51,27 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-20]]
+=== Logstash 6.8.20 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.20
+
+=== Logstash Commits between 6.8 and 6.8.19
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.19..6.8"
+
+a709749d3 - (HEAD -> 6.8, origin/6.8) update golang image to 1.17.1 to get rid of expired DST Root CA X3 (#13264) (7 days ago) <kaisecheng>
+9f10fc716 - Bump version 6.8.20 (#13237) (3 weeks ago) <Andrea Selva>
+827155246 - Release notes for 6.8.19 (#13230) (3 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.19..6.8 *.release"
+Changed plugin versions:
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
 
 [[logstash-6-8-19]]
 === Logstash 6.8.19 Release Notes
