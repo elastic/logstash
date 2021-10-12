@@ -129,6 +129,28 @@
 #
 # api.environment: "production"
 #
+# The HTTP API can be secured with SSL (TLS). To do so, you will need to provide
+# the path to a password-protected keystore in p12 or jks format, along with credentials.
+#
+# api.ssl.enabled: false
+# api.ssl.keystore.path: /path/to/keystore.jks
+# api.ssl.keystore.password: "y0uRp4$$w0rD"
+#
+# The HTTP API can be configured to require authentication. Acceptable values are
+#  - `none`:  no auth is required (default)
+#  - `basic`: clients must authenticate with HTTP Basic auth, as configured
+#             with `api.auth.basic.*` options below
+# api.auth.type: none
+#
+# When configured with `api.auth.type` `basic`, you must provide the credentials
+# that requests will be validated against. Usage of Environment or Keystore
+# variable replacements is encouraged (such as the value `"${HTTP_PASS}"`, which
+# resolves to the value stored in the keystore's `HTTP_PASS` variable if present
+# or the same variable from the environment)
+#
+# api.auth.basic.username: "logstash-user"
+# api.auth.basic.password: "s3cUreP4$$w0rD"
+#
 # ------------ Module Settings ---------------
 # Define modules here.  Modules definitions must be defined as an array.
 # The simple way to see this is to prepend each `name` with a `-`, and keep
