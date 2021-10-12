@@ -56,14 +56,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-15-1]]
 === Logstash 7.15.1 Release Notes
 
-[[featured-7-15-1]]
-==== New features and enhancements
-
-[[ecs-7-15-1]]
-===== Progress toward Elastic Common Schema (ECS)
-
-Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
-
 [[notable-7-15-1]]
 ==== Performance improvements and notable issues fixed
 
@@ -71,7 +63,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
   For an air-gapped environment, Users can use a script, `elasticsearch-geoip`, to bootstrap a mock server to interact with Logstash.
   Set `xpack.geoip.download.endpoint` to use the mock server.
 
-* Fixed a shutdown error when using an external GeoIP DB https://github.com/elastic/logstash/pull/13224[#13224]
+* Fixed a shutdown error that could occur when using an external GeoIP DB https://github.com/elastic/logstash/pull/13224[#13224]
 
 * Fixed GeoIP database service SSL verification error
   - The certificate cross-signed by the expired DST Root CA X3 failed the verification since 30/9
@@ -79,8 +71,9 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 
 * Added missing configs that support customization using environment variables in Docker https://github.com/elastic/logstash/pull/13200[#13200]
 
-* Our ECS efforts caused us to introduce a problem when updating some plugins depending on
-  our ecs_compatibility_support helper, this is now resolved https://github.com/elastic/logstash/pull/13268[#13268]
+* Our ECS efforts introduced a problem that can occur when updating some plugins
+that are dependent on our ecs_compatibility_support helper.
+This issue is resolved in https://github.com/elastic/logstash/pull/13268[#13268].
 
 **Updates to dependencies**
 
@@ -111,10 +104,10 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 
 *Mutate Filter - 3.5.4*
 
-* DOC: In 'replace' documentation, mention 'add' behavior https://github.com/logstash-plugins/logstash-filter-mutate/pull/155[#155]
-* DOC: Add warning about #27 https://github.com/logstash-plugins/logstash-filter-mutate/pull/101[#101]
+* [DOC] In 'replace' documentation, mention 'add' behavior https://github.com/logstash-plugins/logstash-filter-mutate/pull/155[#155]
+* [DOC] Add warning about #27 https://github.com/logstash-plugins/logstash-filter-mutate/pull/101[#101]
 
-* DOC: Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
+* [DOC] Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
 
 *Elasticsearch Input - 4.9.3*
 
@@ -122,7 +115,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 
 *Http Input - 3.4.2*
 
-* Docs: added `v8` as an acceptible value for `ecs_compatibility`
+* [DOC] Added `v8` as an acceptable value for `ecs_compatibility` https://github.com/logstash-plugins/logstash-input-http/pull/142[#142]
 
 *Snmp Input - 1.2.8*
 
@@ -143,7 +136,7 @@ Check out our https://github.com/elastic/logstash/issues/11635[progress toward E
 
 *Lumberjack Output - 3.1.9*
 
-* Docs: specified the policity selection of host from `hosts` setting [32](https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32)
+* [DOC] Specified the policy selection of host from `hosts` setting https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32[#32]
 
 *S3 Output - 4.3.5*
 
