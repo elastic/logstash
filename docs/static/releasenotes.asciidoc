@@ -66,9 +66,8 @@ This section summarizes the changes in the following releases:
 
 * Fixed a shutdown error that could occur when using an external GeoIP DB https://github.com/elastic/logstash/pull/13224[#13224]
 
-* Fixed GeoIP database service SSL verification error
-  - The certificate cross-signed by the expired DST Root CA X3 failed the verification since 30/9
-  - Started using Manticore (Apache HTTP client) that does not depend on jruby-openssl
+* Fixed GeoIP database service SSL verification error https://github.com/elastic/logstash/pull/13273[#13273]
+  - Work-around for the recent expiration of the "DST Root CA X3" certificate
 
 * Added missing configs that support customization using environment variables in Docker https://github.com/elastic/logstash/pull/13200[#13200]
 
