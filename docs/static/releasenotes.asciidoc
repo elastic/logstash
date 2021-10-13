@@ -60,7 +60,7 @@ This section summarizes the changes in the following releases:
 ==== Performance improvements and notable issues fixed
 
 * Bootstrap air-gapped environment for GeoIP database service https://github.com/elastic/logstash/pull/13104[#13104].
-  For an air-gapped environment, Users can use a script, `elasticsearch-geoip`, to bootstrap a mock server to interact with Logstash.
+  For an air-gapped environment, users can run the `elasticsearch-geoip` script to bootstrap a mock server to interact with Logstash.
   Set `xpack.geoip.download.endpoint` to use the mock server.
 
 * Fixed a shutdown error that could occur when using an external GeoIP DB https://github.com/elastic/logstash/pull/13224[#13224]
