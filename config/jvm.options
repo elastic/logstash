@@ -79,3 +79,6 @@
 
 # Copy the logging context from parent threads to children
 -Dlog4j2.isThreadContextMapInheritable=true
+
+17-:--add-opens java.base/sun.nio.ch=ALL-UNNAMED
+17-:--add-opens java.base/java.io=ALL-UNNAMED
