@@ -125,7 +125,6 @@ This issue is resolved in https://github.com/elastic/logstash/pull/13268[#13268]
 *Tcp Input - 6.2.1*
 
 * Fix: restore logic to add the Bouncy-Castle security provider at runtime https://github.com/logstash-plugins/logstash-input-tcp/pull/181[#181]
-* required to properly read encrypted (legacy) OpenSSL PKCS#5v1.5 keys
 
 *Elasticsearch Output - 11.0.5*
 
@@ -141,7 +140,7 @@ This issue is resolved in https://github.com/elastic/logstash/pull/13268[#13268]
 
 *S3 Output - 4.3.5*
 
-*  Feat: cast true/false values for additional_settings https://github.com/logstash-plugins/logstash-output-s3/pull/241[#241]
+* Feat: cast true/false values for additional_settings https://github.com/logstash-plugins/logstash-output-s3/pull/241[#241]
 
 
 [[logstash-7-15-0]]
