@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-15-1,Logstash 7.15.1>>
 * <<logstash-7-15-0,Logstash 7.15.0>>
 * <<logstash-7-14-2,Logstash 7.14.2>>
 * <<logstash-7-14-1,Logstash 7.14.1>>
@@ -51,6 +52,95 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-15-1]]
+=== Logstash 7.15.1 Release Notes
+
+[[notable-7-15-1]]
+==== Performance improvements and notable issues fixed
+
+* Bootstrap air-gapped environment for GeoIP database service https://github.com/elastic/logstash/pull/13104[#13104].
+  For an air-gapped environment, users can run the `elasticsearch-geoip` script to bootstrap a mock server to interact with Logstash.
+  Set `xpack.geoip.download.endpoint` to use the mock server.
+  For more info, see <<plugins-filters-geoip-metrics,Manage your own databases>> in the Geoip filter plugin docs.
+
+* Fixed a shutdown error that could occur when using an external GeoIP DB https://github.com/elastic/logstash/pull/13224[#13224]
+
+* Fixed GeoIP database service SSL verification error https://github.com/elastic/logstash/pull/13273[#13273]
+  - Work-around for the recent expiration of the "DST Root CA X3" certificate
+
+* Added missing configs that support customization using environment variables in Docker https://github.com/elastic/logstash/pull/13200[#13200]
+
+* Our ECS efforts introduced a problem that can occur when updating some plugins
+that are dependent on our ecs_compatibility_support helper.
+This issue is resolved in https://github.com/elastic/logstash/pull/13268[#13268].
+
+**Updates to dependencies**
+
+* Update bundled JDK to 11.0.12+7 https://github.com/elastic/logstash/pull/13185[#13185]
+
+[[plugins-7-15-1]]
+==== Plugins
+
+*Fluent Codec - 3.4.1*
+
+* Fix: handle multiple PackForward-encoded messages in a single payload https://github.com/logstash-plugins/logstash-codec-fluent/pull/28[#28]
+
+*Multiline Codec - 3.1.1*
+
+* Fix: avoid reusing per-identity codec instances for differing identities. Removes a very minor optimization so that stateful codecs like CSV can work reliably https://github.com/logstash-plugins/logstash-codec-multiline/pull/70[#70]
+
+*Dissect Filter - 1.2.1*
+
+* [DOC] Added note to clarify notation for dot or nested fields https://github.com/logstash-plugins/logstash-filter-dissect/pull/76[#76]
+
+*Elasticsearch Filter - 3.9.5*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/151[#151]
+
+*Geoip Filter - 7.2.3*
+
+* [DOC] Add documentation for bootstrapping air-gapped environment for database auto-update https://github.com/logstash-plugins/logstash-filter-geoip/pull/189[#189]
+
+*Mutate Filter - 3.5.4*
+
+* [DOC] In 'replace' documentation, mention 'add' behavior https://github.com/logstash-plugins/logstash-filter-mutate/pull/155[#155]
+* [DOC] Add warning about #27 https://github.com/logstash-plugins/logstash-filter-mutate/pull/101[#101]
+
+* [DOC] Expand description and behaviors for `rename` option https://github.com/logstash-plugins/logstash-filter-mutate/pull/156[#156]
+
+*Elasticsearch Input - 4.9.3*
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/156[#156]
+
+*Http Input - 3.4.2*
+
+* [DOC] Added `v8` as an acceptable value for `ecs_compatibility` https://github.com/logstash-plugins/logstash-input-http/pull/142[#142]
+
+*Snmp Input - 1.2.8*
+
+* Fixed interval handling to only sleep off the _remainder_ of the interval (if any), and to log a helpful warning when crawling the hosts takes longer than the configured interval https://github.com/logstash-plugins/logstash-input-snmp/issues/61[#61]
+
+*Tcp Input - 6.2.1*
+
+* Fix: restore logic to add the Bouncy-Castle security provider at runtime https://github.com/logstash-plugins/logstash-input-tcp/pull/181[#181]
+
+*Elasticsearch Output - 11.0.5*
+
+* Fixed running post-register action when Elasticsearch status change from unhealthy to healthy https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1035[#1035]
+
+* [DOC] Clarify that `http_compression` applies to _requests_, and remove noise about _response_ decompression https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1000[#1000]
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1032[#1032]
+
+*Lumberjack Output - 3.1.9*
+
+* [DOC] Specified the policy selection of host from `hosts` setting https://github.com/logstash-plugins/logstash-output-lumberjack/pull/32[#32]
+
+*S3 Output - 4.3.5*
+
+* Feat: cast true/false values for additional_settings https://github.com/logstash-plugins/logstash-output-s3/pull/241[#241]
+
 
 [[logstash-7-15-0]]
 === Logstash 7.15.0 Release Notes
