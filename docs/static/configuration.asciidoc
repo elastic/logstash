@@ -730,6 +730,10 @@ environment variable is undefined.
 * You can add environment variable references in any plugin option type : string, number, boolean, array, or hash.
 * Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
 
+NOTE: Environment variable references are only supported in plugin configuration, not in {logstash-ref}/event-dependent-configuration.html#conditionals[conditionals]. A workaround for this limitation is to add a new event field with the value
+of the environment variable and use that new field in the conditional.
+
+
 ==== Examples
 
 The following examples show you how to use environment variables to set the values of some commonly used
