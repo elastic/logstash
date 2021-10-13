@@ -61,6 +61,9 @@ clean {
 }
 
 tasks.register("integrationTests", Test) {
+  if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
+    jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
+  }
   dependsOn copyProductionLog4jConfiguration
 
   inputs.files fileTree("${projectDir}/services")
