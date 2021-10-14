@@ -70,6 +70,24 @@ public class TimestampTest {
     }
 
     @Test
+    public void testParsingDateWithHoursOnlyOffset() throws Exception {
+        final Timestamp t = new Timestamp("2014-09-23-08", OFFSET_CLOCK);
+        assertEquals("2014-09-23T08:00:00Z", t.toString());
+    }
+
+    @Test
+    public void testParsingDateWithHoursMinutesOffset() throws Exception {
+        final Timestamp t = new Timestamp("2014-09-23-0800", OFFSET_CLOCK);
+        assertEquals("2014-09-23T08:00:00Z", t.toString());
+    }
+
+    @Test
+    public void testParsingDateWithHoursMinutesSecondsOffset() throws Exception {
+        final Timestamp t = new Timestamp("2014-09-23-080000", OFFSET_CLOCK);
+        assertEquals("2014-09-23T08:00:00Z", t.toString());
+    }
+
+    @Test
     public void testParsingDateTimeWithZOffset() throws Exception {
         final Timestamp t = new Timestamp("2014-09-23T13:49:52.987654321Z", OFFSET_CLOCK);
         assertEquals("2014-09-23T13:49:52.987654321Z", t.toString());

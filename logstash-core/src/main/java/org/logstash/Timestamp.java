@@ -151,7 +151,8 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
             .optionalStart().appendLiteral('T').append(DateTimeFormatter.ISO_LOCAL_TIME).optionalEnd()
             // Timezone is optional, and may land in one of a couple different formats.
             .optionalStart().appendZoneOrOffsetId().optionalEnd()
-            .optionalStart().appendOffset("+HHmmss", "Z").optionalEnd()
+            .optionalStart().appendOffset("+HHMMss", "Z").optionalEnd()
+            .optionalStart().appendOffset("+HH", "Z").optionalEnd()
             .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
             .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
             .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
