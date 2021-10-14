@@ -126,11 +126,11 @@
 #
 # api.enabled: true
 #
-# By default, the HTTP API is bound to only the host's local loopback interface,
-# ensuring that it is not accessible to the rest of the network. Because the API
-# includes neither authentication nor authorization and has not been hardened or
-# tested for use as a publicly-reachable API, binding to publicly accessible IPs
-# should be avoided where possible.
+# By default, the HTTP API is not secured and is therefore bound to only the
+# host's loopback interface, ensuring that it is not accessible to the rest of
+# the network.
+# When secured with SSL and Basic Auth, the API is bound to _all_ interfaces
+# unless configured otherwise.
 #
 # api.http.host: 127.0.0.1
 #
