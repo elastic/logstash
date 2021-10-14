@@ -33,7 +33,7 @@ module LogStash
 
     def self.from_settings(logger, agent, settings)
       options = {}
-      options[:http_host] = settings.get('api.http.host')
+      options[:http_host] = settings.get('api.http.host') # may be overridden later if API configured securely
       options[:http_ports] = settings.get('api.http.port')
       options[:http_environment] = settings.get('api.environment')
 
@@ -57,8 +57,15 @@ module LogStash
         warn_ignored(logger, settings, "api.auth.basic.", "api.auth.type")
       end
 
+      if !settings.set?('api.http.host')
+        if settings.get('api.ssl.enabled') && settings.get('api.auth.type') == 'basic'
+          logger.info("API configured securely with SSL and Basic Auth. Defaulting `api.http.host` to all available interfaces")
+          options[:http_host] = '0.0.0.0'
+        end
+      end
+
       logger.debug("Initializing API WebServer",
-                   "api.http.host"        => settings.get("api.http.host"),
+                   "api.http.host"        => options[:http_host],
                    "api.http.port"        => settings.get("api.http.port"),
                    "api.ssl.enabled"      => settings.get("api.ssl.enabled"),
                    "api.auth.type"        => settings.get("api.auth.type"),

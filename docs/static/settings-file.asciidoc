@@ -250,6 +250,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `api.http.host`
 | The bind address for the HTTP API endpoint.
   By default, the {ls} HTTP API binds only to the local loopback interface.
+  When configured securely (`api.ssl.enabled: true` and `api.auth.type: basic`), the HTTP API binds to _all_ available interfaces.
 | `"127.0.0.1"`
 
 | `api.http.port`
