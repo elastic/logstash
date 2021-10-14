@@ -379,7 +379,7 @@ class LogStash::Agent
         #
         # This give us a bit more extensibility with the current startup/validation model
         # that we currently have.
-        begin
+        # begin
           logger.debug("Executing action", :action => action)
           action_result = action.execute(self, @pipelines_registry)
           converge_result.add(action, action_result)
@@ -392,10 +392,11 @@ class LogStash::Agent
               :backtrace => action_result.backtrace
             )
           end
-        rescue SystemExit, Exception => e
-          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
-        end
+        # rescue SystemExit, Exception => e
+        #   logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
+        #   puts "failed to execute action :exception => #{e.class.name}, :message => #{e.message}, :backtrace => #{e.backtrace}"
+        #   converge_result.add(action, e)
+        # end
       end
     end.each(&:join)
 
