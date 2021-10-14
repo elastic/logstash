@@ -73,6 +73,18 @@ prevent Logstash from starting on Java 8.
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
 
+[[ts-pqs]]
+==== Troubleshooting persistent queues
+
+Symptoms of persistent queue problems include {ls} or one or more pipelines not starting successfully, accompanied by an error message similar to this one.
+
+```
+message=>"java.io.IOException: Page file size is too small to hold elements
+```
+
+See the <<troubleshooting-pqs,troubleshooting information>> in the persistent
+queue section for more information on remediating problems with persistent queues. 
+
 
 [[ts-ingest]] 
 ==== Data ingestion
@@ -141,7 +153,6 @@ troubleshooting tips to share, please:
 
 * create an issue at https://github.com/elastic/logstash/issues, or
 * create a pull request with your proposed changes at https://github.com/elastic/logstash.
-
 
 [[ts-pipeline-logging-level-performance]]
 ==== Logging level can affect performances
