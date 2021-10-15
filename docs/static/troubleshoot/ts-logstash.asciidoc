@@ -79,7 +79,7 @@ https://github.com/elastic/logstash/issues/10496[issue].
 Symptoms of persistent queue problems include {ls} or one or more pipelines not starting successfully, accompanied by an error message similar to this one.
 
 ```
-message=>"java.io.IOException: Page file size is too small to hold elements
+message=>"java.io.IOException: Page file size is too small to hold elements"
 ```
 
 See the <<troubleshooting-pqs,troubleshooting information>> in the persistent
