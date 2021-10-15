@@ -94,7 +94,7 @@ class LogstashService < Service
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
     Bundler.with_clean_env do
-      `cat #{Shellwords.escape(input)} | #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
+      `cat #{Shellwords.escape(input)} | LS_JAVA_HOME=#{java.lang.System.getProperty('java.home')} #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
     end
   end
 
