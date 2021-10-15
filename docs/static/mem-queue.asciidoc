@@ -26,16 +26,20 @@ TIP: Consider using <<persistent-queues,persistent queues>> to avoid these limit
 ==== Memory queue size
 
 Memory queue size is not configured directly.
-It is defined by the number of events, the size of which can vary greatly depending on the event payload. 
+Instead, it depends on how you have Logstash tuned. 
 
-The maximum number of events that can be held in each memory queue is equal to
-the value of `pipeline.batch.size` multiplied by the value of
-`pipeline.workers`.
-This value is called the "inflight count." 
+Its upper bound is defined by `pipeline.workers` (default: number of CPUs) times the `pipeline.batch.size` (default: 125) events.
+This value, called the "inflight count," determines maximum number of events that can be held in each memory queue.
 
-NOTE: Each pipeline has its own queue.
+Doubling the number of workers OR doubling the batch size will effectively double the memory queue's capacity (and memory usage).
+Doubling both will _quadruple_ the capacity (and usage).
+
+IMPORTANT: Each pipeline has its own queue.
 
 See <<tuning-logstash>> for more info on the effects of adjusting `pipeline.batch.size` and `pipeline.workers`.
+
+If you need to absorb bursts of traffic, consider using <<persistent-queues,persistent queues>> instead.
+Persistent queues are bound to allocated capacity on disk.
 
 [[mq-settings]]
 ===== Settings that affect queue size
