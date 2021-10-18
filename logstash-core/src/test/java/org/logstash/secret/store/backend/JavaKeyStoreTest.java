@@ -315,13 +315,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-        if (LogstashJavaCompat.isJavaAtLeast(16)) {
-            // starting with java 16 the error when tampering the keystore file switched from
-            // root cause UnrecoverableKeyException to not having the root cause
-            thrown.expect(SecretStoreException.LoadException.class);
-        } else {
-            thrown.expect(SecretStoreException.AccessException.class);
-        }
+        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
