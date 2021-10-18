@@ -31,7 +31,7 @@ require_relative "../support/matchers"
 
 describe LogStash::Runner do
 
-  subject { LogStash::Runner }
+  subject(:runner) { LogStash::Runner }
   let(:logger) { double("logger") }
   let(:agent) { double("agent") }
 
@@ -488,9 +488,12 @@ describe LogStash::Runner do
     end
 
     context "deprecated flags" do
+      let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
+      before(:each) { allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
+
       context "when using --quiet" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -503,7 +506,7 @@ describe LogStash::Runner do
       end
       context "when using --debug" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -516,7 +519,7 @@ describe LogStash::Runner do
       end
       context "when using --verbose" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
         end
