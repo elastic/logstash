@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.LogstashJavaCompat;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreException;
@@ -314,7 +315,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
+        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
