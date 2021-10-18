@@ -311,7 +311,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     while(msg = LogStash::DeprecationMessage.instance.shift)
-      logger.warn msg
+      deprecation_logger.deprecated msg
     end
 
     # Skip any validation and just return the version
