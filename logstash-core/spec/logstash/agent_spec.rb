@@ -65,6 +65,8 @@ describe LogStash::Agent do
       allow(described_class).to receive(:logger).and_return(logger)
       [:debug, :info, :error, :fatal, :trace].each {|level| allow(logger).to receive(level) }
       [:debug?, :info?, :error?, :fatal?, :trace?].each {|level| allow(logger).to receive(level) }
+
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
     end
 
     after :each do
