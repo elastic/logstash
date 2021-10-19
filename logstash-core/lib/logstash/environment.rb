@@ -62,7 +62,7 @@ module LogStash
            Setting::Boolean.new("pipeline.plugin_classloaders", false),
            Setting::Boolean.new("pipeline.separate_logs", false),
    Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
-   Setting::CoercibleString.new("pipeline.ecs_compatibility", "disabled", true, %w(disabled v1 v2)),
+   Setting::CoercibleString.new("pipeline.ecs_compatibility", "disabled", true, %w(disabled v1 v2 v8)),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),

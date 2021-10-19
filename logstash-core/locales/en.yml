@@ -45,6 +45,13 @@ en:
         %{plugin} output plugin: setting 'workers => %{worker_count}' is not
         supported by this plugin. I will continue working as if you had not set
         this setting. Reason: %{message}
+      ecs_compatibility:
+        v2_deprecated: >-
+          The setting `pipeline.ecs_compatibility` will not support the
+          placeholder value `v2` that previously referred to the next
+          unreleased version of ECS. Please use the value `v8` to refer to
+          version 8 of the Elastic Common Schema, which is set to release
+          along-side Logstash 8.
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version

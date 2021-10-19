@@ -72,6 +72,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # is by design and necessary for the wait_until_started semantic
     @finished_run = Concurrent::AtomicBoolean.new(false)
 
+    if settings.get('pipeline.ecs_compatibility') == "v2"
+      deprecation_logger.deprecated I18n.t("logstash.pipeline.ecs_compatibility.v2_deprecated")
+    end
+
     @thread = nil
   end # def initialize
 

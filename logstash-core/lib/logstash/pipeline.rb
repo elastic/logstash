@@ -61,6 +61,10 @@ module LogStash; class BasePipeline < AbstractPipeline
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
     end
 
+    if settings.get('pipeline.ecs_compatibility') == "v2"
+      deprecation_logger.deprecated I18n.t("logstash.pipeline.ecs_compatibility.v2_deprecated")
+    end
+
     # Evaluate the config compiled code that will initialize all the plugins and define the
     # filter and output methods.
     begin
