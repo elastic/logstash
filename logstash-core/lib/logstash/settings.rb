@@ -300,6 +300,12 @@ module LogStash
       SettingWithDeprecatedAlias.wrap(self, deprecated_alias_name)
     end
 
+    ##
+    # Returns a Nullable-wrapped self, effectively making the Setting optional.
+    def nullable
+      Nullable.new(self)
+    end
+
     def format(output)
       effective_value = self.value
       default_value = self.default
@@ -722,6 +728,21 @@ module LogStash
       protected
       def validate(value)
         coerce(value)
+      end
+    end
+
+    # @see Setting#nullable
+    # @api internal
+    class Nullable < SimpleDelegator
+      def validate(value)
+        return true if value.nil?
+
+        __getobj__.send(:validate, value)
+      end
+
+      # prevent delegate from intercepting
+      def validate_value
+        validate(value)
       end
     end
 
