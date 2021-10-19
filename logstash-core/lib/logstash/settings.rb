@@ -114,6 +114,10 @@ module LogStash
       settings
     end
 
+    def names
+      @settings.keys
+    end
+
     def set?(setting_name)
       get_setting(setting_name).set?
     end
