@@ -110,6 +110,17 @@ describe LogStash::Settings do
       end
     end
   end
+
+  describe '#names' do
+    subject(:settings) { described_class.new }
+    before(:each) do
+      settings.register(LogStash::Setting.new("one.two.three", String, "123", false))
+      settings.register(LogStash::Setting.new("this.that", Integer, 123, false))
+    end
+    it 'returns a list of setting names' do
+      expect(settings.names).to contain_exactly("one.two.three", "this.that")
+    end
+  end
   
   describe "post_process" do
     subject(:settings) { described_class.new }
