@@ -36,6 +36,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+    deprecation_logger.deprecated I18n.t("logstash.pipeline.engine.deprecated_ruby")
+
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger
 
@@ -59,6 +61,10 @@ module LogStash; class BasePipeline < AbstractPipeline
 
     if settings.get_value("config.debug")
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
+    end
+
+    if settings.get('pipeline.ecs_compatibility') == "v2"
+      deprecation_logger.deprecated I18n.t("logstash.pipeline.ecs_compatibility.v2_deprecated")
     end
 
     # Evaluate the config compiled code that will initialize all the plugins and define the
