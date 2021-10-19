@@ -36,6 +36,8 @@ module LogStash; class BasePipeline < AbstractPipeline
   attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+    deprecation_logger.deprecated I18n.t("logstash.pipeline.engine.deprecated_ruby")
+
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger
 

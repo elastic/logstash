@@ -52,6 +52,13 @@ en:
           unreleased version of ECS. Please use the value `v8` to refer to
           version 8 of the Elastic Common Schema, which is set to release
           along-side Logstash 8.
+      engine:
+        deprecated_ruby: >-
+          The Ruby Execution Engine is deprecated and will not be available in
+          Logstash 8. The Java Execution Engine has been the default since 7.0,
+          and reached maturity in 7.10. You no longer need to provide the
+          command-line flag `--java-execution` or to specify `pipeline.java_execution`
+          in your `pipelines.yml` or logstash.yml` settings files.
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version
