@@ -4,9 +4,8 @@
 
 {ls} requires one of these versions:
 
-* Java 8
 * Java 11
-* Java 15 (see <<jdk15-upgrade>> for settings info)
+* Java 17 (see <<jdk17-upgrade>> for settings info)
 
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
@@ -20,7 +19,7 @@ for the official word on supported versions across releases.
 ===== 
 {ls} offers architecture-specific
 https://staging-website.elastic.co/downloads/logstash[downloads] that include
-AdoptOpenJDK 11, the latest long term support (LTS) release of JDK.
+Adoptium Eclipse Terumin 17, the latest long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the
 version that is bundled. 
@@ -61,25 +60,24 @@ install the correct startup method (SysV init scripts, Upstart, or systemd). If
 installation, you may get an error message, and {ls} will not start properly.
 
 [float]
-[[jdk15-upgrade]]
-==== Using JDK 15
+[[jdk17-upgrade]]
+==== Using JDK 17
 
-{ls} supports JDK 15, but you need to update settings in `jvm.options` and
+{ls} supports JDK 17, but you need to update settings in `jvm.options` and
 `log4j2.properties` if: 
 
-* you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later, and
-* you are using JDK 15 or later.
+* you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later.
 
 [float]
 ===== Updates to `jvm.options`
-In the `config/jvm.options` file, replace all CMS related flags with:
+In the `config/jvm.options` file, remove all CMS related flags:
 
 [source,shell]
 -----
 ## GC configuration
-8-13:-XX:+UseConcMarkSweepGC
-8-13:-XX:CMSInitiatingOccupancyFraction=75
-8-13:-XX:+UseCMSInitiatingOccupancyOnly
+-XX:+UseConcMarkSweepGC
+-XX:CMSInitiatingOccupancyFraction=75
+-XX:+UseCMSInitiatingOccupancyOnly
 -----
 
 For more information about how to use `jvm.options`, please refer to <<jvm-settings>>.

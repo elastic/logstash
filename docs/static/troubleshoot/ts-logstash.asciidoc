@@ -29,17 +29,17 @@ Operation not permitted
 
 * Change setting to mount `/tmp` with `exec`.
 * Specify an alternate directory using the `-Djava.io.tmpdir` setting in the `jvm.options` file.
- 
 
-[[ts-startup]] 
+
+[[ts-startup]]
 ==== {ls} start up
- 
-[[ts-illegal-reflective-error]] 
+
+[[ts-illegal-reflective-error]]
 ===== 'Illegal reflective access' errors
 
 // https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
 
-Running Logstash with Java 11 results in warnings similar to these:
+After an upgrade from an earlier version of Logstash, running Logstash may result in warnings similar to these:
 
 [source,sh]
 -----
@@ -60,15 +60,14 @@ Try adding these values to the `jvm.options` file.
 -----
 --add-opens=java.base/java.security=ALL-UNNAMED
 --add-opens=java.base/java.io=ALL-UNNAMED
---add-opens=java.base/java.nio.channels=org.jruby.dist
---add-opens=java.base/sun.nio.ch=org.jruby.dist
---add-opens=java.management/sun.management=org.jruby.dist
+--add-opens=java.base/java.nio.channels=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=org.ALL-UNNAMED
+--add-opens=java.management/sun.management=ALL-UNNAMED
 -----
 
 *Notes:*
 
-* These settings allow Logstash to start without warnings in Java 11, but they
-prevent Logstash from starting on Java 8.
+* These settings allow Logstash to start without warnings
 * This workaround has been tested with simple pipelines. If you have experiences
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
