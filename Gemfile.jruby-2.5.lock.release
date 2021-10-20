@@ -22,7 +22,8 @@ PATH
       minitar (~> 0.8)
       mustermann (~> 1.0.3)
       pry (~> 0.12)
-      puma (~> 4)
+      puma (~> 5)
+      racc (~> 1.5.2)
       rack (~> 2)
       rubyzip (~> 1)
       rufus-scheduler
@@ -679,7 +680,7 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (4.3.10-java)
+    puma (5.5.2-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
     rack (2.2.3)
