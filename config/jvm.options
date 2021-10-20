@@ -17,9 +17,9 @@
 ################################################################
 
 ## GC configuration
-8-13:-XX:+UseConcMarkSweepGC
-8-13:-XX:CMSInitiatingOccupancyFraction=75
-8-13:-XX:+UseCMSInitiatingOccupancyOnly
+11-13:-XX:+UseConcMarkSweepGC
+11-13:-XX:CMSInitiatingOccupancyFraction=75
+11-13:-XX:+UseCMSInitiatingOccupancyOnly
 
 ## Locale
 # Set the locale language
@@ -63,12 +63,7 @@
 #-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof
 
 ## GC logging
-#-XX:+PrintGCDetails
-#-XX:+PrintGCTimeStamps
-#-XX:+PrintGCDateStamps
-#-XX:+PrintClassHistogram
-#-XX:+PrintTenuringDistribution
-#-XX:+PrintGCApplicationStoppedTime
+#-Xlog:gc*,gc+age=trace,safepoint:file=@loggc@:utctime,pid,tags:filecount=32,filesize=64m
 
 # log GC status to a file with time stamps
 # ensure the directory exists
@@ -80,5 +75,8 @@
 # Copy the logging context from parent threads to children
 -Dlog4j2.isThreadContextMapInheritable=true
 
-17-:--add-opens java.base/sun.nio.ch=ALL-UNNAMED
-17-:--add-opens java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.security=ALL-UNNAMED
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.nio.channels=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+--add-opens=java.management/sun.management=ALL-UNNAMED
