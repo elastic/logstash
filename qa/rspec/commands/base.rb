@@ -75,6 +75,36 @@ module ServiceTester
       plugins_list.include?(search_token)
     end
 
+    ##
+    # Determines whether a specific gem is included in the vendored distribution.
+    #
+    # When no block is given, returns `true` if _any version_ of the gem is vendored.
+    #
+    # When a block is given, the specification for each vendored gem matching the name
+    # is yielded to the provided block, and the resulting value is used to determine
+    # whether the requirement is met.
+    #
+    # @param host [???]
+    # @param gem_name [String]
+    # @yieldparam gem_specification [Gem::Specification]
+    # @yieldreturn [Boolean]
+    #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
+    def gem_vendored?(host, gem_name, &block)
+      cmd = run_command_in_path("find vendor/bundle/jruby/*/gems/specifications -name '#{gem_name}-*.gemspec'", host)
+
+      matches = cmd.stdout.lines
+
+      matches.map do |path_to_gemspec|
+        filename = path_to_gemspec.split('/').last
+        gemspec_contents = run_command_in_path("cat #{shellescape path_to_gemspec}", host)
+        Tempfile.create(filename) do |tempfile|
+          tempfile.write(gemspec_contents)
+          tempfile.flush
+          Gem::Specification::load(tempfile.path)
+        end
+      end.select { |gemspec| gemspec.name == gem_name }.any?(&block)
+    end
+
     def download(from, to, host)
       run_command("wget #{from} -O #{to}", host)
     end
