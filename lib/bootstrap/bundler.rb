@@ -124,10 +124,16 @@ module LogStash
       # force Rubygems sources to our Gemfile sources
       ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
 
+      ::Bundler.settings.set_local(:path, LogStash::Environment::BUNDLE_DIR)
+      ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
+      ::Bundler.settings.set_local(:without, options[:without])
+      ::Bundler.settings.set_local(:force, options[:force])
+
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
-      # Note: Using `ENV`s here because ::Bundler.settings.set_local
-      # does not work (set_global *does*, but that seems too drastic a change)
+      # Note: Using `ENV`s here because ::Bundler.settings.set_local or `bundle config`
+      # is not being respected with `Bundler::CLI.start`?
+      # (set_global *does*, but that seems too drastic a change)
       with_env({"BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
                 "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
                 "BUNDLE_SILENCE_ROOT_WARNING" => "true",
