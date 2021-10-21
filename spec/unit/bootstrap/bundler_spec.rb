@@ -58,17 +58,26 @@ describe LogStash::Bundler do
     end
 
     after do
-      expect(::Bundler.settings[:path]).to eq(LogStash::Environment::BUNDLE_DIR)
-      expect(::Bundler.settings[:gemfile]).to eq(LogStash::Environment::GEMFILE_PATH)
-      expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []))
-
       expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_home)
-
       $stderr = original_stderr
     end
 
     it 'should call Bundler::CLI.start with the correct arguments' do
+      allow(ENV).to receive(:replace)
       expect(::Bundler::CLI).to receive(:start).with(bundler_args)
+      expect(ENV).to receive(:replace) do |args|
+        expect(args).to include("BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                                                            "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+                                                            "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                                                            "BUNDLE_WITHOUT" => "development")
+      end
+      expect(ENV).to receive(:replace) do |args|
+        expect(args).not_to include(
+                                "BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                                "BUNDLE_WITHOUT" => "development")
+      end
+
       LogStash::Bundler.invoke!(options)
     end
 
