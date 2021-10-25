@@ -90,13 +90,11 @@ module ServiceTester
     # @yieldreturn [Boolean]
     #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
     def gem_vendored?(host, gem_name, &block)
-      cmd = run_command_in_path("find vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
-
+      cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
       matches = cmd.stdout.lines
-
       matches.map do |path_to_gemspec|
         filename = path_to_gemspec.split('/').last
-        gemspec_contents = run_command_in_path("cat #{shellescape path_to_gemspec}", host)
+        gemspec_contents = run_command("cat #{path_to_gemspec}", host).stdout
         Tempfile.create(filename) do |tempfile|
           tempfile.write(gemspec_contents)
           tempfile.flush
