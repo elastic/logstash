@@ -90,7 +90,7 @@ module ServiceTester
     # @yieldreturn [Boolean]
     #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
     def gem_vendored?(host, gem_name, &block)
-      cmd = run_command_in_path("find vendor/bundle/jruby/*/gems/specifications -name '#{gem_name}-*.gemspec'", host)
+      cmd = run_command_in_path("find vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
 
       matches = cmd.stdout.lines
 
