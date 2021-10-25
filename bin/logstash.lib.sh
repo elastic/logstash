@@ -138,6 +138,10 @@ setup_java() {
   export JAVACMD
 
   CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
+
+  # Verify the version of Java being used, and exit if the wrong version of Java is not available.
+  "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.util.JavaVersionChecker
+
   JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
   unset CLASSPATH
   export JAVA_OPTS
