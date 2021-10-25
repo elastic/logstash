@@ -28,18 +28,10 @@ describe "artifacts composition" do
       end
     end
 
-    # context 'necessary gem dependencies (sanity check)' do
-    #   it 'vendor concurrent-ruby' do
-    #     expect(logstash.gem_vendored?('concurrent-ruby')).to be true
-    #   end
-    #
-    #   it 'FAILSPEC vendors v2 of concurrent-ruby' do
-    #     expect(logstash.gem_vendored?('concurrent-ruby') { |spec| spec.version == "2" }).to be true
-    #   end
-    #
-    #   it 'SPEC vendors v1.1.9 of concurrent-ruby' do
-    #     expect(logstash.gem_vendored?('concurrent-ruby') { |spec| spec.version == "1.1.9" }).to be true
-    #   end
-    # end
+    context 'necessary gem dependencies (sanity check)' do
+      it 'vendor concurrent-ruby' do
+        expect(logstash.gem_vendored?('concurrent-ruby')).to be true
+      end
+    end
   end
 end
