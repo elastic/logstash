@@ -16,17 +16,17 @@ openssl req -new -x509 -days 1826 -extensions ca -key root.key -out root.crt -su
 # intermediate CA
 openssl genrsa -out intermediate-ca.key 4096
 openssl req -new -key intermediate-ca.key -out intermediate-ca.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=intermediate-ca" -config ../openssl.cnf
-openssl x509 -req -days 1000 -extfile ../openssl.cnf -extensions intermediate_ca -in intermediate-ca.csr -CA root.crt -CAkey root.key -out intermediate-ca.crt -set_serial 01
+openssl x509 -req -days 1000 -extfile ../openssl.cnf -extensions intermediate_ca -in intermediate-ca.csr -CA root.crt -CAkey root.key -set_serial 01 -sha256 -out intermediate-ca.crt
 
 # server certificate from intermediate CA
 openssl genrsa -out server_from_intermediate.key 4096
 openssl req -new -key server_from_intermediate.key -out server_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=server" -config ../openssl.cnf
-openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in server_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 02 -out server_from_intermediate.crt
+openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in server_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 02 -sha256 -out server_from_intermediate.crt
 
 # server certificate from root
 openssl genrsa -out server_from_root.key 4096
 openssl req -new -key server_from_root.key -out server_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=server" -config ../openssl.cnf
-openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in server_from_root.csr -CA root.crt -CAkey root.key -set_serial 03 -out server_from_root.crt
+openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in server_from_root.csr -CA root.crt -CAkey root.key -set_serial 03 -sha256 -out server_from_root.crt
 
 
 # Client certificates - We don't need them now
