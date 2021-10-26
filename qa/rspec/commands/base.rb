@@ -78,18 +78,13 @@ module ServiceTester
     ##
     # Determines whether a specific gem is included in the vendored distribution.
     #
-    # When no block is given, returns `true` if _any version_ of the gem is vendored.
-    #
-    # When a block is given, the specification for each vendored gem matching the name
-    # is yielded to the provided block, and the resulting value is used to determine
-    # whether the requirement is met.
+    # Returns `true` if _any version_ of the gem is vendored.
     #
     # @param host [???]
     # @param gem_name [String]
-    # @yieldparam gem_specification [Gem::Specification]
-    # @yieldreturn [Boolean]
+    # @return [Boolean]
     #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
-    def gem_vendored?(host, gem_name, &block)
+    def gem_vendored?(host, gem_name)
       cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
       matches = cmd.stdout.lines
       matches.map do |path_to_gemspec|
@@ -100,7 +95,7 @@ module ServiceTester
           tempfile.flush
           Gem::Specification::load(tempfile.path)
         end
-      end.select { |gemspec| gemspec.name == gem_name }.any?(&block)
+      end.select { |gemspec| gemspec.name == gem_name }.any?
     end
 
     def download(from, to, host)
