@@ -435,13 +435,16 @@ en:
           DEPRECATED: use --log.level=info instead.
       java:
         home: >-
-          The use of JAVA_HOME is now deprecated. Starting from Logstash 8.0, this value will be ignored and the
-          bundled JDK will be used instead.
-          The recommended way to run Logstash is to use the bundled JDK. If you do need to provide your own JDK,
-          please configure it using LS_JAVA_HOME instead.
+          The use of JAVA_HOME has been deprecated. Logstash 8.0 and later ignores JAVA_HOME and uses the bundled JDK.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
         version: >-
           Starting from Logstash 8.0, the minimum required version of Java is Java 11; your Java version from
-          %{java_version} does not meet this requirement. Please reconfigure your version of Java to one that is supported.
+          %{java_home} does not meet this requirement. Please reconfigure your version of Java to one that is supported.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
     settings:
       deprecation:
         set: >-

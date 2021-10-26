@@ -27,7 +27,7 @@ import java.util.Objects;
  * Helper class to compare current version of JVM with a target version.
  * Based on JavaVersion class from elasticsearch java version checker tool
  */
-public class JavaVersion {
+public class JavaVersion implements Comparable<JavaVersion> {
 
     public static final JavaVersion CURRENT = parse(System.getProperty("java.specification.version"));
     public static final JavaVersion JAVA_11 = parse("11");
@@ -59,7 +59,7 @@ public class JavaVersion {
         }
     }
 
-    public static int compare(final JavaVersion leftVersion, final JavaVersion rightVersion) {
+    private static int compare(final JavaVersion leftVersion, final JavaVersion rightVersion) {
         List<Integer> left = leftVersion.version;
         List<Integer> right = rightVersion.version;
         // lexicographically compare two lists, treating missing entries as zeros
@@ -77,4 +77,8 @@ public class JavaVersion {
         return 0;
     }
 
+    @Override
+    public int compareTo(JavaVersion other) {
+        return compare(this, other);
+    }
 }
