@@ -149,7 +149,7 @@ api.http.host: 0.0.0.0 # 127.0.0.1
 # the path to a password-protected keystore in p12 or jks format, along with credentials.
 #
 api.ssl.enabled: true
-api.ssl.keystore.path: /home/kares/workspace/work/elastic/logstash/qa/integration/fixtures/webserver_certs/generated/server_from_root.jks
+api.ssl.keystore.path: /home/kares/workspace/work/elastic/logstash/qa/integration/fixtures/webserver_certs/generated/server_from_root_and_root.p12
 api.ssl.keystore.password: "12345678"
 
 api.ssl.client_authentication: required

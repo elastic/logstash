@@ -65,6 +65,8 @@ openssl pkcs12 -export -in server_from_root.chain.crt -inkey server_from_root.ke
 # use java keytool to convert all pkcs12 keystores to jks-format keystores (pass:12345678)
 keytool -importkeystore -srckeystore server_from_intermediate.p12 -srcstoretype pkcs12 -srcstorepass 12345678 -destkeystore server_from_intermediate.jks -deststorepass 12345678 -alias server_from_intermediate
 keytool -importkeystore -srckeystore server_from_root.p12 -srcstoretype pkcs12 -srcstorepass 12345678 -destkeystore server_from_root.jks -deststorepass 12345678 -alias server_from_root
+cp server_from_root.p12 server_from_root_and_root.p12
+keytool -importcert -storetype PKCS12 -keystore server_from_root_and_root.p12 -storepass 12345678 -alias root -file root.crt -noprompt
 
 # cleanup csr, we don't need them
 rm -rf *.csr
