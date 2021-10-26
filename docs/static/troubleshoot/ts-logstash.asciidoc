@@ -39,7 +39,7 @@ Operation not permitted
 
 // https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
 
-After an upgrade from an earlier version of Logstash, running Logstash may result in warnings similar to these:
+After an upgrade, Logstash may show warnings similar to these:
 
 [source,sh]
 -----
@@ -67,7 +67,7 @@ Try adding these values to the `jvm.options` file.
 
 *Notes:*
 
-* These settings allow Logstash to start without warnings
+* These settings allow Logstash to start without warnings.
 * This workaround has been tested with simple pipelines. If you have experiences
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
