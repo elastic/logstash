@@ -131,7 +131,7 @@ module LogStash
         return unless monitoring_enabled?(runner.settings)
 
         deprecation_logger.deprecated(
-            "Internal collectors option for Logstash monitoring is deprecated and targeted for removal in the next major version.\n"\
+            "Internal collectors option for Logstash monitoring is deprecated and may be removed in a future release.\n"\
             "Please configure Metricbeat to monitor Logstash. Documentation can be found at: \n"\
             "https://www.elastic.co/guide/en/logstash/current/monitoring-with-metricbeat.html"
             )
