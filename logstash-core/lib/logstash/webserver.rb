@@ -41,6 +41,11 @@ module LogStash
         ssl_params = {}
         ssl_params[:keystore_path] = required_setting(settings, 'api.ssl.keystore.path', "api.ssl.enabled")
         ssl_params[:keystore_password] = required_setting(settings, 'api.ssl.keystore.password', "api.ssl.enabled")
+        ssl_params[:verify_mode] = {
+            'none'     => 'none',
+            'optional' => 'peer',
+            'required' => 'force_peer',
+        }.fetch(settings.get('api.ssl.client_authentication'))
 
         options[:ssl_params] = ssl_params.freeze
       else
