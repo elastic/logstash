@@ -435,8 +435,11 @@ en:
           DEPRECATED: use --log.level=info instead.
       java:
         home: >-
-          The use of JAVA_HOME is now deprecated and will be removed in Logstash 8.0. Please configure LS_JAVA_HOME instead.
-        version: |-
+          The use of JAVA_HOME is now deprecated. Starting from Logstash 8.0, this value will be ignored and the
+          bundled JDK will be used instead.
+          The recommended way to run Logstash is to use the bundled JDK. If you do need to provide your own JDK,
+          please configure it using LS_JAVA_HOME instead.
+        version: >-
           Starting from Logstash 8.0, the minimum required version of Java is Java 11; your Java version from
           %{java_version} does not meet this requirement. Please reconfigure your version of Java to one that is supported.
     settings:

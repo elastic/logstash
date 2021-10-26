@@ -23,12 +23,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Helper class to compare current version of JVM with a target version.
+ * Based on JavaVersion class from elasticsearch java version checker tool
+ */
 public class JavaVersion {
 
-    public static final List<Integer> CURRENT = parse(System.getProperty("java.specification.version"));
-    public static final List<Integer> JAVA_11 = parse("11");
+    public static final JavaVersion CURRENT = parse(System.getProperty("java.specification.version"));
+    public static final JavaVersion JAVA_11 = parse("11");
+    private final List<Integer> version;
 
-    static List<Integer> parse(final String value) {
+    private JavaVersion(List<Integer> version){
+        this.version = version;
+    }
+
+    static JavaVersion parse(final String value) {
         if (value.matches("^0*[0-9]+(\\.[0-9]+)*$") == false) {
             throw new IllegalArgumentException(value);
         }
@@ -38,19 +47,21 @@ public class JavaVersion {
         for (final String component : components) {
             version.add(Integer.valueOf(component));
         }
-        return version;
+        return new JavaVersion(version);
     }
 
-    public static int majorVersion(final List<Integer> javaVersion) {
+    public static int majorVersion(final JavaVersion javaVersion) {
         Objects.requireNonNull(javaVersion);
-        if (javaVersion.get(0) > 1) {
-            return javaVersion.get(0);
+        if (javaVersion.version.get(0) > 1) {
+            return javaVersion.version.get(0);
         } else {
-            return javaVersion.get(1);
+            return javaVersion.version.get(1);
         }
     }
 
-    public static int compare(final List<Integer> left, final List<Integer> right) {
+    public static int compare(final JavaVersion leftVersion, final JavaVersion rightVersion) {
+        List<Integer> left = leftVersion.version;
+        List<Integer> right = rightVersion.version;
         // lexicographically compare two lists, treating missing entries as zeros
         final int len = Math.max(left.size(), right.size());
         for (int i = 0; i < len; i++) {
