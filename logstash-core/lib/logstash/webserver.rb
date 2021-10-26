@@ -189,7 +189,8 @@ module LogStash
           if @ssl_params
             unwrapped_ssl_params = {
               'keystore'      => @ssl_params.fetch(:keystore_path),
-              'keystore-pass' => @ssl_params.fetch(:keystore_password).value
+              'keystore-pass' => @ssl_params.fetch(:keystore_password).value,
+              'verify_mode'   => @ssl_params.fetch(:verify_mode)
             }
             ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
             @server.add_ssl_listener(http_host, candidate_port, ssl_context)
