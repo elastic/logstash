@@ -132,7 +132,7 @@
 # When secured with SSL and Basic Auth, the API is bound to _all_ interfaces
 # unless configured otherwise.
 #
-# api.http.host: 127.0.0.1
+api.http.host: 0.0.0.0 # 127.0.0.1
 #
 # The HTTP API web server will listen on an available port from the given range.
 # Values can be specified as a single port (e.g., `9600`), or an inclusive range
@@ -148,9 +148,12 @@
 # The HTTP API can be secured with SSL (TLS). To do so, you will need to provide
 # the path to a password-protected keystore in p12 or jks format, along with credentials.
 #
-# api.ssl.enabled: false
-# api.ssl.keystore.path: /path/to/keystore.jks
-# api.ssl.keystore.password: "y0uRp4$$w0rD"
+api.ssl.enabled: true
+api.ssl.keystore.path: /home/kares/workspace/work/elastic/logstash/qa/integration/fixtures/webserver_certs/generated/server_from_root.jks
+api.ssl.keystore.password: "12345678"
+
+api.ssl.client_authentication: required
+
 #
 # The HTTP API can be configured to require authentication. Acceptable values are
 #  - `none`:  no auth is required (default)
