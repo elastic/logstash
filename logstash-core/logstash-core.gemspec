@@ -57,7 +57,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "mustermann", '~> 1.0.3'
   gem.add_runtime_dependency "sinatra", '~> 2'
   gem.add_runtime_dependency 'puma', '~> 5'
-  gem.add_runtime_dependency "jruby-openssl", "= 0.10.5" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
