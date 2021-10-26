@@ -32,14 +32,14 @@ openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in
 # Client certificates - We don't need them now
 
 # client certificate from intermediate CA
-# openssl genrsa -out client_from_intermediate.key 4096
-# openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-# openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
+openssl genrsa -out client_from_intermediate.key 4096
+openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
 
 # client certificate from root
-# openssl genrsa -out client_from_root.key 4096
-# openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-# openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
+openssl genrsa -out client_from_root.key 4096
+openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
 
 # create server chain pems.
 cat intermediate-ca.crt server_from_intermediate.crt > server_from_intermediate.chain.crt
