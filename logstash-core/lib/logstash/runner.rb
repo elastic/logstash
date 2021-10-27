@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+java_import 'org.logstash.util.JavaVersion'
 Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
@@ -317,6 +317,12 @@ class LogStash::Runner < Clamp::StrictCommand
       deprecation_logger.deprecated msg
     end
 
+    if JavaVersion::CURRENT < JavaVersion::JAVA_11
+      logger.warn I18n.t("logstash.runner.java.version",
+                                             :java_home => java.lang.System.getProperty("java.home"))
+    end
+
+    logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
     # Skip any validation and just return the version
     if version?
       show_version
