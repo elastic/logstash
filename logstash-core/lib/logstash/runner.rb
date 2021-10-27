@@ -318,11 +318,11 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     if JavaVersion::CURRENT < JavaVersion::JAVA_11
-        deprecation_logger.deprecated I18n.t("logstash.runner.java.version",
+      logger.warn I18n.t("logstash.runner.java.version",
                                              :java_home => java.lang.System.getProperty("java.home"))
     end
 
-    deprecation_logger.deprecated I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
+    logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
     # Skip any validation and just return the version
     if version?
       show_version
