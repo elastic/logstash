@@ -30,11 +30,11 @@ describe LogStash::Config::Source::Local::ConfigStringLoader do
   let(:config_string) { "input { generator {} } output { stdout {} }"}
 
   it "returns one config_parts" do
-    expect(subject.read(config_string).size).to eq(1)
+    expect(subject.new(config_string).read.size).to eq(1)
   end
 
   it "returns a valid config part" do
-    config_part = subject.read(config_string).first
+    config_part = subject.new(config_string).read.first
     expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
   end
 end
@@ -51,7 +51,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       end
 
       it "returns an empty array" do
-        expect(subject.read(directory)).to be_empty
+        expect(subject.new(directory).read).to be_empty
       end
     end
 
@@ -63,7 +63,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       end
 
       it "returns an empty array" do
-        expect(subject.read(directory)).to be_empty
+        expect(subject.new(directory).read).to be_empty
       end
     end
   end
@@ -82,16 +82,16 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       end
 
       it "returns a `config_parts` per file" do
-        expect(subject.read(reader_config).size).to eq(files.size)
+        expect(subject.new(reader_config).read.size).to eq(files.size)
       end
 
       it "returns alphabetically sorted parts" do
-        parts = subject.read(reader_config)
+        parts = subject.new(reader_config).read
         expect(parts.collect { |part| ::File.basename(part.id) }).to eq(files.keys.sort)
       end
 
       it "returns valid `config_parts`" do
-        parts = subject.read(reader_config)
+        parts = subject.new(reader_config).read
 
         parts.each do |part|
           basename = ::File.basename(part.id)
@@ -116,7 +116,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
       it "raises an exception" do
         # check against base name because on Windows long paths are shrinked in the exception message
-        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /.+#{::File.basename(file_path)}/
+        expect { subject.new(file_path).read }.to raise_error LogStash::ConfigLoadingError, /.+#{::File.basename(file_path)}/
       end
     end
 
@@ -268,11 +268,11 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
     end
 
     it "returns one config_parts" do
-      expect(subject.read(remote_url).size).to eq(1)
+      expect(subject.new(remote_url).read.size).to eq(1)
     end
 
     it "returns a valid config part" do
-      config_part = subject.read(remote_url).first
+      config_part = subject.new(remote_url).read.first
       expect(config_part).to be_a_source_with_metadata("http", remote_url, config_string)
     end
   end
@@ -287,7 +287,7 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
       end
 
       it "raises the exception up" do
-        expect { subject.read(remote_url) }.to raise_error LogStash::ConfigLoadingError
+        expect { subject.new(remote_url).read }.to raise_error LogStash::ConfigLoadingError
       end
     end
   end
