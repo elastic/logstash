@@ -32,23 +32,29 @@ module LogStash module Config module Source
   #
   class Local < Base
     class ConfigStringLoader
+      include LogStash::Util::SubstitutionVariables
+      include LogStash::Util::Loggable
+
       INPUT_BLOCK_RE = /input *{/
       OUTPUT_BLOCK_RE = /output *{/
       EMPTY_RE = /^\s*$/
 
-      def self.read(config_string)
-        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, config_string)]
+      def initialize(config_string)
+        @config_string = config_string
+      end
+
+      def read
+        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, deep_replace(@config_string))]
 
         # Make sure we have an input and at least 1 output
         # if its not the case we will add stdin and stdout
         # this is for backward compatibility reason
-        if !INPUT_BLOCK_RE.match(config_string)
+        if !INPUT_BLOCK_RE.match(@config_string)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default input", 0, 0, LogStash::Config::Defaults.input)
-
         end
 
         # include a default stdout output if no outputs given
-        if !OUTPUT_BLOCK_RE.match(config_string)
+        if !OUTPUT_BLOCK_RE.match(@config_string)
           config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
         end
 
@@ -57,6 +63,7 @@ module LogStash module Config module Source
     end
 
     class ConfigPathLoader
+      include LogStash::Util::SubstitutionVariables
       include LogStash::Util::Loggable
 
       TEMPORARY_FILE_RE = /~$/
@@ -88,7 +95,8 @@ module LogStash module Config module Source
           config_string.force_encoding("UTF-8")
 
           if config_string.valid_encoding?
-            part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
+            part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, deep_replace(config_string))
+            # part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
             config_parts << part
           else
             encoding_issue_files << file
@@ -104,10 +112,6 @@ module LogStash module Config module Source
         end
 
         config_parts
-      end
-
-      def self.read(path)
-        ConfigPathLoader.new(path).read
       end
 
       private
@@ -141,8 +145,14 @@ module LogStash module Config module Source
     end
 
     class ConfigRemoteLoader
-      def self.read(uri)
-        uri = URI.parse(uri)
+      include LogStash::Util::SubstitutionVariables
+
+      def initialize(uri)
+        @uri = uri
+      end
+
+      def read
+        uri = URI.parse(@uri)
 
         Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == "https") do |http|
           request = Net::HTTP::Get.new(uri.path)
@@ -151,7 +161,7 @@ module LogStash module Config module Source
           # since we have fetching config we wont follow any redirection.
           case response.code.to_i
           when 200
-            [org.logstash.common.SourceWithMetadata.new(uri.scheme, uri.to_s, 0, 0, response.body)]
+            [org.logstash.common.SourceWithMetadata.new(uri.scheme, uri.to_s, 0, 0, deep_replace(response.body))]
           when 302
             raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "We don't follow redirection for remote configuration")
           when 404
@@ -201,11 +211,11 @@ module LogStash module Config module Source
 
     def local_pipeline_configs
       config_parts = if config_string?
-        ConfigStringLoader.read(config_string)
+        ConfigStringLoader.new(config_string).read
       elsif local_config?
-        ConfigPathLoader.read(config_path)
+        ConfigPathLoader.new(config_path).read
       elsif remote_config?
-        ConfigRemoteLoader.read(config_path)
+        ConfigRemoteLoader.new(config_path).read
       else
         []
       end

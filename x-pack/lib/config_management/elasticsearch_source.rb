@@ -13,8 +13,9 @@ require "license_checker/licensed"
 module LogStash
   module ConfigManagement
     class ElasticsearchSource < LogStash::Config::Source::Base
-      include LogStash::Util::Loggable, LogStash::LicenseChecker::Licensed,
-              LogStash::Helpers::ElasticsearchOptions
+      include LogStash::Util::Loggable, LogStash::LicenseChecker::Licensed, LogStash::Helpers::ElasticsearchOptions
+      include LogStash::Util::SubstitutionVariables
+
 
       class RemoteConfigError < LogStash::Error; end
 
@@ -93,7 +94,8 @@ module LogStash
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
-        config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s, config_string, pipeline_metadata_str)
+        config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s,
+                                                                 deep_replace(config_string), pipeline_metadata_str)
 
         # We don't support multiple pipelines, so use the global settings from the logstash.yml file
         settings = @settings.clone
