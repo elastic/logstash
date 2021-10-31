@@ -3,7 +3,6 @@
 
 coming[8.0.0]
 
-* <<logstash-8-0-0,Logstash 8.0.0>>
 This section summarizes the changes in the following releases:
 
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
