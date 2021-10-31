@@ -2,102 +2,54 @@
 == Release Notes
 
 coming[8.0.0]
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.0.0
-
-* Remove unused NodeStats#mem_payload https://github.com/elastic/logstash/pull/9051[#9051]
-* Central management typeless API https://github.com/elastic/logstash/pull/10421[#10421]
-* remove exclusive lock for Ruby pipeline initialization https://github.com/elastic/logstash/pull/10431[#10431]
-* cleanup rake tasks and default plugin list https://github.com/elastic/logstash/pull/10509[#10509]
-* update to send api version 6 https://github.com/elastic/logstash/pull/10518[#10518]
-* Update monitoring HTTP end point https://github.com/elastic/logstash/pull/10528[#10528]
-* monitoring: bump to system_api_version 7 https://github.com/elastic/logstash/pull/10535[#10535]
-* move download setup code inside the downloadEs task https://github.com/elastic/logstash/pull/10547[#10547]
-* make monitoring specs resilient to internal api number changes https://github.com/elastic/logstash/pull/10552[#10552]
-* correctly handle unexecuted downloadEs task https://github.com/elastic/logstash/pull/10555[#10555]
-* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10560[#10560]
-* Refactoring of LIR serializer and exposing pipeline metrics https://github.com/elastic/logstash/pull/10561[#10561]
-* monitoring: bump to system_api_version 7 https://github.com/elastic/logstash/pull/10562[#10562]
-* Enhance GET _node/stats/pipelines API for Metricbeat monitoring https://github.com/elastic/logstash/pull/10576[#10576]
-*  Enhance `GET /` API for Metricbeat https://github.com/elastic/logstash/pull/10589[#10589]
-* Update JRuby and Java prerequisites https://github.com/elastic/logstash/pull/10604[#10604]
-* Collect and expose codec metrics https://github.com/elastic/logstash/pull/10614[#10614]
-* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
-* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
-* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
-* Refactor Gradle wrappers around Ruby operations https://github.com/elastic/logstash/pull/10642[#10642]
-* [DOCS] Adds tagged region for notable breaking changes https://github.com/elastic/logstash/pull/10654[#10654]
-* download exact version artifact for release build otherwise download snapshot https://github.com/elastic/logstash/pull/10664[#10664]
-* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
-* Corrects the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
-* Correct settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
-* Correction on Java execution in docs on command-line arguments https://github.com/elastic/logstash/pull/10710[#10710]
-* Clarify that Java codecs work only with Java inputs and outputs https://github.com/elastic/logstash/pull/10716[#10716]
-* Include G1 in JVM heap metrics https://github.com/elastic/logstash/pull/10728[#10728]
-* JRuby resolv.rb leak https://github.com/elastic/logstash/pull/10734[#10734]
-
-=== Logstash Commits between 8.0 and 8.0.0-alpha2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.0-alpha2..8.0"
-
-462191ebb - (HEAD -> 8.0, origin/8.0) Forwardport #13358 to master: Add deprecation warnings for JAVA_HOME/… (#13365) (5 days ago) <Rob Bavey>
-e619b7ade - Revert "Add JavaVersionChecker to check Java version for compatibility before… (#13356)" (#13364) (5 days ago) <Rob Bavey>
-620a65477 - Add JavaVersionChecker to check Java version for compatibility before… (#13356) (5 days ago) <Rob Bavey>
-a6e3914d6 - Fix bundler handling of 'without' (#13351) (5 days ago) <Rob Bavey>
-15be7a98c - Update documentation around JVM usage to reflect changes (#13350) (5 days ago) <Rob Bavey>
-dd2245c44 - only use --add-opens flags on java 11+ (#13360) (5 days ago) <João Duarte>
-057b02206 - Remove jdk8 from ci matrix (#13344) (5 days ago) <Rob Bavey>
-e92bae0e3 - Deps: upgrade jruby-openssl to 0.11.0 (#13355) (5 days ago) <Karol Bucek>
-4188bacb6 - Update jvm.options to remove JDK 8 only settings (#13349) (6 days ago) <Rob Bavey>
-15930ccd3 - Secure API (#13308) (12 days ago) <Ry Biesemeyer>
-9354d4136 - Temporarily pin `racc` to `1.5.2` to fix build (#13339) (12 days ago) <Rob Bavey>
-258b8b555 - Chore: update tested (ci) releases for 7.x / 6.x (#13335) (12 days ago) <Karol Bucek>
-7395641a4 - Fixes to build and run Logstah on JDK 17 (#13306) (13 days ago) <Andrea Selva>
-e5c8e6e3e - Doc: Add link to pq info from troubleshooting topic (#13320) (2 weeks ago) <Karen Metts>
-fc35cba88 - Doc: Fix templating error in integration plugin header (#13324) (2 weeks ago) <Karen Metts>
-7178890f4 - Fix Elasticsearch integration test to use specified JDK (#13316) (2 weeks ago) <Rob Bavey>
-904d257cf - Doc: Expand content for memqueue (#13317) (2 weeks ago) <Karen Metts>
-096eb7ac4 - [DOC] Clarify the scope of environment variable expansion (#13299) (3 weeks ago) <João Duarte>
-f70350ba1 - don't require mutate filter on remove_spec (#13292) (3 weeks ago) <João Duarte>
-949b4a0ce - Update JDK matrix to include JDK17: OpenJDK, AdoptiumJDK and Zulu (#13307) (3 weeks ago) <Andrea Selva>
-82081d80d - Add support for Nanosecond-precision timetamps (#12797) (3 weeks ago) <Ry Biesemeyer>
-9f45087d8 - Add pipeline.ordered setting for docker image (#13300) (3 weeks ago) <Andres Rodriguez>
-8a01cf6d1 - Doc: Fix list formatting (#13294) (3 weeks ago) <Karen Metts>
-aa6afa5a9 - fix plugin installation script (#13289) (3 weeks ago) <kaisecheng>
-3314f2fbd - Doc: Rework PQ content (#13173) (4 weeks ago) <Karen Metts>
-1299f336d - Doc: Remove outdated info and folder (#13259) (4 weeks ago) <Karen Metts>
-6b9d2169d - Replace Faraday to Manticore to get rid of jruby-openssl verification error of Let's Encrypt cross-signed DST Root CA X3 (#13273) (4 weeks ago) <kaisecheng>
-44ea102a7 - Doc: Add topic and expand info for in-memory queue (#13246) (4 weeks ago) <Karen Metts>
-50834d0f2 - Fix plugin manager test that fail to fetch dependency (#13270) (4 weeks ago) <kaisecheng>
-4187d80bf - unlock ecs_compatibility_support version in plugin update (#13218) (4 weeks ago) <kaisecheng>
-2d8abc459 - Doc: Add shared attribute for messaging ecs default info (#13083) (4 weeks ago) <Karen Metts>
-1913de1bf - update golang image to 1.17.1(#13260) (4 weeks ago) <kaisecheng>
-0f433a081 - avoid duplication of heading and index entry in release notes (#13192) (5 weeks ago) <kaisecheng>
-8c83282ba - geoip integrate air-gapped bootstrap script (#13104) (5 weeks ago) <kaisecheng>
-aa1aa8e37 - Fix kafka download link for integration tests (#13248) (5 weeks ago) <Rob Bavey>
-a876f6479 - update ci releases to 7.15.0 (#13245) (5 weeks ago) <kaisecheng>
-37e1db0c1 - Doc: Add note and example for date math in conditionals (#13199) (6 weeks ago) <Karen Metts>
-d535247a6 - Update CI to run on AdoptOpenJDK16 (#13202) (6 weeks ago) <Andrea Selva>
-5e9207f6b - Update Logstash releases with latest 6.8.19 (#13241) (6 weeks ago) <Andrea Selva>
-643fee7c8 - Update Logstash releases with latest 7.14.2 (#13240) (6 weeks ago) <Andrea Selva>
-642875d70 - [Docs] Remove outdated roadmap content (#13233) (6 weeks ago) <Rob Bavey>
-0ce03de17 - Release notes for 8.0.0-alpha2 (#13228) (7 weeks ago) <Logstash Machine>
-827bbd927 - fix geoip external DB shutdown nil exception (#13224) (7 weeks ago) <kaisecheng>
-d51afe54d - Removed JAVA_HOME using only LS_JAVA_HOME (#13214) (7 weeks ago) <Andrea Selva>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.0.0-alpha2..8.0 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
 
 * <<logstash-8-0-0,Logstash 8.0.0>>
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-0-0-beta1]]
+=== Logstash 8.0.0-beta1 Release Notes
+
+[[nanosecond-precision]]
+As processing times speed up, millisecond granularity is not always enough. Inbound data increasingly has sub-millisecond granularity timestamps.
+The pull request https://github.com/elastic/logstash/pull/12797[#12797] allows the internal mechanisms of Logstash that hold moment-in-time data - such as the Logstash Event, the Persistent Queue, the Dead Letter Queue and JSON encoding/decoding - to have nanosecond granularity.
+
+Timestamp precision is limited to the JVM and Platform's available granularity, which in many cases is microseconds.
+
+This change also grants users access to https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns[Java time's improved formatters], which include support fort ISO quarters, week-of-month, and a variety of timezone/offset-related format substitutions. For example:
+
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  mutate {
+    add_field => {"nanos" => "Nanos: %{{n}}" }
+  }
+}
+--------------------------------------------------------------------------------
+
+Results in the following event:
+
+[source,json]
+--------------------------------------------------------------------------------
+{
+    "@timestamp" => 2021-10-31T22:32:34.747968Z,
+          "host" => "logstash.lan",
+         "nanos" => "Nanos: 747968000",
+       "message" => "test",
+          "type" => "stdin",
+      "@version" => "1"
+}
+--------------------------------------------------------------------------------
+
+NOTE: These prs below are also in 7.15/7.16, we can delete these entries before v8.0.0-beta1 release
+* Secure API https://github.com/elastic/logstash/pull/13308[#13308]
+* geoip integrate air-gapped bootstrap script https://github.com/elastic/logstash/pull/13104[#13104]
+* Add deprecation warnings for JAVA_HOME/… https://github.com/elastic/logstash/pull/13365[#13365]
+* Fixes to build and run Logstah on JDK 17 https://github.com/elastic/logstash/pull/13306[#13306]
+
 
 [[logstash-8-0-0-alpha2]]
 === Logstash 8.0.0-alpha2 Release Notes
