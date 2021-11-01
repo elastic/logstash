@@ -52,6 +52,15 @@ The Field Reference parser interprets references to fields in your pipelines and
 plugins. It was configurable in 7.x, with the default set to strict to reject
 inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
 {ls} rejects ambiguous and illegal inputs as standard behavior.
+
+[discrete]
+[[bc-java-home]]
+===== Removed support for JAVA_HOME
+Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs
+with has been removed. 
+Users should set the value of `LS_JAVA_HOME` to the path of their preferred JDK
+if they need to use a version other than the bundled JDK. 
+The value of `JAVA_HOME` will be ignored.
 // end::notable-breaking-changes[]
 
 [[breaking-7.0]]
