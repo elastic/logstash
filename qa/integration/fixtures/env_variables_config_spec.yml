@@ -8,8 +8,10 @@ config: |-
     }
   }
   filter {
-    mutate {
-      add_tag => [ "blah", "${TEST_ENV_TAG}" ]
+    if [host] == "${TEST_ENV_HOST}" {
+     mutate {
+       add_tag => [ "blah", "${TEST_ENV_TAG}" ]
+     }
     }
   }
   output {

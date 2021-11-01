@@ -42,7 +42,8 @@ describe "Test Logstash configuration" do
     test_env["TEST_ENV_TCP_PORT"] = "#{test_tcp_port}"
     test_env["TEST_ENV_TAG"] = test_tag
     test_env["TEST_ENV_PATH"] = test_path
-    
+    test_env["TEST_ENV_HOST"] = "localhost"
+
     logstash_service = @fixture.get_service("logstash")
     logstash_service.env_variables = test_env
     logstash_service.start_background(@fixture.config)
