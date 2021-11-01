@@ -44,7 +44,7 @@ module LogStash module Config module Source
       end
 
       def read
-        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, deep_replace(@config_string))]
+        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, replace_placeholders(@config_string))]
 
         # Make sure we have an input and at least 1 output
         # if its not the case we will add stdin and stdout
@@ -96,7 +96,6 @@ module LogStash module Config module Source
 
           if config_string.valid_encoding?
             part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, deep_replace(config_string))
-            # part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
             config_parts << part
           else
             encoding_issue_files << file
@@ -146,6 +145,7 @@ module LogStash module Config module Source
 
     class ConfigRemoteLoader
       include LogStash::Util::SubstitutionVariables
+      include LogStash::Util::Loggable
 
       def initialize(uri)
         @uri = uri

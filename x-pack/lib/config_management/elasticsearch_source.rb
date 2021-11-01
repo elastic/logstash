@@ -13,7 +13,9 @@ require "license_checker/licensed"
 module LogStash
   module ConfigManagement
     class ElasticsearchSource < LogStash::Config::Source::Base
-      include LogStash::Util::Loggable, LogStash::LicenseChecker::Licensed, LogStash::Helpers::ElasticsearchOptions
+      include LogStash::Util::Loggable
+      include LogStash::LicenseChecker::Licensed
+      include LogStash::Helpers::ElasticsearchOptions
       include LogStash::Util::SubstitutionVariables
 
 

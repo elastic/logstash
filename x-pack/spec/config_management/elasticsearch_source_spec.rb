@@ -480,6 +480,16 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                 end
               end
             end
+
+            context "when config string has env variable" do
+              let(:config) { "input { generator {} } if [app] != \"${APP}\" { } output { stdout {} }" }
+              before { ENV['APP'] = 'foobar' }
+
+              it "give env value in config string" do
+                pipeline_config = subject.pipeline_configs
+                expect(pipeline_config.first.config_string).to match(/if \[app\] != "foobar"/)
+              end
+            end
           end
 
           context "when the license has expired [#{es_version}]" do
