@@ -109,12 +109,10 @@ public final class CompiledPipeline {
     {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
-        try (ConfigVariableExpander cve = new ConfigVariableExpander(
-                secretStore,
-                EnvironmentVariableProvider.defaultProvider())) {
-            inputs = setupInputs(cve);
-            filters = setupFilters(cve);
-            outputs = setupOutputs(cve);
+        try {
+            inputs = setupInputs();
+            filters = setupFilters();
+            outputs = setupOutputs();
         } catch (Exception e) {
             throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
@@ -158,13 +156,13 @@ public final class CompiledPipeline {
     /**
      * Sets up all outputs learned from {@link PipelineIR}.
      */
-    private Map<String, AbstractOutputDelegatorExt> setupOutputs(ConfigVariableExpander cve) {
+    private Map<String, AbstractOutputDelegatorExt> setupOutputs() {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
         final Map<String, AbstractOutputDelegatorExt> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            final Map<String, Object> args = expandArguments(def, cve);
+            final Map<String, Object> args = expandArguments(def);
             res.put(v.getId(), pluginFactory.buildOutput(
                 RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
@@ -175,14 +173,14 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private Map<String, AbstractFilterDelegatorExt> setupFilters(ConfigVariableExpander cve) {
+    private Map<String, AbstractFilterDelegatorExt> setupFilters() {
         final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
         final Map<String, AbstractFilterDelegatorExt> res = new HashMap<>(filterPlugins.size(), 1.0F);
 
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
-            final Map<String, Object> args = expandArguments(def, cve);
+            final Map<String, Object> args = expandArguments(def);
             res.put(vertex.getId(), pluginFactory.buildFilter(
                 RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
@@ -193,13 +191,13 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby inputs learnt from {@link PipelineIR}.
      */
-    private Collection<IRubyObject> setupInputs(ConfigVariableExpander cve) {
+    private Collection<IRubyObject> setupInputs() {
         final Collection<PluginVertex> vertices = pipelineIR.getInputPluginVertices();
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            final Map<String, Object> args = expandArguments(def, cve);
+            final Map<String, Object> args = expandArguments(def);
             IRubyObject o = pluginFactory.buildInput(
                 RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
             nodes.add(o);
@@ -220,8 +218,9 @@ public final class CompiledPipeline {
     }
 
 
-    private Map<String, Object> expandArguments(final PluginDefinition pluginDefinition, final ConfigVariableExpander cve) {
-        Map<String, Object> arguments = expandConfigVariables(cve, pluginDefinition.getArguments());
+    private Map<String, Object> expandArguments(final PluginDefinition pluginDefinition) {
+//        Map<String, Object> arguments = expandConfigVariables(cve, pluginDefinition.getArguments());
+        Map<String, Object> arguments = pluginDefinition.getArguments();
 
         // Intercept codec definitions from LIR
         for (final Map.Entry<String, Object> entry : arguments.entrySet()) {
@@ -231,7 +230,7 @@ public final class CompiledPipeline {
                 final PluginStatement codecPluginStatement = (PluginStatement) value;
                 final PluginDefinition codecDefinition = codecPluginStatement.getPluginDefinition();
                 final SourceWithMetadata codecSource = codecPluginStatement.getSourceWithMetadata();
-                final Map<String, Object> codecArguments = expandArguments(codecDefinition, cve);
+                final Map<String, Object> codecArguments = expandArguments(codecDefinition);
                 IRubyObject codecInstance = pluginFactory.buildCodec(RubyUtil.RUBY.newString(codecDefinition.getName()),
                         Rubyfier.deep(RubyUtil.RUBY, codecArguments),
                         codecSource);
@@ -243,26 +242,6 @@ public final class CompiledPipeline {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
-        Map<String, Object> expandedConfig = new HashMap<>();
-        for (Map.Entry<String, Object> e : configArgs.entrySet()) {
-            if (e.getValue() instanceof List) {
-                List list = (List) e.getValue();
-                List<Object> expandedObjects = new ArrayList<>();
-                for (Object o : list) {
-                    expandedObjects.add(cve.expand(o));
-                }
-                expandedConfig.put(e.getKey(), expandedObjects);
-            } else if (e.getValue() instanceof Map) {
-                expandedConfig.put(e.getKey(), expandConfigVariables(cve, (Map<String, Object>) e.getValue()));
-            } else if (e.getValue() instanceof String) {
-                expandedConfig.put(e.getKey(), cve.expand(e.getValue()));
-            } else {
-                expandedConfig.put(e.getKey(), e.getValue());
-            }
-        }
-        return expandedConfig;
-    }
 
     /**
      * Checks if a certain {@link Vertex} represents a {@link AbstractFilterDelegatorExt}.
