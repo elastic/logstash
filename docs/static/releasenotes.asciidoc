@@ -14,7 +14,7 @@ This section summarizes the changes in the following releases:
 
 ==== Breaking Changes
 
-[[java-11-minimum]]
+[[rn-java-11-minimum]]
 Starting from Logstash 8.0, the minimum required version of Java to run Logstash is Java 11. By default, Logstash will
 run with the bundled JDK, which has been verified to work with each specific version of Logstash, and generally
 provides the best performance and reliability.
