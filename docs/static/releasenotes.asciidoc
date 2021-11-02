@@ -21,7 +21,7 @@ provides the best performance and reliability.
 
 ==== New features and enhancements
 
-[[nanosecond-precision]]
+[[rn-nanosecond-precision]]
 As processing times speed up, millisecond granularity is not always enough. Inbound data increasingly has sub-millisecond granularity timestamps.
 The pull request https://github.com/elastic/logstash/pull/12797[#12797] allows the internal mechanisms of Logstash that hold moment-in-time data - such as the Logstash Event, the Persistent Queue, the Dead Letter Queue and JSON encoding/decoding - to have nanosecond granularity.
 
