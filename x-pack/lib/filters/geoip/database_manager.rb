@@ -36,6 +36,15 @@ module LogStash module Filters module Geoip class DatabaseManager
   include LogStash::Filters::Geoip::Util
   include Singleton
 
+  DATABASE_INIT = "init"
+  DATABASE_UP_TO_DATE = "up_to_date"
+  DATABASE_TO_BE_EXPIRED = "to_be_expired"
+  DATABASE_EXPIRED = "expired"
+
+  DOWNLOAD_SUCCEEDED = "succeeded"
+  DOWNLOAD_FAILED = "failed"
+  DOWNLOAD_UPDATING = "updating"
+
   private
   def initialize
     @triggered = false
@@ -102,7 +111,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       pipeline_id = ThreadContext.get("pipeline.id")
       ThreadContext.put("pipeline.id", nil)
 
-      update_download_status(:updating)
+      update_download_status(DOWNLOAD_UPDATING)
 
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -172,15 +181,15 @@ module LogStash module Filters module Geoip class DatabaseManager
           end
         end
 
-        database_status = :expired
+        database_status = DATABASE_EXPIRED
       when days_without_update >= 25
         logger.warn("The MaxMind database hasn't been updated for last #{days_without_update} days. "\
           "Logstash will fail the GeoIP plugin in #{30 - days_without_update} days. "\
           "Please check the network settings and allow Logstash accesses the internet to download the latest database ")
-        database_status = :to_be_expired
+        database_status = DATABASE_TO_BE_EXPIRED
       else
         logger.trace("passed age check", :days_without_update => days_without_update)
-        database_status = :up_to_date
+        database_status = DATABASE_UP_TO_DATE
       end
 
       metric.namespace([:database, database_type.to_sym]).tap do |n|
@@ -230,7 +239,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     metadatas.each do |row|
       type = row[DatabaseMetadata::Column::DATABASE_TYPE]
       metric.namespace([:database, type.to_sym]).tap do |n|
-        n.gauge(:status, @states[type].is_eula ? :up_to_date : :init)
+        n.gauge(:status, @states[type].is_eula ? DATABASE_UP_TO_DATE : DATABASE_INIT)
         if @states[type].is_eula
           n.gauge(:last_updated_at, unix_time_to_iso8601(row[DatabaseMetadata::Column::DIRNAME]))
           n.gauge(:fail_check_in_days, time_diff_in_days(row[DatabaseMetadata::Column::CHECK_AT]))
@@ -250,10 +259,10 @@ module LogStash module Filters module Geoip class DatabaseManager
 
       if success_cnt == DB_TYPES.size
         n.increment(:successes, 1)
-        n.gauge(:status, :succeeded)
+        n.gauge(:status, DOWNLOAD_SUCCEEDED)
       else
         n.increment(:failures, 1)
-        n.gauge(:status, :failed)
+        n.gauge(:status, DOWNLOAD_FAILED)
       end
     end
   end

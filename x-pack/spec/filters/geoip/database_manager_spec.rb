@@ -49,7 +49,7 @@ describe LogStash::Filters::Geoip do
 
         c = db_manager.instance_variable_get(:@metric).collector
         [ASN, CITY].each do |type|
-          expect(c.get([:database, type.to_sym], :status, :gauge).value).to eql(:init)
+          expect(c.get([:database, type.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseManager::DATABASE_INIT)
           expect(c.get([:database, type.to_sym], :fail_check_in_days, :gauge).value).to be_nil
         end
         expect_initial_download_metric(c)
@@ -96,7 +96,7 @@ describe LogStash::Filters::Geoip do
       end
 
       def expect_second_database_metric(c)
-        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:up_to_date)
+        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseManager::DATABASE_UP_TO_DATE)
         expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to match /2020-02-20/
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to eql(0)
       end
@@ -207,13 +207,13 @@ describe LogStash::Filters::Geoip do
       def expect_download_metric_success(c)
         expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
         expect(c.get([:download_stats], :successes, :counter).value).to eql(1)
-        expect(c.get([:download_stats], :status, :gauge).value).to eql(:succeeded)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseManager::DOWNLOAD_SUCCEEDED)
       end
 
       def expect_download_metric_fail(c)
         expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
         expect(c.get([:download_stats], :failures, :counter).value).to eql(1)
-        expect(c.get([:download_stats], :status, :gauge).value).to eql(:failed)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseManager::DOWNLOAD_FAILED)
       end
     end
 
@@ -243,7 +243,7 @@ describe LogStash::Filters::Geoip do
           db_manager.send(:check_age)
 
           c = db_manager.instance_variable_get(:@metric).collector
-          expect_database_metric(c, :to_be_expired, second_dirname_in_ymd, 26)
+          expect_database_metric(c, LogStash::Filters::Geoip::DatabaseManager::DATABASE_TO_BE_EXPIRED, second_dirname_in_ymd, 26)
         end
 
         it "should log error and update plugin filter when 30 days has passed" do
@@ -255,7 +255,7 @@ describe LogStash::Filters::Geoip do
           db_manager.send(:check_age)
 
           c = db_manager.instance_variable_get(:@metric).collector
-          expect_database_metric(c, :expired, second_dirname_in_ymd, 33)
+          expect_database_metric(c, LogStash::Filters::Geoip::DatabaseManager::DATABASE_EXPIRED, second_dirname_in_ymd, 33)
         end
       end
 
@@ -288,7 +288,7 @@ describe LogStash::Filters::Geoip do
       end
 
       def expect_healthy_database_metric(c)
-        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:init)
+        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseManager::DATABASE_INIT)
         expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to be_nil
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to be_nil
       end
