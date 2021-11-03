@@ -23,6 +23,7 @@ PATH
       mustermann (~> 1.0.3)
       pry (~> 0.12)
       puma (~> 4)
+      racc (~> 1.5.2)
       rack (~> 2)
       rubyzip (~> 1)
       rufus-scheduler
@@ -62,7 +63,7 @@ GEM
     backports (3.21.0)
     belzebuth (0.2.3)
       childprocess
-    benchmark-ips (2.9.1)
+    benchmark-ips (2.9.2)
     bindata (2.4.10)
     buftok (0.2.0)
     builder (3.2.4)
@@ -151,7 +152,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.8.10)
+    i18n (1.8.11)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     jar-dependencies (0.4.1)
@@ -289,7 +290,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3
-    logstash-filter-geoip (7.2.3-java)
+    logstash-filter-geoip (7.2.4-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.1)
@@ -359,7 +360,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.2.0-java)
+    logstash-input-beats (6.2.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -451,7 +452,7 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (>= 4.0.1, < 5)
-    logstash-input-s3 (3.8.0)
+    logstash-input-s3 (3.8.1)
       logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -510,7 +511,7 @@ GEM
       elastic-workplace-search (~> 0.4.1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-integration-jdbc (5.1.5)
+    logstash-integration-jdbc (5.1.8)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -631,7 +632,7 @@ GEM
       mime-types (>= 1.16, < 4)
     manticore (0.7.1-java)
       openssl_pkcs8_pure
-    march_hare (4.3.0-java)
+    march_hare (4.4.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
@@ -670,7 +671,7 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (4.3.8-java)
+    puma (4.3.10-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
     rack (2.2.3)
@@ -680,7 +681,7 @@ GEM
       rack (>= 1.0, < 3)
     rake (12.3.3)
     rchardet (1.8.0)
-    redis (4.4.0)
+    redis (4.5.1)
     rexml (3.2.5)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
@@ -694,7 +695,7 @@ GEM
     rspec-mocks (3.10.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
-    rspec-support (3.10.2)
+    rspec-support (3.10.3)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
     ruby-progressbar (1.11.0)
@@ -707,7 +708,7 @@ GEM
       faraday (> 0.8, < 2.0)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.49.0)
+    sequel (5.50.0)
     simple_oauth (0.3.1)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -738,7 +739,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2021.3)
+    tzinfo-data (1.2021.5)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.10.2)
@@ -887,4 +888,4 @@ DEPENDENCIES
   webmock (~> 3)
 
 BUNDLED WITH
-   2.2.28
+   2.2.30
