@@ -71,8 +71,4 @@ module LogStash module Filters module Geoip class DatabaseMetric
     end
   end
 
-  def metric
-    @metric
-  end
-
 end end end end
