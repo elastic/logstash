@@ -35,6 +35,15 @@ Here are the breaking changes for 8.0.
 ==== Changes in Logstash Core
 
 [discrete]
+[[bc-ecs-compatibility]]
+===== ECS compatibility is now on by default
+Many plugins can now be run in a mode that avoids implicit conflict with the <<ecs-ls,Elastic Common Schema>>.
+This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the Logstash `pipeline.ecs_compatibility` setting.
+In Logstash 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
+
+If you wish to _lock in_ a pipeline's behaviour from Logstash 7.x before upgrading to Logstash 8, you can set  `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
+
+[discrete]
 [[bc-ruby-engine]]
 ===== Ruby Execution Engine removed
 The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
