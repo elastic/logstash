@@ -13,14 +13,14 @@ module LogStash module Filters module Geoip class DatabaseMetric
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
 
-  DATABASE_INIT = "init"
-  DATABASE_UP_TO_DATE = "up_to_date"
-  DATABASE_TO_BE_EXPIRED = "to_be_expired"
-  DATABASE_EXPIRED = "expired"
+  DATABASE_INIT = "init".freeze
+  DATABASE_UP_TO_DATE = "up_to_date".freeze
+  DATABASE_TO_BE_EXPIRED = "to_be_expired".freeze
+  DATABASE_EXPIRED = "expired".freeze
 
-  DOWNLOAD_SUCCEEDED = "succeeded"
-  DOWNLOAD_FAILED = "failed"
-  DOWNLOAD_UPDATING = "updating"
+  DOWNLOAD_SUCCEEDED = "succeeded".freeze
+  DOWNLOAD_FAILED = "failed".freeze
+  DOWNLOAD_UPDATING = "updating".freeze
 
   def initialize(metric)
     # Fallback when testing plugin and no metric collector are correctly configured.

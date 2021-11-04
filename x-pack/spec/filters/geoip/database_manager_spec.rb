@@ -252,6 +252,10 @@ describe LogStash::Filters::Geoip do
       end
 
       context "cc database" do
+        before do
+          allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).and_return(logger)
+        end
+
         it "should not give warning after 25 days" do
           expect(mock_geoip_plugin).to receive(:update_filter).never
           expect(logger).to receive(:warn).never
@@ -362,6 +366,17 @@ describe LogStash::Filters::Geoip do
       it "should unsubscribe gracefully" do
         db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
         expect { db_manager.unsubscribe_database_path(CITY, mock_geoip_plugin) }.not_to raise_error
+      end
+    end
+
+    context "database metric is not assigned" do
+      let(:db_manager) { manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+
+      it "does not throw error" do
+        allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:debug).once
+        database_metric = db_manager.database_metric
+        expect { database_metric.set_download_status_updating }.not_to raise_error
       end
     end
 

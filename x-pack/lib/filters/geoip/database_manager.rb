@@ -61,7 +61,7 @@ module LogStash module Filters module Geoip class DatabaseManager
 
     @download_manager = DownloadManager.new(@metadata)
 
-    @database_metric.initialize_metrics(@metadata.get_all, @states)
+    database_metric.initialize_metrics(@metadata.get_all, @states)
   end
 
   protected
@@ -101,7 +101,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       pipeline_id = ThreadContext.get("pipeline.id")
       ThreadContext.put("pipeline.id", nil)
 
-      @database_metric.set_download_status_updating
+      database_metric.set_download_status_updating
 
       updated_db = @download_manager.fetch_database
       updated_db.each do |database_type, valid_download, dirname, new_database_path|
@@ -130,7 +130,7 @@ module LogStash module Filters module Geoip class DatabaseManager
     ensure
       check_age
       clean_up_database
-      @database_metric.update_download_stats(success_cnt)
+      database_metric.update_download_stats(success_cnt)
 
       ThreadContext.put("pipeline.id", pipeline_id)
     end
@@ -182,7 +182,7 @@ module LogStash module Filters module Geoip class DatabaseManager
         database_status = DatabaseMetric::DATABASE_UP_TO_DATE
       end
 
-      @database_metric.update_database_status(database_type, database_status, metadata, days_without_update)
+      database_metric.update_database_status(database_type, database_status, metadata, days_without_update)
     end
   end
 
@@ -250,6 +250,11 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def database_metric=(database_metric)
     @database_metric = database_metric
+  end
+
+  def database_metric
+    logger.debug("DatabaseMetric is nil. No geoip metrics are available. Please report the bug") if @database_metric.nil?
+    @database_metric ||= LogStash::Filters::Geoip::DatabaseMetric.new(LogStash::Instrument::NamespacedNullMetric.new)
   end
 
   class DatabaseState
