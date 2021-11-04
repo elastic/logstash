@@ -57,41 +57,16 @@ This section summarizes the changes in the following releases:
 [[logstash-7-15-2]]
 === Logstash 7.15.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.15.2
 
-* Backport PR #13339 to 7.15: Temporarily pin `racc` to `1.5.2` to fix … https://github.com/elastic/logstash/pull/13341[#13341]
-* Deps: upgrade jruby-openssl to 0.11.0 https://github.com/elastic/logstash/pull/13357[#13357]
-* Backport PR #13351 to 7.15: Fix bundler handling of 'without' https://github.com/elastic/logstash/pull/13363[#13363]
-* Backport PR #13369 to 7.15. Add java version parameterization to Logs… https://github.com/elastic/logstash/pull/13385[#13385]
+[[notable-7-15-2]]
+==== Performance improvements and notable issues fixed
 
-=== Logstash Commits between 7.15 and 7.15.1
+* Upgrade jruby-openssl to 0.11.0 to properly support alt-chain certificate verifications in plugins using the Ruby
+  net/http stack.
+  The recent Let's Encrypt "DST Root CA X3" expiration has caused issues in Logstash plugins such as S3.
+  We're including the upstream fix to avoid these issues and support alternate chain TLS certificate verification.
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.15.1..7.15"
-
-9dbaf1d61 - (HEAD -> 7.15, origin/7.15) Backport PR #13369 to 7.15. Add java version parameterization to Logstash builds (#13385) (4 hours ago) <Rob Bavey>
-2b76d039d - Bump lockfile for 7.15.2 (#13389) (22 hours ago) <Rob Bavey>
-e8c83cff5 - Doc: Update central management license info (#13375) (2 days ago) <Karen Metts>
-bd6f13e99 - Backport PR #13351 to 7.15: Fix bundler handling of 'without' (#13363) (9 days ago) <Rob Bavey>
-3fb9e557a - Deps: upgrade jruby-openssl to 0.11.0 (#13357) (9 days ago) <Karol Bucek>
-fd2b8afe5 - Backport PR #13339 to 7.15: Temporarily pin `racc` to `1.5.2` to fix build (#13341) (2 weeks ago) <Rob Bavey>
-d82a5cb12 - Doc: Add link to pq info from troubleshooting topic (#13328) (3 weeks ago) <Karen Metts>
-6749c2baf - Doc: Fix templating error in integration plugin header (#13326) (3 weeks ago) <Karen Metts>
-2e5e2022c - Doc: Expand content for memqueue (#13317) (#13322) (3 weeks ago) <Karen Metts>
-6ea06eee3 - Version bump to 7.15.2 (#13314) (3 weeks ago) <Rob Bavey>
-802c3d2dc - Release notes for 7.15.1 (#13295) (3 weeks ago) <Logstash Machine>
-92337afd2 - [DOC] Clarify the scope of environment variable expansion (#13299) (#13312) (3 weeks ago) <João Duarte>
-a0bdf525a - don't require mutate filter on remove_spec (#13292) (#13310) (3 weeks ago) <João Duarte>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.15.1..7.15 *.release"
-Changed plugin versions:
-logstash-filter-geoip: 7.2.3 -> 7.2.4
-logstash-input-beats: 6.2.0 -> 6.2.1
-logstash-input-s3: 3.8.0 -> 3.8.1
-logstash-integration-jdbc: 5.1.5 -> 5.1.8
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-7-15-2]]
 ==== Plugins
 
 *Geoip Filter - 7.2.4*
