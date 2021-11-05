@@ -42,8 +42,8 @@ performance and reliability.
 [[bc-java-home]]
 ===== Support for JAVA_HOME removed
 We've removed support for using `JAVA_HOME` to override the path to the JDK. 
-Users should set the value of `LS_JAVA_HOME` to the path of their preferred JDK
-if they need to use a version other than the bundled JDK. 
+Users who need to use a version other than the bundled JDK should set the value
+of `LS_JAVA_HOME` to the path of their preferred JDK. 
 The value of `JAVA_HOME` will be ignored.
 
 [discrete]
