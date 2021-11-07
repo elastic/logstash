@@ -128,11 +128,17 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
+
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
-      # Note: Using an `ENV` here because ::Bundler.settings.set_local(:silence_root_warning, true)
-      # does not work (set_global *does*, but that seems too drastic a change)
-      with_env("BUNDLE_SILENCE_ROOT_WARNING" => "true") do
+      # Note: Using `ENV`s here because ::Bundler.settings.set_local or `bundle config`
+      # is not being respected with `Bundler::CLI.start`?
+      # (set_global *does*, but that seems too drastic a change)
+      with_env({"BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                "BUNDLE_WITHOUT" => options[:without].join(":")}) do
+
         if !debug?
           # Will deal with transient network errors
           execute_bundler_with_retry(options)
@@ -246,6 +252,9 @@ module LogStash
         if options[:local]
           arguments << "--local"
           arguments << "--no-prune" # From bundler docs: Don't remove stale gems from the cache.
+        end
+        if options[:force]
+          arguments << "--redownload"
         end
       elsif options[:update]
         arguments << "update"

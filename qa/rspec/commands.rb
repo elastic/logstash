@@ -98,6 +98,10 @@ module ServiceTester
       client.plugin_installed?(host, name, version)
     end
 
+    def gem_vendored?(gem_name)
+      client.gem_vendored?(host, gem_name)
+    end
+
     def download(from, to)
       client.download(from, to , host)
     end
