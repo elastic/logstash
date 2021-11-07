@@ -219,7 +219,6 @@ public final class CompiledPipeline {
 
 
     private Map<String, Object> expandArguments(final PluginDefinition pluginDefinition) {
-//        Map<String, Object> arguments = expandConfigVariables(cve, pluginDefinition.getArguments());
         Map<String, Object> arguments = pluginDefinition.getArguments();
 
         // Intercept codec definitions from LIR
