@@ -57,14 +57,15 @@ This section summarizes the changes in the following releases:
 [[logstash-7-15-2]]
 === Logstash 7.15.2 Release Notes
 
-
 [[notable-7-15-2]]
 ==== Performance improvements and notable issues fixed
 
-* Upgrade jruby-openssl to 0.11.0 to properly support alt-chain certificate verifications in plugins using the Ruby
-  net/http stack.
-  The recent Let's Encrypt "DST Root CA X3" expiration has caused issues in Logstash plugins such as S3.
-  We're including the upstream fix to avoid these issues and support alternate chain TLS certificate verification.
+**Jruby-openssl upgrade.** We've upgraded {ls} to 0.11.0 to properly support
+alt-chain certificate verifications in plugins using the Ruby net/http stack.
+The recent Let's Encrypt "DST Root CA X3" expiration has caused issues in
+Logstash plugins such as S3.
+We're including the upstream fix to avoid these issues and support alternate
+chain TLS certificate verification.
 
 [[plugins-7-15-2]]
 ==== Plugins
