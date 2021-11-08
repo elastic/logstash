@@ -20,6 +20,8 @@ Starting from Logstash 8.0, the minimum required version of Java to run Logstash
 run with the bundled JDK, which has been verified to work with each specific version of Logstash, and generally
 provides the best performance and reliability.
 
+See <<breaking-changes>> for a preview of additional breaking changes coming your way. 
+
 ==== New features and enhancements
 
 [[rn-nanosecond-precision]]
