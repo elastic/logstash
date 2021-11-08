@@ -56,6 +56,9 @@ Results in the following event:
 }
 --------------------------------------------------------------------------------
 
+==== Plugin releases
+Plugins align with release 7.15.1
+
 
 [[logstash-8-0-0-alpha2]]
 === Logstash 8.0.0-alpha2 Release Notes
