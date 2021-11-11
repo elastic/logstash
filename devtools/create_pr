@@ -17,7 +17,7 @@ usage = """
 
     This script does the following:
         * cleanups local_branch (warning: drops local changes)
-        * rebases the branch against master
+        * rebases the branch against main
         * it will attempt to create a PR for you using the GitHub API, but requires
           the GitHub token, with the public_repo scope, available in `~/.elastic/github.token`.
           Keep in mind this token has to also be authorized to the Elastic organization as
@@ -38,7 +38,7 @@ def main():
         epilog=usage)
     parser.add_argument("local_branch",
                         help="Branch to Create a PR for")
-    parser.add_argument("--to_branch", default="master",
+    parser.add_argument("--to_branch", default="main",
                         help="Which remote to push the backport branch to")
     parser.add_argument("--yes", action="store_true",
                         help="Assume yes. Warning: discards local changes.")
