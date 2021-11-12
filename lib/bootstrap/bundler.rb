@@ -55,7 +55,8 @@ module LogStash
       end
     end
 
-    def setup!(options = {})
+    # set environment variable and revertible bundler setting
+    def setup(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
@@ -76,6 +77,11 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:frozen, true) unless options[:allow_gemfile_changes]
       ::Bundler.reset!
+    end
+
+    # do the actual bundler setup
+    def setup!(options = {})
+      setup(options)
       ::Bundler.setup
     end
 
