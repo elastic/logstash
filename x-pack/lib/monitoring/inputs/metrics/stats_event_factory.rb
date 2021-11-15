@@ -12,7 +12,7 @@ module LogStash; module Inputs; class Metrics;
       @snapshot = snapshot
       @metric_store = @snapshot.metric_store
       @cluster_uuid = cluster_uuid
-      @webserver_enabled = LogStash::SETTINGS.get_value("http.enabled")
+      @webserver_enabled = LogStash::SETTINGS.get_value("api.enabled")
     end
 
     def make(agent, extended_performance_collection=true, collection_interval=10)
