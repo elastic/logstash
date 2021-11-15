@@ -160,8 +160,5 @@ public class SecretStoreFactory {
             secureConfig.add(KEYSTORE_ACCESS_KEY, keystore_pass.toCharArray());
             keystore_pass = null;
         }
-
-        //futile attempt to remove the original pass from memory
-        System.gc();
     }
 }
