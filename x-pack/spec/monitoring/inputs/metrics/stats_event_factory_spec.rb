@@ -17,7 +17,7 @@ shared_examples_for("old model monitoring event with webserver setting") do
     global_stats = {"uuid" => "00001" }
     sut = described_class.new(global_stats, collector.snapshot_metric, nil)
     LogStash::SETTINGS.set_value("monitoring.enabled", false)
-    LogStash::SETTINGS.set_value("api.http.enabled", webserver_enabled)
+    LogStash::SETTINGS.set_value("api.enabled", webserver_enabled)
 
     monitoring_evt = sut.make(agent, true)
     json = JSON.parse(monitoring_evt.to_json)
