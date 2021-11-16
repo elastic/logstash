@@ -54,7 +54,7 @@ def main():
                         help="Assume yes. Warning: discards local changes.")
     parser.add_argument("--continue", action="store_true",
                         help="Continue after fixing merging errors.")
-    parser.add_argument("--from_branch", default="master",
+    parser.add_argument("--from_branch", default="main",
                         help="From branch")
     parser.add_argument("--diff", action="store_true",
                         help="Display the diff before pushing the PR")

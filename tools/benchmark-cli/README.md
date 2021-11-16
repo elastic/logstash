@@ -31,7 +31,7 @@ Option                           Description
                                    'ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7',
                                  'user-
                                    name#ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7'
-                                   or 'master'
+                                   or 'main'
 --local-path <String>            Path to the root of a local Logstash
                                    distribution.
                                   E.g. `/opt/logstash`
