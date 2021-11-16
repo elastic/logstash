@@ -26,6 +26,7 @@ import java.util.Collection;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.logstash.ackedqueue.io.ByteBufferCleaner;
 
+
 /**
  * Logic around ensuring compatibility with Java 8 and 9 simultaneously.
  */
