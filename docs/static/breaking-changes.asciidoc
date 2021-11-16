@@ -37,7 +37,7 @@ Here are the breaking changes for 8.0.
 [discrete]
 [[bc-ecs-compatibility]]
 ===== ECS compatibility is now on by default
-Many plugins can now be run in a mode that avoids implicit conflict with the <<ecs-ls,Elastic Common Schema>>.
+Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema.
 This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the Logstash `pipeline.ecs_compatibility` setting.
 In Logstash 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
 
