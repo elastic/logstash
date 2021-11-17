@@ -82,7 +82,7 @@ describe LogStash::Filters::Geoip do
           "name" => filename,
           "provider" => "maxmind",
           "updated" => 1609891257,
-          "url" => "https://github.com/logstash-plugins/logstash-filter-geoip/archive/master.zip"
+          "url" => "https://github.com/logstash-plugins/logstash-filter-geoip/archive/main.zip"
         }
       end
       let(:md5_hash) { SecureRandom.hex }
