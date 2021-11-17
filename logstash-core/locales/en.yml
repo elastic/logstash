@@ -45,6 +45,9 @@ en:
         %{plugin} output plugin: setting 'workers => %{worker_count}' is not
         supported by this plugin. I will continue working as if you had not set
         this setting. Reason: %{message}
+      effective_ecs_compatibility: >-
+        Pipeline `%{pipeline_id}` is configured with `pipeline.ecs_compatibility: %{ecs_compatibility}` setting.
+        All plugins in this pipeline will default to `ecs_compatibility => %{ecs_compatibility}` unless explicitly configured otherwise.
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version
