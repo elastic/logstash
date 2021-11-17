@@ -129,7 +129,7 @@ namespace "artifact" do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
@@ -173,7 +173,7 @@ namespace "artifact" do
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0',"-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
 
     #without JDK
     @bundles_jdk = false
