@@ -39,6 +39,9 @@ echo Using drive !use_drive! for %WORKSPACE%
 :: change current directory to that drive
 !use_drive!
 
+:: unset JAVA_TOOL_OPTIONS to workaround https://github.com/jruby/jruby/issues/4546 on this version of jruby on windows
+set JAVA_TOOL_OPTIONS=
+
 echo Running core tests..
 call .\gradlew.bat test --console=plain --no-daemon --info
 
