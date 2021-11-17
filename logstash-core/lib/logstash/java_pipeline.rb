@@ -72,6 +72,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # is by design and necessary for the wait_until_started semantic
     @finished_run = Concurrent::AtomicBoolean.new(false)
 
+    @logger.info(I18n.t('logstash.pipeline.effective_ecs_compatibility',
+                        :pipeline_id       => pipeline_id,
+                        :ecs_compatibility => settings.get('pipeline.ecs_compatibility')))
+
     @thread = nil
   end # def initialize
 
