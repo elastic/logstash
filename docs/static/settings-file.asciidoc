@@ -116,7 +116,7 @@ increasing this number to better utilize machine processing power.
 
 | `pipeline.ordered`
 a|
-Set the pipeline event ordering.Valid options are:
+Set the pipeline event ordering. Valid options are:
 
 * `auto`. Automatically enables ordering if the `pipeline.workers` setting is also set to `1`.
 * `true`. Enforces ordering on the pipeline and prevent logstash from starting
