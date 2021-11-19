@@ -1,9 +1,13 @@
 [[pipeline-to-pipeline]]
-=== Pipeline-to-Pipeline Communication
+=== Pipeline-to-pipeline communication
 
 When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 
 If you need to set up communication _between_ Logstash instances, use either {logstash-ref}/ls-to-ls.html[Logstash-to-Logstash] communications, or an intermediary queue, such as Kafka or Redis.
+
+TIP: Persistent queues (PQs) can help keep data moving through pipelines.  
+See <<pq-pline-pline>> to learn how PQs can enhance your
+pipeline-to-pipeline communication strategy. 
 
 [[pipeline-to-pipeline-overview]]
 ==== Configuration overview
