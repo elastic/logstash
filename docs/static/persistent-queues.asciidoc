@@ -124,8 +124,7 @@ the input (and thus all other outputs), until the operator can restore flow to
 the stalled output and let the queue drain._"
 
 "_Our real-time outputs must be low-latency, and our bulk outputs must be
-consistent. We use PQs to protect against stalling the real-time outputs, not
-to protect against data loss in the bulk outputs. (Although that's nice, too)._"
+consistent. We use PQs to protect against stalling the real-time outputs more so than to protect against data loss in the bulk outputs. (Although the protection is nice, too)._"
 
 
 [[troubleshooting-pqs]]
