@@ -26,6 +26,7 @@ description = """Logstash Core Java"""
 
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
+String jrubyVersion = versionMap['jruby']['version']
 
 String log4jVersion = '2.14.0'
 
@@ -152,9 +153,9 @@ idea {
 }
 
 dependencies {
-    api files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
+    api(files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
         builtBy ':downloadAndInstallJRuby'
-    }
+    }) { because "DEPENDENCY: org.jruby:jruby-core:${jrubyVersion}" } // meta-data for generateLicenseReport
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
