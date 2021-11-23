@@ -152,8 +152,9 @@ idea {
 }
 
 dependencies {
-    compile files("../vendor/jruby/lib/jruby.jar") // jruby-core.jar
-
+    api files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
+        builtBy ':downloadAndInstallJRuby'
+    }
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
