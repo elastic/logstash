@@ -142,14 +142,14 @@ push:
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
-	LOCAL_PY_VER=`python3 --version 2>&1`;\
-	echo "Was using $$LOCAL_PY_VER";\
-	eval "$$(pyenv init -)" && eval "$$(pyenv init --path)";\
-	pyenv install --skip-existing $(PY_VERSION);\
-	pyenv local $(PY_VERSION);\
-	python3 -mvenv venv; \
-	pip install -r requirements.txt;\
-	touch venv;\
+	LOCAL_PY_VER=`python3 --version 2>&1`&&\
+	echo "Was using $$LOCAL_PY_VER" &&\
+	eval "$$(pyenv init -)" && eval "$$(pyenv init --path)" &&\
+	pyenv install --skip-existing $(PY_VERSION) &&\
+	pyenv local $(PY_VERSION) &&\
+	python3 -mvenv venv && \
+	pip install -r requirements.txt &&\
+	touch venv &&\
 
 # Make a Golang container that can compile our env2yaml tool.
 golang:
