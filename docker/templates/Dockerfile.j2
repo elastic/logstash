@@ -19,33 +19,24 @@
   # Minimal distributions do not ship with en language packs.
   {% set locale = 'C.UTF-8' -%}
 {% else -%}
-  {% set base_image = 'centos:7'  -%}
-  {% set package_manager = 'yum' -%}
+  {% set base_image = 'ubuntu:20.04'  -%}
+  {% set package_manager = 'apt-get' -%}
   {% set locale = 'en_US.UTF-8' -%}
 {% endif -%}
 
 FROM {{ base_image }}
 
-# Install Java and the "which" command, which is needed by Logstash's shell
-# scripts.
-# Minimal distributions also require findutils tar gzip (procps for integration tests)
-
-# on aarch64, yum does not pick the right `bind-license` package for some reason
-# here we install a specific noarch RPM.
-{% if arch == 'aarch64' -%}
-RUN for iter in {1..10}; do {{ package_manager }} install -y http://mirror.centos.org/centos/7/updates/x86_64/Packages/bind-license-9.11.4-26.P2.el7_9.5.noarch.rpm && \
-    {{ package_manager }} clean all && \
-    {{ package_manager }} clean metadata && \
-    exit_code=0 && break || exit_code=$? && \
-    echo "packaging error: retry $iter in 10s" && \
-    {{ package_manager }} clean all && \
-    {{ package_manager }} clean metadata && sleep 10; done; \
-    (exit $exit_code)
-
+RUN for iter in {1..10}; do \
+{% if image_flavor != 'ubi8' -%}
+    export DEBIAN_FRONTEND=noninteractive && \
 {% endif -%}
 
-RUN for iter in {1..10}; do {{ package_manager }} update -y && \
-    {{ package_manager }} install -y procps findutils tar gzip which shadow-utils && \
+    {{ package_manager }} update -y && \
+    {{ package_manager }} upgrade -y && \
+    {{ package_manager }} install -y procps findutils tar gzip curl && \
+{% if image_flavor == 'ubi8' -%}
+    {{ package_manager }} install -y which shadow-utils && \
+{% endif -%}
     {{ package_manager }} clean all && \
 {% if image_flavor != 'ubi8' -%}
     {{ package_manager }} clean metadata && \
@@ -62,7 +53,7 @@ RUN for iter in {1..10}; do {{ package_manager }} update -y && \
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \
     adduser --uid 1000 --gid 1000 \
-      --home-dir /usr/share/logstash --no-create-home \
+      --home /usr/share/logstash --no-create-home \
       logstash
 
 # Add Logstash itself.
