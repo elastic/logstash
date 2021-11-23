@@ -127,7 +127,7 @@ bin/logstash-plugin remove logstash-input-github
 [[installing-local-plugins]]
 ==== Advanced: Adding a locally built plugin
 
-In some cases, you may want to install plugins which are not yett released and
+In some cases, you may want to install plugins which are not yet released and
 not hosted on RubyGems.org. Logstash provides you the option to install a
 locally built plugin which is packaged as a ruby gem. Using a file location:
 
