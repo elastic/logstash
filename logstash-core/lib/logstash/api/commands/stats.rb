@@ -39,6 +39,8 @@ module LogStash
           end
 
           {:events_count => total_queued_events}
+        rescue Instrument::MetricStore::MetricNotFound
+          {}
         end
 
         def jvm
