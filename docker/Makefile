@@ -149,7 +149,7 @@ venv: requirements.txt
 	pyenv local $(PY_VERSION) &&\
 	python3 -mvenv venv && \
 	pip install -r requirements.txt &&\
-	touch venv &&\
+	touch venv
 
 # Make a Golang container that can compile our env2yaml tool.
 golang:
