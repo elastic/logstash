@@ -82,8 +82,8 @@ end
 # https://github.com/puma/puma/blob/v5.5.2/lib/puma/server.rb#L169-L192
 #
 # Remove this patch once https://github.com/elastic/logstash/issues/13444 gets resolved!
-Puma::Server.class_eval do
-  if closed_socket_supported? && ENV_JAVA['os.name'].match?(/Linux/i) && ENV_JAVA['os.arch'].eql?('aarch64')
+if ENV_JAVA['os.name'].match?(/Linux/i) && ENV_JAVA['os.arch'].eql?('aarch64')
+  Puma::Server.class_eval do
     def closed_socket?(socket)
       false
     end
