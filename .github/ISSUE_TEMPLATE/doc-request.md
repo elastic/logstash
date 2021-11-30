@@ -5,7 +5,7 @@ labels: "docs,status:needs-triage"
 
 ---
 <!--
-Please search existing issues. The issue may already exist.
+Please search [existing issues](https://github.com/elastic/logstash/issues?q=is%3Aopen+is%3Aissue+label%3Adocs). The issue may already exist.
 -->
 
 #### Tell us about the issue
