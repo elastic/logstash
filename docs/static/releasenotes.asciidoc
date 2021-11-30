@@ -58,117 +58,51 @@ This section summarizes the changes in the following releases:
 [[logstash-7-16-0]]
 === Logstash 7.16.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.16.0
+[[notable-7-16-0]]
+==== Performance improvements and notable issues fixed
 
-* Backport PR #13015 to 7.x: Bundler: freeze lockfile on run, and "norm… https://github.com/elastic/logstash/pull/13140[#13140]
-* Backport PR #13005 to 7.x: update fpm to allow pkg creation on jdk11+… https://github.com/elastic/logstash/pull/13144[#13144]
-* Remove dependency:bundler task https://github.com/elastic/logstash/pull/13146[#13146]
-* Backport to 7.x: Refactor: avoid global mutex on ecs_compatibility (#13036) https://github.com/elastic/logstash/pull/13163[#13163]
-* add the missing logstash config supported by env2yaml for docker https://github.com/elastic/logstash/pull/13178[#13178]
-* [7.x] add the missing logstash config supported by env2yaml for docker (#13178) https://github.com/elastic/logstash/pull/13180[#13180]
-* Feature/remove gradle license report plugin https://github.com/elastic/logstash/pull/13182[#13182]
-* Fix/introduce explicit dependencies https://github.com/elastic/logstash/pull/13183[#13183]
-* Switched to Gradle 7 https://github.com/elastic/logstash/pull/13184[#13184]
-* Introduce LS_JAVA_HOME environment variable https://github.com/elastic/logstash/pull/13204[#13204]
-* Deprecate JAVA_HOME preferring LS_JAVA_HOME https://github.com/elastic/logstash/pull/13207[#13207]
-* [backport 7.x] Gradle 7 updates, issue #13177 https://github.com/elastic/logstash/pull/13212[#13212]
-* [backport 7.x] Use LS_JAVA_HOME in favor of JAVA_HOME #12725 https://github.com/elastic/logstash/pull/13213[#13213]
-* unlock ecs_compatibility_support version in plugin update https://github.com/elastic/logstash/pull/13218[#13218]
-* [7.x] geoip integrate air-gapped bootstrap script (#13104) https://github.com/elastic/logstash/pull/13251[#13251]
-* [7.x] avoid duplication of heading and index entry in release notes (#13192) https://github.com/elastic/logstash/pull/13254[#13254]
-* [7.x] update golang image to 1.17.1(#13260) (#13260) https://github.com/elastic/logstash/pull/13262[#13262]
-* [7.15] unlock ecs_compatibility_support version in plugin update (#13218) https://github.com/elastic/logstash/pull/13269[#13269]
-* Fix plugin manager test that fail to fetch dependency  https://github.com/elastic/logstash/pull/13270[#13270]
-* replace Faraday with Manticore to get rid of jruby-openssl verification error https://github.com/elastic/logstash/pull/13273[#13273]
-* [7.x] Replace Faraday to Manticore to get rid of jruby-openssl verification error of Let's Encrypt cross-signed DST Root CA X3 (#13273) https://github.com/elastic/logstash/pull/13279[#13279]
-* fix plugin installation script https://github.com/elastic/logstash/pull/13289[#13289]
-* Add pipeline.ordered setting for docker image (env2yml) https://github.com/elastic/logstash/pull/13300[#13300]
-* Backport PR #13300 to 7.x: Add pipeline.ordered setting for docker image (env2yml) https://github.com/elastic/logstash/pull/13304[#13304]
-* Backport PR #13292 to 7.x: don't require mutate filter on remove_spec https://github.com/elastic/logstash/pull/13309[#13309]
-* Backport PR #13299 to 7.x: [DOC] Clarify the scope of environment variable expansion https://github.com/elastic/logstash/pull/13311[#13311]
-* [backport 7.x] Update JDK matrix to include JDK17: OpenJDK, AdoptiumJDK and Zulu (#13307) https://github.com/elastic/logstash/pull/13330[#13330]
-* [backport 7.x] Fixes to build and run Logstah on JDK 17 (#13306) https://github.com/elastic/logstash/pull/13331[#13331]
-* Backport PR #13339 to 7.x: Temporarily pin `racc` to `1.5.2` to fix b… https://github.com/elastic/logstash/pull/13340[#13340]
-* Deps: upgrade jruby-openssl to 0.11.0 https://github.com/elastic/logstash/pull/13359[#13359]
+* Add `pipeline.ordered` setting for docker image https://github.com/elastic/logstash/pull/13300[#13300]
 
-=== Logstash Commits between 7.16 and 7.15.2
+[[deprecated-7-16-0]]
+==== Deprecations
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.15.2..7.16"
+* Logstash 8.0 will remove support for Java versions before 11, thus using Java 8 has been deprecated.
 
-fcf7fa87b - (HEAD -> 7.16, origin/7.16) Forward Port: Release notes for 7.15.2 (#13435) (6 minutes ago) <Karol Bucek>
-2c965533b -  Forward Port: Release notes for 7.15.1 (#13434) (29 minutes ago) <Karol Bucek>
-1f9f78274 - Doc: Expand PQ content for pipeline-pipeline (#13422) (4 days ago) <Karen Metts>
-003dbb0c8 - propagate master/main branch rename for geoip filter (7.16) (#13413) (6 days ago) <Ry Biesemeyer>
-f6c379e2d - [Backport 7.16] Fixes a usage of deprecated 'http.enabled' to the new 'api.enabled' (#13380) (#13408) (7 days ago) <Andrea Selva>
-ff99fbe8f - Backport PR #13369 to 7.16: Add java version parameterization to Logstash builds (#13386) (3 weeks ago) <Rob Bavey>
-354210663 - Doc: Update central management license info  (#13374) (3 weeks ago) <Karen Metts>
-292b2ebb5 - Backport PR #13351 to 7.16: Fix bundler handling of 'without' (#13362) (4 weeks ago) <Rob Bavey>
-c612afa5e - Add deprecation warnings for JAVA_HOME/older versions of Java (#13358) (4 weeks ago) <Rob Bavey>
-7952046eb - Soften deprecation language and point module deprecations to agent in… (#13338) (4 weeks ago) <Rob Bavey>
-1ee7a1701 - Deps: upgrade jruby-openssl to 0.11.0 (#13359) (4 weeks ago) <Karol Bucek>
-ad4277b9d - Deps: fix broken gem lock due puma requirement (#13348) (5 weeks ago) <Karol Bucek>
-328e772e9 - Deps: bump update gems for 7.16.0 (#13337) (5 weeks ago) <Karol Bucek>
-b9fb174aa - Pre-freeze Deprecations/Alignment (#13346) (5 weeks ago) <Ry Biesemeyer>
-0603651ba - Secure API (Backport to 7.x) (#13342) (5 weeks ago) <Ry Biesemeyer>
-0f8296870 - Backport PR #13339 to 7.x: Temporarily pin `racc` to `1.5.2` to fix build (#13340) (5 weeks ago) <Rob Bavey>
-7202c5860 - Updates the clauses used to filter out from stderr captured messages (#13336) (5 weeks ago) <Andrea Selva>
-2e6ed1d7e - Fixes to build and run Logstah on JDK 17 (#13306) (#13331) (5 weeks ago) <Andrea Selva>
-1c80c86cd - Update JDK matrix to include JDK17: OpenJDK, AdoptiumJDK and Zulu (#13307) (#13330) (5 weeks ago) <Andrea Selva>
-a2d45ccee - Backport PR #13316 to 7.x: Fix Elasticsearch integration test to use specified JDK (#13323) (6 weeks ago) <Rob Bavey>
-e1b3445ad - Doc: Add link to pq info from troubleshooting topic (#13327) (6 weeks ago) <Karen Metts>
-26e01b8b5 - Doc: Fix templating error in integration plugin header (#13325) (6 weeks ago) <Karen Metts>
-6f781e6ab - Doc: Expand content for memqueue (#13317) (#13321) (6 weeks ago) <Karen Metts>
-a46efe4df - [DOC] Clarify the scope of environment variable expansion (#13299) (#13311) (6 weeks ago) <João Duarte>
-6983129f4 - don't require mutate filter on remove_spec (#13292) (#13309) (6 weeks ago) <João Duarte>
-fcbfdc87e - Add pipeline.ordered setting for docker image (#13304) (7 weeks ago) <Andres Rodriguez>
-f59bd179d - fix plugin installation script (#13289) (#13290) (7 weeks ago) <kaisecheng>
-d7b5e1784 - Doc: Fix list formatting (#13296) (7 weeks ago) <Karen Metts>
-360e8fca1 - Doc: Rework PQ content (#13284) (7 weeks ago) <Karen Metts>
-7495df6ae - Doc: Remove outdated info and folder  (#13282) (7 weeks ago) <Karen Metts>
-6af35b5b9 - Replace Faraday to Manticore to get rid of jruby-openssl verification error of Let's Encrypt cross-signed DST Root CA X3 (#13273) (#13279) (7 weeks ago) <kaisecheng>
-c3fcf2d5f - Doc: Add topic and expand info for in-memory queue (#13276) (7 weeks ago) <Karen Metts>
-e3eede52e - Fix plugin manager test that fail to fetch dependency (#13270) (#13271) (7 weeks ago) <kaisecheng>
-f675a3984 - unlock ecs_compatibility_support version in plugin update (#13218) (#13268) (7 weeks ago) <kaisecheng>
-748111261 - Doc: Add shared attribute for messaging ecs default info (#13265) (8 weeks ago) <Karen Metts>
-1f6103845 - update golang image to 1.17.1(#13260) (#13262) (8 weeks ago) <kaisecheng>
-2be6cb326 - avoid duplication of heading and index entry in release notes (#13192) (#13254) (8 weeks ago) <kaisecheng>
-77a6af1ba - geoip integrate air-gapped bootstrap script (#13104) (#13251) (8 weeks ago) <kaisecheng>
-aeb3dc2cf - Backport PR#13248 to 7.x: Fix kafka download link for integration tests (#13250) (8 weeks ago) <Rob Bavey>
-ae80fd27a - Forward port of 7.15.0 release notes to 7.x (#13239) (9 weeks ago) <kaisecheng>
-d3b92d58c - Doc: Add note and example for date math in conditionals  (#13242) (9 weeks ago) <Karen Metts>
-eb776ca41 - Forward port of 7.14.2 release notes to 7.x (#13235) (9 weeks ago) <Andrea Selva>
-050eb98f0 - fix geoip external DB shutdown nil exception (#13224) (#13225) (10 weeks ago) <kaisecheng>
-82993fa6f - [backport 7.x] Use LS_JAVA_HOME in favor of JAVA_HOME #12725 (#13213) (3 months ago) <Andrea Selva>
-959248ac4 - [backport 7.x] Gradle 7 updates, issue #13177 (#13212) (3 months ago) <Andrea Selva>
-a27e109bd - [backport 7.x] Added rexml notice to license list (#13209) (#13210) (3 months ago) <Andrea Selva>
-6b6b3f37b - Forward port of 7.14.1 release notes, from PR #13174 (#13189) (3 months ago) <Andrea Selva>
-c49d5f015 - [backport 7.x] Update bundled JDK to 11.0.12+7 (#13185) (#13186) (3 months ago) <Andrea Selva>
-3e9cc4014 - add the missing logstash config supported by env2yaml for docker (#13178) (#13180) (3 months ago) <kaisecheng>
-6a56b96f9 - Backport #13164: Test: improve monitoring api logging asserts (#13169) (3 months ago) <Karol Bucek>
-8763e51f8 - Backport #13036 to 7.x: Refactor: avoid global mutex on ecs_compatibility (#13163) (3 months ago) <Karol Bucek>
-adb149c66 - Remove dependency:bundler task (#13146) (3 months ago) <Rob Bavey>
-c36e475ab - Bump version to 7.16.0 (#13147) (3 months ago) <Rob Bavey>
-2ac869a9c - Backport PR #13015 to 7.x: Bundler: freeze lockfile on run, and "norm… (#13140) (3 months ago) <Rob Bavey>
-cc06c5d8f - Backport PR #13005 to 7.x: update fpm to allow pkg creation on jdk11+jruby 9.2 (#13005) (#13144) (3 months ago) <Rob Bavey>
-811020b83 - Doc: Forwardport aarch64 support note (#13132) to 7.x release notes (#13137) (3 months ago) <Karen Metts>
-24314350a - [bacport 7.x] Update Snakeyaml version to 1.29 (#13129) (#13134) (3 months ago) <Andrea Selva>
+* The use of the `JAVA_HOME` environment variable is targeted for removal in 8.0, please use `LS_JAVA_HOME` instead.
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.15.2..7.16 *.release"
-Changed plugin versions:
-logstash-codec-avro: 3.2.4 -> 3.3.0
-logstash-codec-es_bulk: 3.0.8 -> 3.1.0
-logstash-filter-aggregate: 2.9.2 -> 2.10.0
-logstash-filter-elasticsearch: 3.9.5 -> 3.11.0
-logstash-filter-geoip: 7.2.4 -> 7.2.3
-logstash-input-azure_event_hubs: 1.3.0 -> 1.4.0
-logstash-input-elasticsearch: 4.9.3 -> 4.12.1
-logstash-input-http_poller: 5.0.2 -> 5.1.0
-logstash-integration-jdbc: 5.1.8 -> 5.1.6
-logstash-output-elasticsearch: 11.0.5 -> 11.2.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Reminder that the Ruby Execution Engine is deprecated and will not be available in Logstash 8.
+  The Java Execution Engine has been the default since 7.0 and reached substantial maturity in 7.10.
 
+[[featured-7-16-0]]
+==== New features and enhancements
+
+* Added options for securing the Logstash HTTP API using TLS and/or HTTP Basic auth https://github.com/elastic/logstash/pull/13308[#13308].
+  We're planning on following up on the feature set shipped in 7.16 for details please see https://github.com/elastic/logstash/issues/13196[#13196].
+
+* Opting in to ECS compatibility per-pipeline (`pipeline.ecs_compatibility`) or globally has graduated from BETA.
+
+* Introduce `LS_JAVA_HOME` environment variable https://github.com/elastic/logstash/pull/13204[#13204].
+  Logstash launch scripts have been using `JAVA_HOME` to identify a JDK configured by the user,
+  as that environment variable could be too generic Logstash now has a dedicated `LS_JAVA_HOME`.
+  If `LS_JAVA_HOME` is not specified Logstash still looks for `JAVA_HOME`.
+
+* Logstash started supporting JDK 17 https://github.com/elastic/logstash/pull/13330[#13330]
+  and tests against Java 17 https://github.com/elastic/logstash/pull/13330[#13330]
+
+The complete list of supported operating systems and JVMs is available in the
+https://www.elastic.co/support/matrix[support matrix].
+
+[[ecs-7-16-0]]
+===== Progress toward Elastic Common Schema (ECS)
+
+In this release, we continued our efforts towards Elastic Common Schema (ECS):
+
+* <<plugins-inputs-elasticsearch,elasticsearch input>> has sensible defaults with `ecs_compatibility`
+* <<plugins-inputs-http_poller,http_poller input>> leverages ECS fields under `ecs_compatibility`
+* <<plugins-codecs-avro,avro codec>> added `target` support
+* <<plugins-codecs-es_bulk,ES bulk codec>> added `target` support
+
+[[plugins-7-16-0]]
 ==== Plugins
 
 *Avro Codec - 3.3.0*
@@ -189,117 +123,6 @@ logstash-output-elasticsearch: 11.0.5 -> 11.2.1
 
 * Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/152[#152]
 
-*Geoip Filter - 7.2.3*
-
-* [DOC] Add documentation for bootstrapping air-gapped environment for database auto-update https://github.com/logstash-plugins/logstash-filter-geoip/pull/189[#189]
-
-* [DOC] Add documentation for database auto-update behavior and database metrics https://github.com/logstash-plugins/logstash-filter-geoip/pull/187[#187]
-
-* Republish the gem due to missing jars in 7.2.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/186[#186]
-
-* YANKED
-* Add EULA GeoIP2 Database with auto-update https://github.com/logstash-plugins/logstash-filter-geoip/pull/181[#181]
-    Available in Logstash 7.14+
-* Support multiple pipelines using the same database
-* Add EULA doc
-
-* Fixed resolving wrong `fields` name `AUTONOMOUS_SYSTEM_NUMBER` and `AUTONOMOUS_SYSTEM_ORGANIZATION` https://github.com/logstash-plugins/logstash-filter-geoip/pull/185[#185]
-
-* Remove EULA doc as MaxMind auto-update has been retargeted to a later release https://github.com/logstash-plugins/logstash-filter-geoip/pull/183[#183]
-
-* Changed the behaviour of database expiry. Instead of stopping the pipeline, it adds a tag `_geoip_expired_database` https://github.com/logstash-plugins/logstash-filter-geoip/pull/182[#182]
-
-* Add ECS compatibility https://github.com/logstash-plugins/logstash-filter-geoip/pull/179[#179]
-
-* [DOC] Add documentation for MaxMind database license change https://github.com/logstash-plugins/logstash-filter-geoip/pull/177[#177]
-
-* Changed the plugin to use EULA GeoIP2 Database with auto-update https://github.com/logstash-plugins/logstash-filter-geoip/pull/176[#176]
-    Available in Logstash 7.13+ Elastic license
-
-* Fix database download task. Upgrade project to java 11 https://github.com/logstash-plugins/logstash-filter-geoip/pull/175[#175]
-
-* Enable the use of MaxMind GeoIP2-Domain databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/162[#162]
-
-* Fixed docs for missing region_code https://github.com/logstash-plugins/logstash-filter-geoip/pull/158[#158]
-
-* Update of GeoLite2 DB https://github.com/logstash-plugins/logstash-filter-geoip/pull/157[#157]
-
-* Fixed deeplink to Elasticsearch Reference 
-  https://github.com/logstash-plugins/logstash-filter-geoip/pull/151[#151]
-
-* Removed obsolete lru_cache_size field
-
-* Skip lookup operation if source field contains an empty string 
-* Update of the GeoIP2 DB
-
-* Update gemspec summary
-
-* Fix some documentation issues
-
-* Make deprecated field lru_cache_size obsolete
-
-* Bundle the GeoLite2-ASN database by default
-* Add default_database_type configuration option to allow selection between the GeoLite2-City and GeoLote2-ASN databases.
-
-* Add support for GeoLite2-ASN database from MaxMind for ASN data.
-* Update Java dependencies to 2.9.0 to support the new ASN database.
-
-* Add support for commercial databases from MaxMind.
-* Add ASN data support via GeoIP2-ISP database.
-  
-* Removed from RubyGems.org since it was missing the default GeoIP2 database.  
-
-* Docs: Remove patch classes from the main plugin file
-* Update of the GeoIP2 DB
-
-* Docs: Clarify GeoLite2 database support
-  
-* Update of the GeoIP2 DB
-* Target should be merged and not completely overwritten (#98)
-
-* Update of the GeoIP2 DB
-
-* Recreate gem since 4.0.1 lacked jars
-
-* Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
-
-* Update the plugin to the version 2.0 of the plugin api, this change is required for Logstash 5.0 compatibility. See https://github.com/elastic/logstash/issues/5141
-* GA release for GeoIP2 database, compatible with LS 5.x
-
-# 3.0.0-beta3
-* Return empty result when IP lookup fails for location field (#70)
-
-# 3.0.0-beta2
-* Internal: Actually include the vendored jars
-
-# 3.0.0-beta1
-* Changed plugin to use GeoIP2 database. See http://dev.maxmind.com/geoip/geoip2/whats-new-in-geoip2/
-
-# 2.0.7
-* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
-# 2.0.6
-* New dependency requirements for logstash-core for the 5.0 release
-* Use proper field references
-
-* Refactor GeoIP Struct to hash conversion to minimise repeated manipulation
-
-* Fix Issue 50, incorrect data returned when geo lookup fails
-
-* Update core dependency in gemspec
-
-* Remove filter? call
-
-* Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
-   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
-* Dependency on logstash-core update to 2.0
-
-* 1.1.2
-* Be more defensive with threadsafety, mostly for specs
-* 1.1.1
-* Lazy-load LRU cache
-* 1.1.0
-* Add LRU cache
-
 *Azure_event_hubs Input - 1.4.0*
 
 * Updated the minor version of Azure SDK and other dependencies to ensure users of this plugin get upstream fixes and improvements https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/67[#67]
@@ -317,58 +140,6 @@ logstash-output-elasticsearch: 11.0.5 -> 11.2.1
 *Http_poller Input - 5.1.0*
 
 * Add ECS support https://github.com/logstash-plugins/logstash-input-http_poller/pull/129[#129]
-
-*Jdbc Integration - 5.1.6*
-
-* Fix, serialize the JDBC driver loading steps to avoid concurrency issues https://github.com/logstash-plugins/logstash-integration-jdbc/pull/84[#84]
-
-* Refined ECS support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
-* Uses shared `target` guidance when ECS compatibility is enabled
-* Uses Logstash's EventFactory instead of instantiating events directly
-
-* [DOC] Update filter-jdbc_static doc to describe ECS compatibility https://github.com/logstash-plugins/logstash-integration-jdbc/pull/79[#79]
-
-* Improve robustness when handling errors from `sequel` library in jdbc static and streaming
-    filters https://github.com/logstash-plugins/logstash-integration-jdbc/pull/78[#78]
-
-*  Fix `prepared_statement_bind_values` in streaming filter to resolve nested event's fields https://github.com/logstash-plugins/logstash-integration-jdbc/pull/76[#76]
-
-* [DOC] Changed docs to indicate that logstash-jdbc-static requires local_table https://github.com/logstash-plugins/logstash-integration-jdbc/pull/56[#56]. Fixes https://github.com/logstash-plugins/logstash-integration-jdbc/issues/55[#55].
-
-* Added `target` option to JDBC input, allowing the row columns to target a specific field instead of being expanded 
-    at the root of the event. This allows the input to play nicer with the Elastic Common Schema when 
-    the input does not follow the schema. https://github.com/logstash-plugins/logstash-integration-jdbc/issues/69[#69]
-    
-* Added `target` to JDBC filter static `local_lookups` to verify it's properly valued when ECS is enabled. 
-    https://github.com/logstash-plugins/logstash-integration-jdbc/issues/71[#71]
-
-* Feat: try hard to log Java cause (chain) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/62[#62]
-
-    This allows seeing a full trace from the JDBC driver in case of connection errors. 
-
-* Refactored Lookup used in jdbc_streaming and jdbc_static to avoid code duplication. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/59[#59]
-
-* DOC:Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
-
-* Fixed user sequel_opts not being passed down properly https://github.com/logstash-plugins/logstash-integration-jdbc/pull/37[#37]
-* Refactored jdbc_streaming to share driver loading, so the fixes from the jdbc plugin also effect jdbc_streaming
-
-* Fixed issue where JDBC Drivers that don't correctly register with Java's DriverManager fail to load (such as Sybase) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/34[#34]
-
-* Fixed issue where a lost connection to the database can cause errors when using prepared statements with the scheduler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/25[#25]
-
-* Fixed potential resource leak by ensuring scheduler is shutdown when a pipeline encounter an error during the running https://github.com/logstash-plugins/logstash-integration-jdbc/pull/28[#28]
-
-* Fixed tracking_column regression with Postgresql Numeric types https://github.com/logstash-plugins/logstash-integration-jdbc/pull/17[#17]
-* Fixed driver loading when file not accessible https://github.com/logstash-plugins/logstash-integration-jdbc/pull/15[#15]
-
-* Initial Release of JDBC Integration Plugin, incorporating [logstash-input-jdbc](https://github.com/logstash-plugins/logstash-input-jdbc), [logstash-filter-jdbc_streaming](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming) and
-    [logstash-filter-jdbc_static](https://github.com/logstash-plugins/logstash-filter-jdbc_static)
-* For Changelog of individual plugins, see:
-* [JBDC Input version 4.3.19](https://github.com/logstash-plugins/logstash-input-jdbc/blob/v4.3.19/CHANGELOG.md)
-* [JDBC Static filter version 1.1.0](https://github.com/logstash-plugins/logstash-filter-jdbc_static/blob/v1.1.0/CHANGELOG.md)
-* [JDBC Streaming filter version 1.0.10](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/blob/v1.0.10/CHANGELOG.md)
- 
 
 *Elasticsearch Output - 11.2.1*
 
