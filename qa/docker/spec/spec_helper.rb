@@ -6,6 +6,7 @@ require 'logstash/version'
 require 'json'
 require 'stud/try'
 require 'docker-api'
+require_relative '../patches/excon/unix_socket'
 
 def version
   @version ||= LOGSTASH_VERSION
@@ -35,15 +36,25 @@ def start_container(image, options={})
 end
 
 def wait_for_logstash(container)
-  Stud.try(40.times, RSpec::Expectations::ExpectationNotMetError) do
-    expect(container.exec(['curl', '-s', 'http://localhost:9600/_node'])[0][0]).not_to be_empty
+  Stud.try(40.times, [NoMethodError, Docker::Error::ConflictError, RSpec::Expectations::ExpectationNotMetError, TypeError]) do
+    expect(logstash_available?(container)).to be true
+    expect(get_logstash_status(container)).to eql 'green'
+  end
+end
+
+def wait_for_pipeline(container, pipeline='main')
+  Stud.try(40.times, [NoMethodError, Docker::Error::ConflictError, RSpec::Expectations::ExpectationNotMetError, TypeError]) do
+    expect(pipeline_stats_available?(container, pipeline)).to be true
   end
 end
 
 def cleanup_container(container)
   unless container.nil?
-    container.kill
-    container.delete(:force=>true)
+    begin
+      container.stop
+    ensure
+      container.delete(:force=>true)
+    end
   end
 end
 
@@ -56,16 +67,52 @@ def license_agreement_for_flavor(flavor)
 end
 
 def get_logstash_status(container)
-  JSON.parse(container.exec(['curl', '-s', 'http://localhost:9600'])[0][0])['status']
+  make_request(container,'curl -s http://localhost:9600/')['status']
 end
 
-
 def get_node_info(container)
-  JSON.parse(container.exec(['curl', '-s', 'http://localhost:9600/_node'])[0][0])
+  make_request(container,'curl -s http://localhost:9600/_node/')
 end
 
 def get_node_stats(container)
-  JSON.parse(container.exec(['curl', '-s', 'http://localhost:9600/_node/stats'])[0][0])
+  make_request(container,'curl -s http://localhost:9600/_node/stats')
+end
+
+def get_pipeline_setting(container, property, pipeline='main')
+  make_request(container, "curl -s http://localhost:9600/_node/pipelines/#{pipeline}")
+          .dig('pipelines', pipeline, property)
+end
+
+def get_pipeline_stats(container, pipeline='main')
+  make_request(container, "curl -s http://localhost:9600/_node/stats/pipelines").dig('pipelines', pipeline)
+end
+
+def get_plugin_info(container, type, id, pipeline='main')
+  pipeline_info = make_request(container, "curl -s http://localhost:9600/_node/stats/pipelines")
+  all_plugins = pipeline_info.dig('pipelines', pipeline, 'plugins', type)
+  if all_plugins.nil?
+    # This shouldn't happen, so if it does, let's figure out why
+    puts container.logs(stdout: true)
+    puts "Unable to find plugins from #{pipeline_info}, when looking for #{type} plugins in #{pipeline}"
+    return nil
+  end
+  all_plugins.find{|plugin|plugin['id'] == id}
+end
+
+def logstash_available?(container)
+  response = exec_in_container_full(container, 'curl -s http://localhost:9600')
+  return false if response[:exitcode] != 0
+  !(response[:stdout].nil? || response[:stdout].empty?)
+end
+
+def pipeline_stats_available?(container, pipeline)
+  response = make_request(container, "curl -s http://localhost:9600/_node/stats/pipelines")
+  plugins = response.dig('pipelines', pipeline, 'plugins')
+  !(plugins.nil? || plugins.empty?)
+end
+
+def make_request(container, url)
+  JSON.parse(exec_in_container(container, url))
 end
 
 def get_settings(container)
@@ -73,11 +120,24 @@ def get_settings(container)
 end
 
 def java_process(container, column)
-  exec_in_container(container, "ps -C java -o #{column}=").strip
+  exec_in_container(container, "ps -C java -o #{column}=")
 end
 
+# Runs the given command in the given container. This method returns
+# a hash including the `stdout` and `stderr` outputs and the exit code
+def exec_in_container_full(container, command)
+  response = container.exec(command.split)
+  {
+      :stdout => response[0],
+      :stderr => response[1],
+      :exitcode => response[2]
+  }
+end
+
+# Runs the given command in the given container. This method returns
+# only the stripped/chomped `stdout` output.
 def exec_in_container(container, command)
-  container.exec(command.split)[0].join
+  exec_in_container_full(container, command)[:stdout].join.chomp.strip
 end
 
 def running_architecture
