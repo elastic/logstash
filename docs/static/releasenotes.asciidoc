@@ -148,9 +148,7 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 *Elasticsearch Output - 11.2.1*
 
 * Fix referencing Gem classes from global lexical scope https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1044[#1044]
-
 * Added preflight checks on Elasticsearch https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1026[#1026]
-
 * Feat: add `user-agent` header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1038[#1038]
 
 
