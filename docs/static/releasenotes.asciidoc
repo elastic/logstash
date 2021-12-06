@@ -134,11 +134,8 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 *Elasticsearch Input - 4.12.1*
 
 * Fixed too_long_frame_exception by passing scroll_id in the body https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/159[#159]
-
 * Feat: Update Elasticsearch client to 7.14.0 https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/157[#157]
-
 * Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/158[#158]
-
 * Feat: added ecs_compatibility + event_factory support https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/149[#149]
 
 *Http_poller Input - 5.1.0*
