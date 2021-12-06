@@ -78,17 +78,10 @@ public class CloudSettingAuthTest {
 	
 	@Test
 	public void testSpecialCharactersPassword() {
-        final CloudSettingAuth sut = new CloudSettingAuth("frodo:=+$;@");
+        final CloudSettingAuth sut = new CloudSettingAuth("frodo:=+$;@abcd");
         assertEquals("frodo", sut.getUsername());
-        assertEquals("%3D+%24%3B%40", sut.getPassword().getValue());
+        assertEquals("%3D+%24%3B%40abcd", sut.getPassword().getValue());
         assertEquals("frodo:<password>", sut.toString());
 	}
 
-	@Test
-	public void testColonInPassword() {
-        final CloudSettingAuth sut = new CloudSettingAuth("frodo:bag:gins");
-        assertEquals("frodo", sut.getUsername());
-        assertEquals("bag%3Ains", sut.getPassword().getValue());
-        assertEquals("frodo:<password>", sut.toString());
-	}
 }
