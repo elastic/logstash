@@ -90,8 +90,7 @@ This section summarizes the changes in the following releases:
   as that environment variable could be too generic Logstash now has a dedicated `LS_JAVA_HOME`.
   If `LS_JAVA_HOME` is not specified Logstash still looks for `JAVA_HOME`.
 
-* Logstash started supporting JDK 17 https://github.com/elastic/logstash/pull/13330[#13330]
-  and tests against Java 17 https://github.com/elastic/logstash/pull/13330[#13330]
+* Logstash added tests against Java 17 and started supporting JDK 17 https://github.com/elastic/logstash/pull/13330[#13330]
 
 The complete list of supported operating systems and JVMs is available in the
 https://www.elastic.co/support/matrix[support matrix].
