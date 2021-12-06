@@ -119,7 +119,7 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 
 *Aggregate Filter - 2.10.0*
 
-* new feature: add ability to generate new event during code execution (#116)
+* Feat: add ability to generate new event during code execution https://github.com/logstash-plugins/logstash-filter-aggregate/pull/116[#116]
 
 *Elasticsearch Filter - 3.11.0*
 
