@@ -123,7 +123,6 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 *Elasticsearch Filter - 3.11.0*
 
 * Feat: update Elasticsearch client to 7.14.0 https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/150[#150]
-
 * Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/152[#152]
 
 *Azure_event_hubs Input - 1.4.0*
