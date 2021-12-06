@@ -63,6 +63,10 @@ This section summarizes the changes in the following releases:
 
 * Add `pipeline.ordered` setting for docker image https://github.com/elastic/logstash/pull/13300[#13300]
 
+**Updates to dependencies**
+
+* Update JRuby to 9.2.20.1 https://github.com/elastic/logstash/pull/13468[#13468]
+
 [[deprecated-7-16-0]]
 ==== Deprecations
 
