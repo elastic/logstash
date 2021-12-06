@@ -73,6 +73,7 @@ public class CloudSettingAuth {
         return String.join(":", username, password.toString());
     }
 	
+	//CS427 Issue Link: https://github.com/elastic/logstash/issues/11193
 	private String encodeSpecialCharacters(String value) {
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < value.length(); i++)
