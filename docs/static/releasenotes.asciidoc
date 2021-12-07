@@ -74,7 +74,7 @@ This section summarizes the changes in the following releases:
 
 * Logstash will no longer support the use of the `JAVA_HOME` environment variable in 8.0, and will use the bundled JDK instead.  If you need to use a different version, use the `LS_JAVA_HOME` environment variable.
 
-* Reminder that the Ruby Execution Engine is deprecated and will not be available in Logstash 8.
+* Reminder: The Ruby Execution Engine is deprecated and will not be available in Logstash 8.
   The Java Execution Engine has been the default since 7.0 and reached substantial maturity in 7.10.
 
 [[featured-7-16-0]]
