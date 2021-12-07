@@ -70,7 +70,7 @@ This section summarizes the changes in the following releases:
 [[deprecated-7-16-0]]
 ==== Deprecations
 
-* Logstash 8.0 will remove support for Java versions before 11, thus using Java 8 has been deprecated.
+* Java 8 has been deprecated. Logstash 8.0 will remove support for Java versions before 11.
 
 * The use of the `JAVA_HOME` environment variable is targeted for removal in 8.0, please use `LS_JAVA_HOME` instead.
 
