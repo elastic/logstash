@@ -83,7 +83,7 @@ This section summarizes the changes in the following releases:
 * Added options for securing the Logstash HTTP API using TLS and/or HTTP Basic auth https://github.com/elastic/logstash/pull/13308[#13308].
   We're planning to follow up on the feature set shipped in 7.16.  For details please see https://github.com/elastic/logstash/issues/13196[#13196].
 
-* Opting in to ECS compatibility per-pipeline (`pipeline.ecs_compatibility`) or globally has graduated from BETA.
+* Opting in to ECS compatibility per-pipeline (`pipeline.ecs_compatibility`) or globally has graduated from BETA and is general available (GA). 
 
 * Introduce `LS_JAVA_HOME` environment variable https://github.com/elastic/logstash/pull/13204[#13204].
   Logstash launch scripts have been using `JAVA_HOME` to identify a JDK configured by the user,
