@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.jruby.RubyString;
 
 /**
@@ -75,11 +76,7 @@ public final class FieldReference {
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
      */
-    public static final FieldReference TIMESTAMP_REFERENCE =
-        deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD));
-
-    private static final FieldReference METADATA_PARENT_REFERENCE =
-        new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
+    public static final FieldReference TIMESTAMP_REFERENCE = FieldReference.from(Event.TIMESTAMP);
 
     /**
      * Cache of all existing {@link FieldReference} by their {@link RubyString} source.
@@ -106,9 +103,10 @@ public final class FieldReference {
     private final int type;
 
     private FieldReference(final String[] path, final String key, final int type) {
-        this.key = key;
-        this.type = type;
+        this.key = ConvertedMap.internStringForUseAsKey(key);
+        ConvertedMap.internStringsForUseAsKeys(path);
         this.path = path;
+        this.type = type;
         hash = calculateHash(this.key, this.path, this.type);
     }
 
@@ -221,10 +219,10 @@ public final class FieldReference {
     private static FieldReference parse(final CharSequence reference) {
         final List<String> path = TOKENIZER.tokenize(reference);
 
-        final String key = path.remove(path.size() - 1).intern();
+        final String key = path.remove(path.size() - 1);
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
-            return METADATA_PARENT_REFERENCE;
+            return new FieldReference(EMPTY_STRING_ARRAY, key, META_PARENT);
         } else if (!empty && path.get(0).equals(Event.METADATA)) {
             return new FieldReference(
                 path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD
@@ -240,7 +238,11 @@ public final class FieldReference {
      **/
     private static class StrictTokenizer {
 
-        public List<String> tokenize(CharSequence reference) {
+        /**
+         * @param reference a sequence of characters representing a reference to a field
+         * @return a list of string path fragments.
+         */
+        public List<String> tokenize(final CharSequence reference) {
             ArrayList<String> path = new ArrayList<>();
             final int length = reference.length();
 
@@ -286,7 +288,7 @@ public final class FieldReference {
 
                         if (splitPoint < i) {
                             // if we have something to add, add it.
-                            path.add(reference.subSequence(splitPoint, i).toString().intern());
+                            path.add(reference.subSequence(splitPoint, i).toString());
                         }
 
                         depth--;
@@ -309,7 +311,9 @@ public final class FieldReference {
                 // if we saw no brackets, this is a top-level reference that can be emitted as-is without
                 // further processing
                 path.add(reference.toString());
+                path.trimToSize();
                 return path;
+
             } else if (depth > 0) {
                 // when we hit the end-of-input while still in an open bracket, we have an invalid field reference
                 potentiallyAmbiguousSyntaxDetected = true;
