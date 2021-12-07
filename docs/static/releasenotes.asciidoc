@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-16-0,Logstash 7.16.0>>
 * <<logstash-7-15-2,Logstash 7.15.2>>
 * <<logstash-7-15-1,Logstash 7.15.1>>
 * <<logstash-7-15-0,Logstash 7.15.0>>
@@ -53,6 +54,99 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-16-0]]
+=== Logstash 7.16.0 Release Notes
+
+[[notable-7-16-0]]
+==== Performance improvements and notable issues fixed
+
+* Add `pipeline.ordered` setting for docker image https://github.com/elastic/logstash/pull/13300[#13300]
+
+**Updates to dependencies**
+
+* Update JRuby to 9.2.20.1 https://github.com/elastic/logstash/pull/13468[#13468]
+
+[[deprecated-7-16-0]]
+==== Deprecations
+
+* Java 8 has been deprecated. Logstash 8.0 will remove support for Java versions before 11.
+
+* Logstash will no longer support the use of the `JAVA_HOME` environment variable in 8.0, and will use the bundled JDK instead.  If you need to use a different version, use the `LS_JAVA_HOME` environment variable.
+
+* Reminder: The Ruby Execution Engine is deprecated and will not be available in Logstash 8.
+  The Java Execution Engine has been the default since 7.0 and reached substantial maturity in 7.10.
+
+[[featured-7-16-0]]
+==== New features and enhancements
+
+* Added options for securing the Logstash HTTP API using TLS and/or HTTP Basic auth https://github.com/elastic/logstash/pull/13308[#13308].
+  We're planning to follow up on the feature set shipped in 7.16.  For details please see https://github.com/elastic/logstash/issues/13196[#13196].
+
+* Opting in to ECS compatibility per-pipeline (`pipeline.ecs_compatibility`) or globally has graduated from BETA and is general available (GA). 
+
+* Introduce `LS_JAVA_HOME` environment variable to replace `JAVA_HOME` https://github.com/elastic/logstash/pull/13204[#13204].
+  - Until 8.0, Logstash looks for `JAVA_HOME` if `LS_JAVA_HOME` is not specified.  (See <<deprecated-7-16-0>>.)
+  - We recommend using the bundled JDK unless you have a compelling reason to use a different one.
+
+* Logstash added tests against Java 17 and started supporting JDK 17 https://github.com/elastic/logstash/pull/13330[#13330]
+
+The complete list of supported operating systems and JVMs is available in the
+https://www.elastic.co/support/matrix[support matrix].
+
+[[ecs-7-16-0]]
+===== Progress toward Elastic Common Schema (ECS)
+
+In this release, we continued our efforts towards Elastic Common Schema (ECS):
+
+* <<plugins-inputs-elasticsearch,elasticsearch input>> has sensible defaults with `ecs_compatibility`
+* <<plugins-inputs-http_poller,http_poller input>> leverages ECS fields under `ecs_compatibility`
+* <<plugins-codecs-avro,avro codec>> added `target` support
+* <<plugins-codecs-es_bulk,ES bulk codec>> added `target` support
+
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
+
+[[plugins-7-16-0]]
+==== Plugins
+
+*Avro Codec - 3.3.0*
+
+* Add ECS support. Add target option and event.original https://github.com/logstash-plugins/logstash-codec-avro/pull/36[#36]
+
+*Es_bulk Codec - 3.1.0*
+
+* Add ECS support. Add `target` option https://github.com/logstash-plugins/logstash-codec-es_bulk/pull/20[#20]
+
+*Aggregate Filter - 2.10.0*
+
+* Feat: add ability to generate new event during code execution https://github.com/logstash-plugins/logstash-filter-aggregate/pull/116[#116]
+
+*Elasticsearch Filter - 3.11.0*
+
+* Feat: update Elasticsearch client to 7.14.0 https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/150[#150]
+* Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/152[#152]
+
+*Azure_event_hubs Input - 1.4.0*
+
+* Updated the minor version of Azure SDK and other dependencies to ensure users of this plugin get upstream fixes and improvements https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/67[#67]
+
+*Elasticsearch Input - 4.12.1*
+
+* Fixed too_long_frame_exception by passing scroll_id in the body https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/159[#159]
+* Feat: Update Elasticsearch client to 7.14.0 https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/157[#157]
+* Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/158[#158]
+* Feat: added ecs_compatibility + event_factory support https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/149[#149]
+
+*Http_poller Input - 5.1.0*
+
+* Add ECS support https://github.com/logstash-plugins/logstash-input-http_poller/pull/129[#129]
+
+*Elasticsearch Output - 11.2.1*
+
+* Fix referencing Gem classes from global lexical scope https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1044[#1044]
+* Added preflight checks on Elasticsearch https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1026[#1026]
+* Feat: add `user-agent` header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1038[#1038]
+
 
 [[logstash-7-15-2]]
 === Logstash 7.15.2 Release Notes
