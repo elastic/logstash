@@ -105,6 +105,8 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 * <<plugins-codecs-avro,avro codec>> added `target` support
 * <<plugins-codecs-es_bulk,ES bulk codec>> added `target` support
 
+Check out our https://github.com/elastic/logstash/issues/11635[progress toward ECS compatibility] in github issue https://github.com/elastic/logstash/issues/11635[#11635].
+
 [[plugins-7-16-0]]
 ==== Plugins
 
