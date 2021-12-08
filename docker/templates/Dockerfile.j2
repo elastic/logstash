@@ -30,15 +30,17 @@ RUN for iter in {1..10}; do \
 {% if image_flavor != 'ubi8' -%}
     export DEBIAN_FRONTEND=noninteractive && \
 {% endif -%}
-
     {{ package_manager }} update -y && \
     {{ package_manager }} upgrade -y && \
     {{ package_manager }} install -y procps findutils tar gzip curl && \
 {% if image_flavor == 'ubi8' -%}
     {{ package_manager }} install -y which shadow-utils && \
+{% else -%}
+    {{ package_manager }} install -y locales && \
 {% endif -%}
     {{ package_manager }} clean all && \
 {% if image_flavor != 'ubi8' -%}
+    locale-gen 'en_US.UTF-8' && \
     {{ package_manager }} clean metadata && \
 {% endif -%}
     exit_code=0 && break || exit_code=$? && \
