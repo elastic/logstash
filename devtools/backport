@@ -10,6 +10,7 @@ from os.path import expanduser
 import re
 from subprocess import check_call, call, check_output
 import requests
+import json
 
 usage = """
     Example usage:
@@ -97,7 +98,25 @@ def create_pr(parser, args):
         call("git branch -D {} > /dev/null".format(tmp_branch), shell=True)
         check_call("git checkout -b {}".format(tmp_branch), shell=True)
 
-        commit_hashes = "{}".format(" ").join(args.commit_hashes)
+        if len(args.commit_hashes) == 0:
+            if token:
+                session = github_session(token)
+                base = "https://api.github.com/repos/elastic/logstash"
+                original_pr = session.get(base + "/pulls/" + args.pr_number).json()
+                merge_commit = original_pr['merge_commit_sha']
+                if not merge_commit:
+                    info("Could not auto resolve merge commit - PR isn't merged yet")
+                    return 1
+                info("Merge commit detected from PR: {}".format(merge_commit))
+                commit_hashes = merge_commit
+            else:
+                info("GitHub API token not available. " +
+                     "Please manually specify commit hash(es) argument(s)\n")
+                parser.print_help()
+                return 1
+        else:
+            commit_hashes = "{}".format(" ").join(args.commit_hashes)
+
         info("Cherry-picking {}".format(commit_hashes))
         if call("git cherry-pick -x {}".format(commit_hashes), shell=True) != 0:
             info("Looks like you have cherry-pick errors.")
