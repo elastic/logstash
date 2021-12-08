@@ -811,7 +811,7 @@ module LogStash
 
       def validate_value
         # bypass deprecation warning
-        validate(wrapped.value) if set?
+        wrapped.validate_value if set?
       end
     end
 
