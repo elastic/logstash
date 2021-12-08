@@ -14,11 +14,11 @@ import json
 
 usage = """
     Example usage:
-        ./devtools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527
+        ./devtools/backport 7.16 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527
 
     In case of backporting errors, fix them, then run
         git cherry-pick --continue
-        ./devtools/backport 5.0 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527 --continue
+        ./devtools/backport 7.16 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527 --continue
 
     This script does the following:
         * cleanups both from_branch and to_branch (warning: drops local changes)
