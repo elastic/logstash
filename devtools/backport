@@ -172,7 +172,7 @@ def create_pr(parser, args):
             title="Backport PR #{} to {}: {}".format(args.pr_number, args.to_branch, original_pr["title"]),
             head=remote_user + ":" + tmp_branch,
             base=args.to_branch,
-            body="Backport PR #{} to {} branch. Original message: \n\n{}"
+            body="**Backport PR #{} to {} branch, original message:**\n\n---\n\n{}"
             .format(args.pr_number, args.to_branch, original_pr["body"])
         ))
         if request.status_code > 299:
