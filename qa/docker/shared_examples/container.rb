@@ -10,6 +10,10 @@ shared_examples_for 'the container is configured correctly' do |flavor|
   end
 
   context 'logstash' do
+    it 'does not warn cannot change locale' do
+      expect(@container.logs(stderr: true)).not_to match /cannot change locale/
+    end
+
     it 'should run with the correct version' do
       console_out = exec_in_container(@container, 'logstash --version')
       console_filtered = console_out.split("\n")
