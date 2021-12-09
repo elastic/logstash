@@ -18,7 +18,7 @@ describe 'A container running the oss image' do
       cleanup_container(@container)
     end
 
-    it 'has an Ubunto 20.04 base image' do
+    it 'has an Ubuntu 20.04 base image' do
       expect(exec_in_container(@container, 'cat /etc/os-release').chomp).to match /Ubuntu 20.04/
     end
   end
