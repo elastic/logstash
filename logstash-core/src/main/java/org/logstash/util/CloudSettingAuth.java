@@ -42,6 +42,13 @@ public class CloudSettingAuth {
 		charMap.put("%", "%25");
 	}
 
+    /**
+    * Verifies cloud authentication string using passed in username and password.
+    * Hides password to any external observers.
+    *
+    * @param value original username and password string
+    * @return null if input is null
+    */
     public CloudSettingAuth(String value) {
         if (value == null) {
             return;
