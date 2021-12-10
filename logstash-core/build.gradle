@@ -11,6 +11,8 @@ String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 
+String log4jVersion = '2.15.0'
+
 repositories {
     mavenCentral()
 }
@@ -119,9 +121,9 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 
 dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:2.9.1'
-    compile 'org.apache.logging.log4j:log4j-core:2.9.1'
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.1'
+    compile 'org.apache.logging.log4j:log4j-api:${log4jVersion}'
+    compile 'org.apache.logging.log4j:log4j-core:${log4jVersion}'
+    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}'
     compile 'commons-codec:commons-codec:1.11'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
