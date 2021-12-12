@@ -56,22 +56,10 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-21]]
 === Logstash 6.8.21 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.21
-
-* Backport PR #13369 to 6.8. Add java version parameterization to Logst… https://github.com/elastic/logstash/pull/13384[#13384]
-* Backport PR#12626 to 6.8: use correct headers api for redirects in pl… https://github.com/elastic/logstash/pull/13411[#13411]
+* Add java version parameterization to Logstash builds https://github.com/elastic/logstash/pull/13384[#13384]
+* Use correct headers api for redirects in plugin manager http client https://github.com/elastic/logstash/pull/13411[#13411]
 * Update log4j dependencies https://github.com/elastic/logstash/pull/13500[#13500]
 
-=== Logstash Commits between 6.8 and 6.8.20
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.20..6.8"
-
-d55b317 - (HEAD -> 6.8, origin/6.8) Update log4j dependencies (#13500) (2 days ago) <Rob Bavey>
-e8fe311 - Backport PR#12626 to 6.8: use correct headers api for redirects in plugin manager http client (#12626) (#13411) (4 weeks ago) <Rob Bavey>
-afab7d9 - Backport PR #13369 to 6.8. Add java version parameterization to Logstash builds (#13384) (5 weeks ago) <Rob Bavey>
-1285fb6 - Versionbump to 6.8.21 (#13315) (8 weeks ago) <Rob Bavey>
-9d55b4b - Release notes for 6.8.20 (#13305) (9 weeks ago) <Logstash Machine>
 
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff v6.8.20..6.8 *.release"
