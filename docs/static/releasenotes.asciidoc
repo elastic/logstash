@@ -56,8 +56,14 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-21]]
 === Logstash 6.8.21 Release Notes
 
+[[notable-6-8-21]]
+==== Performance improvements and notable issues fixed
+
 * Add java version parameterization to Logstash builds https://github.com/elastic/logstash/pull/13384[#13384]
 * Use correct headers api for redirects in plugin manager http client https://github.com/elastic/logstash/pull/13411[#13411]
+
+**Updates to dependencies**
+
 * Update log4j dependencies https://github.com/elastic/logstash/pull/13500[#13500]
 
 [[logstash-6-8-20]]
