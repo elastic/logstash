@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-16-1,Logstash 7.16.1>>
 * <<logstash-7-16-0,Logstash 7.16.0>>
 * <<logstash-7-15-2,Logstash 7.15.2>>
 * <<logstash-7-15-1,Logstash 7.15.1>>
@@ -54,6 +55,165 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-16-1]]
+=== Logstash 7.16.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.16.1
+
+* Fix: delegating from deprecated setting https://github.com/elastic/logstash/pull/13481[#13481]
+* Backport PR #13481 to 7.16: Fix: delegating from deprecated setting https://github.com/elastic/logstash/pull/13484[#13484]
+* Backport #13494 to 7.16. bump log4j version to 2.15.0 https://github.com/elastic/logstash/pull/13496[#13496]
+
+=== Logstash Commits between 7.16 and 7.16.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.16.0..7.16"
+
+b2d1d1138 - (HEAD -> 7.16, origin/7.16) Updated lockfile for 7.16.1 (#13499) (2 days ago) <Rob Bavey>
+0da0f8e12 - Backport #13494 to 7.16. bump log4j version to 2.15.0 (#13496) (2 days ago) <Rob Bavey>
+5e3c2ac74 - Deps: bump lock file for 7.16.1 (#13483) (4 days ago) <Karol Bucek>
+d73755475 -  Backport PR #13481 to 7.16: Fix: delegating from deprecated setting (#13484) (4 days ago) <Karol Bucek>
+d492c4ed3 - Release: bump version to 7.16.1 (#13476) (5 days ago) <Karol Bucek>
+c22871004 - Release notes for 7.16.0 (#13436) (5 days ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.16.0..7.16 *.release"
+Changed plugin versions:
+logstash-codec-avro: 3.3.0 -> 3.3.1
+logstash-filter-date: 3.1.9 -> 3.1.11
+logstash-filter-dissect: 1.2.1 -> 1.2.2
+logstash-filter-geoip: 7.2.3 -> 7.2.6
+logstash-filter-grok: 4.4.0 -> 4.4.1
+logstash-filter-mutate: 3.5.4 -> 3.5.6
+logstash-filter-syslog_pri: 3.1.0 -> 3.1.1
+logstash-filter-useragent: 3.3.1 -> 3.3.2
+logstash-filter-xml: 4.1.2 -> 4.1.3
+logstash-input-azure_event_hubs: 1.4.0 -> 1.4.1
+logstash-input-beats: 6.2.1 -> 6.2.3
+logstash-input-dead_letter_queue: 1.1.5 -> 1.1.6
+logstash-input-http: 3.4.2 -> 3.4.3
+logstash-input-tcp: 6.2.1 -> 6.2.3
+logstash-integration-jdbc: 5.1.6 -> 5.1.8
+logstash-integration-kafka: 10.8.1 -> 10.8.2
+logstash-mixin-validator_support: 1.0.1 -> 1.0.2
+logstash-output-elasticsearch: 11.2.1 -> 11.2.3
+logstash-output-sns: 4.0.7 -> 4.0.8
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Avro Codec - 3.3.1*
+
+* Pin avro gem to 1.10.x, as 1.11+ requires ruby 2.6+ https://github.com/logstash-plugins/logstash-codec-avro/pull/37[#37]
+
+*Date Filter - 3.1.11*
+
+* Internal: upgrade packaging tooling to Gradle 7 so that plugin can be packaged on modern Java releases https://github.com/logstash-plugins/logstash-filter-date/pull/140[#140]
+* Internal: refined spec and unit test assertions to account for changes in how timestamps are serialised in Logstash 8. https://github.com/logstash-plugins/logstash-filter-date/pull/141[#141]
+* Update log4j dependencies https://github.com/logstash-plugins/logstash-filter-date/pull/142[#142]
+* Build against JRuby 9k https://github.com/logstash-plugins/logstash-filter-date/issues/116[#116]
+* Fix build failure https://github.com/logstash-plugins/logstash-filter-date/issues/114[#114]
+  
+
+*Dissect Filter - 1.2.2*
+
+* Update log4j dependencies https://github.com/logstash-plugins/logstash-filter-dissect/pull/80[#80]
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-filter-dissect/pull/78[#78]
+
+*Geoip Filter - 7.2.6*
+
+* Update Log4J dependencies https://github.com/logstash-plugins/logstash-filter-geoip/pull/196[#196]
+
+* Added preview of ECS-v8 support with existing ECS-v1 implementation https://github.com/logstash-plugins/logstash-filter-geoip/pull/193[#193]
+
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-filter-geoip/pull/191[#191]
+* [DOC] Clarify CC licensed database indefinite use condition and air-gapped environment https://github.com/logstash-plugins/logstash-filter-geoip/pull/192[#192]
+
+*Grok Filter - 4.4.1*
+
+* Added preview of ECS v8 support using existing ECS v1 implementation https://github.com/logstash-plugins/logstash-filter-grok/pull/175[#175]
+
+*Mutate Filter - 3.5.6*
+
+* [DOC] Added info on maintaining precision between Ruby float and Elasticsearch float https://github.com/logstash-plugins/logstash-filter-mutate/pull/158[#158]
+
+* Fix: removed code and documentation for already removed 'remove' option. https://github.com/logstash-plugins/logstash-filter-mutate/pull/161[#161]
+
+*Syslog_pri Filter - 3.1.1*
+
+* Added preview of ECS-v8 support with existing ECS-v1 implementation https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/10[#10]
+
+*Useragent Filter - 3.3.2*
+
+* Added preview of ECS-v8 support with existing ECS-v1 implementation https://github.com/logstash-plugins/logstash-filter-useragent/pull/76[#76]
+* Internal: update to Gradle 7 https://github.com/logstash-plugins/logstash-filter-useragent/pull/75[#75]
+
+*Xml Filter - 4.1.3*
+
+* [DOC] Updated URL for current xsl reference docs https://github.com/logstash-plugins/logstash-filter-xml/pull/70[#70]
+* [DOC] Added info about non valid characters https://github.com/logstash-plugins/logstash-filter-xml/pull/72[#72]  
+
+*Azure_event_hubs Input - 1.4.1*
+
+* Update log4j dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/71[#71]
+* Fixed Gradle's script to use Gradle 7 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/69[#69]
+
+*Beats Input - 6.2.3*
+
+* Updated log4j dependency to 2.15.0
+
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-beats/pull/432[#432]
+* [DOC] Edit documentation for `executor_threads` https://github.com/logstash-plugins/logstash-input-beats/pull/435[#435]
+
+*Dead_letter_queue Input - 1.1.6*
+
+* Update dependencies for log4j and jackson https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/30[#30]
+
+*Http Input - 3.4.3*
+
+* Update log4j dependency to 2.15.0
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-http/pull/145[#145]
+
+*Tcp Input - 6.2.3*
+
+* Update log4j dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/186[#186]
+
+* Internal: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-tcp/pull/184[#184]
+* Internal: relax jruby-openssl upper bound https://github.com/logstash-plugins/logstash-input-tcp/pull/185[#185]
+
+*Jdbc Integration - 5.1.8*
+
+* Fix the blocking pipeline reload and shutdown when connectivity issues happen https://github.com/logstash-plugins/logstash-integration-jdbc/pull/85[#85]
+
+* Normalize jdbc_driver_class loading to support any top-level java packages https://github.com/logstash-plugins/logstash-integration-jdbc/pull/86[#86]
+
+*Kafka Integration - 10.8.2*
+
+* [DOC] Updates description of `enable_auto_commit=false` to clarify that the commit happens after data is fetched AND written to the queue https://github.com/logstash-plugins/logstash-integration-kafka/pull/90[#90]
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-integration-kafka/pull/104[#104]
+* [DOC] Clarify Kafka client does not support proxy https://github.com/logstash-plugins/logstash-integration-kafka/pull/103[#103]
+
+*Validator_support Mixin - 1.0.2*
+
+# 1.0.2
+
+* Fix: '' value behavior in `field_reference` validator https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/2[#2]
+
+# 1.0.1
+
+* Introduces plugin parameter validation adapters, including initial backport for `:field_reference` validator.
+
+*Elasticsearch Output - 11.2.3*
+
+* Downgrade ECS templates, pinning to v1.10.0 of upstream; fixes an issue where ECS templates cannot be installed in Elasticsearch 6.x or 7.1-7.2, since the generated templates include fields of `type: flattened` that was introduced in Elasticsearch 7.3
+
+* Update ECS templates from upstream; `ecs_compatiblity => v1` now resolves to templates for ECS v1.12.1 https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1027[#1027]
+
+*Sns Output - 4.0.8*
+
+* Feat: handle host object as subject (due ECS) https://github.com/logstash-plugins/logstash-output-sns/pull/22[#22] 
+
 
 [[logstash-7-16-0]]
 === Logstash 7.16.0 Release Notes
