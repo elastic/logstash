@@ -60,14 +60,6 @@ This section summarizes the changes in the following releases:
 * Use correct headers api for redirects in plugin manager http client https://github.com/elastic/logstash/pull/13411[#13411]
 * Update log4j dependencies https://github.com/elastic/logstash/pull/13500[#13500]
 
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.20..6.8 *.release"
-Changed plugin versions:
----------- DELETE UP TO HERE ------------
-
-==== Plugins
-
 [[logstash-6-8-20]]
 === Logstash 6.8.20 Release Notes
 
