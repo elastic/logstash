@@ -59,6 +59,18 @@ This section summarizes the changes in the following releases:
 [[logstash-7-16-1]]
 === Logstash 7.16.1 Release Notes
 
+[[security-updates-7.16.1]]
+==== Security update
+
+**Logstash response to Apache Log4j vulnerability**. 
+A high severity vulnerability https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228[(CVE-2021-44228)] impacting multiple versions of the Apache Log4j2 utility was disclosed publicly through the project’s GitHub on December 9, 2021. 
+The vulnerability impacts Apache Log4j2 versions 2.0 to 2.14.1.
+
+In Logstash, we responded by bumping the log4j version to 2.15.0 in https://github.com/elastic/logstash/pull/13494[#13494] to bypass the vulnerability.
+
+IMPORTANT: Update to Logstash version 6.8.21 or 7.16.1 to get this fix.  
+
+
 [[notable-7-16-1]]
 ==== Performance improvements and notable issues fixed
 
