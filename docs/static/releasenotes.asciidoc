@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-21,Logstash 6.8.21>>
 * <<logstash-6-8-20,Logstash 6.8.20>>
 * <<logstash-6-8-19,Logstash 6.8.19>>
 * <<logstash-6-8-18,Logstash 6.8.18>>
@@ -51,6 +52,18 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-21]]
+=== Logstash 6.8.21 Release Notes
+
+[[notable-6-8-21]]
+==== Performance improvements and notable issues fixed
+
+* Use correct headers api for redirects in plugin manager http client https://github.com/elastic/logstash/pull/13411[#13411]
+
+**Updates to dependencies**
+
+* Update log4j dependencies https://github.com/elastic/logstash/pull/13500[#13500]
 
 [[logstash-6-8-20]]
 === Logstash 6.8.20 Release Notes
