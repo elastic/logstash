@@ -59,6 +59,14 @@ This section summarizes the changes in the following releases:
 [[logstash-7-16-1]]
 === Logstash 7.16.1 Release Notes
 
+[[known-issue-7-16-1]]
+==== Known issue
+
+Release 7.16.1 includes updated versions of filters that will not run on JDK 8.
+We are actively patching the build scripts for all filters that are affected. 
+
+Workaround: Clear the `JAVA_HOME` variable to use the JDK version (Java 11) bundled with Logstash. 
+
 [[notable-7-16-1]]
 ==== Performance improvements and notable issues fixed
 
