@@ -56,6 +56,9 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-21]]
 === Logstash 6.8.21 Release Notes
 
+
+
+
 [[notable-6-8-21]]
 ==== Performance improvements and notable issues fixed
 
