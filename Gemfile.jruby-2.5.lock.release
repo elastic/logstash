@@ -276,7 +276,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-filter-date (3.1.11)
+    logstash-filter-date (3.1.12)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-de_dot (1.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -296,7 +296,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3
-    logstash-filter-geoip (7.2.6-java)
+    logstash-filter-geoip (7.2.7-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
