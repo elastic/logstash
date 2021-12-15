@@ -57,6 +57,26 @@ This section summarizes the changes in the following releases:
 [[logstash-7-15-2]]
 === Logstash 7.15.2 Release Notes
 
+[[known-issue-7-15-2]]
+==== Known issue
+
+Release 7.15.2 includes filter versions that will not run on JDK 8.
+This issue is fixed in the latest versions: 
+
+* https://www.elastic.co/guide/en/logstash-versioned-plugins/current/v3.1.12-plugins-filters-date.html[date filter 3.1.12]
+* https://www.elastic.co/guide/en/logstash-versioned-plugins/current/v7.2.7-plugins-filters-geoip.html[geoip filter 7.2.7]
+
+You can <<updating-plugins,update these plugins>> as usual:
+
+[source,sh]
+-----
+bin/logstash-plugin update logstash-filter-date
+bin/logstash-plugin update logstash-filter-geoip
+-----
+
+TIP: Clear the `JAVA_HOME` environment variable to run Logstash with the bundled JDK (currently JDK 11). 
+This approach is recommended and can help you avoid version incompatibilities. 
+
 [[notable-7-15-2]]
 ==== Performance improvements and notable issues fixed
 
