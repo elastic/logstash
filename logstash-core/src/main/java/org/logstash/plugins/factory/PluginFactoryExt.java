@@ -166,13 +166,20 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     @Override
     public Codec buildDefaultCodec(String codecName) {
-        return (Codec) JavaUtil.unwrapJavaValue(plugin(
+        final IRubyObject pluginInstance = plugin(
                 RubyUtil.RUBY.getCurrentContext(),
                 PluginLookup.PluginType.CODEC,
                 codecName,
                 RubyHash.newHash(RubyUtil.RUBY),
                 null
-        ));
+        );
+        final Codec codec = (Codec) JavaUtil.unwrapJavaValue(pluginInstance);
+        if (codec != null) {
+            return codec;
+        }
+
+        // no unwrap is possible so this is a real Ruby instance
+        return new RubyCodecDelegator(RubyUtil.RUBY.getCurrentContext(), pluginInstance);
     }
 
     @SuppressWarnings("unchecked")
