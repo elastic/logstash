@@ -33,7 +33,9 @@ The data persisted to disk is not replicated.
 [[configuring-persistent-queues]]
 ==== Configuring persistent queues
 
-To configure persistent queues, specify options in the Logstash <<logstash-settings-file,settings file>>:
+To configure persistent queues, specify options in the Logstash <<logstash-settings-file,settings file>>.
+The settings will be applied to every pipelines, capacity and sizing settings values are to be intended per pipeline.
+If you want to define them for a specific pipeline, use <<multiple-pipelines, `pipelines.yml`>>.
 
 `queue.type`:: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled (default: `queue.type: memory`).
 `path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
