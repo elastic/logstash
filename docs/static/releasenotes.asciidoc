@@ -74,7 +74,7 @@ bin/logstash-plugin update logstash-filter-date
 bin/logstash-plugin update logstash-filter-geoip
 -----
 
-TIP: Clear the `JAVA_HOME` and `LS_JAVA_HOME` environment variables to run Logstash with the bundled JDK (currently JDK 11). 
+TIP: Clear the `JAVA_HOME` environment variable to run Logstash with the bundled JDK (currently JDK 11). 
 This approach is recommended and can help you avoid version incompatibilities. 
 
 [[notable-7-15-2]]
