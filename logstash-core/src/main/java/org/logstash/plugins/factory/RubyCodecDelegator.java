@@ -30,6 +30,7 @@ class RubyCodecDelegator implements Codec {
 
     private final ThreadContext currentContext;
     private final IRubyObject pluginInstance;
+    private final String wrappingId;
 
     public RubyCodecDelegator(ThreadContext currentContext, IRubyObject pluginInstance) {
         this.currentContext = currentContext;
@@ -37,6 +38,13 @@ class RubyCodecDelegator implements Codec {
 
         verifyCodecAncestry(pluginInstance);
         invokeRubyRegister(currentContext, pluginInstance);
+
+        wrappingId = "jw-" + wrappedPluginId();
+    }
+
+    private String wrappedPluginId() {
+        RubyString id = (RubyString) pluginInstance.callMethod(this.currentContext, "id");
+        return id.toString();
     }
 
     private void verifyCodecAncestry(IRubyObject pluginInstance) {
@@ -116,13 +124,14 @@ class RubyCodecDelegator implements Codec {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        // TODO bring configuration options from wrapped end convert to PluginConfigSpec
+        // this method is invoked only for real java codecs, the one that are configured
+        // in pipeline config that needs configuration validation. In this case the validation
+        // is already done on the Ruby codec.
         return null;
     }
 
     @Override
     public String getId() {
-        // TODO return the id of the plugin instance, maybe prepended with "jw-"
-        return null;
+        return wrappingId;
     }
 }
