@@ -330,6 +330,8 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
+    jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
+    logger.info "JVM bootstrap flags: #{jvmArgs}"
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
