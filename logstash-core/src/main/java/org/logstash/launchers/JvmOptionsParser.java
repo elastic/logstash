@@ -129,7 +129,6 @@ public class JvmOptionsParser {
 
     private List<String> parseJvmOptions(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
         if (!jvmOptionsFile.toFile().exists()) {
-            System.err.format("Warning: jvm.options file does not exist or is not readable: `%s`\n", jvmOptionsFile);
             return Collections.emptyList();
         }
         final int majorJavaVersion = javaMajorVersion();
