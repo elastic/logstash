@@ -35,6 +35,7 @@ import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.ext.JrubyWrappedSynchronousRingBufferExt;
 
 /**
  * Persistent queue factory JRuby extension.
@@ -82,11 +83,18 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         .convertToInteger().getIntValue()
                 )
             );
+        } else if ("recent_memory".equals(type)) {
+            return new JrubyWrappedSynchronousRingBufferExt(
+                context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_RING_BUFFER_CLASS
+            ).initialize(
+                context,
+                getSetting(context, settings, "queue.max_events")
+            );
         } else {
             throw context.runtime.newRaiseException(
                 RubyUtil.CONFIGURATION_ERROR_CLASS,
                 String.format(
-                    "Invalid setting `%s` for `queue.type`, supported types are: 'memory' or 'persisted'",
+                    "Invalid setting `%s` for `queue.type`, supported types are: 'memory', 'recent_memory', and 'persisted'",
                     type
                 )
             );
