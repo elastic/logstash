@@ -14,8 +14,6 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-//import org.junit.contrib.java.lang.system.
-
 import static org.junit.Assert.*;
 
 public class JvmOptionsParserTest {
@@ -40,8 +38,6 @@ public class JvmOptionsParserTest {
     public void test_LS_JAVA_OPTS_isUsedWhenNoJvmOptionsIsAvailable() throws IOException, InterruptedException, ReflectiveOperationException {
         updateEnv("LS_JAVA_OPTS", "-Xblabla");
 
-        // TODO use temp random path @Rule
-//        JvmOptionsParser.main(new String[] {"/tmp/"});
         JvmOptionsParser.main(new String[] {temp.toString()});
 
         // Verify
