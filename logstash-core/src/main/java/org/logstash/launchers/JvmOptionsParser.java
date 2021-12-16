@@ -109,40 +109,54 @@ public class JvmOptionsParser {
     }
 
     private void parseAndInjectEnvironment(Optional<Path> jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
-        final List<String> jvmOptionsContent = new ArrayList<>();
-
-        if (jvmOptionsFile.isPresent()) {
-            System.err.format("Processing jvm.options file at `%s`\n", jvmOptionsFile.get().toString());
-            jvmOptionsContent.addAll(parseJvmOptions(jvmOptionsFile.get()));
-        } else {
-            System.err.println("Warning: no jvm.options file found.");
-        }
+        final List<String> jvmOptionsContent = new ArrayList<>(parseJvmOptions(jvmOptionsFile));
 
         final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
         if (lsJavaOpts != null && !lsJavaOpts.isEmpty()) {
-            System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
+            if (isDebugEnabled()) {
+                System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
+            }
             jvmOptionsContent.add(lsJavaOpts);
         }
 
         System.out.println(String.join(" ", jvmOptionsContent));
     }
 
-    private List<String> parseJvmOptions(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
-        if (!jvmOptionsFile.toFile().exists()) {
+    private List<String> parseJvmOptions(Optional<Path> jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
+        if (!jvmOptionsFile.isPresent()) {
+            System.err.println("Warning: no jvm.options file found.");
             return Collections.emptyList();
+        }
+        final Path optionsFilePath = jvmOptionsFile.get();
+        if (!optionsFilePath.toFile().exists()) {
+            System.err.format("Warning: jvm.options file does not exist or is not readable: `%s`\n", optionsFilePath);
+            return Collections.emptyList();
+        }
+
+        if (isDebugEnabled()) {
+            System.err.format("Processing jvm.options file at `%s`\n", optionsFilePath);
         }
         final int majorJavaVersion = javaMajorVersion();
 
-        try (InputStream is = Files.newInputStream(jvmOptionsFile);
+        try (InputStream is = Files.newInputStream(optionsFilePath);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader)
         ) {
             final ParseResult parseResults = parse(majorJavaVersion, br);
             if (parseResults.hasErrors()) {
-                throw new JvmOptionsFileParserException(jvmOptionsFile, parseResults.getInvalidLines());
+                throw new JvmOptionsFileParserException(optionsFilePath, parseResults.getInvalidLines());
             }
             return parseResults.getJvmOptions();
         }
+    }
+
+    private boolean isDebugEnabled() {
+        final String debug = System.getenv("DEBUG");
+        if (debug == null) {
+            return false;
+        }
+
+        return "1".equals(debug) || Boolean.parseBoolean(debug);
     }
 
     /**
