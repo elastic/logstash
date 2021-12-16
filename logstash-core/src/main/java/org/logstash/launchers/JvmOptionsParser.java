@@ -73,11 +73,7 @@ public class JvmOptionsParser {
         final String jvmOpts = args.length == 2 ? args[1] : null;
         try {
             Optional<Path> jvmOptions = parser.lookupJvmOptionsFile(jvmOpts);
-            if (!jvmOptions.isPresent()) {
-                System.err.println("warning: no jvm.options file found");
-                return;
-            }
-            parser.parse(jvmOptions.get());
+            parser.parseAndInjectEnvironment(jvmOptions);
         } catch (JvmOptionsFileParserException pex) {
             System.err.printf(Locale.ROOT,
                     "encountered [%d] error%s parsing [%s]",
@@ -112,17 +108,28 @@ public class JvmOptionsParser {
                 .findFirst();
     }
 
-    private void parse(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
-        final List<String> jvmOptionsContent = parseJvmOptions(jvmOptionsFile);
+    private void parseAndInjectEnvironment(Optional<Path> jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
+        final List<String> jvmOptionsContent = new ArrayList<>();
+
+        if (jvmOptionsFile.isPresent()) {
+            System.err.format("Processing jvm.options file at `%s`\n", jvmOptionsFile.get().toString());
+            jvmOptionsContent.addAll(parseJvmOptions(jvmOptionsFile.get()));
+        } else {
+            System.err.println("Warning: no jvm.options file found.");
+        }
+
         final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
         if (lsJavaOpts != null && !lsJavaOpts.isEmpty()) {
+            System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
             jvmOptionsContent.add(lsJavaOpts);
         }
+
         System.out.println(String.join(" ", jvmOptionsContent));
     }
 
     private List<String> parseJvmOptions(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
         if (!jvmOptionsFile.toFile().exists()) {
+            System.err.format("Warning: jvm.options file does not exist or is not readable: `%s`\n", jvmOptionsFile);
             return Collections.emptyList();
         }
         final int majorJavaVersion = javaMajorVersion();
