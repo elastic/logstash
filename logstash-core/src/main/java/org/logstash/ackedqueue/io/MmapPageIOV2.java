@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.LogstashJavaCompat;
 import org.logstash.ackedqueue.SequencedList;
 
 /**

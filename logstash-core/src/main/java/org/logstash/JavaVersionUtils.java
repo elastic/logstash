@@ -20,12 +20,12 @@
 package org.logstash;
 
 /**
- * Logic around ensuring compatibility with Java 8 and 9 simultaneously.
+ * Helper Class for dealing with Java versions
  */
-public final class LogstashJavaCompat {
+public final class JavaVersionUtils {
 
     /**
-     * Identifies whether we are running on a versiongreater than or equal to the version parameter specified.
+     * Identifies whether we are running on a version greater than or equal to the version parameter specified.
      * @param version The version to test against. This must be the Major version of Java
      * @return True if running on Java whose major version is greater than or equal to the
      *         specified version.

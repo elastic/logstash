@@ -21,7 +21,6 @@
 package org.logstash.instruments.monitors;
 
 import org.junit.Test;
-import org.logstash.LogstashJavaCompat;
 import org.logstash.instrument.monitors.MemoryMonitor;
 
 import java.util.Map;

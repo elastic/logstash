@@ -30,8 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.Logstash;
-import org.logstash.LogstashJavaCompat;
+import org.logstash.JavaVersionUtils;
 
 public class ProcessMonitor {
 
@@ -119,7 +118,7 @@ public class ProcessMonitor {
      */
     private static Method getCpuLoadMethod(){
         try{
-            String methodName = (LogstashJavaCompat.isJavaAtLeast(14)) ? "getCpuLoad" : "getSystemCpuLoad";
+            String methodName = (JavaVersionUtils.isJavaAtLeast(14)) ? "getCpuLoad" : "getSystemCpuLoad";
             return Class.forName("com.sun.management.OperatingSystemMXBean").getMethod(methodName);
         } catch (ReflectiveOperationException e){
             LOGGER.warn("OperatingSystemMXBean CPU load method not available, CPU load will not be measured", e);

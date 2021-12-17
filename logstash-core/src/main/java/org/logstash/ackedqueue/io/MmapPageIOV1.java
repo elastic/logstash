@@ -29,7 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
-import org.logstash.LogstashJavaCompat;
+
 import org.logstash.ackedqueue.SequencedList;
 
 /**
