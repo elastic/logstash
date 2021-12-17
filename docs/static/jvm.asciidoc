@@ -15,6 +15,7 @@ http://openjdk.java.net/[OpenJDK].
 See the https://www.elastic.co/support/matrix#matrix_jvm[Elastic Support Matrix]
 for the official word on supported versions across releases.
 
+[[bundled-jdk]]
 .Bundled JDK
 [NOTE]
 ===== 
