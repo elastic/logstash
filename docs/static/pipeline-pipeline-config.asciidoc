@@ -138,7 +138,6 @@ Here is an example of this scenario using the output isolator pattern.
 ----
 # config/pipelines.yml
 - pipeline.id: intake
-  queue.type: persisted
   config.string: |
     input { beats { port => 5044 } }
     output { pipeline { send_to => [es, http] } }
@@ -154,7 +153,7 @@ Here is an example of this scenario using the output isolator pattern.
     output { http { } }
 ----
 
-In this architecture, each stage has its own queue with its own tuning and settings. Note that this approach uses up to three times as much disk space and incurs three times as much serialization/deserialization cost as a single pipeline.
+In this architecture, each output has its own queue with its own tuning and settings. Note that this approach uses up to twice as much disk space and incurs three times as much serialization/deserialization cost as a single pipeline.
 
 If any of the persistent queues of the downstream pipelines (in the example above, `buffered-es` and `buffered-http`) become full, both outputs will stop.
 
