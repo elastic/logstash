@@ -330,6 +330,7 @@ GEM
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-mixin-ecs_compatibility_support (~> 1.2)
     logstash-input-http_poller (4.0.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
