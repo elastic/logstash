@@ -415,7 +415,7 @@ GEM
     logstash-input-unix (3.0.7)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-mixin-aws (5.0.0)
+    logstash-mixin-aws (4.3.0)
       aws-sdk (~> 2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
