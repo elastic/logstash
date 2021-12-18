@@ -626,7 +626,7 @@ GEM
     tzinfo-data (1.2021.5)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
-    webhdfs (0.10.2)
+    webhdfs (0.9.0)
       addressable
     webmock (3.5.1)
       addressable (>= 2.3.6)
