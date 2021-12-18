@@ -51,7 +51,7 @@ GEM
     backports (3.21.0)
     belzebuth (0.2.3)
       childprocess
-    benchmark-ips (2.9.2)
+    benchmark-ips (2.9.1)
     bindata (2.4.10)
     buftok (0.2.0)
     builder (3.2.4)
@@ -462,7 +462,7 @@ GEM
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-lumberjack (3.1.9)
+    logstash-output-lumberjack (3.1.8)
       jls-lumberjack (>= 0.0.26)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
@@ -490,7 +490,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
       stud (~> 0.0.22)
-    logstash-output-sns (4.0.8)
+    logstash-output-sns (4.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
     logstash-output-sqs (5.1.2)
@@ -510,14 +510,14 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snappy (= 0.0.12)
       webhdfs
-    logstash-patterns-core (4.3.1)
+    logstash-patterns-core (4.1.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     lru_redux (1.1.0)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
-    manticore (0.7.1-java)
+    manticore (0.7.0-java)
       openssl_pkcs8_pure
-    march_hare (4.4.0-java)
+    march_hare (4.3.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
@@ -533,7 +533,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.12.5-java)
+    nokogiri (1.11.7-java)
       racc (~> 1.4)
     numerizer (0.1.1)
     octokit (3.8.0)
@@ -555,7 +555,7 @@ GEM
       spoon (~> 0.0)
     public_suffix (1.4.6)
     puma (2.16.0-java)
-    racc (1.6.0-java)
+    racc (1.5.2-java)
     rack (1.6.13)
     rack-protection (1.5.5)
       rack
