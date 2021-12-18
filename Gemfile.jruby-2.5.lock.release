@@ -150,7 +150,6 @@ GEM
     logstash-codec-graphite (3.0.5)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-event_support (~> 1.0)
     logstash-codec-json (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-json_lines (3.0.6)
