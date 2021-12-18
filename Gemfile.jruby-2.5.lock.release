@@ -420,8 +420,6 @@ GEM
       aws-sdk-v1 (>= 1.61.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-mixin-event_support (1.0.1-java)
-      logstash-core (>= 6.8)
     logstash-mixin-http_client (6.0.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
