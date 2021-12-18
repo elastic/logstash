@@ -5729,7 +5729,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ==========
-Notice for: org.apache.logging.log4j:log4j-api-2.15.0
+Notice for: org.apache.logging.log4j:log4j-api-2.17.0
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=a241a12d0ecd1eb83c030f18eb34f169fcd71f02;hb=HEAD
@@ -5752,7 +5752,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-core-2.15.0
+Notice for: org.apache.logging.log4j:log4j-core-2.17.0
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=a241a12d0ecd1eb83c030f18eb34f169fcd71f02;hb=HEAD
@@ -5775,7 +5775,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.15.0
+Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.17.0
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=a241a12d0ecd1eb83c030f18eb34f169fcd71f02;hb=HEAD
