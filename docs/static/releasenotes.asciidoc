@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-16-2,Logstash 7.16.2>>
 * <<logstash-7-16-1,Logstash 7.16.1>>
 * <<logstash-7-16-0,Logstash 7.16.0>>
 * <<logstash-7-15-2,Logstash 7.15.2>>
@@ -55,6 +56,87 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-16-2]]
+=== Logstash 7.16.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.16.2
+
+* bump to version 7.16.2 https://github.com/elastic/logstash/pull/13508[#13508]
+* Bump log4j version to 2.16.0 per CVE-2021-45046 https://github.com/elastic/logstash/pull/13518[#13518]
+* Backport PR #13518 to 7.16: Bump log4j version to 2.16.0 per CVE-2021-45046 https://github.com/elastic/logstash/pull/13521[#13521]
+* Bump log4j dependency to 2.17.0 https://github.com/elastic/logstash/pull/13544[#13544]
+* Backport PR #13544 to 7.16: Bump log4j dependency to 2.17.0 https://github.com/elastic/logstash/pull/13548[#13548]
+
+=== Logstash Commits between 7.16 and 7.16.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.16.1..7.16"
+
+f1d497fd3 - (HEAD -> 7.16, origin/7.16) update lock file for 7.16.2 (#13549) (2 minutes ago) <kaisecheng>
+9d3c09939 - Bump log4j dependency to 2.17.0 (#13548) (63 minutes ago) <Andres Rodriguez>
+e695b2d39 - Doc: Add anchor to bundled jdk info 7.16 (#13543) (19 hours ago) <Karen Metts>
+fb4d95481 - Doc: remove PQ on input for Output Isolator 7.16 (#13540) (20 hours ago) <Karen Metts>
+06361b516 - Bump log4j version to 2.16.0 per CVE-2021-45046 (#13518) (#13521) (3 days ago) <Ry Biesemeyer>
+c3b0bb422 - Doc: Add dependency fix to 7.16.1 release notes (#13516) (4 days ago) <Karen Metts>
+7875e243f - Doc: Add filter known issue to 7.16.1 release notes (#13513) (4 days ago) <Karen Metts>
+beaf49a54 - bump to version 7.16.2 (#13508) (5 days ago) <João Duarte>
+59c275474 - Release notes for 7.16.1 (#13503) (5 days ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.16.1..7.16 *.release"
+Changed plugin versions:
+logstash-filter-date: 3.1.11 -> 3.1.13
+logstash-filter-dissect: 1.2.2 -> 1.2.3
+logstash-filter-geoip: 7.2.6 -> 7.2.8
+logstash-input-azure_event_hubs: 1.4.1 -> 1.4.2
+logstash-input-beats: 6.2.3 -> 6.2.4
+logstash-input-dead_letter_queue: 1.1.6 -> 1.1.7
+logstash-input-http: 3.4.3 -> 3.4.4
+logstash-input-tcp: 6.2.3 -> 6.2.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Date Filter - 3.1.13*
+
+* Update log4j to 2.17.0
+
+* Ensure java 8 compatibility https://github.com/logstash-plugins/logstash-filter-date/pull/143[#143]
+
+*Dissect Filter - 1.2.3*
+
+* Update log4j dependencies to 2.17.0
+
+*Geoip Filter - 7.2.8*
+
+* Update Log4j dependency to 2.17.0
+
+* Ensure java 8 compatibility https://github.com/logstash-plugins/logstash-filter-geoip/pull/197[#197]
+
+*Azure_event_hubs Input - 1.4.2*
+
+* Update log4j dependencies to 2.17.0
+
+*Beats Input - 6.2.4*
+
+* Updated log4j dependency to 2.17.0
+
+*Dead_letter_queue Input - 1.1.7*
+
+* Further update dependencies for log4j (2.17.0) and jackson
+
+*Http Input - 3.4.4*
+
+* Update log4j dependency to 2.17.0
+
+*Tcp Input - 6.2.5*
+
+* Update log4j dependency to 2.17.0
+
+* Update Log4j dependency to 2.16, ensuring this plugin's runtime relies only on log4j-api instead 
+    of providing its own log4j-core. https://github.com/logstash-plugins/logstash-input-tcp/pull/188[#188]
+
 
 [[logstash-7-16-1]]
 === Logstash 7.16.1 Release Notes
