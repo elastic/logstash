@@ -623,7 +623,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2021.5)
+    tzinfo-data (1.2021.1)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     webhdfs (0.9.0)
