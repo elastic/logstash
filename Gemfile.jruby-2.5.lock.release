@@ -147,7 +147,7 @@ GEM
     logstash-codec-fluent (3.3.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       msgpack (~> 1.1)
-    logstash-codec-graphite (3.0.6)
+    logstash-codec-graphite (3.0.5)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-event_support (~> 1.0)
