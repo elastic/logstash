@@ -97,7 +97,7 @@ This section summarizes the changes in the following releases:
 *Tcp Input - 6.2.5*
 
 * Update log4j dependency to 2.17.0
-* Update Log4j dependency to 2.16, ensuring this plugin's runtime relies only on log4j-api instead of providing its own log4j-core. https://github.com/logstash-plugins/logstash-input-tcp/pull/188[#188]
+* Ensure this plugin's runtime relies only on log4j-api instead of providing its own log4j-core. https://github.com/logstash-plugins/logstash-input-tcp/pull/188[#188]
 
 
 [[logstash-7-16-1]]
