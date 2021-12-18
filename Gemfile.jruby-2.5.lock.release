@@ -46,7 +46,7 @@ GEM
       jmespath (~> 1.0)
     aws-sdk-resources (2.11.632)
       aws-sdk-core (= 2.11.632)
-    aws-sigv4 (1.4.0)
+    aws-sigv4 (1.2.3)
       aws-eventstream (~> 1, >= 1.0.2)
     backports (3.21.0)
     belzebuth (0.2.3)
