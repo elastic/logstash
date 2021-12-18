@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-16-2,Logstash 7.16.2>>
 * <<logstash-7-16-1,Logstash 7.16.1>>
 * <<logstash-7-16-0,Logstash 7.16.0>>
 * <<logstash-7-15-2,Logstash 7.15.2>>
@@ -55,6 +56,49 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-16-2]]
+=== Logstash 7.16.2 Release Notes
+
+* Update to log4j 2.17.0 https://github.com/elastic/logstash/pull/13548[#13548]
+
+==== Plugins
+
+*Date Filter - 3.1.13*
+
+* Update log4j to 2.17.0
+* Ensure java 8 compatibility https://github.com/logstash-plugins/logstash-filter-date/pull/143[#143]
+
+*Dissect Filter - 1.2.3*
+
+* Update log4j dependencies to 2.17.0
+
+*Geoip Filter - 7.2.8*
+
+* Update Log4j dependency to 2.17.0
+* Ensure java 8 compatibility https://github.com/logstash-plugins/logstash-filter-geoip/pull/197[#197]
+
+*Azure_event_hubs Input - 1.4.2*
+
+* Update log4j dependencies to 2.17.0
+
+*Beats Input - 6.2.4*
+
+* Updated log4j dependency to 2.17.0
+
+*Dead_letter_queue Input - 1.1.7*
+
+* Further update dependencies for log4j (2.17.0) and jackson
+
+*Http Input - 3.4.4*
+
+* Update log4j dependency to 2.17.0
+
+*Tcp Input - 6.2.5*
+
+* Update log4j dependency to 2.17.0
+* Ensure this plugin's runtime relies only on log4j-api instead of providing its own log4j-core. https://github.com/logstash-plugins/logstash-input-tcp/pull/188[#188]
+
 
 [[logstash-7-16-1]]
 === Logstash 7.16.1 Release Notes
