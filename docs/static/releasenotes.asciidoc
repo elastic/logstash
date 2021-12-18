@@ -57,116 +57,57 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-22]]
 === Logstash 6.8.22 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.22
-
-* bump version to 6.8.22 https://github.com/elastic/logstash/pull/13507[#13507]
-* update readme wrt 6.8.22 https://github.com/elastic/logstash/pull/13509[#13509]
-* bump Log4j dependency to 2.17.0 on 6.8 https://github.com/elastic/logstash/pull/13545[#13545]
-
-=== Logstash Commits between 6.8 and 6.8.21
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.21..6.8"
-
-9a394e700 - (HEAD -> 6.8, origin/6.8) bump lock file for 6.8.22 (#13553) (3 minutes ago) <Logstash Machine>
-aa688a08a - bump Log4j dependency to 2.17.0 on 6.8 (#13545) (5 hours ago) <João Duarte>
-5bd5f9812 - update readme wrt 6.8.22 (#13509) (4 days ago) <João Duarte>
-0630ed783 - Doc: Add dep note to 6.8.21 release notes (#13517) (4 days ago) <Karen Metts>
-1a209ec56 - Release notes for 6.8.21 (#13502) (5 days ago) <Logstash Machine>
-45831020d - bump version to 6.8.22 (#13507) (5 days ago) <João Duarte>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.21..6.8 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.1.9 -> 3.1.13
-logstash-filter-dissect: 1.2.0 -> 1.2.3
-logstash-filter-geoip: 5.0.3 -> 5.0.4
-logstash-input-azure_event_hubs: 1.1.4 -> 1.4.2
-logstash-input-beats: 5.1.9 -> 5.1.10
-logstash-input-dead_letter_queue: 1.1.5 -> 1.1.7
-logstash-input-http: 3.3.7 -> 3.4.4
-logstash-input-tcp: 5.2.3 -> 5.2.6
----------- DELETE UP TO HERE ------------
+* bump Log4j dependency to 2.17.0 https://github.com/elastic/logstash/pull/13545[#13545]
 
 ==== Plugins
 
 *Date Filter*
 
 * Update log4j to 2.17.0
-
 * Ensure java 8 compatibility [#143](https://github.com/logstash-plugins/logstash-filter-date/pull/143)
-
 * Internal: upgrade packaging tooling to Gradle 7 so that plugin can be packaged on modern Java releases [#140](https://github.com/logstash-plugins/logstash-filter-date/pull/140)
-* Internal: refined spec and unit test assertions to account for changes in how timestamps are serialised in Logstash 8. [#141](https://github.com/logstash-plugins/logstash-filter-date/pull/141)
-* Update log4j dependencies [#142](https://github.com/logstash-plugins/logstash-filter-date/pull/142)
-* Build against JRuby 9k https://github.com/logstash-plugins/logstash-filter-date/issues/116[#116]
-* Fix build failure https://github.com/logstash-plugins/logstash-filter-date/issues/114[#114]
-  
 
 *Dissect Filter*
 
 * Update log4j dependencies to 2.17.0
-
-* Update log4j dependencies [#80](https://github.com/logstash-plugins/logstash-filter-dissect/pull/80)
 * Fix: update to Gradle 7 [#78](https://github.com/logstash-plugins/logstash-filter-dissect/pull/78)
-
 * [DOC] Added note to clarify notation for dot or nested fields [#76](https://github.com/logstash-plugins/logstash-filter-dissect/pull/76)
 
 *Geoip Filter*
 
-* Updated Log4j dependency to 2.17.0
+* Update Log4j dependency to 2.17.0
 
 *Azure_event_hubs Input*
 
-* Update log4j dependencies to 2.17.0
-
-* Update log4j dependencies [#71](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/71)
+* Update Log4j dependencies to 2.17.0
 * Fixed Gradle's script to use Gradle 7 [#69](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/69)
-
 * Updated the minor version of Azure SDK and other dependencies to ensure users of this plugin get upstream fixes and improvements [#67](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/67)
-
 * Add EventHub `user properties` in `@metadata` object [#66](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/66)
-
 * Fixed missing configuration of `prefetch_count` and `receive_timeout` [#61](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/61)
-
 * Refactor: scope and review global java_imports [#57](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/57)
-
 * [DOC] Changed documentation to update the default number of threads [#55](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/55)
-
 * Changed the default number of threads from `4` to `16` to match the default number from the Azure-Sdk EventProcessorHost [#54](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/54)
 
 *Beats Input*
 
-* Update log4j dependency to 2.17.0
+* Update Log4j dependency to 2.17.0
 
 *Dead_letter_queue Input*
 
 * Further update dependencies for log4j (2.17.0) and jackson
-
 * Update dependencies for log4j and jackson [#30](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/30)
 
 *Http Input*
 
 * Update log4j dependency to 2.17.0
-
-* Update log4j dependency to 2.15.0
 * Fix: update to Gradle 7 [#145](https://github.com/logstash-plugins/logstash-input-http/pull/145)
-
 * Docs: added `v8` as an acceptable value for `ecs_compatibility` [#142](https://github.com/logstash-plugins/logstash-input-http/pull/142)
-
-* Changed jar dependencies to reflect newer versions [#140](https://github.com/logstash-plugins/logstash-input-http/pull/140)
-
 * Add ECS support, mapping Http header to ECS compatible fields [#137](https://github.com/logstash-plugins/logstash-input-http/pull/137)
 
 *Tcp Input*
 
 * Ensure correct jar paths when building plugin from a non-standard directory
-
 * Update Log4j dependency to 2.17
-
-* Update Log4j dependency to 2.16, ensuring this plugin's runtime relies only on log4j-api instead
-     of providing its own log4j-core [#189](https://github.com/logstash-plugins/logstash-input-tcp/pull/189)
-
 
 [[logstash-6-8-21]]
 === Logstash 6.8.21 Release Notes
