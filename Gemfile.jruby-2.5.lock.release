@@ -195,11 +195,11 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-csv (3.0.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-date (3.1.9)
+    logstash-filter-date (3.1.13)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-de_dot (1.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-dissect (1.2.0)
+    logstash-filter-dissect (1.2.3)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
     logstash-filter-dns (3.0.14)
@@ -214,7 +214,7 @@ GEM
     logstash-filter-fingerprint (3.2.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       murmurhash3
-    logstash-filter-geoip (5.0.3-java)
+    logstash-filter-geoip (5.0.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-grok (4.2.0)
       jls-grok (~> 0.11.3)
@@ -273,19 +273,19 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.1.4)
+    logstash-input-azure_event_hubs (1.4.2)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (5.1.9-java)
+    logstash-input-beats (5.1.10-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       thread_safe (~> 0.3.5)
-    logstash-input-dead_letter_queue (1.1.5)
+    logstash-input-dead_letter_queue (1.1.7)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-elasticsearch (4.3.3)
@@ -326,10 +326,11 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.3.7-java)
+    logstash-input-http (3.4.4-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-mixin-ecs_compatibility_support (~> 1.2)
     logstash-input-http_poller (4.0.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -394,12 +395,13 @@ GEM
       logstash-filter-date
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (5.2.3-java)
+    logstash-input-tcp (5.2.6-java)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
       logstash-codec-multiline
       logstash-codec-plain
+      logstash-core (< 7.0.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-twitter (3.0.8)
       http-form_data (<= 1.0.1)
