@@ -51,7 +51,7 @@ POST _xpack/security/role/logstash_writer
   "indices": [
     {
       "names": [ "logstash-*" ], <2>
-      "privileges": ["write","create","create_index","manage","manage_ilm"]  <3>
+      "privileges": ["write","read","create","create_index","manage","manage_ilm"]  <3>
     }
   ]
 }
