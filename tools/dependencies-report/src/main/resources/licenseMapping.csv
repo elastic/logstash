@@ -114,9 +114,9 @@ dependency,dependencyUrl,licenseOverride
 "numerizer:0.1.1","https://github.com/jduff/numerizer/",MIT
 "openssl_pkcs8_pure:0.0.0.2",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
 "options",https://github.com/headius/options,Apache-2.0
-"org.apache.logging.log4j:log4j-api:2.17.0",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
-"org.apache.logging.log4j:log4j-core:2.17.0",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
-"org.apache.logging.log4j:log4j-slf4j-impl:2.17.0",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.apache.logging.log4j:log4j-api:2.17.1",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.apache.logging.log4j:log4j-core:2.17.1",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.apache.logging.log4j:log4j-slf4j-impl:2.17.1",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.codehaus.janino:commons-compiler:3.0.8",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.janino:janino:3.0.8",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.mojo:animal-sniffer-annotations:1.14",https://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/,MIT
