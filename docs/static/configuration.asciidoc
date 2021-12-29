@@ -392,6 +392,9 @@ output {
 }
 ----------------------------------
 
+But be careful, the local environment of sprintf differs from the local environment of the date filter. As a result, this can create inconsistencies in the rollover of indices and other unexpected behaviours.
+This is why it is best to specify a canonical time zone ID to be used for date analysis which will avoid any inconsistencies during your use such as http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[joda time format] or https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns[java time format] (recommanded).
+
 NOTE: The sprintf format continues to support http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[deprecated joda time format] strings as well using the `%{+FORMAT}` syntax.
       These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
 
