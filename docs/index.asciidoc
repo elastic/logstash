@@ -106,10 +106,12 @@ include::static/upgrading.asciidoc[]
 include::static/configuration.asciidoc[]
 
 :edit_url!:
-include::static/security/logstash.asciidoc[]
+include::static/ls-to-cloud.asciidoc[]
+
+// Security
 
 :edit_url!:
-include::static/ls-to-cloud.asciidoc[]
+include::static/security/logstash.asciidoc[]
 
 // Advanced Logstash Configuration
 
