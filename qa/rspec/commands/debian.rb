@@ -32,8 +32,16 @@ module ServiceTester
       stdout.match(/^Status: install ok installed$/)
     end
 
-    def package_for(filename, base=ServiceTester::Base::LOCATION)
-      File.join(base, "#{filename}.deb")
+    def package_extension
+      "deb"
+    end
+
+    def architecture_extension
+      if java.lang.System.getProperty("os.arch") == "amd64"
+        "amd64"
+      else
+        "arm64"
+      end
     end
 
     def install(package, host=nil)

@@ -2,7 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "logstash/event"
+
 require "logstash/inputs/base"
 require "logstash/instrument/collector"
 require 'helpers/elasticsearch_options'
@@ -211,9 +211,12 @@ module LogStash module Inputs
     end
 
     def extract_cluster_uuids(stats)
-      result = stats.extract_metrics([:stats, :pipelines, :main, :config], :cluster_uuids)
-      if result && !result[:cluster_uuids].empty?
-        cluster_uuids = result[:cluster_uuids]
+      cluster_uuids = agent.running_pipelines.flat_map do |_, pipeline|
+        next if pipeline.system?
+        pipeline.resolve_cluster_uuids
+      end.compact.uniq
+
+      if cluster_uuids.any?
         @logger.info("Found cluster_uuids from elasticsearch output plugins", :cluster_uuids => cluster_uuids)
         if LogStash::SETTINGS.set?("monitoring.cluster_uuid")
           @logger.warn("Found monitoring.cluster_uuid setting configured in logstash.yml while using the ones discovered from elasticsearch output plugins, ignoring setting monitoring.cluster_uuid")

@@ -20,9 +20,11 @@
 
 package org.logstash.config.ir;
 
+import com.google.common.io.Files;
 import org.hamcrest.MatcherAssert;
 import org.jruby.RubyArray;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
@@ -34,10 +36,11 @@ import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static org.logstash.config.ir.DSL.*;
@@ -194,5 +197,33 @@ public class IRHelpers {
     public static RubyArray toSourceWithMetadata(String config) throws IncompleteSourceWithMetadataException {
         return RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
                 RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config)));
+    }
+
+    /**
+     * Load pipeline configuration from a path returning the list of SourceWithMetadata.
+     *
+     * The path refers to test's resources, if it point to single file that file is loaded, if reference a directory
+     * then the full list of contained files is loaded in name order.
+     * */
+    @SuppressWarnings("rawtypes")
+    public static RubyArray toSourceWithMetadataFromPath(String configPath) throws IncompleteSourceWithMetadataException, IOException {
+        URL url = IRHelpers.class.getClassLoader().getResource(configPath);
+        String path = url.getPath();
+        final File filePath = new File(path);
+        final List<File> files;
+        if (filePath.isDirectory()) {
+            files = Arrays.asList(filePath.listFiles());
+            Collections.sort(files);
+        } else {
+            files = Collections.singletonList(filePath);
+        }
+
+        List<IRubyObject> rubySwms = new ArrayList<>();
+        for (File configFile : files) {
+            final List<String> fileContent = Files.readLines(configFile, Charset.defaultCharset());
+            final SourceWithMetadata swm = new SourceWithMetadata("file", configFile.getPath(), 1, 1, String.join("\n", fileContent));
+            rubySwms.add(JavaUtil.convertJavaToRuby(RubyUtil.RUBY, swm));
+        }
+        return RubyUtil.RUBY.newArray(rubySwms);
     }
 }

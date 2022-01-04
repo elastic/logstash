@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Cherry pick and backport a PR"""
+from __future__ import print_function
+
+from builtins import input
+import sys
+import os
+import argparse
+from os.path import expanduser
+import re
+from subprocess import check_call, call, check_output
+import requests
+
+usage = """
+    Example usage:
+        ./dev-tools/create local_branch
+
+    This script does the following:
+        * cleanups local_branch (warning: drops local changes)
+        * rebases the branch against main
+        * it will attempt to create a PR for you using the GitHub API, but requires
+          the GitHub token, with the public_repo scope, available in `~/.elastic/github.token`.
+          Keep in mind this token has to also be authorized to the Elastic organization as
+          well as to work with SSO.
+          (see https://help.github.com/en/articles/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on)
+
+    Note that you need to take the commit hashes from `git log` on the
+    from_branch, copying the IDs from Github doesn't work in case we squashed the
+    PR.
+"""
+
+
+def main():
+    """Main"""
+    parser = argparse.ArgumentParser(
+        description="Creates a new PR from a branch",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=usage)
+    parser.add_argument("local_branch",
+                        help="Branch to Create a PR for")
+    parser.add_argument("--to_branch", default="main",
+                        help="Which remote to push the backport branch to")
+    parser.add_argument("--yes", action="store_true",
+                        help="Assume yes. Warning: discards local changes.")
+    parser.add_argument("--continue", action="store_true",
+                        help="Continue after fixing merging errors.")
+    parser.add_argument("--diff", action="store_true",
+                        help="Display the diff before pushing the PR")
+    parser.add_argument("--remote", default="",
+                        help="Which remote to push the backport branch to")
+    args = parser.parse_args()
+
+    print(args)
+
+    create_pr(args)
+
+def create_pr(args):
+    
+    if not vars(args)["continue"]:
+        if not args.yes and input("This will destroy all local changes. " +
+                                      "Continue? [y/n]: ") != "y":
+            return 1
+        info("Destroying local changess...")
+        check_call("git reset --hard", shell=True)
+        check_call("git clean -df", shell=True)
+        #check_call("git fetch", shell=True)
+
+        info("Checkout of {} to create a PR....".format(args.local_branch))
+        check_call("git checkout {}".format(args.local_branch), shell=True)
+        check_call("git rebase {}".format(args.to_branch), shell=True)
+
+    if args.diff:
+        call("git diff {}".format(args.to_branch), shell=True)
+        if input("Continue? [y/n]: ") != "y":
+            info("Aborting PR creation...")
+            return 1
+
+    info("Ready to push branch and create PR...")
+
+    remote = args.remote
+    if not remote:
+        remote = input("To which remote should I push? (your fork): ")
+
+    info("Pushing branch {} to remote {}".format(args.local_branch, remote))
+    call("git push {} :{} > /dev/null".format(remote, args.local_branch),
+         shell=True)
+    check_call("git push --set-upstream {} {}"
+               .format(remote, args.local_branch), shell=True)
+
+    info("Checking if GitHub API token is available in `~/.elastic/github.token`")
+    try:
+        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
+    except:
+        token = False
+
+    if not token:
+        info("GitHub API token not available.\n" +
+             "Manually create a PR by following this URL: \n\t" +
+             "https://github.com/elastic/logstash/compare/{}...{}:{}?expand=1"
+              .format(args.to_branch, remote, args.local_branch))
+    else:
+        info("Automatically creating a PR for you...")
+
+        base = "https://api.github.com/repos/elastic/logstash"
+        session = requests.Session()
+        session.headers.update({"Authorization": "token " + token})
+
+        # get the github username from the remote where we pushed
+        remote_url = check_output("git remote get-url {}".format(remote),
+                                  shell=True)
+        remote_user = re.search("github.com[:/](.+)/logstash", str(remote_url)).group(1)
+
+        ### TODO:
+        title = input("Title: ")
+        body = input("Description: ")
+
+        # create PR
+        request = session.post(base + "/pulls", json=dict(
+            title=title,
+            head=remote_user + ":" + args.local_branch,
+            base=args.to_branch,
+            body=body
+        ))
+        if request.status_code > 299:
+            info("Creating PR failed: {}".format(request.json()))
+            sys.exit(1)
+        new_pr = request.json()
+
+        """
+        # add labels
+        labels = ["backport"]
+        # get the version we are backported to
+        version = get_version(os.getcwd())
+        if version:
+            labels.append("v" + version)
+
+        session.post(
+            base + "/issues/{}/labels".format(new_pr["number"]), json=labels)
+
+        # Set a version label on the original PR
+        if version:
+            session.post(
+                base + "/issues/{}/labels".format(args.pr_number), json=[version])
+        """
+
+        info("Done. PR created: {}".format(new_pr["html_url"]))
+        info("Please go and check it and add the review tags")
+
+def get_version(base_dir):
+    #pattern = re.compile(r'(const\s|)\w*(v|V)ersion\s=\s"(?P<version>.*)"')
+    with open(os.path.join(base_dir, "versions.yml"), "r") as f:
+        for line in f:
+            if line.startswith('logstash:'):
+                return line.split(':')[-1].strip()
+            #match = pattern.match(line)
+            #if match:
+            #    return match.group('version')
+
+def info(msg):
+    print("\nINFO: {}".format(msg))
+
+if __name__ == "__main__":
+    sys.exit(main())

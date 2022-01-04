@@ -20,6 +20,11 @@
 
 package org.logstash.ackedqueue;
 
+/**
+ * Persistent queue chekpoint. There is one checkpoint per queue, and simply it's a picture of some
+ * management data like first not acked sequence number.
+ *
+ * */
 public class Checkpoint {
 //    Checkpoint file structure see FileCheckpointIO
 

@@ -25,6 +25,9 @@ import org.jruby.runtime.ThreadContext;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
+/**
+ * Default implementation of {@link CounterMetric}
+ * */
 public class CounterMetricImpl implements CounterMetric {
     private LongCounter longCounter;
 

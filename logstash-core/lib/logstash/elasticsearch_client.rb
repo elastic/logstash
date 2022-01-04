@@ -18,6 +18,7 @@
 require "elasticsearch"
 require "elasticsearch/transport/transport/http/manticore"
 require 'logstash/util/manticore_ssl_config_helper'
+require 'logstash/util/password'
 
 module LogStash class ElasticsearchClient
   include LogStash::Util::Loggable

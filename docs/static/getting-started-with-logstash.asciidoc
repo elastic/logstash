@@ -7,39 +7,16 @@ input, parses the logs, and writes the parsed data to an Elasticsearch cluster. 
 
 This section includes the following topics:
 
+* <<ls-jvm>>
 * <<installing-logstash>>
 * <<first-event>>
 * {logstash-ref}/advanced-pipeline.html[Parsing Logs with Logstash]
 * {logstash-ref}/multiple-input-output-plugins.html[Stitching Together Multiple Input and Output Plugins]
 
+include::jvm.asciidoc[]
+
 [[installing-logstash]]
 === Installing Logstash
-
-NOTE: Logstash requires Java 8 or Java 11. Use the
-http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
-distribution such as http://openjdk.java.net/[OpenJDK].
-
-To check your Java version, run the following command:
-
-[source,shell]
-java -version
-
-On systems with Java installed, this command produces output similar to the following:
-
-[source,shell]
------
-java version "11.0.1" 2018-10-16 LTS
-Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
-Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
------
-
-On some Linux systems, you may also need to have the `JAVA_HOME` environment
-exported before attempting the install, particularly if you installed Java from
-a tarball.  This is because Logstash uses Java during installation to
-automatically detect your environment and install the correct startup method
-(SysV init scripts, Upstart, or systemd).  If Logstash is unable to find the
-JAVA_HOME environment variable during package installation time, you may get an
-error message, and Logstash will be unable to start properly.
 
 [float]
 [[installing-binary]]
@@ -57,7 +34,7 @@ contains colon (:) characters.
 --
 These packages are free to use under the Elastic license. They contain open 
 source and free commercial features and access to paid commercial features.  
-{stack-ov}/license-management.html[Start a 30-day trial] to try out all of the 
+{kibana-ref}/managing-licenses.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels. 
@@ -87,6 +64,20 @@ Elastic's Signing Key, with fingerprint
     4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
 
 to sign all our packages. It is available from https://pgp.mit.edu.
+
+[NOTE]
+--
+When installing from a package repository (or from the DEB or RPM installation file),
+you will need to run Logstash as a service. Please refer to
+{logstash-ref}/running-logstash.html[Running Logstash as a Service] for more
+information.
+
+For testing purposes, you may still run Logstash from the command line, but
+you may need to define the default setting options (described in
+{logstash-ref}/dir-layout.html[Logstash Directory Layout]) manually. Please
+refer to {logstash-ref}/running-logstash-command-line.html[Running Logstash from the Command Line]
+for more information.
+--
 
 [float]
 ==== APT
@@ -301,8 +292,9 @@ the data to a destination.
 
 image::static/images/basic_logstash_pipeline.png[]
 
-To test your Logstash installation, run the most basic Logstash pipeline. For
-example:
+To test your Logstash installation, run the most basic Logstash pipeline. 
+
+**MacOS, Linux**
 
 ["source","sh",subs="attributes"]
 --------------------------------------------------
@@ -310,8 +302,20 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
-NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
-to find the location of `bin\logstash` on your system.
+**Windows**
+
+["source","sh",subs="attributes"]
+--------------------------------------------------
+cd logstash-{logstash_version}
+.\bin\logstash.bat -e "input { stdin { } } output { stdout {} }"
+--------------------------------------------------
+
+The command might vary slightly, depending on the terminal or shell you
+are using.
+
+NOTE: The location of the `bin` directory varies by platform. See
+{logstash-ref}/dir-layout.html[Directory layout] to find the location of
+`bin\logstash` on your system.
 
 [IMPORTANT]
 .macOS Gatekeeper warnings

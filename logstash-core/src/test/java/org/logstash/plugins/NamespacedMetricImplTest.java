@@ -24,6 +24,7 @@ import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyHash;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +81,7 @@ public class NamespacedMetricImplTest extends MetricTestCase {
         }
     }
 
+    @Ignore("Test failing intermittently for some time. See https://github.com/elastic/logstash/issues/11925")
     @Test
     public void testTimeCallable() {
         final NamespacedMetric metrics = this.getInstance().namespace("test");

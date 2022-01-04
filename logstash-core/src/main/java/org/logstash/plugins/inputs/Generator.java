@@ -42,6 +42,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+/**
+ * Java implementation of the "generator" input
+ * */
 @LogstashPlugin(name = "java_generator")
 public class Generator implements Input {
 

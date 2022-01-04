@@ -34,6 +34,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
+/**
+ * JRuby extension to provide slow logger functionality to Ruby classes
+ * */
 @JRubyClass(name = "SlowLogger")
 public class SlowLoggerExt extends RubyObject {
 
@@ -55,15 +58,34 @@ public class SlowLoggerExt extends RubyObject {
         super(runtime, metaClass);
     }
 
+    SlowLoggerExt(final Ruby runtime, final RubyClass metaClass, final String loggerName,
+                  final long warnThreshold, final long infoThreshold,
+                  final long debugThreshold, final long traceThreshold) {
+        super(runtime, metaClass);
+        initialize(loggerName, warnThreshold, infoThreshold, debugThreshold, traceThreshold);
+    }
+
     @JRubyMethod(required = 5)
     public SlowLoggerExt initialize(final ThreadContext context, final IRubyObject[] args) {
-        String loggerName = args[0].asJavaString();
-        slowLogger = LogManager.getLogger("slowlog." + loggerName);
-        warnThreshold = ((RubyNumeric) args[1]).getLongValue();
-        infoThreshold = ((RubyNumeric) args[2]).getLongValue();
-        debugThreshold = ((RubyNumeric) args[3]).getLongValue();
-        traceThreshold = ((RubyNumeric) args[4]).getLongValue();
+        initialize(args[0].asJavaString(), toLong(args[1]), toLong(args[2]), toLong(args[3]), toLong(args[4]));
         return this;
+    }
+
+    private void initialize(final String loggerName,
+                            final long warnThreshold, final long infoThreshold,
+                            final long debugThreshold, final long traceThreshold) {
+        slowLogger = LogManager.getLogger("slowlog." + loggerName);
+        this.warnThreshold = warnThreshold;
+        this.infoThreshold = infoThreshold;
+        this.debugThreshold = debugThreshold;
+        this.traceThreshold = traceThreshold;
+    }
+
+    static long toLong(final IRubyObject value) {
+        if (!(value instanceof RubyNumeric)) {
+            throw RubyUtil.RUBY.newTypeError("Numeric expected, got " + value.getMetaClass());
+        }
+        return ((RubyNumeric) value).getLongValue();
     }
 
     private RubyHash asData(final ThreadContext context, final IRubyObject pluginParams,

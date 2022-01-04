@@ -217,7 +217,7 @@ constructor at instantiation time.
 
 Lastly, but certainly not least importantly, unit tests are strongly encouraged.
 The example filter plugin includes an
-https://github.com/logstash-plugins/logstash-filter-java_filter_example/blob/master/src/test/java/org/logstashplugins/JavaFilterExampleTest.java[example
+https://github.com/logstash-plugins/logstash-filter-java_filter_example/blob/main/src/test/java/org/logstashplugins/JavaFilterExampleTest.java[example
 unit test] that you can use as a template for your own.
 
 
@@ -251,8 +251,6 @@ Start Logstash with:
 bin/logstash -f /path/to/java_filter.conf
 -----
 
-NOTE: The Java execution engine, the default execution engine since Logstash 7.0, is required
-as Java plugins are not supported in the Ruby execution engine.
 
 The expected Logstash output (excluding initialization) with the configuration
 above is:

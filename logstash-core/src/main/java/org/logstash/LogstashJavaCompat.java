@@ -90,4 +90,23 @@ public final class LogstashJavaCompat {
         final int end = version.indexOf('.');
         return Integer.parseInt(version.substring(0, end > 0 ? end : version.length())) >= 9;
     }
+
+    /**
+     * Identifies whether we are running on a versiongreater than or equal to the version parameter specified.
+     * @param version The version to test against. This must be the Major version of Java
+     * @return True if running on Java whose major version is greater than or equal to the
+     *         specified version.
+     */
+    public static boolean isJavaAtLeast(int version) {
+        final String value = System.getProperty("java.specification.version");
+        final int actualVersion;
+        // Java specification version prior to Java 9 were of the format `1.X`, and after the format `X`
+        // See https://openjdk.java.net/jeps/223
+        if (value.startsWith("1.")) {
+            actualVersion = Integer.parseInt(value.split("\\.")[1]);
+        } else {
+            actualVersion = Integer.parseInt(value);
+        }
+        return actualVersion >= version;
+    }
 }

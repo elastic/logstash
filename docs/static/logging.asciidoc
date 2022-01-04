@@ -42,6 +42,12 @@ logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
 logger.elasticsearchoutput.level = debug
 --------------------------------------------------
 
+The previous example defines a name and level for the logger `logstash.outputs.elasticsearch`.
+The logger is usually identified by a Java class name, such as
+`org.logstash.dissect.Dissector`, for example.  It can also be a partial package
+path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
+the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
+
 ==== Logging APIs
 
 For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
@@ -49,7 +55,7 @@ downtime. Instead, you can dynamically update logging levels through the logging
 immediately and do not need a restart. 
 
 NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 ===== Retrieve list of logging configurations

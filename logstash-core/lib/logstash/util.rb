@@ -24,6 +24,7 @@ module LogStash::Util
   end
 
   PR_SET_NAME = 15
+
   def self.set_thread_name(name)
     previous_name = Java::java.lang.Thread.currentThread.getName() if block_given?
 
@@ -34,7 +35,6 @@ module LogStash::Util
     if UNAME == "linux"
       require "logstash/util/prctl"
       # prctl PR_SET_NAME allows up to 16 bytes for a process name
-      # since MRI 1.9, JRuby, and Rubinius use system threads for this.
       LibC.prctl(PR_SET_NAME, name[0..16], 0, 0, 0)
     end
 
@@ -65,7 +65,7 @@ module LogStash::Util
 
     {
       "thread_id" => get_thread_id(thread), # might be nil for dead threads
-      "name" => thread[:name],
+      "name" => thread[:name] || get_thread_name(thread),
       "plugin" => (thread[:plugin] ? thread[:plugin].debug_info : nil),
       "backtrace" => backtrace,
       "blocked_on" => blocked_on,
@@ -219,4 +219,20 @@ module LogStash::Util
       Marshal.load(Marshal.dump(o))
     end
   end
+
+  # Returns true if the object is considered blank.
+  # A blank includes things like '', '   ', nil,
+  # and arrays and hashes that have nothing in them.
+  #
+  # This logic is mostly shared with ActiveSupport's blank?
+  def self.blank?(value)
+    if value.kind_of?(NilClass)
+      true
+    elsif value.kind_of?(String)
+      value !~ /\S/
+    else
+      value.respond_to?(:empty?) ? value.empty? : !value
+    end
+  end
+
 end # module LogStash::Util

@@ -18,7 +18,6 @@
 require "spec_helper"
 require 'logstash/instrument/collector'
 require "logstash/filter_delegator"
-require "logstash/event"
 require "support/shared_contexts"
 
 describe LogStash::FilterDelegator do

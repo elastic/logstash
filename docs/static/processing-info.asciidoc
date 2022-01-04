@@ -1,0 +1,48 @@
+[[processing]]
+=== Processing Details
+
+Understanding how {ls} works and how components interrelate can help you make
+better decisions when you are setting up or adjusting your {ls} environment.
+This section is designed to elevate concepts to assist with that level of
+knowledge.
+
+NOTE: This is a new section. We're still working on it.
+
+[float] 
+[[event-ordering]] 
+==== Event ordering 
+
+By design and by default, {ls} does not guarantee event order. Reordering can
+occur in two places:
+
+* Events within a batch can be reordered during filter processing.
+* In-flight batches can be reordered when one or more batches are processed faster than
+others. 
+
+When maintaining event order is important, use a single worker and set
+'pipeline.ordered => true'.
+This approach ensures that batches are computed one-after-the-other, and
+that events maintain their order within the batch.
+
+[float] 
+[[order-setting]] 
+===== 'pipeline.ordered' setting
+
+The `pipeline.ordered` setting in <<logstash-settings-file,logstash.yml>>
+gives you more control over event ordering for single worker pipelines.
+
+`auto` automatically enables ordering if the `pipeline.workers` setting is also
+set to `1`. `true` will enforce ordering on the pipeline and prevent logstash
+from starting if there are multiple workers. `false` will disable the processing
+required to preserve order. Ordering will not be guaranteed, but you save the
+processing cost required to preserve order.
+
+[float] 
+[[pipeline-init-time]] 
+==== Java pipeline initialization time
+
+The Java pipeline initialization time appears in the startup logs at INFO level.
+Initialization time is the time it takes to compile the pipeline config and
+instantiate the compiled execution for all workers.
+
+include::reserved-fields.asciidoc[]

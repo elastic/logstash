@@ -41,7 +41,7 @@ describe "Pack the dependencies", :integration => true do
       FileUtils.rm_rf(bundler_config)
       FileUtils.rm_rf(vendor_path)
 
-      Bundler.with_clean_env do
+      Bundler.with_unbundled_env do
         Dir.chdir(path) do
           system(bundler_cmd)
           system(rake_cmd)
@@ -69,7 +69,7 @@ describe "Pack the dependencies", :integration => true do
       FileUtils.rm_rf(bundler_config)
       FileUtils.rm_rf(vendor_path)
 
-      Bundler.with_clean_env do
+      Bundler.with_unbundled_env do
         Dir.chdir(path) do
           system(bundler_cmd)
           system(rake_cmd)

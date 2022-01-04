@@ -39,6 +39,9 @@ import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+/**
+ * JRuby extension
+ * */
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 

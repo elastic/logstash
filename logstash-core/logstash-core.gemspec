@@ -49,15 +49,15 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp", "~> 0.6" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1"
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "mustermann", '~> 1.0.3'
   gem.add_runtime_dependency "sinatra", '~> 2'
-  gem.add_runtime_dependency 'puma', '~> 4'
-  gem.add_runtime_dependency "jruby-openssl", "~> 0.10" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency 'puma', '~> 5'
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
@@ -72,4 +72,14 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "elasticsearch", '~> 7'
   gem.add_runtime_dependency "manticore", '~> 0.6'
+
+  # xpack geoip database service
+  gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
+  gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
+  gem.add_dependency 'tzinfo-data' #(MIT license)
+  gem.add_dependency 'rufus-scheduler' #(MIT license)
+
+  # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
+  # SEE: https://github.com/ruby/racc/issues/172
+  gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
 end

@@ -4,7 +4,7 @@ services:
   - elasticsearch
 config: |-
   input {
-    stdin { }
+    stdin { ecs_compatibility => disabled }
   }
 
   filter {
@@ -19,15 +19,21 @@ config: |-
       locale => en
     }
     geoip {
+      ecs_compatibility => disabled
       source => "clientip"
     }
     useragent {
+      ecs_compatibility => disabled
       source => "agent"
       target => "useragent"
     }
   }
   output {
-    elasticsearch {}
+    elasticsearch {
+      data_stream => "false"
+      ecs_compatibility => disabled
+      index => "logstash-integration-test"
+    }
   }
 
 input: how_sample.input

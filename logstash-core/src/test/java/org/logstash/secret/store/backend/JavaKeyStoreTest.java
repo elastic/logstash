@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.LogstashJavaCompat;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreException;
@@ -46,15 +47,18 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.nio.file.attribute.PosixFilePermission.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
 /**
@@ -311,7 +315,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
+        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
@@ -688,5 +692,32 @@ public class JavaKeyStoreTest {
         thrown.expect(SecretStoreException.AccessException.class);
         withDefinedPassConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
         new JavaKeyStore().load(withDefinedPassConfig);
+    }
+
+    @Test(timeout = 40_000)
+    public void concurrentReadTest() throws Exception {
+
+        final int KEYSTORE_COUNT = 250;
+
+        final ExecutorService executorService = Executors.newFixedThreadPool(KEYSTORE_COUNT);
+        String password = "pAssW3rd!";
+        keyStore.persistSecret(new SecretIdentifier("password"), password.getBytes(StandardCharsets.UTF_8));
+        try{
+            Callable<byte[]> reader = () -> keyStore.retrieveSecret(new SecretIdentifier("password"));
+
+            List<Future<byte[]>> futures = new ArrayList<>();
+            for (int i = 0; i < KEYSTORE_COUNT; i++) {
+                futures.add(executorService.submit(reader));
+            }
+
+            for (Future<byte[]> future : futures) {
+                byte[] result = future.get();
+                assertThat(result).isNotNull();
+                assertThat(new String(result, StandardCharsets.UTF_8)).isEqualTo(password);
+            }
+        } finally {
+            executorService.shutdownNow();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        }
     }
 }

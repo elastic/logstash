@@ -28,7 +28,7 @@ RSpec.shared_examples "updated" do |logstash|
   end
 
   before(:each) do
-    options={:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./" }
+    options={:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./", :skip_jdk_infix => true }
     logstash.install(options) # make sure latest version is installed
   end
 
@@ -38,7 +38,8 @@ RSpec.shared_examples "updated" do |logstash|
     logstash.install({:version => LOGSTASH_VERSION})
     expect(logstash).to be_installed
     # starts the service to be sure it runs after the upgrade
-    logstash.start_service
-    expect(logstash).to be_running
+    with_running_logstash_service(logstash) do
+      expect(logstash).to be_running
+    end
   end
 end

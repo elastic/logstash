@@ -29,6 +29,9 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * JRuby extension to provide deprecation logger functionality to Ruby classes
+ * */
 @JRubyClass(name = "DeprecationLogger")
 public class DeprecationLoggerExt extends RubyObject {
 
@@ -40,10 +43,19 @@ public class DeprecationLoggerExt extends RubyObject {
         super(runtime, metaClass);
     }
 
+    DeprecationLoggerExt(final Ruby runtime, final RubyClass metaClass, final String loggerName) {
+        super(runtime, metaClass);
+        initialize(loggerName);
+    }
+
     @JRubyMethod
     public DeprecationLoggerExt initialize(final ThreadContext context, final IRubyObject loggerName) {
-        logger = new DefaultDeprecationLogger(loggerName.asJavaString());
+        initialize(loggerName.asJavaString());
         return this;
+    }
+
+    private void initialize(final String loggerName) {
+        logger = new DefaultDeprecationLogger(loggerName);
     }
 
     @JRubyMethod(name = "deprecated", required = 1, optional = 1)

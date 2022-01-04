@@ -21,6 +21,7 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
+require "fileutils"
 
 describe "Test Logstash Pipeline id" do
   before(:all) {
@@ -56,7 +57,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /\[logstash.javapipeline\s*\]\[#{pipeline_name}\]/).to be > 0
@@ -70,7 +71,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["config string"\]/).to be > 0
@@ -84,7 +85,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1", "-f", "#{initial_config_file}")
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
@@ -99,7 +100,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
     expect(File.exists?(pipeline_log_file)).to be true
@@ -108,9 +109,61 @@ describe "Test Logstash Pipeline id" do
 
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exists?(plainlog_file)).to be true
-    plaing_log_content = IO.read(plainlog_file)
-    expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
+    plainlog_content = IO.read(plainlog_file)
+    expect(plainlog_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
   end
+
+  it "should rollover main log file when pipeline.separate_logs is enabled" do
+    pipeline_name = "custom_pipeline"
+    settings = {
+      "path.logs" => temp_dir,
+      "pipeline.id" => pipeline_name,
+      "pipeline.separate_logs" => true
+    }
+    FileUtils.mkdir_p(File.join(temp_dir, "data"))
+    data = File.join(temp_dir, "data")
+    settings = settings.merge({ "path.data" => data })
+    IO.write(File.join(temp_dir, "logstash.yml"), YAML.dump(settings))
+
+    log_definition = File.read('fixtures/logs_rollover/log4j2.properties')
+    expect(log_definition).to match(/appender\.rolling\.policies\.size\.size\s*=\s*1KB/)
+    expect(log_definition).to match(/appender\.rolling\.filePattern\s*=\s*.*\/logstash-plain-%d{yyyy-MM-dd}\.log/)
+    FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
+
+    @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+    wait_logstash_process_terminate(@ls)
+
+    logstash_logs = Dir.glob("logstash-plain*.log", base: temp_dir)
+    expect(logstash_logs.size).to eq(2)
+    logstash_logs.each do |filename|
+      file_size = File.size(File.join(temp_dir, filename))
+      # should be 1KB = 1024 but due to end of line rounding the rollover goes a little bit over
+      expect(file_size).to be < 1300
+    end
+  end
+
+  it "rollover of pipeline log file when pipeline.separate_logs is enabled shouldn't create spurious file " do
+      pipeline_name = "custom_pipeline"
+      settings = {
+        "path.logs" => temp_dir,
+        "pipeline.id" => pipeline_name,
+        "pipeline.separate_logs" => true
+      }
+      FileUtils.mkdir_p(File.join(temp_dir, "data"))
+      data = File.join(temp_dir, "data")
+      settings = settings.merge({ "path.data" => data })
+      IO.write(File.join(temp_dir, "logstash.yml"), YAML.dump(settings))
+
+      log_definition = File.read('fixtures/logs_rollover/log4j2.properties')
+      expect(log_definition).to match(/appender\.routing\.pipeline\.policy\.size\s*=\s*1KB/)
+      FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
+
+      @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+      wait_logstash_process_terminate(@ls)
+
+      pipeline_logs = Dir.glob("pipeline*.log", base: temp_dir)
+      expect(pipeline_logs).not_to include("pipeline_${ctx:pipeline.id}.log")
+    end
 
   it "should not create separate pipelines log files if not enabled" do
     pipeline_name = "custom_pipeline"
@@ -121,7 +174,7 @@ describe "Test Logstash Pipeline id" do
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1" , "-e", config)
-    wait_logstash_process_terminate()
+    wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
     expect(File.exists?(pipeline_log_file)).to be false
@@ -132,12 +185,11 @@ describe "Test Logstash Pipeline id" do
     expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
   end
 
-  @private
-  def wait_logstash_process_terminate
+  def wait_logstash_process_terminate(service)
     num_retries = 100
     try(num_retries) do
-      expect(@ls.exited?).to be(true)
+      expect(service.exited?).to be(true)
     end
-    expect(@ls.exit_code).to be >= 0
+    expect(service.exit_code).to be >= 0
   end
 end

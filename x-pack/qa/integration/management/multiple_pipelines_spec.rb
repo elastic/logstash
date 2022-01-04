@@ -4,6 +4,7 @@
 
 require_relative "../spec_helper"
 require "stud/temporary"
+require "rspec/wait"
 
 describe "Read configuration from elasticsearch" do
   before :each do
@@ -17,7 +18,7 @@ describe "Read configuration from elasticsearch" do
       "hello" => nil
     }
 
-    cleanup_elasticsearch(".logstash*")
+    cleanup_system_indices(@pipelines.keys)
     cleanup_elasticsearch(".monitoring-logstash*")
 
     @pipelines.each do |pipeline_id, config|
@@ -27,7 +28,7 @@ describe "Read configuration from elasticsearch" do
     @logstash_service = logstash("bin/logstash -w 1", {
       :settings => {
         "xpack.management.enabled" => true,
-        "xpack.management.pipeline.id" => @pipelines.keys,
+        "xpack.management.pipeline.id" => @pipelines.keys + ["*"],
         "xpack.management.logstash.poll_interval" => "1s",
         "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
         "xpack.management.elasticsearch.username" => "elastic",
@@ -87,6 +88,19 @@ describe "Read configuration from elasticsearch" do
     wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(4)
+  end
+
+  it "add new pipelines" do
+    temporary_file = File.join(Stud::Temporary.directory, "wildcard_pipeline.log")
+    new_config = "input { generator { count => 10000 } tcp { port => 6008 }} output { file { path => '#{temporary_file}' } }"
+
+    expect(File.exist?(temporary_file)).to be_falsey
+    push_elasticsearch_config("wildcard_pipeline", new_config)
+    elasticsearch_client.indices.refresh
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(temporary_file)).to be_truthy
+    end
   end
 
   # Returns the number of hashes for the list of pipelines
@@ -161,6 +175,29 @@ describe "Read configuration from elasticsearch" do
       Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
         expect(File.exist?(File.join(@temporary_directory, "#{pipeline_id}_new"))).to be_truthy
       end
+    end
+  end
+
+  it "should pick up recreated pipeline with the same config string and different metadata" do
+    elasticsearch_client.indices.refresh
+
+    pipeline_id = @pipelines.keys[0]
+    config = @pipelines.values[0]
+    file = File.join(@temporary_directory, pipeline_id)
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(file)).to be_truthy
+    end
+
+    cleanup_system_indices([pipeline_id])
+    File.delete(file)
+    expect(File.exist?(file)).to be_falsey
+
+    push_elasticsearch_config(pipeline_id, config, "2")
+    elasticsearch_client.indices.refresh
+
+    Stud.try(max_retry.times, [RSpec::Expectations::ExpectationNotMetError]) do
+      expect(File.exist?(file)).to be_truthy
     end
   end
 

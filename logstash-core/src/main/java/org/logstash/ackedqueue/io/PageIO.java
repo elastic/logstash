@@ -25,6 +25,9 @@ import org.logstash.ackedqueue.SequencedList;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Internal API to access pages stored in files.
+ * */
 public interface PageIO extends Closeable {
 
     // the concrete class should be constructed with the pageNum, capacity and dirPath attributes

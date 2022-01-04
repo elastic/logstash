@@ -17,7 +17,7 @@
 
 require "logstash/agent"
 require "logstash/java_pipeline"
-require "logstash/event"
+
 require "stud/try"
 require "rspec/expectations"
 require "thread"
@@ -76,7 +76,7 @@ module PipelineHelpers
       let(:pipeline) do
         settings.set_value("queue.drain", true)
         LogStash::JavaPipeline.new(
-          LogStash::Config::PipelineConfig.new(
+          org.logstash.config.ir.PipelineConfig.new(
             LogStash::Config::Source::Local, :main,
             SourceWithMetadata.new(
               "config_string", "config_string",

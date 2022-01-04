@@ -21,14 +21,21 @@
 package co.elastic.logstash.api;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 
+/**
+ * A factory for events.
+ */
+@FunctionalInterface
 public interface EventFactory {
 
     /**
      * @return New and empty event.
      */
-    Event newEvent();
+    default Event newEvent() {
+        return newEvent(Collections.emptyMap());
+    }
 
     /**
      * @param data Map from which the new event should copy its data.

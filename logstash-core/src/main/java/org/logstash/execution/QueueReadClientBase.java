@@ -39,6 +39,9 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Common code shared by Persistent and In-Memory queues clients implementation
+ * */
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 

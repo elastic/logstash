@@ -155,7 +155,7 @@ public final class Valuefier {
         );
         converters.put(
             RubyTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                RubyUtil.RUBY, new Timestamp(((RubyTime) input).getDateTime())
+                RubyUtil.RUBY, new Timestamp(((RubyTime) input).toInstant())
             )
         );
         converters.put(

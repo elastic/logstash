@@ -22,8 +22,9 @@ shared_context "execution_context" do
   let(:plugin_id) { :plugin_id }
   let(:plugin_type) { :plugin_type }
   let(:dlq_writer) { double("dlq_writer") }
+  let(:execution_context_factory) { ::LogStash::Plugins::ExecutionContextFactory.new(agent, pipeline, dlq_writer) }
   let(:execution_context) do
-    ::LogStash::ExecutionContext.new(pipeline, agent, plugin_id, plugin_type, dlq_writer)
+    execution_context_factory.create(plugin_id, plugin_type)
   end
 
   before do

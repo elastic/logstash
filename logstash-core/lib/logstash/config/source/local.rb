@@ -75,7 +75,7 @@ module LogStash module Config module Source
         end
 
         get_matched_files.each do |file|
-          next unless ::File.file?(file) # skip directory
+          next unless ::File.file?(file) or ::File.pipe?(file) # skip directory
 
           logger.debug("Reading config file", :config_file => file)
 
@@ -212,7 +212,7 @@ module LogStash module Config module Source
 
       return [] if config_parts.empty?
 
-      [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
+      [org.logstash.config.ir.PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
     def automatic_reload_with_config_string?

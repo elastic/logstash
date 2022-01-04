@@ -37,6 +37,9 @@ import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 
 import java.util.Collection;
 
+/**
+ * JRuby extension
+ * */
 @JRubyClass(name = "PipelineReporter")
 public final class PipelineReporterExt extends RubyBasicObject {
 

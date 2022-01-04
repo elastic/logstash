@@ -29,7 +29,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     def to_s
@@ -47,10 +47,8 @@ module LogStash module PipelineAction
         return LogStash::ConvergeResult::FailedAction.new("Cannot reload pipeline, because the existing pipeline is not reloadable")
       end
 
-      java_exec = @pipeline_config.settings.get_value("pipeline.java_execution")
-
       begin
-        pipeline_validator = java_exec ? LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil) : LogStash::BasePipeline.new(@pipeline_config)
+        pipeline_validator = LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil)
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)
       end
@@ -66,11 +64,10 @@ module LogStash module PipelineAction
         # the block must emit a success boolean value
 
         # First shutdown old pipeline
-        old_pipeline.shutdown { LogStash::ShutdownWatcher.start(old_pipeline) }
-        old_pipeline.thread.join
+        old_pipeline.shutdown
 
         # Then create a new pipeline
-        new_pipeline = java_exec ? LogStash::JavaPipeline.new(@pipeline_config, @metric, agent) : LogStash::Pipeline.new(@pipeline_config, @metric, agent)
+        new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
         success = new_pipeline.start # block until the pipeline is correctly started or crashed
 
         # return success and new_pipeline to registry reload_pipeline

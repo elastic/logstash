@@ -39,16 +39,19 @@ current_release_dashes = current_release.tr(".", "-")
 
 release_notes = IO.read(RELEASE_NOTES_PATH).split("\n")
 
-release_notes.insert(5, "* <<logstash-#{current_release_dashes},Logstash #{current_release}>>")
+current_release_heading = "* <<logstash-#{current_release_dashes},Logstash #{current_release}>>"
+release_notes.insert(5, current_release_heading) unless release_notes[5].eql?(current_release_heading)
 
-release_notes_entry_index = release_notes.find_index {|line| line.match(/^\[\[logstash/) }
+coming_tag_index = release_notes.find_index {|line| line.match(/^coming\[#{current_release}\]/) }
+coming_tag_index += 1 if coming_tag_index
+release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/^\[\[logstash/) }
 
-report << "[[logstash-#{current_release_dashes}]]"
-report << "=== Logstash #{current_release} Release Notes\n"
+report << "[[logstash-#{current_release_dashes}]]" unless release_notes.any? { |line| line.match(/^\[\[logstash-#{current_release_dashes}/) }
+report << "=== Logstash #{current_release} Release Notes\n" unless release_notes.any? { |line| line.match(/^=== Logstash #{current_release}/)}
 
 plugin_changes = {}
 
-report <<  "---------- DELETE FROM HERE ------------"
+report <<  "---------- GENERATED CONTENT STARTS HERE ------------"
 report <<  "=== Logstash Pull Requests with label v#{current_release}\n"
 
 uri = URI.parse("https://api.github.com/search/issues?q=repo:elastic/logstash+is:pr+is:closed+label:v#{current_release}&sort=created&order=asc")
@@ -81,13 +84,13 @@ result.each do |line|
 end
 report << "Changed plugin versions:"
 plugin_changes.each {|p, v| report << "#{p}: #{v.first} -> #{v.last}" }
-report << "---------- DELETE UP TO HERE ------------\n"
+report << "---------- GENERATED CONTENT ENDS HERE ------------\n"
 
 report << "==== Plugins\n"
 
 plugin_changes.each do |plugin, versions|
   _, type, name = plugin.split("-")
-  header = "*#{name.capitalize} #{type.capitalize}*"
+  header = "*#{name.capitalize} #{type.capitalize} - #{versions.last}*"
   start_changelog_file = Tempfile.new(plugin + 'start')
   end_changelog_file = Tempfile.new(plugin + 'end')
   changelog = `curl https://raw.githubusercontent.com/logstash-plugins/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")

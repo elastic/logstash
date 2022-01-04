@@ -29,11 +29,19 @@ module ServiceTester
         stdout = cmd.stdout
       end
       stdout.match(/^Installed Packages$/)
-      stdout.match(/^logstash.noarch/)
+      stdout.match(/^logstash.noarch/) || stdout.match(/^logstash.#{architecture_extension}/)
     end
 
-    def package_for(filename, base=ServiceTester::Base::LOCATION)
-      File.join(base, "#{filename}.rpm")
+    def package_extension
+      "rpm"
+    end
+
+    def architecture_extension
+      if java.lang.System.getProperty("os.arch") == "amd64"
+        "x86_64"
+      else
+        "aarch64"
+      end
     end
 
     def install(package, host=nil)

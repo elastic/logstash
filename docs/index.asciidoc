@@ -1,8 +1,10 @@
 [[logstash-reference]]
 = Logstash Reference
 
-include::{asciidoc-dir}/../../shared/versions/stack/{source_branch}.asciidoc[]
-include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
+include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
+include::{docs-root}/shared/attributes.asciidoc[]
+include::./include/attributes-ls.asciidoc[]
+include::./include/attributes-lsplugins.asciidoc[]
 
 :include-xpack:         true
 :lang:                  en
@@ -55,6 +57,15 @@ include::static/advanced-pipeline.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
 include::static/life-of-an-event.asciidoc[]
 
+// Elastic Common Schema (ECS)
+:editurl!:
+include::static/ecs-compatibility.asciidoc[]
+
+// Processing details
+
+:edit_url!:
+include::static/processing-info.asciidoc[]
+
 // Logstash setup
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-logstash.asciidoc
@@ -84,9 +95,6 @@ include::static/logging.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
-include::static/setup/setting-up-xpack.asciidoc[]
-
 // Upgrading Logstash
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/upgrading.asciidoc
@@ -100,7 +108,10 @@ include::static/configuration.asciidoc[]
 :edit_url!:
 include::static/security/logstash.asciidoc[]
 
-// Advanced Logstash Configurion
+:edit_url!:
+include::static/ls-to-cloud.asciidoc[]
+
+// Advanced Logstash Configuration
 
 :edit_url!:
 include::static/configuration-advanced.asciidoc[]
@@ -166,6 +177,9 @@ include::static/filebeat-modules.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/resiliency.asciidoc
 include::static/resiliency.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/mem-queue.asciidoc
+include::static/mem-queue.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/persistent-queues.asciidoc
 include::static/persistent-queues.asciidoc[]
 
@@ -187,14 +201,13 @@ include::static/deploying.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/performance-checklist.asciidoc
 include::static/performance-checklist.asciidoc[]
 
-// Monitoring 
-:edit_url!:
-include::static/monitoring/monitoring.asciidoc[]
-
 // X-Pack Monitoring 
 :edit_url!:
 include::static/monitoring/monitoring-overview.asciidoc[]
 
+// Monitoring 
+:edit_url!:
+include::static/monitoring/monitoring.asciidoc[]
 
 // Working with Plugins
 
@@ -218,7 +231,7 @@ include::static/best-practice.asciidoc[]
 include::static/config-details.asciidoc[]
 
 :edit_url!:
-include::static/troubleshooting.asciidoc[]
+include::static/troubleshoot/troubleshooting.asciidoc[]
 
 :edit_url:
 
@@ -231,31 +244,35 @@ include::static/codec.asciidoc[]
 include::static/filter.asciidoc[]
 include::static/output.asciidoc[]
 
-// Plugin doc guidelines
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/doc-for-plugin.asciidoc
-include::static/doc-for-plugin.asciidoc[]
-
-// Contributing a Patch to a Logstash Plugin
-
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-patch.asciidoc
-include::static/contributing-patch.asciidoc[]
-
 // Logstash Community Maintainer Guide
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/maintainer-guide.asciidoc
+:edit_url!: 
 include::static/maintainer-guide.asciidoc[]
 
 // A space is necessary here ^^^
 
+// Plugin doc guidelines
+
+:edit_url: 
+include::static/doc-for-plugin.asciidoc[]
+
 // Submitting a Plugin
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
-include::static/submitting-a-plugin.asciidoc[]
+:edit_url!: 
+include::static/submitting-a-plugin.asciidoc[] 
+
+:edit_url!:
+include::static/listing-a-plugin.asciidoc[]
+
+:edit_url!: 
+include::static/contributing-patch.asciidoc[]
+
+:edit_url!:
+include::static/contribute-core.asciidoc[]
 
 // Contributing to Logstash - JAVA EDITION
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-java-plugin.asciidoc
+:edit_url: 
 include::static/contributing-java-plugin.asciidoc[]
 
 // Glossary of Terms
@@ -273,6 +290,8 @@ include::static/breaking-changes.asciidoc[]
 
 // Release Notes
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/releasenotes.asciidoc
+:edit_url!:
 include::static/releasenotes.asciidoc[]
 
+:edit_url:
+include::static/redirects.asciidoc[]

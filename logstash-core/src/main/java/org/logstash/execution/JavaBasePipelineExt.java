@@ -44,6 +44,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+/**
+ * JRuby extension used as parent for Ruby's JavaPipelines
+ * */
 @JRubyClass(name = "JavaBasePipeline")
 public final class JavaBasePipelineExt extends AbstractPipelineExt {
 

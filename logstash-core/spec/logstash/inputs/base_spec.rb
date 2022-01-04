@@ -86,18 +86,34 @@ describe "LogStash::Inputs::Base#decorate" do
 
     subject(:instance) { klass.new({}) }
 
-    it "allow to set the context" do
-      expect(instance.execution_context).to be_nil
-      instance.execution_context = execution_context
+    context 'execution_context=' do
+      let(:deprecation_logger_stub) { double('DeprecationLogger').as_null_object }
+      before(:each) do
+        allow(klass).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
+      end
 
-      expect(instance.execution_context).to eq(execution_context)
-    end
+      it "allow to set the context" do
+        new_ctx = execution_context.dup
+        subject.execution_context = new_ctx
+        expect(subject.execution_context).to be(new_ctx)
+      end
 
-    it "propagate the context to the codec" do
-      expect(instance.codec.execution_context).to be_nil
-      instance.execution_context = execution_context
+      it "propagate the context to the codec" do
+        new_ctx = execution_context.dup
+        expect(instance.codec.execution_context).to_not be(new_ctx)
+        instance.execution_context = new_ctx
 
-      expect(instance.codec.execution_context).to eq(execution_context)
+        expect(instance.execution_context).to be(new_ctx)
+        expect(instance.codec.execution_context).to be(new_ctx)
+      end
+
+      it 'emits a deprecation warning' do
+        expect(deprecation_logger_stub).to receive(:deprecated) do |message|
+          expect(message).to match(/execution_context=/)
+        end
+
+        instance.execution_context = execution_context
+      end
     end
   end
 

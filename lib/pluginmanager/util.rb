@@ -16,9 +16,38 @@
 # under the License.
 
 require "rubygems/package"
+require "yaml"
 require_relative "../bootstrap/patches/remote_fetcher"
 
 module LogStash::PluginManager
+
+  def self.load_aliases_definitions(path = File.expand_path('plugin_aliases.yml', __dir__))
+    content = IO.read(path)
+
+    #Verify header
+    header = content.lines[0]
+    if !header.start_with?('#CHECKSUM:')
+      raise ValidationError.new "Bad header format, expected '#CHECKSUM: ...' but found #{header}"
+    end
+    yaml_body = content.lines[2..-1].join
+    extracted_sha = header.delete_prefix('#CHECKSUM:').chomp.strip
+    sha256_hex = Digest::SHA256.hexdigest(yaml_body)
+    if sha256_hex != extracted_sha
+      raise ValidationError.new "Bad checksum value, expected #{sha256_hex} but found #{extracted_sha}"
+    end
+
+    yaml = YAML.safe_load(yaml_body) || {}
+    result = {}
+    yaml.each do |type, alias_defs|
+      alias_defs.each do |alias_name, aliased|
+        result["logstash-#{type}-#{alias_name}"] = "logstash-#{type}-#{aliased}"
+      end
+    end
+    result
+  end
+
+  # Defines the plugin alias, must be kept in synch with Java class org.logstash.plugins.AliasRegistry
+  ALIASES = load_aliases_definitions()
 
   class ValidationError < StandardError; end
 

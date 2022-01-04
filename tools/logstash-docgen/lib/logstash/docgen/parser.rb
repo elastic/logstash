@@ -30,14 +30,14 @@ module LogStash module Docgen
 
     class << self
       def default_plugins_list
-        @default_plugins_list ||= from_master_json
+        @default_plugins_list ||= from_main_json
       end
 
       def include?(name)
         default_plugins_list.include?(name)
       end
 
-      def from_master_json
+      def from_main_json
         response = open(DEFAULT_PLUGINS_LIST_JSON)
         JSON.parse(response.read).select { |_, values| values["default-plugins"] == true }.keys
       end
@@ -150,8 +150,8 @@ module LogStash module Docgen
     alias_method :sorted_attributes, :config
 
     def changelog_url
-      # https://github.com/logstash-plugins/logstash-input-beats/blob/master/CHANGELOG.md#310beta3
-      "#{LOGSTASH_PLUGINS_ORGANIZATION}/#{canonical_name}/blob/master/CHANGELOG.md##{anchor_version}"
+      # https://github.com/logstash-plugins/logstash-input-beats/blob/main/CHANGELOG.md#310beta3
+      "#{LOGSTASH_PLUGINS_ORGANIZATION}/#{canonical_name}/blob/main/CHANGELOG.md##{anchor_version}"
     end
 
     def anchor_version

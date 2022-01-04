@@ -1,15 +1,17 @@
-name,version,url,license
-bundler,1.16.1,http://bundler.io,MIT
-bundler,1.16.0,http://bundler.io,MIT
-filesize,0.0.4,http://filesize.rubyforge.org/,UNKNOWN
-jar-dependencies,0.3.12,https://github.com/mkristian/jar-dependencies,MIT
-jar-dependencies,0.3.11,https://github.com/mkristian/jar-dependencies,MIT
-jar-dependencies,0.3.10,https://github.com/mkristian/jar-dependencies,MIT
-jruby-openssl,0.9.21,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1
-jruby-openssl,0.9.20,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1
-jruby-readline,1.1.1,https://github.com/jruby/jruby,EPL-1.0|GPL-2.0|LGPL-2.1
-com.fasterxml.jackson.core:jackson-core,2.7.3,https://github.com/FasterXML/jackson-core,Apache-2.0
-com.fasterxml.jackson.core:jackson-core,2.9.1,https://github.com/FasterXML/jackson-core,Apache-2.0
-control.js,,,MIT
-json-generator,,https://github.com/flori/json,Ruby
-json-parser,,https://github.com/flori/json,Ruby
+name,version,url,license,copyright,sourceURL
+bundler,1.16.1,http://bundler.io,MIT,,
+bundler,1.16.0,http://bundler.io,MIT,,
+filesize,0.0.4,http://filesize.rubyforge.org/,UNKNOWN,,
+jar-dependencies,0.3.12,https://github.com/mkristian/jar-dependencies,MIT,,
+jar-dependencies,0.3.11,https://github.com/mkristian/jar-dependencies,MIT,,
+jar-dependencies,0.3.10,https://github.com/mkristian/jar-dependencies,MIT,,
+jruby-openssl,0.9.21,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1,,
+jruby-openssl,0.9.20,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1,,
+jruby-readline,1.1.1,https://github.com/jruby/jruby,EPL-1.0|GPL-2.0|LGPL-2.1,,
+com.fasterxml.jackson.core:jackson-core,2.7.3,https://github.com/FasterXML/jackson-core,Apache-2.0,,
+com.fasterxml.jackson.core:jackson-core,2.9.1,https://github.com/FasterXML/jackson-core,Apache-2.0,,
+control.js,,,MIT,,
+json-generator,,https://github.com/flori/json,Ruby,,
+json-parser,,https://github.com/flori/json,Ruby,,
+tzinfo,,https://github.com/tzinfo/tzinfo,MIT,Philip Ross,
+Red Hat Universal Base Image minimal,8,https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8,Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf,,https://oss-dependencies.elastic.co/red-hat-universal-base-image-minimal/8/ubi-minimal-8-source.tar.gz

@@ -101,6 +101,7 @@ public interface EventCondition {
          * All compilation is globally {@code synchronized} on {@link EventCondition.Compiler#cache}
          * to minimize code size by avoiding compiling logically equivalent expressions in more than
          * one instance.
+         *
          * @param expression BooleanExpress to compile
          * @return Compiled {@link EventCondition}
          */
@@ -125,7 +126,7 @@ public interface EventCondition {
                 } else if (expression instanceof Not) {
                     condition = not((Not) expression);
                 } else if (expression instanceof Gt || expression instanceof Gte
-                    || expression instanceof Lt || expression instanceof Lte) {
+                        || expression instanceof Lt || expression instanceof Lte) {
                     condition = comparison((BinaryBooleanExpression) expression);
                 } else if (expression instanceof Neq) {
                     condition = not(eq((BinaryBooleanExpression) expression));
@@ -152,7 +153,7 @@ public interface EventCondition {
                 first = buildCondition((BooleanExpression) left);
                 second = truthy((EventValueExpression) right);
             } else if (right instanceof BooleanExpression &&
-                left instanceof EventValueExpression) {
+                    left instanceof EventValueExpression) {
                 first = truthy((EventValueExpression) left);
                 second = buildCondition((BooleanExpression) right);
             } else {
@@ -183,28 +184,29 @@ public interface EventCondition {
         /**
          * Checks if a {@link BinaryBooleanExpression} consists of a {@link ValueExpression} on the
          * left and a {@link EventValueExpression} on the right.
+         *
          * @param expression Expression to check type for
          * @return True if the left branch of the {@link BinaryBooleanExpression} is a
          * {@link ValueExpression} and its right side is a {@link EventValueExpression}.
          */
         private static boolean vAndE(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof ValueExpression &&
-                expression.getRight() instanceof EventValueExpression;
+                    expression.getRight() instanceof EventValueExpression;
         }
 
         private static boolean vAndV(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof ValueExpression &&
-                expression.getRight() instanceof ValueExpression;
+                    expression.getRight() instanceof ValueExpression;
         }
 
         private static boolean eAndV(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof EventValueExpression &&
-                expression.getRight() instanceof ValueExpression;
+                    expression.getRight() instanceof ValueExpression;
         }
 
         private static boolean eAndE(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof EventValueExpression &&
-                expression.getRight() instanceof EventValueExpression;
+                    expression.getRight() instanceof EventValueExpression;
         }
 
         private static boolean vAndR(final BinaryBooleanExpression expression) {
@@ -268,19 +270,19 @@ public interface EventCondition {
             final Expression uright = expression.getRight();
             if (eAndV(expression)) {
                 condition = compareFieldToConstant(
-                    (EventValueExpression) uleft, (ValueExpression) uright, conditional
+                        (EventValueExpression) uleft, (ValueExpression) uright, conditional
                 );
             } else if (vAndE(expression)) {
                 condition = compareFieldToConstant(
-                    (EventValueExpression) uright, (ValueExpression) uleft, converse
+                        (EventValueExpression) uright, (ValueExpression) uleft, converse
                 );
             } else if (vAndV(expression)) {
                 return compareConstants(
-                    (ValueExpression) uleft, (ValueExpression) uright, conditional
+                        (ValueExpression) uleft, (ValueExpression) uright, conditional
                 );
             } else {
                 return compareFields(
-                    (EventValueExpression) uleft, (EventValueExpression) uright, conditional
+                        (EventValueExpression) uleft, (EventValueExpression) uright, conditional
                 );
             }
             return condition;
@@ -292,23 +294,23 @@ public interface EventCondition {
             final EventCondition condition;
             if (eAndV(in) && isScalar((ValueExpression) in.getRight())) {
                 condition = new EventCondition.Compiler.FieldInConstantScalar(
-                    FieldReference.from(((EventValueExpression) left).getFieldName()),
-                    ((ValueExpression) right).get().toString()
+                        FieldReference.from(((EventValueExpression) left).getFieldName()),
+                        ((ValueExpression) right).get().toString()
                 );
             } else if (vAndE(in) && isScalar((ValueExpression) in.getLeft())) {
                 final Object leftv = ((ValueExpression) left).get();
                 final FieldReference rfield =
-                    FieldReference.from(((EventValueExpression) right).getFieldName());
+                        FieldReference.from(((EventValueExpression) right).getFieldName());
                 if (leftv instanceof String) {
                     condition = new EventCondition.Compiler.ConstantStringInField(
-                        rfield, (String) leftv
+                            rfield, (String) leftv
                     );
                 } else {
                     condition = new EventCondition.Compiler.ConstantScalarInField(rfield, leftv);
                 }
             } else if (eAndV(in) && listValueRight(in)) {
                 condition = in(
-                    (EventValueExpression) left, (List<?>) ((ValueExpression) right).get()
+                        (EventValueExpression) left, (List<?>) ((ValueExpression) right).get()
                 );
             } else if (eAndE(in)) {
                 condition = in((EventValueExpression) left, (EventValueExpression) right);
@@ -322,14 +324,15 @@ public interface EventCondition {
 
         private static EventCondition in(final EventValueExpression left, final List<?> right) {
             return new EventCondition.Compiler.FieldInConstantList(
-                FieldReference.from(left.getFieldName()), right
+                    FieldReference.from(left.getFieldName()), right
             );
         }
 
         /**
          * Compiles a constant (due to both of its sides being constant {@link ValueExpression})
          * conditional.
-         * @param left Constant left side {@link ValueExpression}
+         *
+         * @param left  Constant left side {@link ValueExpression}
          * @param right Constant right side {@link ValueExpression}
          * @return Constant {@link EventCondition}
          */
@@ -339,12 +342,12 @@ public interface EventCondition {
             final boolean res;
             if (found instanceof ConvertedList && other instanceof RubyString) {
                 res = ((ConvertedList) found).stream().anyMatch(item -> item.toString()
-                    .equals(other.toString()));
+                        .equals(other.toString()));
             } else if (found instanceof RubyString && other instanceof RubyString) {
                 res = found.toString().contains(other.toString());
             } else if (found instanceof RubyString && other instanceof ConvertedList) {
                 res = ((ConvertedList) other).stream()
-                    .anyMatch(item -> item.toString().equals(found.toString()));
+                        .anyMatch(item -> item.toString().equals(found.toString()));
             } else {
                 res = found != null && found.equals(other);
             }
@@ -361,18 +364,18 @@ public interface EventCondition {
         }
 
         private static EventCondition in(final EventValueExpression left,
-            final EventValueExpression right) {
+                                         final EventValueExpression right) {
             return new EventCondition.Compiler.FieldInField(
-                FieldReference.from(left.getFieldName()), FieldReference.from(right.getFieldName())
+                    FieldReference.from(left.getFieldName()), FieldReference.from(right.getFieldName())
             );
         }
 
         @SuppressWarnings("unchecked")
         private static EventCondition eq(final EventValueExpression evalE,
-            final ValueExpression valE) {
+                                         final ValueExpression valE) {
             return rubyFieldEquals(
-                (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, valE.get()),
-                evalE.getFieldName()
+                    (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, valE.get()),
+                    evalE.getFieldName()
             );
         }
 
@@ -388,14 +391,14 @@ public interface EventCondition {
                 condition = eq((EventValueExpression) left, (EventValueExpression) right);
             } else {
                 condition = constant(
-                    ((ValueExpression) left).get().equals(((ValueExpression) right).get())
+                        ((ValueExpression) left).get().equals(((ValueExpression) right).get())
                 );
             }
             return condition;
         }
 
         private static EventCondition eq(final EventValueExpression first,
-            final EventValueExpression second) {
+                                         final EventValueExpression second) {
             final FieldReference field1 = FieldReference.from(first.getFieldName());
             final FieldReference field2 = FieldReference.from(second.getFieldName());
             return event -> {
@@ -415,30 +418,30 @@ public interface EventCondition {
         }
 
         private static EventCondition compareConstants(final ValueExpression left,
-            final ValueExpression right, final Predicate<Integer> operator) {
+                                                       final ValueExpression right, final Predicate<Integer> operator) {
             return constant(operator.test(compare(left.get(), right.get())));
         }
 
         private static EventCondition compareFields(final EventValueExpression left,
-            final EventValueExpression right, final Predicate<Integer> operator) {
+                                                    final EventValueExpression right, final Predicate<Integer> operator) {
             final FieldReference one = FieldReference.from(left.getFieldName());
             final FieldReference other = FieldReference.from(right.getFieldName());
             return event -> {
                 final Event javaEvent = event.getEvent();
                 return operator.test(
-                    compare(
-                        javaEvent.getUnconvertedField(one), javaEvent.getUnconvertedField(other)
-                    )
+                        compare(
+                                javaEvent.getUnconvertedField(one), javaEvent.getUnconvertedField(other)
+                        )
                 );
             };
         }
 
         @SuppressWarnings("unchecked")
         private static EventCondition compareFieldToConstant(final EventValueExpression left,
-            final ValueExpression right, final Predicate<Integer> operator) {
+                                                             final ValueExpression right, final Predicate<Integer> operator) {
             final FieldReference one = FieldReference.from(left.getFieldName());
             final Comparable<IRubyObject> other =
-                (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
+                    (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
             return event -> {
                 final Event javaEvent = event.getEvent();
                 return operator.test(compare(javaEvent.getUnconvertedField(one), other));
@@ -455,7 +458,8 @@ public interface EventCondition {
 
         /**
          * Contains function using Ruby equivalent comparison logic.
-         * @param list List to find value in
+         *
+         * @param list  List to find value in
          * @param value Value to find in list
          * @return True iff value is in list
          */
@@ -469,7 +473,7 @@ public interface EventCondition {
         }
 
         private static EventCondition rubyFieldEquals(final Comparable<IRubyObject> left,
-            final String field) {
+                                                      final String field) {
             final FieldReference reference = FieldReference.from(field);
             return event ->
                     left.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
@@ -549,8 +553,8 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 return found instanceof RubyString &&
-                    ((RubyString) found).getByteList().indexOf(bytes) > -1
-                    || found instanceof ConvertedList && contains((ConvertedList) found, string);
+                        ((RubyString) found).getByteList().indexOf(bytes) > -1
+                        || found instanceof ConvertedList && contains((ConvertedList) found, string);
             }
         }
 
@@ -569,7 +573,7 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 return found instanceof ConvertedList && contains((ConvertedList) found, value)
-                    || Objects.equals(found, field);
+                        || Objects.equals(found, field);
             }
         }
 
@@ -588,7 +592,7 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 return found instanceof RubyString &&
-                    value.indexOf(((RubyString) found).getByteList()) > -1;
+                        value.indexOf(((RubyString) found).getByteList()) > -1;
             }
         }
 
@@ -611,7 +615,7 @@ public interface EventCondition {
                     return false;
                 } else if (lfound instanceof RubyString && rfound instanceof RubyString) {
                     return ((RubyString) rfound).getByteList()
-                        .indexOf(((RubyString) lfound).getByteList()) > -1;
+                            .indexOf(((RubyString) lfound).getByteList()) > -1;
                 } else if (rfound instanceof ConvertedList) {
                     return contains((ConvertedList) rfound, lfound);
                 } else {
@@ -635,7 +639,7 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 return found != null &&
-                    value.stream().anyMatch(val -> val.toString().equals(found.toString()));
+                        value.stream().anyMatch(val -> val.toString().equals(found.toString()));
             }
         }
 
@@ -665,20 +669,34 @@ public interface EventCondition {
 
             UnexpectedTypeException(final Expression left, final Expression right) {
                 super(
-                    String.format("Unexpected input types %s %s", left.getClass(), right.getClass())
+                        String.format(
+                                "Unexpected input types left: %s, right: %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                        )
                 );
             }
 
             UnexpectedTypeException(final Object inner) {
-                super(String.format("Unexpected input type %s", inner.getClass()));
+                super(String.format("Unexpected input type %s", getUnexpectedTypeDetails(inner)));
             }
 
             UnexpectedTypeException(final Object left, final Object right) {
                 super(
-                    String.format(
-                        "Unexpected input type combination %s %s", left.getClass(), right.getClass()
-                    )
+                        String.format(
+                                "Unexpected input type combination left %s, right %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                        )
                 );
+            }
+
+            private static String getUnexpectedTypeDetails(Object unexpected) {
+                String details;
+                if (unexpected instanceof Expression) {
+                    Expression expression = (Expression)unexpected;
+                    details = (expression.getSourceWithMetadata() != null) ? expression.getSourceWithMetadata().toString()
+                                                                           : expression.toString();
+                } else {
+                    details = unexpected.toString();
+                }
+                return String.format("%s:%s", unexpected.getClass(), details);
             }
         }
     }

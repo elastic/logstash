@@ -32,6 +32,14 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     ##
     LogStash::Bundler.setup!({:without => [:build, :development]})
 
+    if LogStash::PluginManager::ALIASES.has_key?(plugin)
+      unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
+        aliased_plugin = LogStash::PluginManager::ALIASES[plugin]
+        puts "Cannot remove the alias #{plugin}, which is an alias for #{aliased_plugin}; if you wish to remove it, you must remove the aliased plugin instead."
+        return
+      end
+    end
+
     # If a user is attempting to uninstall X-Pack, present helpful output to guide
     # them toward the OSS-only distribution of Logstash
     LogStash::PluginManager::XPackInterceptor::Remove.intercept!(plugin)
@@ -46,7 +54,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     signal_error("This plugin has not been previously installed") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
 
     exit(1) unless ::Bundler::LogstashUninstall.uninstall!(plugin)
-
+    LogStash::Bundler.genericize_platform
     remove_unused_locally_installed_gems!
   rescue => exception
     report_exception("Operation aborted, cannot remove plugin", exception)

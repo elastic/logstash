@@ -23,7 +23,6 @@ class ElasticsearchService < Service
   end
 
   def get_client
-    Elasticsearch::Client.new(:hosts => "localhost:9200")
+    @client ||= Elasticsearch::Client.new(:hosts => "localhost:9200")
   end
-
 end

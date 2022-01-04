@@ -22,6 +22,9 @@ package org.logstash.ackedqueue;
 
 import java.io.IOException;
 
+/**
+ * Subclasses that are stored in queues must implement this to provide serializer and deserializer.
+ * */
 public interface Queueable {
 
     byte[] serialize() throws IOException;

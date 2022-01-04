@@ -19,7 +19,7 @@
 
 import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's master versions.yml file
+// fetch version from Logstash's main versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
 
 description = """Logstash Dependency Reporting Utility"""
@@ -28,17 +28,16 @@ String jacksonVersion = versionMap['jackson']
 
 repositories {
   mavenCentral()
-  jcenter()
 }
 
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
+    gradlePluginPortal()
   }
   dependencies {
-    classpath 'org.yaml:snakeyaml:1.17'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+    classpath 'org.yaml:snakeyaml:1.29'
+    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
   }
 }
 

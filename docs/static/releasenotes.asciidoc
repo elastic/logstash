@@ -5,22 +5,50 @@ coming[8.0.0]
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
+* <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
-//* <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
-//* <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
-
-Logstash 8.0.0 Release Notes
-
-coming[8.0.0]
-////
 [[logstash-8-0-0-alpha2]]
 === Logstash 8.0.0-alpha2 Release Notes
 
-Placeholder for alpha2 release notes
+==== Breaking changes
 
+[[java-home-breaking-change]]
+===== Removed support for JAVA_HOME
+Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
+In the `8.x` release, users should set the value of `LS_JAVA_HOME` to the path of their preferred JDK if they
+wish to use a version other than the bundled JDK. The value of `JAVA_HOME` will be ignored.
+
+==== Plugin releases
+Plugins align with release 7.15.0
 
 [[logstash-8-0-0-alpha1]]
 === Logstash 8.0.0-alpha1 Release Notes
 
-Placeholder for alpha1 release notes
-////
+==== Breaking changes
+
+[[ruby-engine]]
+===== Ruby Execution Engine removed
+The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
+Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
+
+[[utf-16]]
+===== Support for UTF-16
+We have added support for UTF-16 and other multi-byte-character when reading log files. https://github.com/elastic/logstash/pull/9702[#9702]
+
+[[field-ref-parser]]
+===== Field Reference parser removed
+The Field Reference parser interprets references to fields in your pipelines and
+plugins. It was configurable in 7.x, with the default set to strict to reject
+inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
+{ls} rejects ambiguous and illegal inputs as standard behavior. https://github.com/elastic/logstash/pull/12466[#12466]
+
+==== New features and enhancements
+
+**Option to pass custom data to the benchmark CLI**
+
+We have added another flag to the Benchmark CLI to allow passing a data file with previously captured data to the custom test case.
+This feature allows users to run the Benchmark CLI in a custom test case with a custom config and a custom dataset. https://github.com/elastic/logstash/pull/12437[#12437]
+
+==== Plugin releases
+Plugins align with release 7.14.0

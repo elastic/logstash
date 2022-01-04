@@ -27,7 +27,7 @@ COPY --chown=logstash:logstash gradlew /opt/logstash/gradlew
 COPY --chown=logstash:logstash gradle/wrapper /opt/logstash/gradle/wrapper
 COPY --chown=logstash:logstash settings.gradle /opt/logstash/settings.gradle
 WORKDIR /opt/logstash
-RUN ./gradlew wrapper --warning-mode all
+RUN for iter in `seq 1 10`; do ./gradlew wrapper --warning-mode all && exit_code=0 && break || exit_code=$? && echo "gradlew error: retry $iter in 10s" && sleep 10; done; exit $exit_code
 WORKDIR /home/logstash
 
 ADD versions.yml /opt/logstash/versions.yml
@@ -45,6 +45,7 @@ ADD spec /opt/logstash/spec
 ADD qa /opt/logstash/qa
 ADD lib /opt/logstash/lib
 ADD pkg /opt/logstash/pkg
+ADD buildSrc /opt/logstash/buildSrc
 ADD tools /opt/logstash/tools
 ADD logstash-core /opt/logstash/logstash-core
 ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
