@@ -74,7 +74,7 @@ module LogStash module Filters module Geoip class DownloadManager
 
     updated_db = DB_TYPES.map do |database_type|
       db_info = service_resp.find { |db| db['name'].eql?("#{GEOLITE}#{database_type}.#{GZ_EXT}") }
-      has_update = @metadata.gz_md5(database_type) != db_info['md5_hash']
+      has_update = db_info && (@metadata.gz_md5(database_type) != db_info['md5_hash'])
       [database_type, has_update, db_info]
     end
     .select { |database_type, has_update, db_info| has_update }

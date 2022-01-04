@@ -42,34 +42,78 @@ describe LogStash::Filters::Geoip do
     end
 
     context "check update" do
+      let(:city_md5) { 'a195a73d4651a2bd02e5edd680f6703c' }
+      let(:asn_md5) { '8d57aec1958070f01042ac1ecd8ec2ab' }
+      let(:old_city_md5) { '01234567890aaa2bd02e5edd680f6703c'}
+
       before(:each) do
         expect(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint",
-                           :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
+                           :body => ::File.read(::File.expand_path(response, ::File.dirname(__FILE__))),
                            :code => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
-      it "should return City db info when City md5 does not match" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("8d57aec1958070f01042ac1ecd8ec2ab", "a123a45d67890a2bd02e5edd680f6703c")
+      shared_examples "single database update" do
+        it "should return City db info when City md5 does not match" do
+          updated_db = download_manager.send(:check_update)
+          expect(updated_db.size).to eql(1)
 
-        updated_db = download_manager.send(:check_update)
-        expect(updated_db.size).to eql(1)
-
-        type, info = updated_db[0]
-        expect(info).to have_key("md5_hash")
-        expect(info).to have_key("name")
-        expect(info).to have_key("provider")
-        expect(info).to have_key("updated")
-        expect(info).to have_key("url")
-        expect(type).to eql(database_type)
+          type, info = updated_db[0]
+          expect(info).to have_key("md5_hash")
+          expect(info).to have_key("name")
+          expect(info).to have_key("provider")
+          expect(info).to have_key("updated")
+          expect(info).to have_key("url")
+          expect(type).to eql(database_type)
+        end
       end
 
-      it "should return empty array when md5 are the same" do
-        expect(mock_metadata).to receive(:gz_md5).and_return("8d57aec1958070f01042ac1ecd8ec2ab", "a195a73d4651a2bd02e5edd680f6703c")
+      shared_examples "no database update" do
+        it "should return empty array when md5 are the same" do
+          updated_db = download_manager.send(:check_update)
+          expect(updated_db.size).to eql(0)
+        end
+      end
 
-        updated_db = download_manager.send(:check_update)
-        expect(updated_db.size).to eql(0)
+      context "call geoip endpoint service" do
+        let(:response) { './fixtures/normal_resp.json' }
+
+        context "metadata has an old md5" do
+          before do
+            expect(mock_metadata).to receive(:gz_md5).and_return(asn_md5, old_city_md5)
+          end
+
+          it_behaves_like "single database update"
+        end
+
+        context "metadata has updated md5" do
+          before do
+            expect(mock_metadata).to receive(:gz_md5).and_return(asn_md5, city_md5)
+          end
+
+          it_behaves_like "no database update"
+        end
+      end
+
+      context "call air-gapped endpoint" do
+        let(:response) { './fixtures/single_city_resp.json' }
+
+        context "metadata has an old md5" do
+          before do
+            expect(mock_metadata).to receive(:gz_md5).and_return(old_city_md5)
+          end
+
+          it_behaves_like "single database update"
+        end
+
+        context "metadata has updated md5" do
+          before do
+            expect(mock_metadata).to receive(:gz_md5).and_return(city_md5)
+          end
+
+          it_behaves_like "no database update"
+        end
       end
 
     end
