@@ -55,7 +55,7 @@ module LogStash
       end
     end
 
-    # set environment variable and revertible bundler setting
+    # setup environment variable and bundler
     def setup(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
@@ -79,7 +79,9 @@ module LogStash
       ::Bundler.reset!
     end
 
-    # do the actual bundler setup
+    # After +Bundler.setup+ call, all +load+ or +require+ of the gems would be allowed only if they are part of
+    # the Gemfile or Ruby's standard library
+    # To install a new plugin which is not part of Gemfile, DO NOT call setup!
     def setup!(options = {})
       setup(options)
       ::Bundler.setup
