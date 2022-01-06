@@ -25,7 +25,7 @@ with a username and password for a user with the appropriate permissions.
 In addition to configuring authentication credentials for Logstash, you need
 to grant authorized users permission to access the Logstash indices.
 
-
+include::es-security.asciidoc[]
 include::basic-auth.asciidoc[]
 include::grant-access.asciidoc[]
 include::pki-auth.asciidoc[]

@@ -1,0 +1,35 @@
+[discrete]
+[[es-security-on]]
+== {es} security on by default
+
+{es} {ref}/configuring-stack-security.html[security is on by default] starting in 8.0. 
+{es} is the certificate authority (CA), and it generates its own self-signed Secure Sockets Layer (SSL) certificate at startup. 
+{ls} must establish a secure connection using the SSL certificate before it can transfer data. 
+Our hosted {ess} can handle these details for you. 
+
+
+.Hosted {ess} simplifies security
+[NOTE]
+=====
+Our hosted {ess} on Elastic Cloud simplifies safe, secure communication between {ls} and {es}. 
+When you configure the elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,cloud_id>> with either the <<plugins-outputs-elasticsearch-cloud_auth,cloud_auth option>> or the <<plugins-outputs-elasticsearch-api_key,api_key option>>, no additional SSL configuration steps are needed.
+
+Examples:
+
+* `output {elasticsearch { cloud_id => "" cloud_auth => "" } }`
+* `output {elasticsearch { cloud_id => "" api_key => "" } }``
+
+For more details, check out the
+{logstash-ref}/connecting-to-cloud.html[Logstash-to-Cloud documentation].
+
+{ess-leadin-short}
+=====
+
+
+
+If you are running {es} on your own hardware...
+
+
+
+
+
