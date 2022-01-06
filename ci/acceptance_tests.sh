@@ -9,6 +9,11 @@ export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 export OSS=true
 
+if [ -n "$BUILD_JAVA_HOME" ]; then
+  GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+fi
+
+
 SELECTED_TEST_SUITE=$1
 
 # The acceptance test in our CI infrastructure doesn't clear the workspace between run

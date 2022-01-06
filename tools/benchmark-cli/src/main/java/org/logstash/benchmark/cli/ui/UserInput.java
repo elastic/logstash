@@ -86,7 +86,7 @@ public final class UserInput {
         "Either a git tree (tag/branch or commit hash), optionally prefixed by a Github username,",
         "if ran against forks.",
         "E.g. 'ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7',",
-        "'user-name#ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7' or 'master'"
+        "'user-name#ab1cfe8cf7e20114df58bcc6c996abcb2b0650d7' or 'main'"
     );
 
     public static final String LOCAL_VERSION_PARAM = "local-path";

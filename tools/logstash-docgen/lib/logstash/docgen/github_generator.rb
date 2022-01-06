@@ -86,7 +86,7 @@ module LogStash module Docgen
         g = Git.init(path)
         g.reset
         g.fetch
-        g.merge("origin/master")
+        g.merge("origin/main")
       else
         g = Git.clone(repository, path, :depth => 1 )
       end
