@@ -55,7 +55,8 @@ module LogStash
       end
     end
 
-    def setup!(options = {})
+    # prepare bundler's environment variables, but do not invoke ::Bundler::setup
+    def prepare(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
@@ -76,6 +77,13 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:frozen, true) unless options[:allow_gemfile_changes]
       ::Bundler.reset!
+    end
+
+    # After +Bundler.setup+ call, all +load+ or +require+ of the gems would be allowed only if they are part of
+    # the Gemfile or Ruby's standard library
+    # To install a new plugin which is not part of Gemfile, DO NOT call setup!
+    def setup!(options = {})
+      prepare(options)
       ::Bundler.setup
     end
 
