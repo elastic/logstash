@@ -55,8 +55,8 @@ module LogStash
       end
     end
 
-    # setup environment variable and bundler
-    def setup(options = {})
+    # prepare bundler's environment variables, but do not invoke ::Bundler::setup
+    def prepare(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
