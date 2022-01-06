@@ -377,11 +377,11 @@ output {
 }
 ----------------------------------
 
-Similarly, you can convert the timestamp in the `@timestamp` field into a string.
+Similarly, you can convert the UTC timestamp in the `@timestamp` field into a string.
 
 Instead of specifying a field name inside the curly braces, use the `%{{FORMAT}}` syntax where `FORMAT` is a https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns[java time format].
 
-For example, if you want to use the file output to write logs based on the event's date and hour and the `type` field:
+For example, if you want to use the file output to write logs based on the event's UTC date and hour and the `type` field:
 
 [source,js]
 ----------------------------------
@@ -394,6 +394,8 @@ output {
 
 NOTE: The sprintf format continues to support http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[deprecated joda time format] strings as well using the `%{+FORMAT}` syntax.
       These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
+
+NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 
 [discrete]
 [[conditionals]]
