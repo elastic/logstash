@@ -377,10 +377,10 @@ output {
 }
 ----------------------------------
 
-Similarly, you can convert the timestamp in the `@timestamp` field into a string. Instead of specifying a field name inside the curly braces, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
+Similarly, you can convert the UTC timestamp in the `@timestamp` field into a string. Instead of specifying a field name inside the curly braces, use the `+FORMAT` syntax where `FORMAT` is a http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[time format].
 
 For example, if you want to use the file output to write to logs based on the
-event's date and hour and the `type` field:
+event's UTC date and hour and the `type` field:
 
 [source,js]
 ----------------------------------
@@ -390,6 +390,8 @@ output {
   }
 }
 ----------------------------------
+
+NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 
 [discrete]
 [[conditionals]]
