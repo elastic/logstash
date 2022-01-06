@@ -83,7 +83,7 @@ module LogStash
     # the Gemfile or Ruby's standard library
     # To install a new plugin which is not part of Gemfile, DO NOT call setup!
     def setup!(options = {})
-      setup(options)
+      prepare(options)
       ::Bundler.setup
     end
 
