@@ -7,7 +7,7 @@
  * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *	http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -151,8 +151,8 @@ public final class CompiledPipeline {
      */
     public CompiledPipeline.CompiledExecution buildExecution(boolean orderedExecution) {
         return orderedExecution
-                ? new CompiledPipeline.CompiledOrderedExecution()
-                : new CompiledPipeline.CompiledUnorderedExecution();
+            ? new CompiledPipeline.CompiledOrderedExecution()
+            : new CompiledPipeline.CompiledUnorderedExecution();
     }
 
     /**
@@ -166,7 +166,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(v.getId(), pluginFactory.buildOutput(
-                    RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         });
         return res;
@@ -184,7 +184,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                    RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         }
         return res;
@@ -201,7 +201,7 @@ public final class CompiledPipeline {
             final SourceWithMetadata source = v.getSourceWithMetadata();
             final Map<String, Object> args = expandArguments(def, cve);
             IRubyObject o = pluginFactory.buildInput(
-                    RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
             nodes.add(o);
         });
         return nodes;
@@ -288,7 +288,7 @@ public final class CompiledPipeline {
 
         @Override
         public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-            compute(batch.events(), flush, shutdown);
+           compute(batch.events(), flush, shutdown);
         }
 
         @Override
@@ -370,11 +370,11 @@ public final class CompiledPipeline {
          */
         private Dataset compileFilters() {
             final Vertex separator = pipelineIR.getGraph()
-                    .vertices()
-                    .filter(v -> v instanceof SeparatorVertex)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Missing Filter End Vertex"));
-            return DatasetCompiler.terminalFilterDataset(flatten(Collections.emptyList(), separator));
+                .vertices()
+                .filter(v -> v instanceof SeparatorVertex)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Missing Filter End Vertex"));
+           return DatasetCompiler.terminalFilterDataset(flatten(Collections.emptyList(), separator));
         }
 
         /**
@@ -383,14 +383,14 @@ public final class CompiledPipeline {
          */
         private Dataset compileOutputs() {
             final Collection<Vertex> outputNodes = pipelineIR.getGraph()
-                    .allLeaves().filter(CompiledPipeline.this::isOutput)
-                    .collect(Collectors.toList());
+                .allLeaves().filter(CompiledPipeline.this::isOutput)
+                .collect(Collectors.toList());
             if (outputNodes.isEmpty()) {
                 return Dataset.IDENTITY;
             } else {
                 return DatasetCompiler.terminalOutputDataset(outputNodes.stream()
-                        .map(leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf)))
-                        .collect(Collectors.toList()));
+                    .map(leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf)))
+                    .collect(Collectors.toList()));
             }
         }
 
@@ -406,10 +406,10 @@ public final class CompiledPipeline {
 
             if (!plugins.containsKey(vertexId)) {
                 final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.filterDataset(
-                                flatten(datasets, vertex),
-                                filters.get(vertexId)
-                        );
+                    DatasetCompiler.filterDataset(
+                        flatten(datasets, vertex),
+                        filters.get(vertexId)
+                    );
                 LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
@@ -430,11 +430,11 @@ public final class CompiledPipeline {
 
             if (!plugins.containsKey(vertexId)) {
                 final ComputeStepSyntaxElement<Dataset> prepared =
-                        DatasetCompiler.outputDataset(
-                                flatten(datasets, vertex),
-                                outputs.get(vertexId),
-                                outputs.size() == 1
-                        );
+                    DatasetCompiler.outputDataset(
+                        flatten(datasets, vertex),
+                        outputs.get(vertexId),
+                        outputs.size() == 1
+                    );
                 LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
@@ -452,9 +452,9 @@ public final class CompiledPipeline {
          * @return The half of the datasets contents that fulfils the condition
          */
         private SplitDataset split(
-                final Collection<Dataset> datasets,
-                final EventCondition condition,
-                final Vertex vertex)
+            final Collection<Dataset> datasets,
+            final EventCondition condition,
+            final Vertex vertex)
         {
             final String vertexId = vertex.getId();
             SplitDataset conditional = iffs.get(vertexId);
@@ -465,7 +465,7 @@ public final class CompiledPipeline {
                 // by requiring its else branch.
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
-                            DatasetCompiler.splitDataset(dependencies, condition);
+                        DatasetCompiler.splitDataset(dependencies, condition);
                     LOGGER.debug("Compiled conditional\n {} \n into \n {}", vertex, prepared);
 
                     conditional = prepared.instantiate();
@@ -486,13 +486,13 @@ public final class CompiledPipeline {
          * @return Datasets originating from given {@link Vertex}
          */
         private Collection<Dataset> flatten(
-                final Collection<Dataset> datasets,
-                final Vertex start)
+            final Collection<Dataset> datasets,
+            final Vertex start)
         {
             final Collection<Dataset> result = compileDependencies(
-                    start,
-                    datasets,
-                    start.incomingVertices().filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
+                start,
+                datasets,
+                start.incomingVertices().filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
             );
             return result.isEmpty() ? datasets : result;
         }
@@ -510,31 +510,31 @@ public final class CompiledPipeline {
                 final Stream<Vertex> dependencies)
         {
             return dependencies.map(
-                    dependency -> {
-                        if (isFilter(dependency)) {
-                            return filterDataset(dependency, datasets);
-                        } else if (isOutput(dependency)) {
-                            return outputDataset(dependency, datasets);
+                dependency -> {
+                    if (isFilter(dependency)) {
+                        return filterDataset(dependency, datasets);
+                    } else if (isOutput(dependency)) {
+                        return outputDataset(dependency, datasets);
+                    } else {
+                        // We know that it's an if vertex since the the input children are either
+                        // output, filter or if in type.
+                        final IfVertex ifvert = (IfVertex) dependency;
+                        final SplitDataset ifDataset = split(
+                            datasets,
+                            conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
+                            dependency
+                        );
+                        // It is important that we double check that we are actually dealing with the
+                        // positive/left branch of the if condition
+                        if (ifvert.outgoingBooleanEdgesByType(true)
+                            .anyMatch(edge -> Objects.equals(edge.getTo(), start)))
+                        {
+                            return ifDataset;
                         } else {
-                            // We know that it's an if vertex since the the input children are either
-                            // output, filter or if in type.
-                            final IfVertex ifvert = (IfVertex) dependency;
-                            final SplitDataset ifDataset = split(
-                                    datasets,
-                                    conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
-                                    dependency
-                            );
-                            // It is important that we double check that we are actually dealing with the
-                            // positive/left branch of the if condition
-                            if (ifvert.outgoingBooleanEdgesByType(true)
-                                    .anyMatch(edge -> Objects.equals(edge.getTo(), start)))
-                            {
-                                return ifDataset;
-                            } else {
-                                return ifDataset.right();
-                            }
+                            return ifDataset.right();
                         }
                     }
+                }
             ).collect(Collectors.toList());
         }
     }
