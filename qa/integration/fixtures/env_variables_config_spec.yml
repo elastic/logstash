@@ -8,7 +8,7 @@ config: |-
     }
   }
   filter {
-    if [host] == "${TEST_ENV_HOST}" {
+    if [host] == "${TEST_ENV_HOST}" or [@metadata][input][tcp][source][name] == "${TEST_ENV_HOST}" {
      mutate {
        add_tag => [ "blah", "${TEST_ENV_TAG}" ]
      }

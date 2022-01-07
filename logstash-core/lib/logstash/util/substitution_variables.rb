@@ -48,8 +48,11 @@ module ::LogStash::Util::SubstitutionVariables
 
   # Replace all substitution variable references in the 'value' param and returns the substituted value, or the original value if a substitution can not be made
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
-  # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
-  # If the value does not match the pattern, the 'value' param returns as-is
+  # When check_secret_store = true,
+  #   If 'value' matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
+  #   If 'value' matches the pattern and no substitution found, raise error
+  # When check_secret_store = false, does not take substitution from secret store.
+  #   If 'value' matches the pattern and no substitution found, return original value
   def replace_placeholders(value, check_secret_store = true)
     if value.kind_of?(::LogStash::Util::Password)
       interpolated = replace_placeholders(value.value, check_secret_store)
