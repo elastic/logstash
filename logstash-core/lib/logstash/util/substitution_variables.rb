@@ -30,18 +30,18 @@ module ::LogStash::Util::SubstitutionVariables
   private_constant :SECRET_STORE
 
   # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value)
+  def deep_replace(value, check_secret_store = true)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, check_secret_store)
       end
     else
       if value.is_a?(Array)
         value.each_index do | valueArrayIndex|
-          value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
+          value[valueArrayIndex] = deep_replace(value[valueArrayIndex], check_secret_store)
         end
       else
-        return replace_placeholders(value)
+        return replace_placeholders(value, check_secret_store)
       end
     end
   end
@@ -50,9 +50,9 @@ module ::LogStash::Util::SubstitutionVariables
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
-  def replace_placeholders(value)
+  def replace_placeholders(value, check_secret_store = true)
     if value.kind_of?(::LogStash::Util::Password)
-      interpolated = replace_placeholders(value.value)
+      interpolated = replace_placeholders(value.value, check_secret_store)
       return ::LogStash::Util::Password.new(interpolated)
     end
     return value unless value.is_a?(String)
@@ -66,18 +66,22 @@ module ::LogStash::Util::SubstitutionVariables
       default = Regexp.last_match(:default)
       logger.debug("Replacing `#{placeholder}` with actual value")
 
-      #check the secret store if it exists
-      secret_store = SECRET_STORE.instance
-      replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
+      replacement = if check_secret_store
+                      #check the secret store if it exists
+                      secret_store = SECRET_STORE.instance
+                      secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
+                    end
+
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
-      if replacement.nil?
+      if replacement.nil? && check_secret_store
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
             "or as an Environment entry and there is no default value given."
       end
-      replacement.to_s
+
+      replacement || placeholder
     end
-  end # def replace_placeholders
+  end
 
   class << self
     private

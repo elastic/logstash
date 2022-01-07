@@ -79,6 +79,13 @@ describe "Test that Logstash" do
     end
   end
 
+  it "won't show secret value when pipeline definition is wrong" do
+    test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
+    logstash = @logstash.run_cmd(["bin/logstash","-e", "input { http { user => test password => \"${tag1}\" port = \"3333\" }}", "--path.settings", settings_dir], true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/\[ERROR\]/)
+    expect(logstash.stderr_and_stdout).to match(/\\"\$\{tag1\}\\"/)
+  end
+
   context "won't start" do
     it "with the wrong password when variables are in settings" do
       test_env["LOGSTASH_KEYSTORE_PASS"] = "WRONG_PASSWRD"

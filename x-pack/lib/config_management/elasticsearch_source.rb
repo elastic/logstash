@@ -97,7 +97,7 @@ module LogStash
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
         config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s,
-                                                                 replace_placeholders(config_string), pipeline_metadata_str)
+                                                                 replace_placeholders(config_string, false), pipeline_metadata_str)
 
         # We don't support multiple pipelines, so use the global settings from the logstash.yml file
         settings = @settings.clone

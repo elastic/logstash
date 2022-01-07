@@ -26,7 +26,7 @@ require "spec_helper"
 require "webmock/rspec"
 
 describe "multiple config loader" do
-  let(:env_config_string) { "input { generator {} } if [app] != \"${APP}\" { } output { stdout {} }" }
+  let(:env_config_string) { "input { generator { tags => \"${z}\" } } if [app] != \"${APP}\" { } output { stdout {} }" }
 
   RSpec.shared_examples "support env variable in condition" do |logstash|
 
@@ -37,6 +37,27 @@ describe "multiple config loader" do
     it "give env value in config string" do
       swm = subject.new(loader_input).read.first
       expect(swm.text).to match(/if \[app\] != "foobar"/)
+    end
+
+    it "does not give empty string to unknown variable" do
+      swm = subject.new(loader_input).read.first
+      expect(swm.text).to match(/tags => "\${z}"/)
+    end
+
+    context "with secret store" do
+      before :each do
+        LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../../../src/test/resources/logstash.keystore.with.default.pass"))
+        LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
+      end
+
+      after(:each) do
+        LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
+      end
+
+      it "does not resolve secret store value" do
+        swm = subject.new(loader_input).read.first
+        expect(swm.text).to match(/tags => "\${z}"/)
+      end
     end
   end
 

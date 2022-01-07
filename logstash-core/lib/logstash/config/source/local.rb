@@ -44,7 +44,7 @@ module LogStash module Config module Source
       end
 
       def read
-        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, replace_placeholders(@config_string))]
+        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, replace_placeholders(@config_string, false))]
 
         # Make sure we have an input and at least 1 output
         # if its not the case we will add stdin and stdout
@@ -95,7 +95,7 @@ module LogStash module Config module Source
           config_string.force_encoding("UTF-8")
 
           if config_string.valid_encoding?
-            part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, deep_replace(config_string))
+            part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, deep_replace(config_string, false))
             config_parts << part
           else
             encoding_issue_files << file
@@ -161,7 +161,7 @@ module LogStash module Config module Source
           # since we have fetching config we wont follow any redirection.
           case response.code.to_i
           when 200
-            [org.logstash.common.SourceWithMetadata.new(uri.scheme, uri.to_s, 0, 0, deep_replace(response.body))]
+            [org.logstash.common.SourceWithMetadata.new(uri.scheme, uri.to_s, 0, 0, deep_replace(response.body, false))]
           when 302
             raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "We don't follow redirection for remote configuration")
           when 404
