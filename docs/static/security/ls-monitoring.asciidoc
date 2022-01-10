@@ -2,9 +2,9 @@
 [[ls-monitoring-user]]
 === Configuring credentials for {ls} monitoring
 
-If you plan to ship Logstash {logstash-ref}/configuring-logstash.html[monitoring]
-data to a secure cluster, you need to configure the username and password that
-Logstash uses to authenticate for shipping monitoring data.
+If you want to monitor your Logstash instance with {stack-monitor-features}, and
+store the monitoring data in a secured {es} cluster, you must configure Logstash
+with a username and password for a user with the appropriate permissions.
 
 The {security-features} come preconfigured with a
 {ref}/built-in-users.html[`logstash_system` built-in user]
