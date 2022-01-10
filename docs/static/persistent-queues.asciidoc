@@ -107,13 +107,33 @@ In a situation where Logstash is terminated or there is a hardware-level
 failure, any data that has not been checkpointed, is lost. 
 See <<durability-persistent-queues>> to better understand the trade-offs.
 
+
+[[pq-pline-pline]]
+===== PQs and pipeline-to-pipeline communication
+
+Persistent queues can play an important role in your <<pipeline-to-pipeline,pipeline-to-pipeline>> configuration. 
+
+[[uc-isolator]]
+====== Use case: PQs and output isolator pattern
+
+Here is a real world use case described by a Logstash user.
+
+"_In our deployment, we use one pipeline per output, and each pipeline has a
+large PQ. This configuration allows a single output to stall without blocking
+the input (and thus all other outputs), until the operator can restore flow to
+the stalled output and let the queue drain._"
+
+"_Our real-time outputs must be low-latency, and our bulk outputs must be
+consistent. We use PQs to protect against stalling the real-time outputs more so than to protect against data loss in the bulk outputs. (Although the protection is nice, too)._"
+
+
 [[troubleshooting-pqs]]
 ==== Troubleshooting persistent queues
 
 Symptoms of persistent queue problems include {ls} or one or more pipelines not starting successfully, accompanied by an error message similar to this one.
 
 ```
-message=>"java.io.IOException: Page file size is too small to hold elements
+message=>"java.io.IOException: Page file size is too small to hold elements"
 ```
 
 This error indicates that the head page (the oldest in a directory and the one with lowest page id) has a size < 18 bytes, the size of a page header.

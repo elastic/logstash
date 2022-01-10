@@ -461,16 +461,9 @@ describe LogStash::Plugin do
       end
 
       context 'and pipeline-level setting is not specified' do
-        it 'emits a deprecation warning about using the default which may change' do
-          instance.ecs_compatibility
-
-          expect(deprecation_logger_stub).to have_received(:deprecated) do |message|
-            expect(message).to include("Relying on default value of `pipeline.ecs_compatibility`")
-          end
-        end
-        it 'returns `disabled`' do
+        it 'returns `v8`' do
           # Default value of `pipeline.ecs_compatibility`
-          expect(instance.ecs_compatibility).to eq(:disabled)
+          expect(instance.ecs_compatibility).to eq(:v8)
         end
       end
     end

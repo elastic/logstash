@@ -31,8 +31,29 @@ Here are the breaking changes for 8.0.
 
 // tag::notable-breaking-changes[]
 [discrete]
-[[bc-core]]
-==== Changes in Logstash Core
+[[bc-java-11-minimum]]
+===== Java 11 minimum
+Logstash requires Java 11 or later.
+By default, Logstash will run with the bundled JDK, which has been verified to
+work with each specific version of Logstash, and generally provides the best
+performance and reliability.
+
+[discrete]
+[[bc-java-home]]
+===== Support for JAVA_HOME removed
+We've removed support for using `JAVA_HOME` to override the path to the JDK. 
+Users who need to use a version other than the bundled JDK should set the value
+of `LS_JAVA_HOME` to the path of their preferred JDK. 
+The value of `JAVA_HOME` will be ignored.
+
+[discrete]
+[[bc-ecs-compatibility]]
+===== ECS compatibility is now on by default
+Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema.
+This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the Logstash `pipeline.ecs_compatibility` setting.
+In Logstash 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
+
+If you wish to _lock in_ a pipeline's behaviour from Logstash 7.x before upgrading to Logstash 8, you can set  `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
 
 [discrete]
 [[bc-ruby-engine]]
