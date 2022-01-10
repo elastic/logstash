@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-8-23,Logstash 6.8.23>>
 * <<logstash-6-8-22,Logstash 6.8.22>>
 * <<logstash-6-8-21,Logstash 6.8.21>>
 * <<logstash-6-8-20,Logstash 6.8.20>>
@@ -53,6 +54,70 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-8-23]]
+=== Logstash 6.8.23 Release Notes
+
+---------- DELETE FROM HERE ------------
+=== Logstash Pull Requests with label v6.8.23
+
+=== Logstash Commits between 6.8 and 6.8.22
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.22..6.8"
+
+2d726680d - (HEAD -> 6.8, origin/6.8) Update lockfile for 6.8.23 (#13583) (5 days ago) <Rob Bavey>
+7e67cbfaf - Bump log4j dependency to 2.17.1 (#13568) (12 days ago) <kaisecheng>
+c3d02c8a7 - bump version to 6.8.23 (#13559) (3 weeks ago) <Karol Bucek>
+6675bb230 - Release notes for 6.8.22 (#13555) (3 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v6.8.22..6.8 *.release"
+Changed plugin versions:
+logstash-filter-date: 3.1.13 -> 3.1.14
+logstash-filter-dissect: 1.2.3 -> 1.2.4
+logstash-filter-geoip: 5.0.4 -> 5.0.5
+logstash-input-azure_event_hubs: 1.4.2 -> 1.4.3
+logstash-input-beats: 5.1.10 -> 5.1.11
+logstash-input-dead_letter_queue: 1.1.7 -> 1.1.8
+logstash-input-http: 3.4.4 -> 3.4.5
+logstash-input-tcp: 5.2.6 -> 5.2.7
+---------- DELETE UP TO HERE ------------
+
+==== Plugins
+
+*Date Filter*
+
+* Update log4j to 2.17.1
+
+*Dissect Filter*
+
+* Update log4j dependencies to 2.17.1
+
+*Geoip Filter*
+
+* Update log4j dependency to 2.17.1
+
+*Azure_event_hubs Input*
+
+* Build: make log4j-api a provided dependency [#73](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/73)
+
+*Beats Input*
+
+* Update log4j dependency to 2.17.1
+
+*Dead_letter_queue Input*
+
+* Update dependencies for log4j to 2.17.1
+
+*Http Input*
+
+* Build: do not package log4j-api dependency [#149](https://github.com/logstash-plugins/logstash-input-http/pull/149).
+   Logstash provides the log4j framework and the dependency is not needed except testing and compiling.
+
+*Tcp Input*
+
+* Update Log4j dependency to 2.17.1
+
 
 [[logstash-6-8-22]]
 === Logstash 6.8.22 Release Notes
