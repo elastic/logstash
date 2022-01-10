@@ -58,30 +58,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-8-23]]
 === Logstash 6.8.23 Release Notes
 
----------- DELETE FROM HERE ------------
-=== Logstash Pull Requests with label v6.8.23
-
-=== Logstash Commits between 6.8 and 6.8.22
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v6.8.22..6.8"
-
-2d726680d - (HEAD -> 6.8, origin/6.8) Update lockfile for 6.8.23 (#13583) (5 days ago) <Rob Bavey>
-7e67cbfaf - Bump log4j dependency to 2.17.1 (#13568) (12 days ago) <kaisecheng>
-c3d02c8a7 - bump version to 6.8.23 (#13559) (3 weeks ago) <Karol Bucek>
-6675bb230 - Release notes for 6.8.22 (#13555) (3 weeks ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v6.8.22..6.8 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.1.13 -> 3.1.14
-logstash-filter-dissect: 1.2.3 -> 1.2.4
-logstash-filter-geoip: 5.0.4 -> 5.0.5
-logstash-input-azure_event_hubs: 1.4.2 -> 1.4.3
-logstash-input-beats: 5.1.10 -> 5.1.11
-logstash-input-dead_letter_queue: 1.1.7 -> 1.1.8
-logstash-input-http: 3.4.4 -> 3.4.5
-logstash-input-tcp: 5.2.6 -> 5.2.7
----------- DELETE UP TO HERE ------------
+* Bump log4j dependency to 2.17.1 https://github.com/elastic/logstash/pull/13568[#13568]
 
 ==== Plugins
 
@@ -99,7 +76,7 @@ logstash-input-tcp: 5.2.6 -> 5.2.7
 
 *Azure_event_hubs Input*
 
-* Build: make log4j-api a provided dependency [#73](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/73)
+* Build: make log4j-api a provided dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/73[#73]
 
 *Beats Input*
 
@@ -111,7 +88,7 @@ logstash-input-tcp: 5.2.6 -> 5.2.7
 
 *Http Input*
 
-* Build: do not package log4j-api dependency [#149](https://github.com/logstash-plugins/logstash-input-http/pull/149).
+* Build: do not package log4j-api dependency https://github.com/logstash-plugins/logstash-input-http/pull/149[#149].
    Logstash provides the log4j framework and the dependency is not needed except testing and compiling.
 
 *Tcp Input*
