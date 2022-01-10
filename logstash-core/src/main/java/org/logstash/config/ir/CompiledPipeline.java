@@ -287,12 +287,12 @@ public final class CompiledPipeline {
         @SuppressWarnings({"unchecked"})  private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
 
         @Override
-        public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-           compute(batch.events(), flush, shutdown);
+        public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
+           return compute(batch.events(), flush, shutdown);
         }
 
         @Override
-        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+        public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             if (!batch.isEmpty()) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
@@ -302,11 +302,14 @@ public final class CompiledPipeline {
                     _compute(filterBatch, outputBatch, flush, shutdown);
                 }
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                return outputBatch.size();
             } else if (flush || shutdown) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                return outputBatch.size();
             }
+            return 0;
         }
 
         private void _compute(final RubyArray<RubyEvent> batch, final RubyArray<RubyEvent> outputBatch, final boolean flush, final boolean shutdown) {
@@ -319,18 +322,19 @@ public final class CompiledPipeline {
     public final class CompiledUnorderedExecution extends CompiledExecution {
 
         @Override
-        public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-            compute(batch.events(), flush, shutdown);
+        public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
+            return compute(batch.events(), flush, shutdown);
         }
 
         @Override
-        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+        public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             // we know for now this comes from batch.collection() which returns a LinkedHashSet
             final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
             @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
             compiledOutputs.compute(outputBatch, flush, shutdown);
+            return outputBatch.size();
         }
     }
 
@@ -360,9 +364,13 @@ public final class CompiledPipeline {
             compiledOutputs = compileOutputs();
         }
 
-        public abstract void compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
+        /**
+         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
+         *  the pipeline drops or clones events during the filter stage.
+         * */
+        public abstract int compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
 
-        public abstract void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
+        public abstract int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
 
         /**
          * Instantiates the graph of compiled filter section {@link Dataset}.
