@@ -12,7 +12,7 @@ Our hosted {ess} can handle these details for you.
 [NOTE]
 =====
 Our hosted {ess} on Elastic Cloud simplifies safe, secure communication between {ls} and {es}. 
-When you configure the elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,cloud_id>> with either the <<plugins-outputs-elasticsearch-cloud_auth,cloud_auth option>> or the <<plugins-outputs-elasticsearch-api_key,api_key option>>, no additional SSL configuration steps are needed.
+When you configure the elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> with either the <<plugins-outputs-elasticsearch-cloud_auth,`cloud_auth` option>> or the <<plugins-outputs-elasticsearch-api_key,`api_key` option>>, no additional SSL configuration steps are needed.
 
 Examples:
 
@@ -25,11 +25,52 @@ For more details, check out the
 {ess-leadin-short}
 =====
 
+[discrete]
+[[es-security-onprem]]
+=== Secure communication with an on-premise {es} cluster
 
+If you are running {es} on your own hardware, you need to complete a few more steps to establish secure communication between {ls} and {es}.
+You need to: 
 
-If you are running {es} on your own hardware...
+* Copy the self-signed certificate from {es} and save it to {ls}
+* Configure the elasticsearch-output plugin to use the certificate
 
+[discrete]
+[[es-sec-copy-cert]]
+==== Copy and save the certificate
 
+{es} generates a self-signed certificate when it starts.
+{ls} needs its own copy of the self-signed certificate from the {es} cluster so that it can validate the certificate presented by {es}.
 
+Copy the self-signed certificate from {es} to {ls}. 
+Save it to a location that Logstash can access, such as `config/certs`. 
 
+/////
+ToDo: 
+Verify location. 
+I don't see an existing config/certs folder. 
+If this is the location we'd like users to use, we should stub out a folder in https://github.com/elastic/logstash/tree/main/config. 
+As always, there's a definite argument for consistency across deployments. 
+/////
 
+[discrete]
+[[es-sec-plugin]]
+==== Configure the elasticsearch output
+
+Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-outputs-elasticsearch-cacert,`cacert` option>> to point to the certificate's location. 
+
+**Example**
+
+[source,ruby] 
+-------
+output {
+  elasticsearch {
+    hosts => ["https://...] <1>
+    cacert => '/etc/logstash/config/certs/ca.crt' <2>
+  }
+}
+-------
+<1> Note that the `hosts` url must begin with `https` 
+<2> Path to the {ls} copy of the {es} certificate
+
+For more information about establishing secure communication with {es}, see {ref}/configuring-stack-security.html[security is on by default]. 
