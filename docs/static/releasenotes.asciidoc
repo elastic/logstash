@@ -61,30 +61,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-16-3]]
 === Logstash 7.16.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.16.3
-
-=== Logstash Commits between 7.16 and 7.16.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.16.2..7.16"
-
-3026bec17 - (HEAD -> 7.16, origin/7.16) Update lockfile for 7.16.3 (#13581) (5 days ago) <Rob Bavey>
-b84e7f849 - Bump log4j dependency to 2.17.1 (#13564) (#13567) (12 days ago) <kaisecheng>
-c148a0e56 - bump version to 7.16.3 (#13558) (3 weeks ago) <Karol Bucek>
-88da116c3 - Release notes draft for 7.16.2 (#13551) (3 weeks ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.16.2..7.16 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.1.13 -> 3.1.14
-logstash-filter-dissect: 1.2.3 -> 1.2.4
-logstash-filter-geoip: 7.2.8 -> 7.2.9
-logstash-input-azure_event_hubs: 1.4.2 -> 1.4.3
-logstash-input-beats: 6.2.4 -> 6.2.5
-logstash-input-dead_letter_queue: 1.1.7 -> 1.1.8
-logstash-input-http: 3.4.4 -> 3.4.5
-logstash-input-tcp: 6.2.5 -> 6.2.6
----------- GENERATED CONTENT ENDS HERE ------------
+* Bump log4j dependency to 2.17.1 https://github.com/elastic/logstash/pull/#13567[#13567]
 
 ==== Plugins
 
@@ -98,7 +75,6 @@ logstash-input-tcp: 6.2.5 -> 6.2.6
 
 *Geoip Filter - 7.2.9*
 
-* Fix: red CI in Logstash 8.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/201[#201]
 * Update Log4j dependency to 2.17.1
 
 *Azure_event_hubs Input - 1.4.3*
