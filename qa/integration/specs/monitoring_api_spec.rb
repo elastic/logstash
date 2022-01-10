@@ -17,6 +17,7 @@
 
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
+require_relative '../framework/helpers'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
@@ -48,6 +49,31 @@ describe "Test Monitoring API" do
       result = logstash_service.monitoring_api.event_stats rescue nil
       expect(result).not_to be_nil
       expect(result["in"]).to eq(number_of_events)
+    end
+  end
+
+  context "verify global event counters" do
+    let(:config) { @fixture.config("dropping_events", { :port => tcp_port } ) }
+    let(:tcp_port) { random_port }
+    let(:sample_data) { 'Hello World!' }
+
+    it 'expose the correct output counter in presence of drop filter' do
+      logstash_service = @fixture.get_service("logstash")
+      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.wait_for_logstash
+      wait_for_port(tcp_port, 60)
+
+      send_data(tcp_port, sample_data)
+
+      try(max_retry) do
+        # node_stats can fail if the stats subsystem isn't ready
+        result = logstash_service.monitoring_api.node_stats rescue nil
+        expect(result).not_to be_nil
+        expect(result["events"]).not_to be_nil
+        expect(result["events"]["in"]).to eq(1)
+        expect(result["events"]["filtered"]).to eq(1)
+        expect(result["events"]["out"]).to eq(0)
+      end
     end
   end
 
