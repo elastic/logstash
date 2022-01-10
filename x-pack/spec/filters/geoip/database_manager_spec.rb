@@ -37,6 +37,7 @@ describe LogStash::Filters::Geoip do
 
     after do
       delete_file(metadata_path, get_dir_path(second_dirname))
+      db_manager.database_metric = nil
     end
 
     context "initialize" do
