@@ -111,8 +111,8 @@ class RubyCodecDelegator implements Codec {
 
         // method return an nested array, the outer contains just one element
         // while the inner contains the original event and encoded event in form of String
-        final String result = (String) ((RubyArray) encoded.get(0)).get(1);
-        output.write(result.getBytes(StandardCharsets.UTF_8));
+        final RubyString result = ((RubyArray) encoded.eltInternal(0)).eltInternal(1).convertToString();
+        output.write(result.getByteList().getUnsafeBytes(), result.getByteList().getBegin(), result.getByteList().getRealSize());
     }
 
     @Override
