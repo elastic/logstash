@@ -2,7 +2,455 @@
 == Release Notes
 
 coming[8.0.0]
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.0.0
 
+* correctly handle unexecuted downloadEs task https://github.com/elastic/logstash/pull/10555[#10555]
+* Refactoring of LIR serializer and exposing pipeline metrics https://github.com/elastic/logstash/pull/10561[#10561]
+*  Enhance `GET /` API for Metricbeat https://github.com/elastic/logstash/pull/10589[#10589]
+* Update JRuby and Java prerequisites https://github.com/elastic/logstash/pull/10604[#10604]
+* Collect and expose codec metrics https://github.com/elastic/logstash/pull/10614[#10614]
+* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
+* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
+* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
+* Refactor Gradle wrappers around Ruby operations https://github.com/elastic/logstash/pull/10642[#10642]
+* [DOCS] Adds tagged region for notable breaking changes https://github.com/elastic/logstash/pull/10654[#10654]
+* download exact version artifact for release build otherwise download snapshot https://github.com/elastic/logstash/pull/10664[#10664]
+* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
+* Corrects the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
+* Correct settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
+* Correction on Java execution in docs on command-line arguments https://github.com/elastic/logstash/pull/10710[#10710]
+* Clarify that Java codecs work only with Java inputs and outputs https://github.com/elastic/logstash/pull/10716[#10716]
+* Include G1 in JVM heap metrics https://github.com/elastic/logstash/pull/10728[#10728]
+* JRuby resolv.rb leak https://github.com/elastic/logstash/pull/10734[#10734]
+* [DOCS] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
+* Clarify behavior of ensure_delivery flag https://github.com/elastic/logstash/pull/10754[#10754]
+* Expose Metrics API to Java plugins https://github.com/elastic/logstash/pull/10761[#10761]
+* Provide DLQ writer interface to Java plugins https://github.com/elastic/logstash/pull/10790[#10790]
+* Plain codec for Java https://github.com/elastic/logstash/pull/10791[#10791]
+* Default stack trace size for hot threads to 50 and make it configurable https://github.com/elastic/logstash/pull/10793[#10793]
+* performance: share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
+* Document copy semantics of QueueWriter::push method https://github.com/elastic/logstash/pull/10808[#10808]
+* LIR support for octal literals in pipeline definitions https://github.com/elastic/logstash/pull/10828[#10828]
+* Merge config values in LIR https://github.com/elastic/logstash/pull/10832[#10832]
+* Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR https://github.com/elastic/logstash/pull/10837[#10837]
+* field_refefence: handle illegal field references in converted maps https://github.com/elastic/logstash/pull/10839[#10839]
+
+=== Logstash Commits between 8.0 and 8.0.0-beta1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.0-beta1..8.0"
+
+84f901c79 - (HEAD -> 8.0, origin/8.0) Backport PR#13533 to 8.0: Add JavaVersionChecker to check Java version for compatibility before running (#13596) (2 hours ago) <Rob Bavey>
+56d84fb41 - Adds license definitions for faraday-multipart and faraday-retry (#13592) (#13595) (5 hours ago) <Andrea Selva>
+41acef295 - docs: sprintf vs UTC nature of @timestamp field (#13576) (#13589) (4 days ago) <Ry Biesemeyer>
+9e3d90650 - Update lockfile for 8.0 (#13584) (4 days ago) <Rob Bavey>
+deb5c6f30 - Fix logstash-plugin install command to install non default plugin (#13405) (#13586) (4 days ago) <kaisecheng>
+237b5da7d - Doc: Restructure source files for security docs 8.0 (#13578) (6 days ago) <Karen Metts>
+523409aba - Bump log4j dependency to 2.17.1 (#13564) (#13565) (12 days ago) <kaisecheng>
+172fc5f09 - update lock file for 8.0.0 (#13557) (3 weeks ago) <kaisecheng>
+9c12b43d1 - Bump log4j dependency to 2.17.0 (#13546) (3 weeks ago) <Andres Rodriguez>
+c8900cb7c - Doc: Add anchor to bundled jdk info 8.0 (#13541) (3 weeks ago) <Karen Metts>
+afdbbb0e3 - Doc: remove PQ on input for Output Isolator 8.0 (#13538) (3 weeks ago) <Karen Metts>
+2adcc3bc2 - Bump log4j version to 2.16.0 per CVE-2021-45046 (#13518) (#13520) (4 weeks ago) <Ry Biesemeyer>
+632b93c00 - Backport #13442 to 8.0. Update logstash docker to use ubuntu 20.04 base image (#13490) (4 weeks ago) <Rob Bavey>
+0b8d15a78 - Backport #13494 to 8.0. bump log4j version to 2.15.0 (#13495) (4 weeks ago) <Rob Bavey>
+5bf9248b8 - Backport PR #13481 to 8.0: Fix: delegating from deprecated setting (#13486) (5 weeks ago) <Karol Bucek>
+a0362dd85 - Backport of #13471 to 8.0: Use $BUILD_JAVA_HOME to control JVMs used with acceptance tests (#13474) (5 weeks ago) <Rob Bavey>
+d1263690c - (origin/bump_jruby_9_2_20_1_8.0) bump jruby to 9.2.20.1 (#13468) (6 weeks ago) <João Duarte>
+6937139b6 - Backport PR #13447 to 8.0: Fix: patch Puma around a JRuby ARM64 bug (#13453) (6 weeks ago) <Karol Bucek>
+93f7da5f2 - Backport PR#13014 to 8.0: Docker integration tests stability improvements (#13445) (6 weeks ago) <Rob Bavey>
+bbc29c2bf - Deps: bump lock file for 8.0.0 (#13450) (7 weeks ago) <Karol Bucek>
+4f4553c78 - Update bundled JDK to 11.0.13+8 (#13437) (#13439) (7 weeks ago) <João Duarte>
+536d28309 - Doc: Expand PQ content for pipeline-pipeline (#13421) (8 weeks ago) <Karen Metts>
+042eb9855 - ECS on by default for Logstash 8, again (#13391) (#13416) (8 weeks ago) <Ry Biesemeyer>
+a271d24f7 - propagate master/main branch rename for geoip filter (8.0) (#13412) (8 weeks ago) <Ry Biesemeyer>
+a25c71c00 - Doc: Add breaking changes (#13414) (8 weeks ago) <Karen Metts>
+da7dbc4ed - [backport 8.0]Fixes a usage of deprecated 'http.enabled' to the new 'api.enabled' (#13380) (#13407) (8 weeks ago) <Andrea Selva>
+f4508da41 - Release notes for 8.0.0-beta1 (#13373) (9 weeks ago) <Logstash Machine>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.0.0-beta1..8.0 *.release"
+Changed plugin versions:
+logstash-core-plugin-api: 2.1.16 -> 2.1.16
+logstash-codec-avro: 3.3.1 -> 3.3.1
+logstash-codec-cef: 6.2.3 -> 6.2.3
+logstash-codec-collectd: 3.1.0 -> 3.1.0
+logstash-codec-dots: 3.0.6 -> 3.0.6
+logstash-codec-edn: 3.1.0 -> 3.1.0
+logstash-codec-edn_lines: 3.1.0 -> 3.1.0
+logstash-codec-es_bulk: 3.1.0 -> 3.1.0
+logstash-codec-fluent: 3.4.1 -> 3.4.1
+logstash-codec-graphite: 3.0.6 -> 3.0.6
+logstash-codec-json: 3.1.0 -> 3.1.0
+logstash-codec-json_lines: 3.1.0 -> 3.1.0
+logstash-codec-line: 3.1.1 -> 3.1.1
+logstash-codec-msgpack: 3.1.0 -> 3.1.0
+logstash-codec-multiline: 3.1.1 -> 3.1.1
+logstash-codec-netflow: 4.2.2 -> 4.2.2
+logstash-codec-plain: 3.1.0 -> 3.1.0
+logstash-codec-rubydebug: 3.1.0 -> 3.1.0
+logstash-filter-aggregate: 2.10.0 -> 2.10.0
+logstash-filter-anonymize: 3.0.6 -> 3.0.6
+logstash-filter-cidr: 3.1.3 -> 3.1.3
+logstash-filter-clone: 4.2.0 -> 4.2.0
+logstash-filter-csv: 3.1.1 -> 3.1.1
+logstash-filter-date: 3.1.14 -> 3.1.14
+logstash-filter-de_dot: 1.0.4 -> 1.0.4
+logstash-filter-dissect: 1.2.4 -> 1.2.4
+logstash-filter-dns: 3.1.4 -> 3.1.4
+logstash-filter-drop: 3.0.5 -> 3.0.5
+logstash-filter-elasticsearch: 3.11.0 -> 3.11.0
+logstash-filter-fingerprint: 3.3.2 -> 3.3.2
+logstash-filter-geoip: 7.2.9 -> 7.2.9
+logstash-filter-grok: 4.4.1 -> 4.4.1
+logstash-filter-http: 1.2.1 -> 1.2.1
+logstash-filter-json: 3.2.0 -> 3.2.0
+logstash-filter-kv: 4.5.0 -> 4.5.0
+logstash-filter-memcached: 1.1.0 -> 1.1.0
+logstash-filter-metrics: 4.0.7 -> 4.0.7
+logstash-filter-mutate: 3.5.6 -> 3.5.6
+logstash-filter-prune: 3.0.4 -> 3.0.4
+logstash-filter-ruby: 3.1.7 -> 3.1.7
+logstash-filter-sleep: 3.0.7 -> 3.0.7
+logstash-filter-split: 3.1.8 -> 3.1.8
+logstash-filter-syslog_pri: 3.1.1 -> 3.1.1
+logstash-filter-throttle: 4.0.4 -> 4.0.4
+logstash-filter-translate: 3.3.0 -> 3.3.0
+logstash-filter-truncate: 1.0.4 -> 1.0.4
+logstash-filter-urldecode: 3.0.6 -> 3.0.6
+logstash-filter-useragent: 3.3.3 -> 3.3.3
+logstash-filter-uuid: 3.0.5 -> 3.0.5
+logstash-filter-xml: 4.1.3 -> 4.1.3
+logstash-input-azure_event_hubs: 1.4.3 -> 1.4.3
+logstash-input-beats: 6.2.5 -> 6.2.5
+logstash-input-couchdb_changes: 3.1.6 -> 3.1.6
+logstash-input-dead_letter_queue: 1.1.8 -> 1.1.8
+logstash-input-elasticsearch: 4.12.1 -> 4.12.1
+logstash-input-exec: 3.4.0 -> 3.4.0
+logstash-input-file: 4.4.0 -> 4.4.0
+logstash-input-ganglia: 3.1.4 -> 3.1.4
+logstash-input-gelf: 3.3.1 -> 3.3.1
+logstash-input-generator: 3.1.0 -> 3.1.0
+logstash-input-graphite: 3.0.6 -> 3.0.6
+logstash-input-heartbeat: 3.1.1 -> 3.1.1
+logstash-input-http: 3.4.5 -> 3.4.5
+logstash-input-http_poller: 5.1.0 -> 5.1.0
+logstash-input-imap: 3.2.0 -> 3.2.0
+logstash-input-jms: 3.2.0 -> 3.2.0
+logstash-input-pipe: 3.1.0 -> 3.1.0
+logstash-input-redis: 3.7.0 -> 3.7.0
+logstash-input-s3: 3.8.2 -> 3.8.2
+logstash-input-snmp: 1.3.1 -> 1.3.1
+logstash-input-snmptrap: 3.1.0 -> 3.1.0
+logstash-input-sqs: 3.1.3 -> 3.1.3
+logstash-input-stdin: 3.4.0 -> 3.4.0
+logstash-input-syslog: 3.6.0 -> 3.6.0
+logstash-input-tcp: 6.2.6 -> 6.2.6
+logstash-input-twitter: 4.1.0 -> 4.1.0
+logstash-input-udp: 3.5.0 -> 3.5.0
+logstash-input-unix: 3.1.1 -> 3.1.1
+logstash-integration-elastic_enterprise_search: 2.1.2 -> 2.1.2
+logstash-integration-jdbc: 5.2.1 -> 5.2.1
+logstash-integration-kafka: 10.9.0 -> 10.9.0
+logstash-integration-rabbitmq: 7.3.0 -> 7.3.0
+logstash-mixin-aws: 4.4.1 -> 4.4.1
+logstash-mixin-deprecation_logger_support: 1.0.0 -> 1.0.0
+logstash-mixin-ecs_compatibility_support: 1.3.0 -> 1.3.0
+logstash-mixin-event_support: 1.0.1 -> 1.0.1
+logstash-mixin-http_client: 7.0.0 -> 7.0.0
+logstash-mixin-validator_support: 1.0.2 -> 1.0.2
+logstash-output-cloudwatch: 3.0.10 -> 3.0.10
+logstash-output-csv: 3.0.8 -> 3.0.8
+logstash-output-elasticsearch: 11.3.3 -> 11.3.3
+logstash-output-email: 4.1.1 -> 4.1.1
+logstash-output-file: 4.3.0 -> 4.3.0
+logstash-output-graphite: 3.1.6 -> 3.1.6
+logstash-output-http: 5.2.5 -> 5.2.5
+logstash-output-lumberjack: 3.1.9 -> 3.1.9
+logstash-output-nagios: 3.0.6 -> 3.0.6
+logstash-output-null: 3.0.5 -> 3.0.5
+logstash-output-pipe: 3.0.6 -> 3.0.6
+logstash-output-redis: 5.0.0 -> 5.0.0
+logstash-output-s3: 4.3.5 -> 4.3.5
+logstash-output-sns: 4.0.8 -> 4.0.8
+logstash-output-sqs: 6.0.0 -> 6.0.0
+logstash-output-stdout: 3.1.4 -> 3.1.4
+logstash-output-tcp: 6.0.0 -> 6.0.0
+logstash-output-udp: 3.2.0 -> 3.2.0
+logstash-output-webhdfs: 3.0.6 -> 3.0.6
+logstash-patterns-core: 4.3.1 -> 4.3.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Plugin Core - 2.1.16*
+
+404: Not Found
+
+*Avro Codec - 3.3.1*
+
+*Cef Codec - 6.2.3*
+
+*Collectd Codec - 3.1.0*
+
+*Dots Codec - 3.0.6*
+
+*Edn Codec - 3.1.0*
+
+*Edn_lines Codec - 3.1.0*
+
+*Es_bulk Codec - 3.1.0*
+
+*Fluent Codec - 3.4.1*
+
+*Graphite Codec - 3.0.6*
+
+*Json Codec - 3.1.0*
+
+*Json_lines Codec - 3.1.0*
+
+*Line Codec - 3.1.1*
+
+*Msgpack Codec - 3.1.0*
+
+*Multiline Codec - 3.1.1*
+
+*Netflow Codec - 4.2.2*
+
+*Plain Codec - 3.1.0*
+
+*Rubydebug Codec - 3.1.0*
+
+*Aggregate Filter - 2.10.0*
+
+*Anonymize Filter - 3.0.6*
+
+*Cidr Filter - 3.1.3*
+
+*Clone Filter - 4.2.0*
+
+*Csv Filter - 3.1.1*
+
+*Date Filter - 3.1.14*
+
+*De_dot Filter - 1.0.4*
+
+*Dissect Filter - 1.2.4*
+
+*Dns Filter - 3.1.4*
+
+*Drop Filter - 3.0.5*
+
+*Elasticsearch Filter - 3.11.0*
+
+*Fingerprint Filter - 3.3.2*
+
+*Geoip Filter - 7.2.9*
+
+*Grok Filter - 4.4.1*
+
+*Http Filter - 1.2.1*
+
+*Json Filter - 3.2.0*
+
+*Kv Filter - 4.5.0*
+
+*Memcached Filter - 1.1.0*
+
+*Metrics Filter - 4.0.7*
+
+*Mutate Filter - 3.5.6*
+
+*Prune Filter - 3.0.4*
+
+# 3.0.4
+* Fixed regex to prevent Exception in sprintf call https://github.com/logstash-plugins/logstash-filter-prune/pull/25[#25]
+* Changed testing to docker https://github.com/logstash-plugins/logstash-filter-prune/pull/27[#27]
+* Added clarification in docs around whitelist_values
+* Changed tests from insist to expect
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* internal: Bumped up logstash-core-plugin-api dependency to allow installation with Logstash 5.
+* doc: Clarify that pruning of subfields is unsupported.
+
+* doc: Documentation improvements.
+
+* doc: Documentation improvements.
+
+* internal,deps: Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* internal,deps: New dependency requirements for logstash-core for the 5.0 release
+
+* internal: Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully,
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* internal,deps: Dependency on logstash-core update to 2.0
+
+*Ruby Filter - 3.1.7*
+
+*Sleep Filter - 3.0.7*
+
+*Split Filter - 3.1.8*
+
+*Syslog_pri Filter - 3.1.1*
+
+*Throttle Filter - 4.0.4*
+
+*Translate Filter - 3.3.0*
+
+*Truncate Filter - 1.0.4*
+
+*Urldecode Filter - 3.0.6*
+
+*Useragent Filter - 3.3.3*
+
+*Uuid Filter - 3.0.5*
+
+*Xml Filter - 4.1.3*
+
+*Azure_event_hubs Input - 1.4.3*
+
+*Beats Input - 6.2.5*
+
+*Couchdb_changes Input - 3.1.6*
+
+*Dead_letter_queue Input - 1.1.8*
+
+*Elasticsearch Input - 4.12.1*
+
+*Exec Input - 3.4.0*
+
+*File Input - 4.4.0*
+
+*Ganglia Input - 3.1.4*
+
+*Gelf Input - 3.3.1*
+
+*Generator Input - 3.1.0*
+
+*Graphite Input - 3.0.6*
+
+*Heartbeat Input - 3.1.1*
+
+*Http Input - 3.4.5*
+
+*Http_poller Input - 5.1.0*
+
+*Imap Input - 3.2.0*
+
+*Jms Input - 3.2.0*
+
+*Pipe Input - 3.1.0*
+
+*Redis Input - 3.7.0*
+
+*S3 Input - 3.8.2*
+
+*Snmp Input - 1.3.1*
+
+*Snmptrap Input - 3.1.0*
+
+*Sqs Input - 3.1.3*
+
+*Stdin Input - 3.4.0*
+
+*Syslog Input - 3.6.0*
+
+*Tcp Input - 6.2.6*
+
+*Twitter Input - 4.1.0*
+
+*Udp Input - 3.5.0*
+
+*Unix Input - 3.1.1*
+
+*Elastic_enterprise_search Integration - 2.1.2*
+
+*Jdbc Integration - 5.2.1*
+
+*Kafka Integration - 10.9.0*
+
+*Rabbitmq Integration - 7.3.0*
+
+*Aws Mixin - 4.4.1*
+
+*Deprecation_logger_support Mixin - 1.0.0*
+
+404: Not Found
+
+*Ecs_compatibility_support Mixin - 1.3.0*
+
+# 1.3.0
+* Feat: introduce a target check helper https://github.com/logstash-plugins/logstash-mixin-ecs_compatibility_support/pull/6[#6] 
+
+# 1.2.0
+* Added support for resolution aliases, allowing a plugin that uses `ecs_select` to support multiple ECS versions with a single declaration.
+
+# 1.1.0
+* Added support for `ecs_select` helper, allowing plugins to declare mappings that are selected during plugin instantiation.
+
+# 1.0.0
+* Support Mixin for ensuring a plugin has an `ecs_compatibility` method that is configurable from an `ecs_compatibility` option that accepts the literal `disabled` or a v-prefixed integer representing a major ECS version (e.g., `v1`), using the implementation from Logstash core if available.
+
+*Event_support Mixin - 1.0.1*
+
+*Http_client Mixin - 7.0.0*
+
+*Validator_support Mixin - 1.0.2*
+
+# 1.0.2
+
+* Fix: '' value behavior in `field_reference` validator https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/2[#2]
+
+# 1.0.1
+
+* Introduces plugin parameter validation adapters, including initial backport for `:field_reference` validator.
+
+*Cloudwatch Output - 3.0.10*
+
+*Csv Output - 3.0.8*
+
+*Elasticsearch Output - 11.3.3*
+
+*Email Output - 4.1.1*
+
+*File Output - 4.3.0*
+
+*Graphite Output - 3.1.6*
+
+*Http Output - 5.2.5*
+
+*Lumberjack Output - 3.1.9*
+
+*Nagios Output - 3.0.6*
+
+*Null Output - 3.0.5*
+
+*Pipe Output - 3.0.6*
+
+*Redis Output - 5.0.0*
+
+*S3 Output - 4.3.5*
+
+*Sns Output - 4.0.8*
+
+*Sqs Output - 6.0.0*
+
+*Stdout Output - 3.1.4*
+
+*Tcp Output - 6.0.0*
+
+*Udp Output - 3.2.0*
+
+*Webhdfs Output - 3.0.6*
+
+*Core Patterns - 4.3.1*
+
+
+
+* <<logstash-8-0-0,Logstash 8.0.0>>
 This section summarizes the changes in the following releases:
 
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
