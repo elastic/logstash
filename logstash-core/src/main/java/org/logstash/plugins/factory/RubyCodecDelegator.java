@@ -77,9 +77,7 @@ class RubyCodecDelegator implements Codec {
                 // Expect only one argument, the LogStash::Event instantiated by the Ruby codec
                 final IRubyObject event = args[0];
                 // TODO should we check the type of the args[0] or assume it's always an RubyEvent?
-                final Map<String, Object> unwrappedEvent = ((JrubyEventExtLibrary.RubyEvent) event).ruby_to_hash(currentContext)
-                        .toJava(Map.class);
-                eventConsumer.accept(unwrappedEvent);
+                eventConsumer.accept( ((JrubyEventExtLibrary.RubyEvent) event).getEvent().getData() );
                 return event;
             }
         });
