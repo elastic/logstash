@@ -30,32 +30,30 @@ module ::LogStash::Util::SubstitutionVariables
   private_constant :SECRET_STORE
 
   # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value, check_secret_store = true)
+  def deep_replace(value, substitute_with_secret_store = true)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue, check_secret_store)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, substitute_with_secret_store)
       end
     else
       if value.is_a?(Array)
         value.each_index do | valueArrayIndex|
-          value[valueArrayIndex] = deep_replace(value[valueArrayIndex], check_secret_store)
+          value[valueArrayIndex] = deep_replace(value[valueArrayIndex], substitute_with_secret_store)
         end
       else
-        return replace_placeholders(value, check_secret_store)
+        return replace_placeholders(value, substitute_with_secret_store)
       end
     end
   end
 
-  # Replace all substitution variable references in the 'value' param and returns the substituted value, or the original value if a substitution can not be made
-  # Process following patterns : ${VAR}, ${VAR:defaultValue}
-  # When check_secret_store = true,
-  #   If 'value' matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
-  #   If 'value' matches the pattern and no substitution found, raise error
-  # When check_secret_store = false, does not take substitution from secret store.
-  #   If 'value' matches the pattern and no substitution found, return original value
-  def replace_placeholders(value, check_secret_store = true)
+  # Replace all substitution variable references, ${VAR}, ${VAR:defaultValue}, in the 'value' param and
+  # returns the substituted value as following precedence : Secret store value, Environment entry value, default value as provided in the pattern
+  # When substitute_with_secret_store flog is false, it does not take the substitution from secret store.
+  #   If no substitution found, return the original pattern
+
+  def replace_placeholders(value, substitute_with_secret_store = true)
     if value.kind_of?(::LogStash::Util::Password)
-      interpolated = replace_placeholders(value.value, check_secret_store)
+      interpolated = replace_placeholders(value.value, substitute_with_secret_store)
       return ::LogStash::Util::Password.new(interpolated)
     end
     return value unless value.is_a?(String)
@@ -69,20 +67,22 @@ module ::LogStash::Util::SubstitutionVariables
       default = Regexp.last_match(:default)
       logger.debug("Replacing `#{placeholder}` with actual value")
 
-      replacement = if check_secret_store
-                      #check the secret store if it exists
-                      secret_store = SECRET_STORE.instance
-                      secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
-                    end
+      #check the secret store if it exists
+      secret_store = SECRET_STORE.instance
+      replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(SecretStoreExt.getStoreId(name))
 
       #check the environment
       replacement = ENV.fetch(name, default) if replacement.nil?
-      if replacement.nil? && check_secret_store
+      if replacement.nil?
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
             "or as an Environment entry and there is no default value given."
       end
 
-      replacement || placeholder
+      if substitute_with_secret_store
+        replacement
+      else
+        ENV.fetch(name, default) || placeholder
+      end
     end
   end
 
