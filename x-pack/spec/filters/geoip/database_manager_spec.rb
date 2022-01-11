@@ -4,6 +4,7 @@
 
 require_relative 'test_helper'
 require "filters/geoip/database_manager"
+require "filters/geoip/database_metric"
 
 describe LogStash::Filters::Geoip do
 
@@ -13,9 +14,10 @@ describe LogStash::Filters::Geoip do
     let(:mock_download_manager)  { double("download_manager") }
     let(:mock_scheduler)  { double("scheduler") }
     let(:agent_metric)  { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+    let(:database_metric) { LogStash::Filters::Geoip::DatabaseMetric.new(agent_metric) }
     let(:db_manager) do
       manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-      manager.metric = agent_metric
+      manager.database_metric = database_metric
       manager.send(:setup)
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
@@ -35,6 +37,7 @@ describe LogStash::Filters::Geoip do
 
     after do
       delete_file(metadata_path, get_dir_path(second_dirname))
+      db_manager.database_metric = nil
     end
 
     context "initialize" do
@@ -47,9 +50,9 @@ describe LogStash::Filters::Geoip do
         expect(states[ASN].database_path).to eql(states[ASN].cc_database_path)
         expect(::File.exist?(states[ASN].cc_database_path)).to be_truthy
 
-        c = db_manager.instance_variable_get(:@metric).collector
+        c = metric_collector(db_manager)
         [ASN, CITY].each do |type|
-          expect(c.get([:database, type.to_sym], :status, :gauge).value).to eql(:init)
+          expect(c.get([:database, type.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseMetric::DATABASE_INIT)
           expect(c.get([:database, type.to_sym], :fail_check_in_days, :gauge).value).to be_nil
         end
         expect_initial_download_metric(c)
@@ -66,7 +69,7 @@ describe LogStash::Filters::Geoip do
           expect(states[CITY].is_eula).to be_truthy
           expect(states[CITY].database_path).to include second_dirname
 
-          c = db_manager.instance_variable_get(:@metric).collector
+          c = metric_collector(db_manager)
           expect_second_database_metric(c)
           expect_initial_download_metric(c)
         end
@@ -75,7 +78,7 @@ describe LogStash::Filters::Geoip do
       context "when metadata exists but database is deleted manually" do
         let(:db_manager) do
           manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-          manager.metric = agent_metric
+          manager.database_metric = database_metric
           manager.send(:setup)
           manager
         end
@@ -89,14 +92,14 @@ describe LogStash::Filters::Geoip do
           expect(states[CITY].is_eula).to be_truthy
           expect(states[CITY].database_path).to be_nil
 
-          c = db_manager.instance_variable_get(:@metric).collector
+          c = metric_collector(db_manager)
           expect_second_database_metric(c)
           expect_initial_download_metric(c)
         end
       end
 
       def expect_second_database_metric(c)
-        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:up_to_date)
+        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseMetric::DATABASE_UP_TO_DATE)
         expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to match /2020-02-20/
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to eql(0)
       end
@@ -116,12 +119,7 @@ describe LogStash::Filters::Geoip do
 
       context "plugin is set" do
         let(:db_manager) do
-          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-          manager.metric = agent_metric
-          manager.send(:setup)
-          manager.instance_variable_set(:@metadata, mock_metadata)
-          manager.instance_variable_set(:@download_manager, mock_download_manager)
-          manager.instance_variable_set(:@scheduler, mock_scheduler)
+          manager = super()
           manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[CITY].is_eula = true
           manager.instance_variable_get(:@states)[ASN].plugins.push(mock_geoip_plugin)
@@ -142,7 +140,7 @@ describe LogStash::Filters::Geoip do
           expect(db_manager.database_path(CITY)).to match /#{second_dirname}\/#{default_city_db_name}/
           expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
 
-          c = db_manager.instance_variable_get(:@metric).collector
+          c = metric_collector(db_manager)
           expect_download_metric_success(c)
         end
       end
@@ -158,7 +156,7 @@ describe LogStash::Filters::Geoip do
         expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
         expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
 
-        c = db_manager.instance_variable_get(:@metric).collector
+        c = metric_collector(db_manager)
         expect_download_metric_fail(c)
       end
 
@@ -173,7 +171,7 @@ describe LogStash::Filters::Geoip do
         expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
         expect(db_manager.database_path(ASN)).to match /#{second_dirname}\/#{default_asn_db_name}/
 
-        c = db_manager.instance_variable_get(:@metric).collector
+        c = metric_collector(db_manager)
         expect_download_metric_success(c)
       end
 
@@ -188,7 +186,7 @@ describe LogStash::Filters::Geoip do
         expect(db_manager.database_path(CITY)).to match /#{CC}\/#{default_city_db_name}/
         expect(db_manager.database_path(ASN)).to  match /#{CC}\/#{default_asn_db_name}/
 
-        c = db_manager.instance_variable_get(:@metric).collector
+        c = metric_collector(db_manager)
         expect_download_metric_success(c)
       end
 
@@ -200,32 +198,27 @@ describe LogStash::Filters::Geoip do
 
         db_manager.send(:execute_download_job)
 
-        c = db_manager.instance_variable_get(:@metric).collector
+        c = metric_collector(db_manager)
         expect_download_metric_fail(c)
       end
-      
+
       def expect_download_metric_success(c)
         expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
         expect(c.get([:download_stats], :successes, :counter).value).to eql(1)
-        expect(c.get([:download_stats], :status, :gauge).value).to eql(:succeeded)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseMetric::DOWNLOAD_SUCCEEDED)
       end
 
       def expect_download_metric_fail(c)
         expect(c.get([:download_stats], :last_checked_at, :gauge).value).to match /#{now_in_ymd}/
         expect(c.get([:download_stats], :failures, :counter).value).to eql(1)
-        expect(c.get([:download_stats], :status, :gauge).value).to eql(:failed)
+        expect(c.get([:download_stats], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseMetric::DOWNLOAD_FAILED)
       end
     end
 
     context "check age" do
       context "eula database" do
         let(:db_manager) do
-          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-          manager.metric = agent_metric
-          manager.send(:setup)
-          manager.instance_variable_set(:@metadata, mock_metadata)
-          manager.instance_variable_set(:@download_manager, mock_download_manager)
-          manager.instance_variable_set(:@scheduler, mock_scheduler)
+          manager = super()
           manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
           manager.instance_variable_get(:@states)[CITY].is_eula = true
           manager.instance_variable_get(:@states)[ASN].plugins.push(mock_geoip_plugin)
@@ -242,8 +235,8 @@ describe LogStash::Filters::Geoip do
 
           db_manager.send(:check_age)
 
-          c = db_manager.instance_variable_get(:@metric).collector
-          expect_database_metric(c, :to_be_expired, second_dirname_in_ymd, 26)
+          c = metric_collector(db_manager)
+          expect_database_metric(c, LogStash::Filters::Geoip::DatabaseMetric::DATABASE_TO_BE_EXPIRED, second_dirname_in_ymd, 26)
         end
 
         it "should log error and update plugin filter when 30 days has passed" do
@@ -254,19 +247,23 @@ describe LogStash::Filters::Geoip do
 
           db_manager.send(:check_age)
 
-          c = db_manager.instance_variable_get(:@metric).collector
-          expect_database_metric(c, :expired, second_dirname_in_ymd, 33)
+          c = metric_collector(db_manager)
+          expect_database_metric(c, LogStash::Filters::Geoip::DatabaseMetric::DATABASE_EXPIRED, second_dirname_in_ymd, 33)
         end
       end
 
       context "cc database" do
+        before do
+          allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).and_return(logger)
+        end
+
         it "should not give warning after 25 days" do
           expect(mock_geoip_plugin).to receive(:update_filter).never
           expect(logger).to receive(:warn).never
 
           db_manager.send(:check_age)
 
-          c = db_manager.instance_variable_get(:@metric).collector
+          c = metric_collector(db_manager)
           expect_healthy_database_metric(c)
         end
 
@@ -276,7 +273,7 @@ describe LogStash::Filters::Geoip do
 
           db_manager.send(:check_age)
 
-          c = db_manager.instance_variable_get(:@metric).collector
+          c = metric_collector(db_manager)
           expect_healthy_database_metric(c)
         end
       end
@@ -288,7 +285,7 @@ describe LogStash::Filters::Geoip do
       end
 
       def expect_healthy_database_metric(c)
-        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(:init)
+        expect(c.get([:database, CITY.to_sym], :status, :gauge).value).to eql(LogStash::Filters::Geoip::DatabaseMetric::DATABASE_INIT)
         expect(c.get([:database, CITY.to_sym], :last_updated_at, :gauge).value).to be_nil
         expect(c.get([:database, CITY.to_sym], :fail_check_in_days, :gauge).value).to be_nil
       end
@@ -336,15 +333,6 @@ describe LogStash::Filters::Geoip do
       end
 
       context "when eula database is expired" do
-        let(:db_manager) do
-          manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-          manager.metric = agent_metric
-          manager.send(:setup)
-          manager.instance_variable_set(:@download_manager, mock_download_manager)
-          manager.instance_variable_set(:@scheduler, mock_scheduler)
-          manager
-        end
-
         before do
           rewrite_temp_metadata(metadata_path, [city_expired_metadata])
         end
@@ -361,12 +349,7 @@ describe LogStash::Filters::Geoip do
 
     context "unsubscribe" do
       let(:db_manager) do
-        manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance
-        manager.metric = agent_metric
-        manager.send(:setup)
-        manager.instance_variable_set(:@metadata, mock_metadata)
-        manager.instance_variable_set(:@download_manager, mock_download_manager)
-        manager.instance_variable_set(:@scheduler, mock_scheduler)
+        manager = super()
         manager.instance_variable_get(:@states)[CITY].plugins.push(mock_geoip_plugin)
         manager.instance_variable_get(:@states)[CITY].is_eula = true
         manager
@@ -385,6 +368,21 @@ describe LogStash::Filters::Geoip do
         db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
         expect { db_manager.unsubscribe_database_path(CITY, mock_geoip_plugin) }.not_to raise_error
       end
+    end
+
+    context "database metric is not assigned" do
+      let(:db_manager) { manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+
+      it "does not throw error" do
+        allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:debug).once
+        database_metric = db_manager.database_metric
+        expect { database_metric.set_download_status_updating }.not_to raise_error
+      end
+    end
+
+    def metric_collector(db_manager)
+      db_manager.instance_variable_get(:@database_metric).instance_variable_get(:@metric).collector
     end
   end
 end
