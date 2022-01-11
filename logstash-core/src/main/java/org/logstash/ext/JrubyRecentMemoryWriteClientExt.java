@@ -59,7 +59,6 @@ public final class JrubyRecentMemoryWriteClientExt extends JRubyAbstractQueueWri
         final JrubyEventExtLibrary.RubyEvent event)
         throws InterruptedException {
             while(queue.remainingCapacity() < 1) {
-            System.out.print("Shrinking.\n");
             try {
                 queue.removeFirst();
             }

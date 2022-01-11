@@ -32,7 +32,8 @@ import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClientBase;
 
 /**
- * JRuby extension to provide an implementation of queue client for InMemory queue
+ * JRuby extension to provide an implementation of the queue client for an
+ * in-memory ring buffer queue.
  * */
 @JRubyClass(name = "RecentMemoryReadClient", parent = "QueueReadClientBase")
 public final class JrubyRecentMemoryReadClientExt extends QueueReadClientBase {
