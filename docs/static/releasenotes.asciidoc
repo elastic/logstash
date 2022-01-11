@@ -4,6 +4,7 @@
 coming[8.0.0]
 
 This section summarizes the changes in the following releases:
+
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
@@ -14,12 +15,11 @@ This section summarizes the changes in the following releases:
 
 ==== Breaking changes
 
-
 [[rn-ecs-compatibility]]
-Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema. This mode is controlled individually with each plugin’s ecs_compatibility option, which defaults to the value of the Logstash pipeline.ecs_compatibility setting. In Logstash 8, this compatibility mode will be on-by-default for all pipelines.
+===== ECS compatibility 
+Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema (ECS). This mode is controlled individually with each plugin’s ecs_compatibility option, which defaults to the value of the Logstash pipeline.ecs_compatibility setting. In Logstash 8, this compatibility mode will be on-by-default for all pipelines.
 
-If you wish to lock in a pipeline’s behaviour from Logstash 7.x before upgrading to Logstash 8, you can set pipeline.ecs_compatibility: disabled to its definition in pipelines.yml (or globally in logstash.yml).
-
+If you wish to lock in a pipeline’s behavior from Logstash 7.x before upgrading to Logstash 8, you can set pipeline.ecs_compatibility: disabled to its definition in pipelines.yml (or globally in logstash.yml).
 
 ==== New features and enhancements
 
