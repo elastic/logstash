@@ -39,7 +39,6 @@ import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
 import org.logstash.plugins.factory.PluginMetricsFactoryExt;
 import org.logstash.plugins.factory.PluginFactoryExt;
-import org.logstash.secret.store.SecretStore;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -71,19 +70,20 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
     public JavaBasePipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
         throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
-        final PluginFactoryExt pluginFactoryExt = new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
+        lirExecution = new CompiledPipeline(
+            lir,
+            new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
                 lir,
                 new PluginMetricsFactoryExt(
-                        context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
+                    context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
                 ).initialize(context, pipelineId(), metric()),
                 new ExecutionContextFactoryExt(
-                        context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
+                    context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
                 ).initialize(context, args[3], this, dlqWriter(context)),
                 RubyUtil.FILTER_DELEGATOR_CLASS
+            ),
+            getSecretStore(context)
         );
-        final SecretStore secretStore = getSecretStore(context);
-        lirExecution = new CompiledPipeline(lir, pluginFactoryExt, secretStore);
-
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
         outputs = RubyArray.newArray(context.runtime, lirExecution.outputs());
