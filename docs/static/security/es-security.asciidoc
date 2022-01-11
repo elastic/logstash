@@ -16,8 +16,8 @@ When you configure the elasticsearch output plugin to use <<plugins-outputs-elas
 
 Examples:
 
-* `output {elasticsearch { cloud_id => "" cloud_auth => "" } }`
-* `output {elasticsearch { cloud_id => "" api_key => "" } }``
+* `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
+* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }``
 
 For more details, check out the
 {logstash-ref}/connecting-to-cloud.html[Logstash-to-Cloud documentation].
