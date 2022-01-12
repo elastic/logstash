@@ -26,7 +26,7 @@ describe "artifacts operation" do
   config = ServiceTester.configuration
   config.servers.each do |address|
     logstash = ServiceTester::Artifact.new(address, config.lookup[address])
-    it_behaves_like "installable", logstash
+    # it_behaves_like "installable", logstash
     it_behaves_like "installable_with_jdk", logstash
     it_behaves_like "updated", logstash
   end

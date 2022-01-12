@@ -10,8 +10,6 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
-  JAVA_HOME=$BUILD_JAVA_HOME
-  LS_JAVA_HOME=$BUILD_JAVA_HOME
 fi
 
 # Can run either a specific flavor, or all flavors -
@@ -40,7 +38,7 @@ cd $LS_HOME
 if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   echo "building oss docker images"
   cd $LS_HOME
-  rake artifact:docker_oss
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:docker_oss
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -50,7 +48,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "building full docker images"
   cd $LS_HOME
-  rake artifact:docker
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:docker
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -60,7 +58,7 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
   echo "building ubi8 docker images"
   cd $LS_HOME
-  rake artifact:docker_ubi8
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:docker_ubi8
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -70,7 +68,7 @@ elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
 else
   echo "Building all docker images"
   cd $LS_HOME
-  rake artifact:docker_only
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:docker_only
 
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
