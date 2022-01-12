@@ -18,3 +18,20 @@ config:
     output {
       stdout { }
     }
+  cloning_events: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+        type => 'type1'
+      }
+    }
+
+    filter {
+      clone {
+        clones => ["sun", "moon"]
+      }
+    }
+
+    output {
+      stdout { }
+    }

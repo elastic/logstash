@@ -53,26 +53,47 @@ describe "Test Monitoring API" do
   end
 
   context "verify global event counters" do
-    let(:config) { @fixture.config("dropping_events", { :port => tcp_port } ) }
     let(:tcp_port) { random_port }
     let(:sample_data) { 'Hello World!' }
+    let(:logstash_service) { @fixture.get_service("logstash") }
 
-    it 'expose the correct output counter in presence of drop filter' do
-      logstash_service = @fixture.get_service("logstash")
+    before(:each) do
       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.wait_for_logstash
       wait_for_port(tcp_port, 60)
 
       send_data(tcp_port, sample_data)
+    end
 
-      try(max_retry) do
-        # node_stats can fail if the stats subsystem isn't ready
-        result = logstash_service.monitoring_api.node_stats rescue nil
-        expect(result).not_to be_nil
-        expect(result["events"]).not_to be_nil
-        expect(result["events"]["in"]).to eq(1)
-        expect(result["events"]["filtered"]).to eq(1)
-        expect(result["events"]["out"]).to eq(0)
+    context "when a drop filter is in the pipeline" do
+      let(:config) { @fixture.config("dropping_events", { :port => tcp_port } ) }
+
+      it 'expose the correct output counter' do
+        try(max_retry) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          expect(result["events"]).not_to be_nil
+          expect(result["events"]["in"]).to eq(1)
+          expect(result["events"]["filtered"]).to eq(1)
+          expect(result["events"]["out"]).to eq(0)
+        end
+      end
+    end
+
+    context "when a clone filter is in the pipeline" do
+      let(:config) { @fixture.config("cloning_events", { :port => tcp_port } ) }
+
+      it 'expose the correct output counter' do
+        try(max_retry) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          expect(result["events"]).not_to be_nil
+          expect(result["events"]["in"]).to eq(1)
+          expect(result["events"]["filtered"]).to eq(1)
+          expect(result["events"]["out"]).to eq(3)
+        end
       end
     end
   end
