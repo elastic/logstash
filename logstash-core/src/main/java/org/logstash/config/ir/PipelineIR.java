@@ -24,11 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.logstash.common.Util;
-import org.logstash.config.ir.graph.Graph;
-import org.logstash.config.ir.graph.PluginVertex;
-import org.logstash.config.ir.graph.QueueVertex;
-import org.logstash.config.ir.graph.Vertex;
-import org.logstash.config.ir.graph.SeparatorVertex;
+import org.logstash.config.ir.graph.*;
 
 public final class PipelineIR implements Hashable {
 
@@ -130,6 +126,12 @@ public final class PipelineIR implements Hashable {
         return graph.vertices()
                .filter(v -> v instanceof PluginVertex)
                .map(v -> (PluginVertex) v);
+    }
+
+    public Stream<IfVertex> ifVertices() {
+        return graph.vertices()
+                .filter(v -> v instanceof IfVertex)
+                .map(v -> (IfVertex) v);
     }
 
     @Override

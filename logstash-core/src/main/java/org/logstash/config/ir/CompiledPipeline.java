@@ -19,12 +19,10 @@
 
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -38,6 +36,7 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -48,6 +47,8 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +96,8 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
+    private final Map<String, BooleanExpression> substitutedBoolExpCache;
+
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
@@ -115,6 +118,7 @@ public final class CompiledPipeline {
             inputs = setupInputs(cve);
             filters = setupFilters(cve);
             outputs = setupOutputs(cve);
+            substitutedBoolExpCache = buildBooleanExpressionCache(cve);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
@@ -207,6 +211,51 @@ public final class CompiledPipeline {
         return nodes;
     }
 
+    private Map<String, BooleanExpression> buildBooleanExpressionCache(ConfigVariableExpander cve) {
+        final Stream<IfVertex> vertices = pipelineIR.ifVertices();
+        return vertices.collect(Collectors.toMap(Vertex::getId, v -> substituteBoolExpression(cve, v.getBooleanExpression())));
+    }
+
+    private BooleanExpression substituteBoolExpression(ConfigVariableExpander cve, BooleanExpression boolExp) {
+        try {
+            if (boolExp instanceof BinaryBooleanExpression) {
+                BinaryBooleanExpression binaryBoolExp = (BinaryBooleanExpression) boolExp;
+                Expression substitutedLeftExp = substituteExpression(cve, binaryBoolExp.getSourceWithMetadata(), binaryBoolExp.getLeft());
+                Expression substitutedRightExp = substituteExpression(cve, binaryBoolExp.getSourceWithMetadata(), binaryBoolExp.getRight());
+                if (substitutedLeftExp != binaryBoolExp.getLeft() || substitutedRightExp != binaryBoolExp.getRight()) {
+                    Constructor<? extends BinaryBooleanExpression> constructor = binaryBoolExp.getClass().getConstructor(SourceWithMetadata.class, Expression.class, Expression.class);
+                    return constructor.newInstance(binaryBoolExp.getSourceWithMetadata(), substitutedLeftExp, substitutedRightExp);
+                }
+            } else {
+                UnaryBooleanExpression unaryBoolExp = (UnaryBooleanExpression) boolExp;
+                Expression substitutedExp = substituteExpression(cve, unaryBoolExp.getSourceWithMetadata(), unaryBoolExp.getExpression());
+                if (substitutedExp != unaryBoolExp.getExpression()) {
+                    Constructor<? extends UnaryBooleanExpression> constructor = unaryBoolExp.getClass().getConstructor(SourceWithMetadata.class, Expression.class);
+                    return constructor.newInstance(unaryBoolExp.getSourceWithMetadata(), substitutedExp);
+                }
+            }
+
+            return boolExp;
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Unable to instantiate substituted condition expression", e);
+        }
+    }
+
+    private Expression substituteExpression(ConfigVariableExpander cve, SourceWithMetadata swm, Expression exp) {
+        if (exp instanceof ValueExpression && ((ValueExpression) exp).get() instanceof String) {
+            String originalValue = (String) ((ValueExpression) exp).get();
+            String substitutedValue = expandConfigVariables(cve, originalValue);
+            if (!originalValue.equals(substitutedValue)) {
+                try {
+                    return new ValueExpression(swm, substitutedValue);
+                } catch (InvalidIRException e) {
+                    throw new IllegalStateException("Unable to create substituted value.", e);
+                }
+            }
+        }
+
+        return exp;
+    }
 
     final RubyHash convertArgs(final Map<String, Object> input) {
         final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
@@ -262,6 +311,10 @@ public final class CompiledPipeline {
             }
         }
         return expandedConfig;
+    }
+
+    private String expandConfigVariables(ConfigVariableExpander cve, String s) {
+        return (String) cve.expand(s);
     }
 
     /**
@@ -519,9 +572,10 @@ public final class CompiledPipeline {
                         // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
+                        final BooleanExpression substitutedBoolExp = substitutedBoolExpCache.getOrDefault(ifvert.getId(), ifvert.getBooleanExpression());
                         final SplitDataset ifDataset = split(
                             datasets,
-                            conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
+                            conditionalCompiler.buildCondition(substitutedBoolExp),
                             dependency
                         );
                         // It is important that we double check that we are actually dealing with the
