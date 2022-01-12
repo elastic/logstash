@@ -61,7 +61,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-16-3]]
 === Logstash 7.16.3 Release Notes
 
-* Bump log4j dependency to 2.17.1 https://github.com/elastic/logstash/pull/#13567[#13567]
+* Bump log4j dependency to 2.17.1 https://github.com/elastic/logstash/pull/13567[#13567]
 
 ==== Plugins
 
