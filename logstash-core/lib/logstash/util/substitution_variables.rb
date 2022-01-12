@@ -38,9 +38,8 @@ module ::LogStash::Util::SubstitutionVariables
     else
       if value.is_a?(Array)
         value_array_index = 0
-        value.each do |single_value|
-          value[value_array_index] = deep_replace(single_value)
-          value_array_index += 1
+        value.each_with_index do |single_value, i|
+          value[i] = deep_replace(single_value)
         end
       else
         return replace_placeholders(value)
