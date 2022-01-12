@@ -11,8 +11,9 @@ export OSS=true
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+  JAVA_HOME=$BUILD_JAVA_HOME
+  LS_JAVA_HOME=$BUILD_JAVA_HOME
 fi
-
 
 SELECTED_TEST_SUITE=$1
 
@@ -37,16 +38,16 @@ cleanup() {
   bundle check || bundle install
   bundle exec rake qa:vm:halt
 }
-trap cleanup EXIT
+#trap cleanup EXIT
 
 # Cleanup any stale VMs from old jobs first
-cleanup
+#cleanup
 
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
   ./gradlew clean bootstrap
-  rake artifact:rpm
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:rpm
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -57,10 +58,11 @@ if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   bundle exec rake qa:acceptance:redhat
   bundle exec rake qa:vm:halt["redhat"]
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
+  echo $LS_JAVA_HOME
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
   ./gradlew clean bootstrap
-  rake artifact:deb
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:deb
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -74,7 +76,7 @@ elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
   echo "Building Logstash artifacts"
   cd $LS_HOME
   ./gradlew clean bootstrap
-  rake artifact:all
+  LS_JAVA_HOME=$BUILD_JAVA_HOME rake artifact:all
 
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR

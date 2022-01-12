@@ -10,6 +10,8 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+  JAVA_HOME=$BUILD_JAVA_HOME
+  LS_JAVA_HOME=$BUILD_JAVA_HOME
 fi
 
 # Can run either a specific flavor, or all flavors -
