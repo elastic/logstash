@@ -153,6 +153,11 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   When creating pipeline batches, how long to wait while polling for the next event. This option defines
   how long in milliseconds to wait while polling for the next event before dispatching an undersized batch
   to filters and outputs. The default is 50ms.
+  
+  *`--pipeline.ecs_compatibility MODE`*::
+  Sets the ECS compatibility mode for the whole Logstash process, see <<ecs-compatibility>>.
+  Can be an ECS version like `v8` or `disabled`.
+  The default depends on the individual plugins.
 
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events
