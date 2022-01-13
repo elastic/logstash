@@ -4,7 +4,7 @@
 
 {es} {ref}/configuring-stack-security.html[security is on by default] starting in 8.0. 
 {es} is the certificate authority (CA), and it generates its own self-signed Secure Sockets Layer (SSL) certificate at startup. 
-{ls} must establish a secure connection using the SSL certificate before it can transfer data. 
+For an on-premise {es} cluster, {ls} must establish a secure connection using the self-signed SSL certificate before it can transfer data. 
 Our hosted {ess} can handle these details for you. 
 
 
@@ -32,17 +32,17 @@ For more details, check out the
 If you are running {es} on your own hardware, you need to complete a few more steps to establish secure communication between {ls} and {es}.
 You need to: 
 
-* Copy the self-signed certificate from {es} and save it to {ls}
+* Copy the self-signed CA certificate from {es} and save it to {ls}
 * Configure the elasticsearch-output plugin to use the certificate
 
 [discrete]
 [[es-sec-copy-cert]]
 ==== Copy and save the certificate
 
-{es} generates a self-signed certificate when it starts.
+On on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts.
 {ls} needs its own copy of the self-signed certificate from the {es} cluster so that it can validate the certificate presented by {es}.
 
-Copy the self-signed certificate from {es} to {ls}. 
+Copy the self-signed CA certificate from {es} to {ls}. 
 Save it to a location that Logstash can access, such as `config/certs`. 
 
 /////
