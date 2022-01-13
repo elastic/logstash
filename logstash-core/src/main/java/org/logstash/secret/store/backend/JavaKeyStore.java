@@ -352,6 +352,17 @@ public final class JavaKeyStore implements SecretStore {
         }
     }
 
+    @Override
+    public boolean containsSecret(SecretIdentifier identifier) {
+        try {
+            loadKeyStore();
+            return keyStore.containsAlias(identifier.toExternalForm());
+        } catch (Exception e) {
+            throw new SecretStoreException.LoadException(String.format("Found a keystore at %s, but failed to load it.",
+                    keyStorePath.toAbsolutePath().toString()));
+        }
+    }
+
     private void releaseLock(Lock lock) {
         if (lock != null) {
             lock.unlock();
