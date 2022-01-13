@@ -96,7 +96,7 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
-    private final Map<String, BooleanExpression> substitutedBoolExpCache;
+    private final Map<String, Expression> substitutedBoolExpCache;
 
     public CompiledPipeline(
             final PipelineIR pipelineIR,
@@ -211,50 +211,41 @@ public final class CompiledPipeline {
         return nodes;
     }
 
-    private Map<String, BooleanExpression> buildBooleanExpressionCache(ConfigVariableExpander cve) {
+    private Map<String, Expression> buildBooleanExpressionCache(ConfigVariableExpander cve) {
         final Stream<IfVertex> vertices = pipelineIR.ifVertices();
         return vertices.collect(Collectors.toMap(Vertex::getId, v -> substituteBoolExpression(cve, v.getBooleanExpression())));
     }
 
-    private BooleanExpression substituteBoolExpression(ConfigVariableExpander cve, BooleanExpression boolExp) {
+    private Expression substituteBoolExpression(ConfigVariableExpander cve, Expression expression) {
         try {
-            if (boolExp instanceof BinaryBooleanExpression) {
-                BinaryBooleanExpression binaryBoolExp = (BinaryBooleanExpression) boolExp;
-                Expression substitutedLeftExp = substituteExpression(cve, binaryBoolExp.getSourceWithMetadata(), binaryBoolExp.getLeft());
-                Expression substitutedRightExp = substituteExpression(cve, binaryBoolExp.getSourceWithMetadata(), binaryBoolExp.getRight());
+            if (expression instanceof BinaryBooleanExpression) {
+                BinaryBooleanExpression binaryBoolExp = (BinaryBooleanExpression) expression;
+                Expression substitutedLeftExp = substituteBoolExpression(cve, binaryBoolExp.getLeft());
+                Expression substitutedRightExp = substituteBoolExpression(cve, binaryBoolExp.getRight());
                 if (substitutedLeftExp != binaryBoolExp.getLeft() || substitutedRightExp != binaryBoolExp.getRight()) {
                     Constructor<? extends BinaryBooleanExpression> constructor = binaryBoolExp.getClass().getConstructor(SourceWithMetadata.class, Expression.class, Expression.class);
                     return constructor.newInstance(binaryBoolExp.getSourceWithMetadata(), substitutedLeftExp, substitutedRightExp);
                 }
-            } else {
-                UnaryBooleanExpression unaryBoolExp = (UnaryBooleanExpression) boolExp;
-                Expression substitutedExp = substituteExpression(cve, unaryBoolExp.getSourceWithMetadata(), unaryBoolExp.getExpression());
+            } else if (expression instanceof UnaryBooleanExpression) {
+                UnaryBooleanExpression unaryBoolExp = (UnaryBooleanExpression) expression;
+                Expression substitutedExp = substituteBoolExpression(cve, unaryBoolExp.getExpression());
                 if (substitutedExp != unaryBoolExp.getExpression()) {
                     Constructor<? extends UnaryBooleanExpression> constructor = unaryBoolExp.getClass().getConstructor(SourceWithMetadata.class, Expression.class);
                     return constructor.newInstance(unaryBoolExp.getSourceWithMetadata(), substitutedExp);
                 }
+            } else if (expression instanceof RegexValueExpression) {
+                return expression;
+            } else if (expression instanceof ValueExpression) {
+                String key = "placeholder";
+                Map<String, Object> args = Map.of(key, ((ValueExpression) expression).get());
+                Map<String, Object> substitutedArgs = expandConfigVariables(cve, args);
+                return new ValueExpression(expression.getSourceWithMetadata(), substitutedArgs.get(key));
             }
 
-            return boolExp;
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            return expression;
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | InvalidIRException e) {
             throw new IllegalStateException("Unable to instantiate substituted condition expression", e);
         }
-    }
-
-    private Expression substituteExpression(ConfigVariableExpander cve, SourceWithMetadata swm, Expression exp) {
-        if (exp instanceof ValueExpression && ((ValueExpression) exp).get() instanceof String) {
-            String originalValue = (String) ((ValueExpression) exp).get();
-            String substitutedValue = expandConfigVariables(cve, originalValue);
-            if (!originalValue.equals(substitutedValue)) {
-                try {
-                    return new ValueExpression(swm, substitutedValue);
-                } catch (InvalidIRException e) {
-                    throw new IllegalStateException("Unable to create substituted value.", e);
-                }
-            }
-        }
-
-        return exp;
     }
 
     final RubyHash convertArgs(final Map<String, Object> input) {
@@ -311,10 +302,6 @@ public final class CompiledPipeline {
             }
         }
         return expandedConfig;
-    }
-
-    private String expandConfigVariables(ConfigVariableExpander cve, String s) {
-        return (String) cve.expand(s);
     }
 
     /**
@@ -572,7 +559,8 @@ public final class CompiledPipeline {
                         // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
-                        final BooleanExpression substitutedBoolExp = substitutedBoolExpCache.getOrDefault(ifvert.getId(), ifvert.getBooleanExpression());
+                        final BooleanExpression substitutedBoolExp =
+                                (BooleanExpression) substitutedBoolExpCache.getOrDefault(ifvert.getId(), ifvert.getBooleanExpression());
                         final SplitDataset ifDataset = split(
                             datasets,
                             conditionalCompiler.buildCondition(substitutedBoolExp),
