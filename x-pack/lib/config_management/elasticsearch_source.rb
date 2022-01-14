@@ -38,13 +38,6 @@ module LogStash
 
         if enabled?
           @es_options = es_options_from_settings('management', settings)
-
-          # Since the calls made by the client are fully controlled by Logstash,
-          # and not by user-driven configuration, ensure that the client includes
-          # an origin header so that deprecation noise can be reduced.
-          @es_options['custom_headers'] ||= {}
-          @es_options['custom_headers']['x-elastic-product-origin'] = 'logstash'
-
           setup_license_checker(FEATURE_INTERNAL)
           license_check(true)
         end
