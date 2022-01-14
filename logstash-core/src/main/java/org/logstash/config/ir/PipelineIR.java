@@ -128,12 +128,6 @@ public final class PipelineIR implements Hashable {
                .map(v -> (PluginVertex) v);
     }
 
-    public Stream<IfVertex> ifVertices() {
-        return graph.vertices()
-                .filter(v -> v instanceof IfVertex)
-                .map(v -> (IfVertex) v);
-    }
-
     @Override
     public String uniqueHash() {
         return this.uniqueHash;
