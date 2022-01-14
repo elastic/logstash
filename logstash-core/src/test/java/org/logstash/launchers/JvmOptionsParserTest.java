@@ -36,9 +36,7 @@ public class JvmOptionsParserTest {
 
     @Test
     public void test_LS_JAVA_OPTS_isUsedWhenNoJvmOptionsIsAvailable() throws IOException, InterruptedException, ReflectiveOperationException {
-        updateEnv("LS_JAVA_OPTS", "-Xblabla");
-
-        JvmOptionsParser.main(new String[] {temp.toString()});
+        JvmOptionsParser.handleJvmOptions(new String[] {temp.toString()}, "-Xblabla");
 
         // Verify
         final String output = outputStreamCaptor.toString();

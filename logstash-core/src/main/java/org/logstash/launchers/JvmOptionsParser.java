@@ -68,12 +68,16 @@ public class JvmOptionsParser {
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
             );
         }
+        final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
+        handleJvmOptions(args, lsJavaOpts);
+    }
 
+    static void handleJvmOptions(String[] args, String lsJavaOpts) {
         final JvmOptionsParser parser = new JvmOptionsParser(args[0]);
         final String jvmOpts = args.length == 2 ? args[1] : null;
         try {
             Optional<Path> jvmOptions = parser.lookupJvmOptionsFile(jvmOpts);
-            parser.parseAndInjectEnvironment(jvmOptions);
+            parser.parseAndInjectEnvironment(jvmOptions, lsJavaOpts);
         } catch (JvmOptionsFileParserException pex) {
             System.err.printf(Locale.ROOT,
                     "encountered [%d] error%s parsing [%s]",
@@ -108,10 +112,9 @@ public class JvmOptionsParser {
                 .findFirst();
     }
 
-    private void parseAndInjectEnvironment(Optional<Path> jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
+    private void parseAndInjectEnvironment(Optional<Path> jvmOptionsFile, String lsJavaOpts) throws IOException, JvmOptionsFileParserException {
         final List<String> jvmOptionsContent = new ArrayList<>(parseJvmOptions(jvmOptionsFile));
 
-        final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
         if (lsJavaOpts != null && !lsJavaOpts.isEmpty()) {
             if (isDebugEnabled()) {
                 System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
