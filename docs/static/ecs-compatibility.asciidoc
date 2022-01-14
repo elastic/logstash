@@ -2,7 +2,7 @@
 === ECS in Logstash
 
 // LS8 will ship with ECS v8, but until ECS v8 is ready we rely on ECS v1 as an approximation.
-:ls8-ecs-major-version: v1
+:ls8-ecs-major-version: v8
 
 The {ecs-ref}/index.html[Elastic Common Schema (ECS)] is an open source specification, developed with support from the Elastic user community.
 ECS defines a common set of fields to be used for storing event data, such as logs and metrics, in {es}.
@@ -19,15 +19,6 @@ This allows you to configure plugins to use ECS -- or to lock in your existing n
 
 ECS Compatibility modes do not prevent you from explicitly configuring a plugin in a manner that conflicts with ECS.
 Instead, they ensure that _implicit_ configuration avoids conflicts.
-
-NOTE: Until {ls} 8.0 and the final 7.x are released, any value for `pipeline.ecs_compatibility` other than `disabled` are considered BETA and unsupported.
-      As we continue to release plugins with ECS Compatibility modes, having this flag set will cause even patch-level upgrades to _automatically_ consume breaking changes in the upgraded plugins, changing the shape of data the plugin produces.
-
-ifeval::["{ls8-ecs-major-version}"!="v8"]
-NOTE: ECS `v8` will be the default in the GA release of {ls} 8.0.0, and will be available at or before the final minor release of {ls} 7.
-      We expect the scope of breaking changes in ECS 8 to be limited.
-      We are https://github.com/elastic/ecs/issues/839[tracking progress toward ECS v8] in a GitHub issue.
-endif::[]
 
 [[ecs-configuration]]
 ===== Configuring ECS
@@ -82,9 +73,6 @@ If unspecified for an individual pipeline, the global value will be used.
   path.config: "/etc/path/to/ecs-pipeline.config"
   pipeline.ecs_compatibility: {ls8-ecs-major-version}
 -----
-
-NOTE: Until the final minor release of {ls} 7 that coincides with the General Availability of {ls} 8.0.0, any value for `pipeline.ecs_compatibility` other than `disabled` is considered BETA and unsupported because it will produce undesireable consequences when performing upgrades.
-      As we continue to release updated plugins with ECS-Compatibility modes, opting into them at a pipeline or process level will cause the affected plugins to silently and automatically consume breaking changes with each upgrade, which may change the shape of data your pipeline produces.
 
 [[ecs-configuration-all]]
 ====== All plugins in all pipelines
