@@ -56,8 +56,9 @@ public final class PipelineIR implements Hashable {
         Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
         // Connect all the input vertices out to the queue
-        queue = new QueueVertex();
-        tempGraph = tempGraph.chain(queue);
+        QueueVertex tempQueue = new QueueVertex();
+
+        tempGraph = tempGraph.chain(tempQueue);
 
         // Now we connect the queue to the root of the filter section
         tempGraph = tempGraph.chain(filterSection);
@@ -67,6 +68,8 @@ public final class PipelineIR implements Hashable {
 
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
+
+        queue = (QueueVertex) this.graph.getVertexById(tempQueue.getId());
 
         this.graph.validate();
 
