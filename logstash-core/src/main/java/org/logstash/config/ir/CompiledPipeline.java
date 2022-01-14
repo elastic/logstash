@@ -96,8 +96,6 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
-    private final Map<String, Expression> substitutedBoolExpCache;
-
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
@@ -118,7 +116,6 @@ public final class CompiledPipeline {
             inputs = setupInputs(cve);
             filters = setupFilters(cve);
             outputs = setupOutputs(cve);
-            substitutedBoolExpCache = buildBooleanExpressionCache(cve);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
@@ -283,7 +280,7 @@ public final class CompiledPipeline {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
         Map<String, Object> expandedConfig = new HashMap<>();
         for (Map.Entry<String, Object> e : configArgs.entrySet()) {
             if (e.getValue() instanceof List) {
@@ -559,11 +556,9 @@ public final class CompiledPipeline {
                         // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
-                        final BooleanExpression substitutedBoolExp =
-                                (BooleanExpression) substitutedBoolExpCache.getOrDefault(ifvert.getId(), ifvert.getBooleanExpression());
                         final SplitDataset ifDataset = split(
                             datasets,
-                            conditionalCompiler.buildCondition(substitutedBoolExp),
+                            conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
                             dependency
                         );
                         // It is important that we double check that we are actually dealing with the
