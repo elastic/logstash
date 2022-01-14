@@ -79,6 +79,16 @@ module LogStash module Helpers
       opts
     end
 
+    # when the Elasticsearch Output client is used exclusively to
+    # perform Logstash-defined actions without user input, adding
+    # a product origin header allows us to reduce log noise.
+    def es_options_with_product_origin_header(es_options)
+      custom_headers = es_options.delete('custom_headers') { Hash.new }
+                                 .merge('x-elastic-product-origin' => 'logstash')
+
+      es_options.merge('custom_headers' => custom_headers)
+    end
+
     def ssl?(feature, settings, prefix)
       return true if verify_https_scheme(feature, settings, prefix)
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.cloud_id") # cloud_id always resolves to https hosts
