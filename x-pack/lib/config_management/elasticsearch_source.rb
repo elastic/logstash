@@ -119,7 +119,7 @@ module LogStash
       # But we have to silence the logger from the plugin, to make sure the
       # log originate from the `ElasticsearchSource`
       def build_client
-        es = LogStash::Outputs::ElasticSearch.new(@es_options)
+        es = LogStash::Outputs::ElasticSearch.new(es_options_with_product_origin_header(@es_options))
         new_logger = logger
         es.instance_eval { @logger = new_logger }
         es.build_client

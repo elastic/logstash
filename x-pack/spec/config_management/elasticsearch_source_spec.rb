@@ -192,6 +192,27 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         end
       end
     end
+
+    context "valid settings" do
+      let(:settings) do
+        {
+          "xpack.management.enabled" => true,
+          "xpack.management.pipeline.id" => "main",
+          "xpack.management.elasticsearch.hosts" => elasticsearch_url,
+          "xpack.management.elasticsearch.username" => elasticsearch_username,
+          "xpack.management.elasticsearch.password" => elasticsearch_password,
+        }
+      end
+
+      # This spec is certainly indirect, and assumes that communication with Elasticsearch
+      # will be done through an ES-output HttpClient available at described_class.client
+      it 'creates an Elasticsearch HttpClient with product origin custom headers' do
+        internal_client = subject.send(:client) # internal reach
+        expect(internal_client)
+          .to be_a_kind_of(LogStash::Outputs::ElasticSearch::HttpClient)
+          .and(have_attributes(:client_settings => hash_including(:headers => hash_including("x-elastic-product-origin" => "logstash"))))
+      end
+    end
   end
 
   describe LogStash::ConfigManagement::SystemIndicesFetcher do
