@@ -365,7 +365,7 @@ public class DeadLetterQueueReaderTest {
 
         System.out.println("events per block= " + eventsPerBlock);
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(2))) {
             for (int i = 1; i < eventsToWrite; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -378,7 +378,7 @@ public class DeadLetterQueueReaderTest {
                 }
             }
 
-            Thread.sleep(2000);
+            Thread.sleep(3000);
 
             try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
                 for (int i = 1; i < eventsToWrite; i++) {
