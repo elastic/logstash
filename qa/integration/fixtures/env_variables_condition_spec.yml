@@ -13,9 +13,6 @@ config: |-
        source => "message"
     }
 
-    if [tag1] == "${TAG1}" {
-       mutate { add_tag => ["${TAG1}"] }
-    }
     if ("${APP}") {
        mutate { add_tag => ["Truthy"] }
     }
@@ -48,6 +45,9 @@ config: |-
     }
     if [amount] =~ /\d+/ {
        mutate { add_tag => ["=~"] }
+    }
+    if [amount] =~ /${BIG}/ {
+       mutate { add_tag => ["wrong_regex_substitution"] }
     }
     if [amount] !~ /[a-z]+/ {
        mutate { add_tag => ["!~"] }

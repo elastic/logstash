@@ -62,17 +62,37 @@ describe "Support environment variable in condition" do
   let(:settings) {{"pipeline.id" => "${pipeline.id}"}}
   let(:logstash_keystore_passowrd) { "keystore_pa9454w3rd" }
 
-  it "expands environment variables in secret store, ENV" do
+  it "expands variables and evaluate expression successfully" do
     test_env["TEST_ENV_PATH"] = test_path
     test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
-    test_env['TAG1'] = "wrong_tag" # secret store should take precedence
 
     @logstash.env_variables = test_env
     @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
 
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       output = IO.read(File.join(test_path, "env_variables_condition_output.log")).gsub("\n", "")
-      expect(output).to match /mytag1,Truthy,Not,>,>=,<,<=,==,!=,in,not in,=~,!~,and,more_and,or,nand,xor/
+      expect(output).to match /Truthy,Not,>,>=,<,<=,==,!=,in,not in,=~,!~,and,more_and,or,nand,xor/
     end
+  end
+
+  it "expands variables in secret store" do
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
+    test_env['TAG1'] = "wrong_env" # secret store should take precedence
+    logstash = @logstash.run_cmd(["bin/logstash", "-e",
+                                  "input { generator { count => 1 } }
+                                    filter { if (\"${APP}\") { mutate { add_tag => \"${TAG1}\"} } }
+                                    output { stdout{} }",
+                                  "--path.settings", settings_dir],
+                                 true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/mytag1/)
+    expect(logstash.stderr_and_stdout).not_to match(/wrong_env/)
+    expect(logstash.exit_code).to be(0)
+  end
+
+  it "exits with error when env variable is undefined" do
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
+    logstash = @logstash.run_cmd(["bin/logstash","-e", "filter { if \"${NOT_EXIST}\" { mutate {add_tag => \"oh no\"} } }", "--path.settings", settings_dir], true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/Cannot evaluate `\$\{NOT_EXIST\}`/)
+    expect(logstash.exit_code).to be(1)
   end
 end  
