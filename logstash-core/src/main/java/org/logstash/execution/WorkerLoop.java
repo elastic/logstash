@@ -84,10 +84,10 @@ public final class WorkerLoop implements Runnable {
                 if (batch.filteredSize() > 0 || isFlush) {
                     consumedCounter.add(batch.filteredSize());
                     readClient.startMetrics(batch);
-                    execution.compute(batch, isFlush, false);
+                    final int outputCount = execution.compute(batch, isFlush, false);
                     int filteredCount = batch.filteredSize();
                     filteredCounter.add(filteredCount);
-                    readClient.addOutputMetrics(filteredCount);
+                    readClient.addOutputMetrics(outputCount);
                     readClient.addFilteredMetrics(filteredCount);
                     readClient.closeBatch(batch);
                     if (isFlush) {
