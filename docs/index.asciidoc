@@ -141,8 +141,8 @@ include::static/config-details.asciidoc[]
 include::static/troubleshoot/troubleshooting.asciidoc[]
 
 // Contributing to Logstash
+:edit_url:
 include::static/contributing-to-logstash.asciidoc[]
-
 include::static/input.asciidoc[]
 include::static/codec.asciidoc[]
 include::static/filter.asciidoc[]
@@ -161,9 +161,11 @@ include::static/contributing-patch.asciidoc[]
 include::static/contribute-core.asciidoc[]
 
 // Contributing to Logstash - JAVA EDITION
+:edit_url:
 include::static/contributing-java-plugin.asciidoc[]
 
 // Glossary of Terms
+:edit_url!:
 include::static/glossary.asciidoc[]
 
 // Breaking Changes
