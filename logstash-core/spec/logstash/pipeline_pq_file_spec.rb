@@ -117,6 +117,7 @@ describe LogStash::Pipeline do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     pipeline_settings_obj.set("queue.page_capacity", page_capacity)
     pipeline_settings_obj.set("queue.max_bytes", max_bytes)
+    pipeline_settings_obj.set("queue.drain", true)
     times.push(Time.now.to_f)
 
     subject.start
