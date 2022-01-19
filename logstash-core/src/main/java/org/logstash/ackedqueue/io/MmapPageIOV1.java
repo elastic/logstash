@@ -29,7 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
-import org.logstash.LogstashJavaCompat;
+
 import org.logstash.ackedqueue.SequencedList;
 
 /**
@@ -43,8 +43,7 @@ public final class MmapPageIOV1 implements PageIO {
     /**
      * Cleaner function for forcing unmapping of backing {@link MmapPageIOV1#buffer}.
      */
-    private static final ByteBufferCleaner BUFFER_CLEANER =
-        LogstashJavaCompat.setupBytebufferCleaner();
+    private static final ByteBufferCleaner BUFFER_CLEANER = new ByteBufferCleanerImpl();
 
     private final File file;
 
