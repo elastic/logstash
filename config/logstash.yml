@@ -66,6 +66,20 @@
 #
 # pipeline.ordered: auto
 #
+# Sets the pipeline's default value for `ecs_compatibility`, a setting that is
+# available to plugins that implement an ECS Compatibility mode for use with
+# the Elastic Common Schema.
+# Possible values are:
+# - disabled (default)
+# - v1
+# - v8
+# The default value will be `v8` in Logstash 8, making ECS on-by-default. To ensure a
+# migrated pipeline continues to operate as it did before your upgrade, opt-OUT
+# of ECS for the individual pipeline in its `pipelines.yml` definition. Setting
+# it here will set the default for _all_ pipelines, including new ones.
+#
+# pipeline.ecs_compatibility: disabled
+#
 # ------------ Pipeline Configuration Settings --------------
 #
 # Where to fetch the pipeline configuration for the main pipeline
