@@ -23,6 +23,8 @@ package org.logstash;
 import java.lang.reflect.Field;
 import java.util.Map;
 import org.hamcrest.CoreMatchers;
+import org.jruby.RubyString;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,10 +35,16 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
+    @Before
+    @After
+    public void clearInternalCaches() throws Exception {
+        clearParsingCache();
+        clearDedupCache();
+        clearRubyCache();
+    }
 
     @SuppressWarnings("unchecked")
-    @Before
-    public void clearParsingCache() throws Exception {
+    private void clearParsingCache() throws Exception {
         final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
         cacheField.setAccessible(true);
         final Map<CharSequence, FieldReference> cache =
@@ -45,12 +53,20 @@ public final class FieldReferenceTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Before
-    public void clearDedupCache() throws Exception  {
+    private void clearDedupCache() throws Exception  {
         final Field cacheField = FieldReference.class.getDeclaredField("DEDUP");
         cacheField.setAccessible(true);
         final Map<CharSequence, FieldReference> cache =
                 (Map<CharSequence, FieldReference>) cacheField.get(null);
+        cache.clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void clearRubyCache() throws Exception  {
+        final Field cacheField = FieldReference.class.getDeclaredField("RUBY_CACHE");
+        cacheField.setAccessible(true);
+        final Map<RubyString, FieldReference> cache =
+                (Map<RubyString, FieldReference>) cacheField.get(null);
         cache.clear();
     }
 
@@ -73,11 +89,26 @@ public final class FieldReferenceTest {
     public void testCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
         final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
         cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
+        final Map<String, FieldReference> cache =
+                (Map<String, FieldReference>) cacheField.get(null);
         final int initial = cache.size();
         for (int i = 0; i < 10_001 - initial; ++i) {
             FieldReference.from(String.format("[array][%d]", i));
+        }
+        assertThat(cache.size(), CoreMatchers.is(10_000));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testRubyCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
+        final Field cacheField = FieldReference.class.getDeclaredField("RUBY_CACHE");
+        cacheField.setAccessible(true);
+        final Map<RubyString, FieldReference> cache =
+                (Map<RubyString, FieldReference>) cacheField.get(null);
+        final int initial = cache.size();
+        for (int i = 0; i < 10_050 - initial; ++i) {
+            final RubyString rubyString = RubyUtil.RUBY.newString(String.format("[array][%d]", i));
+            FieldReference.from(rubyString);
         }
         assertThat(cache.size(), CoreMatchers.is(10_000));
     }
