@@ -117,9 +117,18 @@ describe "CLI > logstash-plugin install" do
       end
     end
 
-    xcontext "install non bundle plugin" do
+    context "install non bundle plugin" do
       let(:plugin_name) { "logstash-input-google_cloud_storage" }
       let(:install_command) { "bin/logstash-plugin install" }
+
+      after(:each) do
+         # cleanly remove the installed plugin to don't pollute
+         # the environment for other subsequent tests
+         removal = @logstash_plugin.run_raw("bin/logstash-plugin uninstall #{plugin_name}")
+
+         expect(removal.stderr_and_stdout).to match(/Successfully removed #{plugin_name}/)
+         expect(removal.exit_code).to eq(0)
+      end
 
       it "successfully install the plugin" do
         execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}")
