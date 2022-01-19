@@ -21,7 +21,6 @@
 package org.logstash.instruments.monitors;
 
 import org.junit.Test;
-import org.logstash.LogstashJavaCompat;
 import org.logstash.instrument.monitors.MemoryMonitor;
 
 import java.util.Map;
@@ -38,11 +37,7 @@ public class MemoryMonitorTest {
     public void testEachHeapSpaceRepresented() {
         Map<String, Map<String, Object>> heap = MemoryMonitor.detect(MemoryMonitor.Type.All).getHeap();
         assertThat(heap, notNullValue());
-        if (LogstashJavaCompat.IS_JAVA_9_OR_GREATER) {
-            assertThat(heap.keySet(), hasItems("G1 Old Gen", "G1 Survivor Space", "G1 Eden Space"));
-        } else {
-            assertThat(heap.keySet(), hasItems("PS Survivor Space", "PS Old Gen", "PS Eden Space"));
-        }
+        assertThat(heap.keySet(), hasItems("G1 Old Gen", "G1 Survivor Space", "G1 Eden Space"));
     }
 
     @Test
