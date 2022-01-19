@@ -20,12 +20,12 @@
 
 package org.logstash.config.ir;
 
-import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.StringEscapeHelper;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.imperative.Statement;
 
@@ -53,14 +53,20 @@ public final class ConfigCompiler {
      * @throws InvalidIRException if the the configuration contains errors
      */
     @SuppressWarnings("unchecked")
-    public static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
+    static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
                                                 final boolean supportEscapes) throws InvalidIRException {
-        return compileSources(sourcesWithMetadata, supportEscapes);
+        final StringEscapeHelper escapeSequenceParser = supportEscapes ? StringEscapeHelper.MINIMAL : StringEscapeHelper.DISABLED;
+        return compileSources(sourcesWithMetadata, escapeSequenceParser);
     }
 
-    public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, boolean supportEscapes) throws InvalidIRException {
+    public static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
+                                                final StringEscapeHelper stringEscapeHelper) throws InvalidIRException {
+        return compileSources(sourcesWithMetadata, stringEscapeHelper);
+    }
+
+    public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, final StringEscapeHelper stringEscapeHelper) throws InvalidIRException {
         Map<PluginDefinition.Type, List<Graph>> groupedPipelineSections = sourcesWithMetadata.stream()
-                .map(swm -> compileGraph(swm, supportEscapes))
+                .map(swm -> compileGraph(swm, stringEscapeHelper))
                 .flatMap(m -> m.entrySet().stream())
                 .filter(e -> e.getValue() != null)
                 .collect(groupingBy(Map.Entry::getKey,
@@ -84,7 +90,7 @@ public final class ConfigCompiler {
     }
 
     private static Map<PluginDefinition.Type, Statement> compileImperative(SourceWithMetadata sourceWithMetadata,
-                                                                           boolean supportEscapes) {
+                                                                           StringEscapeHelper stringEscapeHelper) {
         final IRubyObject compiler = RubyUtil.RUBY.executeScript(
                 "require 'logstash/compiler'\nLogStash::Compiler",
                 ""
@@ -93,7 +99,7 @@ public final class ConfigCompiler {
         final IRubyObject code = compiler.callMethod(RubyUtil.RUBY.getCurrentContext(), "compile_imperative",
                 new IRubyObject[]{
                         JavaUtil.convertJavaToRuby(RubyUtil.RUBY, sourceWithMetadata),
-                        RubyUtil.RUBY.newBoolean(supportEscapes)
+                        JavaUtil.convertJavaToRuby(RubyUtil.RUBY, stringEscapeHelper)
                 });
         RubyHash hash = (RubyHash) code;
         Map<PluginDefinition.Type, Statement> result = new HashMap<>();
@@ -108,8 +114,8 @@ public final class ConfigCompiler {
         return inputValue.toJava(Statement.class);
     }
 
-    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) {
-        Map<PluginDefinition.Type, Statement> pluginStatements = compileImperative(swm, supportEscapes);
+    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, final StringEscapeHelper stringEscapeHelper) {
+        Map<PluginDefinition.Type, Statement> pluginStatements = compileImperative(swm, stringEscapeHelper);
         return pluginStatements.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> toGraphWithUntypedException(e.getValue())));
     }

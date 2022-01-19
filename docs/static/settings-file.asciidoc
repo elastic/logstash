@@ -179,8 +179,23 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `false`
 
 | `config.support_escapes`
-| When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
-| `false`
+a| The escape sequences in strings are not processed by default (`disabled`/`false`).
+
+When set to `minimal` (or `true`), quoted strings will process the following escape sequences:
+
+  * `\n` becomes a literal newline (ASCII 10),
+  * `\r` becomes a literal carriage return (ASCII 13),
+  * `\t` becomes a literal tab (ASCII 9),
+  * `\\` becomes a literal backslash `\`,
+  * `\"` becomes a literal double quotation mark,
+  * `\'` becomes a literal quotation mark, and
+  * `\0` becomes a literal NULL (ASCII 0).
+
+When set to `extended`, quoted strings will process everything in `minimal`, plus:
+
+  * `\xHH` becomes the corresponding hexadecimal codepoint (`\0x24` -> `$` ), and
+  * `\uHHHH` or `\uHHHHHHHH` become the corresponding unicode codepoint (`\u267B` -> &#x267B; ; `\u0001F49E` -> &#128158;).
+| `disabled`
 
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.

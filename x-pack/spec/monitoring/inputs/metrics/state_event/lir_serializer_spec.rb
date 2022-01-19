@@ -22,9 +22,9 @@ describe ::LogStash::Config::LIRSerializer do
   end
 
   let(:lir_pipeline) do
-#     ::LogStash::Compiler.compile_sources(config_source_with_metadata, true)
     java_import org.logstash.config.ir.ConfigCompiler
-    ConfigCompiler.compileSources(config_source_with_metadata, true)
+    java_import org.logstash.common.StringEscapeHelper
+    ConfigCompiler.compileSources(config_source_with_metadata, StringEscapeHelper::MINIMAL)
   end
 
   describe "#serialize" do

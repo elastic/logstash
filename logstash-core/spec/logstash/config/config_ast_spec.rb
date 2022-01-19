@@ -193,8 +193,10 @@ describe LogStashConfigParser do
       let(:compiled_string) { eval(config.recursive_select(LogStash::Config::AST::String).first.compile) }
 
       before do
-        config.process_escape_sequences = escapes
+        config.string_escape_helper = org.logstash.common.StringEscapeHelper.forMode(escape_mode)
       end
+
+      let(:escape_mode) { escapes ? 'minimal' : 'disabled' }
 
       context "is enabled" do
         let(:escapes) { true }

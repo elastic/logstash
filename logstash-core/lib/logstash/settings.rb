@@ -547,13 +547,20 @@ module LogStash
     # then these options in the config file or command line will be all valid: "foo", true, false, "true", "false"
     #
     class CoercibleString < Coercible
-      def initialize(name, default=nil, strict=true, possible_strings=[], &validator_proc)
+      def initialize(name, default=nil, strict=true, possible_strings=[], deprecated_aliases={}, &validator_proc)
+        _init_validate_alias_mapping!(possible_strings, deprecated_aliases)
         @possible_strings = possible_strings
+        @deprecated_aliases = deprecated_aliases
         super(name, Object, default, strict, &validator_proc)
       end
 
       def coerce(value)
-        value.to_s
+        value = value.to_s
+        if @deprecated_aliases.include?(value)
+          deprecated_value, value = value, @deprecated_aliases.fetch(value)
+          deprecation_logger.deprecated("The value `#{deprecated_value}` for setting `#{name}` is deprecated and may not be supported in a future major release of Logstash; please use `#{value}` instead.")
+        end
+        value
       end
 
       def validate(value)
@@ -561,6 +568,18 @@ module LogStash
         unless @possible_strings.empty? || @possible_strings.include?(value)
           raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
         end
+      end
+
+      private
+
+      def _init_validate_alias_mapping!(possible, alias_mapping)
+        return if possible.empty? || alias_mapping.empty?
+
+        missing_targets = alias_mapping.values - possible
+        fail(ArgumentError, "Missing alias targets: #{missing_targets}") unless missing_targets.empty?
+
+        redefined_inputs = alias_mapping.keys & possible
+        fail(ArgumentError, "Invalid alias names redefine valid values: #{redefined_inputs}") unless redefined_inputs.empty?
       end
     end
 

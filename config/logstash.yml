@@ -112,9 +112,25 @@
 # config.debug: false
 #
 # When enabled, process escaped characters such as \n and \" in strings in the
-# pipeline configuration files.
+# pipeline configuration files. There are multiple modes:
 #
-# config.support_escapes: false
+# disabled:
+#     no unescaping is performed
+# minimal:
+#     \\ : literal backslash
+#     \" : literal double-quote
+#     \' : literal single-quote
+#     \n : newline
+#     \r : return
+#     \t : tab
+#     \0 : null byte
+# extended:
+#     everything from `minimal`, plus:
+#     `\xHH`: codepoint represented by given hexadecimal value
+#     `\uHHHH`: unicode character represented by given hexadecimal value
+#     `\uHHHHHHHH`: unicode character represented by given hexadecimal value
+#
+# config.support_escapes: disabled
 #
 # ------------ API Settings -------------
 # Define settings related to the HTTP API here.

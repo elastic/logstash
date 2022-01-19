@@ -52,7 +52,9 @@ describe LogStash::Compiler do
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings.get_value("config.support_escapes")) }
+    let(:string_escape_helper) { org.logstash.common.StringEscapeHelper.for_mode(escape_mode) }
+    let(:escape_mode) { settings.get_value("config.support_escapes") }
+    subject(:compiled) { described_class.compile_imperative(source_with_metadata, string_escape_helper) }
 
     context "when config.support_escapes" do
       let(:parser) { LogStashCompilerLSCLGrammarParser.new }
@@ -75,6 +77,10 @@ describe LogStash::Compiler do
 
       before do
         settings.set_value("config.support_escapes", process_escape_sequences)
+      end
+
+      after do
+        settings.get_setting("config.support_escapes").reset
       end
 
       context "is enabled" do
