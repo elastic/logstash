@@ -54,13 +54,21 @@ include::static/processing-info.asciidoc[]
 
 // Logstash setup
 include::static/setting-up-logstash.asciidoc[]
+
 include::static/settings-file.asciidoc[]
+
 include::static/keystore.asciidoc[]
+
 include::static/running-logstash-command-line.asciidoc[]
+
 include::static/running-logstash.asciidoc[]
+
 include::static/docker.asciidoc[]
+
 include::static/running-logstash-windows.asciidoc[]
+
 include::static/logging.asciidoc[]
+
 include::static/shutdown.asciidoc[]
 
 // Upgrading Logstash
@@ -68,6 +76,7 @@ include::static/upgrading.asciidoc[]
 
 // Configuring Logstash
 include::static/configuration.asciidoc[]
+
 include::static/ls-to-cloud.asciidoc[]
 
 // Security
@@ -75,14 +84,23 @@ include::static/security/logstash.asciidoc[]
 
 // Advanced Logstash Configuration
 include::static/configuration-advanced.asciidoc[]
+
 include::static/multiple-pipelines.asciidoc[]
+
 include::static/pipeline-pipeline-config.asciidoc[]
+
 include::static/reloading-config.asciidoc[]
+
 include::static/managing-multiline-events.asciidoc[]
+
 include::static/glob-support.asciidoc[]
+
 include::static/ingest-convert.asciidoc[]
+
 include::static/ls-ls-config.asciidoc[]
+
 include::static/management/configuring-centralized-pipelines.asciidoc[]
+
 include::static/field-reference.asciidoc[]
 
 //The `field-reference.asciidoc` file (included above) contains a
@@ -97,8 +115,11 @@ include::static/config-management.asciidoc[]
 
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
+
 include::static/arcsight-module.asciidoc[]
+
 include::static/netflow-module.asciidoc[]
+
 include::static/azure-module.asciidoc[]
 
 // Working with Filebeat Modules
@@ -106,8 +127,11 @@ include::static/filebeat-modules.asciidoc[]
 
 // Data resiliency
 include::static/resiliency.asciidoc[]
+
 include::static/mem-queue.asciidoc[]
+
 include::static/persistent-queues.asciidoc[]
+
 include::static/dead-letter-queues.asciidoc[]
 
 // Transforming Data
@@ -121,6 +145,7 @@ include::static/performance-checklist.asciidoc[]
 
 // Monitoring 
 include::static/monitoring/monitoring-overview.asciidoc[]
+
 include::static/monitoring/monitoring.asciidoc[]
 
 // Working with Plugins
@@ -129,23 +154,33 @@ include::static/plugin-manager.asciidoc[]
 // These files do their own pass blocks
 
 include::{plugins-repo-dir}/plugins/integrations.asciidoc[]
+
 include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
+
 include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
+
 include::{plugins-repo-dir}/plugins/filters.asciidoc[]
+
 include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
 // FAQ and Troubleshooting
 :edit_url!:
 include::static/best-practice.asciidoc[]
+
 include::static/config-details.asciidoc[]
+
 include::static/troubleshoot/troubleshooting.asciidoc[]
 
 // Contributing to Logstash
 :edit_url:
 include::static/contributing-to-logstash.asciidoc[]
+
 include::static/input.asciidoc[]
+
 include::static/codec.asciidoc[]
+
 include::static/filter.asciidoc[]
+
 include::static/output.asciidoc[]
 
 // Logstash Community Maintainer Guide
@@ -156,8 +191,11 @@ include::static/doc-for-plugin.asciidoc[]
 
 // Submitting a Plugin 
 include::static/submitting-a-plugin.asciidoc[] 
+
 include::static/listing-a-plugin.asciidoc[] 
+
 include::static/contributing-patch.asciidoc[]
+
 include::static/contribute-core.asciidoc[]
 
 // Contributing to Logstash - JAVA EDITION
