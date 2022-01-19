@@ -56,8 +56,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "mustermann", '~> 1.0.3'
   gem.add_runtime_dependency "sinatra", '~> 2'
-  gem.add_runtime_dependency 'puma', '~> 4'
-  gem.add_runtime_dependency "jruby-openssl", "= 0.10.5" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency 'puma', '~> 5'
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
@@ -78,4 +78,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
   gem.add_dependency 'tzinfo-data' #(MIT license)
   gem.add_dependency 'rufus-scheduler' #(MIT license)
+
+  # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
+  # SEE: https://github.com/ruby/racc/issues/172
+  gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
 end

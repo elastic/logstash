@@ -197,6 +197,9 @@ public class SecretStoreFactoryTest {
         }
 
         @Override
+        public boolean containsSecret(SecretIdentifier id) { return secrets.containsKey(id); }
+
+        @Override
         public byte[] retrieveSecret(SecretIdentifier id) {
             ByteBuffer bb = secrets.get(id);
             return bb != null ? bb.array() : null;

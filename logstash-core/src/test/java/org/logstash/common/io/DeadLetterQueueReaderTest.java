@@ -33,17 +33,13 @@ import org.logstash.ackedqueue.StringElement;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
@@ -128,27 +124,33 @@ public class DeadLetterQueueReaderTest {
     // This test checks that polling after a block has been mostly filled with an event is handled correctly.
     @Test
     public void testRereadFinalBlock() throws Exception {
-        Event event = new Event(Collections.emptyMap());
+        Event event = createEventWithConstantSerializationOverhead(Collections.emptyMap());
 
         // Fill event with not quite enough characters to fill block. Fill event with valid RecordType characters - this
         // was the cause of https://github.com/elastic/logstash/issues/7868
-        event.setField("message", generateMessageContent(32500));
+        event.setField("message", generateMessageContent(32495));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
         try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
-                DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
-                messageSize += entry.serialize().length;
+                DLQEntry entry = new DLQEntry(event, "", "", String.valueOf(i), constantSerializationLengthTimestamp(startTime++));
+                final int serializationLength = entry.serialize().length;
+                assertThat("setup: serialized entry size...", serializationLength, is(lessThan(BLOCK_SIZE)));
+                messageSize += serializationLength;
                 writeManager.writeEntry(entry);
             }
+            assertThat(messageSize, is(greaterThan(BLOCK_SIZE)));
         }
         try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
-            for (int i = 0; i < 3;i++) {
-                readManager.pollEntry(100);
+            for (int i = 0; i < 2;i++) {
+                final DLQEntry dlqEntry = readManager.pollEntry(100);
+                assertThat(String.format("read index `%s`", i), dlqEntry, is(notNullValue()));
+                assertThat("", dlqEntry.getReason(), is(String.valueOf(i)));
             }
+            final DLQEntry entryBeyondEnd = readManager.pollEntry(100);
+            assertThat("read beyond end", entryBeyondEnd, is(nullValue()));
         }
     }
-
 
     @Test
     public void testSeek() throws Exception {
@@ -180,14 +182,15 @@ public class DeadLetterQueueReaderTest {
     }
 
     private void writeSegmentSizeEntries(int count) throws IOException {
-        Event event = new Event(Collections.emptyMap());
-        DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0));
+        final Event event = createEventWithConstantSerializationOverhead();
+        long startTime = System.currentTimeMillis();
+        DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0), constantSerializationLengthTimestamp(startTime));
         int size = templateEntry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE + VERSION_SIZE;
         DeadLetterQueueWriter writeManager = null;
         try {
             writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize, Duration.ofSeconds(1));
             for (int i = 1; i <= count; i++) {
-                writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i)));
+                writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i), constantSerializationLengthTimestamp(startTime++)));
             }
         } finally {
             writeManager.close();
@@ -218,11 +221,11 @@ public class DeadLetterQueueReaderTest {
     public void testBlockBoundary() throws Exception {
 
         final int PAD_FOR_BLOCK_SIZE_EVENT = 32490;
-        Event event = new Event();
+        Event event = createEventWithConstantSerializationOverhead();
         char[] field = new char[PAD_FOR_BLOCK_SIZE_EVENT];
         Arrays.fill(field, 'e');
         event.setField("T", new String(field));
-        Timestamp timestamp = new Timestamp();
+        Timestamp timestamp = constantSerializationLengthTimestamp();
 
         try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
@@ -241,7 +244,7 @@ public class DeadLetterQueueReaderTest {
     // This test has multiple messages, with a message ending on a block boundary
     @Test
     public void testBlockBoundaryMultiple() throws Exception {
-        Event event = new Event(Collections.emptyMap());
+        Event event = createEventWithConstantSerializationOverhead();
         char[] field = new char[7929];
         Arrays.fill(field, 'x');
         event.setField("message", new String(field));
@@ -249,7 +252,7 @@ public class DeadLetterQueueReaderTest {
         int messageSize = 0;
         try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 1; i <= 5; i++) {
-                DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
+                DLQEntry entry = new DLQEntry(event, "", "", "", constantSerializationLengthTimestamp(startTime++));
                 messageSize += entry.serialize().length;
                 writeManager.writeEntry(entry);
                 if (i == 4){
@@ -365,7 +368,7 @@ public class DeadLetterQueueReaderTest {
 
         System.out.println("events per block= " + eventsPerBlock);
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(2))) {
             for (int i = 1; i < eventsToWrite; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -378,7 +381,7 @@ public class DeadLetterQueueReaderTest {
                 }
             }
 
-            Thread.sleep(2000);
+            Thread.sleep(3000);
 
             try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
                 for (int i = 1; i < eventsToWrite; i++) {
@@ -393,9 +396,9 @@ public class DeadLetterQueueReaderTest {
     // This test tests for a single event that ends on a block and segment boundary
     @Test
     public void testBlockAndSegmentBoundary() throws Exception {
-        Event event = new Event();
+        Event event = createEventWithConstantSerializationOverhead();
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
-        Timestamp timestamp = new Timestamp();
+        Timestamp timestamp = constantSerializationLengthTimestamp();
 
         try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
@@ -516,6 +519,60 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    /**
+     * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
+     * such that the result will have a constant serialization length of 24 bytes.
+     *
+     * If the provided epoch millis is exactly a whole second with no remainder, one millisecond
+     * is added to the value to ensure that there are remainder millis.
+     *
+     * @param millis
+     * @return
+     */
+    private Timestamp constantSerializationLengthTimestamp(long millis) {
+        if ( millis % 1000 == 0) { millis += 1; }
+
+        final Timestamp timestamp = new Timestamp(millis);
+        assertThat(String.format("pre-validation: expected timestamp to serialize to exactly 24 bytes, got `%s`", timestamp),
+                   timestamp.serialize().length, is(24));
+        return new Timestamp(millis);
+    }
+
+    private Timestamp constantSerializationLengthTimestamp() {
+        return constantSerializationLengthTimestamp(System.currentTimeMillis());
+    }
+
+    private Timestamp constantSerializationLengthTimestamp(final Timestamp basis) {
+        return constantSerializationLengthTimestamp(basis.toEpochMilli());
+    }
+
+    /**
+     * Because many of the tests here rely on _exact_ alignment of serialization byte size,
+     * and the {@link Timestamp} has a variable-sized serialization length, we need a way to
+     * generated events whose serialization length will not vary depending on the millisecond
+     * in which the test was run.
+     *
+     * This method uses the normal method of creating an event, and ensures that the value of
+     * the timestamp field will serialize to a constant length, truncating precision and
+     * possibly shifting the value to ensure that there is sub-second remainder millis.
+     *
+     * @param data
+     * @return
+     */
+    private Event createEventWithConstantSerializationOverhead(final Map<String, Object> data) {
+        final Event event = new Event(data);
+
+        final Timestamp existingTimestamp = event.getTimestamp();
+        if (existingTimestamp != null) {
+            event.setTimestamp(constantSerializationLengthTimestamp(existingTimestamp));
+        }
+
+        return event;
+    }
+
+    private Event createEventWithConstantSerializationOverhead() {
+        return createEventWithConstantSerializationOverhead(Collections.emptyMap());
+    }
 
     private int randomBetween(int from, int to){
         Random r = new Random();

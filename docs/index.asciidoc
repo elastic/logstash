@@ -95,9 +95,6 @@ include::static/logging.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
-include::static/setup/setting-up-xpack.asciidoc[]
-
 // Upgrading Logstash
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/upgrading.asciidoc
@@ -109,10 +106,12 @@ include::static/upgrading.asciidoc[]
 include::static/configuration.asciidoc[]
 
 :edit_url!:
-include::static/security/logstash.asciidoc[]
+include::static/ls-to-cloud.asciidoc[]
+
+// Security
 
 :edit_url!:
-include::static/ls-to-cloud.asciidoc[]
+include::static/security/logstash.asciidoc[]
 
 // Advanced Logstash Configuration
 

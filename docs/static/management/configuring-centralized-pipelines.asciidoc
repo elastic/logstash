@@ -1,4 +1,3 @@
-[role="xpack"]
 [[configuring-centralized-pipelines]]
 === Configuring Centralized Pipeline Management
 ++++

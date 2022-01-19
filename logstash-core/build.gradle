@@ -21,7 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's master versions.yml file
+// fetch version from Logstash's main versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
 
 description = """Logstash Core Java"""
@@ -30,7 +30,7 @@ String jrubyVersion = versionMap['jruby']['version']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 
-String log4jVersion = '2.14.0'
+String log4jVersion = '2.17.1'
 
 repositories {
     mavenCentral()
@@ -191,6 +191,8 @@ dependencies {
     }
     implementation 'org.javassist:javassist:3.26.0-GA'
     testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testImplementation 'org.elasticsearch:securemock:1.2'

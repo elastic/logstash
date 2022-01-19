@@ -3,7 +3,8 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "digest"
-
+require "date"
+require "time"
 
 module LogStash module Filters
   module Geoip
@@ -47,6 +48,14 @@ module LogStash module Filters
         error_details = { :cause => e.cause }
         error_details[:backtrace] = e.backtrace if logger.debug?
         error_details
+      end
+
+      def time_diff_in_days(timestamp)
+        (::Date.today - ::Time.at(timestamp.to_i).to_date).to_i
+      end
+
+      def unix_time_to_iso8601(timestamp)
+        Time.at(timestamp.to_i).iso8601
       end
     end
   end

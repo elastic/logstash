@@ -5,8 +5,80 @@ coming[8.0.0]
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
+* <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-0-0-rc1]]
+=== Logstash 8.0.0-rc1 Release Notes
+
+==== Breaking changes
+
+[[rn-ecs-compatibility]]
+===== ECS compatibility
+Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema (ECS). This mode is controlled individually with each plugin’s ecs_compatibility option, which defaults to the value of the Logstash pipeline.ecs_compatibility setting. In Logstash 8, this compatibility mode will be on-by-default for all pipelines.
+
+If you wish to lock in a pipeline’s behavior from Logstash 7.x before upgrading to Logstash 8, you can set pipeline.ecs_compatibility: disabled to its definition in pipelines.yml (or globally in logstash.yml).
+
+==== New features and enhancements
+
+Logstash Docker images are now based on Ubuntu 20.04.
+
+==== Plugin releases
+Plugins align with release 7.16.2
+
+
+[[logstash-8-0-0-beta1]]
+=== Logstash 8.0.0-beta1 Release Notes
+
+==== Breaking changes
+
+[[rn-java-11-minimum]]
+===== Java 11 minimum
+Starting from Logstash 8.0, the minimum required version of Java to run Logstash is Java 11. By default, Logstash will
+run with the bundled JDK, which has been verified to work with each specific version of Logstash, and generally
+provides the best performance and reliability.
+
+See <<breaking-changes>> for a preview of additional breaking changes coming your way. 
+
+==== New features and enhancements
+
+[[rn-nanosecond-precision]]
+===== Nanosecond precision
+As processing times speed up, millisecond granularity is not always enough. Inbound data increasingly has sub-millisecond granularity timestamps.
+The pull request https://github.com/elastic/logstash/pull/12797[#12797] allows the internal mechanisms of Logstash that hold moment-in-time data - such as the Logstash Event, the Persistent Queue, the Dead Letter Queue and JSON encoding/decoding - to have nanosecond granularity.
+
+Timestamp precision is limited to the JVM and Platform's available granularity, which in many cases is microseconds.
+
+This change also grants users access to https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns[Java time's improved formatters], which include support fort ISO quarters, week-of-month, and a variety of timezone/offset-related format substitutions. For example:
+
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  mutate {
+    add_field => {"nanos" => "Nanos: %{{n}}" }
+  }
+}
+--------------------------------------------------------------------------------
+
+Results in the following event:
+
+[source,json]
+--------------------------------------------------------------------------------
+{
+    "@timestamp" => 2021-10-31T22:32:34.747968Z,
+          "host" => "logstash.lan",
+         "nanos" => "Nanos: 747968000",
+       "message" => "test",
+          "type" => "stdin",
+      "@version" => "1"
+}
+--------------------------------------------------------------------------------
+
+==== Plugin releases
+Plugins align with release 7.15.1
+
 
 [[logstash-8-0-0-alpha2]]
 === Logstash 8.0.0-alpha2 Release Notes

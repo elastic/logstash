@@ -5,10 +5,9 @@
 # which Logstash can be tested against.
 
 LS_RUNTIME_JAVA:
-  - java8
   - openjdk11
-  - openjdk16
+  - openjdk17
   - adoptopenjdk11
-  - adoptopenjdk16
+  - adoptiumjdk17
   - zulu11
-  - zulu16
+  - zulu17
