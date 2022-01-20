@@ -1,5 +1,7 @@
 package org.logstash.launchers;
 
+import org.logstash.util.JavaVersionChecker;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +70,7 @@ public class JvmOptionsParser {
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
             );
         }
+        JavaVersionChecker.bailOnOldJava();
         final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
         handleJvmOptions(args, lsJavaOpts);
     }

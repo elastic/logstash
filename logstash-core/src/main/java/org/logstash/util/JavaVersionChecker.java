@@ -26,30 +26,20 @@ import java.util.Locale;
  * Simple program that checks if the runtime Java version is at least 11.
  * Based on JavaVersionChecker from Elasticsearch
  */
-final class JavaVersionChecker {
+public final class JavaVersionChecker {
 
     private JavaVersionChecker() {}
 
-    /**
-     * The main entry point. The exit code is 0 if the Java version is at least 11, otherwise the exit code is 1.
-     *
-     * @param args the args to the program which are rejected if not empty
-     */
-    public static void main(final String[] args) {
-        // no leniency!
-        if (args.length != 0) {
-            throw new IllegalArgumentException("expected zero arguments but was " + Arrays.toString(args));
-        }
+    public static void bailOnOldJava() {
         if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_11) < 0) {
             final String message = String.format(
                     Locale.ROOT,
-                    "the minimum required Java version is 11; your Java version from [%s] does not meet this requirement",
+                    "The minimum required Java version is 11; your Java version from [%s] does not meet this requirement",
                     System.getProperty("java.home")
             );
             errPrintln(message);
             exit(1);
         }
-        exit(0);
     }
 
     /**
