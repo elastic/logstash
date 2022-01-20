@@ -92,35 +92,39 @@ GEM
     elastic-app-search (7.8.0)
       jwt (>= 1.5, < 3.0)
     elastic-workplace-search (0.4.1)
-    elasticsearch (7.16.1)
-      elasticsearch-api (= 7.16.1)
-      elasticsearch-transport (= 7.16.1)
-    elasticsearch-api (7.16.1)
+    elasticsearch (7.16.3)
+      elasticsearch-api (= 7.16.3)
+      elasticsearch-transport (= 7.16.3)
+    elasticsearch-api (7.16.3)
       multi_json
-    elasticsearch-transport (7.16.1)
+    elasticsearch-transport (7.16.3)
       faraday (~> 1)
       multi_json
     equalizer (0.0.11)
-    faraday (1.8.0)
+    faraday (1.9.3)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
-      faraday-httpclient (~> 1.0.1)
+      faraday-httpclient (~> 1.0)
+      faraday-multipart (~> 1.0)
       faraday-net_http (~> 1.0)
-      faraday-net_http_persistent (~> 1.1)
+      faraday-net_http_persistent (~> 1.0)
       faraday-patron (~> 1.0)
       faraday-rack (~> 1.0)
-      multipart-post (>= 1.2, < 3)
+      faraday-retry (~> 1.0)
       ruby2_keywords (>= 0.0.4)
     faraday-em_http (1.0.0)
     faraday-em_synchrony (1.0.0)
     faraday-excon (1.1.0)
     faraday-httpclient (1.0.1)
+    faraday-multipart (1.0.3)
+      multipart-post (>= 1.2, < 3)
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.2.0)
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
-    ffi (1.15.4-java)
+    faraday-retry (1.0.3)
+    ffi (1.15.5-java)
     filesize (0.2.0)
     fivemat (1.3.7)
     flores (0.0.7)
@@ -139,7 +143,7 @@ GEM
     gems (1.2.0)
     gene_pool (1.5.0)
       concurrent-ruby (>= 1.0)
-    git (1.10.1)
+    git (1.10.2)
       rchardet (~> 1.8)
     hashdiff (1.0.1)
     hitimes (1.3.1-java)
@@ -160,7 +164,7 @@ GEM
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
       concurrent-ruby
-    jmespath (1.4.0)
+    jmespath (1.5.0)
     jrjackson (0.4.14-java)
     jruby-jms (1.3.0-java)
       gene_pool
@@ -296,7 +300,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3
-    logstash-filter-geoip (7.2.9-java)
+    logstash-filter-geoip (7.2.10-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -540,7 +544,7 @@ GEM
       elastic-workplace-search (~> 0.4.1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-integration-jdbc (5.2.1)
+    logstash-integration-jdbc (5.2.2)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -548,7 +552,7 @@ GEM
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
       lru_redux
-      rufus-scheduler (< 3.5)
+      rufus-scheduler (~> 3.0.9)
       sequel
       tzinfo
       tzinfo-data
@@ -593,11 +597,11 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.3.3-java)
+    logstash-output-elasticsearch (11.4.1-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
-      manticore (>= 0.7.1, < 1.0.0)
+      manticore (>= 0.8.0, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
     logstash-output-email (4.1.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -655,12 +659,12 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       snappy (= 0.0.12)
       webhdfs
-    logstash-patterns-core (4.3.1)
+    logstash-patterns-core (4.3.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     lru_redux (1.1.0)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
-    manticore (0.7.1-java)
+    manticore (0.8.0-java)
       openssl_pkcs8_pure
     march_hare (4.4.0-java)
     memoizable (0.4.2)
@@ -683,7 +687,7 @@ GEM
     nokogiri (1.12.5-java)
       racc (~> 1.4)
     numerizer (0.1.1)
-    octokit (4.21.0)
+    octokit (4.22.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
     openssl_pkcs8_pure (0.0.0.2)
@@ -719,7 +723,7 @@ GEM
       rspec-mocks (~> 3.10.0)
     rspec-core (3.10.1)
       rspec-support (~> 3.10.0)
-    rspec-expectations (3.10.1)
+    rspec-expectations (3.10.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-mocks (3.10.2)
@@ -918,4 +922,4 @@ DEPENDENCIES
   webmock (~> 3)
 
 BUNDLED WITH
-   2.3.4
+   2.3.5
