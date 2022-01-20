@@ -46,7 +46,6 @@ describe "Test Elasticsearch output" do
     result = es_client.search(index: '.ds-logs-*', size: 1, q: 'dynamic')
     expect(result).to have_hits(1)
     s = result["hits"]["hits"][0]["_source"]
-    puts s
     expect(s["bytes"]).to eq(18848)
     expect(s["response"]).to eq(200)
     expect(s["clientip"]).to eq("213.113.233.227")
