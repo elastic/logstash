@@ -40,7 +40,7 @@ public class JvmOptionsParserTest {
 
         // Verify
         final String output = outputStreamCaptor.toString();
-        assertEquals("Output MUST contains the options present in LS_JAVA_OPTS", "-Xblabla\n", output);
+        assertEquals("Output MUST contains the options present in LS_JAVA_OPTS", "-Xblabla" + System.lineSeparator(), output);
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -54,7 +54,7 @@ public class JvmOptionsParserTest {
 
     @Test
     public void testParseCommentLine() throws IOException {
-        final BufferedReader options = asReader("# this is a comment\n-XX:+UseConcMarkSweepGC");
+        final BufferedReader options = asReader("# this is a comment" + System.lineSeparator() + "-XX:+UseConcMarkSweepGC");
         final JvmOptionsParser.ParseResult res = JvmOptionsParser.parse(11, options);
 
         assertTrue("no invalid lines can be present", res.getInvalidLines().isEmpty());
@@ -91,19 +91,19 @@ public class JvmOptionsParserTest {
 
     @Test
     public void testErrorLinesAreReportedCorrectly() throws IOException {
-        final String jvmOptionsContent = "10-11:-XX:+UseConcMarkSweepGC\n" +
-                "invalidOption\n" +
-                "-Duser.country=US\n" +
+        final String jvmOptionsContent = "10-11:-XX:+UseConcMarkSweepGC" + System.lineSeparator() +
+                "invalidOption" + System.lineSeparator() +
+                "-Duser.country=US" + System.lineSeparator() +
                 "anotherInvalidOption";
         JvmOptionsParser.ParseResult res = JvmOptionsParser.parse(11, asReader(jvmOptionsContent));
-        verifyOptions("Option must be present for Java 11", "-XX:+UseConcMarkSweepGC\n-Duser.country=US", res);
+        verifyOptions("Option must be present for Java 11", "-XX:+UseConcMarkSweepGC" + System.lineSeparator() + "-Duser.country=US", res);
 
         assertEquals("invalidOption", res.getInvalidLines().get(2));
         assertEquals("anotherInvalidOption", res.getInvalidLines().get(4));
     }
 
     private void verifyOptions(String message, String expected, JvmOptionsParser.ParseResult res) {
-        assertEquals(message, expected, String.join("\n", res.getJvmOptions()));
+        assertEquals(message, expected, String.join(System.lineSeparator(), res.getJvmOptions()));
     }
 
     private BufferedReader asReader(String s) {
