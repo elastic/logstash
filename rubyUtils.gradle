@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath 'org.yaml:snakeyaml:1.29'
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-complete:9.3.2.0"
+        classpath "org.jruby:jruby-complete:9.3.3.0"
     }
 }
 
