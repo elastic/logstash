@@ -86,7 +86,7 @@ setup_classpath() {
   echo "${classpath}"
 }
 
-# set up CLASSPATH as a side-effect, we start to java processes
+# set up CLASSPATH once (we start more than one java process)
 CLASSPATH="${JRUBY_HOME}/lib/jruby.jar"
 CLASSPATH="$(setup_classpath $CLASSPATH $LOGSTASH_JARS)"
 
@@ -141,8 +141,6 @@ setup_java() {
 
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
-
-  CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
 
   # Verify the version of Java being used, and exit if the wrong version of Java is not available.
   if ! "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.util.JavaVersionChecker ; then
