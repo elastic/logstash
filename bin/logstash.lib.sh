@@ -140,6 +140,11 @@ setup_java() {
   CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
 
   JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    exit $EXIT_CODE
+  fi
+
   unset CLASSPATH
   export JAVA_OPTS
 }
