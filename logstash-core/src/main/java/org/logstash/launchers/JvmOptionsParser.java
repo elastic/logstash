@@ -1,5 +1,7 @@
 package org.logstash.launchers;
 
+import org.logstash.util.JavaVersion;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,16 +70,30 @@ public class JvmOptionsParser {
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
             );
         }
+        bailOnOldJava();
+        final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
+        handleJvmOptions(args, lsJavaOpts);
+    }
 
+    static void bailOnOldJava(){
+        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_11) < 0) {
+            final String message = String.format(
+                    Locale.ROOT,
+                    "The minimum required Java version is 11; your Java version from [%s] does not meet this requirement",
+                    System.getProperty("java.home")
+            );
+            System.err.println(message);
+            System.exit(1);
+        }
+    }
+
+
+    static void handleJvmOptions(String[] args, String lsJavaOpts) {
         final JvmOptionsParser parser = new JvmOptionsParser(args[0]);
         final String jvmOpts = args.length == 2 ? args[1] : null;
         try {
             Optional<Path> jvmOptions = parser.lookupJvmOptionsFile(jvmOpts);
-            if (!jvmOptions.isPresent()) {
-                System.err.println("warning: no jvm.options file found");
-                return;
-            }
-            parser.parse(jvmOptions.get());
+            parser.parseAndInjectEnvironment(jvmOptions, lsJavaOpts);
         } catch (JvmOptionsFileParserException pex) {
             System.err.printf(Locale.ROOT,
                     "encountered [%d] error%s parsing [%s]",
@@ -112,31 +128,54 @@ public class JvmOptionsParser {
                 .findFirst();
     }
 
-    private void parse(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
-        final List<String> jvmOptionsContent = parseJvmOptions(jvmOptionsFile);
-        final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
+    private void parseAndInjectEnvironment(Optional<Path> jvmOptionsFile, String lsJavaOpts) throws IOException, JvmOptionsFileParserException {
+        final List<String> jvmOptionsContent = new ArrayList<>(parseJvmOptions(jvmOptionsFile));
+
         if (lsJavaOpts != null && !lsJavaOpts.isEmpty()) {
+            if (isDebugEnabled()) {
+                System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
+            }
             jvmOptionsContent.add(lsJavaOpts);
         }
+
         System.out.println(String.join(" ", jvmOptionsContent));
     }
 
-    private List<String> parseJvmOptions(Path jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
-        if (!jvmOptionsFile.toFile().exists()) {
+    private List<String> parseJvmOptions(Optional<Path> jvmOptionsFile) throws IOException, JvmOptionsFileParserException {
+        if (!jvmOptionsFile.isPresent()) {
+            System.err.println("Warning: no jvm.options file found.");
             return Collections.emptyList();
+        }
+        final Path optionsFilePath = jvmOptionsFile.get();
+        if (!optionsFilePath.toFile().exists()) {
+            System.err.format("Warning: jvm.options file does not exist or is not readable: `%s`\n", optionsFilePath);
+            return Collections.emptyList();
+        }
+
+        if (isDebugEnabled()) {
+            System.err.format("Processing jvm.options file at `%s`\n", optionsFilePath);
         }
         final int majorJavaVersion = javaMajorVersion();
 
-        try (InputStream is = Files.newInputStream(jvmOptionsFile);
+        try (InputStream is = Files.newInputStream(optionsFilePath);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader)
         ) {
             final ParseResult parseResults = parse(majorJavaVersion, br);
             if (parseResults.hasErrors()) {
-                throw new JvmOptionsFileParserException(jvmOptionsFile, parseResults.getInvalidLines());
+                throw new JvmOptionsFileParserException(optionsFilePath, parseResults.getInvalidLines());
             }
             return parseResults.getJvmOptions();
         }
+    }
+
+    private boolean isDebugEnabled() {
+        final String debug = System.getenv("DEBUG");
+        if (debug == null) {
+            return false;
+        }
+
+        return "1".equals(debug) || Boolean.parseBoolean(debug);
     }
 
     /**

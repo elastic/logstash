@@ -23,6 +23,8 @@ package org.logstash;
 import java.lang.reflect.Field;
 import java.util.Map;
 import org.hamcrest.CoreMatchers;
+import org.jruby.RubyString;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,25 +35,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
-
-    @SuppressWarnings("unchecked")
     @Before
-    public void clearParsingCache() throws Exception {
-        final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
-        cache.clear();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Before
-    public void clearDedupCache() throws Exception  {
-        final Field cacheField = FieldReference.class.getDeclaredField("DEDUP");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
-        cache.clear();
+    @After
+    public void clearInternalCaches() {
+        getInternalCache("CACHE").clear();
+        getInternalCache("DEDUP").clear();
+        getInternalCache("RUBY_CACHE").clear();
     }
 
     @Test
@@ -68,16 +57,23 @@ public final class FieldReferenceTest {
         );
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
-        final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
-        cacheField.setAccessible(true);
-        final Map<CharSequence, FieldReference> cache =
-                (Map<CharSequence, FieldReference>) cacheField.get(null);
+    public void testCacheUpperBound() {
+        final Map<String, FieldReference> cache = getInternalCache("CACHE");
         final int initial = cache.size();
         for (int i = 0; i < 10_001 - initial; ++i) {
             FieldReference.from(String.format("[array][%d]", i));
+        }
+        assertThat(cache.size(), CoreMatchers.is(10_000));
+    }
+
+    @Test
+    public void testRubyCacheUpperBound() {
+        final Map<RubyString, FieldReference> cache = getInternalCache("RUBY_CACHE");
+        final int initial = cache.size();
+        for (int i = 0; i < 10_050 - initial; ++i) {
+            final RubyString rubyString = RubyUtil.RUBY.newString(String.format("[array][%d]", i));
+            FieldReference.from(rubyString);
         }
         assertThat(cache.size(), CoreMatchers.is(10_000));
     }
@@ -182,5 +178,17 @@ public final class FieldReferenceTest {
     @Test(expected=FieldReference.IllegalSyntaxException.class)
     public void testParseLiteralSquareBrackets() throws Exception {
         FieldReference.from("this[index]");
+    }
+
+    @SuppressWarnings("unchecked")
+    private <K,V> Map<K,V> getInternalCache(final String fieldName) {
+        final Field cacheField;
+        try {
+            cacheField = FieldReference.class.getDeclaredField(fieldName);
+            cacheField.setAccessible(true);
+            return (Map<K, V>) cacheField.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

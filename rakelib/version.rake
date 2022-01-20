@@ -39,6 +39,22 @@ def update_version_file(old_version, new_version)
   IO.write(VERSION_FILE, versions_as_text)
 end
 
+def update_lock_release_file(old_version, new_version)
+  lock_file = Dir.glob('Gemfile*.lock.release').first
+  unless lock_file
+    warn "Gemfile*.lock.release missing - skipping version update"
+    return
+  end
+  old_version = old_version['logstash-core']
+  new_version = new_version['logstash-core']
+  versions_as_text = IO.read(lock_file)
+  #      logstash-core (= 7.16.0)
+  versions_as_text.sub!(/logstash-core \(=\s?(#{old_version})\)/) { |m| m.sub(old_version, new_version) }
+  #    logstash-core (7.16.0-java)
+  versions_as_text.sub!(/logstash-core \((#{old_version})-java\)/) { |m| m.sub(old_version, new_version) }
+  IO.write(lock_file, versions_as_text)
+end
+
 def update_index_shared1(new_version)
   index_shared1 = IO.read(INDEX_SHARED1_FILE)
   old_version = index_shared1.match(':logstash_version:\s+(?<logstash_version>\d[.]\d[.]\d.*)')[:logstash_version]
@@ -78,6 +94,7 @@ namespace :version do
     old_version = YAML.safe_load(File.read(VERSION_FILE))
     update_readme(old_version, new_version)
     update_version_file(old_version, new_version)
+    update_lock_release_file(old_version, new_version)
   end
 
   desc "set stack version referenced in docs"

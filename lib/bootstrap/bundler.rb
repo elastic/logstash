@@ -17,6 +17,7 @@
 
 require "fileutils"
 require "stringio"
+require 'set'
 
 module LogStash
   module Bundler
@@ -54,7 +55,8 @@ module LogStash
       end
     end
 
-    def setup!(options = {})
+    # prepare bundler's environment variables, but do not invoke ::Bundler::setup
+    def prepare(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
@@ -75,6 +77,13 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:frozen, true) unless options[:allow_gemfile_changes]
       ::Bundler.reset!
+    end
+
+    # After +Bundler.setup+ call, all +load+ or +require+ of the gems would be allowed only if they are part of
+    # the Gemfile or Ruby's standard library
+    # To install a new plugin which is not part of Gemfile, DO NOT call setup!
+    def setup!(options = {})
+      prepare(options)
       ::Bundler.setup
     end
 
@@ -127,11 +136,17 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
+
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
-      # Note: Using an `ENV` here because ::Bundler.settings.set_local(:silence_root_warning, true)
-      # does not work (set_global *does*, but that seems too drastic a change)
-      with_env("BUNDLE_SILENCE_ROOT_WARNING" => "true") do
+      # Note: Using `ENV`s here because ::Bundler.settings.set_local or `bundle config`
+      # is not being respected with `Bundler::CLI.start`?
+      # (set_global *does*, but that seems too drastic a change)
+      with_env({"BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                "BUNDLE_WITHOUT" => options[:without].join(":")}) do
+
         if !debug?
           # Will deal with transient network errors
           execute_bundler_with_retry(options)
@@ -196,6 +211,44 @@ module LogStash
       ENV["DEBUG"]
     end
 
+    # @param plugin_names [Array] logstash plugin names that are going to update
+    # @return [Array] gem names that plugins depend on, including logstash plugins
+    def expand_logstash_mixin_dependencies(plugin_names)
+      plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
+
+      # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
+      lockfile_gems = ::Bundler::definition.specs.to_a.map { |stub_spec| stub_spec.name }.to_set
+
+      # get the array of dependencies which are eligible to update. Bundler unlock these gems in update process
+      # exclude the gems which are not in lock file. They should not be part of unlock gems.
+      # The core libs, logstash-core logstash-core-plugin-api, are not expected to update when user do plugins update
+      # constraining the transitive dependency updates to only those Logstash maintain
+      unlock_libs = plugin_names.flat_map { |plugin_name| fetch_plugin_dependencies(plugin_name) }
+                                .uniq
+                                .select { |lib_name| lockfile_gems.include?(lib_name) }
+                                .select { |lib_name| lib_name.start_with?("logstash-mixin-") }
+
+      unlock_libs + plugin_names
+    end
+
+    # get all dependencies of a single plugin, considering all versions >= current
+    # @param plugin_name [String] logstash plugin name
+    # @return [Array] gem names that plugin depends on
+    def fetch_plugin_dependencies(plugin_name)
+      old_spec = ::Gem::Specification.find_all_by_name(plugin_name).last
+      require_version = old_spec ? ">= #{old_spec.version}": nil
+      dep = ::Gem::Dependency.new(plugin_name, require_version)
+      new_specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+
+      raise(errors.first.error) if errors.length > 0
+
+      new_specs.map { |spec, source| spec }
+               .flat_map(&:dependencies)
+               .select {|spec| spec.type == :runtime }
+               .map(&:name)
+               .uniq
+    end
+
     # build Bundler::CLI.start arguments array from the given options hash
     # @param option [Hash] the invoke! options hash
     # @return [Array<String>] Bundler::CLI.start string arguments array
@@ -208,9 +261,12 @@ module LogStash
           arguments << "--local"
           arguments << "--no-prune" # From bundler docs: Don't remove stale gems from the cache.
         end
+        if options[:force]
+          arguments << "--redownload"
+        end
       elsif options[:update]
         arguments << "update"
-        arguments << options[:update]
+        arguments << expand_logstash_mixin_dependencies(options[:update])
         arguments << "--local" if options[:local]
       elsif options[:clean]
         arguments << "clean"

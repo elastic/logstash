@@ -22,28 +22,31 @@ describe LogStash::Filters::Geoip do
     GEOIP_STAGING_ENDPOINT = "#{GEOIP_STAGING_HOST}#{LogStash::Filters::Geoip::DownloadManager::GEOIP_PATH}"
 
     before do
-      stub_const('LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT', GEOIP_STAGING_ENDPOINT)
+      allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.download.endpoint").and_return(GEOIP_STAGING_ENDPOINT)
     end
 
+    # this is disabled until https://github.com/elastic/logstash/issues/13261 is solved
     context "rest client" do
+
       it "can call endpoint" do
         conn = download_manager.send(:rest_client)
         res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
-        expect(res.status).to eq(200)
+        expect(res.code).to eq(200)
       end
 
       it "should raise error when endpoint response 4xx" do
-        conn = download_manager.send(:rest_client)
-        expect { conn.get("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree") }.to raise_error /404/
+        bad_uri = URI("#{GEOIP_STAGING_HOST}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
+        expect(download_manager).to receive(:service_endpoint).and_return(bad_uri).twice
+        expect { download_manager.send(:check_update) }.to raise_error(LogStash::Filters::Geoip::DownloadManager::BadResponseCodeError, /404/)
       end
     end
 
     context "check update" do
       before(:each) do
-        expect(download_manager).to receive(:get_uuid).and_return(SecureRandom.uuid)
+        expect(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint",
                            :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
-                           :status => 200)
+                           :code => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 
@@ -79,7 +82,7 @@ describe LogStash::Filters::Geoip do
           "name" => filename,
           "provider" => "maxmind",
           "updated" => 1609891257,
-          "url" => "https://github.com/logstash-plugins/logstash-filter-geoip/archive/master.zip"
+          "url" => "https://github.com/logstash-plugins/logstash-filter-geoip/archive/main.zip"
         }
       end
       let(:md5_hash) { SecureRandom.hex }
@@ -184,5 +187,40 @@ describe LogStash::Filters::Geoip do
       end
     end
 
+    context "download url" do
+      before do
+        allow(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
+      end
+
+      it "should give a path with hostname when input is a filename" do
+        expect(download_manager.send(:download_url, "GeoLite2-ASN.tgz")).to match /#{GEOIP_STAGING_HOST}/
+      end
+
+      it "should give a unmodified path when input has scheme" do
+        expect(download_manager.send(:download_url, GEOIP_STAGING_ENDPOINT)).to eq(GEOIP_STAGING_ENDPOINT)
+      end
+    end
+
+    context "service endpoint" do
+      before do
+        allow(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
+      end
+
+      it "should give xpack setting" do
+        uri = download_manager.send(:service_endpoint)
+        expect(uri.to_s).to match /#{GEOIP_STAGING_ENDPOINT}/
+      end
+
+      context "empty xpack config" do
+        before do
+          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.download.endpoint").and_return(nil)
+        end
+
+        it "should give default endpoint" do
+          uri = download_manager.send(:service_endpoint)
+          expect(uri.to_s).to match /#{LogStash::Filters::Geoip::DownloadManager::GEOIP_ENDPOINT}/
+        end
+      end
+    end
   end
 end

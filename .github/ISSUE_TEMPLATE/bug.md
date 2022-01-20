@@ -36,7 +36,7 @@ If the affected version of Logstash is 7.9 (or earlier), or if it is NOT using t
 
 1. JVM version (`java -version`)
 2. JVM installation source (e.g. from the Operating System's package manager, from source, etc).
-3. Value of the `LS_JAVA_HOME`/`JAVA_HOME` environment variable if set.
+3. Value of the `LS_JAVA_HOME` environment variable if set.
 
 **OS version** (`uname -a` if on a Unix-like system):
 
