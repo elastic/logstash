@@ -1,7 +1,5 @@
 package org.logstash.launchers;
 
-import org.logstash.util.JavaVersion;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,8 +104,6 @@ public class JvmOptionsParser {
             System.exit(1);
         }
     }
-
-
     static void handleJvmOptions(String[] args, String lsJavaOpts) {
         final JvmOptionsParser parser = new JvmOptionsParser(args[0]);
         final String jvmOpts = args.length == 2 ? args[1] : null;

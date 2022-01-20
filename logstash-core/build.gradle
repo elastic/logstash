@@ -156,6 +156,7 @@ dependencies {
     api(files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
         builtBy ':downloadAndInstallJRuby'
     }) { because "DEPENDENCY: org.jruby:jruby-core:${jrubyVersion}" } // meta-data for generateLicenseReport
+    implementation project(':options-parser')
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
