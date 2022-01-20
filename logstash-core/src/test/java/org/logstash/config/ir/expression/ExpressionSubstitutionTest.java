@@ -1,5 +1,6 @@
 package org.logstash.config.ir.expression;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
@@ -81,7 +82,7 @@ public class ExpressionSubstitutionTest {
     }
 
     public Map<String, String> envVar() {
-        return Map.of("APP", "foobar", "SMALL", "1", "BIG", "100");
+        return ImmutableMap.of("APP", "foobar", "SMALL", "1", "BIG", "100");
     }
 
     public ConfigVariableExpander getConfigVariableExpander() {
