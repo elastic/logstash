@@ -53,7 +53,7 @@ describe "Test Kafka Input" do
 
   it "can ingest 37 apache log lines from Kafka broker" do
     try(num_retries) do
-      expect(File.exists?(file_output_path)).to be(true), "output file: #{file_output_path} does not exist"
+      expect(File).to exist(file_output_path) "output file: #{file_output_path} does not exist"
     end
 
     try(num_retries) do
