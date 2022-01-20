@@ -1,6 +1,6 @@
 package org.logstash.launchers;
 
-import org.logstash.util.JavaVersionChecker;
+import org.logstash.util.JavaVersion;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,10 +70,23 @@ public class JvmOptionsParser {
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
             );
         }
-        JavaVersionChecker.bailOnOldJava();
+        bailOnOldJava();
         final String lsJavaOpts = System.getenv("LS_JAVA_OPTS");
         handleJvmOptions(args, lsJavaOpts);
     }
+
+    static void bailOnOldJava(){
+        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_11) < 0) {
+            final String message = String.format(
+                    Locale.ROOT,
+                    "The minimum required Java version is 11; your Java version from [%s] does not meet this requirement",
+                    System.getProperty("java.home")
+            );
+            System.err.println(message);
+            System.exit(1);
+        }
+    }
+
 
     static void handleJvmOptions(String[] args, String lsJavaOpts) {
         final JvmOptionsParser parser = new JvmOptionsParser(args[0]);
