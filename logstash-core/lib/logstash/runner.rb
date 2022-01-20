@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-java_import 'org.logstash.util.JavaVersion'
+
 Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
@@ -54,6 +54,7 @@ require "set"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
+java_import 'org.logstash.util.JavaVersion'
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -330,6 +331,8 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
+    jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
+    logger.info "JVM bootstrap flags: #{jvmArgs}"
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)

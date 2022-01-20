@@ -28,7 +28,6 @@ import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.execution.WorkerLoop;
 
 /**
  * <p>This class is an internal API and behaves very different from a standard {@link Map}.</p>

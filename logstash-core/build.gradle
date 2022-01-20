@@ -28,7 +28,7 @@ String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.14.0'
+String log4jVersion = '2.17.1'
 
 repositories {
     mavenCentral()

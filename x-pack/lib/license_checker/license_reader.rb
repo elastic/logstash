@@ -15,7 +15,9 @@ module LogStash
       def initialize(settings, feature, options)
         @namespace = "xpack.#{feature}"
         @settings = settings
-        @es_options = options.merge('resurrect_delay' => 30)
+
+        es_options = options.merge('resurrect_delay' => 30)
+        @es_options = Helpers::ElasticsearchOptions::es_options_with_product_origin_header(es_options)
       end
 
       ##

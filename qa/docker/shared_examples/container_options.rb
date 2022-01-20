@@ -3,6 +3,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
   before do
     @image = find_image(flavor)
     @container = start_container(@image, options)
+    wait_for_pipeline(@container)
   end
 
   after do
@@ -13,7 +14,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     let(:options) { { 'ENV' => ['PIPELINE_WORKERS=32'] } }
 
     it "should correctly set the number of pipeline workers" do
-      expect(get_node_info(@container)['pipelines']['main']['workers']).to eql 32
+      expect(get_pipeline_setting(@container, 'workers')).to eql 32
     end
   end
 
@@ -21,7 +22,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     let(:options) { { 'ENV' => ['pipeline.workers=64'] } }
 
     it "should correctly set the number of pipeline workers" do
-      expect(get_node_info(@container)['pipelines']['main']['workers']).to eql 64
+      expect(get_pipeline_setting(@container, 'workers')).to eql 64
     end
   end
 
@@ -29,7 +30,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     let(:options) { { 'ENV' => ['pipeline.batch.size=123'] } }
 
     it "should correctly set the batch size" do
-      expect(get_node_info(@container)['pipelines']['main']['batch_size']).to eql 123
+      expect(get_pipeline_setting(@container, 'batch_size')).to eql 123
     end
   end
 
@@ -37,7 +38,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     let(:options) { { 'ENV' => ['pipeline.batch.delay=36'] } }
 
     it 'should correctly set batch delay' do
-      expect(get_node_info(@container)['pipelines']['main']['batch_delay']).to eql 36
+      expect(get_pipeline_setting(@container, 'batch_delay')).to eql 36
     end
   end
 

@@ -184,7 +184,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     return if !verify? || preserve? || development? || local? || local_gem?
 
     puts "Resolving mixin dependencies"
-    LogStash::Bundler.setup!
+    LogStash::Bundler.prepare
     plugins_to_update = install_list.map(&:first)
     unlock_dependencies = LogStash::Bundler.expand_logstash_mixin_dependencies(plugins_to_update) - plugins_to_update
 

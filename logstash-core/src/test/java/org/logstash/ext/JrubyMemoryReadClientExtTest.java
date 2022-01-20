@@ -28,7 +28,6 @@ import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.execution.QueueBatch;
-import org.logstash.execution.WorkerLoop;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
