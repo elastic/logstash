@@ -56,8 +56,7 @@ GEM
     buftok (0.2.0)
     builder (3.2.4)
     cabin (0.9.0)
-    childprocess (0.9.0)
-      ffi (~> 1.0, >= 1.0.11)
+    childprocess (4.1.0)
     chronic_duration (0.10.6)
       numerizer (~> 0.1.1)
     ci_reporter (2.0.0)
@@ -642,7 +641,7 @@ DEPENDENCIES
   belzebuth
   benchmark-ips
   builder (~> 3.2.2)
-  childprocess (~> 0.9)
+  childprocess (~> 4)
   ci_reporter_rspec (= 1.0.0)
   flores (~> 0.0.6)
   fpm (~> 1.3.3)
