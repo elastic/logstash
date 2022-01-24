@@ -2,202 +2,32 @@
 == Release Notes
 
 coming[8.0.0]
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.0.0
 
-* correctly handle unexecuted downloadEs task https://github.com/elastic/logstash/pull/10555[#10555]
-* Refactoring of LIR serializer and exposing pipeline metrics https://github.com/elastic/logstash/pull/10561[#10561]
-*  Enhance `GET /` API for Metricbeat https://github.com/elastic/logstash/pull/10589[#10589]
-* Update JRuby and Java prerequisites https://github.com/elastic/logstash/pull/10604[#10604]
-* Collect and expose codec metrics https://github.com/elastic/logstash/pull/10614[#10614]
-* Handle duplicate config entries https://github.com/elastic/logstash/pull/10619[#10619]
-* Native support for Java plugins (GA) https://github.com/elastic/logstash/pull/10620[#10620]
-* Log successful shutdowns https://github.com/elastic/logstash/pull/10628[#10628]
-* Refactor Gradle wrappers around Ruby operations https://github.com/elastic/logstash/pull/10642[#10642]
-* [DOCS] Adds tagged region for notable breaking changes https://github.com/elastic/logstash/pull/10654[#10654]
-* download exact version artifact for release build otherwise download snapshot https://github.com/elastic/logstash/pull/10664[#10664]
-* Fix default codec and buffer handling in Java stdout output https://github.com/elastic/logstash/pull/10673[#10673]
-* Corrects the description of codec behavior in the output stage of Logstash pipelines https://github.com/elastic/logstash/pull/10682[#10682]
-* Correct settings file doc to note that Java execution defaults to true https://github.com/elastic/logstash/pull/10701[#10701]
-* Correction on Java execution in docs on command-line arguments https://github.com/elastic/logstash/pull/10710[#10710]
-* Clarify that Java codecs work only with Java inputs and outputs https://github.com/elastic/logstash/pull/10716[#10716]
-* Include G1 in JVM heap metrics https://github.com/elastic/logstash/pull/10728[#10728]
-* JRuby resolv.rb leak https://github.com/elastic/logstash/pull/10734[#10734]
-* [DOCS] Updates security API examples https://github.com/elastic/logstash/pull/10752[#10752]
-* Clarify behavior of ensure_delivery flag https://github.com/elastic/logstash/pull/10754[#10754]
-* Expose Metrics API to Java plugins https://github.com/elastic/logstash/pull/10761[#10761]
-* Provide DLQ writer interface to Java plugins https://github.com/elastic/logstash/pull/10790[#10790]
-* Plain codec for Java https://github.com/elastic/logstash/pull/10791[#10791]
-* Default stack trace size for hot threads to 50 and make it configurable https://github.com/elastic/logstash/pull/10793[#10793]
-* performance: share a single secret store https://github.com/elastic/logstash/pull/10794[#10794]
-* Document copy semantics of QueueWriter::push method https://github.com/elastic/logstash/pull/10808[#10808]
-* LIR support for octal literals in pipeline definitions https://github.com/elastic/logstash/pull/10828[#10828]
-* Merge config values in LIR https://github.com/elastic/logstash/pull/10832[#10832]
-* Fixes unit test failures on some runs of ConfigCompilerTest::testComplexConfigToPipelineIR https://github.com/elastic/logstash/pull/10837[#10837]
-* field_refefence: handle illegal field references in converted maps https://github.com/elastic/logstash/pull/10839[#10839]
-
-=== Logstash Commits between 8.0 and 8.0.0-rc1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.0-rc1..8.0"
-
-e643ad7 - (HEAD -> 8.0, origin/8.0) Bump Gemfile lock for 8.0.0-rc2 (#13668) (22 minutes ago) <Andrea Selva>
-8f6922e - [Backport 8.0]Fix unit test under Windows (#13656) (#13664) (64 minutes ago) <Ry Biesemeyer>
-72bf35a - Backport #13430 to 8.0 Replace generated cleaner code with concrete implementation (#13649) (4 days ago) <Rob Bavey>
-27d7ec3 - Backport #13648 to 8.0. Remove separate JavaVersionChecker executable (#13659) (4 days ago) <Rob Bavey>
-1353ca3 - Backport #13353 to 8.0. Add integration test for Elasticsearch using defaults (#13661) (4 days ago) <Rob Bavey>
-1fba125 - [Docs] Add pipeline.ecs_compatibility to the list (#13612) (#13637) (4 days ago) <Ry Biesemeyer>
-66fc777 - field-reference: cap RUBY_CACHE to 10k entries (#13642) (#13654) (4 days ago) <Ry Biesemeyer>
-4c12e9c - [DOC] Clarify scope of queue settings 8.0 (#13650) (4 days ago) <Karen Metts>
-debf3ce - [Backport 8.0] Fix/gems not found in integration test after plugin install (#13641) (#13644) (4 days ago) <Andrea Selva>
-87ebe52 - [Backport 8.0] Fix Ruby port check execution in kafka_setup.sh (#13631) (#13639) (4 days ago) <Andrea Selva>
-a346206 - Doc: Remove hard-coded edit_url links where possible (#13646) (4 days ago) <Karen Metts>
-eabd821 - fix: respect LS_JAVA_OPTS environment even when optionsfile missing (#13525) (#13634) (6 days ago) <Ry Biesemeyer>
-40157a6 - [Backport PR #13604 to 8.0] Fix 2 failing tests on Windows (#13628) (6 days ago) <Rob Bavey>
-814c85d - [Backport 8.0]Add info log of JVM flags used to configure Logstash (#13531) (#13633) (6 days ago) <Andrea Selva>
-5d169a3 - Product origin headers to Logstash-controlled Elasticsearch clients (#13563) (#13622) (10 days ago) <Ry Biesemeyer>
-0845e08 -  [backport 8.0] Avoid to increment `event.out` conter for dropped events (#13593) (#13625) (10 days ago) <Andrea Selva>
-70fb72b - Avoid to itereate with each_index (#13603) (#13610) (11 days ago) <Andrea Selva>
-1c55773 - Release notes for 8.0.0-rc1 (#13598) (13 days ago) <Logstash Machine>
-f447257 - Fix unknown type warning of geoip metrics (#13382) (#13601) (13 days ago) <kaisecheng>
-84f901c - Backport PR#13533 to 8.0: Add JavaVersionChecker to check Java version for compatibility before running (#13596) (2 weeks ago) <Rob Bavey>
-56d84fb - Adds license definitions for faraday-multipart and faraday-retry (#13592) (#13595) (2 weeks ago) <Andrea Selva>
-41acef2 - docs: sprintf vs UTC nature of @timestamp field (#13576) (#13589) (2 weeks ago) <Ry Biesemeyer>
-9e3d906 - Update lockfile for 8.0 (#13584) (3 weeks ago) <Rob Bavey>
-deb5c6f - Fix logstash-plugin install command to install non default plugin (#13405) (#13586) (3 weeks ago) <kaisecheng>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.0.0-rc1..8.0 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.1.13 -> 3.1.14
-logstash-filter-dissect: 1.2.3 -> 1.2.4
-logstash-filter-geoip: 7.2.8 -> 7.2.10
-logstash-filter-http: 1.2.0 -> 1.2.1
-logstash-filter-useragent: 3.3.2 -> 3.3.3
-logstash-input-azure_event_hubs: 1.4.2 -> 1.4.3
-logstash-input-beats: 6.2.4 -> 6.2.5
-logstash-input-dead_letter_queue: 1.1.7 -> 1.1.8
-logstash-input-gelf: 3.3.0 -> 3.3.1
-logstash-input-http: 3.4.4 -> 3.4.5
-logstash-input-s3: 3.8.1 -> 3.8.3
-logstash-input-snmp: 1.3.0 -> 1.3.1
-logstash-input-tcp: 6.2.5 -> 6.2.6
-logstash-input-unix: 3.1.0 -> 3.1.1
-logstash-integration-jdbc: 5.1.10 -> 5.2.2
-logstash-output-cloudwatch: 3.0.9 -> 3.0.10
-logstash-output-elasticsearch: 11.3.1 -> 11.4.1
-logstash-patterns-core: 4.3.1 -> 4.3.2
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
-*Date Filter - 3.1.14*
-
-* Update log4j to 2.17.1
-
-*Dissect Filter - 1.2.4*
-
-* Update log4j dependencies to 2.17.1
-
-*Geoip Filter - 7.2.10*
-
-* [DOC] Air-gapped environment requires both ASN and City databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/204[#204]
-
-* Fix: red CI in Logstash 8.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/201[#201]
-* Update Log4j dependency to 2.17.1
-
-*Http Filter - 1.2.1*
-
-* Fix: do not set content-type if provided by user https://github.com/logstash-plugins/logstash-filter-http/pull/36[#36]
-
-*Useragent Filter - 3.3.3*
-
-* Docs: mention added fields in 3.3 with a note https://github.com/logstash-plugins/logstash-filter-useragent/pull/78[#78]
-
-*Azure_event_hubs Input - 1.4.3*
-
-* Build: make log4j-api a provided dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/73[#73]
-
-*Beats Input - 6.2.5*
-
-* Build: do not package log4j-api dependency https://github.com/logstash-plugins/logstash-input-beats/pull/441[#441].
-   Logstash provides the log4j framework and the dependency is not needed except testing and compiling.
-
-*Dead_letter_queue Input - 1.1.8*
-
-* Update dependencies for log4j to 2.17.1
-
-*Gelf Input - 3.3.1*
-
-* Fix: safely coerce the value of `_@timestamp` to avoid crashing the plugin https://github.com/logstash-plugins/logstash-input-gelf/pull/67[#67]
-
-*Http Input - 3.4.5*
-
-* Build: do not package log4j-api dependency https://github.com/logstash-plugins/logstash-input-http/pull/149[#149].
-   Logstash provides the log4j framework and the dependency is not needed except testing and compiling.
-
-*S3 Input - 3.8.3*
-
-* Fix missing `metadata` and `type` of the last event https://github.com/logstash-plugins/logstash-input-s3/pull/223[#223]
-
-* Refactor: read sincedb time once per bucket listing https://github.com/logstash-plugins/logstash-input-s3/pull/233[#233]
-
-*Snmp Input - 1.3.1*
-
-*  Refactor: handle no response(s) wout error logging https://github.com/logstash-plugins/logstash-input-snmp/pull/105[#105]
-
-*Tcp Input - 6.2.6*
-
-* [DOC] Fix incorrect pipeline code snippet https://github.com/logstash-plugins/logstash-input-tcp/pull/194[#194]
-* Update log4j dependency to 2.17.1 https://github.com/logstash-plugins/logstash-input-tcp/pull/196[#196]
-  
-
-*Unix Input - 3.1.1*
-
-* Fix: unable to stop plugin (on LS 6.x) https://github.com/logstash-plugins/logstash-input-unix/pull/29[#29]
-* Refactor: plugin internals got reviewed for `data_timeout => ...` to work reliably
-
-*Jdbc Integration - 5.2.2*
-
-* Feat: name scheduler threads + redirect error logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/102[#102]
-
-* Refactor: isolate paginated normal statement algorithm in a separate handler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/101[#101]
-
-* Added `jdbc_paging_mode` option to choose if use `explicit` pagination in statements and avoid the initial count 
-    query or use `auto` to delegate to the underlying library https://github.com/logstash-plugins/logstash-integration-jdbc/pull/95[#95]
-
-*Cloudwatch Output - 3.0.10*
-
-* Deps: unpin rufus scheduler https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/20[#20]
-* Fix: an old undefined method error which would surface with load (as queue fills up) 
-
-*Elasticsearch Output - 11.4.1*
-
-* Feat: upgrade manticore (http-client) library https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1063[#1063]
-* the underlying changes include latest HttpClient (4.5.13)
-* resolves an old issue with `ssl_certificate_verification => false` still doing some verification logic
-
-* Updates ECS templates https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1062[#1062]
-* Updates v1 templates to 1.12.1 for use with Elasticsearch 7.x and 8.x
-* Updates BETA preview of ECS v8 templates for Elasticsearch 7.x and 8.x
-
-* Feat: add support for 'traces' data stream type https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1057[#1057]
-
-* Refactor: review manticore error handling/logging, logging originating cause in case of connection related error when debug level is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1029[#1029]
-* Java causes on connection related exceptions will now be extra logged when plugin is logging at debug level
-
-*Core Patterns - 4.3.2*
-
-- Fix: typo in BIN9_QUERYLOG pattern (in ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/307[#307]
-
-
-
-* <<logstash-8-0-0,Logstash 8.0.0>>
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-rc1,Logstash 8.0.0-rc2>>
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-0-0-rc2]]
+=== Logstash 8.0.0-rc2 Release Notes
+
+==== New features and enhancements
+This release is mainly a consolidation of the code base.
+It improves the upgrade path reducing deprecation noise in Elastic Upgrade Assistant (#13563).
+Fixed long-standing issue with event's count exposed in metrics when the events are dropped from pipelines (#13593).
+Mitigates a memory leak that can be caused by using UUIDs or other high-cardinality field names. (#13642)
+Some improvements in Logstash bootstrap phase, logging the JVM flags used (#13531) and respecting
+LS_JAVA_OPTS environment even when `jvm.option` file missing (#13525).
+
+Fixed an issue with Azure input plugin, that when used in a pipeline made Logstash to crash (#13603).
+Consolidation of the test infrastructure: #13628, #13631, #13641, #13661, #13656.
+
+==== Plugin releases
+Plugins align with release 7.17.0
+
 
 [[logstash-8-0-0-rc1]]
 === Logstash 8.0.0-rc1 Release Notes
