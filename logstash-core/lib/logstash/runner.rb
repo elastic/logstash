@@ -299,22 +299,6 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings and the log level is correctly defined.
-    java.lang.System.setProperty("ls.logs", setting("path.logs"))
-    java.lang.System.setProperty("ls.log.format", setting("log.format"))
-    java.lang.System.setProperty("ls.log.level", setting("log.level"))
-    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
-    unless java.lang.System.getProperty("log4j.configurationFile")
-      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-
-      # Windows safe way to produce a file: URI.
-      file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
-      LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
-    end
-    # override log level that may have been introduced from a custom log4j config file
-    LogStash::Logging::Logger::configure_logging(setting("log.level"))
-
     if log_configuration_contains_javascript_usage?
       logger.warn("Logging configuration uses appender or filter with scripting language JavaScript, which will be removed in a future major release of Logstash.")
     end
