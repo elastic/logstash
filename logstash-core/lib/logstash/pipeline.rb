@@ -17,22 +17,7 @@
 
 # for backward compatibility
 # logstash-devutils-1.3.6 logstash_helpers has dependency on this class
+require 'logstash/java_pipeline'
 module LogStash
-  class Pipeline
-
-    # for backward compatibility in devutils for the logstash helpers, this method is not used
-    # in the pipeline anymore.
-    def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    end
-    #
-    # for backward compatibility in devutils for the rspec helpers, this method is not used
-    # in the pipeline anymore.
-    def filter(event, &block)
-    end
-
-    # for backward compatibility in devutils for the rspec helpers, this method is not used
-    # in the pipeline anymore.
-    def flush_filters(options = {}, &block)
-    end
-  end
+  Pipeline = JavaPipeline
 end
