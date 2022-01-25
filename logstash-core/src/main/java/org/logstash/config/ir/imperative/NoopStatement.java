@@ -23,6 +23,7 @@ package org.logstash.config.ir.imperative;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
+import org.logstash.plugins.ConfigVariableExpander;
 
 public class NoopStatement extends Statement {
 
@@ -43,7 +44,7 @@ public class NoopStatement extends Statement {
     }
 
     @Override
-    public Graph toGraph() {
+    public Graph toGraph(ConfigVariableExpander cve) {
         return Graph.empty();
     }
 
