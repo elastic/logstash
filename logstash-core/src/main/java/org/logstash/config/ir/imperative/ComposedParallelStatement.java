@@ -23,6 +23,7 @@ package org.logstash.config.ir.imperative;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.util.List;
 
@@ -37,11 +38,11 @@ public class ComposedParallelStatement extends ComposedStatement {
     }
 
     @Override
-    public Graph toGraph() throws InvalidIRException {
+    public Graph toGraph(ConfigVariableExpander cve) throws InvalidIRException {
         Graph g = Graph.empty();
 
         for (Statement s : getStatements()) {
-            g = Graph.combine(g, s.toGraph()).graph;
+            g = Graph.combine(g, s.toGraph(cve)).graph;
         }
 
         return g;

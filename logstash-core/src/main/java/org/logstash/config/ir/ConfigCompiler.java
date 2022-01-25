@@ -20,7 +20,6 @@
 
 package org.logstash.config.ir;
 
-import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -28,6 +27,7 @@ import org.logstash.RubyUtil;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.imperative.Statement;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.util.List;
 import java.util.Map;
@@ -49,18 +49,19 @@ public final class ConfigCompiler {
     /**
      * @param sourcesWithMetadata Logstash Config partitioned
      * @param supportEscapes The value of the setting {@code config.support_escapes}
+     * @param cve Config variable expander. Substitute variable with value in secret store, env, default config value
      * @return Compiled {@link PipelineIR}
      * @throws InvalidIRException if the the configuration contains errors
      */
     @SuppressWarnings("unchecked")
     public static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
-                                                final boolean supportEscapes) throws InvalidIRException {
-        return compileSources(sourcesWithMetadata, supportEscapes);
+                                                final boolean supportEscapes, ConfigVariableExpander cve) throws InvalidIRException {
+        return compileSources(sourcesWithMetadata, supportEscapes, cve);
     }
 
-    public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, boolean supportEscapes) throws InvalidIRException {
+    public static PipelineIR compileSources(List<SourceWithMetadata> sourcesWithMetadata, boolean supportEscapes, ConfigVariableExpander cve) throws InvalidIRException {
         Map<PluginDefinition.Type, List<Graph>> groupedPipelineSections = sourcesWithMetadata.stream()
-                .map(swm -> compileGraph(swm, supportEscapes))
+                .map(swm -> compileGraph(swm, supportEscapes, cve))
                 .flatMap(m -> m.entrySet().stream())
                 .filter(e -> e.getValue() != null)
                 .collect(groupingBy(Map.Entry::getKey,
@@ -108,15 +109,15 @@ public final class ConfigCompiler {
         return inputValue.toJava(Statement.class);
     }
 
-    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes) {
+    private static Map<PluginDefinition.Type, Graph> compileGraph(SourceWithMetadata swm, boolean supportEscapes, ConfigVariableExpander cve) {
         Map<PluginDefinition.Type, Statement> pluginStatements = compileImperative(swm, supportEscapes);
         return pluginStatements.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> toGraphWithUntypedException(e.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> toGraphWithUntypedException(e.getValue(), cve)));
     }
 
-    private static Graph toGraphWithUntypedException(Statement s) {
+    private static Graph toGraphWithUntypedException(Statement s, ConfigVariableExpander cve) {
         try {
-            return s.toGraph();
+            return s.toGraph(cve);
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
