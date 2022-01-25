@@ -52,6 +52,7 @@ describe LogStash::Compiler do
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
+    let(:cve) { org.logstash.plugins.ConfigVariableExpander.without_secret(org.logstash.common.EnvironmentVariableProvider.default_provider()) }
     subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings.get_value("config.support_escapes")) }
 
     context "when config.support_escapes" do
@@ -70,7 +71,7 @@ describe LogStash::Compiler do
       }
 
       let(:compiled_string) do
-        compiled[:input].toGraph.vertices.toArray.first.getPluginDefinition.arguments["bar"]
+        compiled[:input].toGraph(cve).vertices.toArray.first.getPluginDefinition.arguments["bar"]
       end
 
       before do
