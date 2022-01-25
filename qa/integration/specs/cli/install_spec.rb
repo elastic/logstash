@@ -118,7 +118,7 @@ describe "CLI > logstash-plugin install" do
     end
 
     context "install non bundle plugin" do
-      let(:plugin_name) { "logstash-input-google_cloud_storage" }
+      let(:plugin_name) { "logstash-input-github" }
       let(:install_command) { "bin/logstash-plugin install" }
 
       after(:each) do
