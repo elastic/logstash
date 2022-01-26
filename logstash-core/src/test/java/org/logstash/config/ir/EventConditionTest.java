@@ -25,7 +25,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.RubyUtil;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -74,6 +76,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void testInclusionWithFieldInField() throws Exception {
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
@@ -81,8 +84,8 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         "  if [left] in [right] { " +
                         "    mockoutput{}" +
                         "  } }"),
-                false
-        );
+                false,
+                cve);
 
         // left list values never match
         RubyEvent leftIsList = RubyEvent.newRubyEvent(RubyUtil.RUBY);
@@ -156,6 +159,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
 
     @SuppressWarnings({"unchecked"})
     private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
@@ -163,8 +167,8 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         "  if " + condition + " { " +
                         "    mockoutput{}" +
                         "  } }"),
-                false
-        );
+                false,
+                cve);
 
         new CompiledPipeline(
                 pipelineIR,

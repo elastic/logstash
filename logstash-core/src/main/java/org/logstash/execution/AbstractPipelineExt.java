@@ -51,6 +51,7 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
@@ -62,6 +63,7 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
@@ -183,8 +185,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
-        try {
-            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context), EnvironmentVariableProvider.defaultProvider())) {
+            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes, cve);
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }

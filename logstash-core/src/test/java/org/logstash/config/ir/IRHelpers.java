@@ -26,6 +26,7 @@ import org.jruby.RubyArray;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -35,6 +36,7 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,16 +150,17 @@ public class IRHelpers {
     public static PipelineIR samplePipeline() throws Exception {
         Random rng = new Random(81892198);
         Callable<SourceWithMetadata> meta = () -> randMeta(rng);
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
 
-        Graph inputSection = iComposeParallel(iPlugin(meta.call(), INPUT, "generator"), iPlugin(meta.call(), INPUT, "stdin")).toGraph();
+        Graph inputSection = iComposeParallel(iPlugin(meta.call(), INPUT, "generator"), iPlugin(meta.call(), INPUT, "stdin")).toGraph(null);
         Graph filterSection = iIf(meta.call(), eEq(eEventValue("[foo]"), eEventValue("[bar]")),
                                     iPlugin(meta.call(), FILTER, "grok"),
-                                    iPlugin(meta.call(), FILTER, "kv")).toGraph();
+                                    iPlugin(meta.call(), FILTER, "kv")).toGraph(cve);
         Graph outputSection = iIf(meta.call(), eGt(eEventValue("[baz]"), eValue(1000)),
                                     iComposeParallel(
                                             iPlugin(meta.call(), OUTPUT, "s3"),
                                             iPlugin(meta.call(), OUTPUT, "elasticsearch")),
-                                    iPlugin(meta.call(), OUTPUT, "stdout")).toGraph();
+                                    iPlugin(meta.call(), OUTPUT, "stdout")).toGraph(cve);
 
         return new PipelineIR(inputSection, filterSection, outputSection);
     }

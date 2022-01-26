@@ -19,12 +19,10 @@
 
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -38,6 +36,7 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -48,6 +47,8 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -207,7 +208,6 @@ public final class CompiledPipeline {
         return nodes;
     }
 
-
     final RubyHash convertArgs(final Map<String, Object> input) {
         final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
         for (final Map.Entry<String, Object> entry : input.entrySet()) {
@@ -243,7 +243,7 @@ public final class CompiledPipeline {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
         Map<String, Object> expandedConfig = new HashMap<>();
         for (Map.Entry<String, Object> e : configArgs.entrySet()) {
             if (e.getValue() instanceof List) {
