@@ -24,7 +24,14 @@ require 'optparse'
 
 options = {pr: true}
 OptionParser.new do |opts|
-  opts.banner = "Usage: bump_plugin_versions.rb base_branch last_release allow_for --[no-]pr"
+  opts.banner = <<~EOBANNER
+   Usage: bump_plugin_versions.rb base_branch last_release allow_for --[no-]pr
+
+   If you have a local lockfile, you can specify "LOCAL" for last_release to
+   use it as your baseline. This allows you to consume patch releases on a
+   minor release after feature freeze and the initial minor updates.
+
+  EOBANNER
 
   opts.on("--[no-]pr", "Create Pull Request") do |v|
     options[:pr] = v
@@ -56,12 +63,22 @@ end
 
 puts "Computing #{allow_bump_for} plugin dependency bump from #{base_logstash_version}.."
 
-puts "Fetching lock file for #{base_logstash_version}.."
-uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
-result = Net::HTTP.get(uri)
-if result.match(/404/)
-  puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
-  exit(1)
+if base_logstash_version == "LOCAL"
+  puts "Using local lockfile..."
+  begin
+    result = File.read("Gemfile.jruby-2.5.lock.release")
+  rescue => e
+    puts "Failed to read local lockfile #{e}"
+    exit(1)
+  end
+else
+  puts "Fetching lock file for #{base_logstash_version}.."
+  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
+  result = Net::HTTP.get(uri)
+  if result.match(/404/)
+    puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
+    exit(1)
+  end
 end
 
 base_plugin_versions = {}
