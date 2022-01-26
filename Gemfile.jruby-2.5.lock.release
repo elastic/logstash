@@ -63,7 +63,7 @@ GEM
     backports (3.23.0)
     belzebuth (0.2.3)
       childprocess
-    benchmark-ips (2.9.2)
+    benchmark-ips (2.9.3)
     bindata (2.4.10)
     buftok (0.2.0)
     builder (3.2.4)
@@ -300,7 +300,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3
-    logstash-filter-geoip (7.2.10-java)
+    logstash-filter-geoip (7.2.11-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -705,7 +705,7 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (5.5.2-java)
+    puma (5.6.0-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
     rack (2.2.3)
