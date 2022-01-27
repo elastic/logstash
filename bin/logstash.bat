@@ -47,7 +47,7 @@ if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
 )
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
-%JAVA% %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
+%JAVA% %JAVA_OPTS% -cp %CLASSPATH% org.logstash.Logstash %*
 
 goto :end
 
