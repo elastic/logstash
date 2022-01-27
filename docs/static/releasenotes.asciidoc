@@ -5,7 +5,7 @@ coming[8.0.0]
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-8-0-0-rc1,Logstash 8.0.0-rc2>>
+* <<logstash-8-0-0-rc2,Logstash 8.0.0-rc2>>
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
