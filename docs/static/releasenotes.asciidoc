@@ -14,16 +14,11 @@ This section summarizes the changes in the following releases:
 [[logstash-8-0-0-rc2]]
 === Logstash 8.0.0-rc2 Release Notes
 
-==== New features and enhancements
+==== Notable issues fixed
 This release is mainly a consolidation of the code base.
-It improves the upgrade path reducing deprecation noise in Elastic Upgrade Assistant (#13563).
-Fixed long-standing issue with event's count exposed in metrics when the events are dropped from pipelines (#13593).
-Mitigates a memory leak that can be caused by using UUIDs or other high-cardinality field names. (#13642)
-Some improvements in Logstash bootstrap phase, logging the JVM flags used (#13531) and respecting
-LS_JAVA_OPTS environment even when `jvm.option` file missing (#13525).
-
-Fixed an issue with Azure input plugin, that when used in a pipeline made Logstash to crash (#13603).
-Consolidation of the test infrastructure: #13628, #13631, #13641, #13661, #13656.
+Fixed long-standing issue with event's count exposed in metrics when the events are dropped from pipelines https://github.com/elastic/logstash/pull/13593[#13593].
+Mitigates a memory leak that can be caused by using UUIDs or other high-cardinality field names https://github.com/elastic/logstash/pull/13642[#13642].
+Fixed an issue with Azure input plugin, that when used in a pipeline made Logstash to crash https://github.com/elastic/logstash/pull/13603[#13603].
 
 ==== Plugin releases
 Plugins align with release 7.17.0
