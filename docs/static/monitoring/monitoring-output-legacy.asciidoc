@@ -33,8 +33,7 @@ cluster by using the `.monitoring-logstash` template, which is managed by the
 {ref}/es-monitoring-exporters.html[exporters] within {es}. 
 
 If you are working with a cluster that has {security} enabled, extra steps are 
-necessary to properly configure Logstash. For more information, see 
-<<configuring-logstash>>. 
+necessary to properly configure Logstash.. 
 
 IMPORTANT: When discussing security relative to the `elasticsearch` output, it
 is critical to remember that all users are managed on the production cluster, 
