@@ -62,6 +62,266 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-0]]
 === Logstash 7.17.0 Release Notes
 coming[7.17.0]
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.0
+
+* Remove CI related files not used https://github.com/elastic/logstash/pull/12538[#12538]
+* logging: move init into environment's settings post-processor https://github.com/elastic/logstash/pull/13221[#13221]
+* Fix unknown type warning of geoip metrics https://github.com/elastic/logstash/pull/13382[#13382]
+* Fix logstash-plugin install command to install non default plugin https://github.com/elastic/logstash/pull/13405[#13405]
+* fix: respect LS_JAVA_OPTS environment even when optionsfile missing https://github.com/elastic/logstash/pull/13525[#13525]
+* Backport #13442 to 7.17. Update logstash docker to use ubuntu 20.04 b… https://github.com/elastic/logstash/pull/13529[#13529]
+* Add info log of JVM flags used to configure Logstash https://github.com/elastic/logstash/pull/13531[#13531]
+* Bump log4j dependency to 2.17.0 https://github.com/elastic/logstash/pull/13544[#13544]
+* Backport PR #13544 to 7.17: Bump log4j dependency to 2.17.0 https://github.com/elastic/logstash/pull/13547[#13547]
+* Product origin headers to Logstash-controlled Elasticsearch clients https://github.com/elastic/logstash/pull/13563[#13563]
+* [7.17] Fix logstash-plugin install command to install non default plugin (#13405) https://github.com/elastic/logstash/pull/13587[#13587]
+* Avoid to increment `event.out` conter for dropped events https://github.com/elastic/logstash/pull/13593[#13593]
+* Avoid to itereate with each_index https://github.com/elastic/logstash/pull/13603[#13603]
+* Support env variable in condition https://github.com/elastic/logstash/pull/13608[#13608]
+* [Docs] Add pipeline.ecs_compatibility to the list https://github.com/elastic/logstash/pull/13612[#13612]
+* Backport PR #13563 to 7.17: Product origin headers to Logstash-controlled Elasticsearch clients https://github.com/elastic/logstash/pull/13623[#13623]
+* [Backport PR#13604 to 7.17] Fix 2 failing tests on Windows https://github.com/elastic/logstash/pull/13629[#13629]
+* Fix Ruby port check execution in kafka_setup.sh https://github.com/elastic/logstash/pull/13631[#13631]
+* Backport PR #13525 to 7.17: fix: respect LS_JAVA_OPTS environment even when optionsfile missing https://github.com/elastic/logstash/pull/13635[#13635]
+* Backport PR #13612 to 7.17: [Docs] Add pipeline.ecs_compatibility to the list https://github.com/elastic/logstash/pull/13638[#13638]
+* Fix/gems not found in integration test after plugin install https://github.com/elastic/logstash/pull/13641[#13641]
+* field-reference: cap RUBY_CACHE to 10k entries https://github.com/elastic/logstash/pull/13642[#13642]
+* stats api: startup resilience when stats are partially formed https://github.com/elastic/logstash/pull/13645[#13645]
+* Backport PR #13642 to 7.17: field-reference: cap RUBY_CACHE to 10k entries https://github.com/elastic/logstash/pull/13655[#13655]
+* Fix unit test under Windows https://github.com/elastic/logstash/pull/13656[#13656]
+* Backport PR #13645 to 7.17: stats api: startup resilience when stats are partially formed https://github.com/elastic/logstash/pull/13660[#13660]
+* Backport PR #13221 to 7.17: logging: move init into environment's settings post-processor https://github.com/elastic/logstash/pull/13663[#13663]
+* Backport PR #13656 to 7.17: Fix unit test under Windows https://github.com/elastic/logstash/pull/13665[#13665]
+* Test fix, switch to plugin with less dependencies https://github.com/elastic/logstash/pull/13672[#13672]
+* [Backport 7.17] Test fix, switch to plugin with less dependencies (#13672) https://github.com/elastic/logstash/pull/13674[#13674]
+
+=== Logstash Commits between 7.17 and 7.16.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.16.3..7.17"
+
+455995c32 - (HEAD -> 7.17, origin/7.17) Doc: Add placeholder for 7.17.0 release notes (#13688) (24 hours ago) <Karen Metts>
+4cfe69839 - Revert "[DOC] Clarify the scope of environment variable expansion (#13299)" (#13679) (#13683) (32 hours ago) <kaisecheng>
+e971d17dd - Update patch plugin versions in gemfile lock (#13680) (2 days ago) <Ry Biesemeyer>
+d2a98a0b7 - Support env variable in condition (#13608) (#13678) (3 days ago) <kaisecheng>
+bdf2748e1 - bump dependency patches again for in-flight 7.17.0 (#13676) (3 days ago) <Ry Biesemeyer>
+289ea89b2 - [Backport 7.17] Test fix, switch to plugin with less dependencies (#13672) (#13674) (3 days ago) <Andrea Selva>
+319e67dce - logging: move init into environment's settings post-processor (#13221) (#13663) (4 days ago) <Ry Biesemeyer>
+8d057881a - stats api: startup resilience when stats are partially formed (#13645) (#13660) (4 days ago) <Ry Biesemeyer>
+fe4827132 - [Backport 7.17] Fix unit test under Windows (#13656) (#13665) (4 days ago) <Ry Biesemeyer>
+22e2e52d9 - Backport PR #13612 to 7.17: [Docs] Add pipeline.ecs_compatibility to the list (#13638) (8 days ago) <Ry Biesemeyer>
+c8e2bef09 - field-reference: cap RUBY_CACHE to 10k entries (#13642) (#13655) (8 days ago) <Ry Biesemeyer>
+3c0b948a8 - [DOC] Clarify scope of queue settings 7.17 (#13651) (8 days ago) <Karen Metts>
+779a4d5f1 - [Backport 7.17] Fix Ruby port check execution in kafka_setup.sh (#13631) (#13640) (8 days ago) <Andrea Selva>
+9c4fdf889 - [Backport 7.17] Fix/gems not found in integration test after plugin install (#13641) (#13643) (8 days ago) <Andrea Selva>
+89b3b54a8 - bump dependencies for 7.17.0 (#13647) (8 days ago) <Ry Biesemeyer>
+abadc329e - ecs: docs and comments syncing for 7.last (#13626) (10 days ago) <Ry Biesemeyer>
+36c5e2a09 - Backport PR #13525 to 7.17: fix: respect LS_JAVA_OPTS environment even when optionsfile missing (#13635) (10 days ago) <Ry Biesemeyer>
+779e081c9 - [Backport PR#13604 to 7.17] Fix 2 failing tests on Windows (#13629) (10 days ago) <Rob Bavey>
+920e82193 - [Backport 7.17]Add info log of JVM flags used to configure Logstash (#13531) (#13632) (10 days ago) <Andrea Selva>
+dc4368e0c -  [backport 7.17]Avoid to increment `event.out` conter for dropped events (#13593) (#13624) (11 days ago) <Andrea Selva>
+ddb1ed17c - Product origin headers to Logstash-controlled Elasticsearch clients (#13563) (#13623) (2 weeks ago) <Ry Biesemeyer>
+5b8e61595 - Doc: Forward 7.16.2 and 7.16.2 release notes to 7.17 (#13611) (2 weeks ago) <Karen Metts>
+236cbcaad -  [backport 7.17] Avoid to itereate with each_index (#13603) (#13609) (2 weeks ago) <Andrea Selva>
+d1e2816c4 - Fix unknown type warning of geoip metrics (#13382) (#13602) (2 weeks ago) <kaisecheng>
+0407e9383 - Adds license definitions for faraday-multipart and faraday-retry (#13592) (#13594) (3 weeks ago) <Andrea Selva>
+e48a0810e - docs: sprintf vs UTC nature of @timestamp field (#13576) (#13590) (3 weeks ago) <Ry Biesemeyer>
+958d968e7 - Update lockfile for 7.17.0 (#13582) (3 weeks ago) <Rob Bavey>
+c77994f43 - Fix logstash-plugin install command to install non default plugin (#13405) (#13587) (3 weeks ago) <kaisecheng>
+18a586506 - Removed unused CI files (#13575) (3 weeks ago) <Andrea Selva>
+267545d99 - Bump log4j dependency to 2.17.1 (#13564) (#13566) (4 weeks ago) <kaisecheng>
+2bc03c8c0 - update lock file for 7.17.0 (#13550) (6 weeks ago) <kaisecheng>
+c9940c78e - Bump log4j dependency to 2.17.0 (#13547) (6 weeks ago) <Andres Rodriguez>
+18c30527c - Doc: Add anchor to bundled jdk info 7.17 (#13542) (6 weeks ago) <Karen Metts>
+5fad50496 - Doc: remove PQ on input for Output Isolator 7.17 (#13539) (6 weeks ago) <Karen Metts>
+2d831b85b - Backport #13442 to 7.17. Update logstash docker to use ubuntu 20.04 base image (#13529) (6 weeks ago) <Rob Bavey>
+47038d7ec - Chore: bump version to 7.17.0 (snapshot) (#13527) (6 weeks ago) <Karol Bucek>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.16.3..7.17 *.release"
+Changed plugin versions:
+logstash-filter-clone: 4.1.1 -> 4.2.0
+logstash-filter-geoip: 7.2.9 -> 7.2.11
+logstash-filter-http: 1.0.2 -> 1.2.1
+logstash-filter-ruby: 3.1.7 -> 3.1.8
+logstash-filter-useragent: 3.3.2 -> 3.3.3
+logstash-input-exec: 3.3.3 -> 3.4.0
+logstash-input-gelf: 3.3.0 -> 3.3.1
+logstash-input-generator: 3.0.6 -> 3.1.0
+logstash-input-imap: 3.1.0 -> 3.2.0
+logstash-input-jms: 3.1.2 -> 3.2.1
+logstash-input-pipe: 3.0.7 -> 3.1.0
+logstash-input-s3: 3.8.1 -> 3.8.3
+logstash-input-snmp: 1.2.8 -> 1.3.1
+logstash-input-snmptrap: 3.0.6 -> 3.1.0
+logstash-input-syslog: 3.5.0 -> 3.6.0
+logstash-input-twitter: 4.0.3 -> 4.1.0
+logstash-input-unix: 3.0.7 -> 3.1.1
+logstash-integration-jdbc: 5.1.8 -> 5.2.2
+logstash-integration-kafka: 10.8.2 -> 10.9.0
+logstash-output-cloudwatch: 3.0.9 -> 3.0.10
+logstash-output-elasticsearch: 11.2.3 -> 11.4.1
+logstash-patterns-core: 4.3.1 -> 4.3.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Clone Filter - 4.2.0*
+
+* Added support for ECS v8 as alias for ECS v1 https://github.com/logstash-plugins/logstash-filter-clone/pull/27[#27]
+
+*Geoip Filter - 7.2.11*
+
+* Improved compatibility with the Elastic Common Schema https://github.com/logstash-plugins/logstash-filter-geoip/pull/206[#206]
+* Added support for ECS's composite `region_iso_code` (`US-WA`), which _replaces_ the non-ECS `region_code` (`WA`) as a default field with City databases. To get the stand-alone `region_code` in ECS mode, you must include it in the `fields` directive. 
+* [DOC] Improve ECS-related documentation
+
+* [DOC] Air-gapped environment requires both ASN and City databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/204[#204]
+
+*Http Filter - 1.2.1*
+
+* Fix: do not set content-type if provided by user https://github.com/logstash-plugins/logstash-filter-http/pull/36[#36]
+
+* Feat: improve ECS compatibility https://github.com/logstash-plugins/logstash-filter-http/pull/35[#35]
+
+* Add support for PUT requests https://github.com/logstash-plugins/logstash-filter-http/pull/34[#34]
+
+*Ruby Filter - 3.1.8*
+
+* [DOC] Added doc to describe the option `tag_with_exception_message`https://github.com/logstash-plugins/logstash-filter-ruby/pull/62[#62]
+* Fix SyntaxError handling so other pipelines can shut down gracefully https://github.com/logstash-plugins/logstash-filter-ruby/pull/64[#64]
+
+*Useragent Filter - 3.3.3*
+
+* Docs: mention added fields in 3.3 with a note https://github.com/logstash-plugins/logstash-filter-useragent/pull/78[#78]
+
+*Exec Input - 3.4.0*
+
+* Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-exec/pull/28[#28]
+* Plugin will no longer override fields if they exist in the decoded payload.
+    (It no longer sets the `host` field if decoded from the command's output.)
+
+*Gelf Input - 3.3.1*
+
+* Fix: safely coerce the value of `_@timestamp` to avoid crashing the plugin https://github.com/logstash-plugins/logstash-input-gelf/pull/67[#67]
+
+*Generator Input - 3.1.0*
+
+* Feat: adjusted fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-generator/pull/22[#22]
+* Fix: do not override the host field if it's present in the generator line (after decoding) 
+* Fix: codec flushing when closing input
+
+*Imap Input - 3.2.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-input-imap/pull/55[#55]
+    * added (optional) `headers_target` configuration option
+    * added (optional) `attachments_target` configuration option
+* Fix: plugin should not close `$stdin`, while being stopped 
+
+*Jms Input - 3.2.1*
+
+* Fix: improve compatibility with MessageConsumer implementations https://github.com/logstash-plugins/logstash-input-jms/pull/51[#51],
+   such as IBM MQ.
+* Test: Fix test failures due to ECS compatibility default changes in `8.x` of logstash https://github.com/logstash-plugins/logstash-input-jms/pull/53[#53]
+
+* Feat: event_factory support + targets to aid ECS https://github.com/logstash-plugins/logstash-input-jms/pull/49[#49]
+* Fix: when configured to add JMS headers to the event, headers whose value is not set no longer result in nil entries on the event
+* Fix: when adding the `jms_reply_to` header to an event, a string representation is set instead of an opaque object.
+
+*Pipe Input - 3.1.0*
+
+*  Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-pipe/pull/19[#19]
+
+*S3 Input - 3.8.3*
+
+* Fix missing `metadata` and `type` of the last event https://github.com/logstash-plugins/logstash-input-s3/pull/223[#223]
+
+* Refactor: read sincedb time once per bucket listing https://github.com/logstash-plugins/logstash-input-s3/pull/233[#233]
+
+*Snmp Input - 1.3.1*
+
+*  Refactor: handle no response(s) wout error logging https://github.com/logstash-plugins/logstash-input-snmp/pull/105[#105]
+
+* Feat: ECS compliance + optional target https://github.com/logstash-plugins/logstash-input-snmp/pull/99[#99]
+* Internal: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-snmp/pull/102[#102]
+
+*Snmptrap Input - 3.1.0*
+
+* Feat: ecs_compatiblity support + (optional) target https://github.com/logstash-plugins/logstash-input-snmptrap/pull/37[#37]
+
+*Syslog Input - 3.6.0*
+
+* Add support for ECS v8 as alias to v1 implementation https://github.com/logstash-plugins/logstash-input-syslog/pull/68[#68]
+
+*Twitter Input - 4.1.0*
+
+* Feat: optional target + ecs_compatibility https://github.com/logstash-plugins/logstash-input-twitter/pull/72[#72]
+
+*Unix Input - 3.1.1*
+
+* Fix: unable to stop plugin (on LS 6.x) https://github.com/logstash-plugins/logstash-input-unix/pull/29[#29]
+* Refactor: plugin internals got reviewed for `data_timeout => ...` to work reliably
+
+* Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-unix/pull/28[#28] 
+
+*Jdbc Integration - 5.2.2*
+
+* Feat: name scheduler threads + redirect error logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/102[#102]
+
+* Refactor: isolate paginated normal statement algorithm in a separate handler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/101[#101]
+
+* Added `jdbc_paging_mode` option to choose if use `explicit` pagination in statements and avoid the initial count 
+    query or use `auto` to delegate to the underlying library https://github.com/logstash-plugins/logstash-integration-jdbc/pull/95[#95]
+
+* Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96],
+    the change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+
+    NOTE: a fatal driver error will no longer keep reloading the pipeline and now leads to a system exit. 
+
+* Fix: regression due returning the Java driver class https://github.com/logstash-plugins/logstash-integration-jdbc/pull/98[#98]
+
+* Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96],
+    the change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+
+*Kafka Integration - 10.9.0*
+
+* Refactor: leverage codec when using schema registry https://github.com/logstash-plugins/logstash-integration-kafka/pull/106[#106]
+  
+    Previously using `schema_registry_url` parsed the payload as JSON even if `codec => 'plain'` was set, this is no longer the case.  
+
+*Cloudwatch Output - 3.0.10*
+
+* Deps: unpin rufus scheduler https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/20[#20]
+* Fix: an old undefined method error which would surface with load (as queue fills up) 
+
+*Elasticsearch Output - 11.4.1*
+
+* Feat: upgrade manticore (http-client) library https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1063[#1063]
+* the underlying changes include latest HttpClient (4.5.13)
+* resolves an old issue with `ssl_certificate_verification => false` still doing some verification logic
+
+* Updates ECS templates https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1062[#1062]
+* Updates v1 templates to 1.12.1 for use with Elasticsearch 7.x and 8.x
+* Updates BETA preview of ECS v8 templates for Elasticsearch 7.x and 8.x
+
+* Feat: add support for 'traces' data stream type https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1057[#1057]
+
+* Refactor: review manticore error handling/logging, logging originating cause in case of connection related error when debug level is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1029[#1029]
+* Java causes on connection related exceptions will now be extra logged when plugin is logging at debug level
+
+* ECS-related fixes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1046[#1046]
+* Data Streams requirement on ECS is properly enforced when running on Logstash 8, and warned about when running on Logstash 7.
+* ECS Compatibility v8 can now be selected
+
+* Adds ECS templates https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1048[#1048]
+* Adds templates for ECS v1 for Elasticsearch 8.x
+* Adds templates for BETA preview of ECS v8 for both Elasticsearch 7.x and 8.x
+
+*Core Patterns - 4.3.2*
+
+- Fix: typo in BIN9_QUERYLOG pattern (in ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/307[#307]
+
+
 
 [[featured-7-17-0]]
 ==== New features and enhancements
