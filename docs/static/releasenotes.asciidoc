@@ -14,6 +14,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-0-0-rc2]]
 === Logstash 8.0.0-rc2 Release Notes
 
+[[notable-8.0.0-rc2]]
 ==== Notable issues fixed
 This release is mainly a consolidation of the code base.
 Fixed long-standing issue with event's count exposed in metrics when the events are dropped from pipelines https://github.com/elastic/logstash/pull/13593[#13593].
