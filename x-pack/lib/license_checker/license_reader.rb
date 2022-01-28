@@ -24,17 +24,21 @@ module LogStash
       # fetches an XPackInfo, or log and return nil if unavailable.
       # @return [XPathInfo, nil]
       def fetch_xpack_info
-        begin
-          response = client.get('_xpack')
+        loop do
+          begin
+            response = client.get('_xpack')
 
-          # TODO: do we need both this AND the exception-based control flow??
-          return XPackInfo.xpack_not_installed if xpack_missing_response?(response)
+            # TODO: do we need both this AND the exception-based control flow??
+            return XPackInfo.xpack_not_installed if xpack_missing_response?(response)
 
-          XPackInfo.from_es_response(response)
-        rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => bad_response_error
-          raise unless XPACK_MISSING_STATUS_CODES.include?(bad_response_error.response_code)
+            return XPackInfo.from_es_response(response)
+          rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => bad_response_error
+            raise unless XPACK_MISSING_STATUS_CODES.include?(bad_response_error.response_code)
 
-          XPackInfo.xpack_not_installed
+            return XPackInfo.xpack_not_installed
+          rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError => host_unreachable
+            # continue looping until the client connects to a good host or NoConnectionAvailableError is raised.
+          end
         end
       rescue => e
         if logger.debug?
