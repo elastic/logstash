@@ -125,7 +125,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "org.eclipse.text:org.eclipse.text:",http://www.eclipse.org/jdt,EPL-1.0
 "org.javassist:javassist:",https://github.com/jboss-javassist/javassist,Apache-2.0
 "org.jruby:jruby-core:",http://jruby.org/,EPL-2.0
-"org.logstash:jvm-options-parser",http://github.com/elastic/logstash,Apache-2.0
+"org.logstash:jvm-options-parser:",http://github.com/elastic/logstash,Apache-2.0
 "org.reflections:reflections:",https://github.com/ronmamo/reflections,BSD-2-Clause
 "org.slf4j:slf4j-api:",http://www.slf4j.org/,MIT
 "paquet:",https://github.com/elastic/logstash,Apache-2.0
