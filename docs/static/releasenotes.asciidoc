@@ -16,8 +16,7 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.0.0-rc2]]
 ==== Notable issues fixed
-This release is mainly a consolidation of the code base.
-* Fixed long-standing issue in which the `events.out` count incorrectly included events that had been dropped with the drop filter.  
+* Fixed long-standing issue in which the `events.out` count incorrectly included events that had been dropped with the drop filter.
 Now the total out event count includes only events that reach the out stage. https://github.com/elastic/logstash/pull/13593[#13593].
 * Reduced scope and impact of a memory leak that can be caused by using UUIDs or other high-cardinality field names https://github.com/elastic/logstash/pull/13642[#13642].
 * Fixed an issue with the Azure input plugin that caused Logstash to crash when it was used in a pipeline. https://github.com/elastic/logstash/pull/13603[#13603].
