@@ -6,7 +6,7 @@
 {es} generates its own default self-signed Secure Sockets Layer (SSL) certificates at startup. 
 
 For an on-premise {es} cluster, {ls} must establish a secure connection using the self-signed SSL certificate before it can transfer data.  
-{ess} uses standard publicly trusted certificates, and therefore setting a cacert is not necessary.
+On the other hand, {ess} uses standard publicly trusted certificates, and therefore setting a cacert is not necessary.
 
 .Hosted {ess} simplifies security
 [NOTE]
@@ -39,8 +39,8 @@ You need to:
 [[es-sec-copy-cert]]
 ==== Copy and save the certificate
 
-On on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts.
-{ls} needs its own copy of the self-signed certificate from the {es} cluster so that it can validate the certificate presented by {es}.
+By default an on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts. Therefore
+{ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
 
 Copy the {ref}/configuring-stack-security.html#stack-security-certificates[self-signed CA certificate] from the {es} `config/certs` directory.
 
