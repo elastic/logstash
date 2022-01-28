@@ -29,18 +29,20 @@ For more details, check out the
 [[es-security-onprem]]
 === Secure communication with an on-premise {es} cluster
 
-If you are running {es} on your own hardware, you need to complete a few more steps to establish secure communication between {ls} and {es}.
-You need to: 
+If you are running {es} on your own hardware and using the Elasticsearch cluster's default self-signed certificates, you need to complete a few more steps to establish secure communication between {ls} and {es}.
 
+You need to: 
 * Copy the self-signed CA certificate from {es} and save it to {ls}
 * Configure the elasticsearch-output plugin to use the certificate
+
+These steps are not necessary if your cluster is using public trusted certificates. 
 
 [discrete]
 [[es-sec-copy-cert]]
 ==== Copy and save the certificate
 
-By default an on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts. Therefore
-{ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
+By default an on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts. 
+Therefore{ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
 
 Copy the {ref}/configuring-stack-security.html#stack-security-certificates[self-signed CA certificate] from the {es} `config/certs` directory.
 
