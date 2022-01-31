@@ -24,21 +24,20 @@ module LogStash
       # fetches an XPackInfo, or log and return nil if unavailable.
       # @return [XPathInfo, nil]
       def fetch_xpack_info
-        loop do
-          begin
-            response = client.get('_xpack')
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'validate Elasticsearch license')
+        begin
+          response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+            client.get("_xpack")
+          }
 
-            # TODO: do we need both this AND the exception-based control flow??
-            return XPackInfo.xpack_not_installed if xpack_missing_response?(response)
+          # TODO: do we need both this AND the exception-based control flow??
+          return XPackInfo.xpack_not_installed if xpack_missing_response?(response)
 
-            return XPackInfo.from_es_response(response)
-          rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => bad_response_error
-            raise unless XPACK_MISSING_STATUS_CODES.include?(bad_response_error.response_code)
+          XPackInfo.from_es_response(response)
+        rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => bad_response_error
+          raise unless XPACK_MISSING_STATUS_CODES.include?(bad_response_error.response_code)
 
-            return XPackInfo.xpack_not_installed
-          rescue ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError => host_unreachable
-            # continue looping until the client connects to a good host or NoConnectionAvailableError is raised.
-          end
+          XPackInfo.xpack_not_installed
         end
       rescue => e
         if logger.debug?
