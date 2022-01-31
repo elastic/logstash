@@ -244,6 +244,8 @@ public final class Queue implements Closeable {
             }
         }
 
+        if ( cleanedUpFullyAckedCorruptedPage(headCheckpoint, pqSizeBytes)) { return; }
+
         // transform the head page into a tail page only if the headpage is non-empty
         // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
@@ -302,6 +304,24 @@ public final class Queue implements Closeable {
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
     }
 
+
+    private boolean cleanedUpFullyAckedCorruptedPage(Checkpoint headCheckpoint, long pqSizeBytes) throws IOException {
+        if (headCheckpoint.isFullyAcked()) {
+            PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            if (pageIO.isCorruptedPage()) {
+                this.checkpointIO.purge(checkpointIO.headFileName());
+                pageIO.purge();
+
+                this.seqNum = headCheckpoint.maxSeqNum();
+                newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
+
+                pqSizeBytes += (long) pageIO.getHead();
+                ensureDiskAvailable(this.maxBytes, pqSizeBytes);
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * delete files for the given page

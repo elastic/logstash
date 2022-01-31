@@ -271,6 +271,13 @@ public final class MmapPageIOV2 implements PageIO {
         return this.head;
     }
 
+    @Override
+    public boolean isCorruptedPage() throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            return raf.length() < MIN_CAPACITY;
+        }
+    }
+
     private int checksum(byte[] bytes) {
         checkSummer.reset();
         checkSummer.update(bytes, 0, bytes.length);
