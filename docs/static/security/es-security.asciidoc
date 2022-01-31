@@ -42,7 +42,7 @@ These steps are not necessary if your cluster is using public trusted certificat
 ==== Copy and save the certificate
 
 By default an on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts. 
-Therefore{ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
+Therefore {ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
 
 Copy the {ref}/configuring-stack-security.html#stack-security-certificates[self-signed CA certificate] from the {es} `config/certs` directory.
 
