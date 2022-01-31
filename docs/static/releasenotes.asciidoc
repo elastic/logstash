@@ -71,24 +71,24 @@ This section summarizes the changes in the following releases:
 [[notable-7-17-0]]
 ==== Performance improvements and notable issues fixed
 
-* Reduces the scope of a memory leak that can be caused by processing events with UUID or other high-cardinality field names. https://github.com/elastic/logstash/pull/13655[#13655]
-* Fix an error in the `logstash-plugin install` command that prevented the installation of non-default plugins https://github.com/elastic/logstash/pull/13405[#13405]
+* Reduced the scope of a memory leak that can be caused by processing events with UUID or other high-cardinality field names. https://github.com/elastic/logstash/pull/13655[#13655]
+* Fixed an error in the `logstash-plugin install` command that prevented the installation of non-default plugins https://github.com/elastic/logstash/pull/13405[#13405]
 * Fixed an issue where invoking the Logstash Keystore Utility (`bin/logstash-keystore`) incorrectly set up a logging directory to the literal `${sys:ls.logs}` and produced noise to the console about routing logs. This utility now correctly configures its logger using the provided settings file. https://github.com/elastic/logstash/pull/13221[#13221]
-* Fixes `events.out` metric count when there the events are dropped in filter-output section of the pipeline. Events that were dropped are no longer included. https://github.com/elastic/logstash/pull/13593[#13593]
-* Fixes a regression introduced in `7.12`, in which the `LS_JAVA_OPTS` environment variable is ignored when a readable `jvm.options` file cannot be found. https://github.com/elastic/logstash/pull/13525[#13525]
-* Fix a crash of Logstash in initialization when using the `logstash-input-azure_eventhub` plugin. https://github.com/elastic/logstash/pull/13603[#13603]
-* Fixes an issue where environment variables in pipeline condition statements were not substituted https://github.com/elastic/logstash/pull/13608[#13608]
-* Reduces Deprecation noise in the Elastic Upgrade Assistant. Elasticsearch requests made by the Monitoring or Central Management features that are not directly user-configurable will include a special product origin header so that Upgrade Assistant can avoid calling out deprecations that are not user-actionable. https://github.com/elastic/logstash/pull/13563[#13563]
+* Fixed `events.out` metric count when there the events are dropped in filter-output section of the pipeline. Events that were dropped are no longer included. https://github.com/elastic/logstash/pull/13593[#13593]
+* Fixed a regression introduced in `7.12`, in which the `LS_JAVA_OPTS` environment variable is ignored when a readable `jvm.options` file cannot be found. https://github.com/elastic/logstash/pull/13525[#13525]
+* Fixed a crash of Logstash in initialization when using the `logstash-input-azure_eventhub` plugin. https://github.com/elastic/logstash/pull/13603[#13603]
+* Fixed an issue where environment variables in pipeline condition statements were not substituted https://github.com/elastic/logstash/pull/13608[#13608]
+* Reduced Deprecation noise in the Elastic Upgrade Assistant. Elasticsearch requests made by the Monitoring or Central Management features that are not directly user-configurable will include a special product origin header so that Upgrade Assistant can avoid calling out deprecations that are not user-actionable. https://github.com/elastic/logstash/pull/13563[#13563]
 
 [[ecs-7-17-0]]
 ===== Progress toward Elastic Common Schema (ECS)
 
-In this release, we continued our efforts towards Elastic Common Schema (ECS):
+In this release, we continued our efforts towards Elastic Common Schema (ECS).
 
-* a BETA preview of the upcoming ECS v8 was added or updated in a number of plugins
+* We added (or updated) a BETA preview of the upcoming ECS v8 in these plugins:
 ** <<plugins-inputs-elasticsearch,elasticsearch input>> has updated ECS templates for `v1` and BETA support for upcoimign ECS `v8`
 ** <<plugins-filters-clone,clone filter>> and <<plugins-inputs-syslog,syslog input>> added support for ECS `v8` as an alias to the existing `v1` implementation
-* ECS support was added to a number of plugins, including BETA support of ECS `v8`:
+* We added ECS support including BETA support of ECS `v8` in these plugins:
 ** <<plugins-inputs-exec,exec input>>
 ** <<plugins-inputs-generator,generator input>>
 ** <<plugins-inputs-imap,imap input>>
@@ -98,7 +98,7 @@ In this release, we continued our efforts towards Elastic Common Schema (ECS):
 ** <<plugins-inputs-twitter,twitter input>>
 ** <<plugins-inputs-unix,unix input>>
 ** <<plugins-filters-http,http filter>>
-* ECS-specific improvements were made in other plugins:
+* We made ECS-specific improvements in these plugins:
 ** <<plugins-filters-geoip,geoip filter>> has improved support for ECS's `geo.region_iso_code` field
 ** <<plugins-filters-grok,grok filter>> has a fixed capture of the `BIN9_QUERYLOG` pattern
 
@@ -223,10 +223,10 @@ such as IBM MQ.
 * Added `jdbc_paging_mode` option to choose if use `explicit` pagination in statements and avoid the initial count
   query or use `auto` to delegate to the underlying library https://github.com/logstash-plugins/logstash-integration-jdbc/pull/95[#95]
 * Several improvements to Java driver loading
-** Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96],
-    the change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+** Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96].
+    The change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
 
-    NOTE: a fatal driver error will no longer keep reloading the pipeline and now leads to a system exit.
+    NOTE: A fatal driver error will no longer keep reloading the pipeline and now leads to a system exit.
 
 ** Fix: regression due returning the Java driver class https://github.com/logstash-plugins/logstash-integration-jdbc/pull/98[#98]
 
