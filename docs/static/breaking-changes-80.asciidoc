@@ -1,0 +1,64 @@
+[[breaking-8.0]]
+=== Breaking changes in 8.0
+Here are the breaking changes for 8.0.
+//NOTE: The notable-breaking-changes tagged regions are re-used in the
+//Installation and Upgrade Guide
+
+// tag::notable-breaking-changes[]
+[discrete]
+[[security-on-8.0]]
+===== Secure communication with {es} 
+{ls} must establish a secure connection using an {es} self-signed SSL certificate before it can transfer data to an on-premise {es} cluster. 
+{es} generates its own default self-signed Secure Sockets Layer (SSL) certificates at startup. 
+{ls} must have a copy of the {es} CA and the self-signed certicate to establish a secure connection. 
+
+Our hosted {ess} simplifies safe, secure communication between Logstash and Elasticsearch. 
+{ess} uses standard publicly trusted certificates, and therefore setting a cacert is not necessary.
+
+For more information, see <<es-security-on>>. 
+
+[discrete]
+[[bc-java-11-minimum]]
+===== Java 11 minimum
+Logstash requires Java 11 or later.
+By default, Logstash will run with the bundled JDK, which has been verified to
+work with each specific version of Logstash, and generally provides the best
+performance and reliability.
+
+[discrete]
+[[bc-java-home]]
+===== Support for JAVA_HOME removed
+We've removed support for using `JAVA_HOME` to override the path to the JDK. 
+Users who need to use a version other than the bundled JDK should set the value
+of `LS_JAVA_HOME` to the path of their preferred JDK. 
+The value of `JAVA_HOME` will be ignored.
+
+[discrete]
+[[bc-ecs-compatibility]]
+===== ECS compatibility is now on by default
+Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema.
+This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the Logstash `pipeline.ecs_compatibility` setting.
+In Logstash 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
+
+If you wish to _lock in_ a pipeline's behaviour from Logstash 7.x before upgrading to Logstash 8, you can set  `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
+
+[discrete]
+[[bc-ruby-engine]]
+===== Ruby Execution Engine removed
+The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
+Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
+
+[discrete]
+[[bc-utf-16]]
+===== Support for UTF-16
+We have added support for UTF-16 and other multi-byte-character when reading log files. https://github.com/elastic/logstash/pull/9702[#9702]
+
+[discrete]
+[[bc-field-ref-parser]]
+===== Field Reference parser removed
+The Field Reference parser interprets references to fields in your pipelines and
+plugins. It was configurable in 7.x, with the default set to strict to reject
+inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
+{ls} rejects ambiguous and illegal inputs as standard behavior.
+// end::notable-breaking-changes[]
+
