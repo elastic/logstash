@@ -301,7 +301,7 @@ public final class MmapPageIOV2 implements PageIO {
             this.capacity = pageFileCapacity;
 
             if (this.capacity < MIN_CAPACITY) {
-                throw new IOException(String.format("Page file size is too small to hold elements"));
+                throw new IOException(String.format("Page file size is too small to hold elements. Persistent queue found corrupted page. Run `pqcheck` and `pqrepair` to repair the queue."));
             }
             this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         }
