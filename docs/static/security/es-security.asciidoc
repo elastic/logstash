@@ -33,8 +33,8 @@ If you are running {es} on your own hardware and using the Elasticsearch cluster
 
 You need to:
 
-* Copy the self-signed CA certificate from {es} and save it to {ls}
-* Configure the elasticsearch-output plugin to use the certificate
+* Copy the self-signed CA certificate from {es} and save it to {ls}.
+* Configure the elasticsearch-output plugin to use the certificate.
 
 These steps are not necessary if your cluster is using public trusted certificates. 
 
