@@ -142,12 +142,12 @@ setup_java() {
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
 
-  # Verify the version of Java being used, and exit if the wrong version of Java is not available.
-  if ! "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.util.JavaVersionChecker ; then
-    exit 1
+  JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    exit $EXIT_CODE
   fi
 
-  JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
   export JAVA_OPTS
 }
 

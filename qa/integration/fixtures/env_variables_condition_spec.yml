@@ -1,0 +1,77 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    generator {
+      lines => ['{"app": "foobar", "amount": "100", "version": 1, "tag1": "mytag1"}']
+      count => 1
+    }
+  }
+  filter {
+    json {
+       source => "message"
+    }
+
+    if ("${APP}") {
+       mutate { add_tag => ["Truthy"] }
+    }
+    if !([version] == "${BIG}") {
+       mutate { add_tag => ["Not"] }
+    }
+    if "${BIG}" > "${SMALL}" {
+       mutate { add_tag => [">"] }
+    }
+    if "${BIG}" >= "100" {
+       mutate { add_tag => [">="] }
+    }
+    if "${SMALL}" < "${BIG}" {
+       mutate { add_tag => ["<"] }
+    }
+    if "${SMALL}" <= "1" {
+       mutate { add_tag => ["<="] }
+    }
+    if [app] == "${APP}" {
+       mutate { add_tag => ["=="] }
+    }
+    if "${SMALL}" != "${BIG}" {
+       mutate { add_tag => ["!="] }
+    }
+    if [amount] in ["${SMALL}", "${BIG}"] {
+       mutate { add_tag => ["in"] }
+    }
+    if [amount] not in ["${SMALL}", "2", "3"] {
+       mutate { add_tag => ["not in"] }
+    }
+    if [amount] =~ /\d+/ {
+       mutate { add_tag => ["=~"] }
+    }
+    if [amount] =~ /${BIG}/ {
+       mutate { add_tag => ["wrong_regex_substitution"] }
+    }
+    if [amount] !~ /[a-z]+/ {
+       mutate { add_tag => ["!~"] }
+    }
+    if ([app] == "${APP}") and ([app] == "foobar") {
+       mutate { add_tag => ["and"] }
+    }
+    if ([app] == "${APP}") and ([amount] == "${BIG}") and ([version] == 1) and [tag1] == "${TAG1}" {
+       mutate { add_tag => ["more_and"] }
+    }
+    if (1 > 2) or ([app] == "${APP}") {
+       mutate { add_tag => ["or"] }
+    }
+    if ([app] == "${APP}") nand (1 > 2) {
+       mutate { add_tag => ["nand"] }
+    }
+    if (1 > 2) xor ([app] == "${APP}") {
+       mutate { add_tag => ["xor"] }
+    }
+  }
+  output {
+    file {
+      path => "${TEST_ENV_PATH}/env_variables_condition_output.log"
+      flush_interval => 0
+      codec => line { format => "%{message} %{tags}" }
+    }
+  }

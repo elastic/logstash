@@ -21,8 +21,10 @@
 package org.logstash.config.ir;
 
 import org.junit.Test;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.Util;
 import org.logstash.config.ir.graph.Graph;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import static org.junit.Assert.assertEquals;
 import static org.logstash.config.ir.DSL.*;
@@ -31,13 +33,15 @@ import static org.logstash.config.ir.IRHelpers.randMeta;
 
 public class PipelineIRTest {
     public Graph makeInputSection() throws InvalidIRException {
-        return iComposeParallel(iPlugin(randMeta(), INPUT, "generator"), iPlugin(randMeta(), INPUT, "stdin")).toGraph();
+        return iComposeParallel(iPlugin(randMeta(), INPUT, "generator"), iPlugin(randMeta(), INPUT, "stdin"))
+                .toGraph(ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider()));
     }
 
     public Graph makeFilterSection() throws InvalidIRException {
         return iIf(randMeta(), eEq(eEventValue("[foo]"), eEventValue("[bar]")),
                                     iPlugin(randMeta(), FILTER, "grok"),
-                                    iPlugin(randMeta(), FILTER, "kv")).toGraph();
+                                    iPlugin(randMeta(), FILTER, "kv"))
+                .toGraph(ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider()));
     }
 
     public Graph makeOutputSection() throws InvalidIRException {
@@ -45,7 +49,8 @@ public class PipelineIRTest {
                                     iComposeParallel(
                                             iPlugin(randMeta(), OUTPUT, "s3"),
                                             iPlugin(randMeta(), OUTPUT, "elasticsearch")),
-                                    iPlugin(randMeta(), OUTPUT, "stdout")).toGraph();
+                                    iPlugin(randMeta(), OUTPUT, "stdout"))
+                .toGraph(ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider()));
     }
 
     @Test

@@ -51,9 +51,6 @@ if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
 )
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
-rem check the Java version
-%JAVA% -cp "%CLASSPATH%" "org.logstash.util.JavaVersionChecker" || exit /b 1
-
 %JAVA% %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
 
 goto :end
