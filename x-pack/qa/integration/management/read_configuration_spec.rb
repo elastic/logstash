@@ -37,8 +37,6 @@ describe "Read configuration from elasticsearch" do
     push_elasticsearch_config(PIPELINE_ID, config)
 
     @logstash_service = logstash("bin/logstash -w 1", logstash_options)
-    cls = @logstash_service.stdout_lines.class
-    puts "DNADBG>> stdout_lines.class: #{cls}\n\n #{@logstash_service.stdout_lines} \n\n"
 
     expect(@logstash_service.stdout_lines.any?(/Could not fetch all the sources/)).to be false
   end
@@ -57,7 +55,6 @@ describe "Read configuration from elasticsearch" do
       stop_services
     end
 
-# [ERROR][logstash.config.sourceloader] Could not fetch all the sources....HostUnreachableError
     it "fetches the configuration from elasticsearch" do
       temporary_file = File.join(Stud::Temporary.directory, "hello.log")
       new_config = "input { generator { count => 10000 }} output { file { path => '#{temporary_file}' } }"
@@ -86,7 +83,7 @@ describe "Read configuration from elasticsearch" do
     end
   end
 
-  xcontext "security is disabled" do
+  context "security is disabled" do
     before(:all) do
       elasticsearch_options = {
         :settings => {

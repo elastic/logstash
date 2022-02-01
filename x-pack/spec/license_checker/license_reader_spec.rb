@@ -71,9 +71,6 @@ describe LogStash::LicenseChecker::LicenseReader do
     context 'and receives HostUnreachableError' do
       let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
       before(:each) do
-         #This seems to do not work
-#         allow(mock_client).to receive(:get).with('_xpack').once.and_raise(host_not_reachable)
-#         allow(mock_client).to receive(:get).with('_xpack').once.and_return(xpack_info)
         first_call = true
         allow(mock_client).to receive(:get) do
           if first_call
@@ -85,11 +82,6 @@ describe LogStash::LicenseChecker::LicenseReader do
       end
       it 'continues to fetch and return an XPackInfo' do
         expect(subject.fetch_xpack_info.failed?).to be false
-      end
-
-      it "DBG test multiple calls" do
-        expect{ subject.client.get('_xpack') }.to raise_error(LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError)
-        expect(mock_client.get('_xpack')).to eq(xpack_info)
       end
     end
     context 'when client raises a ConnectionError' do
