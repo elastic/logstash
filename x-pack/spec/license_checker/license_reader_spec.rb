@@ -52,19 +52,44 @@ describe LogStash::LicenseChecker::LicenseReader do
     let(:xpack_info_class) { LogStash::LicenseChecker::XPackInfo }
     let(:mock_client) { double('Client') }
     before(:each) { expect(subject).to receive(:client).and_return(mock_client) }
+    let(:xpack_info) do
+      {
+          "license" => {},
+          "features" => {},
+      }
+    end
 
     context 'when client fetches xpack info' do
-      let(:xpack_info) do
-        {
-            "license" => {},
-            "features" => {},
-        }
-      end
       before(:each) do
         expect(mock_client).to receive(:get).with('_xpack').and_return(xpack_info)
       end
       it 'returns an XPackInfo' do
         expect(subject.fetch_xpack_info).to eq(xpack_info_class.from_es_response(xpack_info))
+      end
+    end
+
+    context 'and receives HostUnreachableError' do
+      let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
+      before(:each) do
+         #This seems to do not work
+#         allow(mock_client).to receive(:get).with('_xpack').once.and_raise(host_not_reachable)
+#         allow(mock_client).to receive(:get).with('_xpack').once.and_return(xpack_info)
+        first_call = true
+        allow(mock_client).to receive(:get) do
+          if first_call
+            first_call = false
+            raise host_not_reachable
+          end
+          xpack_info
+        end
+      end
+      it 'continues to fetch and return an XPackInfo' do
+        expect(subject.fetch_xpack_info.failed?).to be false
+      end
+
+      it "DBG test multiple calls" do
+        expect{ subject.client.get('_xpack') }.to raise_error(LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError)
+        expect(mock_client.get('_xpack')).to eq(xpack_info)
       end
     end
     context 'when client raises a ConnectionError' do
