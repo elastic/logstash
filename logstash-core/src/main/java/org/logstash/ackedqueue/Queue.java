@@ -244,6 +244,7 @@ public final class Queue implements Closeable {
             }
         }
 
+        // delete zero byte page and recreate checkpoint if corrupted page is detected
         if ( cleanedUpFullyAckedCorruptedPage(headCheckpoint, pqSizeBytes)) { return; }
 
         // transform the head page into a tail page only if the headpage is non-empty
@@ -304,15 +305,25 @@ public final class Queue implements Closeable {
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
     }
 
-
+    /**
+     * When the queue is fully acked and zero byte page is found, delete corrupted page and recreate checkpoint head
+     * @param headCheckpoint
+     * @param pqSizeBytes
+     * @return true when corrupted page is found and cleaned
+     * @throws IOException
+     */
     private boolean cleanedUpFullyAckedCorruptedPage(Checkpoint headCheckpoint, long pqSizeBytes) throws IOException {
         if (headCheckpoint.isFullyAcked()) {
             PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             if (pageIO.isCorruptedPage()) {
+                logger.debug("Queue is fully acked. Found zero byte page.{}. Recreate checkpoint.head and delete corrupted page", headCheckpoint.getPageNum());
+
                 this.checkpointIO.purge(checkpointIO.headFileName());
                 pageIO.purge();
 
-                this.seqNum = headCheckpoint.maxSeqNum();
+                if (headCheckpoint.maxSeqNum() > this.seqNum) {
+                    this.seqNum = headCheckpoint.maxSeqNum();
+                }
                 newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
 
                 pqSizeBytes += (long) pageIO.getHead();
