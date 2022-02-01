@@ -17,12 +17,11 @@ This framework is hybrid -- a combination of bash scripts (to mainly setup servi
 * `framework`: Test framework source code.
 * `specs`: Rspec tests that use services and validates stuff
 
-### Set JAVA_HOME
+### Setup Java
 
-`JAVA_HOME` is an environment variable that points to the location where the JDK is installed. 
+The integration test scripts use `gradle` to run the tests, which requires a valid version of Java either on the system path, or specified using the `JAVA_HOME` environment variable pointing to the location of a valid JDK.
 
-If you need to test with a different Java version, you can use the `BUILD_JAVA_HOME` environment variable in test scripts to specify another version. 
-
+To run integration tests using a different version of Java, set the `BUILD_JAVA_HOME` environment variable to the location of the JDK that you wish to test with.
 ## Testing on Mac/Linux
 
 ### Dependencies 
