@@ -65,7 +65,7 @@ This section summarizes the changes in the following releases:
 [[featured-7-17-0]]
 ==== New features and enhancements
 
-* Docker images for `full` and `oss` distributions are now is based on Ununtu 20.04 (`ubi8` image remains unchanged) https://github.com/elastic/logstash/pull/13529[#13529]
+* Docker images for `full` and `oss` distributions are now is based on Ubuntu 20.04 (`ubi8` image remains unchanged) https://github.com/elastic/logstash/pull/13529[#13529]
 //* Backport #13442 to 7.17. Update logstash docker to use ubuntu 20.04 b… https://github.com/elastic/logstash/pull/13529[#13529]
 
 [[notable-7-17-0]]
