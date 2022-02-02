@@ -51,7 +51,7 @@ describe LogStash::LicenseChecker::LicenseReader do
   describe '#fetch_xpack_info' do
     let(:xpack_info_class) { LogStash::LicenseChecker::XPackInfo }
     let(:mock_client) { double('Client') }
-    before(:each) { expect(subject).to receive(:client).and_return(mock_client) }
+    before(:each) { expect(subject).to receive(:client).and_return(mock_client).at_most(:twice) }
     let(:xpack_info) do
       {
           "license" => {},
@@ -72,7 +72,8 @@ describe LogStash::LicenseChecker::LicenseReader do
       let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
       before(:each) do
         first_call = true
-        allow(mock_client).to receive(:get) do
+        allow(mock_client).to receive(:get) do |path|
+          expect(path).to eq('_xpack')
           if first_call
             first_call = false
             raise host_not_reachable
