@@ -16,12 +16,10 @@ jruby:
   version: 9.2.20.1
   sha1: 7f45f8a3d53d5f19f69952014abcb542b2670846
 
-# jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby for logstash runtime only,
-# not for the compile-time jars
-#
+# jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby
 #jruby-runtime-override:
-#  url: http://ci.jruby.org/snapshots/previous/jruby-bin-9.2.0.0-SNAPSHOT.tar.gz
-#  version: 9.2.0.0-SNAPSHOT
+#  url: https://oss.sonatype.org/content/repositories/snapshots/org/jruby/jruby-dist/9.3.0.0-SNAPSHOT/jruby-dist-9.3.0.0-20210723.214927-259-bin.tar.gz
+#  version: 9.3.0.0-SNAPSHOT
 #  sha1: IGNORE
 
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when

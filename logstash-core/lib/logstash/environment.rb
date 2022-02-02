@@ -145,7 +145,7 @@ module LogStash
   module Environment
     extend self
 
-    LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
+    LOGSTASH_CORE = ::File.expand_path(::File.join("..", ".."), ::File.dirname(__FILE__))
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
 
     LINUX_OS_RE = /linux/

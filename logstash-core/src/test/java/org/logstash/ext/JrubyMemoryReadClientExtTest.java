@@ -26,6 +26,7 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.RubyHash;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.execution.QueueBatch;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -34,7 +35,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Tests for {@link JrubyMemoryReadClientExt}.
  */
-public final class JrubyMemoryReadClientExtTest {
+public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
 
     @Test
     public void testInflightBatchesTracking() throws InterruptedException, IOException {

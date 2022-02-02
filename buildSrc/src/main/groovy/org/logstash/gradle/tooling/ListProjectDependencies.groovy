@@ -34,6 +34,13 @@ class ListProjectDependencies extends DefaultTask {
         moduleDeps.addAll(project.configurations.runtimeOnly.getAllDependencies())
 
         def depsInGAV = moduleDeps.collect {dep ->
+
+            // SelfResolvingDependency has no group or version information
+            if (!dep.group && !dep.version && dep.reason) {
+                def m = dep.reason =~ /DEPENDENCY: ([\w\.\-]+:[\w\.\-]+:[\w\.\-]+)/
+                if (m.matches()) return m[0][1]
+            }
+
             "${dep.group}:${dep.name}:${dep.version}"
         }
 

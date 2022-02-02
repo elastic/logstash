@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public final class FieldReferenceTest {
+public final class FieldReferenceTest extends RubyTestBase {
     @Before
     @After
     public void clearInternalCaches() {

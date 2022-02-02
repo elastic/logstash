@@ -36,12 +36,13 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.ObjectMappers;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
 /**
  * Tests for {@link JrubyEventExtLibrary.RubyEvent}.
  */
-public final class JrubyEventExtLibraryTest {
+public final class JrubyEventExtLibraryTest extends RubyTestBase {
 
     @Test
     public void shouldSetJavaProxy() throws IOException {

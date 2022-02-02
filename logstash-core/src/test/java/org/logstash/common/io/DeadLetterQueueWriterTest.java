@@ -36,13 +36,11 @@ import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
 import org.logstash.LockException;
-import org.logstash.Timestamp;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
@@ -140,10 +138,10 @@ public class DeadLetterQueueWriterTest {
                 writer.writeEntry(entry);
 
             // Sleep to allow flush to happen
-            Thread.sleep(2000);
+            sleep(3000);
             assertThat(dlqLength(), is(MAX_QUEUE_LENGTH));
             writer.writeEntry(entry);
-            Thread.sleep(2000);
+            sleep(2000);
             assertThat(dlqLength(), is(MAX_QUEUE_LENGTH));
         }
     }
@@ -155,9 +153,9 @@ public class DeadLetterQueueWriterTest {
             writer.writeEntry(entry);
             entry = new DLQEntry(new Event(), "type", "id", "2");
             // Sleep to allow flush to happen\
-            Thread.sleep(2000);
+            sleep(3000);
             writer.writeEntry(entry);
-            Thread.sleep(2000);
+            sleep(2000);
             // Do not close here - make sure that the slow write is processed
 
             try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
@@ -198,6 +196,11 @@ public class DeadLetterQueueWriterTest {
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             assertThat(reader.pollEntry(100).getReason(), is("1"));
         }
+    }
+
+    private void sleep(long millis) throws InterruptedException {
+        Thread.sleep(millis);
+        Thread.yield();
     }
 
     private long dlqLength() throws IOException {
