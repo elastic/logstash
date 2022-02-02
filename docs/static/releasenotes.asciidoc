@@ -5,10 +5,25 @@ coming[8.0.0]
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-0-rc2,Logstash 8.0.0-rc2>>
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-0-0-rc2]]
+=== Logstash 8.0.0-rc2 Release Notes
+
+[[notable-8.0.0-rc2]]
+==== Notable issues fixed
+* Fixed long-standing issue in which the `events.out` count incorrectly included events that had been dropped with the drop filter.
+Now the total out event count includes only events that reach the out stage. https://github.com/elastic/logstash/pull/13593[#13593]
+* Reduced scope and impact of a memory leak that can be caused by using UUIDs or other high-cardinality field names https://github.com/elastic/logstash/pull/13642[#13642]
+* Fixed an issue with the Azure input plugin that caused Logstash to crash when the input was used in a pipeline. https://github.com/elastic/logstash/pull/13603[#13603]
+
+==== Plugin releases
+Plugins align with release 7.17.0
+
 
 [[logstash-8-0-0-rc1]]
 === Logstash 8.0.0-rc1 Release Notes
