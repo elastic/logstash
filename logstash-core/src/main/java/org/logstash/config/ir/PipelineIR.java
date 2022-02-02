@@ -21,6 +21,7 @@
 package org.logstash.config.ir;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.logstash.common.Util;
@@ -40,7 +41,7 @@ public final class PipelineIR implements Hashable {
 
     private final Graph graph;
 
-    private final QueueVertex queue;
+    private QueueVertex queue;
 
     // Temporary until we have LIR execution
     // Then we will no longer need this property here
@@ -69,7 +70,12 @@ public final class PipelineIR implements Hashable {
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
 
-        queue = (QueueVertex) this.graph.getVertexById(tempQueue.getId());
+        try {
+            queue = (QueueVertex) this.graph.getVertexById(tempQueue.getId());
+        } catch(NoSuchElementException e) {
+            // it's a pipeline without a queue
+            queue = tempQueue;
+        }
 
         this.graph.validate();
 
