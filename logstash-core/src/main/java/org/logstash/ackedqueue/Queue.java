@@ -324,10 +324,8 @@ public final class Queue implements Closeable {
                 if (headCheckpoint.maxSeqNum() > this.seqNum) {
                     this.seqNum = headCheckpoint.maxSeqNum();
                 }
-                newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
 
-                pqSizeBytes += (long) pageIO.getHead();
-                ensureDiskAvailable(this.maxBytes, pqSizeBytes);
+                newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
                 return true;
             }
         }
