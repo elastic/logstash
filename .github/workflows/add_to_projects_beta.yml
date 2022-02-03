@@ -2,7 +2,7 @@ name: Adds Issues/PRs to Projects Beta
 on:
   pull_request:
     types:
-      - opened
+      - ready_for_review
   issues:
     types:
       - opened
