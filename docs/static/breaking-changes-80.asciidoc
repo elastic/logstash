@@ -55,10 +55,8 @@ We have added support for UTF-16 and other multi-byte-character when reading log
 
 [discrete]
 [[bc-field-ref-parser]]
-===== Field Reference parser removed
-The Field Reference parser interprets references to fields in your pipelines and
-plugins. It was configurable in 7.x, with the default set to strict to reject
-inputs that are ambiguous or illegal. Configurability is removed in 8.0. Now
-{ls} rejects ambiguous and illegal inputs as standard behavior.
+===== Field Reference parser configuration setting removed
+The Field Reference parser interprets references to fields in your pipelines and plugins.
+A configuration option that has had only one option since 7.0 was removed in 8.0 and is no longer recognized.
 // end::notable-breaking-changes[]
 
