@@ -40,7 +40,7 @@ jobs:
       - name: Adds Issues/PRs to Projects Beta
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
-          PR_ID: ${{ github.event.pull_request.node_id }}
+          PR_ID: ${{ github.event.node_id }}
         run: |
           item_id="$( gh api graphql -f query='
             mutation($project:ID!, $pr:ID!) {
