@@ -24,15 +24,15 @@ See the following topics for information about upgrading Logstash:
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
 * <<upgrading-minor-versions>>
-* <<upgrading-logstash-7.0>>
+* <<upgrading-logstash-8.0>>
 * <<upgrading-logstash-pqs>>
 
 [float]
-==== When to Upgrade
+==== When to upgrade
 
 Fresh installations can and should start with the same version across the Elastic Stack.
 
-Elasticsearch 7.0 does not require Logstash 7.0. An Elasticsearch 7.0 cluster
+Elasticsearch 8.0 does not require Logstash 8.0. An Elasticsearch 8.0 cluster
 will happily receive data from earlier versions of Logstash via the default
 HTTP communication layer. This provides some flexibility to decide when to
 upgrade Logstash relative to an Elasticsearch upgrade. It may or may not be
@@ -40,38 +40,41 @@ convenient for you to upgrade them together, and it is not required to be done
 at the same time as long as Elasticsearch is upgraded first.
 
 You should upgrade in a timely manner to get the performance improvements that
-come with Logstash 7.0, but do so in the way that makes the most sense for your
+come with Logstash 8.0, but do so in the way that makes the most sense for your
 environment.
 
 [float]
-==== When Not to Upgrade
+==== When not to upgrade
 
-If any Logstash plugin that you require is not compatible with Logstash 7.0, then you should wait until it is ready
+If any Logstash plugin that you require is not compatible with Logstash 8.0, then you should wait until it is ready
 before upgrading.
 
-Although we make great efforts to ensure compatibility, Logstash 7.0 is not completely backwards compatible. As noted
-in the Elastic Stack upgrade guide, Logstash 7.0 should not be upgraded before Elasticsearch 7.0. This is both
-practical and because some Logstash 7.0 plugins may attempt to use features of Elasticsearch 7.0 that did not exist
-in earlier versions. For example, if you attempt to send the 7.x template to a cluster before Elasticsearch 7.0, then 
-all indexing likely fail. If you use your own custom template with Logstash,
-then this issue can be ignored.
+Although we make great efforts to ensure compatibility, Logstash 8.0 is not completely backwards compatible. 
+As noted in the Elastic Stack upgrade guide, you should not upgrade Logstash 8.0 before you upgrade Elasticsearch 8.0. 
+This is both
+practical and because some Logstash 8.0 plugins may attempt to use features of Elasticsearch 8.0 that did not exist
+in earlier versions. 
+
+For example, if you attempt to send the 8.x template to a cluster before
+Elasticsearch 8.0, then  all indexing likely fail. 
+If you use your own custom template with Logstash, then this issue can be ignored.
 
 
 [[upgrading-using-package-managers]]
-=== Upgrading Using Package Managers
+=== Upgrading using package managers
 
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
 1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 2. Using the directions in the <<package-repositories>> section, update your repository
-links to point to the 7.x repositories.
+links to point to the 8.x repositories.
 3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 7.x release.
+some Logstash plugins have changed in the 8.x release.
 5. Restart your Logstash pipeline after you have updated your configuration file.
 
 [[upgrading-using-direct-download]]
-=== Upgrading Using a Direct Download
+=== Upgrading using a direct download
 
 This procedure downloads the relevant Logstash binaries directly from Elastic.
 
@@ -80,24 +83,24 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 3. Unpack the installation file into your Logstash directory.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. 
 Configuration options for
-some Logstash plugins have changed in the 7.x release.
+some Logstash plugins have changed.
 5. Restart your Logstash pipeline after updating your configuration file.
 
 [[upgrading-minor-versions]]
 === Upgrading between minor versions
 
-As a general rule, you can upgrade between minor versions (for example, 7.x to
-7.y, where x < y) by simply installing the new release and restarting {ls}. 
+As a general rule, you can upgrade between minor versions (for example, 8.x to
+8.y, where x < y) by simply installing the new release and restarting {ls}. 
 {ls} typically maintains backwards compatibility for configuration
 settings and exported fields. Please review the
 <<releasenotes,release notes>> for potential exceptions.
 
-Upgrading between non-consecutive major versions (5.x to 7.x, for example) is not
-supported.
+Upgrading between non-consecutive major versions (6.x to 8.x, for example) is
+not supported.
 
 
-[[upgrading-logstash-7.0]]
-=== Upgrading Logstash to 7.0
+[[upgrading-logstash-8.0]]
+=== Upgrading Logstash to 8.0
 
 Before upgrading Logstash:
 
@@ -113,26 +116,20 @@ There you can find info on these topics and more:
 If you are installing Logstash with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
-NOTE: Upgrading between non-consecutive major versions (5.x to 7.x, for example) is not
-supported. We recommend that you upgrade to 6.x, and then upgrade to 7.x.
+NOTE: Upgrading between non-consecutive major versions (6.x to 8.x, for example) is not
+supported. We recommend that you upgrade to {prev-major-last}, and then upgrade to 8.0.
 
 [float]
 [[upgrade-to-6.8-rec]]
-==== Upgrade to {ls} 6.8 before upgrading to 7.0
+==== Upgrade to {ls} {prev-major-last} before upgrading to 8.0
 
-If you haven't already, upgrade to version 6.8 before you upgrade to 7.0. If
+If you haven't already, upgrade to version {prev-major-last} before you upgrade to 8.0. If
 you're using other products in the {stack}, upgrade {ls} as part of the
 {stack-ref}/upgrading-elastic-stack.html[{stack} upgrade process].
 
-TIP: Upgrading to {ls} 6.8 will give you a head-start on new 7.0 features, including
-the java execution engine and the strict field reference parser, while you're still running 6.x.
+TIP: Upgrading to {ls} {prev-major-last} will give you a head-start on new 8.0 features.
 This step helps reduce risk and makes roll backs easier if you hit
 a snag.
-
-//TO DO:  Add links [[field-ref-strict]] and [[java-exec-default]] after upgrade docs are merged
-
-Upgrading to 6.8 is required because the {es} index template was modified to
-be compatible with {es} 7.0 (the `_type` setting changed from `doc` to `_doc`).
 
 
 [[upgrading-logstash-pqs]]
