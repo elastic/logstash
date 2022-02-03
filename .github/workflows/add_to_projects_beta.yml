@@ -33,19 +33,28 @@ jobs:
             }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
 
           echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
-
+          
+      - name: Figure out event ID depending on being an Issue or PR
+        run: |
+          if [[ ${{ github.event.issue.node_id }} == '' ]]; then
+              echo "EVENT_ID=${{ github.event.issue.node_id }} " >> "$GITHUB_ENV"
+          else
+              echo "EVENT_ID=${{ github.event.issue.node_id }}" >> "$GITHUB_ENV"
+          fi
+          
       - name: Adds Issues/PRs to Projects Beta
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
-          PR_ID: ${{ github.event.issue.node_id }}
+          EVENT_ID: ${{ env.EVENT_ID }}
+          # EVENT_ID: ${{ github.event.issue.node_id }}
         run: |
           item_id="$( gh api graphql -f query='
-            mutation($project:ID!, $pr:ID!) {
+            mutation($project:ID!, $event:ID!) {
               addProjectNextItem(input: {projectId: $project, contentId: $pr}) {
                 projectNextItem {
                   id
                 }
               }
-            }' -f project=$PROJECT_ID -f pr=$PR_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
+            }' -f project=$PROJECT_ID -f event=$EVENT_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
           
           echo 'ITEM_ID='$item_id >> $GITHUB_ENV
