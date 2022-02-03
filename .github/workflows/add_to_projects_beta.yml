@@ -50,7 +50,7 @@ jobs:
         run: |
           item_id="$( gh api graphql -f query='
             mutation($project:ID!, $event:ID!) {
-              addProjectNextItem(input: {projectId: $project, contentId: $pr}) {
+              addProjectNextItem(input: {projectId: $project, contentId: $event}) {
                 projectNextItem {
                   id
                 }
