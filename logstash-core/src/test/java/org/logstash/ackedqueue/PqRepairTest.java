@@ -98,6 +98,7 @@ public final class PqRepairTest {
     @Test
     public void testRemoveTempCheckPoint() throws Exception {
         Files.createFile(dataPath.resolve("checkpoint.head.tmp"));
+        Files.createFile(dataPath.resolve("checkpoint.1.tmp"));
         PqRepair.repair(dataPath);
         verifyQueue();
     }
