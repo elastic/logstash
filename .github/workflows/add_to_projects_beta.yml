@@ -36,8 +36,8 @@ jobs:
           
       - name: Figure out event ID depending on being an Issue or PR
         run: |
-          if [[ ${{ github.event.issue.node_id }} == '' ]]; then
-              echo "EVENT_ID=${{ github.event.issue.node_id }} " >> "$GITHUB_ENV"
+          if [[ ${{ github.event.pull_request.node_id }} ]]; then
+              echo "EVENT_ID=${{ github.event.pull_request.node_id }} " >> "$GITHUB_ENV"
           else
               echo "EVENT_ID=${{ github.event.issue.node_id }}" >> "$GITHUB_ENV"
           fi
