@@ -1,4 +1,4 @@
-name: Adds Issues/PRs to Projects Beta
+name: Add to project
 on:
   pull_request:
     types:
