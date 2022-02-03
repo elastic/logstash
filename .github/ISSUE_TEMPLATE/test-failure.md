@@ -1,6 +1,6 @@
 ---
 name: Test Failure
-about: A test failure in CI
+about: A test failure
 labels: "test failure"
 
 ---
