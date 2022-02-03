@@ -57,6 +57,8 @@ We have added support for UTF-16 and other multi-byte-character when reading log
 [[bc-field-ref-parser]]
 ===== Field Reference parser configuration setting removed
 The Field Reference parser interprets references to fields in your pipelines and plugins.
-A configuration option that has had only one option since 7.0 was removed in 8.0 and is no longer recognized.
+Its behavior was configurable in 6.x, and 7.x allowed only a single option: `strict`.
+8.0 no longer recognizes the setting, but maintains the same behavior as the `strict` setting.
+{ls} rejects ambiguous and illegal inputs as standard behavior.
 // end::notable-breaking-changes[]
 
