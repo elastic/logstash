@@ -93,6 +93,7 @@ public final class PqRepair {
     private static void deleteTempCheckpoint(final Path root) throws IOException {
         try (final DirectoryStream<Path> cpTmp = Files.newDirectoryStream(root, "checkpoint.*.tmp")) {
             for (Path cpTmpPath: cpTmp) {
+                LOGGER.info("Deleting temp checkpoint {}", cpTmpPath);
                 Files.delete(cpTmpPath);
             }
         }
