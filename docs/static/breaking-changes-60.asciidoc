@@ -1,0 +1,45 @@
+[[breaking-6.0]]
+=== Breaking changes in 6.0
+
+Here are the breaking changes for 6.0. 
+
+[discrete]
+==== Changes in Logstash Core
+
+These changes can affect any instance of Logstash that uses impacted features.
+Changes to Logstash Core are plugin agnostic.
+
+[discrete]
+===== Application Settings
+
+* The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
+  Previously, users had to convert this to a millisecond time value themselves.
+  Note that the unit qualifier (`s`) is required.
+
+[discrete]
+===== RPM/Deb package changes
+
+* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
+  or the files will not be loaded.
+
+[discrete]
+===== Command Line Interface behavior
+
+* The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and
+  `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
+* Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
+
+[discrete]
+===== List of plugins bundled with Logstash
+
+The following plugins were removed from the default bundle based on usage data. You can still install these plugins manually:
+
+* logstash-codec-oldlogstashjson
+* logstash-input-couchdb_changes
+* logstash-input-irc
+* logstash-input-log4j
+* logstash-input-lumberjack
+* logstash-filter-uuid
+* logstash-output-xmpp
+* logstash-output-irc
+* logstash-output-statsd
