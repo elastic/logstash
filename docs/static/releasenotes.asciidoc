@@ -15,26 +15,32 @@ This section summarizes the changes in the following releases:
 
 The following list are changes in 8.0.0 as compared to 7.17.0, and combines release notes from the 8.0.0-alpha1, -alpha2, -beta1, -rc1 and -rc2 releases.
 
-==== Logstash core
-* BREAKING CHANGE: Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema (ECS).
+[[breaking-8.0.0]]
+==== Breaking changes
+* Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema (ECS).
   This mode is controlled individually with each plugin’s ecs_compatibility option, which defaults to the value of the Logstash pipeline.ecs_compatibility setting.
   In Logstash 8, this compatibility mode will be on-by-default for all pipelines.
   If you wish to lock in a pipeline’s behavior from Logstash 7.x before upgrading to Logstash 8,
   you can set `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
-* BREAKING CHANGE: Starting from Logstash 8.0, the minimum required version of Java to run Logstash is Java 11.
+* Starting from Logstash 8.0, the minimum required version of Java to run Logstash is Java 11.
   By default, Logstash will run with the bundled JDK, which has been verified to work with each specific version of Logstash,
   and generally provides the best performance and reliability.
-* BREAKING CHANGE: Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
+* Support for using `JAVA_HOME` to override the path to the JDK that Logstash runs with has been removed for this release.
   In the `8.x` release, users should set the value of `LS_JAVA_HOME` to the path of their preferred JDK if they
   wish to use a version other than the bundled JDK. The value of `JAVA_HOME` will be ignored.
-* BREAKING CHANGE: The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
+* The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
   Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
-* BREAKING CHANGE: We have added support for UTF-16 and other multi-byte-character when reading log files. https://github.com/elastic/logstash/pull/9702[#9702]
-* BREAKING CHANGE: Setting `config.field_reference.parser` has been removed.
+* We have added support for UTF-16 and other multi-byte-character when reading log files. https://github.com/elastic/logstash/pull/9702[#9702]
+* Setting `config.field_reference.parser` has been removed.
   The Field Reference parser interprets references to fields in your pipelines and plugins.
   Its behavior was configurable in 6.x, and since 7.0 allowed only a single option: `strict`.
   8.0 no longer recognizes the setting, but maintains the same behavior as the `strict` setting.
   {ls} rejects ambiguous and illegal inputs as standard behavior. https://github.com/elastic/logstash/pull/12466[#12466]
+
+For a more detailed view of these changes please check <<breaking-8.0>>.
+
+[[features-8.0.0]]
+==== New features and enhancements
 * As processing times speed up, millisecond granularity is not always enough. Inbound data increasingly has sub-millisecond granularity timestamps.
   The pull request https://github.com/elastic/logstash/pull/12797[#12797] allows the internal mechanisms of
   Logstash that hold moment-in-time data - such as the Logstash Event, the Persistent Queue, the Dead Letter Queue and JSON encoding/decoding - to have nanosecond granularity.
