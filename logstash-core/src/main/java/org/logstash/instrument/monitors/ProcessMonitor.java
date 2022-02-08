@@ -54,7 +54,7 @@ public class ProcessMonitor {
             this.isUnix = osMxBean instanceof UnixOperatingSystemMXBean;
             // Defaults are -1
             if (this.isUnix) {
-                UnixOperatingSystemMXBean unixOsBean = (UnixOperatingSystemMXBean) osMxBean;;
+                UnixOperatingSystemMXBean unixOsBean = (UnixOperatingSystemMXBean) osMxBean;
 
                 this.openFds = unixOsBean.getOpenFileDescriptorCount();
                 this.maxFds =  unixOsBean.getMaxFileDescriptorCount();
@@ -62,9 +62,19 @@ public class ProcessMonitor {
                     unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS
                 );
                 this.cpuProcessPercent = scaleLoadToPercent(unixOsBean.getProcessCpuLoad());
-                this.cpuSystemPercent = getSystemCpuLoad();
+                this.cpuSystemPercent = getSystemCpuLoad(unixOsBean);
 
                 this.memTotalVirtualInBytes = unixOsBean.getCommittedVirtualMemorySize();
+            } else {
+                com.sun.management.OperatingSystemMXBean otherOsBean = (com.sun.management.OperatingSystemMXBean) osMxBean;
+
+                this.cpuMillisTotal = TimeUnit.MILLISECONDS.convert(
+                        otherOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS
+                );
+                this.cpuProcessPercent = scaleLoadToPercent(otherOsBean.getProcessCpuLoad());
+                this.cpuSystemPercent = getSystemCpuLoad(otherOsBean);
+
+                this.memTotalVirtualInBytes = otherOsBean.getCommittedVirtualMemorySize();
             }
         }
 
@@ -87,12 +97,8 @@ public class ProcessMonitor {
         }
 
         private static short scaleLoadToPercent(double load) {
-            if (osMxBean instanceof UnixOperatingSystemMXBean) {
-                if (load >= 0) {
-                    return (short) (load * 100);
-                } else {
-                    return -1;
-                }
+            if (load >= 0) {
+                return (short) (load * 100);
             } else {
                 return -1;
             }
@@ -101,12 +107,12 @@ public class ProcessMonitor {
         // The method `getSystemCpuLoad` is deprecated in favour of `getCpuLoad` since JDK14
         // This method uses reflection to use the correct method depending on the version of
         // the JDK being used.
-        private short getSystemCpuLoad() {
+        private short getSystemCpuLoad(OperatingSystemMXBean mxBeanInstance) {
             if (CPU_LOAD_METHOD == null){
                 return -1;
             }
             try {
-                return scaleLoadToPercent((double)CPU_LOAD_METHOD.invoke(osMxBean));
+                return scaleLoadToPercent((double) CPU_LOAD_METHOD.invoke(mxBeanInstance));
             } catch (Exception e){
                 return -1;
             }
