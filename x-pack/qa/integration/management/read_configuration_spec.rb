@@ -40,7 +40,7 @@ describe "Read configuration from elasticsearch" do
 
     stdout_lines = @logstash_service.stdout_lines
     res = stdout_lines.any?(/Could not fetch all the sources/)
-    if !res
+    if res
       puts "DNADBG>> lines: \n\n #{stdout_lines} \n\n"
     end
     expect(res).to be false
