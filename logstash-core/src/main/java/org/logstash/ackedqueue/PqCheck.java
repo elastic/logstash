@@ -61,7 +61,7 @@ public final class PqCheck {
         }
         System.out.println(String.format("Checking queue dir: %s", path));
         try (
-            DirectoryStream<Path> checkpoints = Files.newDirectoryStream(path, "checkpoint.*")
+            DirectoryStream<Path> checkpoints = Files.newDirectoryStream(path, "checkpoint.{[0-9]*,head}")
         ) {
             StreamSupport.stream(
                 checkpoints.spliterator(), true
