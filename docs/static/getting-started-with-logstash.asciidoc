@@ -24,7 +24,7 @@ include::jvm.asciidoc[]
 
 The {ls} binaries are available from 
 https://www.elastic.co/downloads/logstash[https://www.elastic.co/downloads].
-Download the Logstash installation file for your host environment--TARG.GZ, DEB,
+Download the Logstash installation file for your host environment--TAR.GZ, DEB,
 ZIP, or RPM. 
 
 Unpack the file. Do not install Logstash into a directory path that
