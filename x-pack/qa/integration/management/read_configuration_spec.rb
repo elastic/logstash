@@ -39,11 +39,7 @@ describe "Read configuration from elasticsearch" do
     @logstash_service = logstash("bin/logstash -w 1", logstash_options)
 
     stdout_lines = @logstash_service.stdout_lines
-    res = stdout_lines.any?(/Could not fetch all the sources/)
-    if res
-      puts "DNADBG>> lines: \n\n #{stdout_lines} \n\n"
-    end
-    expect(res).to be false
+    expect(stdout_lines.any?(/Could not fetch all the sources/)).to be false
   end
 
   def stop_services
