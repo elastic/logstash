@@ -38,8 +38,8 @@ describe "Read configuration from elasticsearch" do
 
     @logstash_service = logstash("bin/logstash -w 1", logstash_options)
 
-    stdout_lines = @logstash_service.stdout_lines
-    expect(stdout_lines.any?(/Could not fetch all the sources/)).to be false
+    full_log = @logstash_service.stdout_lines.join("\n")
+    expect(full_log).not_to match(/Could not fetch all the sources/)
   end
 
   def stop_services
