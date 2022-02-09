@@ -25,7 +25,6 @@ See the following topics for information about upgrading Logstash:
 * <<upgrading-using-direct-download>>
 * <<upgrading-minor-versions>>
 * <<upgrading-logstash-8.0>>
-* <<upgrading-logstash-pqs>>
 
 [discrete]
 ==== When to upgrade
@@ -65,13 +64,13 @@ If you use your own custom template with Logstash, then this issue can be ignore
 
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
-1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
-2. Using the directions in the <<package-repositories>> section, update your repository
+. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
+. Using the directions in the <<package-repositories>> section, update your repository
 links to point to the 8.x repositories.
-3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
-4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
+. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
+. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 8.x release.
-5. Restart your Logstash pipeline after you have updated your configuration file.
+. Restart your Logstash pipeline after you have updated your configuration file.
 
 [[upgrading-using-direct-download]]
 === Upgrading using a direct download
@@ -113,7 +112,7 @@ Before upgrading Logstash:
 There you can find info on these topics and more:
 
 ** <<bc-ecs-compatibility,Elastic Common Schema (ECS) compatibility on by default>>
-** Secure communication with Elasticsearch
+** <<security-on-8.0,Secure communication with Elasticsearch>>
 ** <<bc-field-ref-parser,Field parser is more strict>>
 
  
@@ -124,7 +123,7 @@ NOTE: Upgrading between non-consecutive major versions (6.x to 8.x, for example)
 We recommend that you upgrade to {prev-major-last}, and then upgrade to 8.0.
 
 [discrete]
-[[upgrade-to-6.8-rec]]
+[[upgrade-to-previous]]
 ==== Upgrade to {ls} {prev-major-last} before upgrading to 8.0
 
 If you haven't already, upgrade to version {prev-major-last} before you upgrade to 8.0. If
@@ -135,17 +134,4 @@ TIP: Upgrading to {ls} {prev-major-last} gives you a head-start on new 8.0 featu
 This step helps reduce risk and makes roll backs easier if you hit
 a snag.
 
-[[upgrading-logstash-pqs]]
-=== Upgrading with the persistent queue enabled
-
-Upgrading Logstash with persistent queues enabled is supported. The persistent
-queue directory is self-contained and can be read by a new Logstash instance
-running the same pipeline. You can safely shut down the original Logstash
-instance, spin up a new instance, and set `path.queue` in the `logstash.yml`
-<<logstash-settings-file,settings file>> to point to the original queue
-directory. You can also use a mounted drive to make this workflow easier.
-
-Keep in mind that only one Logstash instance can write to `path.queue`. You
-cannot have the original instance and the new instance writing to the queue at
-the same time.
 
