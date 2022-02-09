@@ -49,7 +49,7 @@ shared_examples "logstash list" do |logstash|
         stdout = StringIO.new(result.stdout)
         stdout.set_encoding(Encoding::UTF_8)
         while line = stdout.gets
-          next if line.match(/^Using system java:.*$/)
+          next if line.match(/^Using system java:.*$/) || line.match(/^Using bundled JDK:.*$/)
           match = line.match(/^#{plugin_name_with_version}$/)
           expect(match).to_not be_nil
 

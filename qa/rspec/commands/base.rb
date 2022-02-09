@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'tempfile'
 require_relative "../../vagrant/helpers"
 require_relative "system_helpers"
 
@@ -106,21 +107,17 @@ module ServiceTester
       run_command("rm -rf #{path}", host)
     end
 
-    def package_for(filename, skip_jdk_infix, bundled_jdk, base=ServiceTester::Base::LOCATION)
-      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+    def package_for(filename, skip_jdk_infix, base=ServiceTester::Base::LOCATION)
+      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix)
       File.join(base, "#{filename}#{jdk_arch_ext}.#{package_extension}")
     end
 
     private
-    def jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+    def jdk_architecture_extension(skip_jdk_infix)
       if skip_jdk_infix
         ""
       else
-        if bundled_jdk
-          "-" + architecture_extension
-        else
-          "-no-jdk"
-        end
+        "-" + architecture_extension
       end
     end
   end
