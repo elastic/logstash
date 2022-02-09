@@ -39,8 +39,6 @@ you'll get payloads with the ECS schema in advance of any Logstash upgrade.
 If you see mapping conflicts after upgrade, that is an indication that the
 Beats/ECS change is influencing the data reaching existing indices. 
 
-See the *{beats} Platform Reference* for more information on
-{beats-ref}/upgrading-6-to-7.html#enable-ecs-compatibility[Beats and ECS].
 
 [discrete]
 [[field-ref-strict]]
@@ -141,8 +139,7 @@ NOTE: In Beats 7.0.0, the fields exported by Beats _to_ the Logstash Beats Input
 conform to the {ecs-ref}/index.html[Elastic Common Schema (ECS)]. Many of the
 exported fields have been renamed, so you may need to modify your pipeline
 configurations to access them at their new locations prior to upgrading your
-Beats. See {beats-ref}/breaking-changes-7.0.html[Beats Breaking changes in 7.0]
-for the full list of changed names.
+Beats. 
 
 *HTTP Input*
 
