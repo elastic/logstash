@@ -1,8 +1,11 @@
 [[breaking-8.0]]
 === Breaking changes in 8.0
 Here are the breaking changes for 8.0.
-//NOTE: The notable-breaking-changes tagged regions are re-used in the
-//Installation and Upgrade Guide
+//NOTE: The notable-breaking-changes tagged regions are reused in the
+//Installation and Upgrade Guide.
+//Fully qualified links are required for reused content.
+//The anchor-only approach that works within a guide won't resolve
+//across guides.
 
 // tag::notable-breaking-changes[]
 [discrete]
@@ -15,7 +18,7 @@ When a new {es} cluster is started up _without_ dedicated certificates, it gener
 Our hosted {ess} simplifies safe, secure communication between Logstash and Elasticsearch. 
 {ess} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
 
-For more information, see <<es-security-on>>. 
+For more information, see {logstash-ref}/ls-security.html#es-security-on[{es} security on by default]. 
 
 [discrete]
 [[bc-java-11-minimum]]
