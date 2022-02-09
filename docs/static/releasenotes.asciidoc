@@ -50,7 +50,143 @@ For a more detailed view of these changes please check <<breaking-8.0>>.
 ==== Plugins
 
 Logstash 8.0.0 includes the same versions of all bundled plugins as Logstash 7.17.0.
-If you upgrade to 7.17 before upgrading to 8.0 (as recommended), you won't see any changes to plugin versions. 
+If you upgrade to 7.17 before upgrading to 8.0 (as recommended), you won't see any changes to plugin versions.
+
+*Clone Filter - 4.2.0*
+
+* Added support for ECS v8 as alias for ECS v1 https://github.com/logstash-plugins/logstash-filter-clone/pull/27[#27]
+
+*Geoip Filter - 7.2.11*
+
+* Improved compatibility with the Elastic Common Schema https://github.com/logstash-plugins/logstash-filter-geoip/pull/206[#206]
+** Added support for ECS's composite `region_iso_code` (`US-WA`), which _replaces_ the non-ECS `region_code` (`WA`) as a default field with City databases.
+To get the stand-alone `region_code` in ECS mode, you must include it in the `fields` directive
+** [DOC] Improve ECS-related documentation
+* [DOC] Air-gapped environment requires both ASN and City databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/204[#204]
+
+*Http Filter - 1.2.1*
+
+* Fix: do not set content-type if provided by user https://github.com/logstash-plugins/logstash-filter-http/pull/36[#36]
+* Feat: improve ECS compatibility https://github.com/logstash-plugins/logstash-filter-http/pull/35[#35]
+* Add support for PUT requests https://github.com/logstash-plugins/logstash-filter-http/pull/34[#34]
+
+*Ruby Filter - 3.1.8*
+
+* [DOC] Added doc to describe the option `tag_with_exception_message`https://github.com/logstash-plugins/logstash-filter-ruby/pull/62[#62]
+* Fix SyntaxError handling so other pipelines can shut down gracefully https://github.com/logstash-plugins/logstash-filter-ruby/pull/64[#64]
+
+*Useragent Filter - 3.3.3*
+
+* Docs: mention added fields in 3.3 with a note https://github.com/logstash-plugins/logstash-filter-useragent/pull/78[#78]
+
+*Exec Input - 3.4.0*
+
+* Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-exec/pull/28[#28]
+* Plugin will no longer override fields if they exist in the decoded payload (It no longer sets the `host` field if decoded from the command's output)
+
+*Gelf Input - 3.3.1*
+
+* Fix: safely coerce the value of `_@timestamp` to avoid crashing the plugin https://github.com/logstash-plugins/logstash-input-gelf/pull/67[#67]
+
+*Generator Input - 3.1.0*
+
+* Feat: adjusted fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-generator/pull/22[#22]
+* Fix: do not override the host field if it's present in the generator line (after decoding)
+* Fix: codec flushing when closing input
+
+*Imap Input - 3.2.0*
+
+* Feat: ECS compatibility https://github.com/logstash-plugins/logstash-input-imap/pull/55[#55]
+* added (optional) `headers_target` configuration option
+* added (optional) `attachments_target` configuration option
+* Fix: plugin should not close `$stdin`, while being stopped
+
+*Jms Input - 3.2.1*
+
+* Fix: improve compatibility with MessageConsumer implementations https://github.com/logstash-plugins/logstash-input-jms/pull/51[#51],
+such as IBM MQ.
+* Test: Fix test failures due to ECS compatibility default changes in `8.x` of logstash https://github.com/logstash-plugins/logstash-input-jms/pull/53[#53]
+* Feat: event_factory support + targets to aid ECS https://github.com/logstash-plugins/logstash-input-jms/pull/49[#49]
+* Fix: when configured to add JMS headers to the event, headers whose value is not set no longer result in nil entries on the event
+* Fix: when adding the `jms_reply_to` header to an event, a string representation is set instead of an opaque object.
+
+*Pipe Input - 3.1.0*
+
+*  Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-pipe/pull/19[#19]
+
+*S3 Input - 3.8.3*
+
+* Fix missing `metadata` and `type` of the last event https://github.com/logstash-plugins/logstash-input-s3/pull/223[#223]
+* Refactor: read sincedb time once per bucket listing https://github.com/logstash-plugins/logstash-input-s3/pull/233[#233]
+
+*Snmp Input - 1.3.1*
+
+* Refactor: handle no response(s) wout error logging https://github.com/logstash-plugins/logstash-input-snmp/pull/105[#105]
+* Feat: ECS compliance + optional target https://github.com/logstash-plugins/logstash-input-snmp/pull/99[#99]
+* Internal: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-snmp/pull/102[#102]
+
+*Snmptrap Input - 3.1.0*
+
+* Feat: ecs_compatiblity support + (optional) target https://github.com/logstash-plugins/logstash-input-snmptrap/pull/37[#37]
+
+*Syslog Input - 3.6.0*
+
+* Add support for ECS v8 as alias to v1 implementation https://github.com/logstash-plugins/logstash-input-syslog/pull/68[#68]
+
+*Twitter Input - 4.1.0*
+
+* Feat: optional target + ecs_compatibility https://github.com/logstash-plugins/logstash-input-twitter/pull/72[#72]
+
+*Unix Input - 3.1.1*
+
+* Fix: unable to stop plugin (on LS 6.x) https://github.com/logstash-plugins/logstash-input-unix/pull/29[#29]
+* Refactor: plugin internals got reviewed for `data_timeout => ...` to work reliably
+* Feat: adjust fields for ECS compatibility https://github.com/logstash-plugins/logstash-input-unix/pull/28[#28]
+
+*Jdbc Integration - 5.2.2*
+
+* Feat: name scheduler threads + redirect error logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/102[#102]
+* Refactor: isolate paginated normal statement algorithm in a separate handler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/101[#101]
+* Added `jdbc_paging_mode` option to choose if use `explicit` pagination in statements and avoid the initial count
+query or use `auto` to delegate to the underlying library https://github.com/logstash-plugins/logstash-integration-jdbc/pull/95[#95]
+* Several improvements to Java driver loading
+** Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96].
+The change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+
+    NOTE: A fatal driver error will no longer keep reloading the pipeline and now leads to a system exit.
+
+** Fix: regression due returning the Java driver class https://github.com/logstash-plugins/logstash-integration-jdbc/pull/98[#98]
+
+*Kafka Integration - 10.9.0*
+
+* Refactor: leverage codec when using schema registry
+Previously using `schema_registry_url` parsed the payload as JSON even if `codec => 'plain'` was explicitly set, this is no longer the case.
+https://github.com/logstash-plugins/logstash-integration-kafka/pull/106[#106]
+
+*Cloudwatch Output - 3.0.10*
+
+* Fix: an old undefined method error which would surface with load (as queue fills up)
+* Deps: unpin rufus scheduler https://github.com/logstash-plugins/logstash-output-cloudwatch/pull/20[#20]
+
+*Elasticsearch Output - 11.4.1*
+
+* Feat: upgrade manticore (http-client) library https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1063[#1063]
+** the underlying changes include latest HttpClient (4.5.13)
+** resolves an old issue with `ssl_certificate_verification => false` still doing some verification logic
+* Updates ECS templates https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1062[#1062]
+** Updates v1 templates to 1.12.1 for use with Elasticsearch 7.x and 8.x
+** Updates BETA preview of ECS v8 templates for Elasticsearch 7.x and 8.x
+* Feat: add support for 'traces' data stream type https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1057[#1057]
+* Refactor: review manticore error handling/logging, logging originating cause in case of connection related error when debug level is enabled.
+Java causes on connection related exceptions will now be extra logged when plugin is logging at debug level
+https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1029[#1029]
+* ECS-related fixes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1046[#1046]
+** Data Streams requirement on ECS is properly enforced when running on Logstash 8, and warned about when running on Logstash 7.
+** ECS Compatibility v8 can now be selected
+
+*Core Patterns - 4.3.2*
+
+- Fix: typo in `BIN9_QUERYLOG` pattern (in ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/307[#307]
 
 
 [[logstash-8-0-0-rc2]]
