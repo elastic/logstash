@@ -57,7 +57,7 @@ same server as {ls}.
 To enable the default configuration in the {metricbeat} `modules.d` directory, 
 run: 
 
-*deb, or rpm:* +
+*deb or rpm:* +
 
 ["source","sh",subs="attributes"]
 ----
