@@ -50,6 +50,7 @@ For a more detailed view of these changes please check <<breaking-8.0>>.
 ==== Plugins
 
 Logstash 8.0.0 includes the same versions of all bundled plugins as Logstash 7.17.0.
+If you upgrade to 7.17 before upgrading to 8.0 (as recommended), you won't see any changes to plugin versions. 
 
 
 [[logstash-8-0-0-rc2]]
