@@ -41,7 +41,6 @@ module ServiceTester
       @host    = host
       @options = options
       @client  = CommandsFactory.fetch(options["type"], options["host"])
-      @bundled_jdk = false
       @skip_jdk_infix = false
     end
 
@@ -75,10 +74,9 @@ module ServiceTester
 
     def install(options={})
       base      = options.fetch(:base, ServiceTester::Base::LOCATION)
-      @bundled_jdk = options.fetch(:bundled_jdk, false)
       @skip_jdk_infix = options.fetch(:skip_jdk_infix, false)
       filename = filename(options)
-      package   = client.package_for(filename, @skip_jdk_infix, @bundled_jdk, base)
+      package   = client.package_for(filename, @skip_jdk_infix, base)
       client.install(package, host)
     end
 

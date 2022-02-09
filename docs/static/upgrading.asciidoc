@@ -78,13 +78,16 @@ some Logstash plugins have changed in the 8.x release.
 
 This procedure downloads the relevant Logstash binaries directly from Elastic.
 
-1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
-2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-3. Unpack the installation file into your Logstash directory.
-4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. 
+. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
+. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
+. Backup your `config/` and `data/` folders in a temporary space.
+. Delete your Logstash directory.
+. Unpack the installation file into the folder that contained the Logstash directory that you just deleted.
+. Restore the `config/` and `data/` folders that were previously saved, overwriting the folders created during the unpack operation.
+. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command.
 Configuration options for
 some Logstash plugins have changed.
-5. Restart your Logstash pipeline after updating your configuration file.
+. Restart your Logstash pipeline after updating your configuration file.
 
 [[upgrading-minor-versions]]
 === Upgrading between minor versions
