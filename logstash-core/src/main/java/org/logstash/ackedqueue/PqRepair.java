@@ -63,7 +63,7 @@ public final class PqRepair {
             );
         }
 
-        LOGGER.info("Repairing queue dir: {}", path.toString());
+        LOGGER.info("Start repairing queue dir: {}", path.toString());
 
         deleteTempCheckpoint(path);
 
