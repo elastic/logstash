@@ -83,7 +83,7 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 . Restore the `config/` and `data/` folders that were previously saved, overwriting the folders created during the unpack operation.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command.
 Configuration options for
-some Logstash plugins have changed in the 7.x release.
+some Logstash plugins have changed.
 . Restart your Logstash pipeline after updating your configuration file.
 
 [[upgrading-minor-versions]]
