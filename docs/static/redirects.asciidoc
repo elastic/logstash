@@ -27,3 +27,13 @@ If your use case involves reading files that contain multiline entries,
 {filebeat-ref}[{filebeat}] might be a better option.
 {filebeat} offers {filebeat-ref}/filebeat-modules.html[modules] for processing logs
 from many known apps, such as nginx or apache.
+
+[role="exclude",id="brew"]
+==== Installation via Homebrew (MacOS)
+
+// legacy anchor to prevent 404.
+[brew-start]
+
+As of Logstash 8.0, Elastic no longer maintains formulae for the Homebrew package manager for MacOS.
+You are encouraged to install the appropriate arch-specific tarball.
+
