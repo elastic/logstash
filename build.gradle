@@ -307,7 +307,7 @@ tasks.register("installBundler") {
     dependsOn assemblyDeps
     outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
     doLast {
-      gem(projectDir, buildDir, "bundler", "~> 2", "${projectDir}/vendor/bundle/jruby/2.5.0")
+      gem(projectDir, buildDir, "bundler", "= 2.3.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
   }
 }
 
@@ -435,7 +435,7 @@ tasks.register("installIntegrationTestBundler"){
     dependsOn unpackTarDistribution
     outputs.files file("${qaBundleBin}")
   doLast {
-      gem(projectDir, buildDir, "bundler", "~> 2", qaBundledGemPath)
+      gem(projectDir, buildDir, "bundler", "= 2.3.6", qaBundledGemPath)
   }
 }
 
