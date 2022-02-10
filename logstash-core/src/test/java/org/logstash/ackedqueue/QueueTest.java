@@ -20,6 +20,7 @@
 
 package org.logstash.ackedqueue;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,6 +55,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
@@ -968,6 +971,44 @@ public class QueueTest {
             assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
             assertThat(q.tailPages.get(0).elementCount, is(1));
             assertThat(q.headPage.elementCount, is(0));
+        }
+    }
+
+    @Test
+    public void testZeroByteFullyAckedHeadPageOnOpen() throws IOException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+
+        // the goal here is to recreate a condition where the queue has a head page of size zero with
+        // a checkpoint that indicates it is full acknowledged
+        // see issue #10855
+
+        try(Queue q = new Queue(settings)) {
+            q.open();
+            q.write(element);
+
+            Batch batch = q.readBatch( 1, TimeUnit.SECONDS.toMillis(1));
+            batch.close();
+            assertThat(batch.size(), is(1));
+            assertThat(q.isFullyAcked(), is(true));
+        }
+
+        // now we have a queue state where page 0 is fully acked but not purged
+        // manually truncate page 0 to zero byte to mock corrupted page
+        FileChannel c = new FileOutputStream(Paths.get(dataPath, "page.0").toFile(), true).getChannel();
+        c.truncate(0);
+        c.close();
+
+        try(Queue q = new Queue(settings)) {
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size is too small to hold elements
+            // because head page recover() check integrity of file size
+            q.open();
+
+            // recreated head page and checkpoint
+            File page1 = Paths.get(dataPath, "page.1").toFile();
+            assertThat(page1.exists(), is(true));
+            assertThat(page1.length(), is(greaterThan(0L)));
         }
     }
 

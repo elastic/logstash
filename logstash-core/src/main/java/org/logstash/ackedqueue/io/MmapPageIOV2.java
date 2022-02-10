@@ -271,6 +271,13 @@ public final class MmapPageIOV2 implements PageIO {
         return this.head;
     }
 
+    @Override
+    public boolean isCorruptedPage() throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            return raf.length() < MIN_CAPACITY;
+        }
+    }
+
     private int checksum(byte[] bytes) {
         checkSummer.reset();
         checkSummer.update(bytes, 0, bytes.length);
@@ -294,7 +301,8 @@ public final class MmapPageIOV2 implements PageIO {
             this.capacity = pageFileCapacity;
 
             if (this.capacity < MIN_CAPACITY) {
-                throw new IOException(String.format("Page file size is too small to hold elements"));
+                throw new IOException("Page file size is too small to hold elements. " +
+                        "This is potentially a queue corruption problem. Run `pqcheck` and `pqrepair` to repair the queue.");
             }
             this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         }
