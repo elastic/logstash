@@ -63,6 +63,8 @@ public final class PqRepair {
             );
         }
 
+        LOGGER.info("Start repairing queue dir: {}", path.toString());
+
         deleteTempCheckpoint(path);
 
         final Map<Integer, Path> pageFiles = new HashMap<>();
@@ -88,6 +90,8 @@ public final class PqRepair {
         fixMissingPages(pageFiles, checkpointFiles);
         fixZeroSizePages(pageFiles, checkpointFiles);
         fixMissingCheckpoints(pageFiles, checkpointFiles);
+
+        LOGGER.info("Repair is done");
     }
 
     private static void deleteTempCheckpoint(final Path root) throws IOException {
