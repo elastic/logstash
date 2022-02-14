@@ -23,6 +23,14 @@ cd qa/integration
 bundle exec rspec specs/es_output_how_spec.rb (single test)
 bundle exec rspec specs/*  (all tests)
 ```
+
+## Running tests locally
+
+1. `export LOGSTASH_SOURCE=1`
+2. `cd qa`
+3. `bundle`
+4. `bundle exec rspec integration/path/to/test_spec.rb`
+
 ## Running integration tests locally via Docker 
 
 ### Dependencies 
