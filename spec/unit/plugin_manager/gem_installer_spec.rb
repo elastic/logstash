@@ -46,9 +46,7 @@ describe LogStash::PluginManager::GemInstaller do
     let(:message) { "Hello from the friendly pack" }
 
     context "when present" do
-      before do
-        allow_any_instance_of(::Gem::Specification).to receive(:post_install_message).and_return(message)
-      end
+      let(:plugin_name) { 'logstash-input-packtest_pim-0.0.1' }
 
       context "when we want the message" do
         it "display the message" do
@@ -64,7 +62,7 @@ describe LogStash::PluginManager::GemInstaller do
     end
 
     context "when not present" do
-      context "when we want the message" do
+      context "when we don't want the message" do
         it "doesn't display the message" do
           expect(LogStash::PluginManager.ui).not_to receive(:info).with(message)
           subject.install(simple_gem, true, temporary_gem_home)
