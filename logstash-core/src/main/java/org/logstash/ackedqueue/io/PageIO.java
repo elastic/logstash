@@ -84,4 +84,7 @@ public interface PageIO extends Closeable {
 
     // @return the data container min sequence number
     long getMinSeqNum();
+
+    // check if the page size is < minimum size
+    boolean isCorruptedPage() throws IOException;
 }
