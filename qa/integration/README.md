@@ -19,7 +19,8 @@ This framework is hybrid -- a combination of bash scripts (to mainly setup servi
 
 ### Setup Java
 
-The integration test scripts use `gradle` to run the tests, which requires a valid version of Java either on the system path, or specified using the `JAVA_HOME` environment variable pointing to the location of a valid JDK.
+The integration test scripts use `gradle` to run the tests.
+Gradle requires a valid version of Java either on the system path, or specified using the `JAVA_HOME` environment variable pointing to the location of a valid JDK.
 
 To run integration tests using a different version of Java, set the `BUILD_JAVA_HOME` environment variable to the location of the JDK that you wish to test with.
 ## Testing on Mac/Linux
