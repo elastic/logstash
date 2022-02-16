@@ -44,7 +44,7 @@ You can still install the Apache-licensed OSS distribution with homebrew using t
 [role="exclude",id="brew-start"]
 ==== Homebrew for Logstash
 
-As of Logstash 8.0, Elastic no longer maintains a homebrew cask containing formulae for installing the Elastic-licensed distribution of Logstash.
+As of Logstash 8.0, Elastic no longer maintains a Homebrew cask containing formulae for installing the Elastic-licensed distribution of Logstash.
 If you want to run the full distribution of Logstash on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
 
 
