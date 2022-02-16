@@ -27,10 +27,14 @@ namespace "vendor" do
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
-    puts("Invoking bundler install...")
-    output, exception = LogStash::Bundler.invoke!(:install => true)
-    puts(output)
-    raise(exception) if exception
+    if File.exists?('Gemfile.lock') # `./gradlew bootstrap` already run
+      puts("Skipping bundler install...")
+    else
+      puts("Invoking bundler install...")
+      output, exception = LogStash::Bundler.invoke!(:install => true)
+      puts(output)
+      raise(exception) if exception
+    end
   end # task gems
   task "all" => "gems"
 
