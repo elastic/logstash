@@ -16,10 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-  def vendor(*args)
-    return File.join("vendor", *args)
-  end
-
   task "jruby" do |task, args|
     system('./gradlew bootstrap') unless File.exists?(File.join("vendor", "jruby"))
   end # jruby
@@ -40,6 +36,6 @@ namespace "vendor" do
 
   desc "Clean the vendored files"
   task :clean do
-    rm_rf(vendor)
+    rm_rf('vendor')
   end
 end
