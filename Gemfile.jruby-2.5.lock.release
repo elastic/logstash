@@ -705,7 +705,7 @@ GEM
       nio4r (~> 2.0)
     racc (1.5.2-java)
     rack (2.2.3)
-    rack-protection (2.2.0)
+    rack-protection (2.1.0)
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -743,7 +743,7 @@ GEM
     sinatra (2.1.0)
       mustermann (~> 1.0)
       rack (~> 2.2)
-      rack-protection (= 2.2.0)
+      rack-protection (= 2.1.0)
       tilt (~> 2.0)
     snappy (0.0.12-java)
       snappy-jars (~> 1.1.0)
