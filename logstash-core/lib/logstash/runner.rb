@@ -32,7 +32,6 @@ if !LogStash::OSS
 end
 
 require "clamp"
-require "net/http"
 
 require "logstash-core/logstash-core"
 require "logstash/environment"
@@ -50,7 +49,6 @@ require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/persisted_queue_config"
-require "set"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
