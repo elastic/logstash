@@ -17,6 +17,6 @@
 
 module LogStash
   module Util
-    java_import org.logstash.util.TimeValue
+    java_import "org.logstash.util.TimeValue"
   end
 end

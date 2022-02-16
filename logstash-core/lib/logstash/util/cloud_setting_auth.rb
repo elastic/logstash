@@ -16,5 +16,5 @@
 # under the License.
 
 module LogStash; module Util
-  java_import org.logstash.util.CloudSettingAuth
+  java_import "org.logstash.util.CloudSettingAuth"
 end; end

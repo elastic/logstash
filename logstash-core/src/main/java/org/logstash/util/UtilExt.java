@@ -39,6 +39,7 @@ public class UtilExt {
             throw context.runtime.newTypeError(thread, context.runtime.getThread());
         }
         final Thread javaThread = ((RubyThread) thread).getNativeThread(); // weak-reference
+        System.out.println(javaThread);
         // even if thread is dead the RubyThread instance might stick around while the Java thread
         // instance already could have been garbage collected - let's return nil for dead meat :
         return javaThread == null ? context.nil : context.runtime.newFixnum(javaThread.getId());
