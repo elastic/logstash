@@ -241,10 +241,9 @@ public final class Logstash implements Runnable, AutoCloseable {
      * @return RubyInstanceConfig
      */
     private static RubyInstanceConfig buildConfig(final Path home, final String[] args) {
-        final String[] arguments = new String[args.length + 2];
-        System.arraycopy(args, 0, arguments, 2, args.length);
+        final String[] arguments = new String[args.length + 1];
+        System.arraycopy(args, 0, arguments, 1, args.length);
         arguments[0] = safePath(home, "lib", "bootstrap", "environment.rb");
-        arguments[1] = safePath(home, "logstash-core", "lib", "logstash", "runner.rb");
         return initRubyConfig(home, arguments);
     }
 
