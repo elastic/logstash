@@ -14,6 +14,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: 'main'
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
       - name: setup python
         uses: actions/setup-python@v2
         with:
@@ -22,7 +24,7 @@ jobs:
           echo "branch=$(echo "${{ github.event.comment.body }}" | cut -d " " -f 3)" >> $GITHUB_ENV
       - run: |
           mkdir ~/.elastic && echo ${{ github.token }} >> ~/.elastic/github.token
-      - name: execute py script # run the run.py to get the latest data
+      - name: install python dependencies
         run: pip install requests
       - name: execute py script # run the run.py to get the latest data
         run: python devtools/backport ${{ env.branch }} ${{ github.event.issue.number }} --remote=origin --yes
