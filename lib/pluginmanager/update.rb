@@ -77,6 +77,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     puts("Updating #{filtered_plugins.collect(&:name).join(", ")}") unless filtered_plugins.empty?
 
+    output = nil
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     Bundler.settings.temporary(:frozen => false) do # Unfreeze the bundle when updating gems
