@@ -18,7 +18,7 @@ include::jvm.asciidoc[]
 [[installing-logstash]]
 === Installing Logstash
 
-[float]
+[discrete]
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
@@ -45,7 +45,7 @@ that are available under the Apache 2.0 license.
 
 On supported Linux operating systems, you can use a package manager to install Logstash.
 
-[float]
+[discrete]
 [[package-repositories]]
 === Installing from Package Repositories
 
@@ -79,7 +79,7 @@ refer to {logstash-ref}/running-logstash-command-line.html[Running Logstash from
 for more information.
 --
 
-[float]
+[discrete]
 ==== APT
 
 ifeval::["{release-state}"=="unreleased"]
@@ -155,7 +155,7 @@ See {logstash-ref}/running-logstash.html[Running Logstash] for details about man
 
 endif::[]
 
-[float]
+[discrete]
 ==== YUM
 
 ifeval::["{release-state}"=="unreleased"]
@@ -226,8 +226,7 @@ See the {logstash-ref}/running-logstash.html[Running Logstash] document for mana
 
 endif::[]
 
-[float]
-
+[discrete]
 ==== Docker
 
 Images are available for running Logstash as a Docker container. They are
