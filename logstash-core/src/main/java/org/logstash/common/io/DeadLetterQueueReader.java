@@ -52,6 +52,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -73,12 +74,15 @@ public final class DeadLetterQueueReader implements Closeable {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
-        this.segments = new ConcurrentSkipListSet<>((p1, p2) -> {
-            Function<Path, Integer> id = (p) -> Integer.parseInt(p.getFileName().toString().split("\\.")[0]);
-            return id.apply(p1).compareTo(id.apply(p2));
-        });
+        this.segments = new ConcurrentSkipListSet<>(
+                Comparator.comparingInt(DeadLetterQueueReader::extractSegmentId)
+        );
 
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+    }
+
+    private static int extractSegmentId(Path p) {
+        return Integer.parseInt(p.getFileName().toString().split("\\.")[0]);
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
