@@ -1,0 +1,25 @@
+name: Backport PR to another branch
+on:
+  issue_comment:
+
+jobs:
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR comment
+    if: ${{ github.event.issue.pull_request }} && ${{ startsWith(github.event.comment.body, '@logstashmachine backport') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2 
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: |
+          echo "branch=$(echo "${{ github.event.comment.body }}" | cut -d " " -f 3)" >> $GITHUB_ENV
+      - run: |
+          mkdir ~/.elastic && echo ${{ github.token }} >> ~/.elastic/github.token
+      - name: execute py script # run the run.py to get the latest data
+        run: pip install requests
+      - name: execute py script # run the run.py to get the latest data
+        run: python devtools/backport ${{ env.branch }} ${{ github.event.issue.number }} --remote=origin --yes
