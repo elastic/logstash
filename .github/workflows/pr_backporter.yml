@@ -12,7 +12,7 @@ jobs:
     name: PR comment
     if: |
       (github.event.issue.pull_request && startsWith(github.event.comment.body, '@logstashmachine backport')) &&
-      (github.actor == 'jsvd' || github.actor == 'meh')
+      (github.actor == 'jsvd' || github.actor == 'roaksoax')
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
