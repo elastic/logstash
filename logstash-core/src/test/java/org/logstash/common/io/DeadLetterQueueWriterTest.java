@@ -26,9 +26,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +46,9 @@ import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
@@ -48,6 +56,8 @@ import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueWriterTest {
+    public static final int MB = 1024 * 1024;
+    public static final int GB = 1024 * 1024 * 1024;
     private Path dir;
 
     @Rule
@@ -208,5 +218,60 @@ public class DeadLetterQueueWriterTest {
             return files.filter(p -> p.toString().endsWith(".log"))
                 .mapToLong(p -> p.toFile().length()).sum();
         }
+    }
+
+    @Test
+    public void testRemoveOldestSegmentWhenRetainedSizeIsExceeded() throws IOException {
+        Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
+        long startTime = System.currentTimeMillis();
+
+        int messageSize = 0;
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+
+            // 320 generates 10 Mb of data
+            for (int i = 0; i < (320 * 2) - 1; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime++));
+                final int serializationLength = entry.serialize().length;
+                assertThat("setup: serialized entry size...", serializationLength, Matchers.is(lessThan(BLOCK_SIZE)));
+                messageSize += serializationLength;
+                writeManager.writeEntry(entry);
+            }
+            assertThat(messageSize, Matchers.is(greaterThan(BLOCK_SIZE)));
+        }
+
+        // but every segment file has 1 byte header, 639 messages of 32Kb generates 3 files
+        // 0.log with 319
+        // 1.log with 319
+        // 2.log with 1
+        List<String> segmentFileNames = Files.list(dir)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .sorted()
+                .collect(Collectors.toList());
+        assertEquals(3, segmentFileNames.size());
+        final String fileToBeRemoved = segmentFileNames.get(0);
+
+        // Exercise
+        // with another 32Kb message write we go to write the third file and trigger the 20Mb limit of retained store
+        final long prevQueueSize;
+        final long beheadedQueueSize;
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+            prevQueueSize = writeManager.getCurrentQueueSize();
+            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 639), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime));
+            writeManager.writeEntry(entry);
+            beheadedQueueSize = writeManager.getCurrentQueueSize();
+        }
+
+        // 1.log with 319
+        // 2.log with 1
+        // 3.log with 1, created because the close flushes and beheaded the tail file.
+        Set<String> afterBeheadSegmentFileNames = Files.list(dir)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toSet());
+        assertEquals(3, afterBeheadSegmentFileNames.size());
+        assertThat(afterBeheadSegmentFileNames, Matchers.not(Matchers.contains(fileToBeRemoved)));
+        assertEquals(prevQueueSize - (318 * 32 * 1024 + 1), beheadedQueueSize);
     }
 }

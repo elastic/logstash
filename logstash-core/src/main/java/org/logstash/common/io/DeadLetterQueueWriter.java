@@ -39,6 +39,7 @@
 package org.logstash.common.io;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -46,12 +47,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalAmount;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,8 +95,13 @@ public final class DeadLetterQueueWriter implements Closeable {
     private Instant lastWrite;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
+    private final long maxRetainedSize;
 
     public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final Duration flushInterval) throws IOException {
+        this(queuePath, maxSegmentSize, maxQueueSize, maxQueueSize, flushInterval);
+    }
+
+    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, long maxRetainedSize, final Duration flushInterval) throws IOException {
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
@@ -99,6 +109,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.flushInterval = flushInterval;
         this.currentQueueSize = new LongAdder();
         this.currentQueueSize.add(getStartupQueueSize());
+        this.maxRetainedSize = maxRetainedSize;
 
         cleanupTempFiles();
         currentSegmentIndex = getSegmentPaths(queuePath)
@@ -176,8 +187,22 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
+        if (currentQueueSize.longValue() + eventPayloadSize > maxRetainedSize) {
+            // remove oldest segment
+            final Optional<Path> oldestSegment = getSegmentPaths(queuePath).sorted().findFirst();
+            if (!oldestSegment.isPresent()) {
+                logger.error("Listing of DLQ segments was empty during retain size({}) check", maxRetainedSize);
+                return;
+            }
+            final Path beheadedSegment = oldestSegment.get();
+            final long segmentSize = Files.size(beheadedSegment);
+            currentQueueSize.add(-segmentSize);
+            Files.delete(beheadedSegment);
+            logger.debug("Deleted segment file {}", beheadedSegment);
+        }
+
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
-            logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
+            logger.error("cannot write event to DLQ(path: {}): reached maxQueueSize of {}", this.queuePath, maxQueueSize);
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             finalizeSegment(FinalizeWhen.ALWAYS);
@@ -342,7 +367,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         Files.delete(deleteTarget);
     }
 
-    private static boolean isWindows(){
+    private static boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows");
     }
 }
