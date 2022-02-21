@@ -14,55 +14,18 @@ This section summarizes the changes in the following releases:
 [[logstash-8-0-1]]
 === Logstash 8.0.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.0.1
+[[notable-8.0.1]]
+==== Notable issues fixed
 
-* bump jdk to 11.0.14.1+1 https://github.com/elastic/logstash/pull/13687[#13687]
-* Publish CPU percentage also non Unix systems https://github.com/elastic/logstash/pull/13727[#13727]
-* [backport 8.0]Publish CPU percentage also non Unix systems (#13727) https://github.com/elastic/logstash/pull/13733[#13733]
-* Backport #13762 to 8.0. Unpin bundler, fix gem installer tests https://github.com/elastic/logstash/pull/13764[#13764]
-* Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13784[#13784]
-* Backport PR #13784 to 8.0: Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13786[#13786]
-* Backport PR #13687 to 8.0: bump jdk to 11.0.14.1+1 https://github.com/elastic/logstash/pull/13793[#13793]
-* Backport PR #13687 to 8.0: bump jdk to 11.0.14.1+1 https://github.com/elastic/logstash/pull/13795[#13795]
+* Fixed long-standing monitoring incompatibility on Windows where the CPU metric was not available.
+  https://github.com/elastic/logstash/pull/13727[#13727]
 
-=== Logstash Commits between 8.0 and 8.0.0
+* Recently, users running `bin/logstash-plugin` to install or update plugins stumbled upon an issue that would prevent
+  Logstash from starting due a third-party dependency update.
+  https://github.com/elastic/logstash/issues/13777[#13777]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.0..8.0"
-
-0979fa494 - (HEAD -> 8.0, origin/8.0) Doc: Set up redirects for deleted pages [8.0] (#13799) (4 days ago) <Karen Metts>
-09ae63433 - Deps: update patch plugin versions and dependencies (#13783) (5 days ago) <Karol Bucek>
-a26d98be5 - Deps: pin sinatra due (2.2.0) incompatibilities (#13784) (#13786) (5 days ago) <Karol Bucek>
-5d99a157f - Lock jruby-openssl in logtash-core to 0.11.0 (#13785) (5 days ago) <Rob Bavey>
-5fcc1442e - handle fully acked 0 byte PQ pages (#13692) (#13760) (5 days ago) <kaisecheng>
-949a54846 - Doc:Update qa readme with BUILD_JAVA_HOME setting info [8.0] (#13779) (5 days ago) <Karen Metts>
-9bf698e35 - fix pqrepair log4j setting (#13726) (#13767) (6 days ago) <kaisecheng>
-b63d3b36c - Backport #13762 to 8.0. Unpin bundler, fix gem installer tests (#13764) (10 days ago) <Rob Bavey>
-4812d2e23 - [backport 8.0]Publish CPU percentage also non Unix systems (#13727) (#13733) (11 days ago) <Andrea Selva>
-28fb287a2 - Bump versions.yml for 8.0.1 (#13757) (11 days ago) <Andrea Selva>
-5f46995f1 - Pin bundler to 2.3.6 to fix builder (#13753) (#13754) (11 days ago) <Ry Biesemeyer>
-ce1ad4dec - Docs remove homebrew (#13747) (#13748) (12 days ago) <Ry Biesemeyer>
-7afbb072b - Doc: Update upgrade info for 8.0 in main (#13745) (12 days ago) <Karen Metts>
-b2d94af68 - Release notes draft for 8.0.0 (#13711) (12 days ago) <Logstash Machine>
-d5a366a34 - [backport 8.0][doc]Update the Upgrading Using a Direct Download guide section. (#13684) (#13742) (12 days ago) <Andrea Selva>
-8f53ba5a8 - Doc: Remove links to beats 7.x content 8.0 (#13740) (12 days ago) <Karen Metts>
-94b4931e3 - Doc: Replace short link with full link 8.0 (#13738) (12 days ago) <Karen Metts>
-4bbf8b346 - pqcheck pqrepair handle .tmp checkpoint (#13721) (#13730) (13 days ago) <kaisecheng>
-d7e389e3c - Doc: Expand breaking changes (#13723) (13 days ago) <Karen Metts>
-8e264417d - Release notes for 8.0.0-rc2 (#13669) (3 weeks ago) <Logstash Machine>
-5141cecfd - Doc: Fix formatting for bulleted list 8.0 (#13696) (3 weeks ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.0.0..8.0 *.release"
-Changed plugin versions:
-logstash-filter-dissect: 1.2.4 -> 1.2.5
-logstash-filter-elasticsearch: 3.11.0 -> 3.11.1
-logstash-input-beats: 6.2.5 -> 6.2.6
-logstash-input-dead_letter_queue: 1.1.8 -> 1.1.10
-logstash-input-tcp: 6.2.6 -> 6.2.7
-logstash-integration-jdbc: 5.2.2 -> 5.2.3
-logstash-output-tcp: 6.0.0 -> 6.0.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Logstash startup and the `pqrepair`/`pqcheck` tools have been improved to handle corrupted files in case of an
+  unexpected shutdown. https://github.com/elastic/logstash/pull/13692[#13692] https://github.com/elastic/logstash/pull/13721[#13721]
 
 ==== Plugins
 
