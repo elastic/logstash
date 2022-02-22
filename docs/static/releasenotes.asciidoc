@@ -31,7 +31,7 @@ This section summarizes the changes in the following releases:
 
 *Dissect Filter - 1.2.5*
 
-* fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+* Fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
 
 *Elasticsearch Filter - 3.11.1*
 
