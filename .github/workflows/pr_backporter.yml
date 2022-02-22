@@ -11,10 +11,19 @@ jobs:
   pr_commented:
     name: PR comment
     if: |
-      (github.event.issue.pull_request && startsWith(github.event.comment.body, '@logstashmachine backport')) &&
-      (github.actor == 'jsvd' || github.actor == 'roaksoax')
+      (github.event.issue.pull_request && startsWith(github.event.comment.body, '@logstashmachine backport'))
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch logstash-core team member list
+        uses: tspascoal/get-user-teams-membership@v1
+        with: 
+          username: ${{ github.actor }}
+          organization: elastic
+          team: logstash
+          GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
+      - name: Is user a core team member?
+        if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+        run: exit 1
       - name: checkout repo content
         uses: actions/checkout@v2
         with:
