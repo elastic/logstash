@@ -25,7 +25,10 @@ import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -261,8 +264,8 @@ public class DeadLetterQueueWriterTest {
             prevQueueSize = writeManager.getCurrentQueueSize();
             final int expectedQueueSize = 2 * // number of full segment files
                     FULL_SEGMENT_FILE_SIZE  + // size of a segment file
-                    BLOCK_SIZE + 1 // the third segment file with just one message
-                    + 1; // the header of the head tmp file created in opening
+                    VERSION_SIZE + BLOCK_SIZE + // the third segment file with just one message
+                    VERSION_SIZE; // the header of the head tmp file created in opening
             assertEquals("Queue size is composed of 2 full segment files plus one with an event plus another with just the header byte",
                     expectedQueueSize, prevQueueSize);
             DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", (320 * 2) - 1), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime));
@@ -284,5 +287,150 @@ public class DeadLetterQueueWriterTest {
                 FULL_SEGMENT_FILE_SIZE; //the size of the removed segment file
         assertEquals("Total queue size must be decremented by the size of the first segment file",
                 expectedQueueSize, beheadedQueueSize);
+    }
+
+    @Test
+    public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_reopeningWriterUseCase() throws IOException {
+        final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
+        prepareDLQWithFirstSegmentOlderThanRetainPeriod(event);
+
+        // Exercise
+        final long prevQueueSize;
+        final long beheadedQueueSize;
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+            prevQueueSize = writeManager.getCurrentQueueSize();
+            assertEquals("Queue size is composed of one just one empty file with version byte", VERSION_SIZE, prevQueueSize);
+
+            // write new entry that trigger clean of age retained segment
+            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 320), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            writeManager.writeEntry(entry);
+            beheadedQueueSize = writeManager.getCurrentQueueSize();
+        }
+
+        assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+    }
+
+    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event) throws IOException {
+        final Duration littleMore2Days = Duration.ofDays(2).plusMinutes(1);
+        long startTime = Instant.now().minus(littleMore2Days).toEpochMilli();
+        int messageSize = 0;
+
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+
+            // 320 generates 10 Mb of data
+            for (int i = 0; i < 320 - 1; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime++));
+                final int serializationLength = entry.serialize().length;
+                assertThat("setup: serialized entry size...", serializationLength, Matchers.is(lessThan(BLOCK_SIZE)));
+                messageSize += serializationLength;
+                writeManager.writeEntry(entry);
+            }
+            assertThat(messageSize, Matchers.is(greaterThan(BLOCK_SIZE)));
+        }
+    }
+
+    @Test
+    public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_withContinuousWriterUseCase() throws IOException {
+        final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
+        final Duration littleMore2Days = Duration.ofDays(2).plusMinutes(1);
+        long startTime = Instant.now().minus(littleMore2Days).toEpochMilli();
+        int messageSize = 0;
+
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+
+            // 320 generates 10 Mb of data
+            for (int i = 0; i < 320 - 1; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime++));
+                final int serializationLength = entry.serialize().length;
+                assertThat("setup: serialized entry size...", serializationLength, Matchers.is(lessThan(BLOCK_SIZE)));
+                messageSize += serializationLength;
+                writeManager.writeEntry(entry);
+            }
+            assertThat(messageSize, Matchers.is(greaterThan(BLOCK_SIZE)));
+
+            // Exercise
+            // write an event that goes in second segment
+            final long prevQueueSize = writeManager.getCurrentQueueSize();
+            assertEquals("Queue size is composed of one full segment files", FULL_SEGMENT_FILE_SIZE, prevQueueSize);
+
+            // write new entry that trigger clean of age retained segment
+            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 320), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            writeManager.writeEntry(entry);
+            final long beheadedQueueSize = writeManager.getCurrentQueueSize();
+
+            assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+        }
+    }
+
+    static class ForwardableClock extends Clock {
+
+        private Clock currentClock;
+
+        ForwardableClock(Clock clock) {
+            this.currentClock = clock;
+        }
+
+        void forward(Duration period) {
+            currentClock = Clock.offset(currentClock, period);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return currentClock.getZone();
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return currentClock.withZone(zone);
+        }
+
+        @Override
+        public Instant instant() {
+            return currentClock.instant();
+        }
+    }
+
+    @Test
+    public void testRemoveMultipleOldestSegmentsWhenRetainedAgeIsExceeded() throws InterruptedException, IOException {
+        final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
+
+        final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
+        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+
+        long startTime = fakeClock.instant().toEpochMilli();
+        int messageSize = 0;
+
+        final Duration retention = Duration.ofDays(2);
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB,
+                retention, Duration.ofSeconds(1), fakeClock)) {
+
+            // 320 generates 10 Mb of data
+            for (int i = 0; i < 319 * 2; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime++));
+                final int serializationLength = entry.serialize().length;
+                assertThat("setup: serialized entry size...", serializationLength, Matchers.is(lessThan(BLOCK_SIZE)));
+                messageSize += serializationLength;
+                writeManager.writeEntry(entry);
+            }
+            assertThat(messageSize, Matchers.is(greaterThan(BLOCK_SIZE)));
+
+            // make the retention age to pass for the first 2 full segments
+            fakeClock.forward(retention.plusSeconds(1));
+
+            // Exercise
+            // write an event that goes in second segment
+            final long prevQueueSize = writeManager.getCurrentQueueSize();
+            assertEquals("Queue size is composed of 2 full segment files", 2 * FULL_SEGMENT_FILE_SIZE, prevQueueSize);
+
+            // write new entry that trigger clean of age retained segment
+            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 320), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            writeManager.writeEntry(entry);
+            final long beheadedQueueSize = writeManager.getCurrentQueueSize();
+
+            assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+        }
     }
 }
