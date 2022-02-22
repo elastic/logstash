@@ -548,6 +548,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     }
   end
 
+  def shutdown_requested
+    @shutdownRequested.get
+  end
+
   private
 
   def close_plugin_and_ignore(plugin)
