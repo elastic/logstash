@@ -17,7 +17,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.0.1]]
 ==== Notable issues fixed
 
-* Fixed long-standing monitoring incompatibility on Windows where the CPU metric was not available.
+* Fixed monitoring incompatibility on Windows where the CPU metric was not available.
   https://github.com/elastic/logstash/pull/13727[#13727]
 
 * Recently, users running `bin/logstash-plugin` to install or update plugins stumbled upon an issue that would prevent
