@@ -49,8 +49,8 @@ This section summarizes the changes in the following releases:
 *Tcp Input - 6.2.7*
 
 * Build: skip shadowing jar dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/187[#187]
-    * plugin no longer shadows dependencies into its *logstash-input-tcp.jar*
-    * log4j-api is now a provided dependency and is no longer packaged with the plugin
+** plugin no longer shadows dependencies into its *logstash-input-tcp.jar*
+** log4j-api is now a provided dependency and is no longer packaged with the plugin
 
 *Jdbc Integration - 5.2.3*
 
