@@ -58,6 +58,7 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 public class DeadLetterQueueWriterTest {
     public static final int MB = 1024 * 1024;
     public static final int GB = 1024 * 1024 * 1024;
+    public static final int FULL_SEGMENT_FILE_SIZE = 319 * BLOCK_SIZE + 1; // 319 records that fills completely a block plus the 1 byte header of the segment file
     private Path dir;
 
     @Rule
@@ -227,7 +228,7 @@ public class DeadLetterQueueWriterTest {
         long startTime = System.currentTimeMillis();
 
         int messageSize = 0;
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < (320 * 2) - 1; i++) {
@@ -258,7 +259,13 @@ public class DeadLetterQueueWriterTest {
         final long beheadedQueueSize;
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
             prevQueueSize = writeManager.getCurrentQueueSize();
-            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 639), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime));
+            final int expectedQueueSize = 2 * // number of full segment files
+                    FULL_SEGMENT_FILE_SIZE  + // size of a segment file
+                    BLOCK_SIZE + 1 // the third segment file with just one message
+                    + 1; // the header of the head tmp file created in opening
+            assertEquals("Queue size is composed of 2 full segment files plus one with an event plus another with just the header byte",
+                    expectedQueueSize, prevQueueSize);
+            DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", (320 * 2) - 1), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(startTime));
             writeManager.writeEntry(entry);
             beheadedQueueSize = writeManager.getCurrentQueueSize();
         }
@@ -272,6 +279,10 @@ public class DeadLetterQueueWriterTest {
                 .collect(Collectors.toSet());
         assertEquals(3, afterBeheadSegmentFileNames.size());
         assertThat(afterBeheadSegmentFileNames, Matchers.not(Matchers.contains(fileToBeRemoved)));
-        assertEquals(prevQueueSize - (318 * 32 * 1024 + 1), beheadedQueueSize);
+        final long expectedQueueSize = prevQueueSize +
+                BLOCK_SIZE - // the space of the newly inserted message
+                FULL_SEGMENT_FILE_SIZE; //the size of the removed segment file
+        assertEquals("Total queue size must be decremented by the size of the first segment file",
+                expectedQueueSize, beheadedQueueSize);
     }
 }
