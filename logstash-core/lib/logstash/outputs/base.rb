@@ -136,8 +136,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   def pipeline_shutdown_requested?
-    respond_to?(:execution_context) && execution_context.respond_to?(:pipeline) &&
-      execution_context.pipeline.respond_to?(:shutdown_requested) && execution_context.pipeline.shutdown_requested
+    execution_context.pipeline&.shutdown_requested?
   end
 
   private
