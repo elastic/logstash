@@ -3,12 +3,64 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-0-1,Logstash 8.0.1>>
 * <<logstash-8-0-0,Logstash 8.0.0>>
 * <<logstash-8-0-0-rc2,Logstash 8.0.0-rc2>>
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-0-1]]
+=== Logstash 8.0.1 Release Notes
+
+[[notable-8.0.1]]
+==== Notable issues fixed
+
+* Fixed monitoring incompatibility on Windows where the CPU metric was not available.
+  https://github.com/elastic/logstash/pull/13727[#13727]
+
+* Recently, users running `bin/logstash-plugin` to install or update plugins stumbled upon an issue that would prevent
+  Logstash from starting due a third-party dependency update. The dependency was pinned to an older version.
+  https://github.com/elastic/logstash/issues/13777[#13777]
+
+* Logstash startup and the `pqrepair`/`pqcheck` tools have been improved to handle corrupted files in case of an
+  unexpected shutdown. https://github.com/elastic/logstash/pull/13692[#13692] https://github.com/elastic/logstash/pull/13721[#13721]
+
+==== Plugins
+
+*Dissect Filter - 1.2.5*
+
+* Fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+
+*Elasticsearch Filter - 3.11.1*
+
+*  Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/156[#156]
+
+*Beats Input - 6.2.6*
+
+* Update guidance regarding the private key format and encoding https://github.com/logstash-plugins/logstash-input-beats/pull/445[#445]
+
+*Dead_letter_queue Input - 1.1.10*
+
+* Fix, avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
+* Fix `@metadata` get overwritten by reestablishing metadata that stored in DLQ https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/34[#34]
+
+*Tcp Input - 6.2.7*
+
+* Build: skip shadowing jar dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/187[#187]
+** plugin no longer shadows dependencies into its *logstash-input-tcp.jar*
+** log4j-api is now a provided dependency and is no longer packaged with the plugin
+
+*Jdbc Integration - 5.2.3*
+
+* Performance: avoid contention on scheduler execution https://github.com/logstash-plugins/logstash-integration-jdbc/pull/103[#103]
+
+*Tcp Output - 6.0.1*
+
+* Fixed logging fail retry to stdout https://github.com/logstash-plugins/logstash-output-tcp/pull/43[#43]
+* Fixed to use `reconnect_interval` when establish a connection
+
 
 [[logstash-8-0-0]]
 === Logstash 8.0.0 Release Notes
