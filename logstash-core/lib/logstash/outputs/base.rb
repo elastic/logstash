@@ -135,6 +135,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
     context
   end
 
+  def pipeline_shutdown_requested?
+    respond_to?(:execution_context) && execution_context.respond_to?(:pipeline) &&
+      execution_context.pipeline.respond_to?(:shutdown_requested) && execution_context.pipeline.shutdown_requested
+  end
+
   private
   def output?(event)
     # TODO: noop for now, remove this once we delete this call from all plugins
