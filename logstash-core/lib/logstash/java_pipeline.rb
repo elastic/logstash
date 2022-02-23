@@ -548,7 +548,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     }
   end
 
-  def shutdown_requested
+  def shutdown_requested?
     @shutdownRequested.get
   end
 
