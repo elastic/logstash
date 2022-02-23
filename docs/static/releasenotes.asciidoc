@@ -21,7 +21,7 @@ This section summarizes the changes in the following releases:
   https://github.com/elastic/logstash/pull/13727[#13727]
 
 * Recently, users running `bin/logstash-plugin` to install or update plugins stumbled upon an issue that would prevent
-  Logstash from starting due a third-party dependency update.
+  Logstash from starting due a third-party dependency update. The dependency was pinned to an older version.
   https://github.com/elastic/logstash/issues/13777[#13777]
 
 * Logstash startup and the `pqrepair`/`pqcheck` tools have been improved to handle corrupted files in case of an
