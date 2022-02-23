@@ -51,6 +51,8 @@ import java.time.Duration;
 
 import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_AGE_POLICY;
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_SIZE_POLICY;
 
 public class DeadLetterQueueFactoryTest {
     public static final String PIPELINE_NAME = "pipelineA";
@@ -68,9 +70,9 @@ public class DeadLetterQueueFactoryTest {
     public void testSameBeforeRelease() throws IOException {
         try {
             Path pipelineA = dir.resolve(PIPELINE_NAME);
-            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), NOOP_AGE_POLICY, NOOP_SIZE_POLICY);
             assertTrue(writer.isOpen());
-            DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), NOOP_AGE_POLICY, NOOP_SIZE_POLICY);
             assertSame(writer, writer2);
             writer.close();
         } finally {
@@ -82,11 +84,11 @@ public class DeadLetterQueueFactoryTest {
     public void testOpenableAfterRelease() throws IOException {
         try {
             Path pipelineA = dir.resolve(PIPELINE_NAME);
-            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), NOOP_AGE_POLICY, NOOP_SIZE_POLICY);
             assertTrue(writer.isOpen());
             writer.close();
             DeadLetterQueueFactory.release(PIPELINE_NAME);
-            writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), NOOP_AGE_POLICY, NOOP_SIZE_POLICY);
             assertTrue(writer.isOpen());
             writer.close();
         }finally{

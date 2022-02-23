@@ -26,11 +26,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +60,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -66,6 +74,9 @@ import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
+
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_AGE_POLICY;
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_SIZE_POLICY;
 
 /**
  * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
@@ -278,19 +289,67 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
+                final DeadLetterQueueWriter.DLQRetentionPolicy<Instant> ageRetentionPolicy;
+                if (hasSetting(context, "dead_letter_queue.retain.age")) {
+                    // convert to Duration
+                    final Duration age = parseToDuration(getSetting(context, "dead_letter_queue.retain.age").convertToString().toString());
+                    ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(age);
+                } else {
+                    ageRetentionPolicy = NOOP_AGE_POLICY;
+                }
+                final DeadLetterQueueWriter.DLQRetentionPolicy<Long> sizeRetentionPolicy;
+                if (hasSetting(context, "dead_letter_queue.retain.size")) {
+                    final long retainedSize = parseToBytes(getSetting(context, "dead_letter_queue.retain.size").convertToString().toString());
+                    sizeRetentionPolicy = new DeadLetterQueueWriter.SizeRetentionPolicy(retainedSize);
+                } else {
+                    sizeRetentionPolicy = NOOP_SIZE_POLICY;
+                }
                 dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
                     context.runtime,
                     DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         getSetting(context, "path.dead_letter_queue").asJavaString(),
                         getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()), ageRetentionPolicy, sizeRetentionPolicy)
                     );
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
         return dlqWriter;
+    }
+
+    /**
+     * Convert values like 512mb to the corresponding value in bytes.
+     * */
+    private long parseToBytes(String bytesSize) {
+        final Matcher matcher = Pattern.compile("(?<value>\\d+)\\s*mb").matcher(bytesSize);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Cannot parse space specification [" + bytesSize + "], expected format: <number>mb");
+        }
+        final long value = Long.parseLong(matcher.group("value"));
+        return value * 1024 * 1024;
+    }
+
+    /**
+     * Convert time strings like 3d or 4h or 5m to a duration
+     * */
+    private Duration parseToDuration(String timeStr) {
+        final Matcher matcher = Pattern.compile("(?<value>\\d+)\\s*(?<time>[dhms])").matcher(timeStr);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Cannot parse time specification [" + timeStr + "]");
+        }
+        final int value = Integer.parseInt(matcher.group("value"));
+        final String timeSpecifier = matcher.group("time");
+        final TemporalUnit unit;
+        switch(timeSpecifier) {
+            case "d": unit = ChronoUnit.DAYS; break;
+            case "h": unit = ChronoUnit.HOURS; break;
+            case "m": unit = ChronoUnit.MINUTES; break;
+            case "s": unit = ChronoUnit.SECONDS; break;
+            default: unit = ChronoUnit.SECONDS;
+        }
+        return Duration.of(value, unit);
     }
 
     @JRubyMethod(name = "dlq_enabled?")

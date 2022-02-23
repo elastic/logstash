@@ -264,7 +264,7 @@ public class DeadLetterQueueWriterTest {
         int messageSize = 0;
         final DeadLetterQueueWriter.SizeRetentionPolicy sizeRetentionPolicy = new DeadLetterQueueWriter.SizeRetentionPolicy(20 * MB);
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), Clock.systemDefaultZone(), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
+                Duration.ofSeconds(1), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < (320 * 2) - 1; i++) {
@@ -294,7 +294,7 @@ public class DeadLetterQueueWriterTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), Clock.systemDefaultZone(), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
+                Duration.ofSeconds(1), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             final int expectedQueueSize = 2 * // number of full segment files
                     FULL_SEGMENT_FILE_SIZE  + // size of a segment file

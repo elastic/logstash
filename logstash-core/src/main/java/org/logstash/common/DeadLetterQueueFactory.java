@@ -45,6 +45,7 @@ import org.logstash.common.io.DeadLetterQueueWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -75,19 +76,23 @@ public class DeadLetterQueueFactory {
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
+     * @param agePolicy retention policy based on the age of events in the queue.
+     * @param sizePolicy retention policy based on the size of the queue.
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval,
+                                                  DeadLetterQueueWriter.DLQRetentionPolicy<Instant> agePolicy, DeadLetterQueueWriter.DLQRetentionPolicy<Long> sizePolicy) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, agePolicy, sizePolicy));
     }
 
     public static DeadLetterQueueWriter release(String id) {
         return REGISTRY.remove(id);
     }
 
-    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval) {
+    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval,
+                                                   DeadLetterQueueWriter.DLQRetentionPolicy<Instant> agePolicy, DeadLetterQueueWriter.DLQRetentionPolicy<Long> sizePolicy) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval);
+            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, agePolicy, sizePolicy);
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
         }
