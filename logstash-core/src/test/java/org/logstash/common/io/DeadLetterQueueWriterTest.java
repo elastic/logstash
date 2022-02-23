@@ -54,11 +54,42 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_AGE_POLICY;
+import static org.logstash.common.io.DeadLetterQueueWriter.NOOP_SIZE_POLICY;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueWriterTest {
+
+    static class ForwardableClock extends Clock {
+
+        private Clock currentClock;
+
+        ForwardableClock(Clock clock) {
+            this.currentClock = clock;
+        }
+
+        void forward(Duration period) {
+            currentClock = Clock.offset(currentClock, period);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return currentClock.getZone();
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return currentClock.withZone(zone);
+        }
+
+        @Override
+        public Instant instant() {
+            return currentClock.instant();
+        }
+    }
+
     public static final int MB = 1024 * 1024;
     public static final int GB = 1024 * 1024 * 1024;
     public static final int FULL_SEGMENT_FILE_SIZE = 319 * BLOCK_SIZE + 1; // 319 records that fills completely a block plus the 1 byte header of the segment file
@@ -231,7 +262,9 @@ public class DeadLetterQueueWriterTest {
         long startTime = System.currentTimeMillis();
 
         int messageSize = 0;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+        final DeadLetterQueueWriter.SizeRetentionPolicy sizeRetentionPolicy = new DeadLetterQueueWriter.SizeRetentionPolicy(20 * MB);
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), Clock.systemDefaultZone(), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < (320 * 2) - 1; i++) {
@@ -260,7 +293,8 @@ public class DeadLetterQueueWriterTest {
         // with another 32Kb message write we go to write the third file and trigger the 20Mb limit of retained store
         final long prevQueueSize;
         final long beheadedQueueSize;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), Clock.systemDefaultZone(), NOOP_AGE_POLICY, sizeRetentionPolicy)) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             final int expectedQueueSize = 2 * // number of full segment files
                     FULL_SEGMENT_FILE_SIZE  + // size of a segment file
@@ -293,12 +327,18 @@ public class DeadLetterQueueWriterTest {
     public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_reopeningWriterUseCase() throws IOException {
         final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
-        prepareDLQWithFirstSegmentOlderThanRetainPeriod(event);
+
+        final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
+        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        prepareDLQWithFirstSegmentOlderThanRetainPeriod(event, fakeClock);
 
         // Exercise
         final long prevQueueSize;
         final long beheadedQueueSize;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+
+        final DeadLetterQueueWriter.AgeRetentionPolicy ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(Duration.ofDays(2));
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), fakeClock, ageRetentionPolicy, NOOP_SIZE_POLICY)) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             assertEquals("Queue size is composed of one just one empty file with version byte", VERSION_SIZE, prevQueueSize);
 
@@ -311,12 +351,14 @@ public class DeadLetterQueueWriterTest {
         assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
     }
 
-    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event) throws IOException {
+    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event, ForwardableClock fakeClock) throws IOException {
         final Duration littleMore2Days = Duration.ofDays(2).plusMinutes(1);
-        long startTime = Instant.now().minus(littleMore2Days).toEpochMilli();
+        long startTime = fakeClock.instant().minus(littleMore2Days).toEpochMilli();
         int messageSize = 0;
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+        final DeadLetterQueueWriter.AgeRetentionPolicy ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(Duration.ofDays(2));
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), fakeClock, ageRetentionPolicy, NOOP_SIZE_POLICY)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 320 - 1; i++) {
@@ -334,11 +376,16 @@ public class DeadLetterQueueWriterTest {
     public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_withContinuousWriterUseCase() throws IOException {
         final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
-        final Duration littleMore2Days = Duration.ofDays(2).plusMinutes(1);
-        long startTime = Instant.now().minus(littleMore2Days).toEpochMilli();
+        final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
+        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+
+        long startTime = fakeClock.instant().toEpochMilli();
         int messageSize = 0;
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB, Duration.ofSeconds(1))) {
+        final Duration retention = Duration.ofDays(2);
+        final DeadLetterQueueWriter.AgeRetentionPolicy ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(retention);
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), fakeClock, ageRetentionPolicy, NOOP_SIZE_POLICY)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 320 - 1; i++) {
@@ -352,6 +399,7 @@ public class DeadLetterQueueWriterTest {
 
             // Exercise
             // write an event that goes in second segment
+            fakeClock.forward(retention.plusSeconds(1));
             final long prevQueueSize = writeManager.getCurrentQueueSize();
             assertEquals("Queue size is composed of one full segment files", FULL_SEGMENT_FILE_SIZE, prevQueueSize);
 
@@ -364,36 +412,8 @@ public class DeadLetterQueueWriterTest {
         }
     }
 
-    static class ForwardableClock extends Clock {
-
-        private Clock currentClock;
-
-        ForwardableClock(Clock clock) {
-            this.currentClock = clock;
-        }
-
-        void forward(Duration period) {
-            currentClock = Clock.offset(currentClock, period);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return currentClock.getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return currentClock.withZone(zone);
-        }
-
-        @Override
-        public Instant instant() {
-            return currentClock.instant();
-        }
-    }
-
     @Test
-    public void testRemoveMultipleOldestSegmentsWhenRetainedAgeIsExceeded() throws InterruptedException, IOException {
+    public void testRemoveMultipleOldestSegmentsWhenRetainedAgeIsExceeded() throws IOException {
         final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
 
@@ -404,8 +424,9 @@ public class DeadLetterQueueWriterTest {
         int messageSize = 0;
 
         final Duration retention = Duration.ofDays(2);
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB, 20 * MB,
-                retention, Duration.ofSeconds(1), fakeClock)) {
+        final DeadLetterQueueWriter.AgeRetentionPolicy ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(retention);
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
+                Duration.ofSeconds(1), fakeClock, ageRetentionPolicy, NOOP_SIZE_POLICY)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 319 * 2; i++) {

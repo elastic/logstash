@@ -74,7 +74,35 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
-    static class SizeRetentionPolicy {
+    interface DLQRetentionPolicy<T> {
+        boolean verify(T dimension);
+
+        void updateStatus(DeadLetterQueueWriter queueWriter) throws IOException;
+
+        void apply(DeadLetterQueueWriter queueWriter) throws IOException;
+    }
+
+    static class NoopRetentionPolicy<T> implements DLQRetentionPolicy<T> {
+
+        @Override
+        public boolean verify(T dimension) {
+            return false;
+        }
+
+        @Override
+        public void updateStatus(DeadLetterQueueWriter queueWriter) throws IOException {
+        }
+
+        @Override
+        public void apply(DeadLetterQueueWriter queueWriter) throws IOException {
+        }
+    }
+
+    public static final DeadLetterQueueWriter.NoopRetentionPolicy<Long> NOOP_SIZE_POLICY = new DeadLetterQueueWriter.NoopRetentionPolicy<>();
+
+    public static final DeadLetterQueueWriter.NoopRetentionPolicy<Instant> NOOP_AGE_POLICY = new DeadLetterQueueWriter.NoopRetentionPolicy<>();
+
+    static class SizeRetentionPolicy implements DLQRetentionPolicy<Long> {
         private static final Logger logger = LogManager.getLogger(SizeRetentionPolicy.class);
 
         private long maxRetentionSize;
@@ -83,11 +111,16 @@ public final class DeadLetterQueueWriter implements Closeable {
             this.maxRetentionSize = maxRetentionSize;
         }
 
-        boolean verify(long size) {
+        @Override
+        public boolean verify(Long size) {
             return size > maxRetentionSize;
         }
 
-        void apply(DeadLetterQueueWriter queueWriter) throws IOException {
+        @Override
+        public void updateStatus(DeadLetterQueueWriter queueWriter) {}
+
+        @Override
+        public void apply(DeadLetterQueueWriter queueWriter) throws IOException {
             // remove oldest segment
             final Optional<Path> oldestSegment = getSegmentPaths(queueWriter.queuePath).sorted().findFirst();
             if (!oldestSegment.isPresent()) {
@@ -101,25 +134,26 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    static class AgeRetentionPolicy {
+    static class AgeRetentionPolicy implements DLQRetentionPolicy<Instant> {
+        private static final Logger logger = LogManager.getLogger(AgeRetentionPolicy.class);
+
         private Optional<Timestamp> oldestSegmentTimestamp;
         private Optional<Path> oldestSegmentPath;
         private final TemporalAmount retentionTime;
-        private final Clock clock;
 
-        AgeRetentionPolicy(TemporalAmount retentionTime, Clock clock) {
+        AgeRetentionPolicy(TemporalAmount retentionTime) {
             this.retentionTime = retentionTime;
-            this.clock = clock;
         }
 
-        boolean verify() {
-            final Instant now = clock.instant();
+        @Override
+        public boolean verify(final Instant currentTime) {
             return oldestSegmentTimestamp
-                    .map(t -> t.toInstant().isBefore(now.minus(retentionTime)))
+                    .map(t -> t.toInstant().isBefore(currentTime.minus(retentionTime)))
                     .orElse(false);
         }
 
-        void updateStatus(DeadLetterQueueWriter queueWriter) throws IOException {
+        @Override
+        public void updateStatus(DeadLetterQueueWriter queueWriter) throws IOException {
             oldestSegmentPath = getSegmentPaths(queueWriter.queuePath).sorted().findFirst();
             if (!oldestSegmentPath.isPresent()) {
                 oldestSegmentTimestamp = Optional.empty();
@@ -146,8 +180,8 @@ public final class DeadLetterQueueWriter implements Closeable {
             return DLQEntry.deserialize(eventBytes).getEntryTime();
         }
 
-
-        void apply(DeadLetterQueueWriter queueWriter) throws IOException {
+        @Override
+        public void apply(DeadLetterQueueWriter queueWriter) throws IOException {
             // remove all the old segments that verifies the age retention condition
             boolean cleanNextSegment;
             do {
@@ -186,19 +220,17 @@ public final class DeadLetterQueueWriter implements Closeable {
     private Instant lastWrite;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
-    private final SizeRetentionPolicy sizePolicy;
-    private final AgeRetentionPolicy agePolicy;
+    private final DLQRetentionPolicy<Long> sizePolicy;
+    private final DLQRetentionPolicy<Instant> agePolicy;
+    private final Clock clock;
 
     public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final Duration flushInterval) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, maxQueueSize, flushInterval);
+        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, Clock.systemDefaultZone(), NOOP_AGE_POLICY, NOOP_SIZE_POLICY);
     }
 
-    DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final long maxRetainedSize, final Duration flushInterval) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, maxRetainedSize, Duration.ofDays(2), flushInterval, Clock.systemDefaultZone());
-    }
-
-    DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final long maxRetainedSize,
-                          final TemporalAmount retentionTime, final Duration flushInterval, final Clock clock) throws IOException {
+    DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                          final Duration flushInterval, final Clock clock,
+                          DLQRetentionPolicy<Instant> ageRetentionPolicy, DLQRetentionPolicy<Long> sizePolicy) throws IOException {
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
@@ -206,9 +238,10 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.flushInterval = flushInterval;
         this.currentQueueSize = new LongAdder();
         this.currentQueueSize.add(getStartupQueueSize());
+        this.clock = clock;
 
-        this.sizePolicy = new SizeRetentionPolicy(maxRetainedSize);
-        this.agePolicy = new AgeRetentionPolicy(retentionTime, clock);
+        this.sizePolicy = sizePolicy;
+        this.agePolicy = ageRetentionPolicy;
 
         cleanupTempFiles();
         agePolicy.updateStatus(this);
@@ -304,7 +337,8 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void satisfyAgeRetentionPolicy() throws IOException {
-        if(agePolicy.verify()) {
+        final Instant now = clock.instant();
+        if(agePolicy.verify(now)) {
             agePolicy.apply(this);
         }
     }
