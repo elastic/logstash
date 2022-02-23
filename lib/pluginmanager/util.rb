@@ -17,7 +17,6 @@
 
 require "rubygems/package"
 require "yaml"
-require_relative "../bootstrap/patches/remote_fetcher"
 
 module LogStash::PluginManager
 
