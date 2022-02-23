@@ -63,53 +63,24 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-1]]
 === Logstash 7.17.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.1
+[[notable-7-17-1]]
+==== Notable issues fixed
 
-* handle fully acked 0 byte PQ pages https://github.com/elastic/logstash/pull/13692[#13692]
-* pqcheck pqrepair handle .tmp checkpoint https://github.com/elastic/logstash/pull/13721[#13721]
-* fix pqrepair log4j setting https://github.com/elastic/logstash/pull/13726[#13726]
-* Publish CPU percentage also non Unix systems https://github.com/elastic/logstash/pull/13727[#13727]
-* [backport 7.17]Publish CPU percentage also non Unix systems (#13727) https://github.com/elastic/logstash/pull/13732[#13732]
-* Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13784[#13784]
-* Backport PR #13784 to 7.17: Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13788[#13788]
-* Feat: conservative plugin (dependency) updates by default https://github.com/elastic/logstash/pull/13794[#13794]
+* Fixed monitoring incompatibility on Windows where the CPU metric was not available.
+https://github.com/elastic/logstash/pull/13727[#13727]
 
-=== Logstash Commits between 7.17 and 7.17.0
+* Recently, users running `bin/logstash-plugin` to install or update plugins stumbled upon an issue that would prevent
+Logstash from starting due a third-party dependency update. The dependency was pinned to an older version.
+https://github.com/elastic/logstash/issues/13777[#13777]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.0..7.17"
-
-c5dcd5442 - (HEAD -> 7.17, origin/7.17) Bump Gemfile lock for 7.17.1 (#13805) (26 hours ago) <kaisecheng>
-f47db585e - pin jruby-openssl in logstash 7.17.1 as a recent update causes a gem load error #13785 (#13806) (2 days ago) <kaisecheng>
-f80999c6b - Deps: pin sinatra due (2.2.0) incompatibilities (#13784) (#13788) (7 days ago) <Karol Bucek>
-45c8442f5 - Doc:Update qa readme with BUILD_JAVA_HOME setting info [7.17] (#13780) (7 days ago) <Karen Metts>
-cddcf18ca - fix pqrepair log4j setting (#13726) (#13768) (8 days ago) <kaisecheng>
-5197b340a - Unpin bundler, fix gem installer tests (#13762) (#13776) (8 days ago) <kaisecheng>
-205faa6b6 - [7.17] handle fully acked 0 byte PQ pages (#13692) (#13761) (8 days ago) <kaisecheng>
-0db25a80b - [backport 7.17]Publish CPU percentage also non Unix systems (#13727) (#13732) (2 weeks ago) <Andrea Selva>
-5fca46e63 - pqcheck pqrepair handle .tmp checkpoint (#13721) (#13731) (2 weeks ago) <kaisecheng>
-2c515750f - Update releasenotes.asciidoc (#13701) (3 weeks ago) <Cris da Rocha>
-380089cde - Bump for next 7.17.1 (#13695) (3 weeks ago) <Andrea Selva>
-4113c6b42 - Release notes draft for 7.17.0 (#13690) (3 weeks ago) <Logstash Machine>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.0..7.17 *.release"
-Changed plugin versions:
-logstash-filter-dissect: 1.2.4 -> 1.2.5
-logstash-filter-elasticsearch: 3.11.0 -> 3.11.1
-logstash-input-beats: 6.2.5 -> 6.2.6
-logstash-input-dead_letter_queue: 1.1.8 -> 1.1.10
-logstash-input-elasticsearch: 4.12.1 -> 4.12.2
-logstash-input-tcp: 6.2.6 -> 6.2.7
-logstash-integration-jdbc: 5.2.2 -> 5.2.3
-logstash-output-tcp: 6.0.0 -> 6.0.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Logstash startup and the `pqrepair`/`pqcheck` tools have been improved to handle corrupted files in case of an
+unexpected shutdown. https://github.com/elastic/logstash/pull/13692[#13692] https://github.com/elastic/logstash/pull/13721[#13721]
 
 ==== Plugins
 
 *Dissect Filter - 1.2.5*
 
-* fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+* Fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
 
 *Elasticsearch Filter - 3.11.1*
 
@@ -124,15 +95,11 @@ logstash-output-tcp: 6.0.0 -> 6.0.1
 * Fix, avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
 * Fix `@metadata` get overwritten by reestablishing metadata that stored in DLQ https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/34[#34]
 
-*Elasticsearch Input - 4.12.2*
-
-* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/168[#168]
-
 *Tcp Input - 6.2.7*
 
 * Build: skip shadowing jar dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/187[#187]
-    * plugin no longer shadows dependencies into its *logstash-input-tcp.jar*
-    * log4j-api is now a provided dependency and is no longer packaged with the plugin
+** plugin no longer shadows dependencies into its *logstash-input-tcp.jar*
+** log4j-api is now a provided dependency and is no longer packaged with the plugin
 
 *Jdbc Integration - 5.2.3*
 
