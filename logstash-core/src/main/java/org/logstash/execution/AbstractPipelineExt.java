@@ -290,7 +290,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
                 final DeadLetterQueueWriter.DLQRetentionPolicy<Instant> ageRetentionPolicy;
-                if (hasSetting(context, "dead_letter_queue.retain.age")) {
+                if (hasSetting(context, "dead_letter_queue.retain.age") && !getSetting(context, "dead_letter_queue.retain.age").isNil()) {
                     // convert to Duration
                     final Duration age = parseToDuration(getSetting(context, "dead_letter_queue.retain.age").convertToString().toString());
                     ageRetentionPolicy = new DeadLetterQueueWriter.AgeRetentionPolicy(age);
@@ -298,7 +298,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     ageRetentionPolicy = NOOP_AGE_POLICY;
                 }
                 final DeadLetterQueueWriter.DLQRetentionPolicy<Long> sizeRetentionPolicy;
-                if (hasSetting(context, "dead_letter_queue.retain.size")) {
+                if (hasSetting(context, "dead_letter_queue.retain.size") && !getSetting(context, "dead_letter_queue.retain.size").isNil()) {
                     final long retainedSize = parseToBytes(getSetting(context, "dead_letter_queue.retain.size").convertToString().toString());
                     sizeRetentionPolicy = new DeadLetterQueueWriter.SizeRetentionPolicy(retainedSize);
                 } else {
