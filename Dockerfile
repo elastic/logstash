@@ -35,7 +35,7 @@ ADD LICENSE.txt /opt/logstash/LICENSE.txt
 ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
 ADD licenses /opt/logstash/licenses
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
-ADD Gemfile.template Gemfile.jruby-2.5.lock.* /opt/logstash/
+ADD Gemfile.template Gemfile.jruby-2.6.lock.* /opt/logstash/
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
 ADD rubyUtils.gradle /opt/logstash/rubyUtils.gradle
@@ -57,7 +57,8 @@ ADD ci /opt/logstash/ci
 USER root
 RUN rm -rf build && \
     mkdir -p build && \
-    chown -R logstash:logstash /opt/logstash
+    chown -R logstash:logstash /opt/logstash && \
+    chown -R logstash:logstash /home/logstash
 USER logstash
 WORKDIR /opt/logstash
 
