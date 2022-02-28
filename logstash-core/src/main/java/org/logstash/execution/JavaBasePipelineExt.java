@@ -143,6 +143,11 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         return result;
     }
 
+    @JRubyMethod(name = "shutdown_requested?")
+    public IRubyObject isShutdownRequested(final ThreadContext context) {
+        throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
+    }
+
     public QueueWriter getQueueWriter(final String inputName) {
         return new JRubyWrappedWriteClientExt(RubyUtil.RUBY, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
             .initialize(
