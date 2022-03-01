@@ -27,7 +27,7 @@ namespace "vendor" do
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
-    if File.exists?('Gemfile.lock') # `./gradlew bootstrap` already run
+    if File.exists?(LogStash::Environment::LOCKFILE) # gradlew already bootstrap-ed
       puts("Skipping bundler install...")
     else
       puts("Invoking bundler install...")
