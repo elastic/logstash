@@ -83,6 +83,13 @@ allprojects {
 
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
+    jvmArgs = [
+      "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    ]
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
