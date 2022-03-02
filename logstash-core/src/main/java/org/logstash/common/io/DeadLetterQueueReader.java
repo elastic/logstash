@@ -107,19 +107,30 @@ public final class DeadLetterQueueReader implements Closeable {
         long startTime = System.currentTimeMillis();
         WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
         if (key != null) {
-            for (WatchEvent<?> watchEvent : key.pollEvents()) {
-                if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
-                } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-                    final int oldSize = segments.size();
-                    segments.clear();
-                    segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
-                    logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
-                }
-                key.reset();
-            }
+            pollEventsOnWatch(key);
         }
         return System.currentTimeMillis() - startTime;
+    }
+
+    private void pollNewSegments() throws IOException {
+        WatchKey key = watchService.poll();
+        if (key != null) {
+            pollEventsOnWatch(key);
+        }
+    }
+
+    private void pollEventsOnWatch(WatchKey key) throws IOException {
+        for (WatchEvent<?> watchEvent : key.pollEvents()) {
+            if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+            } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+                final int oldSize = segments.size();
+                segments.clear();
+                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
+            }
+            key.reset();
+        }
     }
 
     public DLQEntry pollEntry(long timeout) throws IOException, InterruptedException {
@@ -201,12 +212,19 @@ public final class DeadLetterQueueReader implements Closeable {
         if (Files.exists(segmentPath)) {
             currentReader = new RecordIOReader(segmentPath);
             currentReader.seekToOffset(position);
-        }else{
+        } else {
             // Otherwise, set the current reader to be at the beginning of the next
             // segment.
-            Path next = segments.higher(segmentPath);
+            Path next = nextExistingSegmentFile(segmentPath);
             if (next != null) {
                 currentReader = new RecordIOReader(next);
+            } else {
+                pollNewSegments();
+                // give a second try after a reload of segments from filesystem
+                next = nextExistingSegmentFile(segmentPath);
+                if (next != null) {
+                    currentReader = new RecordIOReader(next);
+                }
             }
         }
     }

@@ -193,6 +193,28 @@ public class DeadLetterQueueReaderTest {
         validateEntries(startLog, 2, 3, 32);
     }
 
+    @Test
+    public void testSeekToMiddleWhileTheLogIsRemoved() throws IOException, InterruptedException {
+        writeSegmentSizeEntries(3);
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
+
+            // removes 2 segments simulating a retention policy action
+            Files.delete(dir.resolve("1.log"));
+            Files.delete(dir.resolve("2.log"));
+
+            final Path firstLog = dir.resolve("1.log");
+            final int startPosition = 1;
+//            final int startEntry = 3;
+//            final int endEntry = 3;
+
+            readManager.setCurrentReaderAndPosition(firstLog, startPosition);
+//            for (int i = startEntry; i <= endEntry; i++) {
+                DLQEntry readEntry = readManager.pollEntry(100);
+                assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
+//            }
+        }
+    }
+
     private void writeSegmentSizeEntries(int count) throws IOException {
         final Event event = createEventWithConstantSerializationOverhead();
         long startTime = System.currentTimeMillis();
@@ -211,16 +233,12 @@ public class DeadLetterQueueReaderTest {
 
 
     private void validateEntries(Path firstLog, int startEntry, int endEntry, int startPosition) throws IOException, InterruptedException {
-        DeadLetterQueueReader readManager = null;
-        try {
-            readManager = new DeadLetterQueueReader(dir);
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
             readManager.setCurrentReaderAndPosition(firstLog, startPosition);
             for (int i = startEntry; i <= endEntry; i++) {
                 DLQEntry readEntry = readManager.pollEntry(100);
                 assertThat(readEntry.getReason(), equalTo(String.valueOf(i)));
             }
-        } finally {
-            readManager.close();
         }
     }
 
