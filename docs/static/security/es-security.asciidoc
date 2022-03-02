@@ -5,8 +5,11 @@
 {es} {ref}/configuring-stack-security.html[security is on by default] starting in 8.0.
 {es} generates its own default self-signed Secure Sockets Layer (SSL) certificates at startup. 
 
-For an on-premise {es} cluster, {ls} must establish a secure connection using the self-signed SSL certificate before it can transfer data.  
-On the other hand, {ess} uses standard publicly trusted certificates, and therefore setting a cacert is not necessary.
+{ls} must establish a Secure Sockets Layer (SSL) connection before it can transfer data to an on-premise {es} cluster. 
+{ls} must have a copy of the {es} CA that signed the cluster's certificates.
+When a new {es} cluster is started up _without_ dedicated certificates, it generates its own default self-signed Certificate Authority at startup.
+  
+{ess} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
 
 .Hosted {ess} simplifies security
 [NOTE]
