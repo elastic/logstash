@@ -3,12 +3,461 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-1-0,Logstash 8.1.0>>
 * <<logstash-8-0-0,Logstash 8.0.0>>
 * <<logstash-8-0-0-rc2,Logstash 8.0.0-rc2>>
 * <<logstash-8-0-0-rc1,Logstash 8.0.0-rc1>>
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-1-0]]
+=== Logstash 8.1.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.1.0
+
+* Deps: update JRuby to 9.2.20.0 https://github.com/elastic/logstash/pull/13387[#13387]
+* Update the Upgrading Using a Direct Download guide section. https://github.com/elastic/logstash/pull/13684[#13684]
+* Publish CPU percentage also non Unix systems https://github.com/elastic/logstash/pull/13727[#13727]
+* [backport 8.1]Publish CPU percentage also non Unix systems (#13727) https://github.com/elastic/logstash/pull/13734[#13734]
+* Docs remove homebrew https://github.com/elastic/logstash/pull/13747[#13747]
+* Backport PR #13747 to 8.1: Docs remove homebrew https://github.com/elastic/logstash/pull/13749[#13749]
+* Pin bundler to 2.3.6 to fix builder https://github.com/elastic/logstash/pull/13753[#13753]
+* Backport PR #13753 to 8.1: Pin bundler to 2.3.6 to fix builder https://github.com/elastic/logstash/pull/13755[#13755]
+* Backport #13762 to 8.1. Unpin bundler, fix gem installer tests https://github.com/elastic/logstash/pull/13763[#13763]
+* Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13784[#13784]
+* Backport PR #13784 to 8.1: Deps: pin sinatra due (2.2.0) incompatibilities https://github.com/elastic/logstash/pull/13787[#13787]
+
+=== Logstash Commits between 8.1 and 8.0.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.0.1..8.1"
+
+ceb4ef8b6 - (HEAD -> 8.1, origin/8.1) Doc: Set up redirects for deleted pages [8.1] (#13798) (13 days ago) <Karen Metts>
+16d3e8c78 - Deps: pin sinatra due (2.2.0) incompatibilities (#13784) (#13787) (2 weeks ago) <Karol Bucek>
+afd5aeefa - Doc:Update qa readme with BUILD_JAVA_HOME setting info [8.1] (#13778) (2 weeks ago) <Karen Metts>
+ea1c8f642 - fix pqrepair log4j setting (#13726) (#13766) (2 weeks ago) <kaisecheng>
+d42fad9e8 - handle fully acked 0 byte PQ pages (#13692) (#13759) (2 weeks ago) <kaisecheng>
+c7eef1df5 - Backport #13762 to 8.1. Unpin bundler, fix gem installer tests (#13763) (3 weeks ago) <Rob Bavey>
+44b8d1d18 - Pin bundler to 2.3.6 to fix builder (#13753) (#13755) (3 weeks ago) <Ry Biesemeyer>
+0bd33fc70 - Forward port of release notes for 8.0.0 (rc2 and ga) (#13756) (3 weeks ago) <Andrea Selva>
+a70c13b7c - Docs remove homebrew (#13747) (#13749) (3 weeks ago) <Ry Biesemeyer>
+a55623874 - Doc: Update upgrade info for 8.0 in 8.1 (#13746) (3 weeks ago) <Karen Metts>
+5f66d6058 - [backport 8.1][doc]Update the Upgrading Using a Direct Download guide section. (#13684) (#13741) (3 weeks ago) <Andrea Selva>
+4e5a8d8b7 - [backport 8.1]Publish CPU percentage also non Unix systems (#13727) (#13734) (3 weeks ago) <Andrea Selva>
+f999aeaa1 - Doc: Remove links to beats 7.x content 8.1 (#13739) (3 weeks ago) <Karen Metts>
+0b429a6d9 - Doc: Replace short link with full link 8.1 (#13737) (3 weeks ago) <Karen Metts>
+608c38c92 - pqcheck pqrepair handle .tmp checkpoint (#13721) (#13729) (3 weeks ago) <kaisecheng>
+781b8e16c - Doc: Expand breaking changes 8.1 (#13724) (3 weeks ago) <Karen Metts>
+eb27a0635 - Update lockfile for 8.1.0 (#13702) (4 weeks ago) <Andrea Selva>
+18fc9d02b - Copied gemfile lock from 8.0 (4 weeks ago) <andsel>
+3637a30e8 - Refactor: drop redundant (jruby-complete.jar) dependency (#13159) (4 weeks ago) <Karol Bucek>
+2ae5a665b - Update CI versions after release 7.17.0 (#13697) (4 weeks ago) <Andrea Selva>
+82f7bd9e6 - Doc: Fix formatting for bulleted list (#13694) (4 weeks ago) <Karen Metts>
+ef024d880 - Doc: Add topic and content for es security on by default (#13597) (4 weeks ago) <Karen Metts>
+1feeb7ec6 - Revert "[DOC] Clarify the scope of environment variable expansion (#13299)" (#13679) (5 weeks ago) <kaisecheng>
+057c24ab3 - Support env variable in condition (#13608) (5 weeks ago) <kaisecheng>
+6a28ac10e - add compatibility for plugins not in support matrix (#12534) (5 weeks ago) <kaisecheng>
+7bb56e46d - Test fix, switch to plugin with less dependencies (#13672) (5 weeks ago) <Andrea Selva>
+3dbeea403 - Remove java 8 from setup readme (#13667) (5 weeks ago) <Mat Schaffer>
+c5a1cc784 - Regenerate NOTICE file, add new license for elastic enterprise search (#13670) (5 weeks ago) <Rob Bavey>
+3fdc4c3aa - Fix unit test under Windows (#13656) (6 weeks ago) <Andrea Selva>
+2a5e54cd2 - logging: move init into environment's settings post-processor (#13221) (6 weeks ago) <Ry Biesemeyer>
+4b430a5f6 - stats api: startup resilience when stats are partially formed (#13645) (6 weeks ago) <Ry Biesemeyer>
+0927da642 - Remove separate JavaVersionChecker executable (#13648) (6 weeks ago) <Rob Bavey>
+57c16e130 - Add integration test for Elasticsearch using defaults (#13353) (6 weeks ago) <Rob Bavey>
+ca501acdc - field-reference: cap RUBY_CACHE to 10k entries (#13642) (6 weeks ago) <Ry Biesemeyer>
+e16a9d144 - [DOC] Clarify scope of queue settings (#12955) (6 weeks ago) <Luca Belluccini>
+e1da2d651 - Build: update .lock.release with rake version:set (#13477) (6 weeks ago) <Karol Bucek>
+ec51536f5 - Doc: Remove hard-coded edit_url links where possible (#13636) (6 weeks ago) <Karen Metts>
+640ba8489 - Fix/gems not found in integration test after plugin install (#13641) (6 weeks ago) <Andrea Selva>
+4f96a9471 - Replace generated cleaner code with concrete implementation (#13430) (6 weeks ago) <Rob Bavey>
+93f37b960 - Fix Ruby port check execution in kafka_setup.sh (#13631) (6 weeks ago) <Andrea Selva>
+e11d0364d - [Docs] Add pipeline.ecs_compatibility to the list (#13612) (6 weeks ago) <Toby Sutor>
+2a248b2ea - fix: respect LS_JAVA_OPTS environment even when optionsfile missing (#13525) (6 weeks ago) <Ry Biesemeyer>
+d4bdcc936 - Add info log of JVM flags used to configure Logstash (#13531) (6 weeks ago) <Andrea Selva>
+49303c3fc - don't retrieve the secret before purging (#13614) (6 weeks ago) <João Duarte>
+3064f7d0c - Fix 2 failing tests on Windows (#13604) (7 weeks ago) <Rob Bavey>
+b6da829f4 - Avoid to increment `event.out` conter for dropped events (#13593) (7 weeks ago) <Andrea Selva>
+2892964ba - Product origin headers to Logstash-controlled Elasticsearch clients (#13563) (7 weeks ago) <Ry Biesemeyer>
+8fc4ea558 - Bump releases json after 6.8.23, 7.16.3 and 8.0.0-rc1 (#13618) (7 weeks ago) <Rob Bavey>
+e27fdeb25 - Avoid to itereate with each_index (#13603) (7 weeks ago) <Andrea Selva>
+94d04f804 - CI: update releases and test against 7.17 SNAPSHOT (#13607) (7 weeks ago) <Karol Bucek>
+45f2de36c - Forward port of #13598. Release notes for 8.0.0-rc1 (#13605) (7 weeks ago) <Rob Bavey>
+7d5c5f09d - Fix unknown type warning of geoip metrics (#13382) (7 weeks ago) <kaisecheng>
+bc760c5c0 - Adds license definitions for faraday-multipart and faraday-retry (#13592) (7 weeks ago) <Andrea Selva>
+ef40bb064 - docs: sprintf vs UTC nature of @timestamp field (#13576) (8 weeks ago) <Ry Biesemeyer>
+b0c08b809 - Fix logstash-plugin install command to install non default plugin (#13405) (8 weeks ago) <kaisecheng>
+eeb4025b2 - Doc: Restructure source files for security docs (#13570) (8 weeks ago) <Karen Metts>
+55d6f21f3 - Add JavaVersionChecker to check Java version for compatibility before running (#13533) (8 weeks ago) <Rob Bavey>
+d882a71de - Remove CI related files not used (#12538) (8 weeks ago) <Andrea Selva>
+105a9fcda - Bump log4j dependency to 2.17.1 (#13564) (9 weeks ago) <Ry Biesemeyer>
+2cf6675f5 - Bump log4j dependency to 2.17.0 (2 months ago) <João Duarte>
+99f8b37c7 - Doc: Add anchor to bundled jdk info (#13535) (2 months ago) <Karen Metts>
+9b32b441f - Doc: remove PQ on input for Output Isolator (#13537) (2 months ago) <Toby McLaughlin>
+0c2645c9c - CI: update releases after 7.16.0 & 7.16.1 (#13482) (3 months ago) <Karol Bucek>
+bf0b122b3 - Bump log4j version to 2.16.0 per CVE-2021-45046 (#13518) (3 months ago) <thex12>
+c12d2f541 - bump log4j version to 2.15.0 (#13494) (3 months ago) <João Duarte>
+60ffc10ba - bump gradle to 7.3.1 (#13489) (3 months ago) <João Duarte>
+11cf6a197 - Update logstash docker to use ubuntu 20.04 base image (#13442) (3 months ago) <Rob Bavey>
+32b8739f6 - Fix: delegating from deprecated setting (#13481) (3 months ago) <Karol Bucek>
+0cba1e567 - Use $BUILD_JAVA_HOME to control JVMs used with acceptance tests (#13471) (3 months ago) <Rob Bavey>
+8d3127e8f - bump jruby to 9.2.20.1 (#13468) (3 months ago) <João Duarte>
+fbee01c5b - Doc: Fix link in attribute (#13462) (3 months ago) <Karen Metts>
+180767c0a - Add template for creating documentation issues (#13456) (3 months ago) <Karen Metts>
+5992e5713 - artifacts: exclude unused rubyzip test files from distributions (#13431) (3 months ago) <Ry Biesemeyer>
+32690cb96 - Fix: patch Puma around a JRuby ARM64 bug (#13447) (3 months ago) <Karol Bucek>
+2788e87a8 - Docker integration tests stability improvements (#13014) (3 months ago) <Rob Bavey>
+3aa5741e6 - Update logstash-releases.json (#13418) (3 months ago) <Rob Bavey>
+a921f96be - Update bundled JDK to 11.0.13+8 (#13437) (3 months ago) <João Duarte>
+d2ca040e2 - Doc: Update attribute for ECS messaging wrt default (LSR)  (#13427) (3 months ago) <Karen Metts>
+63ed2da5e - Doc: Expand PQ content for pipeline-pipeline (#13319) (3 months ago) <Karen Metts>
+c3e498a24 - ECS on by default for Logstash 8, again (#13391) (4 months ago) <Ry Biesemeyer>
+65e163fc5 - Doc: Add breaking changes (#13376) (4 months ago) <Karen Metts>
+c11514d04 - Refactor: avoid futile attempt to remove String from memory (#13403) (4 months ago) <Karol Bucek>
+64800cd3a - Feat: use Java thread name in thread info (#13156) (4 months ago) <Karol Bucek>
+88c80ebb1 - Fixes a usage of deprecated 'http.enabled' to the new 'api.enabled' (#13380) (4 months ago) <Andrea Selva>
+09fbf5acb - Relax fpm version constraint after bug fix fpm#1856 (#13402) (4 months ago) <João Duarte>
+eb92c1d04 - Build: lock fpm to 1.13.x to avoid dep packaging issues using 1.14.0 (#13400) (4 months ago) <Karol Bucek>
+47666a7b7 - [DOC] replace references to master branch with main (#13302) (4 months ago) <João Duarte>
+4919286e4 - rename references of master branch to main branch (#13301) (4 months ago) <João Duarte>
+55e7a2641 - Deps: update JRuby to 9.2.20.0 (#13387) (4 months ago) <Karol Bucek>
+35522acbc - Add java version parameterization to Logstash builds (#13369) (4 months ago) <Rob Bavey>
+853323290 - Doc: Update central management license info (#13368) (4 months ago) <Karen Metts>
+f8e796c0b - bump version to 8.1.0 (#13366) (4 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.0.1..8.1 *.release"
+Changed plugin versions:
+logstash-filter-dissect: 1.2.5 -> 1.2.4
+logstash-filter-elasticsearch: 3.11.1 -> 3.11.0
+logstash-filter-http: 1.2.1 -> 1.3.0
+logstash-filter-kv: 4.5.0 -> 4.6.0
+logstash-input-dead_letter_queue: 1.1.10 -> 1.1.9
+logstash-input-http_poller: 5.1.0 -> 5.2.0
+logstash-input-sqs: 3.1.3 -> 3.2.0
+logstash-integration-elastic_enterprise_search: 2.1.2 -> 2.2.1
+logstash-integration-jdbc: 5.2.3 -> 5.2.2
+logstash-mixin-http_client: 7.0.0 -> 7.1.0
+logstash-output-http: 5.2.5 -> 5.3.0
+logstash-output-tcp: 6.0.1 -> 6.0.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Dissect Filter - 1.2.4*
+
+* Update log4j dependencies to 2.17.1
+
+* Update log4j dependencies to 2.17.0
+
+* Update log4j dependencies https://github.com/logstash-plugins/logstash-filter-dissect/pull/80[#80]
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-filter-dissect/pull/78[#78]
+
+* [DOC] Added note to clarify notation for dot or nested fields https://github.com/logstash-plugins/logstash-filter-dissect/pull/76[#76]
+
+* Fix Trailing Delimiters requires a false field. A skip field is
+  automatically added when a final delimiter is detected in the dissect pattern.
+  This requires that strict delimiter finding is enforced  - meaning a "no match"
+  results if every delimiter is not found in exactly the declared order
+  [Issue #22](https://github.com/logstash-plugins/logstash-filter-dissect/issues/22)
+
+* Replace v1.1.3 as it packaged the v1.1.1 jar and therefore does not have the fixes below
+* Yank v1.1.3 from rubygems.org
+
+* Test for "Improve field regular expression accuracy to include prefix and suffix options", fixed in 1.1.1
+* Fix for "Dissector mapping, field found in event but it was empty" caused by multibyte UTF8, bytes size vs string size
+* Fix for "Bug: if a dissection is defined with a newline as part of a delimiter it is ignored."
+
+* Update gemspec summary
+
+* Fix for "Missing field values cause dissected fields to be out of position" issue. See updated documentation.
+* Fix for "Check empty fields" issue, empty fields handled better.
+* Fix for "Integer conversion does not handle big integers".
+  
+* Fix some documentation issues
+
+* Fix gemspec to include vendor/jars
+
+* Fix gradle now that Event has been moved into Logstash Core
+* Exit on gradle failures to help protect against bad releases 
+
+* Docs: Fix doc generation error by removing illegal heading
+* Add metrics to track the number of matches and failures
+
+* Add "vendor/jars" to require_paths in gemspec
+
+* Update the version and rebuild the vendored jar.
+
+* Skipping this version number, it exists on Rubygems but is faulty
+
+* Initial commit
+
+*Elasticsearch Filter - 3.11.0*
+
+* Feat: update Elasticsearch client to 7.14.0 https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/150[#150]
+
+* Feat: add user-agent header passed to the Elasticsearch HTTP connection https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/152[#152]
+
+* Fixed SSL handshake hang indefinitely with proxy setup https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/151[#151]
+
+* Fix: a regression (in LS 7.14.0) where due the elasticsearch client update (from 5.0.5 to 7.5.0) the `Authorization` 
+    header isn't passed, this leads to the plugin not being able to leverage `user`/`password` credentials set by the user.
+    https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/148[#148]
+* Fix: default setting for `hosts` not working (since 3.7.0) GH-147
+* Fix: mutating @hosts variable which leads to issues with multiple worker threads GH-129
+
+* [DOC] Update links to use shared attributes https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/144[#144]
+
+* [DOC] Fixed links to restructured Logstash-to-cloud docs https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/142[#142]
+
+* [DOC] Document the permissions required in secured clusters https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/140[#140]
+  
+* Add support to define a proxy with the proxy config option https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/134[#134]
+
+* Added api_key support https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/132[#132]
+
+* [DOC] Removed outdated compatibility notice https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/131[#131]
+
+* Fix: solves an issue where non-ascii unicode values in a template were not handled correctly https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/128[#128]
+
+* Feat: support cloud_id / cloud_auth configuration https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/122[#122]
+
+* Loosen restrictions on Elasticsearch gem (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/120[#120])
+
+* Add support for extracting hits total from Elasticsearch 7.x responses
+
+* Added connection check during register to avoid failures during processing
+* Changed Elasticsearch Client transport to use Manticore
+* Changed amount of logging details during connection failure
+
+* Adds `[@metadata][total_hits]` with total hits returned from the query (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/106[#106])
+* Improves error logging to fully inspect caught exceptions (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/105[#105])
+
+* Fix: The filter now only calls `filter_matched` on events that actually matched.
+    This fixes issues where all events would have success-related actions happened
+    when no match had actually happened (`add_tag`, `add_field`, `remove_tag`,
+    `remove_field`)
+
+* Enhancement : if elasticsearch response contains any shard failure, then `tag_on_failure` tags are added to Logstash event
+* Enhancement : add support for nested fields
+* Enhancement : add 'docinfo_fields' option
+* Enhancement : add 'aggregation_fields' option
+
+* Update gemspec summary
+
+* `index` setting now supports field formatting, such as `index => "%{myindex}"` (Boris Gorbylev)
+
+* Fix a thread safety issue when using this filter with multiple workers on heavy load, we now create an elasticsearch client for every LogStash worker. https://github.com/logstash-plugins/logstash-filter-elasticsearch/issues/76[#76]
+
+* Fix some documentation issues
+
+* Docs: Fix broken link to Logstash docs.
+* Support ca_file setting when using https uri in hosts parameter
+
+* Docs: Bump patch level for doc build.
+
+* Change the queries loglevel from info to debug.
+
+* Docs: Add requirement to use version 3.1.1 or higher to support sending Content-Type headers.
+  
+* Upgrade es-ruby client to support correct content-type
+
+* Support for full use of query DSL. Added query_template to use full DSL.
+
+* Fix couple of bugs related to incorrect variable names
+
+* Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
+
+- Fix: wrong usage of search params, now if index is properly specified
+  it's passed to search so it's performed not to all indices if this is not the explicit intention.
+* Breaking: Updated plugin to use new Java Event APIs
+* Improved the configuration options to be more easy to understand and
+    match what the expectations are from the documentation.
+* Initial refactoring to include later one a common client for all the
+    ES plugins.
+* Adding support for having an index in the query pattern.
+* Improved documentation.
+* Added intitial integration and unit tests.
+* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+* New dependency requirements for logstash-core for the 5.0 release
+* Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully, 
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* Dependency on logstash-core update to 2.0
+- removed require statement for a file that is no longer present in logstash-core.
+
+*Http Filter - 1.3.0*
+
+* Feat: support ssl_verification_mode option https://github.com/logstash-plugins/logstash-filter-http/pull/37[#37]
+
+*Kv Filter - 4.6.0*
+
+* Added `allow_empty_values` option https://github.com/logstash-plugins/logstash-filter-kv/pull/72[#72]
+
+*Dead_letter_queue Input - 1.1.9*
+
+* Fix `@metadata` get overwritten by reestablishing metadata that stored in DLQ https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/34[#34]
+
+* Update dependencies for log4j to 2.17.1
+
+* Further update dependencies for log4j (2.17.0) and jackson
+
+* Update dependencies for log4j and jackson https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/30[#30]
+
+* Fix asciidoc formatting in documentation https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/21[#21]
+
+* Fix broken 1.1.3 release
+
+* Docs: Set the default_codec doc attribute.
+
+* Update gemspec summary
+
+* Docs: Add link to conceptual docs about the dead letter queue
+ 
+* Added support for 'add-field' and 'tags' 
+ 
+* Fix some documentation issues
+
+* Internal: Fixed Continuous Integration errors
+
+* Interal: Bump patch level for doc generation
+
+* Docs: Fixed error in example plus made a few edits
+ 
+* internal: renamed DeadLetterQueueWriteManager to DeadLetterQueueWriter in tests
+ 
+* internal: rename DeadLetterQueueManager to DeadLetterQueueReader
+
+* init
+
+*Http_poller Input - 5.2.0*
+
+* Feat: support ssl_verification_mode option https://github.com/logstash-plugins/logstash-input-http_poller/pull/131[#131]
+
+*Sqs Input - 3.2.0*
+
+* Feature: Add `queue_owner_aws_account_id` parameter for cross-account queues https://github.com/logstash-plugins/logstash-input-sqs/pull/60[#60]
+
+*Elastic_enterprise_search Integration - 2.2.1*
+
+* Fix, change implementation of connectivity check method to be compatible with version `v8.0+` of Workplace Search https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/16[#16] 
+
+* Feature, switch the connection library to elastic-enterprise-search https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/3[#3]
+* [DOC] Added required parameters to Workplace Search example snippet and describe little better what's expected in url parameter https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/11[#11]
+
+*Jdbc Integration - 5.2.2*
+
+* Feat: name scheduler threads + redirect error logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/102[#102]
+
+* Refactor: isolate paginated normal statement algorithm in a separate handler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/101[#101]
+
+* Added `jdbc_paging_mode` option to choose if use `explicit` pagination in statements and avoid the initial count 
+    query or use `auto` to delegate to the underlying library https://github.com/logstash-plugins/logstash-integration-jdbc/pull/95[#95]
+
+* Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96],
+    the change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+
+    NOTE: a fatal driver error will no longer keep reloading the pipeline and now leads to a system exit. 
+
+* Fix: regression due returning the Java driver class https://github.com/logstash-plugins/logstash-integration-jdbc/pull/98[#98]
+
+* Refactor: to explicit Java (driver) class name loading https://github.com/logstash-plugins/logstash-integration-jdbc/pull/96[#96],
+    the change is expected to provide a more robust fix for the driver loading issue https://github.com/logstash-plugins/logstash-integration-jdbc/issues/83[#83].
+
+* Fix the blocking pipeline reload and shutdown when connectivity issues happen https://github.com/logstash-plugins/logstash-integration-jdbc/pull/85[#85]
+
+* Normalize jdbc_driver_class loading to support any top-level java packages https://github.com/logstash-plugins/logstash-integration-jdbc/pull/86[#86]
+
+* Fix, serialize the JDBC driver loading steps to avoid concurrency issues https://github.com/logstash-plugins/logstash-integration-jdbc/pull/84[#84]
+
+* Refined ECS support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/82[#82]
+* Uses shared `target` guidance when ECS compatibility is enabled
+* Uses Logstash's EventFactory instead of instantiating events directly
+
+* [DOC] Update filter-jdbc_static doc to describe ECS compatibility https://github.com/logstash-plugins/logstash-integration-jdbc/pull/79[#79]
+
+* Improve robustness when handling errors from `sequel` library in jdbc static and streaming
+    filters https://github.com/logstash-plugins/logstash-integration-jdbc/pull/78[#78]
+
+*  Fix `prepared_statement_bind_values` in streaming filter to resolve nested event's fields https://github.com/logstash-plugins/logstash-integration-jdbc/pull/76[#76]
+
+* [DOC] Changed docs to indicate that logstash-jdbc-static requires local_table https://github.com/logstash-plugins/logstash-integration-jdbc/pull/56[#56]. Fixes https://github.com/logstash-plugins/logstash-integration-jdbc/issues/55[#55].
+
+* Added `target` option to JDBC input, allowing the row columns to target a specific field instead of being expanded 
+    at the root of the event. This allows the input to play nicer with the Elastic Common Schema when 
+    the input does not follow the schema. https://github.com/logstash-plugins/logstash-integration-jdbc/issues/69[#69]
+    
+* Added `target` to JDBC filter static `local_lookups` to verify it's properly valued when ECS is enabled. 
+    https://github.com/logstash-plugins/logstash-integration-jdbc/issues/71[#71]
+
+* Feat: try hard to log Java cause (chain) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/62[#62]
+
+    This allows seeing a full trace from the JDBC driver in case of connection errors. 
+
+* Refactored Lookup used in jdbc_streaming and jdbc_static to avoid code duplication. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/59[#59]
+
+* DOC:Replaced plugin_header file with plugin_header-integration file. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/40[#40]
+
+* Fixed user sequel_opts not being passed down properly https://github.com/logstash-plugins/logstash-integration-jdbc/pull/37[#37]
+* Refactored jdbc_streaming to share driver loading, so the fixes from the jdbc plugin also effect jdbc_streaming
+
+* Fixed issue where JDBC Drivers that don't correctly register with Java's DriverManager fail to load (such as Sybase) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/34[#34]
+
+* Fixed issue where a lost connection to the database can cause errors when using prepared statements with the scheduler https://github.com/logstash-plugins/logstash-integration-jdbc/pull/25[#25]
+
+* Fixed potential resource leak by ensuring scheduler is shutdown when a pipeline encounter an error during the running https://github.com/logstash-plugins/logstash-integration-jdbc/pull/28[#28]
+
+* Fixed tracking_column regression with Postgresql Numeric types https://github.com/logstash-plugins/logstash-integration-jdbc/pull/17[#17]
+* Fixed driver loading when file not accessible https://github.com/logstash-plugins/logstash-integration-jdbc/pull/15[#15]
+
+* Initial Release of JDBC Integration Plugin, incorporating [logstash-input-jdbc](https://github.com/logstash-plugins/logstash-input-jdbc), [logstash-filter-jdbc_streaming](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming) and
+    [logstash-filter-jdbc_static](https://github.com/logstash-plugins/logstash-filter-jdbc_static)
+* For Changelog of individual plugins, see:
+* [JBDC Input version 4.3.19](https://github.com/logstash-plugins/logstash-input-jdbc/blob/v4.3.19/CHANGELOG.md)
+* [JDBC Static filter version 1.1.0](https://github.com/logstash-plugins/logstash-filter-jdbc_static/blob/v1.1.0/CHANGELOG.md)
+* [JDBC Streaming filter version 1.0.10](https://github.com/logstash-plugins/logstash-filter-jdbc_streaming/blob/v1.0.10/CHANGELOG.md)
+ 
+
+*Http_client Mixin - 7.1.0*
+
+* Feat: add `ssl_verification_mode` https://github.com/logstash-plugins/logstash-mixin-http_client/pull/39[#39] 
+
+*Http Output - 5.3.0*
+
+* Feat: support ssl_verification_mode option https://github.com/logstash-plugins/logstash-output-http/pull/126[#126]
+
+*Tcp Output - 6.0.0*
+
+* Removed obsolete field `message_format`
+
+* Removed requirement to have a certificate/key pair when enabling ssl
+
+* Docs: Set the default_codec doc attribute.
+
+* Update gemspec summary
+
+* Fix some documentation issues
+
+* Breaking: mark deprecated option `message_format` as obsolete
+
+* Remove deprecated `workers_not_supported` call
+* Use concurrency :single
+
+* Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
+
+* breaking,config: Remove deprecated config `message_format`
+
+* Republish all the gems under jruby.
+
+* Update the plugin to the version 2.0 of the plugin api, this change is required for Logstash 5.0 compatibility. See https://github.com/elastic/logstash/issues/5141
+
+* Depend on logstash-core-plugin-api instead of logstash-core, removing the need to mass update plugins on major releases of logstash
+
+* New dependency requirements for logstash-core for the 5.0 release
+
+* Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully, 
+   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
+* Dependency on logstash-core update to 2.0
 
 [[logstash-8-0-0]]
 === Logstash 8.0.0 Release Notes
