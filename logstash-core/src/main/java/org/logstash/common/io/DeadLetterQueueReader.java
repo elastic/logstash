@@ -85,21 +85,29 @@ public final class DeadLetterQueueReader implements Closeable {
         return Integer.parseInt(p.getFileName().toString().split("\\.")[0]);
     }
 
+    private static Timestamp extractEntryTimestamp(byte[] serialized) {
+        try {
+            return DLQEntry.deserialize(serialized).getEntryTime();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
+            if (!Files.exists(segment)) {
+                segments.remove(segment);
+                continue;
+            }
             currentReader = new RecordIOReader(segment);
-            byte[] event = currentReader.seekToNextEventPosition(timestamp, (b) -> {
-                try {
-                    return DLQEntry.deserialize(b).getEntryTime();
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            }, Timestamp::compareTo);
+            byte[] event = currentReader.seekToNextEventPosition(timestamp, DeadLetterQueueReader::extractEntryTimestamp, Timestamp::compareTo);
             if (event != null) {
                 return;
             }
         }
-        currentReader.close();
+        if (currentReader != null) {
+            currentReader.close();
+        }
         currentReader = null;
     }
 

@@ -202,16 +202,9 @@ public class DeadLetterQueueReaderTest {
             Files.delete(dir.resolve("1.log"));
             Files.delete(dir.resolve("2.log"));
 
-            final Path firstLog = dir.resolve("1.log");
-            final int startPosition = 1;
-//            final int startEntry = 3;
-//            final int endEntry = 3;
-
-            readManager.setCurrentReaderAndPosition(firstLog, startPosition);
-//            for (int i = startEntry; i <= endEntry; i++) {
-                DLQEntry readEntry = readManager.pollEntry(100);
-                assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
-//            }
+            readManager.setCurrentReaderAndPosition(dir.resolve("1.log"), 1);
+            DLQEntry readEntry = readManager.pollEntry(100);
+            assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
         }
     }
 
@@ -498,6 +491,47 @@ public class DeadLetterQueueReaderTest {
                           String.valueOf(FIRST_WRITE_EVENT_COUNT));
     }
 
+    @Test
+    public void testSeekByTimestampMoveAfterDeletedSegment() throws IOException, InterruptedException {
+        final long startTime = 1646296760000L;
+        final int eventsPerSegment = prepareFilledSegmentFiles(2, startTime);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // remove the first segment
+            Files.delete(dir.resolve(segmentFileName(1)));
+
+            //Exercise, seek in the middle of first segment
+            final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, hit the first event of the second segment
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertEquals("Must load first event of next available segment", readEntry.getReason(), String.format("%05d", eventsPerSegment));
+            final Timestamp firstEventSecondSegmentTimestamp = new Timestamp(startTime + eventsPerSegment);
+            assertEquals(firstEventSecondSegmentTimestamp, readEntry.getEntryTime());
+        }
+    }
+
+    @Test
+    public void testSeekByTimestampWhenAllSegmentsAreDeleted() throws IOException, InterruptedException {
+        final long startTime = System.currentTimeMillis();
+        final int eventsPerSegment = prepareFilledSegmentFiles(2, startTime);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // remove the first segment
+            Files.delete(dir.resolve(segmentFileName(1)));
+            Files.delete(dir.resolve(segmentFileName(2)));
+
+            //Exercise, seek in the middle of first segment
+            final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, hit the first event of the second segment
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertNull("No entry is available after all segments are deleted", readEntry);
+        }
+    }
+
     /**
      * Tests concurrently reading and writing from the DLQ.
      * @throws Exception On Failure
@@ -641,11 +675,14 @@ public class DeadLetterQueueReaderTest {
     }
 
     private int prepareFilledSegmentFiles(int segments) throws IOException {
+        return prepareFilledSegmentFiles(segments, System.currentTimeMillis());
+    }
+
+    private int prepareFilledSegmentFiles(int segments, long start) throws IOException {
         final Event event = DeadLetterQueueTestUtils.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueTestUtils.generateMessageContent(32479));
 
-        long start = System.currentTimeMillis();
-        DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 1), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(start++));
+        DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 1), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(start));
         assertEquals("Serialized dlq entry + header MUST be 32Kb (size of a block)", BLOCK_SIZE, entry.serialize().length + 13);
 
         final int maxSegmentSize = 10 * MB;
@@ -656,6 +693,7 @@ public class DeadLetterQueueReaderTest {
                 entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(start++));
                 writer.writeEntry(entry);
             }
+            System.out.println("end at millis: " + start + ", timestamp: " + DeadLetterQueueTestUtils.constantSerializationLengthTimestamp(start));
         }
 
         assertEquals(segments, Files.list(dir).count());
