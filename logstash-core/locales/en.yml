@@ -72,23 +72,6 @@ en:
         0-1-x: >-
          Using version 0.1.x %{type} plugin '%{name}'. This plugin isn't well
          supported by the community and likely has no maintainer.
-    agent:
-      sighup: >-
-        SIGHUP received.
-      sigint: >-
-        SIGINT received. Shutting down.
-      sigterm: >-
-        SIGTERM received. Shutting down.
-      slow_shutdown: |-
-        Received shutdown signal, but pipeline is still waiting for in-flight events
-        to be processed. Sending another ^C will force quit Logstash, but this may cause
-        data loss.
-      forced_sigint: >-
-        SIGINT received. Terminating immediately..
-      non_reloadable_config_reload: >-
-        Unable to reload configuration because it does not support dynamic reloading
-      non_reloadable_config_register: |-
-        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       cant_bind_to_port: |-
         Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --api.http.port option."
@@ -169,7 +152,9 @@ en:
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can use to validate
         logstash's configuration before you choose to restart a running system.
-      configuration:
+      # YAML named reference to the logstash.runner.configuration
+      # so we can later alias it from logstash.agent.configuration
+      configuration: &runner_configuration
         obsolete: >-
           The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
           longer available. %{extra} If you have any questions about this, you
@@ -445,6 +430,27 @@ en:
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
           If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
+    agent:
+      sighup: >-
+        SIGHUP received.
+      sigint: >-
+        SIGINT received. Shutting down.
+      sigterm: >-
+        SIGTERM received. Shutting down.
+      slow_shutdown: |-
+        Received shutdown signal, but pipeline is still waiting for in-flight events
+        to be processed. Sending another ^C will force quit Logstash, but this may cause
+        data loss.
+      forced_sigint: >-
+        SIGINT received. Terminating immediately..
+      non_reloadable_config_reload: >-
+        Unable to reload configuration because it does not support dynamic reloading
+      non_reloadable_config_register: |-
+        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
+      # LEGACY: many plugins refer to logstash.agent.configuration.*
+      # so we alias the canonical logstash.runner.configuration.*
+      configuration:
+        <<: *runner_configuration
     settings:
       deprecation:
         set: >-
@@ -456,3 +462,4 @@ en:
         ambiguous: >-
           Both `%{canonical_name}` and its deprecated alias `%{deprecated_alias}` have been set.
           Please only set `%{canonical_name}`
+
