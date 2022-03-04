@@ -118,7 +118,14 @@ module LogStash module Filters module Geoip class DownloadManager
   end
 
   def rest_client
-    @client ||= Manticore::Client.new(request_timeout: 15, connect_timeout: 5)
+    @client ||= begin
+                  client_options = {
+                    request_timeout: 15,
+                    connect_timeout: 5
+                  }
+                  client_options[:proxy]=ENV['http_proxy'] if ENV.include?('http_proxy')
+                  Manticore::Client.new(client_options)
+                end
   end
 
   def uuid
