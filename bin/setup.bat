@@ -29,10 +29,10 @@ if defined LS_JAVA_HOME (
 ) else (
   if exist "%LS_HOME%\jdk" (
     set JAVACMD=%LS_HOME%\jdk\bin\java.exe
-    echo "Using bundled JDK: !JAVACMD!."
+    echo "Using bundled JDK: !JAVACMD!"
   ) else (
     for %%I in (java.exe) do set JAVACMD="%%~$PATH:I"
-    echo "Using system java: %JAVACMD% ."
+    echo "Using system java: !JAVACMD!"
   )
 )
 
