@@ -21,22 +21,22 @@ for %%I in ("%LS_HOME%..") do set LS_HOME=%%~dpfI
 rem ### 2: set java
 
 if defined LS_JAVA_HOME (
-  set JAVA="%LS_JAVA_HOME%\bin\java.exe"
+  set JAVACMD=%LS_JAVA_HOME%\bin\java.exe
   echo Using LS_JAVA_HOME defined java: %LS_JAVA_HOME%
   if exist "%LS_HOME%\jdk" (
     echo WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK.
   )
 ) else (
   if exist "%LS_HOME%\jdk" (
-    set JAVA="%LS_HOME%\jdk\bin\java.exe"
-    echo "Using bundled JDK: %JAVA%."
+    set JAVACMD=%LS_HOME%\jdk\bin\java.exe
+    echo "Using bundled JDK: !JAVACMD!."
   ) else (
-    for %%I in (java.exe) do set JAVA="%%~$PATH:I"
-    echo "Using system java: %JAVA% ."
+    for %%I in (java.exe) do set JAVACMD="%%~$PATH:I"
+    echo "Using system java: %JAVACMD% ."
   )
 )
 
-if not exist %JAVA% (
+if not exist %JAVACMD% (
   echo could not find java; set JAVA_HOME or ensure java is in PATH 1>&2
   exit /b 1
 )
