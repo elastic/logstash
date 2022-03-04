@@ -38,8 +38,8 @@
 #   Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
 #   "auto" automatically enables ordering if the 'pipeline.workers' setting
 #   is also set to '1', and disables otherwise.
-#   "true" enforces ordering on the pipeline and prevent logstash from starting
-#   if there are multiple workers.
+#   "true" enforces ordering on a pipeline and prevents logstash from starting
+#   a pipeline with multiple workers allocated.
 #   "false" disable any extra processing necessary for preserving ordering.
 #
 #   pipeline.ordered: auto
