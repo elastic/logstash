@@ -57,8 +57,7 @@ ADD ci /opt/logstash/ci
 USER root
 RUN rm -rf build && \
     mkdir -p build && \
-    chown -R logstash:logstash /opt/logstash && \
-    chown -R logstash:logstash /home/logstash
+    chown -R logstash:logstash /opt/logstash
 USER logstash
 WORKDIR /opt/logstash
 

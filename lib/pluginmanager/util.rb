@@ -68,9 +68,9 @@ module LogStash::PluginManager
         return false
       end
     else
-      dep = ::Gem::Dependency.new(plugin, version || ::Gem::Requirement.default)
-      ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
-      specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+      dep = Gem::Dependency.new(plugin, version || Gem::Requirement.default)
+      Gem.sources = Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
+      specs, errors = Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
 
       # dump errors
       errors.each { |error| $stderr.puts(error.wordy) }
@@ -112,7 +112,7 @@ module LogStash::PluginManager
   # @return [Gem::Specification] .get file gem specification
   # @raise [Exception] Gem::Package::FormatError will be raised on invalid .gem file format, might be other exceptions too
   def self.plugin_file_spec(path)
-    ::Gem::Package.new(path).spec
+    Gem::Package.new(path).spec
   end
 
   # @param plugin [String] the plugin name or the local path to a .gem file
@@ -125,7 +125,7 @@ module LogStash::PluginManager
   # @param name [String] specific plugin name to find or nil for all plugins
   # @return [Array<Gem::Specification>] all local logstash plugin gem specs
   def self.find_plugins_gem_specs(name = nil)
-    specs = name ? ::Gem::Specification.find_all_by_name(name) : ::Gem::Specification.find_all
+    specs = name ? Gem::Specification.find_all_by_name(name) : Gem::Specification.find_all
     specs.select{|spec| logstash_plugin_gem_spec?(spec)}
   end
 

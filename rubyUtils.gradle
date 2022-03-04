@@ -139,7 +139,7 @@ void buildGem(File projectDir, File buildDir, String gemspec) {
 void rake(File projectDir, File buildDir, String task) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
-        jruby.runScriptlet("require 'rake'; require 'time'")
+        jruby.runScriptlet("require 'rake'")
         jruby.runScriptlet("""
                 rake = Rake.application
                 rake.init

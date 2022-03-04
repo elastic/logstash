@@ -96,11 +96,8 @@ describe LogStash::Util do
 
       it "returns nil as id" do
         thread = dead_thread
-        # p thread if $VERBOSE
-        p thread
-        puts thread.inspect
-        5.times { java.lang.System.gc || sleep(0.05) } # we're assuming a full-gc to clear all weak-refs
-
+        p thread if $VERBOSE
+        2.times { java.lang.System.gc || sleep(0.01) } # we're assuming a full-gc to clear all weak-refs
         # NOTE: if you notice this spec failing - remote it (a java.lang.Thread weak-ref might stick around)
         expect(LogStash::Util.get_thread_id(thread)).to be nil
       end
