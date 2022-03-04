@@ -62,7 +62,7 @@
 # is also set to '1', and disables otherwise.
 # "true" enforces ordering on the pipeline and prevent logstash from starting
 # if there are multiple workers.
-# "false" disable any extra processing necessary for preserving ordering.
+# "false" disables any extra processing necessary for preserving ordering.
 #
 # pipeline.ordered: auto
 #
