@@ -92,13 +92,13 @@ public class JvmOptionsParserTest {
     @Test
     public void testMandatoryJvmOptionApplicableJvmPresent() throws IOException{
         assertTrue("Contains add-exports value for Java 17",
-                JvmOptionsParser.getMandatoryJvmOptions(17).contains("--add-exports=jdk.compiler/com.sun.tools.javac.api==ALL-UNNAMED"));
+                JvmOptionsParser.getMandatoryJvmOptions(17).contains("--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED"));
     }
 
     @Test
     public void testMandatoryJvmOptionNonApplicableJvmNotPresent() throws IOException{
         assertFalse("Does not contains add-exports value for Java 11",
-                JvmOptionsParser.getMandatoryJvmOptions(11).contains("--add-exports=jdk.compiler/com.sun.tools.javac.api==ALL-UNNAMED"));
+                JvmOptionsParser.getMandatoryJvmOptions(11).contains("--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED"));
     }
 
     @Test
