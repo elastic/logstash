@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 import static org.junit.Assert.assertEquals;
 
-public class JavafierTest {
+public class JavafierTest extends RubyTestBase {
 
     @Test
     public void testRubyBignum() {

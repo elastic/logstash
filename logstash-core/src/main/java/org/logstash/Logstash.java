@@ -38,6 +38,8 @@ import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import javax.annotation.Nullable;
+
 /**
  * Logstash Main Entrypoint.
  */
@@ -198,6 +200,40 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     /**
+     * Initialize a runtime configuration.
+     * @param lsHome the LOGSTASH_HOME
+     * @param args extra arguments (ARGV) to process
+     * @return a runtime configuration instance
+     */
+    public static RubyInstanceConfig initRubyConfig(final Path lsHome,
+                                                    final String... args) {
+        return initRubyConfigImpl(lsHome, safePath(lsHome, "vendor", "jruby"), args);
+    }
+
+    /**
+     * Initialize a runtime configuration.
+     * @param lsHome the LOGSTASH_HOME
+     * @param args extra arguments (ARGV) to process
+     * @return a runtime configuration instance
+     */
+    public static RubyInstanceConfig initRubyConfig(final Path lsHome,
+                                                    final Path currentDir,
+                                                    final String... args) {
+
+        return initRubyConfigImpl(currentDir, safePath(lsHome, "vendor", "jruby"), args);
+    }
+
+    private static RubyInstanceConfig initRubyConfigImpl(@Nullable final Path currentDir,
+                                                     final String jrubyHome,
+                                                     final String[] args) {
+        final RubyInstanceConfig config = new RubyInstanceConfig();
+        if (currentDir != null) config.setCurrentDirectory(currentDir.toString());
+        config.setJRubyHome(jrubyHome);
+        config.processArguments(args);
+        return config;
+    }
+
+    /**
      * Sets up the correct {@link RubyInstanceConfig} for a given Logstash installation and set of
      * CLI arguments.
      * @param home Logstash Root Path
@@ -205,13 +241,10 @@ public final class Logstash implements Runnable, AutoCloseable {
      * @return RubyInstanceConfig
      */
     private static RubyInstanceConfig buildConfig(final Path home, final String[] args) {
-        final String[] arguments = new String[args.length + 2];
-        System.arraycopy(args, 0, arguments, 2, args.length);
+        final String[] arguments = new String[args.length + 1];
+        System.arraycopy(args, 0, arguments, 1, args.length);
         arguments[0] = safePath(home, "lib", "bootstrap", "environment.rb");
-        arguments[1] = safePath(home, "logstash-core", "lib", "logstash", "runner.rb");
-        final RubyInstanceConfig config = new RubyInstanceConfig();
-        config.processArguments(arguments);
-        return config;
+        return initRubyConfig(home, arguments);
     }
 
     /**

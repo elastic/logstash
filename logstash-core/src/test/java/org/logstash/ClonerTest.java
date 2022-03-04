@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ClonerTest {
+public class ClonerTest extends RubyTestBase {
     @Test
     public void testRubyStringCloning() {
         String javaString = "fooBar";

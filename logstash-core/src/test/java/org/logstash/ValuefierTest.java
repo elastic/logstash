@@ -41,7 +41,8 @@ import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class ValuefierTest {
+public class ValuefierTest extends RubyTestBase {
+
     @Test
     public void testMapJavaProxy() {
         Map<IRubyObject, IRubyObject> map = new HashMap<>();

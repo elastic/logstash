@@ -48,7 +48,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
-public class DLQEntryTest {
+public class DLQEntryTest extends RubyTestBase {
     @Test
     public void testConstruct() throws Exception {
         Event event = new Event(Collections.singletonMap("key", "value"));

@@ -47,6 +47,7 @@ export LS_HOME="${LOGSTASH_HOME}"
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
 LOGSTASH_JARS=${LOGSTASH_HOME}/logstash-core/lib/jars
+JRUBY_HOME="${LOGSTASH_HOME}/vendor/jruby"
 
 # iterate over the command line args and look for the argument
 # after --path.settings to see if the jvm.options file is in
@@ -77,13 +78,17 @@ setup_bundled_jdk_part() {
 
 # Accepts 1 parameter which is the path the directory where logstash jar are contained.
 setup_classpath() {
-  local jar_directory="${1?jar directory required}"
-  local classpath
+  local classpath="${1?classpath (and jar_directory) required}"
+  local jar_directory="${2}"
   for J in $(cd "${jar_directory}"; ls *.jar); do
     classpath=${classpath}${classpath:+:}${jar_directory}/${J}
   done
   echo "${classpath}"
 }
+
+# set up CLASSPATH once (we start more than one java process)
+CLASSPATH="${JRUBY_HOME}/lib/jruby.jar"
+CLASSPATH="$(setup_classpath $CLASSPATH $LOGSTASH_JARS)"
 
 setup_java() {
   # set the path to java into JAVACMD which will be picked up by JRuby to launch itself
@@ -137,20 +142,17 @@ setup_java() {
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
 
-  CLASSPATH="$(setup_classpath $LOGSTASH_JARS)"
-
   JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
   EXIT_CODE=$?
   if [ $EXIT_CODE -ne 0 ]; then
     exit $EXIT_CODE
   fi
 
-  unset CLASSPATH
   export JAVA_OPTS
 }
 
 setup_vendored_jruby() {
-  JRUBY_BIN="${LOGSTASH_HOME}/vendor/jruby/bin/jruby"
+  JRUBY_BIN="${JRUBY_HOME}/bin/jruby"
 
   if [ ! -f "${JRUBY_BIN}" ] ; then
     echo "Unable to find JRuby."

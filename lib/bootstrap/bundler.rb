@@ -15,10 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "fileutils"
-require "stringio"
-require 'set'
-
 module LogStash
   module Bundler
     extend self
@@ -115,6 +111,7 @@ module LogStash
       require "bundler"
       require "bundler/cli"
 
+      require "fileutils"
       # create Gemfile from template iff it does not exist
       unless ::File.exists?(Environment::GEMFILE_PATH)
         FileUtils.copy(
@@ -213,7 +210,7 @@ module LogStash
 
     # @param plugin_names [Array] logstash plugin names that are going to update
     # @return [Array] gem names that plugins depend on, including logstash plugins
-    def expand_logstash_mixin_dependencies(plugin_names)
+    def expand_logstash_mixin_dependencies(plugin_names); require 'set'
       plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
 
       # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
@@ -268,6 +265,7 @@ module LogStash
         arguments << "update"
         arguments << expand_logstash_mixin_dependencies(options[:update])
         arguments << "--local" if options[:local]
+        arguments << "--conservative" if options[:conservative]
       elsif options[:clean]
         arguments << "clean"
       elsif options[:package]
@@ -299,7 +297,7 @@ module LogStash
     # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
     # @param [Proc] the code block to execute
     # @return [String, Exception] the captured $stdout string and any trapped exception or nil if none
-    def capture_stdout(&block)
+    def capture_stdout(&block); require 'stringio'
       old_stdout = $stdout
       $stdout = StringIO.new("", "w")
       begin

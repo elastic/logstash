@@ -25,27 +25,40 @@ describe "Test Kafka Input" do
   let(:num_retries) { 60 }
   let(:num_events) { 37 }
 
-  before(:all) {
+  before(:all) do
     @fixture = Fixture.new(__FILE__)
-  }
+  end
 
-  after(:all) {
+  after(:all) do
     @fixture.teardown unless @fixture.nil?
-  }
+  end
+
+  let(:logstash_service) do
+    @fixture.get_service("logstash")
+  end
+
+  let(:file_output_path) do
+    # output { file { path => "..." } } is LS_HOME relative
+    File.join(logstash_service.logstash_home, @fixture.actual_output)
+  end
+
+  before do
+    logstash_service.start_background(@fixture.config)
+    sleep(0.5)
+  end
+
+  after do
+    File.delete(file_output_path) if File.exists?(file_output_path)
+  end
 
   it "can ingest 37 apache log lines from Kafka broker" do
-    unless @fixture.nil?
-      logstash_service = @fixture.get_service("logstash")
-      logstash_service.start_background(@fixture.config)
+    try(num_retries) do
+      expect(File).to exist(file_output_path), "output file: #{file_output_path} does not exist"
+    end
 
-      try(num_retries) do
-        expect(@fixture.output_exists?).to be true
-      end
-
-      try(num_retries) do
-        count = File.foreach(@fixture.actual_output).inject(0) {|c, _| c+1}
-        expect(count).to eq(num_events)
-      end
+    try(num_retries) do
+      count = File.foreach(file_output_path).inject(0) {|c, _| c+1}
+      expect(count).to eq(num_events)
     end
   end
 end

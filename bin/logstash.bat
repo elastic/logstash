@@ -33,6 +33,10 @@ for /F "usebackq tokens=1-2* delims= " %%A in (!params!) do (
 	)
 )
 
+rem setup CLASSPATH for Java process
+set "JRUBY_HOME=%LS_HOME%\vendor\jruby"
+
+set "CLASSPATH=%JRUBY_HOME%\lib\jruby.jar"
 for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 	call :concat "%%i"
 )

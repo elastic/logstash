@@ -70,7 +70,8 @@ tasks.register("integrationTests", Test) {
   inputs.files fileTree("${projectDir}/framework")
   inputs.files fileTree("${projectDir}/fixtures")
   inputs.files fileTree("${projectDir}/specs")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+
+  systemProperty 'logstash.root.dir', projectDir.toPath().getParent().getParent().toString()
   include '/org/logstash/integration/RSpecTests.class'
 
   outputs.upToDateWhen {

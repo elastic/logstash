@@ -44,7 +44,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public final class EventTest {
+public final class EventTest extends RubyTestBase {
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {

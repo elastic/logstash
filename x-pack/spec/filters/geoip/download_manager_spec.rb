@@ -39,6 +39,18 @@ describe LogStash::Filters::Geoip do
         expect(download_manager).to receive(:service_endpoint).and_return(bad_uri).twice
         expect { download_manager.send(:check_update) }.to raise_error(LogStash::Filters::Geoip::DownloadManager::BadResponseCodeError, /404/)
       end
+
+      context "when ENV['http_proxy'] is set" do
+        let(:proxy_url) { 'http://user:pass@example.com:1234' }
+
+        around(:each) { |example| with_environment('http_proxy' => proxy_url, &example) }
+
+        it "initializes the client with the proxy" do
+          expect(::Manticore::Client).to receive(:new).with(a_hash_including(:proxy => proxy_url)).and_call_original
+
+          download_manager.send(:rest_client)
+        end
+      end
     end
 
     context "check update" do

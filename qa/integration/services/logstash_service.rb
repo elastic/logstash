@@ -154,7 +154,7 @@ class LogstashService < Service
       args << feature_config_dir
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
-    puts "Starting Logstash: #{@logstash_bin} #{args}"
+    puts "Starting Logstash: #{@logstash_bin} #{args} (pwd: #{Dir.pwd})"
     ChildProcess.build(@logstash_bin, *args)
   end
 
