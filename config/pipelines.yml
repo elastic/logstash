@@ -35,6 +35,15 @@
 #   # before dispatching an undersized batch to filters+outputs
 #   pipeline.batch.delay: 50
 #
+#   Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
+#   "auto" automatically enables ordering if the 'pipeline.workers' setting
+#   is also set to '1', and disables otherwise.
+#   "true" enforces ordering on the pipeline and prevent logstash from starting
+#   if there are multiple workers.
+#   "false" disable any extra processing necessary for preserving ordering.
+#
+#   pipeline.ordered: auto
+#
 #   # Internal queuing model, "memory" for legacy in-memory based queuing and
 #   # "persisted" for disk-based acked queueing. Defaults is memory
 #   queue.type: memory
