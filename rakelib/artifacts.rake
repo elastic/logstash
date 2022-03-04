@@ -84,6 +84,10 @@ namespace "artifact" do
     @exclude_paths << "bin/rspec"
     @exclude_paths << "bin/rspec.bat"
 
+    # vendored test/spec artifacts from upstream
+    @exclude_paths << 'vendor/**/gems/*/test/**/*'
+    @exclude_paths << 'vendor/**/gems/*/spec/**/*'
+
     @exclude_paths
   end
 
