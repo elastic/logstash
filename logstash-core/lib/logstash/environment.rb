@@ -60,7 +60,7 @@ module LogStash
            Setting::Boolean.new("pipeline.plugin_classloaders", false),
            Setting::Boolean.new("pipeline.separate_logs", false),
    Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
-   Setting::CoercibleString.new("pipeline.ecs_compatibility", "disabled", true, %w(disabled v1 v8)),
+   Setting::CoercibleString.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
@@ -69,10 +69,16 @@ module LogStash
            Setting::Boolean.new("help", false),
             Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
-           Setting::Boolean.new("http.enabled", true),
-            Setting::String.new("http.host", "127.0.0.1"),
-         Setting::PortRange.new("http.port", 9600..9700),
-            Setting::String.new("http.environment", "production"),
+           Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled"),
+            Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host"),
+         Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port"),
+            Setting::String.new("api.environment", "production").with_deprecated_alias("http.environment"),
+            Setting::String.new("api.auth.type", "none", true, %w(none basic)),
+            Setting::String.new("api.auth.basic.username", nil, false).nullable,
+          Setting::Password.new("api.auth.basic.password", nil, false).nullable,
+           Setting::Boolean.new("api.ssl.enabled", false),
+  Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
+          Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
             Setting::Boolean.new("queue.drain", false),
             Setting::Bytes.new("queue.page_capacity", "64mb"),
@@ -104,6 +110,23 @@ module LogStash
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
   SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
 
+  SETTINGS.on_post_process do |settings|
+    # Configure Logstash logging facility. This needs to be done as early as possible to
+    # make sure the logger has the correct settings tnd the log level is correctly defined.
+    java.lang.System.setProperty("ls.logs", settings.get("path.logs"))
+    java.lang.System.setProperty("ls.log.format", settings.get("log.format"))
+    java.lang.System.setProperty("ls.log.level", settings.get("log.level"))
+    java.lang.System.setProperty("ls.pipeline.separate_logs", settings.get("pipeline.separate_logs").to_s)
+    unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = ::File.join(settings.get("path.settings"), "log4j2.properties")
+
+      # Windows safe way to produce a file: URI.
+      file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
+      LogStash::Logging::Logger::reconfigure(::URI.encode(file_schema + ::File.absolute_path(log4j_config_location)))
+    end
+    # override log level that may have been introduced from a custom log4j config file
+    LogStash::Logging::Logger::configure_logging(settings.get("log.level"))
+  end
 
   SETTINGS.on_post_process do |settings|
     # If the data path is overridden but the queue path isn't recompute the queue path
@@ -122,7 +145,7 @@ module LogStash
   module Environment
     extend self
 
-    LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
+    LOGSTASH_CORE = ::File.expand_path(::File.join("..", ".."), ::File.dirname(__FILE__))
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
 
     LINUX_OS_RE = /linux/

@@ -23,9 +23,8 @@ require "java"
 # wrapper.
 unless $LS_JARS_LOADED
   jar_path = File.join(File.dirname(File.dirname(__FILE__)), "jars")
-  $:.unshift jar_path
-  Dir.glob(jar_path + '/*.jar') do |jar|
-    require File.basename(jar)
+  Dir.glob("#{jar_path}/*.jar") do |jar|
+    load jar
   end
   java_import org.logstash.RubyUtil
 end

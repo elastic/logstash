@@ -118,7 +118,13 @@ public final class FieldReference {
         if (result != null) {
             return result;
         }
-        return RUBY_CACHE.computeIfAbsent(reference.newFrozen(), ref -> from(ref.asJavaString()));
+
+        final FieldReference parsed = from(reference.asJavaString());
+        // exact size in a race condition is not important
+        if (RUBY_CACHE.size() < 10_000) {
+            RUBY_CACHE.put(reference.newFrozen(), parsed);
+        }
+        return parsed;
     }
 
     public static FieldReference from(final String reference) {

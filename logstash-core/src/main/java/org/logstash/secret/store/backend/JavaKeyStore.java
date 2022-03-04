@@ -23,7 +23,11 @@ package org.logstash.secret.store.backend;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.*;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.SecureConfig;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -349,6 +353,17 @@ public final class JavaKeyStore implements SecretStore {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
             releaseLock(lock);
+        }
+    }
+
+    @Override
+    public boolean containsSecret(SecretIdentifier identifier) {
+        try {
+            loadKeyStore();
+            return keyStore.containsAlias(identifier.toExternalForm());
+        } catch (Exception e) {
+            throw new SecretStoreException.LoadException(String.format("Found a keystore at %s, but failed to load it.",
+                    keyStorePath.toAbsolutePath().toString()));
         }
     }
 

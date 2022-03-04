@@ -16,10 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-  def vendor(*args)
-    return File.join("vendor", *args)
-  end
-
   task "jruby" do |task, args|
     system('./gradlew bootstrap') unless File.exists?(File.join("vendor", "jruby"))
   end # jruby
@@ -31,15 +27,19 @@ namespace "vendor" do
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
-    puts("Invoking bundler install...")
-    output, exception = LogStash::Bundler.invoke!(:install => true)
-    puts(output)
-    raise(exception) if exception
+    if File.exists?(LogStash::Environment::LOCKFILE) # gradlew already bootstrap-ed
+      puts("Skipping bundler install...")
+    else
+      puts("Invoking bundler install...")
+      output, exception = LogStash::Bundler.invoke!(:install => true)
+      puts(output)
+      raise(exception) if exception
+    end
   end # task gems
   task "all" => "gems"
 
   desc "Clean the vendored files"
   task :clean do
-    rm_rf(vendor)
+    rm_rf('vendor')
   end
 end

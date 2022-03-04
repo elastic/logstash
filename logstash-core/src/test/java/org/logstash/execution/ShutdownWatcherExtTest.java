@@ -32,13 +32,14 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
 /**
  * Tests for {@link ShutdownWatcherExt}.
  */
 @NotThreadSafe
-public final class ShutdownWatcherExtTest {
+public final class ShutdownWatcherExtTest extends RubyTestBase {
 
     @Test
     public void testShouldForceShutdown() throws InterruptedException {

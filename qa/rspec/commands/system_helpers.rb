@@ -19,7 +19,7 @@ require_relative "base"
 
 module ServiceTester
   module SystemD
-    def running?(hosts, package, jdk_path='/usr/bin/java')
+    def running?(hosts, package, jdk_path='/usr/share/logstash/jdk/bin/java')
       stdout = ""
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
@@ -42,7 +42,7 @@ module ServiceTester
   end
 
   module InitD
-    def running?(hosts, package, jdk_path='/usr/bin/java')
+    def running?(hosts, package, jdk_path='/usr/share/logstash/jdk/bin/java')
       stdout = ""
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("initctl status #{package}")

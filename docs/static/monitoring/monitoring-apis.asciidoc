@@ -31,8 +31,38 @@ Example response:
 --------------------------------------------------
 
 NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
+
+[discrete]
+[[monitoring-api-security]]
+==== Securing the Logstash API
+
+The {ls} Monitoring APIs are not secured by default, but you can configure {ls} to secure them in one of several ways to meet your organization's needs.
+
+You can enable SSL for the Logstash API by setting `api.ssl.enabled: true` in the `logstash.yml`, and providing the relevant keystore settings `api.ssl.keystore.path` and `api.ssl.keystore.password`:
+
+[source]
+--------------------------------------------------
+api.ssl.enabled: true
+api.ssl.keystore.path: /path/to/keystore.jks
+api.ssl.keystore.password: "s3cUr3p4$$w0rd"
+--------------------------------------------------
+
+The keystore must be in either jks or p12 format, and must contain both a certificate and a private key.
+Connecting clients receive this certificate, allowing them to authenticate the Logstash endpoint.
+
+You can also require HTTP Basic authentication by setting `api.auth.type: basic` in the `logstash.yml`, and providing the relevant credentials `api.auth.basic.username` and `api.auth.basic.password`:
+
+[source]
+--------------------------------------------------
+api.auth.type: basic
+api.auth.basic.username: "logstash"
+api.auth.basic.password: "stashy"
+--------------------------------------------------
+
+NOTE: Usage of Keystore or Environment or variable replacements is encouraged for password-type fields to avoid storing them in plain text.
+      For example, specifying the value `"${HTTP_PASS}"` will resolve to the value stored in the <<keystore,secure keystore's>> `HTTP_PASS` variable if present or the same variable from the <<environment-variables,environment>>)
 
 [discrete]
 [[monitoring-common-options]]

@@ -45,7 +45,6 @@ public class ProcessMonitorTest {
     @SuppressWarnings("unchecked")
     public void testReportCpuStats(){
         Map<String, Object> processStats = ProcessMonitor.detect().toMap();
-        assumeTrue((Boolean) processStats.get("is_unix"));
         assertThat("cpu", processStats.get("cpu"), instanceOf(Map.class));
         Map<String, Object> cpuStats = (Map<String, Object>) processStats.get("cpu");
         assertThat("cpu.process_percent", (Short)cpuStats.get("process_percent") >= 0, is(true));

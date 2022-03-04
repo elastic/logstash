@@ -15,10 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "fileutils"
-require "stringio"
-require 'set'
-
 module LogStash
   module Bundler
     extend self
@@ -55,7 +51,8 @@ module LogStash
       end
     end
 
-    def setup!(options = {})
+    # prepare bundler's environment variables, but do not invoke ::Bundler::setup
+    def prepare(options = {})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
@@ -76,6 +73,13 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:frozen, true) unless options[:allow_gemfile_changes]
       ::Bundler.reset!
+    end
+
+    # After +Bundler.setup+ call, all +load+ or +require+ of the gems would be allowed only if they are part of
+    # the Gemfile or Ruby's standard library
+    # To install a new plugin which is not part of Gemfile, DO NOT call setup!
+    def setup!(options = {})
+      prepare(options)
       ::Bundler.setup
     end
 
@@ -107,6 +111,7 @@ module LogStash
       require "bundler"
       require "bundler/cli"
 
+      require "fileutils"
       # create Gemfile from template iff it does not exist
       unless ::File.exists?(Environment::GEMFILE_PATH)
         FileUtils.copy(
@@ -128,11 +133,17 @@ module LogStash
       ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
+
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
-      # Note: Using an `ENV` here because ::Bundler.settings.set_local(:silence_root_warning, true)
-      # does not work (set_global *does*, but that seems too drastic a change)
-      with_env("BUNDLE_SILENCE_ROOT_WARNING" => "true") do
+      # Note: Using `ENV`s here because ::Bundler.settings.set_local or `bundle config`
+      # is not being respected with `Bundler::CLI.start`?
+      # (set_global *does*, but that seems too drastic a change)
+      with_env({"BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                "BUNDLE_WITHOUT" => options[:without].join(":")}) do
+
         if !debug?
           # Will deal with transient network errors
           execute_bundler_with_retry(options)
@@ -199,7 +210,7 @@ module LogStash
 
     # @param plugin_names [Array] logstash plugin names that are going to update
     # @return [Array] gem names that plugins depend on, including logstash plugins
-    def expand_logstash_mixin_dependencies(plugin_names)
+    def expand_logstash_mixin_dependencies(plugin_names); require 'set'
       plugin_names = Array(plugin_names) if plugin_names.is_a?(String)
 
       # get gem names in Gemfile.lock. If file doesn't exist, it will be generated
@@ -247,10 +258,14 @@ module LogStash
           arguments << "--local"
           arguments << "--no-prune" # From bundler docs: Don't remove stale gems from the cache.
         end
+        if options[:force]
+          arguments << "--redownload"
+        end
       elsif options[:update]
         arguments << "update"
         arguments << expand_logstash_mixin_dependencies(options[:update])
         arguments << "--local" if options[:local]
+        arguments << "--conservative" if options[:conservative]
       elsif options[:clean]
         arguments << "clean"
       elsif options[:package]
@@ -282,7 +297,7 @@ module LogStash
     # capture any $stdout from the passed block. also trap any exception in that block, in which case the trapped exception will be returned
     # @param [Proc] the code block to execute
     # @return [String, Exception] the captured $stdout string and any trapped exception or nil if none
-    def capture_stdout(&block)
+    def capture_stdout(&block); require 'stringio'
       old_stdout = $stdout
       $stdout = StringIO.new("", "w")
       begin

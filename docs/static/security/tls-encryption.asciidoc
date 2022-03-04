@@ -1,0 +1,23 @@
+[discrete]
+[[ls-http-ssl]]
+=== Configuring Logstash to use TLS/SSL encryption
+
+If TLS encryption is enabled on an on premise {es} cluster, you need to
+configure the `ssl` and `cacert` options in your Logstash `.conf` file:
+
+[source,js]
+--------------------------------------------------
+output {
+  elasticsearch {
+    ...
+    ssl => true
+    cacert => '/path/to/cert.pem' <1>
+  }
+}
+--------------------------------------------------
+<1> The path to the local `.pem` file that contains the Certificate
+    Authority's certificate.
+    
+NOTE: Hosted {ess} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud.
+{ess-leadin-short} 
+    

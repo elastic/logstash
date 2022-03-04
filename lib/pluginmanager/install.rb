@@ -30,6 +30,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   option "--preserve", :flag, "preserve current gem options", :default => false
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
   option "--local", :flag, "force local-only plugin installation. see bin/logstash-plugin package|unpack", :default => false
+  option "--[no-]conservative", :flag, "do a conservative update of plugin's dependencies", :default => true
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
@@ -184,14 +185,15 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     return if !verify? || preserve? || development? || local? || local_gem?
 
     puts "Resolving mixin dependencies"
-    LogStash::Bundler.setup!
+    LogStash::Bundler.prepare
     plugins_to_update = install_list.map(&:first)
     unlock_dependencies = LogStash::Bundler.expand_logstash_mixin_dependencies(plugins_to_update) - plugins_to_update
 
     if unlock_dependencies.any?
       puts "Updating mixin dependencies #{unlock_dependencies.join(', ')}"
-      options = {:update => unlock_dependencies, :rubygems_source => gemfile.gemset.sources}
-      LogStash::Bundler.invoke!(options)
+      LogStash::Bundler.invoke! update: unlock_dependencies,
+                                rubygems_source: gemfile.gemset.sources,
+                                conservative: conservative?
     end
 
     unlock_dependencies

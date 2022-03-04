@@ -33,7 +33,8 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 
-public class StringInterpolationTest {
+public class StringInterpolationTest extends RubyTestBase {
+
     @Test
     public void testCompletelyStaticTemplate() throws IOException {
         Event event = getTestEvent();

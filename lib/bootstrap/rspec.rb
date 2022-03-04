@@ -20,13 +20,18 @@ LogStash::Bundler.setup!({:without => [:build]})
 require "logstash-core"
 require "logstash/environment"
 
-$LOAD_PATH.unshift(File.join(LogStash::Environment::LOGSTASH_CORE, "spec"))
+# Bundler + gemspec already setup $LOAD_PATH << '.../lib'
+# but since we load specs from 2 locations we need to hook up these:
+[ LogStash::Environment::LOGSTASH_HOME, LogStash::Environment::LOGSTASH_CORE ].each do |path|
+  spec_path = File.join(path, "spec")
+  $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
+end
 
 require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'
 
-RSpec.world.reset # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
+RSpec.clear_examples # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
 
 status = RSpec::Core::Runner.run(ARGV.empty? ? ($JUNIT_ARGV || ["spec"]) : ARGV).to_i
 if ENV["IS_JUNIT_RUN"]

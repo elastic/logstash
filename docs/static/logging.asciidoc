@@ -55,7 +55,7 @@ downtime. Instead, you can dynamically update logging levels through the logging
 immediately and do not need a restart. 
 
 NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 ===== Retrieve list of logging configurations

@@ -30,13 +30,14 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 
 /**
  * Tests for {@link JrubyTimestampExtLibrary}.
  */
-public final class JrubyTimestampExtLibraryTest {
+public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
 
     @Test
     public void testConstructorNew() {
@@ -63,10 +64,8 @@ public final class JrubyTimestampExtLibraryTest {
     @Test
     public void testConstructFromRubyDateTime() {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject now =
-            context.runtime.evalScriptlet("require 'date'\nDateTime.now.to_time.utc");
-        final JrubyTimestampExtLibrary.RubyTimestamp t =
-            newRubyTimestamp(context, new IRubyObject[]{now});
+        final IRubyObject now = RubyTime.newTime(context.runtime, System.currentTimeMillis());
+        final JrubyTimestampExtLibrary.RubyTimestamp t = newRubyTimestamp(context, new IRubyObject[]{now});
         Assertions.assertThat(
             Math.abs(
                 t.ruby_time(context).to_f().getDoubleValue() - now.convertToFloat().getDoubleValue()

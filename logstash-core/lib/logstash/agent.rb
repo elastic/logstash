@@ -62,19 +62,11 @@ class LogStash::Agent
     @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
-    @http_host = setting("http.host")
-    @http_port = setting("http.port")
-    @http_environment = setting("http.environment")
     # Generate / load the persistent uuid
     id
 
-    if @settings.set?('pipeline.ecs_compatibility')
-      ecs_compatibility_value = settings.get('pipeline.ecs_compatibility')
-      if ecs_compatibility_value != 'disabled'
-        logger.warn("Setting `pipeline.ecs_compatibility` given as `#{ecs_compatibility_value}`; " +
-                    "values other than `disabled` are currently considered BETA and may have unintended consequences when upgrading minor versions of Logstash.")
-      end
-    end
+    # Initialize, but do not start the webserver.
+    @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
@@ -427,17 +419,15 @@ class LogStash::Agent
   end
 
   def start_webserver_if_enabled
-    if @settings.get_value("http.enabled")
+    if @settings.get_value("api.enabled")
       start_webserver
     else
-      @logger.info("HTTP API is disabled (`http.enabled=false`); webserver will not be started.")
+      @logger.info("HTTP API is disabled (`api.enabled=false`); webserver will not be started.")
     end
   end
 
   def start_webserver
     @webserver_control_lock.synchronize do
-      options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
-      @webserver = LogStash::WebServer.new(@logger, self, options)
       @webserver_thread = Thread.new(@webserver) do |webserver|
         LogStash::Util.set_thread_name("Api Webserver")
         webserver.run
@@ -447,7 +437,7 @@ class LogStash::Agent
 
   def stop_webserver
     @webserver_control_lock.synchronize do
-      if @webserver
+      if @webserver_thread
         @webserver.stop
         if @webserver_thread.join(5).nil?
           @webserver_thread.kill
@@ -560,9 +550,11 @@ class LogStash::Agent
 
   def initialize_geoip_database_metrics(metric)
     begin
-      require_relative ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip", "database_manager")
-      database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
-      database_manager.metric = metric.namespace([:geoip_download_manager]).tap do |n|
+      relative_path = ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip")
+      require_relative ::File.join(relative_path, "database_manager")
+      require_relative ::File.join(relative_path, "database_metric")
+
+      geoip_metric = metric.namespace([:geoip_download_manager]).tap do |n|
         db = n.namespace([:database])
         [:ASN, :City].each do  |database_type|
           db_type = db.namespace([database_type])
@@ -577,6 +569,10 @@ class LogStash::Agent
         dl.gauge(:last_checked_at, nil)
         dl.gauge(:status, nil)
       end
+
+      database_metric = LogStash::Filters::Geoip::DatabaseMetric.new(geoip_metric)
+      database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
+      database_manager.database_metric = database_metric
     rescue LoadError => e
       @logger.trace("DatabaseManager is not in classpath")
     end
