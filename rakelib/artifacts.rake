@@ -346,6 +346,8 @@ namespace "artifact" do
   end
 
   task "generate_build_metadata" do
+    require 'time'
+
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
     BUILD_DATE=Time.now.iso8601
