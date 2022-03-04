@@ -1,10 +1,24 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
 require "logstash/state_resolver"
-require "logstash/config/pipeline_config"
-require "logstash/pipeline"
 require "ostruct"
 require "digest"
 
@@ -157,5 +171,45 @@ describe LogStash::StateResolver do
         end
       end
     end
+
+    context "when a pipeline stops" do
+      let(:main_pipeline) { mock_pipeline(:main) }
+      let(:main_pipeline_config) { main_pipeline.pipeline_config }
+      let(:pipelines) do
+        r =  LogStash::PipelinesRegistry.new
+        r.create_pipeline(:main, main_pipeline) { true }
+        r
+      end
+
+      before do
+        expect(main_pipeline).to receive(:finished_execution?).at_least(:once).and_return(true)
+      end
+
+      context "when pipeline config contains a new one and the existing" do
+        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
+
+        it "creates the new one and keep the other one stop" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:create, :hello_world])
+          expect(pipelines.non_running_pipelines.size).to eq(1)
+        end
+      end
+
+      context "when pipeline config contains an updated pipeline" do
+        let(:pipeline_configs) { [mock_pipeline_config(:main, "input { generator {}}")] }
+
+        it "should reload the stopped pipeline" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:reload, :main])
+        end
+      end
+
+      context "when pipeline config contains no pipeline" do
+        let(:pipeline_configs) { [] }
+
+        it "should delete the stopped one" do
+          expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:delete, :main])
+        end
+      end
+    end
+
   end
 end

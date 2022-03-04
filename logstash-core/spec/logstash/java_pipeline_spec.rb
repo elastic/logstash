@@ -1,13 +1,29 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
-require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require 'support/pipeline/pipeline_helpers'
 require "stud/try"
 require 'timeout'
+require "thread"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -23,18 +39,31 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
-class DummyInputGenerator < LogStash::Inputs::Base
-  config_name "dummyinputgenerator"
+class DummyManualInputGenerator < LogStash::Inputs::Base
+  config_name "dummymanualinputgenerator"
   milestone 2
+
+  attr_accessor :keep_running
+
+  def initialize(*args)
+    super(*args)
+    @keep_running = Concurrent::AtomicBoolean.new(false)
+    @queue = nil
+  end
 
   def register
   end
 
   def run(queue)
-    queue << Logstash::Event.new while !stop?
+    @queue = queue
+    while !stop? || @keep_running.true?
+      queue << LogStash::Event.new
+      sleep(0.5)
+    end
   end
 
-  def close
+  def push_once
+    @queue << LogStash::Event.new
   end
 end
 
@@ -71,6 +100,17 @@ class DummyFilter < LogStash::Filters::Base
   def threadsafe?() false; end
 
   def close() end
+end
+
+class DummyCrashingFilter < LogStash::Filters::Base
+  config_name "dummycrashingfilter"
+  milestone 2
+
+  def register; end
+
+  def filter(event)
+    raise("crashing filter")
+  end
 end
 
 class DummySafeFilter < LogStash::Filters::Base
@@ -159,6 +199,15 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  describe "aliased plugin instantiation" do
+    it "should create the pipeline as if it's using the original plugin" do
+      alias_registry = Java::org.logstash.plugins.AliasRegistry.new({["input", "alias"] => "generator"})
+      LogStash::PLUGIN_REGISTRY = LogStash::Plugins::Registry.new alias_registry
+      pipeline = mock_java_pipeline_from_string("input { alias { count => 1 } } output { null {} }")
+      expect(pipeline.ephemeral_id).to_not be_nil
+      pipeline.close
+    end
+  end
 
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055
@@ -197,25 +246,97 @@ describe LogStash::JavaPipeline do
       Thread.abort_on_exception = true
 
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
       Timeout.timeout(timeout) do
-        sleep(0.1) until pipeline.ready?
+        pipeline.start
+        sleep 0.01 until pipeline.stopped?
       end
-      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(3).for do
-          # give us a bit of time to flush the events
-          # puts("*****" + output.events.map{|e| e.message}.to_s)
-          output.events.map{|e| e.get("message")}.include?("END")
-        end.to be_truthy
-      end
+      pipeline.shutdown
+      expect(output.events.map{|e| e.get("message")}).to include("END")
       expect(output.events.size).to eq(2)
       expect(output.events[0].get("tags")).to eq(["notdropped"])
       expect(output.events[1].get("tags")).to eq(["notdropped"])
-      pipeline.shutdown
-      t.join
 
       Thread.abort_on_exception = abort_on_exception_state
     end
+  end
+
+  context "a crashing worker terminates the pipeline and all inputs and workers" do
+    subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
+    let(:config) do
+      <<-EOS
+      input { dummymanualinputgenerator {} }
+      filter { dummycrashingfilter {} }
+      output { dummyoutput {} }
+      EOS
+    end
+    let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new }
+    let(:dummyinput) { DummyManualInputGenerator.new }
+
+    before :each do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
+      allow(DummyManualInputGenerator).to receive(:new).with(any_args).and_return(dummyinput)
+
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummymanualinputgenerator").and_return(DummyManualInputGenerator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummycrashingfilter").and_return(DummyCrashingFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+  context "a crashing worker using memory queue" do
+    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
+
+    it "does not raise in the main thread, terminates the run thread and finishes execution" do
+      # first make sure we keep the input plugin in the run method for now
+      dummyinput.keep_running.make_true
+
+      expect { subject.start }.to_not raise_error
+
+      # wait until there is no more worker thread since we have a single worker that should have died
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # at this point the input plugin should have been asked to stop
+      wait(5).for {dummyinput.stop?}.to be_truthy
+
+      # allow the input plugin to exit the run method now
+      dummyinput.keep_running.make_false
+
+      # the pipeline thread should terminate normally
+      expect { subject.thread.join }.to_not raise_error
+      expect(subject.finished_execution?).to be_truthy
+
+      # when the pipeline has exited, no input threads should be alive
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+    end
+  end
+
+  context "a crashing worker using persisted queue" do
+    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
+
+    it "does not raise in the main thread, terminates the run thread and finishes execution" do
+      # first make sure we keep the input plugin in the run method for now
+      dummyinput.keep_running.make_true
+
+      expect { subject.start }.to_not raise_error
+
+      # wait until there is no more worker thread since we have a single worker that should have died
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # at this point the input plugin should have been asked to stop
+      wait(5).for {dummyinput.stop?}.to be_truthy
+
+      # allow the input plugin to exit the run method now
+      dummyinput.keep_running.make_false
+
+      # the pipeline thread should terminate normally
+      expect { subject.thread.join }.to_not raise_error
+      expect(subject.finished_execution?).to be_truthy
+
+      # when the pipeline has exited, no input threads should be alive
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      expect{dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
+    end
+  end
   end
 
   describe "defaulting the pipeline workers based on thread safety" do
@@ -274,7 +395,7 @@ describe LogStash::JavaPipeline do
           pipeline = mock_java_pipeline_from_string(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             hash_including({:count_was=>worker_thread_count, :filters=>["dummyfilter"]}))
-          pipeline.run
+          pipeline.start
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
           pipeline.shutdown
         end
@@ -287,7 +408,7 @@ describe LogStash::JavaPipeline do
                 " not work with multiple worker threads"
           pipeline = mock_java_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
           expect(pipeline.logger).to receive(:warn).with(msg, hash_including({:worker_threads=> override_thread_count, :filters=>["dummyfilter"]}))
-          pipeline.run
+          pipeline.start
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
           pipeline.shutdown
         end
@@ -314,7 +435,7 @@ describe LogStash::JavaPipeline do
       it "starts multiple filter threads" do
         skip("This test has been failing periodically since November 2016. Tracked as https://github.com/elastic/logstash/issues/6245")
         pipeline = mock_java_pipeline_from_string(test_config_with_filters)
-        pipeline.run
+        pipeline.start
         expect(pipeline.worker_threads.size).to eq(worker_thread_count)
         pipeline.shutdown
       end
@@ -355,22 +476,16 @@ describe LogStash::JavaPipeline do
       eos
     }
 
-    context "output close" do
+    context "input and output close" do
       let(:pipeline) { mock_java_pipeline_from_string(test_config_without_output_workers) }
       let(:output) { pipeline.outputs.first }
+      let(:input) { pipeline.inputs.first }
 
-      before do
-        allow(output).to receive(:do_close)
-      end
-
-      after do
+      it "should call close of input and output without output-workers" do
+        expect(output).to receive(:do_close).once
+        expect(input).to receive(:do_close).once
+        pipeline.start
         pipeline.shutdown
-      end
-
-      it "should call close of output without output-workers" do
-        pipeline.run
-
-        expect(output).to have_received(:do_close).once
       end
     end
   end
@@ -401,6 +516,8 @@ describe LogStash::JavaPipeline do
 
   context "compiled flush function" do
     extend PipelineHelpers
+    let(:settings) { LogStash::SETTINGS.clone }
+
     describe "flusher thread" do
       before(:each) do
         allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
@@ -416,7 +533,7 @@ describe LogStash::JavaPipeline do
         expect(pipeline).to receive(:transition_to_running).ordered.and_call_original
         expect(pipeline).to receive(:start_flusher).ordered.and_call_original
 
-        pipeline.run
+        pipeline.start
         pipeline.shutdown
       end
     end
@@ -448,6 +565,131 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "batch order" do
+    extend PipelineHelpers
+
+    context "with a single worker and ordering enabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "true")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+       sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+      end
+    end
+
+    context "with a multiple workers and ordering enabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 2)
+        s.set_value("pipeline.ordered", "true")
+        s
+      end
+      let(:config) { "input { } output { }" }
+      let(:pipeline) { mock_java_pipeline_from_string(config, settings) }
+
+      it "should raise error" do
+        expect{pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
+        pipeline.close
+      end
+    end
+
+    context "with an explicit single worker ordering will auto enable" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "auto")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+       sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+      end
+    end
+
+    context "with an implicit single worker ordering will not auto enable" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.ordered", "auto")
+        s
+      end
+
+      before(:each) do
+        # this is to make sure this test will be valid by having a pipeline.workers default value > 1
+        # and not explicitly set.
+        expect(settings.get_default("pipeline.workers")).to be > 1
+        expect(settings.set?("pipeline.workers")).to be_falsey
+
+        expect(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").at_least(1).time.and_return(DummyFilter)
+        expect(LogStash::Plugin).to receive(:lookup).with(any_args).at_least(3).time.and_call_original
+      end
+
+      config <<-CONFIG
+        filter {
+          # per above dummyfilter is not threadsafe hence will set the number of workers to 1
+          dummyfilter { }
+
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+      sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+      end
+    end
+
+    context "with a single worker and ordering disabled" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set_value("pipeline.workers", 1)
+        s.set_value("pipeline.ordered", "false")
+        s
+      end
+
+      config <<-CONFIG
+        filter {
+          if [message] =~ "\\d" {
+            mutate { add_tag => "digit" }
+          } else {
+            mutate { add_tag => "letter" }
+          }
+        }
+      CONFIG
+
+      sample_one(["a", "1", "b", "2", "c", "3"]) do
+        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+      end
+    end
+  end
+
+
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
@@ -462,15 +704,10 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(logger).to receive(:warn)
 
-      # pipeline must be first called outside the thread context because it lazily initialize and will create a
-      # race condition if called in the thread
-      p = pipeline
-      t = Thread.new { p.run }
-      Timeout.timeout(timeout) do
-        sleep(0.1) until pipeline.ready?
-      end
+      pipeline.start
+      # the only input auto-closes, so the pipeline will automatically stop.
+      sleep(0.01) until pipeline.stopped?
       pipeline.shutdown
-      t.join
     end
 
     it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
@@ -489,9 +726,12 @@ describe LogStash::JavaPipeline do
   context "compiled filter functions" do
     context "new events should propagate down the filters" do
       extend PipelineHelpers
+      let(:settings) { LogStash::SETTINGS.clone }
+
       config <<-CONFIG
         filter {
           clone {
+            ecs_compatibility => disabled
             clones => ["clone1", "clone2"]
           }
           mutate {
@@ -608,8 +848,9 @@ describe LogStash::JavaPipeline do
   end
 
   context "Periodic Flush" do
-    let(:config) do
-      <<-EOS
+    shared_examples 'it flushes correctly' do
+      let(:config) do
+        <<-EOS
       input {
         dummy_input {}
       }
@@ -619,40 +860,48 @@ describe LogStash::JavaPipeline do
       output {
         dummy_output {}
       }
-      EOS
-    end
-    let(:output) { ::LogStash::Outputs::DummyOutput.new }
-
-    before do
-      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-    end
-
-    it "flush periodically" do
-      Thread.abort_on_exception = true
-      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
-      Timeout.timeout(timeout) do
-        sleep(0.1) until pipeline.ready?
+        EOS
       end
-      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(10).for do
-          # give us a bit of time to flush the events
-          output.events.empty?
-        end.to be_falsey
+      let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+      before do
+        allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+        allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+        allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+        allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       end
 
-      expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+      it "flush periodically" do
+        Thread.abort_on_exception = true
+        pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+        Timeout.timeout(timeout) do
+          pipeline.start
+        end
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          wait(10).for do
+            # give us a bit of time to flush the events
+            output.events.empty?
+          end.to be_falsey
+        end
 
-      pipeline.shutdown
+        expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
 
-      t.join
+        pipeline.shutdown
+      end
+
+    end
+
+    it_behaves_like 'it flushes correctly'
+
+    context 'with pipeline ordered' do
+      before do
+        pipeline_settings_obj.set("pipeline.workers", 1)
+        pipeline_settings_obj.set("pipeline.ordered", true)
+      end
+      it_behaves_like 'it flushes correctly'
     end
   end
-
   context "Periodic Flush that intermittently returns nil" do
     let(:config) do
       <<-EOS
@@ -680,9 +929,8 @@ describe LogStash::JavaPipeline do
     it "flush periodically without error on nil flush return" do
       Thread.abort_on_exception = true
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
       Timeout.timeout(timeout) do
-        sleep(0.1) until pipeline.ready?
+        pipeline.start
       end
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         wait(10).for do
@@ -694,8 +942,6 @@ describe LogStash::JavaPipeline do
       expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
 
       pipeline.shutdown
-
-      t.join
     end
   end
 
@@ -733,9 +979,8 @@ describe LogStash::JavaPipeline do
     it "flush periodically" do
       Thread.abort_on_exception = true
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      t = Thread.new { pipeline.run }
       Timeout.timeout(timeout) do
-        sleep(0.1) until pipeline.ready?
+        pipeline.start
       end
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         wait(11).for do
@@ -747,8 +992,6 @@ describe LogStash::JavaPipeline do
       expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
 
       pipeline.shutdown
-
-      t.join
     end
   end
 
@@ -787,7 +1030,8 @@ describe LogStash::JavaPipeline do
 
     it "correctly distributes events" do
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-      pipeline.run
+      pipeline.start
+      sleep 0.01 until pipeline.finished_execution?
       pipeline.shutdown
       expect(output.events.size).to eq(60)
       expect(output.events.count {|e| e.get("cloned") == "cloned"}).to eq(30)
@@ -817,7 +1061,7 @@ describe LogStash::JavaPipeline do
     end
 
     it "return when the pipeline started working" do
-      subject.run
+      subject.start
       expect(subject.started_at).to be < Time.now
       subject.shutdown
     end
@@ -845,18 +1089,12 @@ describe LogStash::JavaPipeline do
 
     context "when the pipeline is started" do
       it "return the duration in milliseconds" do
-        # subject must be first call outside the thread context because of lazy initialization
-        s = subject
-        t = Thread.new { s.run }
         Timeout.timeout(timeout) do
-          sleep(0.1) until subject.ready?
+          subject.start
         end
-        Timeout.timeout(timeout) do
-          sleep(0.1)
-        end
+        sleep(0.1)
         expect(subject.uptime).to be > 0
         subject.shutdown
-        t.join
       end
     end
   end
@@ -898,12 +1136,6 @@ describe LogStash::JavaPipeline do
     end
     let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new({ "id" => dummy_output_id }) }
     let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
-    let(:pipeline_thread) do
-      # subject has to be called for the first time outside the thread because it will create a race condition
-      # with the subject.ready? call since subject is lazily initialized
-      s = subject
-      Thread.new { s.run }
-    end
 
     before :each do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
@@ -912,9 +1144,8 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(LogStash::Filters::DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
 
-      pipeline_thread
       Timeout.timeout(timeout) do
-        sleep(0.1) until subject.ready?
+        subject.start
       end
 
       # make sure we have received all the generated events
@@ -928,7 +1159,6 @@ describe LogStash::JavaPipeline do
 
     after :each do
       subject.shutdown
-      pipeline_thread.join
     end
 
     context "global metric" do

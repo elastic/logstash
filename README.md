@@ -16,27 +16,6 @@ For information about building the documentation, see the README in https://gith
 You can download officially released Logstash binaries, as well as debian/rpm packages for the
 supported platforms, from [downloads page](https://www.elastic.co/downloads/logstash).
 
-### Snapshot Builds
-
-For the daring, snapshot builds are available.
-These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
-
-| Complete, with X-Pack | Apache 2.0 licensed    |
-| --------------------- | ---------------------- |
-| [tar-complete][]      | [tar-oss][]            |
-| [zip-complete][]      | [zip-oss][]            |
-| [deb-complete][]      | [deb-oss][]            |
-| [rpm-complete][]      | [rpm-oss][]            |
-
-[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.tar.gz
-[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.zip
-[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.deb
-[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-8.0.0-SNAPSHOT.rpm
-[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.tar.gz
-[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.zip
-[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.deb
-[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-8.0.0-SNAPSHOT.rpm
-
 ## Need Help?
 
 - [Logstash Forum](https://discuss.elastic.co/c/logstash)
@@ -65,7 +44,7 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
-* Install JDK version 8 or 11. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* Install JDK version 11 or 17. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
 * Install JRuby 9.2.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
@@ -94,6 +73,13 @@ The Logstash project includes the source code for all of Logstash, including the
 
 ``` sh
 export OSS=true
+```
+
+* Set up the location of the source code to build
+
+``` sh
+export LOGSTASH_SOURCE=1
+export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
 ```
 
 * To run Logstash from the repo you must first bootstrap the environment:
@@ -183,6 +169,14 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 3- To execute the complete test-suite including the integration tests run:
 
     ./gradlew check
+    
+4- To execute a single Ruby test run:
+
+    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests    
+
+5- To execute single spec for integration test, run:
+
+    ./gradlew integrationTests -PrubyIntegrationSpecs=specs/slowlog_spec.rb
 
 Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
 
@@ -192,7 +186,7 @@ If you set `LS_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,
 
 To run the tests of all currently installed plugins:
 
-    rake test:plugin
+    rake test:plugins
 
 You can install the default set of plugins included in the logstash package:
 

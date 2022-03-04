@@ -1,3 +1,0 @@
-https://github.com/jordansissel/ruby-filewatch/blob/master/LICENSE
-
-License is MIT (very permissive).

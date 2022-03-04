@@ -1,0 +1,26 @@
+[
+  {
+    "age": 297221,
+    "md5_hash": "8d57aec1958070f01042ac1ecd8ec2ab",
+    "name": "GeoLite2-ASN.tgz",
+    "provider": "maxmind",
+    "updated": 1619740833,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-ASN.tgz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210430%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210430T000140Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=7212ea23f94454c8008bff13f7a54507b7fa88055f88224ba0d2c8f65bf172c6dfd0844f329223f141b0e1a6e68060df2fe2e5bb1c0bb75aefe246535a30710198d351b36cf59bfc42b0217ae7c3d4ae3da307781dcd603db7768070ac755a45596b1ae77739092b2eeb75b30cf82c6631e02ee48caf1268d0268477fa57f0482511b84ef1f10814dd2aaf7888abfe7c264ebb68c6e477fb2510cb00ed9c469e8fd43e1738dc10fb3702b84c452a12919340bd6fbcbdd1bc75e47a2457c25fb082a280ecd8465cd2eaba38e3f3a1786ec16d06d76fbf6a4b7758665dd517a34ffd583a67a95eff7d7c2106243771bb6aa247e735aeb260b7ebc231c2f2d3404f"
+  },
+  {
+    "age": 222085,
+    "md5_hash": "a195a73d4651a2bd02e5edd680f6703c",
+    "name": "GeoLite2-City.tgz",
+    "provider": "maxmind",
+    "updated": 1619740834,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-City.tgz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210430%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210430T000140Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=9e27f47fe4f9b92a57e0844eb53b44c4ec8948ff85ddc830394261c2b6ddb9a4bd9b9c56df703d362843ed06a4a6ded5558bcc47ffee5edce9e07e47cc945493d7808b05c5e70001308da0750ed6157dddc00e4eea4b90736d1103b3b437d0bed9468f74902c68d62ca4e8460969fd6adc6c1faf227eb08c70943a3079f9f52350a94038a9229e05cdf38fcb3c0a849e4cbf523c74729b04e0a7e5ac51df1b4baaa3202564e550716a1025baedfcf3c57a057ec57f5cfd38be499cd2ebd4621085eefda750ce60dbab611c8c09dae1625505a6f62b6a7a9164345a6b61ba697a9b0c9d6cf436caac64d5b5da2e75e074eaf87694f67b5f72aa8bccff4297e99b"
+  },
+  {
+    "age": 222445,
+    "md5_hash": "8b2092c0fc23e620fe4d801f2feff708",
+    "name": "GeoLite2-Country.tgz",
+    "provider": "maxmind",
+    "updated": 1619740833,
+    "url": "https://storage.googleapis.com/elastic-paisano-production/maxmind/GeoLite2-Country.tgz?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=elastic-paisano-production%40elastic-apps-163815.iam.gserviceaccount.com%2F20210430%2Fhenk%2Fstorage%2Fgoog4_request&X-Goog-Date=20210430T000140Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=33f24e6a7e4660eaa225668cf8424ec7f2b8219b43fe6c7b446ee91eb907ef17871f3a4dba63796e28916317c0aaa581d384b4eb89c4acd1b3a8eaa44cb6a6fd2e43449ba9edc4e20e5a65dc583a13ed1cddc05072b80f8529939d1300da6540dc044811839dd43b13889c89b9101d1e31fb2d050b2af9bf059ab5d403427f4fd206ef845b7b985c7316a6943873c278000cccc14192576a639a1c5eb714c3673eb6dc286af09be244f3e01f5306bcb20787847d543598a64287657d39a7721f91f0afeb41309221d717515956f773625aaf7a6e3f51e5480f3dda601b0068523c4a84ca75070147b4d95bbce3c40bbe13ec152325ce0ce1ea394174f318bde5"
+  }
+]

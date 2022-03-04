@@ -1,37 +1,66 @@
 [[dead-letter-queues]]
-=== Dead Letter Queues
+=== Dead letter queues (DLQ)
 
-NOTE: The dead letter queue feature is currently supported for the
-<<plugins-outputs-elasticsearch>> output only. Additionally, The dead
-letter queue is only used where the response code is either 400
-or 404, both of which indicate an event that cannot be retried.   
-Support for additional outputs will be available in future releases of the 
-Logstash plugins. Before configuring Logstash to use this feature, refer to
-the output plugin documentation to verify that the plugin supports the dead
-letter queue feature.
+The dead letter queue (DLQ) is designed as a place to temporarily write events that cannot be processed. 
+The DLQ gives you flexibility to investigate problematic events without blocking the pipeline or losing the events. 
+Your pipeline keeps flowing, and the immediate problem is averted.
+But those events still need to be addressed.  
+
+You can <<es-proc-dlq,process events from the DLQ>> with the <<plugins-inputs-dead_letter_queue,`dead_letter_queue` input plugin>> .
+
+Processing events does not delete items from the queue, and the DLQ sometimes needs attention.
+See <<dlq-size>> and <<dlq-clear>> for more info. 
+
+[[dead-letter-how]]
+==== How the dead letter queue works
 
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
 either hangs or drops the unsuccessful event. In order to protect against data
 loss in this situation, you can <<configuring-dlq,configure Logstash>> to write
-unsuccessful events to a dead letter queue instead of dropping them. 
+unsuccessful events to a dead letter queue instead of dropping them.
 
-Each event written to the dead letter queue includes the original event, along
-with metadata that describes the reason the event could not be processed,
-information about the plugin that wrote the event, and the timestamp for when
-the event entered the dead letter queue.
+NOTE: The dead letter queue is currently supported only for the
+<<plugins-outputs-elasticsearch,{es} output>>. The dead letter queue is used for
+documents with response codes of 400 or 404, both of which indicate an event
+that cannot be retried.
 
-To process events in the dead letter queue, you simply create a Logstash
-pipeline configuration that uses the
+Each event written to the dead letter queue includes the original event,
+metadata that describes the reason the event could not be processed, information
+about the plugin that wrote the event, and the timestamp when the event
+entered the dead letter queue.
+
+To process events in the dead letter queue, create a Logstash pipeline
+configuration that uses the
 <<plugins-inputs-dead_letter_queue,`dead_letter_queue` input plugin>> to read
-from the queue. 
+from the queue. See <<processing-dlq-events>> for more information.
 
 image::static/images/dead_letter_queue.png[Diagram showing pipeline reading from the dead letter queue]
 
-See <<processing-dlq-events>> for more information.
+[[es-proc-dlq]]
+==== {es} processing and the dead letter queue
+
+**HTTP request failure.** If the HTTP request fails (because {es} is unreachable
+or because it returned an HTTP error code), the {es} output retries the entire
+request indefinitely. In these scenarios, the dead letter queue has no
+opportunity to intercept.
+
+**HTTP request success.** The {ref}/docs-bulk.html[{es} Bulk API] can perform
+multiple actions using the same request. If the Bulk API request is successful,
+it returns `200 OK`, even if some documents in the batch have
+{ref}/docs-bulk.html#bulk-failures-ex[failed]. In this situation, the `errors`
+flag for the request will be `true`.
+
+The response body can include metadata indicating that one or more specific
+actions in the bulk request could not be performed, along with an HTTP-style
+status code per entry to indicate why the action could not be performed.
+If the DLQ is configured, individual indexing failures are routed there.
+
+Even if you regularly process events, events remain in the dead letter queue.
+The dead letter queue requires <<dlq-clear,manual intervention>> to clear it. 
 
 [[configuring-dlq]]
-==== Configuring Logstash to Use Dead Letter Queues
+==== Configuring {ls} to use dead letter queues
 
 Dead letter queues are disabled by default. To enable dead letter queues, set
 the `dead_letter_queue_enable` option in the `logstash.yml`
@@ -57,11 +86,30 @@ specify a different path for the files:
 path.dead_letter_queue: "path/to/data/dead_letter_queue"
 -------------------------------------------------------------------------------
 
+Dead letter queue entries are written to a temporary file, which is then renamed
+ to a dead letter queue segment file, which is then eligible for ingestion. The rename
+ happens either when this temporary file is considered 'full', or when a period
+ of time has elapsed since the last dead letter queue eligible event was written
+ to the temporary file.
+
+This length of time can be set using the `dead_letter_queue.flush_interval` setting.
+ This setting is in milliseconds, and defaults to 5000ms. A low value here will mean
+ in the event of infrequent writes to the dead letter queue more, smaller, queue
+ files may be written, while a larger value will introduce more latency between
+ items being "written" to the dead letter queue, and being made available for
+ reading by the dead_letter_queue input.
+
+ Note that this value cannot be set to lower than 1000ms.
+
+[source,yaml]
+-------------------------------------------------------------------------------
+dead_letter_queue.flush_interval: 5000
+-------------------------------------------------------------------------------
 
 NOTE: You may not use the same `dead_letter_queue` path for two different
 Logstash instances.
 
-===== File Rotation
+===== File rotation
 
 Dead letter queues have a built-in file rotation policy that manages the file
 size of the queue. When the file size reaches a preconfigured threshold, a new
@@ -73,7 +121,7 @@ will be dropped if they would increase the size of the dead letter queue beyond
 this setting. 
 
 [[processing-dlq-events]]
-==== Processing Events in the Dead Letter Queue
+==== Processing events in the dead letter queue
 
 When you are ready to process events in the dead letter queue, you create a
 pipeline that uses the
@@ -131,7 +179,7 @@ will not be resubmitted to the dead letter queue if they cannot be processed
 correctly.
 
 [[dlq-timestamp]]
-==== Reading From a Timestamp
+==== Reading from a timestamp
 
 When you read from the dead letter queue, you might not want to process all the
 events in the queue, especially if there are a lot of old events in the queue.
@@ -154,7 +202,7 @@ For this example, the pipeline starts reading all events that were delivered to
 the dead letter queue on or after June 6, 2017, at 23:40:37. 
 
 [[dlq-example]]
-==== Example: Processing Data That Has Mapping Errors
+==== Example: Processing data that has mapping errors
 
 In this example, the user attempts to index a document that includes geo_ip data,
 but the data cannot be processed because it contains a mapping error:
@@ -216,3 +264,35 @@ output {
 <3> The clean event is sent to Elasticsearch, where it can be indexed because
 the mapping issue is resolved.
 
+[[dlq-size]]
+==== Track dead letter queue size
+
+Monitor the size of the dead letter queue before it becomes a problem.
+By checking it periodically, you can determine the maximum queue size that makes sense for each pipeline. 
+
+The size of the DLQ for each pipeline is available in the node stats API.
+
+[source,txt]
+-----
+pipelines.${pipeline_id}.dead_letter_queue.queue_size_in_bytes.
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
+
+[[dlq-clear]]
+==== Clear the dead letter queue
+
+The dead letter queue cannot be cleared with the upstream pipeline running. 
+
+The dead letter queue is a directory of pages. 
+To clear it, stop the pipeline and delete location/<file-name>.
+
+[source,txt]
+-----
+${path.data}/dead_letter_queue/${pipeline_id}
+-----
+
+Where `{pipeline_id}` is the name of a pipeline with DLQ enabled. 
+
+The pipeline creates a new dead letter queue when it starts again.

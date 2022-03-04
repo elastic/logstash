@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'yaml'
 
 VERSION_FILE = "versions.yml"
@@ -20,6 +37,22 @@ def update_version_file(old_version, new_version)
     versions_as_text.gsub!(/(?<=#{field}: )#{old_version[field]}/, "#{new_version[field]}")
   end
   IO.write(VERSION_FILE, versions_as_text)
+end
+
+def update_lock_release_file(old_version, new_version)
+  lock_file = Dir.glob('Gemfile*.lock.release').first
+  unless lock_file
+    warn "Gemfile*.lock.release missing - skipping version update"
+    return
+  end
+  old_version = old_version['logstash-core']
+  new_version = new_version['logstash-core']
+  versions_as_text = IO.read(lock_file)
+  #      logstash-core (= 7.16.0)
+  versions_as_text.sub!(/logstash-core \(=\s?(#{old_version})\)/) { |m| m.sub(old_version, new_version) }
+  #    logstash-core (7.16.0-java)
+  versions_as_text.sub!(/logstash-core \((#{old_version})-java\)/) { |m| m.sub(old_version, new_version) }
+  IO.write(lock_file, versions_as_text)
 end
 
 def update_index_shared1(new_version)
@@ -61,6 +94,7 @@ namespace :version do
     old_version = YAML.safe_load(File.read(VERSION_FILE))
     update_readme(old_version, new_version)
     update_version_file(old_version, new_version)
+    update_lock_release_file(old_version, new_version)
   end
 
   desc "set stack version referenced in docs"

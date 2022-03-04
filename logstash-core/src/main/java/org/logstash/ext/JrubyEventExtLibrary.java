@@ -1,10 +1,32 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ext;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import co.elastic.logstash.api.EventFactory;
+
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
@@ -15,14 +37,17 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
+import org.logstash.plugins.BasicEventFactory;
 
 public final class JrubyEventExtLibrary {
 
@@ -107,14 +132,14 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_cancel(ThreadContext context)
         {
             this.event.cancel();
-            return context.runtime.getTrue();
+            return context.tru;
         }
 
         @JRubyMethod(name = "uncancel")
         public IRubyObject ruby_uncancel(ThreadContext context)
         {
             this.event.uncancel();
-            return context.runtime.getFalse();
+            return context.fals;
         }
 
         @JRubyMethod(name = "cancelled?")
@@ -176,7 +201,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
-                throw RaiseException.from(getRuntime(), RubyUtil.LOGSTASH_ERROR, "timestamp field is missing");
+                throw toRubyError(context, RubyUtil.LOGSTASH_ERROR, "timestamp field is missing", e);
             }
         }
 
@@ -203,8 +228,7 @@ public final class JrubyEventExtLibrary {
         }
 
         @JRubyMethod(name = "to_java")
-        public IRubyObject ruby_to_java(ThreadContext context)
-        {
+        public IRubyObject ruby_to_java(ThreadContext context) {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event);
         }
 
@@ -214,7 +238,7 @@ public final class JrubyEventExtLibrary {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
             } catch (Exception e) {
-                throw RaiseException.from(context.runtime, RubyUtil.GENERATOR_ERROR, e.getMessage());
+                throw toRubyError(context, RubyUtil.GENERATOR_ERROR, e);
             }
         }
 
@@ -222,27 +246,33 @@ public final class JrubyEventExtLibrary {
         // and a json array will newFromRubyArray each element into individual Event
         // @return Array<Event> array of events
         @JRubyMethod(name = "from_json", required = 1, meta = true)
-        public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value)
-        {
+        public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value, final Block block) {
+            if (!block.isGiven()) return fromJson(context, value, BasicEventFactory.INSTANCE);
+            return fromJson(context, value, (data) -> {
+                // LogStash::Event works fine with a Map arg (instead of a native Hash)
+                IRubyObject event = block.yield(context, RubyUtil.toRubyObject(data));
+                return ((RubyEvent) event).getEvent(); // we unwrap just to re-wrap later
+            });
+        }
+
+        private static IRubyObject fromJson(ThreadContext context, RubyString json, EventFactory eventFactory) {
             Event[] events;
             try {
-                events = Event.fromJson(value.asJavaString());
+                events = Event.fromJson(json.asJavaString(), eventFactory);
             } catch (Exception e) {
-                throw RaiseException.from(context.runtime, RubyUtil.PARSER_ERROR, e.getMessage());
+                throw toRubyError(context, RubyUtil.PARSER_ERROR, e);
             }
-
-            @SuppressWarnings("rawtypes")
-            RubyArray result = RubyArray.newArray(context.runtime, events.length);
 
             if (events.length == 1) {
                 // micro optimization for the 1 event more common use-case.
-                result.set(0, RubyEvent.newRubyEvent(context.runtime, events[0]));
-            } else {
-                for (int i = 0; i < events.length; i++) {
-                    result.set(i, RubyEvent.newRubyEvent(context.runtime, events[i]));
-                }
+                return context.runtime.newArray(RubyEvent.newRubyEvent(context.runtime, events[0]));
             }
-            return result;
+
+            IRubyObject[] rubyEvents = new IRubyObject[events.length];
+            for (int i = 0; i < events.length; i++) {
+                rubyEvents[i] = RubyEvent.newRubyEvent(context.runtime, events[i]);
+            }
+            return context.runtime.newArrayNoCopy(rubyEvents);
         }
 
         @JRubyMethod(name = "validate_value", required = 1, meta = true)
@@ -353,5 +383,16 @@ public final class JrubyEventExtLibrary {
             final long sequence = SEQUENCE_GENERATOR.incrementAndGet();
             return (int) (sequence ^ sequence >>> 32) + 31;
         }
+
+        private static RaiseException toRubyError(ThreadContext context, RubyClass type, Exception e) {
+            return toRubyError(context, type, e.getMessage(), e);
+        }
+
+        private static RaiseException toRubyError(ThreadContext context, RubyClass type, String message, Exception e) {
+            RaiseException ex = RaiseException.from(context.runtime, type, message);
+            ex.initCause(e);
+            return ex;
+        }
+
     }
 }

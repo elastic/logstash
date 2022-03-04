@@ -1,6 +1,6 @@
 [role="xpack"]
 [[monitoring-troubleshooting]]
-=== Troubleshooting {monitoring} in Logstash
+=== Troubleshooting monitoring in Logstash
 ++++
 <titleabbrev>Troubleshooting</titleabbrev>
 ++++

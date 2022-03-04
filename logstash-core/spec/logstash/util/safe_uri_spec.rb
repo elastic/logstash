@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/util/safe_uri"
 require "spec_helper"
 
@@ -14,6 +30,22 @@ module LogStash module Util
         expect(subject.query).to eq("q=s")
         expect(cloned_safe_uri.path).to eq("/cloned")
         expect(cloned_safe_uri.query).to eq("a=b")
+      end
+    end
+
+    describe "equality" do
+      subject { LogStash::Util::SafeURI.new("https://localhost:9200/uri") }
+
+      it "should eql/== to dup" do
+        expect(subject == subject.clone).to be true
+        expect(subject == subject.dup).to be true
+        expect(subject.eql? subject.dup).to be true
+      end
+
+      it "should eql to same uri" do
+        uri = LogStash::Util::SafeURI.new("https://localhost:9200/uri")
+        expect(uri.eql? subject).to be true
+        expect(subject.hash).to eql uri.hash
       end
     end
 
@@ -70,6 +102,53 @@ module LogStash module Util
             end
           end
         end
+      end
+    end
+
+    describe "normalization" do
+      subject { LogStash::Util::SafeURI.new("HTTPS://FOO:BaR@S11.ORG") }
+
+      it "should normalize" do # like URI().normalize
+        subject.normalize!
+        expect(subject.to_s).to eq('https://FOO:xxxxxx@s11.org/')
+      end
+    end
+
+    describe "writers" do
+      subject { LogStash::Util::SafeURI.new("http://sample.net") }
+
+      it "should update :user" do
+        subject.user = 'user'
+        expect(subject.user).to eq('user')
+        expect(subject.to_s).to eq('http://user@sample.net/')
+      end
+
+      it "should update :password" do
+        subject.user = 'user'
+        subject.password = 'pass'
+        expect(subject.password).to eq('pass')
+      end
+
+      it "should update :path" do
+        subject.path = '/path'
+        expect(subject.path).to eq('/path')
+        expect(subject.to_s).to eq('http://sample.net/path')
+
+        subject.path = ''
+        expect(subject.path).to eq('/')
+        expect(subject.to_s).to eq('http://sample.net/')
+      end
+
+      it "should update :host" do
+        subject.host = '127.0.0.1'
+        expect(subject.host).to eq('127.0.0.1')
+        expect(subject.to_s).to eq('http://127.0.0.1/')
+      end
+
+      it "should update :scheme" do
+        subject.update(:scheme, 'https')
+        expect(subject.scheme).to eq('https')
+        expect(subject.to_s).to eq('https://sample.net/')
       end
     end
   end

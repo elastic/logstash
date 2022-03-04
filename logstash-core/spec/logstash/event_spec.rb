@@ -1,8 +1,23 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 require "spec_helper"
 require "logstash/util"
-require "logstash/event"
+
 require "json"
 require "java"
 
@@ -299,15 +314,9 @@ describe LogStash::Event do
       end
     end
 
-    it "should raise TypeError on nil string" do
-      expect{LogStash::Event.from_json(nil)}.to raise_error TypeError
-    end
-
     it "should consistently handle nil" do
-      blank_strings.each do |s|
-        expect{LogStash::Event.from_json(nil)}.to raise_error
-        expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error
-      end
+      expect{LogStash::Event.from_json(nil)}.to raise_error(TypeError)
+      expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error # java.lang.ClassCastException
     end
 
     it "should consistently handle bare string" do
@@ -315,6 +324,12 @@ describe LogStash::Event do
         expect{LogStash::Event.from_json(s)}.to raise_error LogStash::Json::ParserError
         expect{LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
        end
+    end
+
+    it "should allow to pass a block that acts as an event factory" do
+      events = LogStash::Event.from_json(source_json) { |data| LogStash::Event.new(data).tap { |e| e.set('answer', 42) } }
+      expect( events.size ).to eql 1
+      expect( events.first.get('answer') ).to eql 42
     end
   end
 

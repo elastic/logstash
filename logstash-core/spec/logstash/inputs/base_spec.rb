@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/inputs/base"
 require "support/shared_contexts"
@@ -70,18 +86,34 @@ describe "LogStash::Inputs::Base#decorate" do
 
     subject(:instance) { klass.new({}) }
 
-    it "allow to set the context" do
-      expect(instance.execution_context).to be_nil
-      instance.execution_context = execution_context
+    context 'execution_context=' do
+      let(:deprecation_logger_stub) { double('DeprecationLogger').as_null_object }
+      before(:each) do
+        allow(klass).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
+      end
 
-      expect(instance.execution_context).to eq(execution_context)
-    end
+      it "allow to set the context" do
+        new_ctx = execution_context.dup
+        subject.execution_context = new_ctx
+        expect(subject.execution_context).to be(new_ctx)
+      end
 
-    it "propagate the context to the codec" do
-      expect(instance.codec.execution_context).to be_nil
-      instance.execution_context = execution_context
+      it "propagate the context to the codec" do
+        new_ctx = execution_context.dup
+        expect(instance.codec.execution_context).to_not be(new_ctx)
+        instance.execution_context = new_ctx
 
-      expect(instance.codec.execution_context).to eq(execution_context)
+        expect(instance.execution_context).to be(new_ctx)
+        expect(instance.codec.execution_context).to be(new_ctx)
+      end
+
+      it 'emits a deprecation warning' do
+        expect(deprecation_logger_stub).to receive(:deprecated) do |message|
+          expect(message).to match(/execution_context=/)
+        end
+
+        instance.execution_context = execution_context
+      end
     end
   end
 
@@ -112,5 +144,33 @@ describe "LogStash::Inputs::Base#fix_streaming_codecs" do
     tcp = LogStash::Inputs::Tcp.new("codec" => plain, "port" => 3333)
     tcp.instance_eval { fix_streaming_codecs }
     expect(tcp.codec.charset).to eq("CP1252")
+  end
+
+  it "should switch plain codec to line" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "plain" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "plain", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::Line")
+  end
+
+  it "should switch json codec to json_lines" do
+    require "logstash/inputs/tcp"
+    require "logstash/codecs/plain"
+    require "logstash/codecs/line"
+
+    # it is important to use "codec" => "json" here and not the LogStash::Codecs::Plain instance so that
+    # the config parsing wrap the codec into the delagator which was causing the codec identification bug
+    # per https://github.com/elastic/logstash/issues/11140
+    tcp = LogStash::Inputs::Tcp.new("codec" => "json", "port" => 0)
+    tcp.register
+
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::JSONLines")
   end
 end

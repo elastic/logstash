@@ -1,9 +1,33 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.secret.store.backend;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.*;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.SecureConfig;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -27,8 +51,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
@@ -46,9 +69,8 @@ public final class JavaKeyStore implements SecretStore {
     private char[] keyStorePass;
     private Path keyStorePath;
     private ProtectionParameter protectionParameter;
-    private Lock readLock;
+    private Lock lock;
     private boolean useDefaultPass = false;
-    private Lock writeLock;
     //package private for testing
     static String filePermissions = "rw-r--r--";
     private static final boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
@@ -69,7 +91,7 @@ public final class JavaKeyStore implements SecretStore {
         }
         try {
             init(config);
-            writeLock.lock();
+            lock.lock();
             LOGGER.debug("Creating new keystore at {}.", keyStorePath.toAbsolutePath());
             String keyStorePermissions = filePermissions;
             //create the keystore on disk with a default entry to identify this as a logstash keystore
@@ -100,7 +122,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to create the Logstash keystore. ", e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -109,7 +131,7 @@ public final class JavaKeyStore implements SecretStore {
     public void delete(SecureConfig config) {
         try {
             initLocks();
-            writeLock.lock();
+            lock.lock();
             if (exists(config)) {
                 Files.delete(Paths.get(new String(config.getPlainText(PATH_KEY))));
             }
@@ -118,7 +140,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to delete the Logstash keystore", e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -170,35 +192,35 @@ public final class JavaKeyStore implements SecretStore {
 
         useDefaultPass = !config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY);
 
-        if (useDefaultPass) {
-            if (existing) {
-                //read the pass
-                SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
-                if (byteChannel.size() > 1) {
-                    byteChannel.position(byteChannel.size() - 1);
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(1);
-                    byteChannel.read(byteBuffer);
-                    int size = byteBuffer.array()[0] & 0xff;
-                    if (size > 0 && byteChannel.size() >= size + 1) {
-                        byteBuffer = ByteBuffer.allocate(size);
-                        byteChannel.position(byteChannel.size() - size - 1);
-                        byteChannel.read(byteBuffer);
-                        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
-                    }
-                }
-            } else {
-                //create the pass
-                byte[] randomBytes = new byte[32];
-                new Random().nextBytes(randomBytes);
-                return SecretStoreUtil.base64EncodeToChars(randomBytes);
-            }
-        } else {
+        if (!useDefaultPass) {
             //explicit user defined pass
             //keystore passwords require ascii encoding, only base64 encode if necessary
             return asciiEncoder.canEncode(CharBuffer.wrap(plainText)) ? plainText : SecretStoreUtil.base64Encode(plainText);
         }
-        throw new SecretStoreException.AccessException(
-                String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        if (!existing) {
+            //create the pass
+            byte[] randomBytes = new byte[32];
+            new Random().nextBytes(randomBytes);
+            return SecretStoreUtil.base64EncodeToChars(randomBytes);
+        }
+        //read the pass
+        SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
+        if (byteChannel.size() == 0) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Keystore file is empty. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteChannel.position(byteChannel.size() - 1);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        byteChannel.read(byteBuffer);
+        int size = byteBuffer.array()[0] & 0xff;
+        if (size <= 0 || byteChannel.size() < size + 1) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteBuffer = ByteBuffer.allocate(size);
+        byteChannel.position(byteChannel.size() - size - 1);
+        byteChannel.read(byteBuffer);
+        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
     }
 
     private void init(SecureConfig config) throws IOException, KeyStoreException {
@@ -214,16 +236,14 @@ public final class JavaKeyStore implements SecretStore {
     }
 
     private void initLocks(){
-        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-        readLock = readWriteLock.readLock();
-        writeLock = readWriteLock.writeLock();
+        lock = new ReentrantLock();
     }
 
     @Override
     public Collection<SecretIdentifier> list() {
         Set<SecretIdentifier> identifiers = new HashSet<>();
         try {
-            readLock.lock();
+            lock.lock();
             loadKeyStore();
             Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
@@ -233,7 +253,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.ListException(e);
         } finally {
-            releaseLock(readLock);
+            releaseLock(lock);
         }
         return identifiers;
     }
@@ -255,7 +275,7 @@ public final class JavaKeyStore implements SecretStore {
         }
         try {
             init(config);
-            readLock.lock();
+            lock.lock();
             try (final InputStream is = Files.newInputStream(keyStorePath)) {
                 try {
                     keyStore.load(is, this.keyStorePass);
@@ -282,7 +302,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) { //should never happen
             throw new SecretStoreException.UnknownException("Error while trying to load the Logstash keystore", e);
         } finally {
-            releaseLock(readLock);
+            releaseLock(lock);
             config.clearValues();
         }
     }
@@ -299,7 +319,7 @@ public final class JavaKeyStore implements SecretStore {
     @Override
     public void persistSecret(SecretIdentifier identifier, byte[] secret) {
         try {
-            writeLock.lock();
+            lock.lock();
             loadKeyStore();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
             //PBEKey requires an ascii password, so base64 encode it
@@ -317,14 +337,14 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
         }
     }
 
     @Override
     public void purgeSecret(SecretIdentifier identifier) {
         try {
-            writeLock.lock();
+            lock.lock();
             loadKeyStore();
             keyStore.deleteEntry(identifier.toExternalForm());
             saveKeyStore();
@@ -332,7 +352,18 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
-            releaseLock(writeLock);
+            releaseLock(lock);
+        }
+    }
+
+    @Override
+    public boolean containsSecret(SecretIdentifier identifier) {
+        try {
+            loadKeyStore();
+            return keyStore.containsAlias(identifier.toExternalForm());
+        } catch (Exception e) {
+            throw new SecretStoreException.LoadException(String.format("Found a keystore at %s, but failed to load it.",
+                    keyStorePath.toAbsolutePath().toString()));
         }
     }
 
@@ -346,7 +377,7 @@ public final class JavaKeyStore implements SecretStore {
     public byte[] retrieveSecret(SecretIdentifier identifier) {
         if (identifier != null && identifier.getKey() != null && !identifier.getKey().isEmpty()) {
             try {
-                readLock.lock();
+                lock.lock();
                 loadKeyStore();
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                 KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
@@ -365,7 +396,7 @@ public final class JavaKeyStore implements SecretStore {
             } catch (Exception e) {
                 throw new SecretStoreException.RetrievalException(identifier, e);
             } finally {
-                releaseLock(readLock);
+                releaseLock(lock);
             }
         }
         return null;
@@ -408,4 +439,3 @@ public final class JavaKeyStore implements SecretStore {
         return !(chars == null || chars.length == 0);
     }
 }
-

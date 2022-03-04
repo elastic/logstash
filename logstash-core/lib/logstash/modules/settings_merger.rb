@@ -1,10 +1,28 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/util"
 
 module LogStash module Modules module SettingsMerger
   include LogStash::Util::Loggable
   extend self
 
+  # cli_settings Array or LogStash::Util::ModulesSettingArray
+  # yml_settings Array or LogStash::Util::ModulesSettingArray
   def merge(cli_settings, yml_settings)
     # both args are arrays of hashes, e.g.
     # [{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}]
@@ -12,6 +30,7 @@ module LogStash module Modules module SettingsMerger
     merged = []
     # union and group_by preserves order
     # union will also coalesce identical hashes
+    # this "|" operator is provided to Java List by RubyJavaIntegration
     union_of_settings = (cli_settings | yml_settings)
     grouped_by_name = union_of_settings.group_by{|e| e["name"]}
     grouped_by_name.each do |_, array|

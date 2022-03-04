@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/pipeline_action/base"
 require "logstash/pipeline_action/create"
 require "logstash/pipeline_action/stop"
@@ -13,7 +29,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     def to_s
@@ -31,10 +47,8 @@ module LogStash module PipelineAction
         return LogStash::ConvergeResult::FailedAction.new("Cannot reload pipeline, because the existing pipeline is not reloadable")
       end
 
-      java_exec = @pipeline_config.settings.get_value("pipeline.java_execution")
-
       begin
-        pipeline_validator = java_exec ? LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil) : LogStash::BasePipeline.new(@pipeline_config)
+        pipeline_validator = LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil)
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)
       end
@@ -50,11 +64,10 @@ module LogStash module PipelineAction
         # the block must emit a success boolean value
 
         # First shutdown old pipeline
-        old_pipeline.shutdown { LogStash::ShutdownWatcher.start(old_pipeline) }
-        old_pipeline.thread.join
+        old_pipeline.shutdown
 
         # Then create a new pipeline
-        new_pipeline = java_exec ? LogStash::JavaPipeline.new(@pipeline_config, @metric, agent) : LogStash::Pipeline.new(@pipeline_config, @metric, agent)
+        new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
         success = new_pipeline.start # block until the pipeline is correctly started or crashed
 
         # return success and new_pipeline to registry reload_pipeline

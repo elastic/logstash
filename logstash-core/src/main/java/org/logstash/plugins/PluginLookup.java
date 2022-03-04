@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.plugins;
 
 import co.elastic.logstash.api.Codec;
@@ -12,6 +32,7 @@ import org.jruby.javasupport.JavaClass;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.plugins.discovery.PluginRegistry;
+import org.logstash.plugins.factory.PluginFactoryExt;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,20 +41,23 @@ import java.util.stream.Stream;
  * Java Implementation of the plugin that is implemented by wrapping the Ruby
  * {@code LogStash::Plugin} class for the Ruby plugin lookup.
  */
-public final class PluginLookup {
+public final class PluginLookup implements PluginFactoryExt.PluginResolver {
 
     private static final IRubyObject RUBY_REGISTRY = RubyUtil.RUBY.executeScript(
             "require 'logstash/plugins/registry'\nrequire 'logstash/plugin'\nLogStash::Plugin",
             ""
     );
 
-    private PluginLookup() {
-        // Utility Class
+    private final PluginRegistry pluginRegistry;
+
+    public PluginLookup(PluginRegistry pluginRegistry) {
+        this.pluginRegistry = pluginRegistry;
     }
 
     @SuppressWarnings("rawtypes")
-    public static PluginLookup.PluginClass lookup(final PluginLookup.PluginType type, final String name) {
-        Class<?> javaClass = PluginRegistry.getPluginClass(type, name);
+    @Override
+    public PluginClass resolve(PluginType type, String name) {
+        Class<?> javaClass = pluginRegistry.getPluginClass(type, name);
         if (javaClass != null) {
 
             if (!PluginValidator.validatePlugin(type, javaClass)) {
@@ -86,6 +110,9 @@ public final class PluginLookup {
         }
     }
 
+    /**
+     * Descriptor of a plugin implementation. Defines the implementation language and the plugin class
+     * */
     public interface PluginClass {
         PluginLookup.PluginLanguage language();
 
@@ -96,10 +123,16 @@ public final class PluginLookup {
         }
     }
 
+    /**
+     * Enum all the implementation languages used by plugins
+     * */
     public enum PluginLanguage {
         JAVA, RUBY
     }
 
+    /**
+     * Enum all the plugins types used inside Logstash
+     * */
     public enum PluginType {
         INPUT("input", "inputs", Input.class),
         FILTER("filter", "filters", Filter.class),

@@ -1,4 +1,24 @@
 /*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
+/*
  * Licensed to Elasticsearch under one or more contributor
  * license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright
@@ -24,6 +44,7 @@ import org.logstash.common.io.DeadLetterQueueWriter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -53,19 +74,20 @@ public class DeadLetterQueueFactory {
      *                for each id
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
+     * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval));
     }
 
     public static DeadLetterQueueWriter release(String id) {
         return REGISTRY.remove(id);
     }
 
-    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize) {
+    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
+            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval);
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
         }

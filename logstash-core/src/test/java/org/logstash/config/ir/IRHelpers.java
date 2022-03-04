@@ -1,6 +1,32 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.config.ir;
 
+import com.google.common.io.Files;
 import org.hamcrest.MatcherAssert;
+import org.jruby.RubyArray;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -10,11 +36,13 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
+import org.logstash.plugins.ConfigVariableExpander;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static org.logstash.config.ir.DSL.*;
@@ -122,16 +150,17 @@ public class IRHelpers {
     public static PipelineIR samplePipeline() throws Exception {
         Random rng = new Random(81892198);
         Callable<SourceWithMetadata> meta = () -> randMeta(rng);
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
 
-        Graph inputSection = iComposeParallel(iPlugin(meta.call(), INPUT, "generator"), iPlugin(meta.call(), INPUT, "stdin")).toGraph();
+        Graph inputSection = iComposeParallel(iPlugin(meta.call(), INPUT, "generator"), iPlugin(meta.call(), INPUT, "stdin")).toGraph(null);
         Graph filterSection = iIf(meta.call(), eEq(eEventValue("[foo]"), eEventValue("[bar]")),
                                     iPlugin(meta.call(), FILTER, "grok"),
-                                    iPlugin(meta.call(), FILTER, "kv")).toGraph();
+                                    iPlugin(meta.call(), FILTER, "kv")).toGraph(cve);
         Graph outputSection = iIf(meta.call(), eGt(eEventValue("[baz]"), eValue(1000)),
                                     iComposeParallel(
                                             iPlugin(meta.call(), OUTPUT, "s3"),
                                             iPlugin(meta.call(), OUTPUT, "elasticsearch")),
-                                    iPlugin(meta.call(), OUTPUT, "stdout")).toGraph();
+                                    iPlugin(meta.call(), OUTPUT, "stdout")).toGraph(cve);
 
         return new PipelineIR(inputSection, filterSection, outputSection);
     }
@@ -164,5 +193,40 @@ public class IRHelpers {
             out.append(RANDOM_CHARS.charAt(pos));
         }
         return out.toString();
+    }
+
+
+    @SuppressWarnings("rawtypes")
+    public static RubyArray toSourceWithMetadata(String config) throws IncompleteSourceWithMetadataException {
+        return RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
+                RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config)));
+    }
+
+    /**
+     * Load pipeline configuration from a path returning the list of SourceWithMetadata.
+     *
+     * The path refers to test's resources, if it point to single file that file is loaded, if reference a directory
+     * then the full list of contained files is loaded in name order.
+     * */
+    @SuppressWarnings("rawtypes")
+    public static RubyArray toSourceWithMetadataFromPath(String configPath) throws IncompleteSourceWithMetadataException, IOException {
+        URL url = IRHelpers.class.getClassLoader().getResource(configPath);
+        String path = url.getPath();
+        final File filePath = new File(path);
+        final List<File> files;
+        if (filePath.isDirectory()) {
+            files = Arrays.asList(filePath.listFiles());
+            Collections.sort(files);
+        } else {
+            files = Collections.singletonList(filePath);
+        }
+
+        List<IRubyObject> rubySwms = new ArrayList<>();
+        for (File configFile : files) {
+            final List<String> fileContent = Files.readLines(configFile, Charset.defaultCharset());
+            final SourceWithMetadata swm = new SourceWithMetadata("file", configFile.getPath(), 1, 1, String.join("\n", fileContent));
+            rubySwms.add(JavaUtil.convertJavaToRuby(RubyUtil.RUBY, swm));
+        }
+        return RubyUtil.RUBY.newArray(rubySwms);
     }
 }

@@ -4,6 +4,7 @@
 
 require "spec_helper"
 require "logstash/json"
+require "logstash/runner"
 require 'helpers/elasticsearch_options'
 require "license_checker/license_manager"
 require 'monitoring/monitoring'
@@ -15,14 +16,13 @@ shared_examples "elasticsearch options hash is populated without security" do
                                                                                                    "user" => expected_username,
                                                                                                    "password" => expected_password
                                                                                                )
-
   end
 end
 
 shared_examples 'elasticsearch options hash is populated with secure options' do
   context "with ca" do
     let(:elasticsearch_ca) { Stud::Temporary.file.path }
-    let(:settings) { super.merge({ "xpack.monitoring.elasticsearch.ssl.certificate_authority" => elasticsearch_ca })}
+    let(:settings) { super().merge({ "xpack.monitoring.elasticsearch.ssl.certificate_authority" => elasticsearch_ca })}
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
@@ -39,7 +39,7 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
     let(:elasticsearch_truststore_path) { Stud::Temporary.file.path }
     let(:elasticsearch_truststore_password) { "truststore_password" }
     let(:settings) do
-      super.merge({
+      super().merge({
                       "xpack.monitoring.elasticsearch.ssl.truststore.path" => elasticsearch_truststore_path,
                       "xpack.monitoring.elasticsearch.ssl.truststore.password" => elasticsearch_truststore_password,
                   })
@@ -62,7 +62,7 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
     let(:elasticsearch_keystore_password) { "keystore_password" }
 
     let(:settings) do
-      super.merge({
+      super().merge({
                       "xpack.monitoring.elasticsearch.ssl.keystore.path" => elasticsearch_keystore_path,
                       "xpack.monitoring.elasticsearch.ssl.keystore.password" => elasticsearch_keystore_password,
                   })
@@ -98,17 +98,268 @@ describe LogStash::Helpers::ElasticsearchOptions do
   end
 
   describe "es_options_from_settings" do
-    let(:settings) do
-      {
+
+    context "with implicit username" do
+      let(:settings) do
+        {
+          "xpack.monitoring.enabled" => true,
+          "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
+        }
+      end
+
+      it "ignores the implicit default username when no password is set" do
+        # when no explicit password is set then the default/implicit username should be ignored
+        es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+        expect(es_options).to_not include("user")
+        expect(es_options).to_not include("password")
+      end
+
+      context "with cloud_auth" do
+        let(:cloud_username) { 'elastic' }
+        let(:cloud_password) { 'passw0rd'}
+        let(:cloud_auth) { "#{cloud_username}:#{cloud_password}" }
+
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.cloud_auth" => cloud_auth,
+          )
+        end
+
+        it "silently ignores the default username" do
+          es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          expect(es_options).to include("cloud_auth")
+          expect(es_options).to_not include("user")
+        end
+      end
+
+
+      context "with api_key" do
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
+          )
+        end
+
+        it "silently ignores the default username" do
+          es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          expect(es_options).to include("api_key")
+          expect(es_options).to_not include("user")
+        end
+
+        context "and explicit password" do
+          let(:settings) do
+            super().merge(
+              "xpack.monitoring.elasticsearch.password" => elasticsearch_password
+            )
+          end
+
+          it "fails for multiple authentications" do
+            expect {
+              test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+            }.to raise_error(ArgumentError, /Multiple authentication options are specified/)
+          end
+        end
+      end
+    end
+
+    context "with explicit username" do
+      let(:settings) do
+        {
+          "xpack.monitoring.enabled" => true,
+          "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
+          "xpack.monitoring.elasticsearch.username" => "foo",
+        }
+      end
+
+      it "fails without password" do
+        expect {
+          test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+        }.to raise_error(ArgumentError, /password must also be set/)
+      end
+
+      context "with cloud_auth" do
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.password" => "bar",
+            "xpack.monitoring.elasticsearch.cloud_auth" => "foo:bar",
+          )
+        end
+
+        it "fails for multiple authentications" do
+          expect {
+            test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          }.to raise_error(ArgumentError, /Both.*?cloud_auth.*?and.*?username.*?specified/)
+        end
+      end
+
+      context "with api_key" do
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.password" => "bar",
+            "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
+          )
+        end
+
+        it "fails for multiple authentications" do
+          expect {
+            test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          }.to raise_error(ArgumentError, /Multiple authentication options are specified/)
+        end
+      end
+    end
+
+    context "with username and password" do
+      let(:settings) do
+        {
           "xpack.monitoring.enabled" => true,
           "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
           "xpack.monitoring.elasticsearch.username" => elasticsearch_username,
           "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
-      }
+        }
+      end
+
+      it_behaves_like 'elasticsearch options hash is populated without security'
+      it_behaves_like 'elasticsearch options hash is populated with secure options'
     end
 
-    it_behaves_like 'elasticsearch options hash is populated without security'
-    it_behaves_like 'elasticsearch options hash is populated with secure options'
+
+    context 'when cloud_id' do
+      let(:cloud_name) { 'thebigone'}
+      let(:cloud_domain) { 'elastic.co'}
+      let(:cloud_id) { "monitoring:#{Base64.urlsafe_encode64("#{cloud_domain}$#{cloud_name}$ignored")}" }
+      let(:expected_url) { ["https://#{cloud_name}.#{cloud_domain}:443"] }
+      let(:settings) do
+        {
+          "xpack.monitoring.enabled" => true,
+          "xpack.monitoring.elasticsearch.cloud_id" => cloud_id,
+        }
+      end
+
+      context 'hosts also set' do
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.hosts" => 'https://localhost:9200'
+          )
+        end
+
+        it "raises due invalid configuration" do
+          expect {
+            test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+           }.to raise_error(ArgumentError, /Both.*?cloud_id.*?and.*?hosts.*?specified/)
+        end
+      end
+
+      context "when cloud_auth is set" do
+        let(:cloud_username) { 'elastic' }
+        let(:cloud_password) { 'passw0rd'}
+        let(:cloud_auth) { "#{cloud_username}:#{cloud_password}" }
+        let(:settings) do
+          super().merge(
+            "xpack.monitoring.elasticsearch.cloud_auth" => cloud_auth,
+          )
+        end
+
+        it "creates the elasticsearch output options hash" do
+          es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          expect(es_options).to include("cloud_id" => cloud_id, "cloud_auth" => cloud_auth)
+          expect(es_options.keys).to_not include("hosts")
+          expect(es_options.keys).to_not include("username")
+          expect(es_options.keys).to_not include("password")
+        end
+
+        context 'username also set' do
+          let(:settings) do
+            super().merge(
+                "xpack.monitoring.elasticsearch.username" => 'elastic'
+            )
+          end
+
+          it "raises for invalid configuration" do
+            expect {
+              test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+            }.to raise_error(ArgumentError, /Both.*?cloud_auth.*?and.*?username.*?specified/)
+          end
+        end
+
+        context 'api_key also set' do
+          let(:settings) do
+            super().merge(
+                "xpack.monitoring.elasticsearch.api_key" => 'foo:bar',
+            )
+          end
+
+          it "raises for invalid configuration" do
+            expect {
+              test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+            }.to raise_error(ArgumentError, /Multiple authentication options are specified/)
+          end
+        end
+      end
+
+      context "when cloud_auth is not set" do
+        it "does not use authentication and ignores the default username" do
+          es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          expect(es_options).to include("cloud_id")
+          expect(es_options.keys).to_not include("hosts", "user", "password")
+        end
+
+        context 'username and password set' do
+          let(:settings) do
+            super().merge(
+              "xpack.monitoring.elasticsearch.username" => 'foo',
+              "xpack.monitoring.elasticsearch.password" => 'bar'
+            )
+          end
+
+          it "creates the elasticsearch output options hash" do
+            es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+            expect(es_options).to include("cloud_id", "user", "password")
+            expect(es_options.keys).to_not include("hosts")
+          end
+        end
+
+        context 'api_key set' do
+          let(:settings) do
+            super().merge(
+              "xpack.monitoring.elasticsearch.api_key" => 'foo:bar'
+            )
+          end
+
+          it "creates the elasticsearch output options hash" do
+            es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+            expect(es_options).to include("cloud_id", "api_key")
+            expect(es_options.keys).to_not include("hosts")
+          end
+        end
+      end
+    end
+
+    context 'when api_key is set' do
+      let(:api_key) { 'foo:bar'}
+      let(:settings) do
+        {
+          "xpack.monitoring.enabled" => true,
+          "xpack.monitoring.elasticsearch.hosts" => elasticsearch_url,
+          "xpack.monitoring.elasticsearch.api_key" => api_key,
+        }
+      end
+
+      it "creates the elasticsearch output options hash" do
+        es_options = test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+        expect(es_options).to include("api_key" => api_key)
+        expect(es_options.keys).to include("hosts")
+      end
+
+      context "with a non https host" do
+        let(:elasticsearch_url) { ["https://host1", "http://host2"] }
+
+        it "fails at options validation" do
+          expect {
+            test_class.es_options_from_settings_or_modules('monitoring', system_settings)
+          }.to raise_error(ArgumentError, /api_key authentication requires SSL\/TLS/)
+        end
+      end
+    end
   end
 
   describe 'es_options_from_settings_or_modules' do

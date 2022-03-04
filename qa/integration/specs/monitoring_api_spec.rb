@@ -1,5 +1,23 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
+require_relative '../framework/helpers'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
@@ -34,12 +52,58 @@ describe "Test Monitoring API" do
     end
   end
 
+  context "verify global event counters" do
+    let(:tcp_port) { random_port }
+    let(:sample_data) { 'Hello World!' }
+    let(:logstash_service) { @fixture.get_service("logstash") }
+
+    before(:each) do
+      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.wait_for_logstash
+      wait_for_port(tcp_port, 60)
+
+      send_data(tcp_port, sample_data)
+    end
+
+    context "when a drop filter is in the pipeline" do
+      let(:config) { @fixture.config("dropping_events", { :port => tcp_port } ) }
+
+      it 'expose the correct output counter' do
+        try(max_retry) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          expect(result["events"]).not_to be_nil
+          expect(result["events"]["in"]).to eq(1)
+          expect(result["events"]["filtered"]).to eq(1)
+          expect(result["events"]["out"]).to eq(0)
+        end
+      end
+    end
+
+    context "when a clone filter is in the pipeline" do
+      let(:config) { @fixture.config("cloning_events", { :port => tcp_port } ) }
+
+      it 'expose the correct output counter' do
+        try(max_retry) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          expect(result["events"]).not_to be_nil
+          expect(result["events"]["in"]).to eq(1)
+          expect(result["events"]["filtered"]).to eq(1)
+          expect(result["events"]["out"]).to eq(3)
+        end
+      end
+    end
+  end
+
   it "can retrieve JVM stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+    try(max_retry) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -107,59 +171,61 @@ describe "Test Monitoring API" do
       result = logstash_service.monitoring_api.logging_get rescue nil
       expect(result).not_to be_nil
       expect(result["loggers"].size).to be > 0
-      #default
-      logging_get_assert logstash_service, "INFO", "TRACE"
-
-      #root logger - does not apply to logger.slowlog
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
-      logging_get_assert logstash_service, "WARN", "TRACE"
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-      logging_get_assert logstash_service, "INFO", "TRACE"
-
-      #package logger
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
-      expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
-      logging_get_assert logstash_service, "INFO", "TRACE"
-
-      #parent package loggers
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
-
-      #deprecation package loggers
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
-
-      result = logstash_service.monitoring_api.logging_get
-      result["loggers"].each do | k, v |
-        #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
-        if !k.eql?("logstash.agent") && (k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation"))
-          expect(v).to eq("ERROR")
-        else
-          expect(v).to eq("INFO")
-        end
-      end
-
-      # all log levels should be reset to original values
-      logging_put_assert logstash_service.monitoring_api.logging_reset
-      logging_get_assert logstash_service, "INFO", "TRACE"
     end
+
+    #default
+    logging_get_assert logstash_service, "INFO", "TRACE",
+                       skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
+
+    #root logger - does not apply to logger.slowlog
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
+    logging_get_assert logstash_service, "WARN", "TRACE"
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
+    logging_get_assert logstash_service, "INFO", "TRACE"
+
+    #package logger
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
+    expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
+    expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("INFO")
+
+    #parent package loggers
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
+
+    #deprecation package loggers
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+
+    result = logstash_service.monitoring_api.logging_get
+    result["loggers"].each do | k, v |
+      next if k.eql?("logstash.agent")
+      #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
+      if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
+        expect(v).to eq("ERROR")
+      end
+    end
+
+    # all log levels should be reset to original values
+    logging_put_assert logstash_service.monitoring_api.logging_reset
+    logging_get_assert logstash_service, "INFO", "TRACE"
   end
 
   private
 
-  def logging_get_assert(logstash_service, logstash_level, slowlog_level)
+  def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do | k, v |
+      next if !k.empty? && k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
-        expect(v).to eq(logstash_level)
+        expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
       elsif k.start_with? "slowlog"
-        expect(v).to eq(slowlog_level)
+        expect(v).to eq(slowlog_level), "slowlog logger '#{k}' has logging level: #{v} expected: #{slowlog_level}"
       end
     end
   end
 
   def logging_put_assert(result)
-    expect(result["acknowledged"]).to be(true)
+    expect(result['acknowledged']).to be(true), "result not acknowledged, got: #{result.inspect}"
   end
 
 end

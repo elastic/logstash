@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/util"
 require "forwardable"
 
@@ -29,6 +45,17 @@ class LogStash::Util::SafeURI
     raise ArgumentError, "URI is not valid - host is not specified" if @uri.host.nil?
   end
 
+  ##
+  # Attempts to efficiently return an instance of `SafeURI` from the given object.
+  # @param object [Object]: an object that may or may not already be a `SafeURI`.
+  # @return [SafeURI]: if the given `object` was a `SafeURI`, returns it unmodified.
+  #                    otherwise, a new `SafeURI` is initialized using the `object`.
+  def self.from(object)
+    return object if object.kind_of?(self)
+
+    new(object)
+  end
+
   def to_s
     sanitized.to_s
   end
@@ -45,9 +72,14 @@ class LogStash::Util::SafeURI
     make_uri(scheme, user_info, host, port, path, query, fragment)
   end
 
-  def ==(other)
+  def hash
+    @uri.hash * 11
+  end
+
+  def eql?(other)
     other.is_a?(::LogStash::Util::SafeURI) ? @uri == other.uri : false
   end
+  alias == eql?
 
   def clone
     # No need to clone the URI, in java its immutable
@@ -144,13 +176,13 @@ class LogStash::Util::SafeURI
   # Same algorithm as Ruby's URI class uses
   def normalize!
     if path && path == ''
-      path = '/'
+      update(:path, '/')
     end
     if scheme && scheme != scheme.downcase
-      scheme = self.scheme.downcase
+      update(:scheme, self.scheme.downcase)
     end
     if host && host != host.downcase
-      host = self.host.downcase
+      update(:host, self.host.downcase)
     end
   end
 
@@ -188,4 +220,3 @@ class LogStash::Util::SafeURI
     java.net.URI.new(scheme, user_info, host, port || -1, prefixed_path, query, fragment)
   end
 end
-

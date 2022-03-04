@@ -1,9 +1,26 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/util/cloud_setting_id"
 require "logstash/util/cloud_setting_auth"
 require "logstash/modules/settings_merger"
 require "logstash/util/password"
+require "logstash/util/modules_setting_array"
 
 class SubstituteSettingsForRSpec
   def initialize(hash = {}) @hash = hash; end
@@ -13,7 +30,7 @@ end
 
 describe LogStash::Modules::SettingsMerger do
   describe "#merge" do
-    let(:cli) {[{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}]}
+    let(:cli) { LogStash::Util::ModulesSettingArray.new [{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}] }
     let(:yml) {[{"name"=>"mod1", "var.input.tcp.port"=>2222, "var.kibana.username"=>"rupert", "var.kibana.password"=>"fotherington"}, {"name"=>"mod3", "var.input.tcp.port"=>4445}]}
     subject(:results) { described_class.merge(cli, yml) }
     it "merges cli overwriting any common fields in yml" do

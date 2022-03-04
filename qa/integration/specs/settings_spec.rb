@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
@@ -125,7 +142,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "start on a different HTTP port" do
     # default in 9600
     http_port = random_port
-    change_setting("http.port", http_port)
+    change_setting("api.http.port", http_port)
     @logstash_service.spawn_logstash("-e", tcp_config)
     wait_for_port(http_port, 60)
     expect(is_port_open?(http_port)).to be true

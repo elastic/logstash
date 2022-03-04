@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'json'
 
 class PluginVersionWorking
@@ -110,6 +126,7 @@ class PluginVersionWorking
   end
 
   def try_plugin(plugin, successful_dependencies)
+    Bundler::DepProxy.__clear!
     builder = Bundler::Dsl.new
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
     gemfile.update(plugin)
@@ -184,6 +201,29 @@ task :generate_plugins_version do
       def trap(signal, override = false, &block)
         Signal.trap(signal) do
           block.call
+        end
+      end
+    end
+    DepProxy.class_eval do
+      # Bundler caches it's dep-proxy objects (which contain Gem::Dependency objects) from all resolutions.
+      # The Hash itself continues to grow between dependency resolutions and hold up a lot of memory, to avoid
+      # the issue we expose a way of clear-ing the cached objects before each plugin resolution.
+      def self.__clear!
+        @proxies.clear
+      end
+    end
+
+    Fetcher::CompactIndex.class_eval do
+      alias_method :__bundle_worker, :bundle_worker
+      # The compact index is built using multiple threads and this is hard-coded atm to 25 threads:
+      #   `Bundler::Worker.new(Bundler.current_ruby.rbx? ? 1 : 25, worker_name, func)`
+      # each thread might built up a Bundler::Source::Rubygems object which retains more than 100MB.
+      # By limiting the worker thread count we make sure not to produce too many of these objects.
+      def bundle_worker(func = nil)
+        __bundle_worker(func).tap do |worker|
+          size = worker.instance_variable_get(:@size)
+          fail("@size = #{size.inspect} is no longer an integer") unless size.is_a?(Integer)
+          worker.instance_variable_set(:@size, 2)
         end
       end
     end

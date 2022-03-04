@@ -1,17 +1,33 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.dependencies;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.SortedSet;
@@ -22,13 +38,15 @@ class Dependency implements Comparable<Dependency> {
     String version;
     String url;
     String spdxLicense;
+    String sourceURL;
+    String copyright;
 
     /**
      * Returns an object array representing this dependency as a CSV record according
      * to the format requested here: https://github.com/elastic/logstash/issues/8725
      */
     Object[] toCsvReportRecord() {
-        return new String[] {name, version, "", url, spdxLicense, ""};
+        return new String[] {name, version, "", url, spdxLicense, copyright, sourceURL};
     }
 
     /**
@@ -58,10 +76,15 @@ class Dependency implements Comparable<Dependency> {
     private static Dependency fromRubyCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
-        // name, version, url, license
+        // name, version, url, license, copyright, sourceURL
         d.name = record.get(0);
         d.version = record.get(1);
-
+        if (record.size() > 4) {
+            d.copyright = record.get(4);
+        }
+        if (record.size() > 5) {
+            d.sourceURL = record.get(5);
+        }
         return d;
     }
 
@@ -102,17 +125,17 @@ class Dependency implements Comparable<Dependency> {
             return false;
         }
         Dependency d = (Dependency) o;
-        return Objects.equals(name, d.name) && Objects.equals(version, d.version);
+        return Objects.equals(name, d.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, version);
+        return Objects.hash(name);
     }
 
     @Override
     public int compareTo(Dependency o) {
-        return (name + version).compareTo(o.name + o.version);
+        return (name).compareTo(o.name);
     }
 
     public String noticeSourcePath() {
@@ -128,7 +151,7 @@ class Dependency implements Comparable<Dependency> {
     }
 
     public String noticeFilename() {
-        return String.format("%s-%s-NOTICE.txt", fsCompatibleName(), version != null ? version : "NOVERSION");
+        return String.format("%s-NOTICE.txt", fsCompatibleName());
     }
 
     public String resourceName() {
@@ -151,20 +174,16 @@ class Dependency implements Comparable<Dependency> {
        }
     }
 
-    public Path noticePath() {
-        // Get the base first since this always exists, otherwise getResource will return null if its for a notice
-        // that doesn't exist
-        String noticesBase = ReportGenerator.class.getResource("/notices").getPath();
-        Path path = Paths.get(noticesBase, noticeFilename());
-        return path;
-    }
-
     public String getName() {
         return name;
     }
 
     public String getVersion() {
         return version;
+    }
+
+    public String getSourceURL() {
+        return sourceURL;
     }
 
     @Override

@@ -1,0 +1,105 @@
+[[jvm-settings]]
+=== JVM settings
+
+Configure the jvm settings in the `jvm.options` <<settings-files,settings file>>.
+This file contains a line-delimited list of JVM arguments following a special syntax:
+
+* lines consisting of whitespace only are ignored
+* lines beginning with `#` are treated as comments and are ignored
++
+[source,text]
+-------------------------------------
+# this is a comment
+-------------------------------------
+
+* lines beginning with a `-` are treated as a JVM option that applies
+independent of the version of the JVM
++
+[source,text]
+-------------------------------------
+-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `:` followed by a `-` are treated
+as a JVM option that applies only if the version of the JVM matches the number
++
+[source,text]
+-------------------------------------
+8:-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `-` followed by a `:` are treated
+as a JVM option that applies only if the version of the JVM is greater than or
+equal to the number
++
+[source,text]
+-------------------------------------
+8-:-Xmx2g
+-------------------------------------
+
+* lines beginning with a number followed by a `-` followed by a number followed
+by a `:` are treated as a JVM option that applies only if the version of the
+JVM falls in the inclusive range of the two numbers
++
+[source,text]
+-------------------------------------
+8-9:-Xmx2g
+-------------------------------------
+
+* all other lines are rejected
+
+
+[[heap-size]]
+==== Setting the JVM heap size
+
+Here are some tips for adjusting the JVM heap size:
+
+// tag::heap-size-tips[]
+* The recommended heap size for typical ingestion scenarios should be no
+less than 4GB and no more than 8GB.
+
+* CPU utilization can increase unnecessarily if the heap size is too low,
+resulting in the JVM constantly garbage collecting. You can check for this issue
+by doubling the heap size to see if performance improves. 
+
+* Do not increase the heap size past the amount of physical memory. Some memory
+must be left to run the OS and other processes.  As a general guideline for most
+installations, don't exceed 50-75% of physical memory. The more memory you have,
+the higher percentage you can use.
+
+* Set the minimum (Xms) and maximum (Xmx) heap allocation size to the same
+value to prevent the heap from resizing at runtime, which is a very costly
+process.
+
+* You can make more accurate measurements of the JVM heap by using either the
+`jmap` command line utility distributed with Java or by using VisualVM. For more
+info, see <<profiling-the-heap>>.
+// end::heap-size-tips[]
+
+[[stacks-size]]
+==== Setting the JVM stack size
+
+Large configurations may require additional JVM stack memory.
+If you see a stack overflow error, try increasing the JVM stack size. 
+Add an entry similar to this one in the `jvm.options`
+<<settings-files,settings file>>:
+
+[source,sh]
+-----
+-Xss4M 
+-----
+
+Note that the default stack size is different per platform and per OS
+flavor. You can find out what the default is by running:
+
+[source,sh]
+-----
+java -XX:+PrintFlagsFinal -version | grep ThreadStackSize
+-----
+
+Depending on the default stack size, start by multiplying by 4x, then 8x, and
+then 16x until the overflow error resolves.
+
+
+
+

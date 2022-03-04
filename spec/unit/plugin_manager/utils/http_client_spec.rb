@@ -1,5 +1,22 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "pluginmanager/utils/http_client"
+require "net/http"
 require "uri"
 
 describe LogStash::PluginManager::Utils::HttpClient do
@@ -88,9 +105,13 @@ describe LogStash::PluginManager::Utils::HttpClient do
       end
 
       context "with redirects" do
-        let(:redirect_response) { instance_double("Net::HTTP::Response", :code => "302", :headers => { "location" => "https://localhost:8888/new_path" }) }
+        let(:location) { "https://localhost:8888/new_path" }
+        let(:redirect_response) { instance_double("Net::HTTP::Response", :code => "302", :headers => { "location" => location }) }
         let(:response_ok) { instance_double("Net::HTTP::Response", :code => "200") }
 
+        before(:each) do
+          allow(redirect_response).to receive(:[]).with("location").and_return(location)
+        end
         it "follow 1 level redirect" do
           expect(mock_http).to receive(:request).with(kind_of(Net::HTTP::Head)).and_return(redirect_response)
           expect(mock_http).to receive(:request).with(kind_of(Net::HTTP::Head)).and_return(response_ok)

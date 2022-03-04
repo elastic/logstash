@@ -1,0 +1,60 @@
+{
+  "super_generator": {
+    "pipeline": "input { generator { count => 100 } tcp { port => 6005 } } output { }}"
+  },
+  "another_generator": {
+    "pipeline": "input { generator { count => 100 } tcp { port => 6006 } } output { file { path => '/var/folders/8g/415b_scd6ql1vxc2p128kfn40000gn/T/studtmp-b0f4079ab3df20f7eb2389958a6568b6614b38fffec1fcbf1627c4e5edc3/another_generator_new' }}",
+    "username": "log.stash",
+    "pipeline_metadata": {
+      "version": "1"
+    },
+    "pipeline_settings": {
+      "pipeline.batch.delay": "50"
+    },
+    "last_modified": "2020-10-06T23:11:38Z"
+  },
+  "host1_pipeline1": {
+    "pipeline": "input { generator { count => 10000000 }} filter { sleep { time => \"1\" every => 10}} output { file { path  => '/var/folders/8g/415b_scd6ql1vxc2p128kfn40000gn/T/studtmp-b0f4079ab3df20f7eb2389958a6568b6614b38fffec1fcbf1627c4e5edc3/host1_generator1'}}",
+    "username": "log.stash",
+    "pipeline_metadata": {
+      "version": "3"
+    },
+    "pipeline_settings": {
+      "pipeline.batch.delay": "50"
+    },
+    "last_modified": "2020-10-01T15:42:30.229Z"
+  },
+  "host1_pipeline2": {
+    "pipeline": "input { generator { count => 10000000 }} filter { sleep { time => \"1\" every => 10}} output { file { path  => '/var/folders/8g/415b_scd6ql1vxc2p128kfn40000gn/T/studtmp-b0f4079ab3df20f7eb2389958a6568b6614b38fffec1fcbf1627c4e5edc3/host1_generator2'}}",
+    "username": "log.stash",
+    "pipeline_metadata": {
+      "version": "3"
+    },
+    "pipeline_settings": {
+      "pipeline.batch.delay": "50"
+    },
+    "last_modified": "2020-10-01T15:42:30.229Z"
+  },
+  "host2_pipeline1": {
+    "pipeline": "input { generator { count => 10000000 }} filter { sleep { time => \"1\" every => 10}} output { file { path  => '/var/folders/8g/415b_scd6ql1vxc2p128kfn40000gn/T/studtmp-b0f4079ab3df20f7eb2389958a6568b6614b38fffec1fcbf1627c4e5edc3/host2_generator1'}}",
+    "username": "log.stash",
+    "pipeline_metadata": {
+      "version": "3"
+    },
+    "pipeline_settings": {
+      "pipeline.batch.delay": "50"
+    },
+    "last_modified": "2020-10-01T15:42:30.229Z"
+  },
+  "host2_pipeline2": {
+    "pipeline": "input { generator { count => 10000000 }} filter { sleep { time => \"1\" every => 10}} output { file { path  => '/var/folders/8g/415b_scd6ql1vxc2p128kfn40000gn/T/studtmp-b0f4079ab3df20f7eb2389958a6568b6614b38fffec1fcbf1627c4e5edc3/host2_generator2'}}",
+    "username": "log.stash",
+    "pipeline_metadata": {
+      "version": "3"
+    },
+    "pipeline_settings": {
+      "pipeline.batch.delay": "50"
+    },
+    "last_modified": "2020-10-01T15:42:30.229Z"
+  }
+}

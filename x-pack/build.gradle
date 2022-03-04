@@ -1,3 +1,9 @@
+/*
+ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+ * or more contributor license agreements. Licensed under the Elastic License;
+ * you may not use this file except in compliance with the Elastic License.
+ */
+
 description = """Logstash X-Pack"""
 
 repositories {
@@ -10,28 +16,49 @@ buildscript {
   }
 }
 
+configurations {
+  geolite2
+}
+
 dependencies {
-  testCompile project(':logstash-core')
-  testCompile 'org.assertj:assertj-core:3.8.0'
-  testCompile 'junit:junit:4.12'
+  testImplementation project(':logstash-core')
+  testImplementation 'org.assertj:assertj-core:3.8.0'
+  testImplementation 'junit:junit:4.12'
+
+  geolite2('org.elasticsearch:geolite2-databases:20191119') {
+    transitive = false
+  }
 }
 
 test {
   exclude '/**'
 }
 
-task rubyTests(type: Test) {
+tasks.register("unzipGeolite", Copy) {
+  from(zipTree(configurations.geolite2.singleFile)) {
+    include "GeoLite2-ASN.mmdb"
+    include "GeoLite2-City.mmdb"
+  }
+  into file("${projectDir}/spec/filters/geoip/vendor")
+}
+
+tasks.register("rubyTests", Test) {
+  dependsOn unzipGeolite
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecTests.class'
 }
 
-task rubyIntegrationTests(type: Test) {
+tasks.register("rubyIntegrationTests", Test) {
+  if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
+    jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
+  }
+  dependsOn (":copyEs")
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
 }

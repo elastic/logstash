@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/runner"
 require "stud/task"
@@ -15,7 +31,7 @@ require_relative "../support/matchers"
 
 describe LogStash::Runner do
 
-  subject { LogStash::Runner }
+  subject(:runner) { LogStash::Runner }
   let(:logger) { double("logger") }
   let(:agent) { double("agent") }
 
@@ -219,61 +235,152 @@ describe LogStash::Runner do
       end
     end
 
-    context "when :http.host is defined by the user" do
-      it "should pass the value to the webserver" do
-        expect(LogStash::Agent).to receive(:new) do |settings|
-          expect(settings.set?("http.host")).to be(true)
-          expect(settings.get("http.host")).to eq("localhost")
+    context ':api.http.host' do
+      context "when undefined by the user" do
+        let(:args) { ["-e", pipeline_string] }
+        it "creates an Agent whose `api.http.host` uses the default value" do
+          expect(LogStash::Agent).to receive(:new) do |settings|
+            expect(settings.set?("api.http.host")).to be_falsey
+            expect(settings.get("api.http.host")).to eq("127.0.0.1")
+          end
+
+          subject.run("bin/logstash", args)
+        end
+      end
+
+      context "when defined by the user" do
+        let(:args) { ["--api.http.host", "localhost", "-e", pipeline_string]}
+        it "creates an Agent whose `api.http.host` uses provided value" do
+          expect(LogStash::Agent).to receive(:new) do |settings|
+            expect(settings.set?("api.http.host")).to be(true)
+            expect(settings.get("api.http.host")).to eq("localhost")
+          end
+
+          subject.run("bin/logstash", args)
+        end
+      end
+
+      context "using deprecated :http.host alias" do
+        let(:deprecation_logger_stub) { double("DeprecationLogger(Settings)").as_null_object }
+        before(:each) { allow(LogStash::Settings).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
+
+        let(:runner_deprecation_logger_stub) { double("DeprecationLogger(Runner)").as_null_object }
+        before(:each) { allow(runner).to receive(:deprecation_logger).and_return(runner_deprecation_logger_stub) }
+
+        context "when deprecated :http.host is defined by the user" do
+          let(:args) { ["--http.host", "localhost", "-e", pipeline_string]}
+          it "creates an Agent whose `api.http.host` uses the provided value and provides helpful deprecation message" do
+            expect(deprecation_logger_stub).to receive(:deprecated).with(a_string_including "`http.host` is a deprecated alias for `api.http.host`")
+            expect(runner_deprecation_logger_stub).to receive(:deprecated).with(a_string_including 'The flag ["--http.host"] has been deprecated')
+            expect(LogStash::Agent).to receive(:new) do |settings|
+              expect(settings.set?("api.http.host")).to be(true)
+              expect(settings.get("api.http.host")).to eq("localhost")
+            end
+
+            subject.run("bin/logstash", args)
+          end
         end
 
-        args = ["--http.host", "localhost", "-e", pipeline_string]
-        subject.run("bin/logstash", args)
+        context "when :api.http.host and deprecated alias :http.host are both defined by the user" do
+          it "errors helpfully" do
+            args = ["--api.http.host", "api.local", "--http.host", "http.local", "-e", pipeline_string]
+            expect do
+              expect(subject.run("bin/logstash", args)).to_not eq(0)
+            end.to output(a_string_including("Both `api.http.host` and its deprecated alias `http.host` have been set. Please only set `api.http.host`")).to_stderr
+          end
+        end
       end
     end
 
-    context "when :http.host is not defined by the user" do
-      it "should pass the value to the webserver" do
-        expect(LogStash::Agent).to receive(:new) do |settings|
-          expect(settings.set?("http.host")).to be_falsey
-          expect(settings.get("http.host")).to eq("127.0.0.1")
+    context ":api.http.port" do
+      context "when undefined by the user" do
+        let(:args) { ["-e", pipeline_string] }
+        it "creates an Agent whose `api.http.port` uses the default value" do
+          expect(LogStash::Agent).to receive(:new) do |settings|
+            expect(settings.set?("api.http.port")).to be_falsey
+            expect(settings.get("api.http.port")).to eq(9600..9700)
+          end
+
+          subject.run("bin/logstash", args)
         end
-
-        args = ["-e", pipeline_string]
-        subject.run("bin/logstash", args)
-      end
-    end
-
-    context "when :http.port is defined by the user" do
-      it "should pass a single value to the webserver" do
-        expect(LogStash::Agent).to receive(:new) do |settings|
-          expect(settings.set?("http.port")).to be(true)
-          expect(settings.get("http.port")).to eq(10000..10000)
-        end
-
-        args = ["--http.port", "10000", "-e", pipeline_string]
-        subject.run("bin/logstash", args)
       end
 
-      it "should pass a range value to the webserver" do
-        expect(LogStash::Agent).to receive(:new) do |settings|
-          expect(settings.set?("http.port")).to be(true)
-          expect(settings.get("http.port")).to eq(10000..20000)
-        end
+      context "when defined by the user" do
+        let(:args) { ["--api.http.port", port_argument,"-e", pipeline_string] }
+        context "as a single-value string" do
+          let(:port_argument) { "10000" }
+          it "creates an Agent whose `api.http.port` is an appropriate single-element range" do
+            expect(LogStash::Agent).to receive(:new) do |settings|
+              expect(settings.set?("api.http.port")).to be(true)
+              expect(settings.get("api.http.port")).to eq(10000..10000)
+            end
 
-        args = ["--http.port", "10000-20000", "-e", pipeline_string]
-        subject.run("bin/logstash", args)
+            subject.run("bin/logstash", args)
+          end
+        end
+        context "as a range" do
+          let(:port_argument) { "10000-20000" }
+          it "creates an Agent whose `api.http.port` uses the appropriate inclusive-end range" do
+            expect(LogStash::Agent).to receive(:new) do |settings|
+              expect(settings.set?("api.http.port")).to be(true)
+              expect(settings.get("api.http.port")).to eq(10000..20000)
+            end
+
+            subject.run("bin/logstash", args)
+          end
+        end
       end
-    end
 
-    context "when no :http.port is not defined by the user" do
-      it "should use the default settings" do
-        expect(LogStash::Agent).to receive(:new) do |settings|
-          expect(settings.set?("http.port")).to be_falsey
-          expect(settings.get("http.port")).to eq(9600..9700)
+      context "using deprecated :http.port alias" do
+        let(:deprecation_logger_stub) { double("DeprecationLogger(Settings)").as_null_object }
+        before(:each) { allow(LogStash::Settings).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
+
+        let(:runner_deprecation_logger_stub) { double("DeprecationLogger(Runner)").as_null_object }
+        before(:each) { allow(runner).to receive(:deprecation_logger).and_return(runner_deprecation_logger_stub) }
+
+        context "when defined using deprecated :http.port alias" do
+          let(:args) { ["--http.port", port_argument, "-e", pipeline_string] }
+
+          context "as a single-value string" do
+            let(:port_argument) { "10000" }
+            it "creates an Agent whose `api.http.port` uses an appropriate single-element range and logs a helpful deprecation message" do
+              expect(deprecation_logger_stub).to receive(:deprecated).with(a_string_including "`http.port` is a deprecated alias for `api.http.port`")
+              expect(runner_deprecation_logger_stub).to receive(:deprecated).with(a_string_including 'The flag ["--http.port"] has been deprecated')
+
+              expect(LogStash::Agent).to receive(:new) do |settings|
+                expect(settings.set?("api.http.port")).to be(true)
+                expect(settings.get("api.http.port")).to eq(10000..10000)
+              end
+
+              subject.run("bin/logstash", args)
+            end
+          end
+
+          context "as a range" do
+            let(:port_argument) { "10000-20000" }
+            it "creates an Agent whose `api.http.port` uses the appropriate inclusive-end range and logs a helpful deprecation message" do
+              expect(deprecation_logger_stub).to receive(:deprecated).with(a_string_including "`http.port` is a deprecated alias for `api.http.port`")
+              expect(runner_deprecation_logger_stub).to receive(:deprecated).with(a_string_including 'The flag ["--http.port"] has been deprecated')
+
+              expect(LogStash::Agent).to receive(:new) do |settings|
+                expect(settings.set?("api.http.port")).to be(true)
+                expect(settings.get("api.http.port")).to eq(10000..20000)
+              end
+
+              subject.run("bin/logstash", args)
+            end
+          end
         end
 
-        args = ["-e", pipeline_string]
-        subject.run("bin/logstash", args)
+        context "when defined by both canonical name and deprecated :http.port alias" do
+          let(:args) { ["--api.http.port", "9603", "--http.port", "9604", "-e", pipeline_string] }
+
+          it "errors helpfully" do
+            expect do
+              expect(subject.run("bin/logstash", args)).to_not eq(0)
+            end.to output(a_string_including("Both `api.http.port` and its deprecated alias `http.port` have been set. Please only set `api.http.port`")).to_stderr
+          end
+        end
       end
     end
 
@@ -472,9 +579,12 @@ describe LogStash::Runner do
     end
 
     context "deprecated flags" do
+      let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
+      before(:each) { allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
+
       context "when using --quiet" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -487,7 +597,7 @@ describe LogStash::Runner do
       end
       context "when using --debug" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -500,7 +610,7 @@ describe LogStash::Runner do
       end
       context "when using --verbose" do
         it "should warn about the deprecated flag" do
-          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(deprecation_logger_stub).to receive(:deprecated).with(/DEPRECATION WARNING/)
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
         end

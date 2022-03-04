@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import java.io.IOException;
@@ -7,6 +27,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -30,9 +51,11 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
-import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
+import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -40,9 +63,13 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
+/**
+ * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
+ * */
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
 
@@ -93,6 +120,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private RubyString configString;
 
+    @SuppressWarnings("rawtypes")
+    private List<SourceWithMetadata> configParts;
+
     private RubyString configHash;
 
     private IRubyObject settings;
@@ -121,12 +151,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
-        throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
+        throws NoSuchAlgorithmException {
         reporter = new PipelineReporterExt(
             context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
+        configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
         configHash = context.runtime.newString(
             Hex.encodeHexString(
                 MessageDigest.getInstance("SHA1").digest(configString.getBytes())
@@ -153,10 +184,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 );
             }
         }
-        lir = ConfigCompiler.configToPipelineIR(
-            configString.asJavaString(),
-            getSetting(context, "config.support_escapes").isTrue()
-        );
+        boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context), EnvironmentVariableProvider.defaultProvider())) {
+            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes, cve);
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
+        }
         return this;
     }
 
@@ -250,10 +283,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger()
-                            .getLongValue()
-                    )
-                );
+                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+                    );
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
@@ -370,10 +402,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
     @SuppressWarnings("rawtypes")
     public RubyArray getPipelineSourceDetails(final ThreadContext context) {
-        RubyArray res = (RubyArray) pipelineSettings.callMethod(context, "config_parts");
-        List<RubyString> pipelineSources = new ArrayList<>(res.size());
-        for (IRubyObject part : res.toJavaArray()) {
-            SourceWithMetadata sourceWithMetadata = part.toJava(SourceWithMetadata.class);
+        List<RubyString> pipelineSources = new ArrayList<>(configParts.size());
+        for (SourceWithMetadata sourceWithMetadata : configParts) {
             String protocol = sourceWithMetadata.getProtocol();
             switch (protocol) {
                 case "string":

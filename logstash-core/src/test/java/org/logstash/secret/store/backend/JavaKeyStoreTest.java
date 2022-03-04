@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.secret.store.backend;
 
 
@@ -26,15 +46,17 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.nio.file.attribute.PosixFilePermission.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
 /**
@@ -291,7 +313,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
+        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
@@ -668,5 +690,32 @@ public class JavaKeyStoreTest {
         thrown.expect(SecretStoreException.AccessException.class);
         withDefinedPassConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
         new JavaKeyStore().load(withDefinedPassConfig);
+    }
+
+    @Test(timeout = 40_000)
+    public void concurrentReadTest() throws Exception {
+
+        final int KEYSTORE_COUNT = 250;
+
+        final ExecutorService executorService = Executors.newFixedThreadPool(KEYSTORE_COUNT);
+        String password = "pAssW3rd!";
+        keyStore.persistSecret(new SecretIdentifier("password"), password.getBytes(StandardCharsets.UTF_8));
+        try{
+            Callable<byte[]> reader = () -> keyStore.retrieveSecret(new SecretIdentifier("password"));
+
+            List<Future<byte[]>> futures = new ArrayList<>();
+            for (int i = 0; i < KEYSTORE_COUNT; i++) {
+                futures.add(executorService.submit(reader));
+            }
+
+            for (Future<byte[]> future : futures) {
+                byte[] result = future.get();
+                assertThat(result).isNotNull();
+                assertThat(new String(result, StandardCharsets.UTF_8)).isEqualTo(password);
+            }
+        } finally {
+            executorService.shutdownNow();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        }
     }
 }

@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/config/mixin"
 
@@ -28,6 +44,66 @@ describe LogStash::Config::Mixin do
           expect(arg2[:plugin].to_s).to include('"password"=><password>')
         end.once
       subject
+    end
+  end
+
+  context 'DSL::validate_value(String, :codec)' do
+    subject(:plugin_class) { Class.new(LogStash::Filters::Base) { config_name "test_deprecated_two" } }
+    let(:codec_class) { Class.new(LogStash::Codecs::Base) { config_name 'dummy' } }
+    let(:deprecation_logger) { double("DeprecationLogger").as_null_object }
+
+    before(:each) do
+      allow(plugin_class).to receive(:deprecation_logger).and_return(deprecation_logger)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", codec_class.config_name).and_return(codec_class)
+    end
+
+    it 'instantiates the codec' do
+      success, codec = plugin_class.validate_value(codec_class.config_name, :codec)
+
+      expect(success).to be true
+      expect(codec.class).to eq(codec_class)
+    end
+
+    it 'logs a deprecation' do
+      plugin_class.validate_value(codec_class.config_name, :codec)
+      expect(deprecation_logger).to have_received(:deprecated) do |message|
+        expect(message).to include("validate_value(String, :codec)")
+      end
+    end
+  end
+
+  context "validating :field_reference" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base) do
+        config :target, :validate => :field_reference
+      end
+    end
+    let(:params) do
+      { "target" => target_param }
+    end
+
+    before(:each) do
+      allow(plugin_class).to receive(:logger).and_return(double('Logger').as_null_object)
+    end
+
+    context "when input is valid" do
+      let(:target_param) { "[@metadata][target]" }
+      it 'successfully initializes the plugin' do
+        expect(plugin_class.new(params)).to be_a_kind_of plugin_class
+      end
+      it 'coerces the value' do
+        instance = plugin_class.new(params)
+        expect(instance.target).to_not be_nil
+        expect(instance.target).to eq(target_param)
+      end
+    end
+
+    context "when input is invalid" do
+      let(:target_param) { "][Nv@l][d" }
+      it 'does not initialize the plugin' do
+        expect { plugin_class.new(params) }.to raise_exception(LogStash::ConfigurationError)
+        expect(plugin_class.logger).to have_received(:error).with(/must be a field_reference/)
+      end
     end
   end
 
@@ -99,26 +175,74 @@ describe LogStash::Config::Mixin do
   context "when validating lists of items" do
     let(:klass) do
       Class.new(LogStash::Filters::Base)  do
-        config_name "multiuri"
-        config :uris, :validate => :uri, :list => true
+        config_name "list_validator_spec"
         config :strings, :validate => :string, :list => true
         config :required_strings, :validate => :string, :list => true, :required => true
       end
     end
 
-    let(:uris) { ["http://example.net/1", "http://example.net/2"] }
-    let(:safe_uris) { uris.map {|str| ::LogStash::Util::SafeURI.new(str) } }
     let(:strings) { ["I am a", "modern major general"] }
     let(:required_strings) { ["required", "strings"] }
 
-    subject { klass.new("uris" => uris, "strings" => strings, "required_strings" => required_strings) }
-
-    it "a URI list should return an array of URIs" do
-      expect(subject.uris).to match_array(safe_uris)
+    let(:config) do
+      {"strings" => strings, "required_strings" => required_strings}
     end
+
+    subject(:instance) { klass.new(config) }
 
     it "a string list should return an array of strings" do
       expect(subject.strings).to match_array(strings)
+    end
+
+    context 'URI lists' do
+      let(:klass) do
+        Class.new(LogStash::Filters::Base) do
+          config_name 'list_uri_validator_spec'
+          config :uris, :validate => :uri, :list => true
+        end
+      end
+      subject(:instance) { klass.new(config) }
+
+      let(:uri_1) { "http://example.net/1" }
+      let(:uri_2) { "http://example.net/2" }
+      let(:uri_3) { "http://example.net:9201/3" }
+
+      let(:uris) { [uri_1, uri_2, uri_3] }
+      let(:config) { Hash["uris" => uris_parameter] }
+
+      let(:safe_uris) { uris.map {|str| ::LogStash::Util::SafeURI.new(str) } }
+
+      shared_examples ':validate => :uri_list' do
+        it 'should normalize to a flat list containing all extracted URIs from the input' do
+          expect(instance.uris).to match_array(safe_uris)
+        end
+      end
+
+      context 'when given a single string containing exactly one uri' do
+        let(:uris_parameter) { "#{uri_1}" }
+        let(:uris) { [uri_1] }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array of strings, each containing exactly one uri' do
+        let(:uris_parameter) { uris }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given a single string containing multiple whitespace-delimited uris' do
+        let(:uris_parameter) { "#{uri_1} #{uri_2} #{uri_3}" }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array containing a single entry that has multiple whitespace-delimited uris' do
+        let(:uris_parameter) { ["#{uri_1} #{uri_2} #{uri_3}"] }
+        include_examples ':validate => :uri_list'
+      end
+
+      context 'when given an array containing multiple entries, one of which has multiple whitespace-delimited uris' do
+        let(:uris_parameter) { ["#{uri_1} #{uri_2}", "#{uri_3}"] }
+        include_examples ':validate => :uri_list'
+      end
     end
 
     context "with a scalar value" do
@@ -165,36 +289,58 @@ describe LogStash::Config::Mixin do
   end
 
   context "when validating :password" do
-    let(:klass) do
-      Class.new(LogStash::Filters::Base)  do
-        config_name "fake"
-        config :password, :validate => :password
+    shared_examples 'protected password' do
+      let(:secret) { 'fancy pants' }
+      let(:plugin_class) do
+        Class.new(LogStash::Filters::Base)  do
+          config_name "fake"
+          config :password, :validate => :password
+        end
+      end
+      subject(:plugin_instance) { plugin_class.new(instance_params) }
+
+      it "should be a Password object" do
+        expect(plugin_instance.password).to(be_a(LogStash::Util::Password))
+      end
+
+      it "should make password values hidden" do
+        expect(plugin_instance.password.to_s).to(be == "<password>")
+        expect(plugin_instance.password.inspect).to(be == "<password>")
+      end
+
+      it "should show password values via #value" do
+        expect(plugin_instance.password.value).to(be == secret)
+      end
+
+      it "should correctly copy password types" do
+        clone = plugin_instance.class.new(plugin_instance.params)
+        expect(clone.password.value).to(be == secret)
+      end
+
+      it "should obfuscate original_params" do
+        expect(plugin_instance.original_params['password']).to(be_a(LogStash::Util::Password))
       end
     end
 
-    let(:secret) { "fancy pants" }
-    subject { klass.new("password" => secret) }
-
-    it "should be a Password object" do
-      expect(subject.password).to(be_a(LogStash::Util::Password))
+    context 'when instantiated with a string literal password' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => secret } }
+      end
     end
 
-    it "should make password values hidden" do
-      expect(subject.password.to_s).to(be == "<password>")
-      expect(subject.password.inspect).to(be == "<password>")
-    end
+    context 'when instantiated with an environment variable placeholder' do
+      it_behaves_like 'protected password' do
+        let(:instance_params) { { "password" => '${PLACEHOLDER}'} }
+        before(:each) { ENV.store('PLACEHOLDER', secret) }
+        after(:each) { ENV.delete('PLACEHOLDER')}
 
-    it "should show password values via #value" do
-      expect(subject.password.value).to(be == secret)
-    end
-
-    it "should correctly copy password types" do
-      clone = subject.class.new(subject.params)
-      expect(clone.password.value).to(be == secret)
-    end
-
-    it "should obfuscate original_params" do
-      expect(subject.original_params['password']).to(be_a(LogStash::Util::Password))
+        before(:each) do
+          # Ensure the shared examples are actually running with an
+          # environment variable placeholder.
+          # If this assertion fails, setup for the spec is invalid.
+          expect(instance_params['password']).to eq('${PLACEHOLDER}')
+        end
+      end
     end
   end
 

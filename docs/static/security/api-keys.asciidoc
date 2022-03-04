@@ -1,0 +1,294 @@
+[discrete]
+[[ls-api-keys]]
+=== Grant access using API keys
+
+Instead of using usernames and passwords, you can use API keys to grant
+access to {es} resources. You can set API keys to expire at a certain time,
+and you can explicitly invalidate them. Any user with the `manage_api_key`
+or `manage_own_api_key` cluster privilege can create API keys.
+
+Tips for creating API keys:
+
+* API keys are tied to the cluster they are created in. If you are
+sending output to different clusters, be sure to create the correct kind of API
+key. 
+
+* {ls} can send both collected data and monitoring information to {es}. If you are
+sending both to the same cluster, you can use the same API key. For different
+clusters, you need an API key per cluster.
+
+* A single cluster can share a key for ingestion and monitoring purposes. 
+
+* A production cluster and a monitoring cluster require separate keys.
+
+NOTE: For security reasons, we recommend using a unique API key per {ls} instance.
+You can create as many API keys per user as necessary.
+
+
+[discrete]
+[[ls-create-api-key]]
+==== Create an API key 
+
+You can create API keys using either the
+{ref}/security-api-create-api-key.html[Create API key API] or the
+{kibana-ref}/api-keys.html[Kibana UI]. This section walks you through creating
+an API key using the {ref}/security-api-create-api-key.html[Create API key API].
+The privileges needed are the same for either approach.
+
+Here is an example that shows how to create an API key for publishing to {es}
+using the <<plugins-outputs-elasticsearch,Elasticsearch output plugin>>.
+
+
+[source,console,subs="attributes,callouts"]
+------------------------------------------------------------
+POST /_security/api_key
+{
+  "name": "logstash_host001", <1>
+  "role_descriptors": {
+    "logstash_writer": { <2>
+      "cluster": ["monitor", "manage_ilm", "read_ilm"],
+      "index": [
+        {
+          "names": ["logstash-*"],
+          "privileges": ["view_index_metadata", "create_doc"]
+        }
+      ]
+    }
+  }
+}
+------------------------------------------------------------
+<1> Name of the API key
+<2> Granted privileges
+
+The return value should look similar to this:
+
+[source,console-result,subs="attributes,callouts"]
+--------------------------------------------------
+{
+  "id":"TiNAGG4BaaMdaH1tRfuU", <1>
+  "name":"logstash_host001",
+  "api_key":"KnR6yE41RrSowb0kQ0HWoA" <2>
+}
+--------------------------------------------------
+<1> Unique id for this API key
+<2> Generated API key
+
+
+[discrete]
+[[ls-api-key-publish]]
+===== Create an API key for publishing
+
+You're in luck! The example we used in the <<ls-create-api-key>> section creates
+an API key for publishing to {es} using the
+<<plugins-outputs-elasticsearch,Elasticsearch output plugin>>. 
+
+/////
+Work in Progress
+
+The API key for the Elasticsearch output plugin configuration requires these
+cluster privileges:
+
+* `monitor`
+* `manage_ilm`
+* `read_ilm`
+
+It requires these index privileges:
+
+* `view_index_metadata`
+* `create_doc`
+/////
+
+Here's an example using the API key in your
+<<plugins-outputs-elasticsearch,Elasticsearch output plugin>> configuration.
+
+["source","ruby"]
+-----
+output {
+  elasticsearch {
+    api_key => "TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA" <1>
+  }
+}
+-----
+<1> Format is `id:api_key` (as returned by
+{ref}/security-api-create-api-key.html[Create API key])
+
+[discrete]
+[[ls-api-key-input]]
+===== Create an API key for reading
+
+Creating an API key to use for reading data from {es} is similar to creating an
+API key for publishing described earlier. You can use the example in the
+<<ls-create-api-key>> section, granting the appropriate privileges.
+
+/////
+Work in Progress
+The API key for the <<plugins-inputs-elasticsearch,Elasticsearch inputs plugin>>
+configuration requires these cluster privileges:
+
+* `monitor`
+* `read_ilm`
+
+It requires these index privileges:
+
+* `view_index_metadata`
+* `create_doc`
+/////
+
+Here's an example using the API key in your
+<<plugins-inputs-elasticsearch,Elasticsearch inputs plugin>> configuration.
+
+["source","ruby"]
+-----
+input {
+  elasticsearch {
+    "api_key" => "TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA" <1>
+  }
+}
+-----
+<1> Format is `id:api_key` (as returned by
+{ref}/security-api-create-api-key.html[Create API key])s
+
+
+[discrete]
+[[ls-api-key-filter]]
+===== Create an API key for filtering
+
+Creating an API key to use for processing data from {es} is similar to creating
+an API key for publishing described earlier. You can use the example in the
+<<ls-create-api-key>> section, granting the appropriate privileges.
+
+/////
+Work in Progress
+
+The API key for the <<plugins-filters-elasticsearch,Elasticsearch filters plugin>>
+configuration requires these cluster privileges:
+
+* `monitor`
+* `read_ilm`
+
+It requires these index privileges:
+
+* `view_index_metadata`
+* `create_doc`
+/////
+
+Here's an example using the API key in your
+<<plugins-filters-elasticsearch,Elasticsearch filter plugin>> configuration.
+
+["source","ruby"]
+-----
+filter {
+  elasticsearch {
+    api_key => "TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA" <1>
+  }
+}
+-----
+<1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
+
+
+[discrete]
+[[ls-api-key-monitor]]
+===== Create an API key for monitoring
+
+To create an API key to use for sending monitoring data to {es}, use the
+{ref}/security-api-create-api-key.html[Create API key API]. For example:
+
+[source,console,subs="attributes,callouts"]
+------------------------------------------------------------
+POST /_security/api_key
+{
+  "name": "logstash_host001", <1>
+  "role_descriptors": {
+    "logstash_monitoring": { <2>
+      "cluster": ["monitor"],
+      "index": [
+        {
+          "names": [".monitoring-ls-*"],
+          "privileges": ["create_index", "create"]
+        }
+      ]
+    }
+  }
+}
+------------------------------------------------------------
+<1> Name of the API key
+<2> Granted privileges
+
+The return value should look similar to this:
+
+[source,console-result,subs="attributes,callouts"]
+--------------------------------------------------
+{
+  "id":"TiNAGG4BaaMdaH1tRfuU", <1>
+  "name":"logstash_host001",
+  "api_key":"KnR6yE41RrSowb0kQ0HWoA" <2>
+}
+--------------------------------------------------
+<1> Unique id for this API key
+<2> Generated API key
+
+Now you can use this API key in your logstash.yml configuration file:
+["source","yml",subs="attributes"]
+--------------------
+xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
+--------------------
+<1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
+
+
+[discrete]
+[[ls-api-key-man]]
+===== Create an API key for central management
+
+To create an API key to use for central management, use the
+{ref}/security-api-create-api-key.html[Create API key API]. For example:
+
+[source,console,subs="attributes,callouts"]
+------------------------------------------------------------
+POST /_security/api_key
+{
+  "name": "logstash_host001", <1>
+  "role_descriptors": {
+    "logstash_monitoring": { <2>
+      "cluster": ["monitor"],
+      "index": ["read"]
+    }
+  }
+}
+------------------------------------------------------------
+<1> Name of the API key
+<2> Granted privileges
+
+The return value should look similar to this:
+
+[source,console-result,subs="attributes,callouts"]
+--------------------------------------------------
+{
+  "id":"TiNAGG4BaaMdaH1tRfuU", <1>
+  "name":"logstash_host001",
+  "api_key":"KnR6yE41RrSowb0kQ0HWoA" <2>
+}
+--------------------------------------------------
+<1> Unique id for this API key
+<2> Generated API key
+
+Now you can use this API key in your logstash.yml configuration file:
+["source","yml",subs="attributes"]
+--------------------
+xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
+--------------------
+<1> Format is `id:api_key` (as returned by
+{ref}/security-api-create-api-key.html[Create API key])
+
+
+[discrete]
+[[learn-more-api-keys]]
+==== Learn more about API keys
+
+See the {es} API key documentation for more information:
+
+* {ref}/security-api-create-api-key.html[Create API key]
+* {ref}/security-api-get-api-key.html[Get API key information]
+* {ref}/security-api-invalidate-api-key.html[Invalidate API key]
+
+See {kibana-ref}/api-keys.html[API Keys] for info on managing API keys
+through {kib}.

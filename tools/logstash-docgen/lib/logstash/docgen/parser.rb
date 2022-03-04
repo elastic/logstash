@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/docgen/dynamic_parser"
 require "logstash/docgen/static_parser"
 require "logstash/docgen/asciidoc_format"
@@ -14,14 +30,14 @@ module LogStash module Docgen
 
     class << self
       def default_plugins_list
-        @default_plugins_list ||= from_master_json
+        @default_plugins_list ||= from_main_json
       end
 
       def include?(name)
         default_plugins_list.include?(name)
       end
 
-      def from_master_json
+      def from_main_json
         response = open(DEFAULT_PLUGINS_LIST_JSON)
         JSON.parse(response.read).select { |_, values| values["default-plugins"] == true }.keys
       end
@@ -134,8 +150,8 @@ module LogStash module Docgen
     alias_method :sorted_attributes, :config
 
     def changelog_url
-      # https://github.com/logstash-plugins/logstash-input-beats/blob/master/CHANGELOG.md#310beta3
-      "#{LOGSTASH_PLUGINS_ORGANIZATION}/#{canonical_name}/blob/master/CHANGELOG.md##{anchor_version}"
+      # https://github.com/logstash-plugins/logstash-input-beats/blob/main/CHANGELOG.md#310beta3
+      "#{LOGSTASH_PLUGINS_ORGANIZATION}/#{canonical_name}/blob/main/CHANGELOG.md##{anchor_version}"
     end
 
     def anchor_version

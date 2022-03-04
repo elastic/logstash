@@ -11,13 +11,12 @@ module LogStash module Monitoring
     include LogStash::LicenseChecker::Licensed
     include LogStash::Helpers::ElasticsearchOptions
     include LogStash::Util::Loggable
-    VALID_LICENSES = %w(basic trial standard gold platinum)
     FEATURE = 'monitoring'
 
-    def initialize(pipeline_config, agent)
+    def initialize(pipeline_config, agent, settings)
       super(pipeline_config.settings)
       @pipeline_config = pipeline_config
-      @settings = LogStash::SETTINGS.clone
+      @settings = settings
       @agent = agent
       @es_options = es_options_from_settings_or_modules(FEATURE, @settings)
       setup_license_checker(FEATURE)
@@ -36,7 +35,7 @@ module LogStash module Monitoring
       super(xpack_info) if xpack_info
       if valid_basic_license?
         logger.info("Validated license for monitoring. Enabling monitoring pipeline.")
-        enable_monitoring()
+        enable_monitoring
       end
     end
 
@@ -46,7 +45,7 @@ module LogStash module Monitoring
     end
 
     def enable_monitoring
-      @agent.converge_state_and_update
+      @agent.converge_state_and_update_if_running
     end
 
     def populate_license_state(xpack_info)
@@ -68,7 +67,7 @@ module LogStash module Monitoring
             :log_level => :error,
             :log_message => 'Monitoring is not available: License information is currently unavailable. Please make sure you have added your production elasticsearch connection info in the xpack.monitoring.elasticsearch settings.'
         }
-      elsif !xpack_info.license_one_of?(VALID_LICENSES)
+      elsif !xpack_info.license_one_of?(::LogStash::LicenseChecker::LICENSE_TYPES)
         {
             :state => :error,
             :log_level => :error,

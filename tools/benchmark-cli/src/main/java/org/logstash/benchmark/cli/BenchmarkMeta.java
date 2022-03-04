@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.benchmark.cli;
 
 import java.net.InetAddress;
@@ -15,6 +35,8 @@ public final class BenchmarkMeta {
 
     private final Path configpath;
 
+    private final Path datapath;
+
     private final String version;
 
     private final LsVersionType vtype;
@@ -23,10 +45,11 @@ public final class BenchmarkMeta {
 
     private final int batchsize;
 
-    BenchmarkMeta(final String testcase, final Path configpath, final String version, final LsVersionType vtype,
+    BenchmarkMeta(final String testcase, final Path configpath, final Path datapath, final String version, final LsVersionType vtype,
                   final int workers, final int batchsize) {
         this.testcase = testcase;
         this.configpath = configpath;
+        this.datapath = datapath;
         this.version = version;
         this.vtype = vtype;
         this.workers = workers;
@@ -42,7 +65,13 @@ public final class BenchmarkMeta {
         return testcase;
     }
 
-    public Path getConfigPath() { return configpath; }
+    public Path getConfigPath() { 
+        return configpath; 
+    }
+
+    public Path getDataPath() { 
+        return datapath; 
+    }
 
     public LsVersionType getVtype() {
         return vtype;

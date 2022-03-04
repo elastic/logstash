@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.config.ir.compiler;
 
 import org.junit.Assert;
@@ -241,5 +261,57 @@ public class CommonActionsTest {
         o = e.getField(TAGS);
         Assert.assertTrue(o instanceof List);
         Assert.assertEquals(0, ((List) o).size());
+    }
+
+    @Test
+    public void testRemoveFieldFromMetadata() {
+        // remove a field
+        Event e = new Event();
+        String testField = "test_field";
+        String testFieldRef = "[@metadata][" + testField + "]";
+        String testValue = "test_value";
+        e.setField(testFieldRef, testValue);
+        CommonActions.removeField(e, Collections.singletonList(testFieldRef));
+        Assert.assertFalse(e.getMetadata().keySet().contains(testField));
+
+        // remove non-existent field
+        e = new Event();
+        String testField2 = "test_field2";
+        String testField2Ref = "[@metadata][" + testField2 + "]";
+        e.setField(testField2Ref, testValue);
+        CommonActions.removeField(e, Collections.singletonList(testFieldRef));
+        Assert.assertFalse(e.getMetadata().keySet().contains(testField));
+        Assert.assertTrue(e.getMetadata().keySet().contains(testField2));
+
+        // remove multiple fields
+        e = new Event();
+        List<String> fields = new ArrayList<>();
+        List<String> fieldsRef = new ArrayList<>();
+        for (int k = 0; k < 3; k++) {
+            String field = testField + k;
+            String fieldRef = "[@metadata][" + field + "]";
+            e.setField(fieldRef, testValue);
+            fields.add(field);
+            fieldsRef.add(fieldRef);
+        }
+        e.setField(testFieldRef, testValue);
+        CommonActions.removeField(e, fieldsRef);
+        for (String field : fields) {
+            Assert.assertFalse(e.getMetadata().keySet().contains(field));
+        }
+        Assert.assertTrue(e.getMetadata().keySet().contains(testField));
+
+        // remove dynamically-named field
+        e = new Event();
+        String otherField = "other_field";
+        String otherFieldRef = "[@metadata][" + otherField + "]";
+        String otherValue = "other_value";
+        e.setField(otherFieldRef, otherValue);
+        String derivativeField = otherValue + "_foo";
+        String derivativeFieldRef = "[@metadata][" + derivativeField + "]";
+        e.setField(derivativeFieldRef, otherValue);
+        CommonActions.removeField(e, Collections.singletonList("[@metadata][" + "%{" + otherField + "}_foo" + "]"));
+        Assert.assertFalse(e.getMetadata().keySet().contains(derivativeField));
+        Assert.assertTrue(e.getMetadata().keySet().contains(otherField));
     }
 }

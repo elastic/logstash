@@ -1,5 +1,26 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ackedqueue;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -18,6 +39,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +55,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
@@ -950,6 +975,44 @@ public class QueueTest {
     }
 
     @Test
+    public void testZeroByteFullyAckedHeadPageOnOpen() throws IOException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+
+        // the goal here is to recreate a condition where the queue has a head page of size zero with
+        // a checkpoint that indicates it is full acknowledged
+        // see issue #10855
+
+        try(Queue q = new Queue(settings)) {
+            q.open();
+            q.write(element);
+
+            Batch batch = q.readBatch( 1, TimeUnit.SECONDS.toMillis(1));
+            batch.close();
+            assertThat(batch.size(), is(1));
+            assertThat(q.isFullyAcked(), is(true));
+        }
+
+        // now we have a queue state where page 0 is fully acked but not purged
+        // manually truncate page 0 to zero byte to mock corrupted page
+        FileChannel c = new FileOutputStream(Paths.get(dataPath, "page.0").toFile(), true).getChannel();
+        c.truncate(0);
+        c.close();
+
+        try(Queue q = new Queue(settings)) {
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size is too small to hold elements
+            // because head page recover() check integrity of file size
+            q.open();
+
+            // recreated head page and checkpoint
+            File page1 = Paths.get(dataPath, "page.1").toFile();
+            assertThat(page1.exists(), is(true));
+            assertThat(page1.length(), is(greaterThan(0L)));
+        }
+    }
+
+    @Test
     public void pageCapacityChangeOnExistingQueue() throws IOException {
         final Queueable element = new StringElement("foobarbaz1");
         final int ORIGINAL_CAPACITY = computeCapacityForMmapPageIO(element, 2);
@@ -1020,6 +1083,25 @@ public class QueueTest {
             .queueMaxBytes(Long.MAX_VALUE)
             .build();
         try (Queue queue = new Queue(settings)) {
+            queue.open();
+        }
+    }
+
+    @Test
+    public void lockIsReleasedUponOpenException() throws Exception {
+        Settings settings = SettingsImpl.builder(TestSettings.persistedQueueSettings(100, dataPath))
+                .queueMaxBytes(Long.MAX_VALUE)
+                .build();
+        try {
+            Queue queue = new Queue(settings);
+            queue.open();
+            fail("expected queue.open() to throws when not enough disk free");
+        } catch (IOException e) {
+            assertThat(e.getMessage(), CoreMatchers.containsString("Unable to allocate"));
+        }
+
+        // at this point the Queue lock should be released and Queue.open should not throw a LockException
+        try (Queue queue = new Queue(TestSettings.persistedQueueSettings(10, dataPath))) {
             queue.open();
         }
     }

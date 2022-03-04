@@ -1,7 +1,23 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative "monitoring_api"
 
 require "childprocess"
-require_relative "../patch/childprocess-modern-java"
 require "bundler"
 require "socket"
 require "tempfile"
@@ -19,6 +35,10 @@ class LogstashService < Service
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 60
+
+  TIMEOUT_MAXIMUM = 60 * 10 # 10mins.
+
+  class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
 
   @process = nil
 
@@ -73,8 +93,8 @@ class LogstashService < Service
 
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
-    Bundler.with_clean_env do
-      `cat #{input} | #{@logstash_bin} -e \'#{config}\'`
+    Bundler.with_unbundled_env do
+      `cat #{Shellwords.escape(input)} | LS_JAVA_HOME=#{java.lang.System.getProperty('java.home')} #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
     end
   end
 
@@ -90,16 +110,18 @@ class LogstashService < Service
   # Useful to test metrics and such
   def start_with_stdin
     puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true
       @process = build_child_process("-e", STDIN_CONFIG)
       # pipe STDOUT and STDERR to a file
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
+      java_home = java.lang.System.getProperty('java.home')
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.start
       wait_for_logstash
-      puts "Logstash started with PID #{@process.pid}" if alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if alive?
     end
   end
 
@@ -111,12 +133,14 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
+      java_home = java.lang.System.getProperty('java.home')
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.io.inherit!
       @process.start
-      puts "Logstash started with PID #{@process.pid}" if @process.alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
     end
   end
 
@@ -130,7 +154,7 @@ class LogstashService < Service
       args << feature_config_dir
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
-    puts "Starting Logstash: #{@logstash_bin} #{args}"
+    puts "Starting Logstash: #{@logstash_bin} #{args} (pwd: #{Dir.pwd})"
     ChildProcess.build(@logstash_bin, *args)
   end
 
@@ -181,7 +205,7 @@ class LogstashService < Service
   end
 
   def get_version
-    `#{@logstash_bin} --version`.split("\n").last
+    `#{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
   end
 
   def get_version_yml
@@ -202,24 +226,52 @@ class LogstashService < Service
   end
 
   def plugin_cli
-    PluginCli.new(@logstash_home)
+    PluginCli.new(self)
   end
 
   def lock_file
     File.join(@logstash_home, "Gemfile.lock")
   end
 
-  class PluginCli
-    class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
+  def run_cmd(cmd_args, change_dir = true, environment = {})
+    out = Tempfile.new("content")
+    out.sync = true
 
-    TIMEOUT_MAXIMUM = 60 * 10 # 10mins.
+    cmd, *args = cmd_args
+    process = ChildProcess.build(cmd, *args)
+    environment.each do |k, v|
+      process.environment[k] = v
+    end
+    process.io.stdout = process.io.stderr = out
+
+    Bundler.with_unbundled_env do
+      if change_dir
+        Dir.chdir(@logstash_home) do
+          process.start
+        end
+      else
+        process.start
+      end
+    end
+
+    process.poll_for_exit(TIMEOUT_MAXIMUM)
+    out.rewind
+    ProcessStatus.new(process.exit_code, out.read)
+  end
+
+  def run(*args)
+    run_cmd [ @logstash_bin, *args ]
+  end
+
+  class PluginCli
+
     LOGSTASH_PLUGIN = File.join("bin", "logstash-plugin")
 
     attr_reader :logstash_plugin
 
-    def initialize(logstash_home)
-      @logstash_plugin = File.join(logstash_home, LOGSTASH_PLUGIN)
-      @logstash_home = logstash_home
+    def initialize(logstash_service)
+      @logstash = logstash_service
+      @logstash_plugin = File.join(@logstash.logstash_home, LOGSTASH_PLUGIN)
     end
 
     def remove(plugin_name)
@@ -244,36 +296,12 @@ class LogstashService < Service
       run("install #{plugin_name}")
     end
 
-    def run_raw(cmd_parameters, change_dir = true, environment = {})
-      out = Tempfile.new("content")
-      out.sync = true
-
-      parts = cmd_parameters.split(" ")
-      cmd = parts.shift
-
-      process = ChildProcess.build(cmd, *parts)
-      environment.each do |k, v|
-        process.environment[k] = v
-      end
-      process.io.stdout = process.io.stderr = out
-
-      Bundler.with_clean_env do
-        if change_dir
-          Dir.chdir(@logstash_home) do
-            process.start
-          end
-        else
-          process.start
-        end
-      end
-
-      process.poll_for_exit(TIMEOUT_MAXIMUM)
-      out.rewind
-      ProcessStatus.new(process.exit_code, out.read)
-    end
-
     def run(command)
       run_raw("#{logstash_plugin} #{command}")
+    end
+
+    def run_raw(cmd, change_dir = true, environment = {})
+      @logstash.run_cmd(cmd.split(' '), change_dir, environment)
     end
   end
 end

@@ -1,4 +1,24 @@
 /*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
+/*
  * Licensed to Elasticsearch under one or more contributor
  * license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright
@@ -17,6 +37,9 @@
  * under the License.
  */
 package org.logstash.common.io;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,12 +63,14 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
  */
 public final class RecordIOReader implements Closeable {
 
+    private static final Logger logger = LogManager.getLogger(RecordIOReader.class);
     private final FileChannel channel;
     private ByteBuffer currentBlock;
     private int currentBlockSizeReadFromChannel;
     private final Path path;
     private long channelPosition;
     private static final int UNSET = -1;
+    enum SegmentStatus { EMPTY, VALID, INVALID}
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
@@ -58,7 +83,7 @@ public final class RecordIOReader implements Closeable {
         byte versionInFile = versionBuffer.get();
         if (versionInFile != VERSION) {
             this.channel.close();
-            throw new RuntimeException(String.format(
+            throw new IllegalStateException(String.format(
                     "Invalid version on DLQ data file %s. Expected version: %c. Version found on file: %c",
                     path, VERSION, versionInFile));
         }
@@ -218,7 +243,7 @@ public final class RecordIOReader implements Closeable {
         computedChecksum.update(currentBlock.array(), currentBlock.position(), header.getSize());
 
         if ((int) computedChecksum.getValue() != header.getChecksum()) {
-            throw new RuntimeException("invalid checksum of record");
+            throw new IllegalStateException("invalid checksum of record");
         }
 
         buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
@@ -323,4 +348,26 @@ public final class RecordIOReader implements Closeable {
             }
         }
     }
+
+    /**
+     * Verify whether a segment is valid and non-empty.
+     * @param path Path to segment
+     * @return SegmentStatus EMPTY if the segment is empty, VALID if it is valid, INVALID otherwise
+     */
+    static SegmentStatus getSegmentStatus(Path path) {
+        try (RecordIOReader ioReader = new RecordIOReader(path)) {
+            boolean moreEvents = true;
+            SegmentStatus segmentStatus = SegmentStatus.EMPTY;
+            while (moreEvents) {
+                // If all events in the segment can be read, then assume that this is a valid segment
+                moreEvents = (ioReader.readEvent() != null);
+                if (moreEvents) segmentStatus = SegmentStatus.VALID;
+            }
+            return segmentStatus;
+        } catch (IOException | IllegalStateException e){
+            logger.warn("Error reading segment file {}", path, e);
+            return SegmentStatus.INVALID;
+        }
+    }
+
 }

@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash;
 
 
@@ -13,7 +33,8 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 
-public class StringInterpolationTest {
+public class StringInterpolationTest extends RubyTestBase {
+
     @Test
     public void testCompletelyStaticTemplate() throws IOException {
         Event event = getTestEvent();
@@ -57,6 +78,13 @@ public class StringInterpolationTest {
     }
 
     @Test
+    public void TestMixDateAndFieldsJavaSyntax() throws IOException {
+        Event event = getTestEvent();
+        String path = "/full/%{{YYYY-DDD}}/weeee/%{bar}";
+        assertEquals("/full/2015-274/weeee/foo", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
     public void testUnclosedTag() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYY/web";
@@ -71,6 +99,13 @@ public class StringInterpolationTest {
     }
 
     @Test
+    public void TestStringIsJavaDateTag() throws IOException {
+        Event event = getTestEvent();
+        String path = "%{{YYYY-'W'ww}}";
+        assertEquals("2015-W40", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
     public void TestFieldRef() throws IOException {
         Event event = getTestEvent();
         String path = "%{[j][k1]}";
@@ -81,6 +116,8 @@ public class StringInterpolationTest {
     public void TestEpochSeconds() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%ss}";
+        // `+%ss` bypasses the EPOCH syntax and instead matches the JODA syntax.
+        // which produces the literal `%` followed by a two-s seconds value `00`
         assertEquals("%00", StringInterpolation.evaluate(event, path));
     }
 

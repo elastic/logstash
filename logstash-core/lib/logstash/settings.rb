@@ -1,5 +1,23 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "fileutils"
+require "delegate"
+
 require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
@@ -10,6 +28,17 @@ module LogStash
     include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
 
+    # The `LOGGABLE_PROXY` is included into `LogStash::Setting` to make all
+    # settings-related logs and deprecations come from the same logger.
+    LOGGABLE_PROXY = Module.new do
+      define_method(:logger) { Settings.logger }
+      define_method(:deprecation_logger) { Settings.deprecation_logger }
+
+      def self.included(base)
+        base.extend(self)
+      end
+    end
+
     # there are settings that the pipeline uses and can be changed per pipeline instance
     PIPELINE_SETTINGS_WHITE_LIST = [
       "config.debug",
@@ -18,9 +47,9 @@ module LogStash
       "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
+      "dead_letter_queue.flush_interval",
       "dead_letter_queue.max_bytes",
       "metric.collect",
-      "pipeline.java_execution",
       "pipeline.plugin_classloaders",
       "path.config",
       "path.dead_letter_queue",
@@ -31,6 +60,8 @@ module LogStash
       "pipeline.reloadable",
       "pipeline.system",
       "pipeline.workers",
+      "pipeline.ordered",
+      "pipeline.ecs_compatibility",
       "queue.checkpoint.acks",
       "queue.checkpoint.interval",
       "queue.checkpoint.writes",
@@ -53,6 +84,8 @@ module LogStash
     end
 
     def register(setting)
+      return setting.map { |s| register(s) } if setting.kind_of?(Array)
+
       if @settings.key?(setting.name)
         raise ArgumentError.new("Setting \"#{setting.name}\" has already been registered as #{setting.inspect}")
       else
@@ -66,7 +99,7 @@ module LogStash
 
     def get_setting(setting_name)
       setting = @settings[setting_name]
-      raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?
+      raise ArgumentError.new("Setting \"#{setting_name}\" doesn't exist. Please check if you haven't made a typo.") if setting.nil?
       setting
     end
 
@@ -78,6 +111,10 @@ module LogStash
         settings.register(setting.clone)
       end
       settings
+    end
+
+    def names
+      @settings.keys
     end
 
     def set?(setting_name)
@@ -112,6 +149,7 @@ module LogStash
     def to_hash
       hash = {}
       @settings.each do |name, setting|
+        next if setting.kind_of? Setting::DeprecatedAlias
         hash[name] = setting.value
       end
       hash
@@ -135,17 +173,7 @@ module LogStash
       output = []
       output << "-------- Logstash Settings (* means modified) ---------"
       @settings.each do |setting_name, setting|
-        value = setting.value
-        default_value = setting.default
-        if default_value == value # print setting and its default value
-          output << "#{setting_name}: #{value.inspect}" unless value.nil?
-        elsif default_value.nil? # print setting and warn it has been set
-          output << "*#{setting_name}: #{value.inspect}"
-        elsif value.nil? # default setting not set by user
-          output << "#{setting_name}: #{default_value.inspect}"
-        else # print setting, warn it has been set, and show default value
-          output << "*#{setting_name}: #{value.inspect} (default: #{default_value.inspect})"
-        end
+        setting.format(output)
       end
       output << "--------------- Logstash Settings -------------------"
       output
@@ -205,7 +233,7 @@ module LogStash
   end
 
   class Setting
-    include LogStash::Util::Loggable
+    include LogStash::Settings::LOGGABLE_PROXY
 
     attr_reader :name, :default
 
@@ -263,12 +291,42 @@ module LogStash
       }
     end
 
+    def inspect
+      "<#{self.class.name}(#{name}): #{value.inspect}" + (@value_is_set ? '' : ' (DEFAULT)') + ">"
+    end
+
     def ==(other)
       self.to_hash == other.to_hash
     end
 
     def validate_value
       validate(value)
+    end
+
+    def with_deprecated_alias(deprecated_alias_name)
+      SettingWithDeprecatedAlias.wrap(self, deprecated_alias_name)
+    end
+
+    ##
+    # Returns a Nullable-wrapped self, effectively making the Setting optional.
+    def nullable
+      Nullable.new(self)
+    end
+
+    def format(output)
+      effective_value = self.value
+      default_value = self.default
+      setting_name = self.name
+
+      if default_value == value # print setting and its default value
+        output << "#{setting_name}: #{effective_value.inspect}" unless effective_value.nil?
+      elsif default_value.nil? # print setting and warn it has been set
+        output << "*#{setting_name}: #{effective_value.inspect}"
+      elsif effective_value.nil? # default setting not set by user
+        output << "#{setting_name}: #{default_value.inspect}"
+      else # print setting, warn it has been set, and show default value
+        output << "*#{setting_name}: #{effective_value.inspect} (default: #{default_value.inspect})"
+      end
     end
 
     protected
@@ -464,6 +522,48 @@ module LogStash
       end
     end
 
+    class Password < Coercible
+      def initialize(name, default=nil, strict=true)
+        super(name, LogStash::Util::Password, default, strict)
+      end
+
+      def coerce(value)
+        return value if value.kind_of?(LogStash::Util::Password)
+
+        if value && !value.kind_of?(::String)
+          raise(ArgumentError, "Setting `#{name}` could not coerce non-string value to password")
+        end
+
+        LogStash::Util::Password.new(value)
+      end
+
+      def validate(value)
+        super(value)
+      end
+    end
+
+    # The CoercibleString allows user to enter any value which coerces to a String.
+    # For example for true/false booleans; if the possible_strings are ["foo", "true", "false"]
+    # then these options in the config file or command line will be all valid: "foo", true, false, "true", "false"
+    #
+    class CoercibleString < Coercible
+      def initialize(name, default=nil, strict=true, possible_strings=[], &validator_proc)
+        @possible_strings = possible_strings
+        super(name, Object, default, strict, &validator_proc)
+      end
+
+      def coerce(value)
+        value.to_s
+      end
+
+      def validate(value)
+        super(value)
+        unless @possible_strings.empty? || @possible_strings.include?(value)
+          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+        end
+      end
+    end
+
     class ExistingFilePath < Setting
       def initialize(name, default=nil, strict=true)
         super(name, ::String, default, strict) do |file_path|
@@ -549,13 +649,22 @@ module LogStash
     end
 
     class TimeValue < Coercible
+      include LogStash::Util::Loggable
+
       def initialize(name, default, strict=true, &validator_proc)
-        super(name, ::Integer, default, strict, &validator_proc)
+        super(name, Util::TimeValue, default, strict, &validator_proc)
       end
 
       def coerce(value)
-        return value if value.is_a?(::Integer)
-        Util::TimeValue.from_value(value).to_nanos
+        if value.is_a?(::Integer)
+          deprecation_logger.deprecated("Integer value for `#{name}` does not have a time unit and will be interpreted in nanoseconds. " +
+                                        "Time units will be required in a future release of Logstash. " +
+                                        "Acceptable unit suffixes are: `d`, `h`, `m`, `s`, `ms`, `micros`, and `nanos`.")
+
+          return Util::TimeValue.new(value, :nanosecond)
+        end
+
+        Util::TimeValue.from_value(value)
       end
     end
 
@@ -626,6 +735,126 @@ module LogStash
       protected
       def validate(value)
         coerce(value)
+      end
+    end
+
+    # @see Setting#nullable
+    # @api internal
+    class Nullable < SimpleDelegator
+      def validate(value)
+        return true if value.nil?
+
+        __getobj__.send(:validate, value)
+      end
+
+      # prevent delegate from intercepting
+      def validate_value
+        validate(value)
+      end
+    end
+
+    ##
+    # @api private
+    #
+    # A DeprecatedAlias provides a deprecated alias for a setting, and is meant
+    # to be used exclusively through `SettingWithDeprecatedAlias#wrap`
+    class DeprecatedAlias < SimpleDelegator
+      # include LogStash::Util::Loggable
+
+      alias_method :wrapped, :__getobj__
+      attr_reader :canonical_proxy
+
+      def initialize(canonical_proxy, alias_name)
+        @canonical_proxy = canonical_proxy
+
+        clone = @canonical_proxy.canonical_setting.clone
+        clone.instance_variable_set(:@name, alias_name)
+        clone.instance_variable_set(:@default, nil)
+
+        super(clone)
+      end
+
+      def set(value)
+        deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
+                                             deprecated_alias: name,
+                                             canonical_name: canonical_proxy.name))
+        super
+      end
+
+      def value
+        logger.warn(I18n.t("logstash.settings.deprecation.queried",
+                           deprecated_alias: name,
+                           canonical_name: canonical_proxy.name))
+        @canonical_proxy.value
+      end
+
+      def validate_value
+        # bypass deprecation warning
+        wrapped.validate_value if set?
+      end
+    end
+
+    ##
+    # A SettingWithDeprecatedAlias wraps any Setting to provide a deprecated
+    # alias, and hooks `Setting#validate_value` to ensure that a deprecation
+    # warning is fired when the setting is provided by its deprecated alias,
+    # or to produce an error when both the canonical name and deprecated
+    # alias are used together.
+    class SettingWithDeprecatedAlias < SimpleDelegator
+
+      ##
+      # Wraps the provided setting, returning a pair of connected settings
+      # including the canonical setting and a deprecated alias.
+      # @param canonical_setting [Setting]: the setting to wrap
+      # @param deprecated_alias_name [String]: the name for the deprecated alias
+      #
+      # @return [SettingWithDeprecatedAlias,DeprecatedSetting]
+      def self.wrap(canonical_setting, deprecated_alias_name)
+        setting_proxy = new(canonical_setting, deprecated_alias_name)
+
+        [setting_proxy, setting_proxy.deprecated_alias]
+      end
+
+      attr_reader :deprecated_alias
+      alias_method :canonical_setting, :__getobj__
+
+      def initialize(canonical_setting, deprecated_alias_name)
+        super(canonical_setting)
+
+        @deprecated_alias = DeprecatedAlias.new(self, deprecated_alias_name)
+      end
+
+      def set(value)
+        canonical_setting.set(value)
+      end
+
+      def value
+        return super if canonical_setting.set?
+
+        # bypass warning by querying the wrapped setting's value
+        return deprecated_alias.wrapped.value if deprecated_alias.set?
+
+        default
+      end
+
+      def set?
+        canonical_setting.set? || deprecated_alias.set?
+      end
+
+      def format(output)
+        return super unless deprecated_alias.set? && !canonical_setting.set?
+
+        output << "*#{self.name}: #{value.inspect} (via deprecated `#{deprecated_alias.name}`; default: #{default.inspect})"
+      end
+
+      def validate_value
+        if deprecated_alias.set? && canonical_setting.set?
+          fail(ArgumentError, I18n.t("logstash.settings.deprecation.ambiguous",
+                                     canonical_name: canonical_setting.name,
+                                     deprecated_alias: deprecated_alias.name))
+        end
+
+        super
       end
     end
   end

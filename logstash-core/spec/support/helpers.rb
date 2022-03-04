@@ -1,5 +1,22 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "stud/task"
+require "rspec/wait"
 
 def silence_warnings
   warn_level = $VERBOSE
@@ -46,12 +63,7 @@ def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)
                            "config.string" => config_string,
                            "config.reload.automatic" => reloadable)
   pipeline_config = mock_pipeline_config(pipeline_id, config_string, settings)
-  LogStash::Pipeline.new(pipeline_config)
-end
-
-def mock_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
-  pipeline_config = mock_pipeline_config(settings.get("pipeline.id"), config_string, settings)
-  LogStash::Pipeline.new(pipeline_config, metric)
+  LogStash::JavaPipeline.new(pipeline_config)
 end
 
 def mock_java_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
@@ -70,7 +82,7 @@ def mock_pipeline_config(pipeline_id, config_string = nil, settings = {})
 
   config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", 0, 0, config_string)
 
-  LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, pipeline_id, config_part, settings)
+  org.logstash.config.ir.PipelineConfig.new(LogStash::Config::Source::Local, pipeline_id.to_sym, [config_part], settings)
 end
 
 def start_agent(agent)

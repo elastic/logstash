@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative "base"
 
 module ServiceTester
@@ -13,11 +29,19 @@ module ServiceTester
         stdout = cmd.stdout
       end
       stdout.match(/^Installed Packages$/)
-      stdout.match(/^logstash.noarch/)
+      stdout.match(/^logstash.noarch/) || stdout.match(/^logstash.#{architecture_extension}/)
     end
 
-    def package_for(filename, base=ServiceTester::Base::LOCATION)
-      File.join(base, "#{filename}.rpm")
+    def package_extension
+      "rpm"
+    end
+
+    def architecture_extension
+      if java.lang.System.getProperty("os.arch") == "amd64"
+        "x86_64"
+      else
+        "aarch64"
+      end
     end
 
     def install(package, host=nil)
@@ -30,7 +54,7 @@ module ServiceTester
         errors << cmd.stderr unless cmd.stderr.empty?
       end
       if exit_status > 0 
-        raise InstallException.new(errors.join("\n"))
+        raise InstallException.new("Error installing #{package}, #{errors.join('\n')}")
       end
     end
 

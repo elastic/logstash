@@ -23,7 +23,6 @@ And then execute:
 Define the dependencies in your Rakefile
 
 ```ruby
-# encoding: utf-8
 require "paquet"
 
 TARGET_DIRECTORY = File.join(File.dirname(__FILE__), "dependencies")

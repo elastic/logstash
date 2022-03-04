@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
@@ -37,10 +54,11 @@ describe "Test that Logstash" do
   let(:test_env) {Hash.new}
   let(:settings_dir) {Stud::Temporary.directory}
   let(:settings) {{"pipeline.id" => "${pipeline.id}"}}
+  let(:logstash_keystore_passowrd) { "keystore_pa9454w3rd" }
 
   it "expands secret store variables from config" do
     test_env["TEST_ENV_PATH"] = test_path
-    test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
     @logstash.env_variables = test_env
     @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
@@ -50,7 +68,7 @@ describe "Test that Logstash" do
   end
 
   it "expands secret store variables from settings" do
-    test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
     @logstash.env_variables = test_env
     @logstash.spawn_logstash("-e", "input {heartbeat {}} output { }", "--path.settings", settings_dir)
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
@@ -60,6 +78,13 @@ describe "Test that Logstash" do
       mypipeline = result.fetch('pipelines').fetch('mypipeline')
       expect(mypipeline).not_to be_nil
     end
+  end
+
+  it "won't show secret value when pipeline definition is wrong" do
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
+    logstash = @logstash.run_cmd(["bin/logstash","-e", "input { http { user => test password => \"${tag1}\" port = \"3333\" }}", "--path.settings", settings_dir], true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/\[ERROR\]/)
+    expect(logstash.stderr_and_stdout).to match(/\\"\$\{tag1\}\\"/)
   end
 
   context "won't start" do
@@ -77,7 +102,7 @@ describe "Test that Logstash" do
   context "won't start " do
     let(:settings) {{"pipeline.id" => "${missing}"}}
     it "with correct password, but invalid variable " do
-      test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
+      test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
       @logstash.env_variables = test_env
       @logstash.spawn_logstash("-e", "input {stdin {}} output { }", "--path.settings", settings_dir)
       try(num_retries) do

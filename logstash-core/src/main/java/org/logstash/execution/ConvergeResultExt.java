@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import org.jruby.*;
@@ -13,6 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * JRuby extension, used by agent to collect the results of running pipeliene actions (Create, Update, Delete)
+ * */
 @JRubyClass(name = "ConvergeResult")
 public class ConvergeResultExt extends RubyObject {
 
@@ -82,6 +105,9 @@ public class ConvergeResultExt extends RubyObject {
     }
 
 
+    /**
+     * Base class for all action results classes (Failed / Success)
+     * */
     @JRubyClass(name = "ActionResult")
     public static abstract class ActionResultExt extends RubyBasicObject {
 
@@ -133,6 +159,9 @@ public class ConvergeResultExt extends RubyObject {
         protected abstract boolean getSuccessFul();
     }
 
+    /**
+     * Failed result of running an action.
+     * */
     @JRubyClass(name = "FailedAction")
     public static final class FailedActionExt extends ActionResultExt {
 
@@ -189,6 +218,9 @@ public class ConvergeResultExt extends RubyObject {
         }
     }
 
+    /**
+     * Successful result of running an action.
+     * */
     @JRubyClass(name = "SuccessfulAction")
     public static final class SuccessfulActionExt extends ActionResultExt {
 

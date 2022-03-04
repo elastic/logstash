@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ext;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -48,6 +68,10 @@ public final class JrubyTimestampExtLibrary {
             this.timestamp = timestamp;
         }
 
+        public java.time.Instant toInstant() {
+            return this.timestamp.toInstant();
+        }
+
         // def initialize(time = Time.new)
         @JRubyMethod(optional = 1)
         public JrubyTimestampExtLibrary.RubyTimestamp initialize(final ThreadContext context,
@@ -58,7 +82,7 @@ public final class JrubyTimestampExtLibrary {
             if (time.isNil()) {
                 this.timestamp = new Timestamp();
             } else if (time instanceof RubyTime) {
-                this.timestamp = new Timestamp(((RubyTime) time).getDateTime());
+                this.timestamp = new Timestamp(((RubyTime) time).toInstant());
             } else if (time instanceof RubyString) {
                 try {
                     this.timestamp = new Timestamp(time.toString());
@@ -78,19 +102,26 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "time")
         public RubyTime ruby_time(ThreadContext context)
         {
-            return RubyTime.newTime(context.runtime, this.timestamp.getTime());
+            final org.joda.time.DateTime milliPrecise = org.joda.time.Instant.ofEpochMilli(this.timestamp.toEpochMilli()).toDateTime();
+            final long excessNanos = Math.floorMod(this.timestamp.nsec(), 1_000_000L);
+
+            return RubyTime.newTime(context.runtime, milliPrecise, excessNanos);
         }
 
         @JRubyMethod(name = "to_i")
         public IRubyObject ruby_to_i(ThreadContext context)
         {
-            return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getMillis() / 1000);
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.toInstant().getEpochSecond());
         }
 
         @JRubyMethod(name = "to_f")
         public IRubyObject ruby_to_f(ThreadContext context)
         {
-            return RubyFloat.newFloat(context.runtime, this.timestamp.getTime().getMillis() / 1000.0d);
+            final java.time.Instant instant = this.timestamp.toInstant();
+
+            final double epochSecondsWithNanos = instant.getEpochSecond() + (instant.getNano() / 1_000_000_000d);
+
+            return RubyFloat.newFloat(context.runtime, epochSecondsWithNanos);
         }
 
         @JRubyMethod(name = "to_s")
@@ -142,7 +173,7 @@ public final class JrubyTimestampExtLibrary {
                 } else if (time instanceof RubyTime) {
                     return RubyTimestamp.newRubyTimestamp(
                         context.runtime,
-                        new Timestamp(((RubyTime) time).getDateTime())
+                        new Timestamp(((RubyTime) time).toInstant())
                     );
                 } else if (time instanceof RubyString) {
                     return fromRString(context.runtime, (RubyString) time);
@@ -186,7 +217,7 @@ public final class JrubyTimestampExtLibrary {
             } else {
                 t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0], args[1]);
             }
-            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp(t.getDateTime()));
+            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp(t.toInstant()));
         }
 
         @JRubyMethod(name = "now", meta = true)
@@ -213,18 +244,23 @@ public final class JrubyTimestampExtLibrary {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.usec());
         }
 
+        @JRubyMethod(name = {"nsec", "tv_nsec"})
+        public org.jruby.RubyInteger ruby_nsec(final ThreadContext context) {
+            return RubyFixnum.newFixnum(context.runtime, this.timestamp.nsec());
+        }
+
         @JRubyMethod(name = "year")
         public IRubyObject ruby_year(ThreadContext context)
         {
-            return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
+            final int year = this.timestamp.toInstant().atOffset(java.time.ZoneOffset.UTC).getYear();
+            return RubyFixnum.newFixnum(context.runtime, year);
         }
 
         @JRubyMethod(name = "<=>")
         public IRubyObject op_cmp(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return ruby_time(context).op_cmp(
-                    context, ((JrubyTimestampExtLibrary.RubyTimestamp) other).ruby_time(context)
-                );
+                final int cmp = this.timestamp.compareTo(((RubyTimestamp) other).timestamp);
+                return RubyFixnum.newFixnum(context.runtime, cmp);
             }
             return context.nil;
         }

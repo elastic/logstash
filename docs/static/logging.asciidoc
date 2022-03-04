@@ -25,7 +25,7 @@ is restarted.
 [[log4j2]]
 ==== Log4j2 configuration
 
-Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You
+Logstash ships with a `log4j2.properties` file with out-of-the-box settings, including logging to console. You
 can modify this file to change the rotation policy, type, and other
 https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2
 configuration]. 
@@ -42,6 +42,12 @@ logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
 logger.elasticsearchoutput.level = debug
 --------------------------------------------------
 
+The previous example defines a name and level for the logger `logstash.outputs.elasticsearch`.
+The logger is usually identified by a Java class name, such as
+`org.logstash.dissect.Dissector`, for example.  It can also be a partial package
+path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
+the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
+
 ==== Logging APIs
 
 For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
@@ -49,7 +55,7 @@ downtime. Instead, you can dynamically update logging levels through the logging
 immediately and do not need a restart. 
 
 NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 ===== Retrieve list of logging configurations
@@ -165,10 +171,10 @@ slowlog.threshold.trace: 100ms
 
 In this example:
 
-* If the log level is set to `warn`, the log shows events that took longer than 2 seconds to process.
+* If the log level is set to `warn`, the log shows events that took longer than 2s to process.
 * If the log level is set to `info`, the log shows events that took longer than 1s to process.
-* If the log level is set to `trace`, the log shows events that took longer than 100ms to process.
 * If the log level is set to `debug`, the log shows events that took longer than 500ms to process.
+* If the log level is set to `trace`, the log shows events that took longer than 100ms to process.
 
 The logs include the full event and filter configuration that are responsible
 for the slowness.

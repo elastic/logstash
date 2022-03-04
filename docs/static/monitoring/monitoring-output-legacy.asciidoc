@@ -1,0 +1,47 @@
+[float]
+[role="xpack"]
+[[logstash-monitoring-output-legacy]]
+==== Output
+
+Like all Logstash pipelines, the purpose of the dedicated monitoring pipeline is 
+to send events to outputs. In the case of monitoring for Logstash, the output 
+is always an `elasticsearch` output. However, unlike ordinary Logstash pipelines, 
+the output is configured within the `logstash.yml` settings file via the
+`xpack.monitoring.elasticsearch.*` settings.
+
+Other than its unique manner of configuration, this `elasticsearch` output
+behaves like all `elasticsearch` outputs, including its ability to pause data 
+collection when issues exist with the output.
+
+IMPORTANT: It is critical that all Logstash nodes share the same setup. 
+Otherwise, monitoring data might be routed in different ways or to different places.
+
+[float]
+[[logstash-monitoring-default-legacy]]
+===== Default Configuration
+
+If a Logstash node does not explicitly define a monitoring output setting, 
+the following default configuration is used:
+
+[source,yaml]
+---------------------------------------------------
+xpack.monitoring.elasticsearch.hosts: [ "http://localhost:9200" ]
+---------------------------------------------------
+
+All data produced by monitoring for Logstash is indexed in the monitoring 
+cluster by using the `.monitoring-logstash` template, which is managed by the
+{ref}/es-monitoring-exporters.html[exporters] within {es}. 
+
+If you are working with a cluster that has {security} enabled, extra steps are 
+necessary to properly configure Logstash. For more information, see 
+<<configuring-logstash>>. 
+
+IMPORTANT: When discussing security relative to the `elasticsearch` output, it
+is critical to remember that all users are managed on the production cluster, 
+which is identified in the `xpack.monitoring.elasticsearch.hosts` setting.
+This is particularly important to remember when you move from development 
+environments to production environments, where you often have dedicated 
+monitoring clusters.
+
+For more information about the configuration options for the output, see 
+<<monitoring-settings-legacy>>.

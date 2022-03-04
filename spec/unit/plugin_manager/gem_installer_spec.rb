@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "pluginmanager/gem_installer"
 require "pluginmanager/ui"
 require "stud/temporary"
@@ -30,9 +46,7 @@ describe LogStash::PluginManager::GemInstaller do
     let(:message) { "Hello from the friendly pack" }
 
     context "when present" do
-      before do
-        allow_any_instance_of(::Gem::Specification).to receive(:post_install_message).and_return(message)
-      end
+      let(:plugin_name) { 'logstash-input-packtest_pim-0.0.1' }
 
       context "when we want the message" do
         it "display the message" do
@@ -48,7 +62,7 @@ describe LogStash::PluginManager::GemInstaller do
     end
 
     context "when not present" do
-      context "when we want the message" do
+      context "when we don't want the message" do
         it "doesn't display the message" do
           expect(LogStash::PluginManager.ui).not_to receive(:info).with(message)
           subject.install(simple_gem, true, temporary_gem_home)

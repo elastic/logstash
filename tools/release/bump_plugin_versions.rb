@@ -1,9 +1,42 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'net/http'
 require 'uri'
 require 'fileutils'
 require 'yaml'
+require 'optparse'
+
+options = {pr: true}
+OptionParser.new do |opts|
+  opts.banner = <<~EOBANNER
+   Usage: bump_plugin_versions.rb base_branch last_release allow_for --[no-]pr
+
+   If you have a local lockfile, you can specify "LOCAL" for last_release to
+   use it as your baseline. This allows you to consume patch releases on a
+   minor release after feature freeze and the initial minor updates.
+
+  EOBANNER
+
+  opts.on("--[no-]pr", "Create Pull Request") do |v|
+    options[:pr] = v
+  end
+end.parse!
 
 def compute_dependecy(version, allow_for)
   gem_version = Gem::Version.new(version)
@@ -30,12 +63,22 @@ end
 
 puts "Computing #{allow_bump_for} plugin dependency bump from #{base_logstash_version}.."
 
-puts "Fetching lock file for #{base_logstash_version}.."
-uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
-result = Net::HTTP.get(uri)
-if result.match(/404/)
-  puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
-  exit(1)
+if base_logstash_version == "LOCAL"
+  puts "Using local lockfile..."
+  begin
+    result = File.read("Gemfile.jruby-2.5.lock.release")
+  rescue => e
+    puts "Failed to read local lockfile #{e}"
+    exit(1)
+  end
+else
+  puts "Fetching lock file for #{base_logstash_version}.."
+  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
+  result = Net::HTTP.get(uri)
+  if result.match(/404/)
+    puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
+    exit(1)
+  end
 end
 
 base_plugin_versions = {}
@@ -60,14 +103,12 @@ end
 
 IO.write("Gemfile.template", gemfile)
 
-puts "Cleaning up before running 'rake artifact:tar'"
-FileUtils.rm_f("Gemfile")
+puts "Cleaning up before running computing dependencies"
 FileUtils.rm_f("Gemfile.jruby-2.5.lock.release")
-FileUtils.rm_rf("vendor")
 
 # compute new lock file
-puts "Running 'rake artifact:tar'"
-result = `rake artifact:tar`
+puts "Running: ./gradlew clean installDefaultGems"
+`./gradlew clean installDefaultGems`
 
 puts "Cleaning up generated lock file (removing injected requirements)"
 # remove explicit requirements from lock file
@@ -86,6 +127,7 @@ FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.5.lock.release")
 
 puts `git diff Gemfile.jruby-2.5.lock.release`
 
+exit(0) unless options[:pr]
 puts "Creating commit.."
 
 branch_name = "update_lock_#{Time.now.to_i}"

@@ -1,0 +1,39 @@
+[float]
+[[reserved-fields]] 
+==== Reserved fields in {ls} events 
+
+Some fields in {ls} events are reserved, or are required to adhere to a certain
+shape. Using these fields can cause runtime exceptions when the event API or
+plugins encounter incompatible values.
+
+[cols="<,<",options="header",]
+|=======================================================================
+| | 
+| <<metadata,`@metadata`>> |A key/value map. 
+
+Ruby-based Plugin API: value is an 
+https://javadoc.io/static/org.jruby/jruby-core/9.2.5.0/org/jruby/RubyHash.html[org.jruby.RubyHash]. 
+
+Java-based Plugin API: value is an 
+https://github.com/elastic/logstash/blob/main/logstash-core/src/main/java/org/logstash/ConvertedMap.java[org.logstash.ConvertedMap].
+ 
+In serialized form (such as JSON): a key/value map where the keys must be
+strings and the values are not constrained to a particular type.
+
+| `@timestamp` |An object holding representation of a specific moment in time.
+
+Ruby-based Plugin API: value is an
+https://javadoc.io/static/org.jruby/jruby-core/9.2.5.0/org/jruby/RubyTime.html[org.jruby.RubyTime].
+
+Java-based Plugin API: value is a
+https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/Instant.html[java.time.Instant].
+
+In serialized form (such as JSON) or when setting with Event#set: an
+ISO8601-compliant String value is acceptable.
+
+| `@version` |A string, holding an integer value.
+| `tags` |An array of distinct strings
+|=======================================================================
+
+
+

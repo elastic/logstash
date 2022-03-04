@@ -1,4 +1,21 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+require 'tempfile'
 require_relative "../../vagrant/helpers"
 require_relative "system_helpers"
 
@@ -59,12 +76,49 @@ module ServiceTester
       plugins_list.include?(search_token)
     end
 
+    ##
+    # Determines whether a specific gem is included in the vendored distribution.
+    #
+    # Returns `true` if _any version_ of the gem is vendored.
+    #
+    # @param host [???]
+    # @param gem_name [String]
+    # @return [Boolean]
+    #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
+    def gem_vendored?(host, gem_name)
+      cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
+      matches = cmd.stdout.lines
+      matches.map do |path_to_gemspec|
+        filename = path_to_gemspec.split('/').last
+        gemspec_contents = run_command("cat #{path_to_gemspec}", host).stdout
+        Tempfile.create(filename) do |tempfile|
+          tempfile.write(gemspec_contents)
+          tempfile.flush
+          Gem::Specification::load(tempfile.path)
+        end
+      end.select { |gemspec| gemspec.name == gem_name }.any?
+    end
+
     def download(from, to, host)
       run_command("wget #{from} -O #{to}", host)
     end
 
     def delete_file(path, host)
       run_command("rm -rf #{path}", host)
+    end
+
+    def package_for(filename, skip_jdk_infix, base=ServiceTester::Base::LOCATION)
+      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix)
+      File.join(base, "#{filename}#{jdk_arch_ext}.#{package_extension}")
+    end
+
+    private
+    def jdk_architecture_extension(skip_jdk_infix)
+      if skip_jdk_infix
+        ""
+      else
+        "-" + architecture_extension
+      end
     end
   end
 end

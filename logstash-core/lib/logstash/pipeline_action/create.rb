@@ -1,6 +1,21 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/pipeline_action/base"
-require "logstash/pipeline"
 require "logstash/java_pipeline"
 
 
@@ -18,7 +33,7 @@ module LogStash module PipelineAction
     end
 
     def pipeline_id
-      @pipeline_config.pipeline_id
+      @pipeline_config.pipeline_id.to_sym
     end
 
     # Make sure we execution system pipeline like the monitoring
@@ -32,8 +47,7 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines_registry)
-      pipeline_class = @pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::Pipeline
-      new_pipeline = pipeline_class.new(@pipeline_config, @metric, agent)
+      new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end

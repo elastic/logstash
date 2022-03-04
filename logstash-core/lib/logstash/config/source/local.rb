@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/config/source/base"
 require "logstash/config/pipeline_config"
 require "uri"
@@ -59,7 +75,7 @@ module LogStash module Config module Source
         end
 
         get_matched_files.each do |file|
-          next unless ::File.file?(file) # skip directory
+          next unless ::File.file?(file) or ::File.pipe?(file) # skip directory
 
           logger.debug("Reading config file", :config_file => file)
 
@@ -196,7 +212,7 @@ module LogStash module Config module Source
 
       return [] if config_parts.empty?
 
-      [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
+      [org.logstash.config.ir.PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
     def automatic_reload_with_config_string?

@@ -168,6 +168,7 @@ to standard output.
 Logstash has two types of configuration files: _pipeline configuration files_, which define the Logstash processing
 pipeline, and _settings files_, which specify options that control Logstash startup and execution.
 
+[[pipeline-config-files]]
 ==== Pipeline Configuration Files
 
 You create pipeline configuration files when you define the stages of your Logstash processing pipeline. On deb and
@@ -176,6 +177,7 @@ files with `.conf` extension in the `/etc/logstash/conf.d directory` and ignores
 
 See <<configuration>> for more info.
 
+[[settings-files]]
 ==== Settings Files
 
 The settings files are already defined in the Logstash installation. Logstash includes the following settings files:

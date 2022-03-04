@@ -31,7 +31,7 @@ input plugin enables Logstash to receive events from the Elastic Beats framework
 to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
 
 To install Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page]. You can also refer to
-{filebeat-ref}/filebeat-getting-started.html[Getting Started with Filebeat] in the Beats documentation for additional
+{filebeat-ref}/filebeat-installation-configuration.html[Filebeat quick start] for additional
 installation instructions.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
@@ -414,11 +414,7 @@ Notice that the event now contains geographic location information:
 Now that the web logs are broken down into specific fields, you're ready to get
 your data into Elasticsearch. 
 
-TIP: You can run Elasticsearch on your own hardware, or use our
-https://www.elastic.co/cloud/elasticsearch-service[hosted {es} Service] on
-Elastic Cloud. The Elasticsearch Service is available on both AWS and GCP.
-https://www.elastic.co/cloud/elasticsearch-service/signup[Try the {es} Service
-for free].
+TIP: {ess-leadin}
 
 The Logstash pipeline can index the data into an
 Elasticsearch cluster. Edit the `first-pipeline.conf` file and replace the entire `output` section with the following
@@ -658,7 +654,7 @@ If you are using Kibana to visualize your data, you can also explore the Filebea
 
 image::static/images/kibana-filebeat-data.png[Discovering Filebeat data in Kibana]
 
-See the {filebeat-ref}/filebeat-getting-started.html[Filebeat getting started docs] for info about loading the Kibana
+See the {filebeat-ref}/filebeat-installation-configuration.html[Filebeat quick start docs] for info about loading the Kibana
 index pattern for Filebeat.
 
 You've successfully created a pipeline that uses Filebeat to take Apache web logs as input, parses those logs to

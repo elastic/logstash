@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "tmpdir"
 require "spec_helper"
 require "logstash/codecs/plain"
@@ -35,7 +51,7 @@ class DLQCommittingFilter < LogStash::Filters::Base
   def close() end
 end
 
-describe LogStash::Pipeline do
+describe LogStash::JavaPipeline do
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) do
     {
@@ -56,7 +72,7 @@ describe LogStash::Pipeline do
     eos
   }
 
-  subject { mock_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
+  subject { mock_java_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
 
   before(:each) do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
@@ -75,14 +91,14 @@ describe LogStash::Pipeline do
     let(:pipeline_id) { "test-dlq" }
 
     it "retrieves proper pipeline-level DLQ writer" do
-      expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).and_call_original
-      subject.run
+      expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).at_least(:once).and_call_original
+      subject.start
+      subject.shutdown
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       dlq_reader = org.logstash.common.io.DeadLetterQueueReader.new(dlq_path)
       entry = dlq_reader.pollEntry(40)
       expect(entry).to_not be_nil
       expect(entry.reason).to eq("my reason")
-      subject.shutdown
     end
   end
 
@@ -92,8 +108,8 @@ describe LogStash::Pipeline do
 
     it "does not write to the DLQ" do
       expect(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:new).and_call_original
-      expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).and_call_original
-      subject.run
+      expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).at_least(:once).and_call_original
+      subject.start
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       expect(java.nio.file.Files.exists(dlq_path)).to eq(false)
       subject.shutdown

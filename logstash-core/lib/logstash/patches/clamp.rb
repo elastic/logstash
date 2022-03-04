@@ -1,5 +1,23 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'clamp'
 require 'logstash/environment'
+require 'logstash/deprecation_message'
 
 module Clamp
   module Attribute
@@ -60,8 +78,17 @@ module Clamp
 
       def define_deprecated_writer_for(option, opts, &block)
         define_method(option.write_method) do |value|
-          self.class.logger.warn "DEPRECATION WARNING: The flag #{option.switches} has been deprecated, please use \"--#{opts[:new_flag]}=#{opts[:new_value]}\" instead."
-          LogStash::SETTINGS.set(opts[:new_flag], opts[:new_value])
+          new_flag = opts[:new_flag]
+          new_value = opts.fetch(:new_value, value)
+          passthrough = opts.fetch(:passthrough, false)
+
+          LogStash::DeprecationMessage.instance << "DEPRECATION WARNING: The flag #{option.switches} has been deprecated, please use \"--#{new_flag}=#{new_value}\" instead."
+
+          if passthrough
+            LogStash::SETTINGS.set(option.attribute_name, value)
+          else
+            LogStash::SETTINGS.set(opts[:new_flag], opts.include?(:new_value) ? opts[:new_value] : value)
+          end
         end
       end
     end
@@ -98,5 +125,3 @@ module Clamp
     end
   end
 end
-
-

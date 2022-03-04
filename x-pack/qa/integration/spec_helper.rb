@@ -9,4 +9,3 @@ require_relative "support/shared_examples"
 require_relative "support/elasticsearch/api/actions/update_password"
 require "json"
 require "json-schema"
-

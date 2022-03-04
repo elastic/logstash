@@ -1,5 +1,21 @@
-# encoding: utf-8
-require "logstash/event"
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
 require "logstash/plugin"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
@@ -108,10 +124,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   def execution_context=(context)
     super
-    # There is no easy way to propage an instance variable into the codec, because the codec
-    # are created at the class level
-    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their
-    #               parent plugin's
+    # Setting the execution context after initialization is deprecated and will be removed in
+    # a future release of Logstash. While this code is no longer executed from Logstash core,
+    # we continue to propagate a set execution context to an input's codec, and rely on super's
+    # deprecation warning.
     @codec.execution_context = context
     context
   end
@@ -131,11 +147,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
     require "logstash/codecs/line"
     require "logstash/codecs/json"
     require "logstash/codecs/json_lines"
-    case @codec
-      when LogStash::Codecs::Plain
+
+    case @codec.class.name
+      when "LogStash::Codecs::Plain"
         @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
-      when LogStash::Codecs::JSON
+      when "LogStash::Codecs::JSON"
         @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
         @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
     end

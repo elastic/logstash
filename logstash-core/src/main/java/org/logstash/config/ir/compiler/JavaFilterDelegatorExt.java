@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Event;
@@ -76,9 +96,10 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     protected IRubyObject doFlush(final ThreadContext context, final RubyHash options) {
         if (filter.requiresFlush()) {
             Collection<Event> outputEvents = filter.flush(filterMatchListener);
-            @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(RubyUtil.RUBY, outputEvents.size());
+            final Ruby runtime = context.runtime;
+            @SuppressWarnings("rawtypes") RubyArray newBatch = RubyArray.newArray(runtime, outputEvents.size());
             for (Event outputEvent : outputEvents) {
-                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, (org.logstash.Event)outputEvent));
+                newBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(runtime, (org.logstash.Event)outputEvent));
             }
             return newBatch;
         }

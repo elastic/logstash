@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "spec_helper"
 require "logstash/compiler"
 require "support/helpers"
@@ -32,78 +49,10 @@ describe LogStash::Compiler do
     end
   end
 
-  describe "compiling to Pipeline" do
-    subject(:source_id) { "fake_sourcefile" }
-    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { puts "PCOMP"; described_class.compile_pipeline(source_with_metadata, settings) }
-
-    describe "compiling multiple sources" do
-      let(:sources) do
-        [ 
-          "input { input_0 {} } filter { filter_0 {} } output { output_0 {} }",
-          "input { input_1 {} } filter { filter_1 {} } output { output_1 {} }"
-        ]
-      end
-
-      let(:sources_with_metadata) do
-        sources.map.with_index do |source, idx|
-          org.logstash.common.SourceWithMetadata.new("#{source_protocol}_#{idx}", "#{source_id}_#{idx}", 0, 0, source)
-        end
-      end
-
-      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, false) }
-
-      it "should generate a hash" do
-        expect(pipeline.unique_hash).to be_a(String)
-      end
-
-      it "should compile cleanly" do
-        expect(pipeline).to be_a(org.logstash.config.ir.PipelineIR)
-      end
-
-      it "should provide the original source" do
-        expect(pipeline.original_source).to eq(sources.join("\n"))
-      end
-
-      describe "applying protocol and id metadata" do
-        it "should apply the correct source metadata to all components" do
-          # TODO: seems to be a jruby regression we cannot currently call each on a stream
-          pipeline.get_plugin_vertices.each do |pv|
-            name_idx = pv.plugin_definition.name.split("_").last
-            source_protocol_idx = pv.source_with_metadata.protocol.split("_").last
-            source_id_idx = pv.source_with_metadata.id.split("_").last
-
-            expect(name_idx).to eq(source_protocol_idx)
-            expect(name_idx).to eq(source_id_idx)
-          end
-        end
-      end
-    end
-
-    describe "complex configs" do
-      shared_examples_for "compilable LSCL files" do |path|
-        describe "parsing #{path}" do
-          let(:source) { File.read(path) }
-          
-          it "should compile" do
-            expect(compiled).to be_java_kind_of(Java::OrgLogstashConfigIr::Pipeline)
-          end
-          
-          it "should have a hash" do
-            expect(compiled.uniqueHash)
-          end
-        end
-      end
-      
-      Dir.glob(File.join(SUPPORT_DIR, "lscl_configs", "*.conf")).each do |path|
-        it_should_behave_like "compilable LSCL files", path
-      end
-    end
-  end
-
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
+    let(:cve) { org.logstash.plugins.ConfigVariableExpander.without_secret(org.logstash.common.EnvironmentVariableProvider.default_provider()) }
     subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings.get_value("config.support_escapes")) }
 
     context "when config.support_escapes" do
@@ -122,7 +71,7 @@ describe LogStash::Compiler do
       }
 
       let(:compiled_string) do
-        compiled[:input].toGraph.vertices.toArray.first.getPluginDefinition.arguments["bar"]
+        compiled[:input].toGraph(cve).vertices.toArray.first.getPluginDefinition.arguments["bar"]
       end
 
       before do
@@ -190,6 +139,21 @@ describe LogStash::Compiler do
             "iarg" => 123,
             "farg" => 123.123,
             "sarg" => 'hello'
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a plugin with quoted parameter keys" do
+        let(:plugin_source) { "generator { notquoted => 1 'singlequoted' => 2 \"doublequoted\" => 3}" }
+        let(:expected_plugin_args) do
+          {
+            "notquoted" => 1,
+            "singlequoted" => 2,
+            "doublequoted" => 3,
           }
         end
 

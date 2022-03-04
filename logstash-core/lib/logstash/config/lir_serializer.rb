@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'logstash-core'
 require 'logstash/compiler'
 
@@ -10,7 +26,7 @@ module LogStash;
     def self.serialize(lir_pipeline)
       self.new(lir_pipeline).serialize
     end
-    
+
     def initialize(lir_pipeline)
       @lir_pipeline = lir_pipeline
     end
@@ -28,11 +44,11 @@ module LogStash;
     end
     
     def vertices
-      graph.getVertices.map {|v| vertex(v) }
+      graph.getVertices.map {|v| vertex(v) }.compact
     end
     
     def edges
-      graph.getEdges.map {|e| edge(e) }
+      remove_separators_from_edges(graph.getEdges)
     end
     
     def graph
@@ -47,9 +63,11 @@ module LogStash;
                            if_vertex(v)
                          when :queue
                            queue_vertex(v)
+                         when :separator
+                           nil
                          end
 
-      decorate_vertex(v, hashified_vertex)
+      decorate_vertex(v, hashified_vertex) unless hashified_vertex.nil?
     end
     
     def vertex_type(v)
@@ -59,6 +77,8 @@ module LogStash;
         :if
       elsif v.java_kind_of?(org.logstash.config.ir.graph.QueueVertex)
         :queue
+      elsif v.java_kind_of?(org.logstash.config.ir.graph.SeparatorVertex)
+        :separator
       else
         raise "Unexpected vertex type! #{v}"
       end
@@ -90,6 +110,32 @@ module LogStash;
       {}
     end
     
+    def separator_vertex(v)
+      {}
+    end
+
+    # For separators, create new edges going between the incoming and all of the outgoing edges, and remove
+    # the separator vertices from the serialized output.
+    def remove_separators_from_edges(edges)
+      edges_with_separators_removed = []
+      edges.each do |e|
+        if vertex_type(e.to) == :separator
+          e.to.getOutgoingEdges.each do |outgoing|
+            if e.java_kind_of?(org.logstash.config.ir.graph.BooleanEdge)
+              edges_with_separators_removed << edge(org.logstash.config.ir.graph.BooleanEdge.new(e.edgeType, e.from, outgoing.to))
+            else
+              edges_with_separators_removed << edge(org.logstash.config.ir.graph.PlainEdge.factory.make(e.from, outgoing.to))
+            end
+          end
+        elsif vertex_type(e.from) == :separator
+          # Skip the edges coming from the 'from' separator
+        else
+          edges_with_separators_removed << edge(e)
+        end
+      end
+      edges_with_separators_removed
+    end
+
     def edge(e)
       e_json = {
         "from" => e.from.id,
@@ -124,4 +170,3 @@ module LogStash;
   end
   end
 end
-

@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.execution;
 
 import java.util.ArrayList;
@@ -17,6 +37,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
+/**
+ * JRuby extension, used by pipelines to execute the shutdown flow of a pipeline.
+ * */
 @JRubyClass(name = "ShutdownWatcher")
 public final class ShutdownWatcherExt extends RubyBasicObject {
 
@@ -39,18 +62,6 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
     private int abortThreshold = 3;
 
     private IRubyObject pipeline;
-
-    @JRubyMethod(meta = true, required = 1, optional = 3)
-    public static RubyThread start(final ThreadContext context, final IRubyObject recv, final IRubyObject[] args) {
-        return new RubyThread(context.runtime, context.runtime.getThread(), () -> {
-            try {
-                new ShutdownWatcherExt(context.runtime, RubyUtil.SHUTDOWN_WATCHER_CLASS)
-                    .initialize(context, args).start(context);
-            } catch (final InterruptedException ex) {
-                throw new IllegalStateException(ex);
-            }
-        });
-    }
 
     @JRubyMethod(name = "unsafe_shutdown?", meta = true)
     public static IRubyObject isUnsafeShutdown(final ThreadContext context,
@@ -144,8 +155,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                 TimeUnit.SECONDS.sleep(cyclePeriod);
                 attemptsCount.incrementAndGet();
                 if (stopped(context).isTrue() ||
-                    !pipeline.callMethod(context, "thread")
-                        .callMethod(context, "alive?").isTrue()) {
+                    pipeline.callMethod(context, "finished_execution?").isTrue()) {
                     break;
                 }
                 reports.add(pipelineReportSnapshot(context));

@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.benchmark.cli;
 
 import java.io.ByteArrayOutputStream;
@@ -54,7 +74,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 final long newstrt = System.nanoTime();
                 stats.addValue(
                     (double) (newcount - count) /
-                        (double) TimeUnit.SECONDS.convert(newstrt - start, TimeUnit.NANOSECONDS)
+                        (double) TimeUnit.SECONDS.convert(Math.max(newstrt - start, 1_000_000_000), TimeUnit.NANOSECONDS)
                 );
                 start = newstrt;
                 count = newcount;
@@ -88,15 +108,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 return new long[]{-1L, -1L};
             }
             final Map<String, Object> data = LsBenchJsonUtil.deserializeMetrics(baos.toByteArray());
-            final long count;
-            if (data.containsKey("pipeline")) {
-                count = readNestedLong(data, "pipeline", "events", "filtered");
-
-            } else if (data.containsKey("events")) {
-                count = readNestedLong(data, "events", "filtered");
-            } else {
-                count = -1L;
-            }
+            final long count = getEventCount(data);
             final long cpu;
             if (count == -1L) {
                 cpu = -1L;
@@ -122,6 +134,19 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             nested = (Map<String, Object>) nested.get(path[i]);
         }
         return ((Number) nested.get(path[path.length - 1])).longValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private long getEventCount(Map<String, Object> data) {
+        final long count;
+        if (data.containsKey("pipeline") && ((Map<String, Object>) data.get("pipeline")).containsKey("events")) {
+            count = readNestedLong(data, "pipeline", "events", "filtered");
+        } else if (data.containsKey("events")) {
+            count = readNestedLong(data, "events", "filtered");
+        } else {
+            count = -1L;
+        }
+        return count;
     }
 
     /**

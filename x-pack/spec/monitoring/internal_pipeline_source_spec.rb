@@ -4,9 +4,8 @@
 
 require "logstash-core"
 require "logstash/agent"
-require "logstash/agent"
+require "logstash/runner"
 require "monitoring/inputs/metrics"
-require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
 require 'license_checker/x_pack_info'
 require "rspec/wait"
@@ -23,11 +22,17 @@ describe LogStash::Monitoring::InternalPipelineSource do
     let(:options) { { "collection_interval" => xpack_monitoring_interval,
                         "collection_timeout_interval" => 600 } }
 
-    subject { described_class.new(pipeline_config, mock_agent) }
+    subject { described_class.new(pipeline_config, mock_agent, system_settings) }
     let(:mock_agent) { double("agent")}
     let(:mock_license_client) { double("es_client")}
     let(:license_reader) { LogStash::LicenseChecker::LicenseReader.new(system_settings, 'monitoring', es_options)}
-    let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
+    let(:extension) { LogStash::MonitoringExtension.new }
+    let(:system_settings) do
+      LogStash::Runner::SYSTEM_SETTINGS.clone.tap do |system_settings|
+        extension.additionals_settings(system_settings) # register defaults from extension
+        apply_settings(settings, system_settings) # apply `settings`
+      end
+    end
     let(:license_status) { 'active'}
     let(:license_type) { 'trial' }
     let(:license_expiry_date) { Time.now + (60 * 60 * 24)}
@@ -47,7 +52,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
 
     let(:unordered_config_parts) { ordered_config_parts.shuffle }
 
-    let(:pipeline_config) { LogStash::Config::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
+    let(:pipeline_config) { Java::OrgLogstashConfigIr::PipelineConfig.new(source, pipeline_id, unordered_config_parts, system_settings) }
 
     let(:es_options) do
       {
@@ -70,7 +75,6 @@ describe LogStash::Monitoring::InternalPipelineSource do
     end
 
     before :each do
-      allow(subject).to receive(:es_options_from_settings_or_modules).and_return(es_options)
       allow(subject).to receive(:license_reader).and_return(license_reader)
       allow(license_reader).to receive(:build_client).and_return(mock_license_client)
     end
@@ -101,7 +105,7 @@ describe LogStash::Monitoring::InternalPipelineSource do
         end
       end
 
-      %w(basic standard trial gold platinum).each  do |license_type|
+      LogStash::LicenseChecker::LICENSE_TYPES.each  do |license_type|
         context "With a valid #{license_type} license" do
           let(:license_type) { license_type }
           let(:license) do

@@ -1,12 +1,31 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.23'
-        classpath "de.undercouch:gradle-download-task:3.2.0"
-        classpath "org.jruby:jruby-complete:9.2.8.0"
+        classpath 'org.yaml:snakeyaml:1.29'
+        classpath "de.undercouch:gradle-download-task:4.0.4"
+        classpath "org.jruby:jruby-complete:9.2.20.1"
     }
 }
 
@@ -23,12 +42,14 @@ import java.lang.annotation.Annotation
 import java.nio.file.Files
 import java.nio.file.Paths
 
+
 ext {
     bundle = this.&bundle
     bundleWithEnv = this.&bundleWithEnv
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
+    setupJruby = this.&setupJruby
     generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
     validatePluginJar = this.&validatePluginJar
     versionMap = new HashMap()
@@ -80,7 +101,7 @@ void gem(File projectDir, File buildDir, String gem, String version, String path
         jruby.runScriptlet("""
                 require 'rubygems/commands/install_command'
                 cmd = Gem::Commands::InstallCommand.new
-                cmd.handle_options ['--no-ri', '--no-rdoc', '${gem}', '-v', '${version}', '-i', '${path}']
+                cmd.handle_options ['--no-document', '${gem}', '-v', '${version}', '-i', '${path}']
                 begin
                     cmd.execute
                 rescue Gem::SystemExitException => e
@@ -126,6 +147,15 @@ void rake(File projectDir, File buildDir, String task) {
                 rake['${task}'].invoke
                 """
         )
+    }
+}
+
+void setupJruby(File projectDir, File buildDir) {
+    executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
+        jruby.currentDirectory = projectDir
+        jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
+        jruby.runScriptlet("LogStash::Bundler.invoke!")
+        jruby.runScriptlet("LogStash::Bundler.genericize_platform")
     }
 }
 
@@ -179,7 +209,7 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
 
-task downloadJRuby(type: Download) {
+tasks.register("downloadJRuby", Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
@@ -190,7 +220,8 @@ task downloadJRuby(type: Download) {
 
 downloadJRuby.onlyIf { customJRubyDir == "" }
 
-task verifyFile(dependsOn: downloadJRuby, type: Verify) {
+tasks.register("verifyFile", Verify) {
+    dependsOn downloadJRuby
     description "Verify the SHA1 of the download JRuby artifact"
     inputs.file(jrubyTarPath)
     outputs.file(jrubyTarPath)
@@ -202,7 +233,7 @@ task verifyFile(dependsOn: downloadJRuby, type: Verify) {
 verifyFile.onlyIf { customJRubyDir == "" }
 verifyFile.onlyIf { doChecksum }
 
-task buildCustomJRuby(type: Exec) {
+tasks.register("buildCustomJRuby", Exec) {
     description "Build tar.gz and .jar artifacts from JRuby source directory"
     workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
     commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
@@ -215,7 +246,8 @@ task buildCustomJRuby(type: Exec) {
 
 buildCustomJRuby.onlyIf { customJRubyDir != "" }
 
-task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
+tasks.register("installCustomJRuby", Copy) {
+    dependsOn buildCustomJRuby
     description "Install custom built JRuby in the vendor directory"
     inputs.file(customJRubyTar)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -231,7 +263,8 @@ task installCustomJRuby(dependsOn: buildCustomJRuby, type: Copy) {
 installCustomJRuby.onlyIf { customJRubyDir != "" }
 
 
-task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: Copy) {
+tasks.register("downloadAndInstallJRuby", Copy) {
+    dependsOn=[verifyFile, installCustomJRuby]
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -240,17 +273,10 @@ task downloadAndInstallJRuby(dependsOn: [verifyFile, installCustomJRuby], type: 
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
     exclude "**/stdlib/rdoc/**"
-    exclude "**/stdlib/bundler/**"
-    exclude "**/stdlib/bundler.rb"
-    exclude "**/bundler-1.16.6/**"
-    exclude "**/bundler-1.16.6.*"
+    exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
-    doLast {
-        gem(projectDir, buildDir, "rake", "12.3.1", "${projectDir}/vendor/bundle/jruby/2.5.0")
-        gem(projectDir, buildDir, "json", "1.8.6", "${projectDir}/vendor/bundle/jruby/2.5.0")
-    }
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }

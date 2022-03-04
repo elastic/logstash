@@ -1,4 +1,24 @@
 /*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
+/*
  * Licensed to Elasticsearch under one or more contributor
  * license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright
@@ -24,7 +44,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -75,7 +98,11 @@ public final class RecordIOWriter implements Closeable {
     static final int VERSION_SIZE = 1;
     static final char VERSION = '1';
 
+    private Path recordsFile;
+    private Instant lastWrite = null;
+
     public RecordIOWriter(Path recordsFile) throws IOException {
+        this.recordsFile = recordsFile;
         this.posInBlock = 0;
         this.currentBlockIdx = 0;
         recordsFile.toFile().createNewFile();
@@ -113,6 +140,7 @@ public final class RecordIOWriter implements Closeable {
     }
 
     public long writeEvent(byte[] eventArray) throws IOException {
+        lastWrite = Instant.now();
         ByteBuffer eventBuffer = ByteBuffer.wrap(eventArray);
         RecordType nextType = null;
         ByteBuffer slice = eventBuffer.slice();
@@ -138,6 +166,19 @@ public final class RecordIOWriter implements Closeable {
             slice = slice.slice();
         }
         return channel.position() - startPosition;
+    }
+
+
+    public boolean hasWritten(){
+        return lastWrite != null;
+    }
+
+    public boolean isStale(Duration flushPeriod){
+        return hasWritten() && Instant.now().minus(flushPeriod).isAfter(lastWrite);
+    }
+
+    public Path getPath(){
+        return  this.recordsFile;
     }
 
     @Override

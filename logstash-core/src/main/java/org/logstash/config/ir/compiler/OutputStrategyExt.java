@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.config.ir.compiler;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -12,9 +32,14 @@ import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.ExecutionContextExt;
+import org.logstash.plugins.factory.ContextualizerExt;
+
+import static org.logstash.RubyUtil.PLUGIN_CONTEXTUALIZER_MODULE;
 
 public final class OutputStrategyExt {
 
@@ -54,8 +79,8 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod
-        public IRubyObject classes() {
-            return map.rb_values();
+        public IRubyObject classes(final ThreadContext context) {
+            return map.values(context);
         }
 
         @JRubyMethod
@@ -78,7 +103,7 @@ public final class OutputStrategyExt {
                     String.format(
                         "Could not find output delegator strategy of type '%s'. Value strategies: %s",
                         type.asJavaString(),
-                        map.rb_values().stream().map(v -> ((IRubyObject) v).asJavaString())
+                        map.values(context).stream().map(v -> ((IRubyObject) v).asJavaString())
                             .collect(Collectors.joining(", "))
                     )
                 );
@@ -156,6 +181,9 @@ public final class OutputStrategyExt {
 
         @JRubyMethod(required = 4)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
+            final RubyClass outputClass = (RubyClass) args[0];
+            final IRubyObject metric = args[1];
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
             final RubyHash pluginArgs = (RubyHash) args[3];
             workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
             if (workerCount.isNil()) {
@@ -165,12 +193,9 @@ public final class OutputStrategyExt {
             workerQueue = new ArrayBlockingQueue<>(count);
             workers = context.runtime.newArray(count);
             for (int i = 0; i < count; ++i) {
-                final RubyClass outputClass = (RubyClass) args[0];
-                // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-                final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
+                final IRubyObject output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
                 initOutputCallsite(outputClass);
-                output.callMethod(context, "metric=", args[1]);
-                output.callMethod(context, "execution_context=", args[2]);
+                output.callMethod(context, "metric=", metric);
                 workers.append(output);
                 workerQueue.add(output);
             }
@@ -228,11 +253,15 @@ public final class OutputStrategyExt {
         @JRubyMethod(required = 4)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
+            final IRubyObject metric = args[1];
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
+            final RubyHash pluginArgs = (RubyHash) args[3];
+            // TODO: fixup mocks
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
+            output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
+
             initOutputCallsite(outputClass);
-            output.callMethod(context, "metric=", args[1]);
-            output.callMethod(context, "execution_context=", args[2]);
+            output.callMethod(context, "metric=", metric);
             return this;
         }
 

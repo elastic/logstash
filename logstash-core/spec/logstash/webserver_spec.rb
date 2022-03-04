@@ -1,5 +1,20 @@
-# encoding: utf-8
-# require "logstash/json"
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/webserver"
 require_relative "../support/helpers"
 require "socket"
@@ -40,14 +55,20 @@ describe LogStash::WebServer do
   end
 
   let(:logger) { LogStash::Logging::Logger.new("testing") }
-  let(:agent) { OpenStruct.new({:webserver => webserver, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
-  let(:webserver) { OpenStruct.new({}) }
+  let(:agent) { OpenStruct.new({:webserver => webserver_block, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
+  let(:webserver_block) { OpenStruct.new({}) }
 
-  subject { LogStash::WebServer.new(logger,
-                                    agent,
-                                    { :http_host => "127.0.0.1", :http_ports => port_range })}
+  subject(:webserver) { LogStash::WebServer.new(logger, agent, webserver_options) }
+
+  let(:webserver_options) do
+    {
+      :http_host => api_host,
+      :http_ports => port_range,
+    }
+  end
 
   let(:port_range) { 10000..10010 }
+  let(:api_host) { "127.0.0.1" }
 
   context "when an exception occur in the server thread" do
     let(:spy_output) { spy("stderr").as_null_object }
@@ -123,6 +144,58 @@ describe LogStash::WebServer do
       end
     end
   end
+
+  context "when configured with http basic auth" do
+    around(:each) do |example|
+      begin
+        thread = Thread.new(webserver, &:run)
+
+        Stud.try(10.times) { fail('webserver not running') unless webserver.port }
+
+        example.call
+      ensure
+        webserver.stop
+        thread.join
+      end
+    end
+
+    let(:webserver_options) { super().merge(:auth_basic => { :username => "a-user", :password => LogStash::Util::Password.new("s3cur3") }) }
+
+    context "and no auth is provided" do
+      it 'emits an HTTP 401 with WWW-Authenticate header' do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}").get('/')
+        aggregate_failures do
+          expect(response.status).to eq(401)
+          expect(response.headers.to_hash).to include('www-authenticate' => 'Basic realm="logstash-api"')
+        end
+      end
+    end
+    context "and invalid basic auth is provided" do
+      it 'emits an HTTP 401 with WWW-Authenticate header' do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
+          conn.request :basic_auth, 'john-doe', 'open-sesame'
+        end.get('/')
+        aggregate_failures do
+          expect(response.status).to eq(401)
+          expect(response.headers.to_hash).to include('www-authenticate' => 'Basic realm="logstash-api"')
+        end
+      end
+    end
+    context "and valid auth is provided" do
+      it "returns a relevant response" do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
+          conn.request :basic_auth, 'a-user', 's3cur3'
+        end.get('/')
+        aggregate_failures do
+          expect(response.status).to eq(200)
+          expect(response.headers).to_not include('www-authenticate')
+        end
+        expect(response.body).to match(/\A{.*}\z/)
+        decoded_response = LogStash::Json.load(response.body)
+        expect(decoded_response).to include("id" => "myid")
+      end
+    end
+  end
 end
 
 describe LogStash::IOWrappedLogger do
@@ -148,5 +221,13 @@ describe LogStash::IOWrappedLogger do
 
   it "responds to sync=(v)" do
     expect{ subject.sync = true }.not_to raise_error
+  end
+
+  it "responds to sync" do
+    expect{ subject.sync }.not_to raise_error
+  end
+
+  it "responds to flush" do
+    expect{ subject.flush }.not_to raise_error
   end
 end

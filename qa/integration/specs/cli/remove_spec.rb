@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require_relative '../../framework/fixture'
 require_relative '../../framework/settings'
 require_relative '../../services/logstash_service'
@@ -25,17 +41,21 @@ describe "CLI > logstash-plugin remove" do
         end
 
         context "when no other plugins depends on this plugin" do
+          let(:test_plugin) { "logstash-filter-qatest" }
+
+          before :each do
+            @logstash_plugin.install(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "logstash-filter-qatest-0.1.1.gem"))
+          end
+
           it "successfully remove the plugin" do
-            execute = @logstash_plugin.run_raw("#{offline_wrapper_cmd} bin/logstash-plugin remove logstash-filter-mutate")
+            execute = @logstash_plugin.run_raw("#{offline_wrapper_cmd} bin/logstash-plugin remove #{test_plugin}")
 
             expect(execute.exit_code).to eq(0)
-            expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-filter-mutate/)
+            expect(execute.stderr_and_stdout).to match(/Successfully removed #{test_plugin}/)
 
-            presence_check = @logstash_plugin.list("logstash-filter-mutate")
+            presence_check = @logstash_plugin.list(test_plugin)
             expect(presence_check.exit_code).to eq(1)
             expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
-
-            @logstash_plugin.install("logstash-filter-mutate")
           end
         end
 
@@ -58,17 +78,21 @@ describe "CLI > logstash-plugin remove" do
       end
     else
       context "when no other plugins depends on this plugin" do
+        let(:test_plugin) { "logstash-filter-qatest" }
+
+        before :each do
+          @logstash_plugin.install(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "logstash-filter-qatest-0.1.1.gem"))
+        end
+
         it "successfully remove the plugin" do
-          execute = @logstash_plugin.remove("logstash-filter-mutate")
+          execute = @logstash_plugin.remove(test_plugin)
 
           expect(execute.exit_code).to eq(0)
-          expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-filter-mutate/)
+          expect(execute.stderr_and_stdout).to match(/Successfully removed #{test_plugin}/)
 
-          presence_check = @logstash_plugin.list("logstash-filter-mutate")
+          presence_check = @logstash_plugin.list(test_plugin)
           expect(presence_check.exit_code).to eq(1)
           expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
-
-          @logstash_plugin.install("logstash-filter-mutate")
         end
       end
 

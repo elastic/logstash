@@ -1,7 +1,26 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.instruments.monitors;
 
 import org.junit.Test;
-import org.logstash.LogstashJavaCompat;
 import org.logstash.instrument.monitors.MemoryMonitor;
 
 import java.util.Map;
@@ -18,11 +37,7 @@ public class MemoryMonitorTest {
     public void testEachHeapSpaceRepresented() {
         Map<String, Map<String, Object>> heap = MemoryMonitor.detect(MemoryMonitor.Type.All).getHeap();
         assertThat(heap, notNullValue());
-        if (LogstashJavaCompat.IS_JAVA_9_OR_GREATER) {
-            assertThat(heap.keySet(), hasItems("G1 Old Gen", "G1 Survivor Space", "G1 Eden Space"));
-        } else {
-            assertThat(heap.keySet(), hasItems("PS Survivor Space", "PS Old Gen", "PS Eden Space"));
-        }
+        assertThat(heap.keySet(), hasItems("G1 Old Gen", "G1 Survivor Space", "G1 Eden Space"));
     }
 
     @Test

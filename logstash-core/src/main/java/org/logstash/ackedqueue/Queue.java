@@ -1,3 +1,23 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash.ackedqueue;
 
 import java.io.Closeable;
@@ -26,6 +46,9 @@ import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
 
+/**
+ * Persistent queue implementation.
+ * */
 public final class Queue implements Closeable {
 
     private long seqNum;
@@ -138,132 +161,178 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public void open() throws IOException {
-        final int headPageNum;
-
         if (!this.closed.get()) { throw new IOException("queue already opened"); }
 
         lock.lock();
         try {
-            // verify exclusive access to the dirPath
-            this.dirLock = FileLockFactory.obtainLock(this.dirPath, LOCK_NAME);
-
-            // Upgrade to serialization format V2
-            QueueUpgrade.upgradeQueueDirectoryToV2(dirPath);
-
-            Checkpoint headCheckpoint;
             try {
-                headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
-            } catch (NoSuchFileException e) {
-                // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
+                // verify exclusive access to the dirPath
+                this.dirLock = FileLockFactory.obtainLock(this.dirPath, LOCK_NAME);
+            } catch (LockException e) {
+                throw new LockException("The queue failed to obtain exclusive access, cause: " + e.getMessage());
+            }
 
-                logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
-
-                this.ensureDiskAvailable(this.maxBytes, 0);
-
-                this.seqNum = 0;
-                headPageNum = 0;
-
-                newCheckpointedHeadpage(headPageNum);
+            try {
+                openPages();
                 this.closed.set(false);
-
-                return;
+            } catch (IOException e) {
+                // upon any exception while opening the queue and after dirlock has been obtained
+                // we need to make sure to release the dirlock. Calling the close method on a partially
+                // open queue has no effect because the closed flag is still true.
+                releaseLockAndSwallow();
+                throw(e);
             }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-            // at this point we have a head checkpoint to figure queue recovery
+    private void openPages() throws IOException {
+        final int headPageNum;
 
-            // as we load pages, compute actually disk needed substracting existing pages size to the required maxBytes
-            long pqSizeBytes = 0;
+        // Upgrade to serialization format V2
+        QueueUpgrade.upgradeQueueDirectoryToV2(dirPath);
 
-            // reconstruct all tail pages state upto but excluding the head page
-            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-                final String cpFileName = checkpointIO.tailFileName(pageNum);
-                if (!dirPath.resolve(cpFileName).toFile().exists()) {
-                    continue;
-                }
-                final Checkpoint cp = this.checkpointIO.read(cpFileName);
+        Checkpoint headCheckpoint;
+        try {
+            headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
+        } catch (NoSuchFileException e) {
+            // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
 
-                logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
+            logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
-                PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
-                // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
-                // we can purge it and we don't care about its integrity for example if it is of zero-byte file size.
-                if (cp.isFullyAcked()) {
-                    purgeTailPage(cp, pageIO);
-                } else {
-                    pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
-                    addTailPage(PageFactory.newTailPage(cp, this, pageIO));
-                    pqSizeBytes += pageIO.getCapacity();
-                }
+            this.ensureDiskAvailable(this.maxBytes, 0);
 
-                // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
-                if (cp.maxSeqNum() > this.seqNum) {
-                    this.seqNum = cp.maxSeqNum();
-                }
+            this.seqNum = 0;
+            headPageNum = 0;
+
+            newCheckpointedHeadpage(headPageNum);
+            this.closed.set(false);
+
+            return;
+        }
+
+        // at this point we have a head checkpoint to figure queue recovery
+
+        // as we load pages, compute actually disk needed substracting existing pages size to the required maxBytes
+        long pqSizeBytes = 0;
+
+        // reconstruct all tail pages state upto but excluding the head page
+        for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
+            final String cpFileName = checkpointIO.tailFileName(pageNum);
+            if (!dirPath.resolve(cpFileName).toFile().exists()) {
+                continue;
             }
+            final Checkpoint cp = this.checkpointIO.read(cpFileName);
 
-            // transform the head page into a tail page only if the headpage is non-empty
-            // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
+            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
 
-            logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
-
-            PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
-
-            pqSizeBytes += (long)pageIO.getHead();
-            ensureDiskAvailable(this.maxBytes, pqSizeBytes);
-
-            if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
-                // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
-
-                logger.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
-                logger.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
-
-                long firstUnackedSeqNum = headCheckpoint.getFirstUnackedSeqNum();
-                if (firstUnackedSeqNum < pageIO.getMinSeqNum()) {
-                    logger.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
-                    firstUnackedSeqNum = pageIO.getMinSeqNum();
-                }
-                headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
-            }
-            this.headPage = PageFactory.newHeadPage(headCheckpoint, this, pageIO);
-
-            if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
-                // head page is empty, let's keep it as-is
-                // but checkpoint it to update the firstUnackedPageNum if it changed
-                this.headPage.checkpoint();
+            PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
+            // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
+            // we can purge it and we don't care about its integrity for example if it is of zero-byte file size.
+            if (cp.isFullyAcked()) {
+                purgeTailPage(cp, pageIO);
             } else {
-                // head page is non-empty, transform it into a tail page
-                this.headPage.behead();
+                pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
+                addTailPage(PageFactory.newTailPage(cp, this, pageIO));
+                pqSizeBytes += pageIO.getCapacity();
+            }
 
-                if (headCheckpoint.isFullyAcked()) {
-                    purgeTailPage(headCheckpoint, pageIO);
-                } else {
-                    addTailPage(this.headPage);
-                }
+            // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
+            if (cp.maxSeqNum() > this.seqNum) {
+                this.seqNum = cp.maxSeqNum();
+            }
+        }
 
-                // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
+        // delete zero byte page and recreate checkpoint if corrupted page is detected
+        if ( cleanedUpFullyAckedCorruptedPage(headCheckpoint, pqSizeBytes)) { return; }
+
+        // transform the head page into a tail page only if the headpage is non-empty
+        // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
+
+        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
+
+        PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+        pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
+
+        pqSizeBytes += (long) pageIO.getHead();
+        ensureDiskAvailable(this.maxBytes, pqSizeBytes);
+
+        if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
+            // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
+
+            logger.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
+            logger.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
+
+            long firstUnackedSeqNum = headCheckpoint.getFirstUnackedSeqNum();
+            if (firstUnackedSeqNum < pageIO.getMinSeqNum()) {
+                logger.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
+                firstUnackedSeqNum = pageIO.getMinSeqNum();
+            }
+            headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
+        }
+        this.headPage = PageFactory.newHeadPage(headCheckpoint, this, pageIO);
+
+        if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
+            // head page is empty, let's keep it as-is
+            // but checkpoint it to update the firstUnackedPageNum if it changed
+            this.headPage.checkpoint();
+        } else {
+            // head page is non-empty, transform it into a tail page
+            this.headPage.behead();
+
+            if (headCheckpoint.isFullyAcked()) {
+                purgeTailPage(headCheckpoint, pageIO);
+            } else {
+                addTailPage(this.headPage);
+            }
+
+            // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
+            if (headCheckpoint.maxSeqNum() > this.seqNum) {
+                this.seqNum = headCheckpoint.maxSeqNum();
+            }
+
+            // create a new empty head page
+            headPageNum = headCheckpoint.getPageNum() + 1;
+            newCheckpointedHeadpage(headPageNum);
+        }
+
+        // only activate the first tail page
+        if (tailPages.size() > 0) {
+            this.tailPages.get(0).getPageIO().activate();
+        }
+
+        // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
+    }
+
+    /**
+     * When the queue is fully acked and zero byte page is found, delete corrupted page and recreate checkpoint head
+     * @param headCheckpoint
+     * @param pqSizeBytes
+     * @return true when corrupted page is found and cleaned
+     * @throws IOException
+     */
+    private boolean cleanedUpFullyAckedCorruptedPage(Checkpoint headCheckpoint, long pqSizeBytes) throws IOException {
+        if (headCheckpoint.isFullyAcked()) {
+            PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            if (pageIO.isCorruptedPage()) {
+                logger.debug("Queue is fully acked. Found zero byte page.{}. Recreate checkpoint.head and delete corrupted page", headCheckpoint.getPageNum());
+
+                this.checkpointIO.purge(checkpointIO.headFileName());
+                pageIO.purge();
+
                 if (headCheckpoint.maxSeqNum() > this.seqNum) {
                     this.seqNum = headCheckpoint.maxSeqNum();
                 }
 
-                // create a new empty head page
-                headPageNum = headCheckpoint.getPageNum() + 1;
-                newCheckpointedHeadpage(headPageNum);
+                newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
+
+                pqSizeBytes += (long) pageIO.getHead();
+                ensureDiskAvailable(this.maxBytes, pqSizeBytes);
+                return true;
             }
-
-            // only activate the first tail page
-            if (tailPages.size() > 0) {
-                this.tailPages.get(0).getPageIO().activate();
-            }
-
-            // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
-
-            this.closed.set(false);
-        } catch (LockException e) {
-            throw new LockException("The queue failed to obtain exclusive access, cause: " + e.getMessage());
-        } finally {
-            lock.unlock();
         }
+        return false;
     }
 
     /**
@@ -693,15 +762,18 @@ public final class Queue implements Closeable {
                 notFull.signalAll();
 
             } finally {
-                try {
-                    FileLockFactory.releaseLock(this.dirLock);
-                } catch (IOException e) {
-                    // log error and ignore
-                    logger.error("Queue close releaseLock failed, error={}", e.getMessage());
-                } finally {
-                    lock.unlock();
-                }
+                releaseLockAndSwallow();
+                lock.unlock();
             }
+        }
+    }
+
+    private void releaseLockAndSwallow() {
+        try {
+            FileLockFactory.releaseLock(this.dirLock);
+        } catch (IOException e) {
+            // log error and ignore
+            logger.error("Queue close releaseLock failed, error={}", e.getMessage());
         }
     }
 

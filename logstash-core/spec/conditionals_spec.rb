@@ -1,9 +1,24 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'spec_helper'
 require 'support/pipeline/pipeline_helpers'
 
 module ConditionalFanciness
-  include PipelineHelpers
   def description
     return self.metadata[:description]
   end
@@ -36,33 +51,60 @@ describe "conditionals in output" do
     end
   end
 
-  before do
-    LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
-  end
-
   describe "simple" do
-    config <<-CONFIG
-      input {
-        generator {
-          message => '{"foo":{"bar"},"baz": "quux"}'
-          count => 1
-        }
+    let(:config) do <<-CONFIG
+    input {
+      generator {
+        message => '{"foo":{"bar"},"baz": "quux"}'
+        count => 1
       }
-      output {
-        if [foo] == "bar" {
-          dummynull { }
-        }
+    }
+    output {
+      if [foo] == "bar" {
+        dummynull { }
       }
+    }
     CONFIG
+    end
 
-    agent do
+    let(:pipeline) do
+      settings = ::LogStash::SETTINGS.clone
+      config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", config)
+      pipeline_config = LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, :main, config_part, settings)
+      LogStash::JavaPipeline.new(pipeline_config)
+    end
+
+    before do
+      LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
+    end
+
+    after do
+      pipeline.close
+    end
+
+    it "should not fail in pipeline run" do
       #LOGSTASH-2288, should not fail raising an exception
+      pipeline.run
     end
   end
 end
 
 describe "conditionals in filter" do
   extend ConditionalFanciness
+  extend PipelineHelpers
+
+  let(:settings) do
+    # settings is used by sample_one.
+    # This was originally set directly in sample_one and
+    # pipeline.workers was also set to 1. I am preserving
+    # this setting here for the sake of minimizing change
+    # but unsure if this is actually required.
+
+    LogStash::SETTINGS.clone.tap do |s|
+      s.set_value("pipeline.workers", 1)
+      s.set_value("pipeline.ordered", true)
+    end
+  end
 
   describe "simple" do
     config <<-CONFIG
@@ -477,6 +519,7 @@ describe "conditionals in filter" do
       filter {
         if [type] == "original" {
           clone {
+            ecs_compatibility => disabled # rely on legacy clone plugin behaviour
             clones => ["clone"]
           }
         }
@@ -507,6 +550,7 @@ describe "conditionals in filter" do
       filter {
         if [type] == "original" {
           clone {
+            ecs_compatibility => disabled # rely on legacy clone plugin behaviour
             clones => ["clone1", "clone2"]
           }
         }

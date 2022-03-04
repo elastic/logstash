@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require "logstash/settings"
 require "stud/temporary"
 
@@ -8,8 +24,8 @@ describe LogStash::QueueFactory do
     [
       LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
       LogStash::Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
-      LogStash::Setting::Bytes.new("queue.page_capacity", "64mb"),
-      LogStash::Setting::Bytes.new("queue.max_bytes", "1024mb"),
+      LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
+      LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),
       LogStash::Setting::Numeric.new("queue.max_events", 0),
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),

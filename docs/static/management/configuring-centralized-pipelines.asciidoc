@@ -1,4 +1,3 @@
-[role="xpack"]
 [[configuring-centralized-pipelines]]
 === Configuring Centralized Pipeline Management
 ++++
@@ -13,7 +12,7 @@ feature.
 +
 --
 For more information, see https://www.elastic.co/subscriptions and 
-{xpack-ref}/license-management.html[License Management].
+{kibana-ref}/managing-licenses.html[License management].
 --
 
 . Specify 
@@ -31,11 +30,11 @@ centrally manage.
 . Restart Logstash.
 
 . If your Elasticsearch cluster is protected with basic authentication, assign
-the `logstash_admin` role to any users who will use centralized pipeline
-management. See <<ls-security>>.
+the built-in `logstash_admin` role as well as the `logstash_writer` role to any users who will use centralized pipeline
+management. See <<ls-security>> for more information.
 
 NOTE: Centralized management is disabled until you configure and enable
-{security}.
+{security-features}.
 
 IMPORTANT: After you've configured Logstash to use centralized pipeline
 management, you can no longer specify local pipeline configurations. This means
@@ -43,3 +42,4 @@ that the `pipelines.yml` file and settings like `path.config` and
 `config.string` are inactive when this feature is enabled.
 
 include::{log-repo-dir}/static/settings/configuration-management-settings.asciidoc[]
+include::{log-repo-dir}/static/settings/configuration-wildcard-pipeline-id.asciidoc[]

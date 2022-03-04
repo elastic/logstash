@@ -1,4 +1,20 @@
-# encoding: utf-8
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 Thread.abort_on_exception = true
 Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
@@ -13,17 +29,24 @@ class LogStash::DependencyReport < Clamp::Command
   option [ "--csv" ], "OUTPUT_PATH", "The path to write the dependency report in csv format.",
     :required => true, :attribute_name => :output_path
 
+  OTHER_DEPENDENCIES = [
+    ["jruby", "", "http://jruby.org", "EPL-2.0"],
+    ["Red Hat Universal Base Image minimal","8","https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8","Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf","","https://oss-dependencies.elastic.co/red-hat-universal-base-image-minimal/8/ubi-minimal-8-source.tar.gz"]
+  ]
+
   def execute
     require "csv"
 
     tmp_dir = java.lang.System.getProperty("java.io.tmpdir")
     ruby_output_path = File.join(tmp_dir, SecureRandom.uuid)
     # Write a CSV with just the ruby stuff
-    CSV.open(ruby_output_path, "wb", :headers => [ "name", "version", "url", "license" ], :write_headers => true) do |csv|
+    CSV.open(ruby_output_path, "wb", :headers => [ "name", "version", "url", "license","copyright","sourceURL" ], :write_headers => true) do |csv|
       puts "Finding gem dependencies"
       gems.each { |d| csv << d }
       puts "Finding gem embedded java/jar dependencies"
       jars.each { |d| csv << d }
+      puts "Adding non-gem non-jar dependencies (such as jruby distribution)"
+      OTHER_DEPENDENCIES.each { |d| csv << d }
     end
     puts "Wrote temporary ruby deps CSV to #{ruby_output_path}"
 
@@ -32,8 +55,9 @@ class LogStash::DependencyReport < Clamp::Command
     command = ["./gradlew", "generateLicenseReport", "-PlicenseReportInputCSV=#{ruby_output_path}", "-PlicenseReportOutputCSV=#{output_path}"]
     puts "Executing #{command}"
     system(*command)
+
     if $?.exitstatus != 0
-      raise "Could not run gradle java deps! Exit status #{$?.exitstatus}"
+      raise "generateLicenseReport failed with exit status #{$?.exitstatus}"
     end
 
     nil

@@ -1,5 +1,26 @@
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 package org.logstash;
 
+import co.elastic.logstash.api.EventFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,12 +30,12 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.plugins.BasicEventFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +44,9 @@ import java.util.Map;
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
+/**
+ * Event implementation, is the Logstash's event implementation
+ * */
 public final class Event implements Cloneable, Queueable, co.elastic.logstash.api.Event {
 
     private boolean cancelled;
@@ -227,31 +251,56 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return JSON_MAPPER.writeValueAsString(this.data);
     }
 
+    private static final Event[] NULL_ARRAY = new Event[0];
+
     @SuppressWarnings("unchecked")
-    public static Event[] fromJson(String json)
-            throws IOException
-    {
+    private static Object parseJson(final String json) throws IOException {
+        return JSON_MAPPER.readValue(json, Object.class);
+    }
+
+    /**
+     * Map a JSON string into events.
+     * @param json input string
+     * @return events
+     * @throws IOException when (JSON) parsing fails
+     */
+    public static Event[] fromJson(final String json) throws IOException {
+        return fromJson(json, BasicEventFactory.INSTANCE);
+    }
+
+    /**
+     * Map a JSON string into events.
+     * @param json input string
+     * @param factory event factory
+     * @return events
+     * @throws IOException when (JSON) parsing fails
+     */
+    @SuppressWarnings("unchecked")
+    public static Event[] fromJson(final String json, final EventFactory factory) throws IOException {
         // empty/blank json string does not generate an event
-        if (json == null || json.trim().isEmpty()) {
-            return new Event[]{ };
+        if (json == null || isBlank(json)) {
+            return NULL_ARRAY;
         }
 
-        Event[] result;
-        Object o = JSON_MAPPER.readValue(json, Object.class);
+        Object o = parseJson(json);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            result = new Event[]{ new Event((Map<String, Object>)o) };
-        } else if (o instanceof List) {
-            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o; 
-            result = new Event[list.size()];
-            int i = 0;
-            for (final Map<String, Object> e : list) {
-                result[i++] = new Event(e);
-            }
-        } else {
-            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+            // NOTE: we need to assume the factory returns org.logstash.Event impl
+            return new Event[] { (Event) factory.newEvent((Map<? extends Serializable, Object>) o) };
+        }
+        if (o instanceof List) { // Jackson returns an ArrayList
+            return fromList((List<Map<String, Object>>) o, factory);
         }
 
+        throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
+    }
+
+    private static Event[] fromList(final List<Map<String, Object>> list, final EventFactory factory) {
+        final int len = list.size();
+        Event[] result = new Event[len];
+        for (int i = 0; i < len; i++) {
+            result[i] = (Event) factory.newEvent(list.get(i));
+        }
         return result;
     }
 
@@ -296,7 +345,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     public Object remove(final FieldReference field) {
-        return Accessors.del(data, field);
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                // removal of metadata is actually emptying metadata.
+                final ConvertedMap old_value =  ConvertedMap.newFromMap(this.metadata);
+                this.metadata = new ConvertedMap();
+                return Javafier.deep(old_value);
+            case FieldReference.META_CHILD:
+                return Accessors.del(metadata, field);
+            default:
+                return Accessors.del(data, field);
+        }
     }
 
     @Override
@@ -322,6 +381,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return t != null
                 ? t.toString() + " " + hostMessageString
                 : hostMessageString;
+    }
+
+    private static boolean isBlank(final String str) {
+        final int len = str.length();
+        if (len == 0) return true;
+        for (int i = 0; i < len; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Timestamp initTimestamp(Object o) {

@@ -1,3 +1,20 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 require 'spec_helper'
 
 describe ::LogStash::Plugins::Builtin::Pipeline do
@@ -14,6 +31,11 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
   let(:input) { ::LogStash::Plugins::Builtin::Pipeline::Input.new(input_options) }
   let(:output) { ::LogStash::Plugins::Builtin::Pipeline::Output.new(output_options) }
   let(:inputs) { [input] }
+  let(:metric) {
+    LogStash::Instrument::NamespacedMetric.new(
+        LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
+    )
+  }
 
   let(:event) { ::LogStash::Event.new("foo" => "bar") }
 
@@ -22,8 +44,10 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
     allow(agent).to receive(:pipeline_bus).and_return(pipeline_bus)
     inputs.each do |i|
       allow(i).to receive(:execution_context).and_return(execution_context)
+      i.metric = metric
     end
     allow(output).to receive(:execution_context).and_return(execution_context)
+    output.metric = metric
   end
 
   def wait_input_running(input_plugin)
@@ -75,6 +99,20 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
           event.set("baz", "bot")
           expect(subject.to_hash_with_metadata).not_to match(event.to_hash_with_metadata)
         end
+
+        it 'should add `address` to the plugin metrics' do
+          event_metrics = input.metric.collector.snapshot_metric.metric_store.get_with_path(
+              "filter"
+          )[:filter]
+          expect(event_metrics[:address].value).to eq(address)
+        end
+        it 'should add `send_to` to the plugin metrics' do
+          event_metrics = output.metric.collector.snapshot_metric.metric_store.get_with_path(
+              "filter"
+          )[:filter]
+          expect(event_metrics[:send_to].value).to eq([address])
+        end
+
       end
       
       after(:each) do
@@ -123,9 +161,10 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
   describe "one output to multiple inputs" do
     describe "with all plugins up" do
       let(:other_address) { "other" }
+      let(:send_addresses) { [address, other_address]}
       let(:other_input_options) { { "address" => other_address } }
       let(:other_input) { ::LogStash::Plugins::Builtin::Pipeline::Input.new(other_input_options) }
-      let(:output_options) { { "send_to" => [address, other_address] } }
+      let(:output_options) { { "send_to" => send_addresses } }
       let(:inputs) { [input, other_input] }
       let(:queues) { [Queue.new, Queue.new] }
       let(:inputs_queues) { Hash[inputs.zip(queues)] }
@@ -145,6 +184,13 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         end
       end
 
+      it 'should add multiple `send_to` addresses to the plugin metrics' do
+        event_metrics = output.metric.collector.snapshot_metric.metric_store.get_with_path(
+            "filter"
+        )[:filter]
+        expect(event_metrics[:send_to].value).to eq(send_addresses)
+      end
+
       describe "sending a message" do
         before(:each) do
           output.multi_receive([event])
@@ -158,7 +204,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
       end
 
       context "with ensure delivery set to false" do
-        let(:output_options) { super.merge("ensure_delivery" => false) }
+        let(:output_options) { super().merge("ensure_delivery" => false) }
         before(:each) do
           other_input.do_stop
           other_input.do_close
