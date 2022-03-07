@@ -38,6 +38,8 @@ module LogStash
           pipeline_ids.each_with_object({}) do |pipeline_id, result|
             result[pipeline_id] = pipeline(pipeline_id, options)
           end
+        rescue Instrument::MetricStore::MetricNotFound
+          {}
         end
 
         def pipeline(pipeline_id, options={})

@@ -21,9 +21,9 @@ module LogStash; module Config;
       # It is important that we iterate via the agent's pipelines vs. the
       # metrics pipelines. This prevents race conditions as pipeline stats may be
       # populated before the agent has it in its own pipelines state
-      stats = metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines]
+      stats = metric_store.get_with_path("/stats/pipelines").dig(:stats, :pipelines) || {}
       agent.running_pipelines.map do |pipeline_id, pipeline|
-        p_stats = stats[pipeline_id]
+        p_stats = stats.fetch(pipeline_id) { Hash.new }
         # Don't record stats for system pipelines
         next nil if pipeline.system?
         # Don't emit stats for pipelines that have not yet registered any metrics
