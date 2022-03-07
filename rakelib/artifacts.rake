@@ -93,31 +93,16 @@ namespace "artifact" do
 
   def excludes
     return @excludes if @excludes
-    @excludes = exclude_paths.collect { |g| Rake::FileList[g] }.flatten
+    @excludes = exclude_paths
   end
 
-  def exclude?(path)
-    excludes.any? { |ex| path_matches_exclude?(path, ex) }
+  def oss_excludes
+    return @oss_excludes if @oss_excludes
+    @oss_excludes = excludes + [ "x-pack/**/*" ]
   end
 
-  def exclude_oss?(path)
-    path_matches_exclude?(path, "x-pack" ) || exclude?(path)
-  end
-
-  def oss_excluder
-    @oss_excluder ||= self.method(:exclude_oss?)
-  end
-
-  def path_matches_exclude?(path, ex)
-    path == ex || (File.directory?(ex) && path =~ /^#{ex}\//)
-  end
-
-  def files(excluder=nil)
-    excluder ||= self.method(:exclude?)
-
-    package_files.collect do |glob|
-      Rake::FileList[glob].reject(&excluder)
-    end.flatten.uniq
+  def files(excl=excludes)
+    Rake::FileList.new(*package_files).exclude(*excl)
   end
 
   def source_modified_since?(time, excluder=nil)
@@ -180,7 +165,7 @@ namespace "artifact" do
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_excluder]
+    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_excludes]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux")
 
@@ -525,10 +510,10 @@ namespace "artifact" do
     excluder = nil
     if oss
       suffix= "-oss"
-      excluder = oss_excluder
+      excludes = oss_excludes
     end
 
-    files(excluder).each do |path|
+    files(excludes).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
