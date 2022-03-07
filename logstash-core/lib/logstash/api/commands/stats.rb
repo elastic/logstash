@@ -39,6 +39,8 @@ module LogStash
           end
 
           {:events_count => total_queued_events}
+        rescue Instrument::MetricStore::MetricNotFound
+          {}
         end
 
         def jvm
@@ -74,6 +76,9 @@ module LogStash
             [:stats, :events],
             :in, :filtered, :out, :duration_in_millis, :queue_push_duration_in_millis
           )
+        rescue Instrument::MetricStore::MetricNotFound
+          # if the stats/events metrics have not yet been populated, return an empty map
+          {}
         end
 
         def pipeline(pipeline_id = nil, opts={})
