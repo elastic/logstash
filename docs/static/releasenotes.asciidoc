@@ -34,8 +34,8 @@ NOTE: The `bin/logstash-plugin list` command may fail with the same error after 
 A successful plugin `update` will resolve this issue, and allow subsequent `uninstall` and `list` operations to
 work without issue.
 
-To update a plugin, run `bin/logstash-plugin update logstash-<plugintype>-<plugin>` where `logstash-<plugintype>-<plugin>` is the name of the plugin. 
-For example:`bin/logstash-plugin update logstash-filter-dissect`. 
+The `filter-dissect` plugin has recent changes available for update. 
+Running `bin/logstash-plugin update logstash-filter-dissect` should mitigate this issue.
 
 
 ==== Logstash core 
