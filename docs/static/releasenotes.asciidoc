@@ -16,7 +16,7 @@ This section summarizes the changes in the following releases:
 === Logstash 8.1.0 Release Notes
 
 [[known-issue-8-1-0]]
-==== Known issue ====
+==== Known issue
 
 Uninstalling a plugin using `bin/logtash-plugin uninstall` may
 result in an error:
@@ -38,7 +38,7 @@ To update a plugin, run `bin/logstash-plugin update logstash-<plugintype>-<plugi
 For example:`bin/logstash-plugin update logstash-filter-dissect`. 
 
 
-==== Logstash Core ====
+==== Logstash core 
 
 No user-facing changes in Logstash core.
 
