@@ -15,6 +15,25 @@ This section summarizes the changes in the following releases:
 [[logstash-8-1-0]]
 === Logstash 8.1.0 Release Notes
 
+[[known-issue-8-1-0]]
+==== Known issue ====
+
+* Uninstalling a plugin using `bin/logtash-plugin uninstall` may
+result in the following error:
+
+```
+Gem::LoadError: You have already activated jruby-openssl 0.12.2, but your Gemfile requires jruby-openssl 0.12.1. Prepending `bundle exec` to your command may solve this.
+```
+
+* Logstash should still run, and other plugin operation such as `update` and `install` should still work as expected.
+** `bin/logstash-plugin list` may fail with the same error after a failed uninstallation.
+* A successful plugin `update` will resolve this issue, and allow subsequent `uninstall` and `list` operations to
+work without issue.
+** Running `bin/logstash-plugin update logstash-filter-dissect` should mitigate this issue.
+
+
+==== Logstash Core ====
+
 No user-facing changes in Logstash core.
 
 ==== Plugins
