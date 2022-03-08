@@ -27,6 +27,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
+  option "--[no-]conservative", :flag, "do a conservative update of plugin's dependencies", :default => true
 
   def execute
     # Turn off any jar dependencies lookup when running with `--local`
@@ -76,14 +77,14 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     puts("Updating #{filtered_plugins.collect(&:name).join(", ")}") unless filtered_plugins.empty?
 
+    output = nil
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
-    options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
-    options[:local] = true if local?
-    output=nil
-    # Unfreeze the bundle when updating gems
-    Bundler.settings.temporary({:frozen => false}) do
-      output = LogStash::Bundler.invoke!(options)
+    Bundler.settings.temporary(:frozen => false) do # Unfreeze the bundle when updating gems
+      output = LogStash::Bundler.invoke! update: plugins,
+                                         rubygems_source: gemfile.gemset.sources,
+                                         local: local?,
+                                         conservative: conservative?
       output << LogStash::Bundler.genericize_platform unless output.nil?
     end
 
