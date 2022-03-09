@@ -88,6 +88,8 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
                                 .delete_if do |line|
                                   line =~ /cext|├──|└──|logstash-integration|JAVA_OPT|fatal|^WARNING|^warning: ignoring JAVA_TOOL_OPTIONS|^OpenJDK 64-Bit Server VM warning|Option \w+ was deprecated|Using LS_JAVA_HOME defined java|Using system java: |\[\[: not found|^Warning: no jvm.options file found|^Processing jvm.options file at/
                                 end
+                                # TODO remove following line on infra issue 35116 is resolved
+                                .delete_if {|line| line =~ /bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)/}
 
       expect(unpacked.plugins.collect(&:name)).to include(*filters)
       expect(unpacked.plugins.size).to eq(filters.size)
