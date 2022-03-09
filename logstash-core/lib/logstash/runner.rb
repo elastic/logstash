@@ -62,8 +62,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::DefaultConfig,
-      LogStash::BootstrapCheck::PersistedQueueConfig
+      LogStash::BootstrapCheck::DefaultConfig
   ]
 
   # Node Settings
@@ -388,6 +387,14 @@ class LogStash::Runner < Clamp::StrictCommand
         logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
         return 1
       end
+    end
+
+    # check disk has sufficient space for all queues reach their max bytes
+    begin
+      LogStash::BootstrapCheck::PersistedQueueConfig.new(@source_loader.fetch).check
+    rescue => e
+      signal_usage_error(e.message)
+      return 1
     end
 
     # lock path.data before starting the agent

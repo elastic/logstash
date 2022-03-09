@@ -15,14 +15,73 @@
 # specific language governing permissions and limitations
 # under the License.
 
+java_import 'org.logstash.common.FsUtil'
+java_import 'java.nio.file.Paths'
+
 module LogStash
   module BootstrapCheck
     class PersistedQueueConfig
-      def self.check(settings)
-        return unless settings.get('queue.type') == 'persisted'
-        if settings.get('queue.page_capacity') > settings.get('queue.max_bytes')
-          raise(LogStash::BootstrapCheckError, I18n.t("logstash.bootstrap_check.persisted_queue_config.page-capacity"))
+
+      def initialize(fetch)
+        raise "Could not fetch the configuration: #{fetch.error}" unless fetch.success?
+
+        @pipeline_configs = fetch.response
+        @err_msg = []
+        @required_free_bytes  = Hash.new # (String: file system, Integer: size)
+        @queue_path_file_system = Hash.new # (String: queue path, String: file system)
+      end
+
+      def check
+        @pipeline_configs.each do |config|
+          if config.settings.get('queue.type') == 'persisted'
+            max_bytes = config.settings.get("queue.max_bytes").to_i
+            next if max_bytes == 0
+
+            page_capacity = config.settings.get("queue.page_capacity").to_i
+            pipeline_id = config.settings.get("pipeline.id")
+            queue_path = config.settings.get("path.queue")
+            pq_dir = ::File.join(queue_path, pipeline_id, "*")
+            used_bytes = Dir.glob(pq_dir).sum { |f| ::File.size(f) }
+            file_system = get_file_system(queue_path)
+
+            check_page_capacity(pipeline_id, max_bytes, page_capacity)
+            check_queue_usage(pipeline_id, max_bytes, used_bytes)
+
+            @queue_path_file_system[queue_path] = file_system
+            if used_bytes < max_bytes
+              @required_free_bytes[file_system] = @required_free_bytes.fetch(file_system, 0) + max_bytes - used_bytes
+            end
+          end
         end
+
+        check_disk_space
+
+        raise(LogStash::BootstrapCheckError, @err_msg.join(" ")) unless @err_msg.empty?
+      end
+
+      def check_page_capacity(pipeline_id, max_bytes, page_capacity)
+        if page_capacity > max_bytes
+          @err_msg << "Pipeline #{pipeline_id} 'queue.page_capacity' must be less than or equal to 'queue.max_bytes'."
+        end
+      end
+
+      def check_queue_usage(pipeline_id, max_bytes, used_bytes)
+        if used_bytes > max_bytes
+          @err_msg << "Pipeline #{pipeline_id} current queue size (#{used_bytes}) is greater than 'queue.max_bytes' (#{max_bytes})."
+        end
+      end
+
+      # check disk has sufficient space for all queues reach their max bytes
+      def check_disk_space
+        @err_msg +=
+          @queue_path_file_system
+            .select { |queue_path, file_system| !FsUtil.hasFreeSpace(Paths.get(queue_path), @required_free_bytes.fetch(file_system, 0)) }
+            .map { |queue_path, file_system| "Persistent queue path #{queue_path} is unable to allocate #{@required_free_bytes.fetch(file_system, 0)} more bytes on top of its current usage." }
+      end
+
+      def get_file_system(queue_path)
+        return queue_path if Gem.win_platform?
+        `df #{queue_path}`.split("\n")[1].split.first
       end
     end
   end

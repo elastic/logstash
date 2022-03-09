@@ -21,7 +21,7 @@ require "logstash/bootstrap_check/persisted_queue_config"
 
 describe LogStash::BootstrapCheck::PersistedQueueConfig do
 
-  context("when persisted queues are enabled") do
+  xcontext("when persisted queues are enabled") do
     let(:settings) do
       settings = LogStash::SETTINGS.dup
       settings.set_value("queue.type", "persisted")
