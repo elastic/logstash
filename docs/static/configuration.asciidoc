@@ -1,11 +1,18 @@
 [[configuration]]
-== Configuring Logstash
+== Creating a Logstash pipeline
 
-To configure Logstash, you create a config file that specifies which plugins you want to use and settings for each plugin.
-You can reference event fields in a configuration and use conditionals to process events when they meet certain
-criteria. When you run logstash, you use the `-f` to specify your config file.
+A Logstash pipeline lets you string together plugins--<<input-plugins,inputs>>, <<output-plugins,outputs>>, <<filter-plugins,filters>>, and sometimes <<codec-plugins,codecs>>--in order to process data. 
 
-Let's step through creating a simple config file and using it to run Logstash. Create a file named "logstash-simple.conf" and save it in the same directory as Logstash.
+To build a Logstash pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
+
+A very basic pipeline might contain only an input and an output. 
+Most pipelines include at least one filter plugin because that's where the "transform" part of the ETL (extract, transform, load) magic happens. 
+
+You can reference event fields in a pipeline and use conditionals to process events when they meet certain criteria. 
+When you run Logstash, you use the `-f` to specify your pipeline config file.
+
+Let's step through creating a simple config file on your local machine and then using it to run Logstash. 
+Create a file named "logstash-simple.conf" and save it in the same directory as Logstash.
 
 [source,ruby]
 ----------------------------------
@@ -16,25 +23,27 @@ output {
 }
 ----------------------------------
 
-Then, run logstash and specify the configuration file with the `-f` flag.
+Then, run Logstash and specify the configuration file with the `-f` flag.
 
 [source,ruby]
 ----------------------------------
 bin/logstash -f logstash-simple.conf
 ----------------------------------
 
-Et voilà! Logstash reads  the specified configuration file and outputs to both Elasticsearch and stdout. Note that if you see a message in stdout that reads "Elasticsearch Unreachable" that you will need to make sure Elasticsearch is installed and up and reachable on port 9200. Before we
-move on to some <<config-examples,more complex examples>>, let's take a closer look at what's in a config file.
+Et voilà! Logstash reads the specified configuration file and outputs to both Elasticsearch and stdout. 
+Note that if you see a message in stdout that reads "Elasticsearch Unreachable" that you will need to make sure Elasticsearch is installed and up and reachable on port 9200. 
+Before we move on to some <<config-examples,more complex examples>>, let's take a closer look at what's in a pipeline config file.
 
 [[configuration-file-structure]]
-=== Structure of a config file
+=== Structure of a pipeline
 
-A Logstash config file has a separate section for each type of plugin you want to add to the event processing pipeline. For example:
+A Logstash pipeline config file has a separate section for each type of plugin you want to add to the event processing pipeline. 
+For example:
 
 [source,js]
 ----------------------------------
 # This is a comment. You should use comments to describe
-# parts of your configuration.
+# parts of your pipeline configuration.
 input {
   ...
 }
@@ -48,8 +57,8 @@ output {
 }
 ----------------------------------
 
-Each section contains the configuration options for one or more plugins. If you specify
-multiple filters, they are applied in the order of their appearance in the configuration file.
+Each section contains the configuration options for one or more plugins. 
+If you specify multiple filters, they are applied in the order of their appearance in the configuration file.
 
 
 [discrete]
@@ -57,7 +66,8 @@ multiple filters, they are applied in the order of their appearance in the confi
 === Plugin configuration
 
 The configuration of a plugin consists of the plugin name followed
-by a block of settings for that plugin. For example, this input section configures two file inputs:
+by a block of settings for that plugin. 
+For example, this input section configures two file inputs:
 
 [source,js]
 ----------------------------------
@@ -302,10 +312,11 @@ input { # comments can appear at the end of a line, too
 ----------------------------------
 
 [[event-dependent-configuration]]
-=== Accessing event data and fields in the configuration
+=== Accessing event data and fields 
 
-The logstash agent is a processing pipeline with 3 stages: inputs -> filters ->
-outputs. Inputs generate events, filters modify them, outputs ship them
+A Logstash pipeline usually has three stages: inputs -> filters ->
+outputs. 
+Inputs generate events, filters modify them, outputs ship them
 elsewhere.
 
 All events have properties. For example, an apache access log would have things
@@ -719,7 +730,7 @@ filter {
 ----------------------------------
 
 [[environment-variables]]
-=== Using environment variables in the configuration
+=== Using environment variables 
 
 ==== Overview
 

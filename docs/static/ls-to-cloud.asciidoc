@@ -1,7 +1,7 @@
 [[connecting-to-cloud]]
 === Sending data to Elastic Cloud (hosted Elasticsearch Service)
 
-Elastic Cloud is our our hosted Elasticsearch Service, and it is
+Elastic Cloud is our hosted Elasticsearch Service, and it is
 available on AWS, GCP, and Azure.
 {ess-trial}[You can try the Elasticsearch Service for free].
 
