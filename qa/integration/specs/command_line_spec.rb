@@ -36,4 +36,12 @@ describe "CLI >" do
     expect(execute.stderr_and_stdout).to include('--pipeline.id ID')
   end
 
+  it "starts without unexected warnings" do
+    execute = @logstash.run
+    lines = execute.stderr_and_stdout.split("\n")
+    expect(lines.shift).to match(/^(Using system java)|(Using bundled JDK)|(Using LS_JAVA_HOME defined java):/)
+    next_line = lines.shift
+    next_line = lines.shift if next_line['OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated']
+    expect(next_line).to match(/^Sending Logstash logs to/)
+  end
 end
