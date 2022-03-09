@@ -36,4 +36,9 @@ describe "CLI >" do
     expect(execute.stderr_and_stdout).to include('--pipeline.id ID')
   end
 
+  it "does not warn about GC" do
+    execute = @logstash.run
+    puts execute.stderr_and_stdout
+    expect(execute.stderr_and_stdout).not_to include('OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.')
+  end
 end
