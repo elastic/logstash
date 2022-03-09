@@ -86,7 +86,7 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
       filters = @logstash_plugin.list(plugins_to_pack.first)
                                 .stderr_and_stdout.split("\n")
                                 .delete_if do |line|
-                                  line =~ /cext|├──|└──|logstash-integration|JAVA_OPT|fatal|^WARNING|^warning: ignoring JAVA_TOOL_OPTIONS|^OpenJDK 64-Bit Server VM warning|Option \w+ was deprecated|Using LS_JAVA_HOME defined java|Using system java: |\[\[: not found|^Warning: no jvm.options file found|^Processing jvm.options file at/
+                                  line !~ /^logstash-(codec|filter|input|output)-\w*$/
                                 end
 
       expect(unpacked.plugins.collect(&:name)).to include(*filters)
