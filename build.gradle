@@ -41,6 +41,7 @@ import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
+import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 
 allprojects {
   group = 'org.logstash'
@@ -179,32 +180,32 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
-class ExtractBundleJdkVersion extends DefaultTask {
-
-    @InputFile
-    File jdkReleaseFile = project.file("${project.projectDir}/jdk/release")
-
-    @OutputFile
-    File jdkVersionFile = project.file("${project.projectDir}/JDK_VERSION")
-
-    ExtractBundleJdkVersion() {
-        description = "Extracts IMPLEMENTOR_VERSION from JDK's release file"
-        group = "org.logstash.tooling"
-    }
-
-    @TaskAction
-    def extractVersionFile() {
-        def sw = new StringWriter()
-        jdkReleaseFile.filterLine(sw) { it =~ /IMPLEMENTOR_VERSION=.*/ }
-        if (!sw.toString().empty) {
-            def groups = (sw.toString() =~ /^IMPLEMENTOR_VERSION=\"(.*)\"$/)
-            if (!groups.hasGroup()) {
-                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
-            }
-            jdkVersionFile.write(groups[0][1])
-        }
-    }
-}
+//class ExtractBundleJdkVersion extends DefaultTask {
+//
+//    @InputFile
+//    File jdkReleaseFile = project.file("${project.projectDir}/jdk/release")
+//
+//    @OutputFile
+//    File jdkVersionFile = project.file("${project.projectDir}/JDK_VERSION")
+//
+//    ExtractBundleJdkVersion() {
+//        description = "Extracts IMPLEMENTOR_VERSION from JDK's release file"
+//        group = "org.logstash.tooling"
+//    }
+//
+//    @TaskAction
+//    def extractVersionFile() {
+//        def sw = new StringWriter()
+//        jdkReleaseFile.filterLine(sw) { it =~ /IMPLEMENTOR_VERSION=.*/ }
+//        if (!sw.toString().empty) {
+//            def groups = (sw.toString() =~ /^IMPLEMENTOR_VERSION=\"(.*)\"$/)
+//            if (!groups.hasGroup()) {
+//                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
+//            }
+//            jdkVersionFile.write(groups[0][1])
+//        }
+//    }
+//}
 
 
 abstract class SignAliasDefinitionsTask extends DefaultTask {
@@ -892,7 +893,7 @@ tasks.register("copyJdk", Copy) {
     }
 }
 
-tasks.register("extractBundledJdkVersion", ExtractBundleJdkVersion) {
+tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
     dependsOn "decompressJdk"
 }
 
