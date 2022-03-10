@@ -389,7 +389,7 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
-    # check disk has sufficient space for all queues reach their max bytes
+    # check persistent queue config
     begin
       LogStash::BootstrapCheck::PersistedQueueConfig.new(@source_loader.fetch).check
     rescue => e

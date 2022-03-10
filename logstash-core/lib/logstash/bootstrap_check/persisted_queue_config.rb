@@ -71,7 +71,8 @@ module LogStash
         end
       end
 
-      # check disk has sufficient space for all queues reach their max bytes
+      # Check disk has sufficient space for all queues reach their max bytes. Queues may config to different paths/ devices.
+      # It takes the filesystem of the path and count the required bytes by filesystem
       def check_disk_space
         @err_msg +=
           @queue_path_file_system
