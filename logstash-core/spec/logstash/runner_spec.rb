@@ -464,6 +464,12 @@ describe LogStash::Runner do
 
     describe "--modules" do
       let(:args) { ["--modules", module_string, "--setup"] }
+      let(:pq_config_check) { double("pq_config_check") }
+
+      before do
+        allow(pq_config_check).to receive(:check)
+        allow(LogStash::BootstrapCheck::PersistedQueueConfig).to receive(:new).and_return(pq_config_check)
+      end
 
       context "with an available module specified but no connection to elasticsearch" do
         let(:module_string) { "tester" }
@@ -500,10 +506,10 @@ describe LogStash::Runner do
           allow(LogStash::ElasticsearchClient).to receive(:build).and_return(esclient)
           allow(LogStash::Modules::KibanaClient).to receive(:new).and_return(kbnclient)
 
-          expect(esclient).to receive(:put).once do |path, content|
+          expect(esclient).to receive(:put).exactly(2).times do |path, content|
             LogStash::ElasticsearchClient::Response.new(201, "", {})
           end
-          expect(kbnclient).to receive(:post).twice do |path, content|
+          expect(kbnclient).to receive(:post).exactly(4).times do |path, content|
             LogStash::Modules::KibanaClient::Response.new(201, "", {})
           end
 
