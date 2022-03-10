@@ -194,7 +194,6 @@ class ExtractBundleJdkVersion extends DefaultTask {
 
     @TaskAction
     def extractVersionFile() {
-        println "DNADBG>> extract invoked for file ${jdkReleaseFile} to ${jdkVersionFile}"
         def sw = new StringWriter()
         jdkReleaseFile.filterLine(sw) { it =~ /IMPLEMENTOR_VERSION=.*/ }
         if (!sw.toString().empty) {
@@ -203,7 +202,6 @@ class ExtractBundleJdkVersion extends DefaultTask {
                 throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
             }
             jdkVersionFile.write(groups[0][1])
-            println "DNADBG>> matching <<${groups[0][1]}>>"
         }
     }
 }
@@ -895,7 +893,7 @@ tasks.register("copyJdk", Copy) {
 }
 
 tasks.register("extractBundledJdkVersion", ExtractBundleJdkVersion) {
-    dependsOn "copyJdk"
+    dependsOn "decompressJdk"
 }
 
 if (System.getenv('OSS') != 'true') {

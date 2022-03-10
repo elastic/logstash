@@ -100,7 +100,8 @@ setup_java() {
       if [ -x "$LS_JAVA_HOME/bin/java" ]; then
         JAVACMD="$LS_JAVA_HOME/bin/java"
         if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-          echo "WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK."
+          BUNDLED_JDK_VERSION=`cat JDK_VERSION`
+          echo "WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK(${BUNDLED_JDK_VERSION})."
         fi
       else
         echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable."
