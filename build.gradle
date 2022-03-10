@@ -179,6 +179,36 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
+class ExtractBundleJdkVersion extends DefaultTask {
+
+    @InputFile
+    File jdkReleaseFile = project.file("${project.projectDir}/jdk/release")
+
+    @OutputFile
+    File jdkVersionFile = project.file("${project.projectDir}/JDK_VERSION")
+
+    ExtractBundleJdkVersion() {
+        description = "Extracts IMPLEMENTOR_VERSION from JDK's release file"
+        group = "org.logstash.tooling"
+    }
+
+    @TaskAction
+    def extractVersionFile() {
+        println "DNADBG>> extract invoked for file ${jdkReleaseFile} to ${jdkVersionFile}"
+        def sw = new StringWriter()
+        jdkReleaseFile.filterLine(sw) { it =~ /IMPLEMENTOR_VERSION=.*/ }
+        if (!sw.toString().empty) {
+            def groups = (sw.toString() =~ /^IMPLEMENTOR_VERSION=\"(.*)\"$/)
+            if (!groups.hasGroup()) {
+                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
+            }
+            jdkVersionFile.write(groups[0][1])
+            println "DNADBG>> matching <<${groups[0][1]}>>"
+        }
+    }
+}
+
+
 abstract class SignAliasDefinitionsTask extends DefaultTask {
 
     /**
@@ -862,6 +892,10 @@ tasks.register("copyJdk", Copy) {
     doLast {
         System.out.println "Download location is ${project.ext.jdkDownloadLocation}, Decompressing ${project.ext.jdkDirectory} to \"${project.ext.jdkBundlingDirectory}\""
     }
+}
+
+tasks.register("extractBundledJdkVersion", ExtractBundleJdkVersion) {
+    dependsOn "copyJdk"
 }
 
 if (System.getenv('OSS') != 'true') {
