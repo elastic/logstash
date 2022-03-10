@@ -7,5 +7,4 @@ sed -i \
   -e 's|# path.logs:|path.logs: /var/log/logstash|' \
   -e 's|# path.data:|path.data: /var/lib/logstash|' \
   /etc/logstash/logstash.yml
-chmod 600 /etc/logstash/startup.options
 chmod 600 /etc/default/logstash
