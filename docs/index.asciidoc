@@ -75,7 +75,7 @@ include::static/shutdown.asciidoc[]
 include::static/upgrading.asciidoc[]
 
 // Configuring Logstash
-include::static/configuration.asciidoc[]
+include::static/pipeline-configuration.asciidoc[]
 
 include::static/ls-to-cloud.asciidoc[]
 
