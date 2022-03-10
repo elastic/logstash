@@ -25,7 +25,7 @@ if defined LS_JAVA_HOME (
   echo Using LS_JAVA_HOME defined java: %LS_JAVA_HOME%
   if exist "%LS_HOME%\jdk" (
     set /p BUNDLED_JDK_VERSION=<JDK_VERSION
-    echo WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK(%BUNDLED_JDK_VERSION%).
+    echo "WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK(%BUNDLED_JDK_VERSION%)."
   )
 ) else (
   if exist "%LS_HOME%\jdk" (
