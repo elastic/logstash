@@ -80,7 +80,7 @@ module LogStash
       end
 
       def get_file_system(queue_path)
-        return queue_path if Gem.win_platform?
+        return queue_path if ::Gem.win_platform?
         `df #{queue_path}`.split("\n")[1].split.first
       end
     end

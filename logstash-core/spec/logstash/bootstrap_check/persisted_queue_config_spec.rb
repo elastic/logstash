@@ -78,10 +78,16 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
     end
 
     context("disk does not have sufficient space") do
-      let(:pipeline_configs) { LogStash::Config::Source::Local.new(settings).pipeline_configs * 2 }
+      # two pq with different paths
+      let(:settings1) { settings.dup.merge("queue.max_bytes" => "1000pb") }
+      let(:settings2) { settings1.dup.merge("path.queue" => Stud::Temporary.directory) }
+
+      let(:pipeline_configs) do
+        LogStash::Config::Source::Local.new(settings1).pipeline_configs +
+          LogStash::Config::Source::Local.new(settings2).pipeline_configs
+      end
 
       it "should throw" do
-        settings.set_value("queue.max_bytes", "1000pb")
         pq_config = LogStash::BootstrapCheck::PersistedQueueConfig.new(successful_fetch)
         expect { pq_config.check }.to raise_error(LogStash::BootstrapCheckError, /is unable to allocate/)
         expect(pq_config.instance_variable_get(:@required_free_bytes).size).to eq(1)
