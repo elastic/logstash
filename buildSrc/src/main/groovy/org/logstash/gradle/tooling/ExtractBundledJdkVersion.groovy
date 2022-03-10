@@ -39,6 +39,10 @@ abstract class ExtractBundledJdkVersion extends DefaultTask {
             if (!groups.hasGroup()) {
                 throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
             }
+
+            if (groups.size() < 1 || groups[0].size() < 2) {
+                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
+            }
             jdkVersionFile.write(groups[0][1])
         }
     }
