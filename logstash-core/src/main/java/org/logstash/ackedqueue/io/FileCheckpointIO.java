@@ -32,6 +32,7 @@ import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.util.ExponentialBackoff;
 
 
 /**
@@ -70,6 +71,7 @@ public class FileCheckpointIO implements CheckpointIO {
     private static final String HEAD_CHECKPOINT = "checkpoint.head";
     private static final String TAIL_CHECKPOINT = "checkpoint.";
     private final Path dirPath;
+    private final ExponentialBackoff backoff;
 
     public FileCheckpointIO(Path dirPath) {
         this(dirPath, false);
@@ -78,6 +80,7 @@ public class FileCheckpointIO implements CheckpointIO {
     public FileCheckpointIO(Path dirPath, boolean retry) {
         this.dirPath = dirPath;
         this.retry = retry;
+        this.backoff = new ExponentialBackoff(retry? 10L: 0L);
     }
 
     @Override
@@ -105,21 +108,9 @@ public class FileCheckpointIO implements CheckpointIO {
         }
 
         try {
-            Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException ex) {
-            if (retry) {
-                try {
-                    logger.error("Retrying after exception writing checkpoint: " + ex);
-                    Thread.sleep(500);
-                    Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
-                } catch (IOException | InterruptedException ex2) {
-                    logger.error("Aborting after second exception writing checkpoint: " + ex2);
-                    throw ex;
-                }
-            } else {
-                logger.error("Error writing checkpoint: " + ex);
-                throw ex;
-            }
+            backoff.retry(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
+        } catch (ExponentialBackoff.RetryException ex) {
+            throw new IOException("Error writing checkpoint", ex);
         }
     }
 
