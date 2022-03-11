@@ -20,9 +20,10 @@ java_import 'java.nio.file.Paths'
 
 module LogStash
   module BootstrapCheck
-    class PersistedQueueConfig
+    module PersistedQueueConfig
+      extend self
 
-      def self.check(running_pipelines, pipeline_configs)
+      def check(running_pipelines, pipeline_configs)
         return unless queue_configs_updated?(running_pipelines, pipeline_configs)
 
         err_msg = []
@@ -56,21 +57,21 @@ module LogStash
         raise(LogStash::BootstrapCheckError, err_msg.flatten.join(" ")) unless err_msg.empty?
       end
 
-      def self.check_page_capacity(err_msg, pipeline_id, max_bytes, page_capacity)
+      def check_page_capacity(err_msg, pipeline_id, max_bytes, page_capacity)
         if page_capacity > max_bytes
           err_msg << "Pipeline #{pipeline_id} 'queue.page_capacity' must be less than or equal to 'queue.max_bytes'."
         end
       end
 
-      def self.check_queue_usage(err_msg, pipeline_id, max_bytes, used_bytes)
+      def check_queue_usage(err_msg, pipeline_id, max_bytes, used_bytes)
         if used_bytes > max_bytes
           err_msg << "Pipeline #{pipeline_id} current queue size (#{used_bytes}) is greater than 'queue.max_bytes' (#{max_bytes})."
         end
       end
 
-      # Check disk has sufficient space for all queues reach their max bytes. Queues may config to different paths/ devices.
-      # It takes the filesystem of the path and count the required bytes by filesystem
-      def self.check_disk_space(err_msg, queue_path_file_system, required_free_bytes)
+      # Check disk has sufficient space for all queues reach their max bytes. Queues may config with different paths/ devices.
+      # It uses the filesystem of the path and count the required bytes by filesystem
+      def check_disk_space(err_msg, queue_path_file_system, required_free_bytes)
         disk_err_msg =
           queue_path_file_system
             .select { |queue_path, file_system| !FsUtil.hasFreeSpace(Paths.get(queue_path), required_free_bytes.fetch(file_system, 0)) }
@@ -79,12 +80,16 @@ module LogStash
         err_msg << disk_err_msg unless disk_err_msg.empty?
       end
 
-      def self.get_file_system(queue_path)
+      def get_file_system(queue_path)
         return queue_path if ::Gem.win_platform?
         `df #{queue_path}`.split("\n")[1].split.first
       end
 
-      def self.queue_configs_updated?(running_pipelines, pipeline_configs)
+      # Compare value in pipeline registry and new pipeline config
+      # return true if new pipeline is added or reloadable PQ config has changed
+      # running_pipelines: Map of {pipeline_id (sym) => JavaPipeline}
+      # pipeline_configs: Array of PipelineConfig
+      def queue_configs_updated?(running_pipelines, pipeline_configs)
         pipeline_configs.each do |pipeline_config|
           return true unless running_pipelines.has_key?(pipeline_config.pipeline_id.to_sym)
 
