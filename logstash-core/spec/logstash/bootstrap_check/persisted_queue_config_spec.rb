@@ -35,21 +35,20 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
       )
     end
     let(:pipeline_configs) { LogStash::Config::Source::Local.new(settings).pipeline_configs }
-    let(:successful_fetch) { LogStash::Config::SourceLoader::SuccessfulFetch.new(pipeline_configs) }
 
     context("'queue.max_bytes' is less than 'queue.page_capacity'") do
       it "should throw" do
         settings.set_value("queue.max_bytes", 512)
-        pq_config = LogStash::BootstrapCheck::PersistedQueueConfig.new(successful_fetch)
-        expect { pq_config.check }.to raise_error(LogStash::BootstrapCheckError, /'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
+        expect { LogStash::BootstrapCheck::PersistedQueueConfig.check({}, pipeline_configs) }
+          .to raise_error(LogStash::BootstrapCheckError, /'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
       end
     end
 
     context("'queue.max_bytes' = 0 which is less than 'queue.page_capacity'") do
       it "should not throw" do
         settings.set_value("queue.max_bytes", 0)
-        pq_config = LogStash::BootstrapCheck::PersistedQueueConfig.new(successful_fetch)
-        expect { pq_config.check }.not_to raise_error
+        expect { LogStash::BootstrapCheck::PersistedQueueConfig.check({}, pipeline_configs) }
+          .not_to raise_error
       end
     end
 
@@ -67,8 +66,8 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
 
       it "should throw" do
         settings.set_value("queue.max_bytes", "1mb")
-        pq_config = LogStash::BootstrapCheck::PersistedQueueConfig.new(successful_fetch)
-        expect { pq_config.check }.to raise_error(LogStash::BootstrapCheckError, /greater than 'queue.max_bytes'/)
+        expect { LogStash::BootstrapCheck::PersistedQueueConfig.check({}, pipeline_configs) }
+          .to raise_error(LogStash::BootstrapCheckError, /greater than 'queue.max_bytes'/)
       end
 
       after do
@@ -88,10 +87,62 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
       end
 
       it "should throw" do
-        pq_config = LogStash::BootstrapCheck::PersistedQueueConfig.new(successful_fetch)
-        expect { pq_config.check }.to raise_error(LogStash::BootstrapCheckError, /is unable to allocate/)
-        expect(pq_config.instance_variable_get(:@required_free_bytes).size).to eq(1)
-        expect(pq_config.instance_variable_get(:@required_free_bytes).values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
+        expect(LogStash::BootstrapCheck::PersistedQueueConfig).to receive(:check_disk_space) do | _, _, required_free_bytes|
+          expect(required_free_bytes.size).to eq(1)
+          expect(required_free_bytes.values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
+        end.and_call_original
+
+        expect { LogStash::BootstrapCheck::PersistedQueueConfig.check({}, pipeline_configs) }
+          .to raise_error(LogStash::BootstrapCheckError, /is unable to allocate/)
+      end
+    end
+
+    context("queue config check update") do
+      shared_examples "no update" do
+        it "gives false" do
+          expect(LogStash::BootstrapCheck::PersistedQueueConfig.queue_configs_updated?(running_pipelines, pipeline_configs))
+            .to be_falsey
+        end
+      end
+
+      shared_examples "got update" do
+        it "gives true" do
+          expect(LogStash::BootstrapCheck::PersistedQueueConfig.queue_configs_updated?(running_pipelines, pipeline_configs))
+            .to be_truthy
+        end
+      end
+
+      let(:java_pipeline) { LogStash::JavaPipeline.new(pipeline_configs[0]) }
+      let(:running_pipelines) { {:main => java_pipeline } }
+
+      context("pipeline config is identical") do
+        it_behaves_like "no update"
+      end
+
+      context("add more pipeline") do
+        let(:settings1) { settings.dup.merge("pipeline.id" => "main") }
+        let(:settings2) { settings.dup.merge("pipeline.id" => "second") }
+        let(:pipeline_configs) do
+          LogStash::Config::Source::Local.new(settings1).pipeline_configs +
+            LogStash::Config::Source::Local.new(settings2).pipeline_configs
+        end
+
+        it_behaves_like "got update"
+      end
+
+      context("queue configs has changed") do
+        let(:settings1) { settings.dup.merge("queue.max_bytes" => "1mb") }
+        let(:pipeline_configs1) { LogStash::Config::Source::Local.new(settings1).pipeline_configs }
+        let(:java_pipeline) { LogStash::JavaPipeline.new(pipeline_configs1[0]) }
+
+        it_behaves_like "got update"
+      end
+
+      context("queue configs do not changed") do
+        let(:settings1) { settings.dup.merge("config.debug" => "true") }
+        let(:pipeline_configs) { LogStash::Config::Source::Local.new(settings1).pipeline_configs }
+
+        it_behaves_like "no update"
       end
     end
   end

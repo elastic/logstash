@@ -389,14 +389,6 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
-    # check persistent queue config
-    begin
-      LogStash::BootstrapCheck::PersistedQueueConfig.new(@source_loader.fetch).check
-    rescue => e
-      signal_usage_error(e.message)
-      return 1
-    end
-
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
