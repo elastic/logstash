@@ -153,6 +153,12 @@ module LogStash module Plugins
       GemRegistry.logstash_plugins.each do |plugin_context|
         if plugin_context.spec.metadata.key?('java_plugin')
           jar_files = plugin_context.spec.files.select {|f| f =~ /.*\.jar/}
+          if jar_files.length == 0
+            gem_home = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "2.5.0"))
+            plugin_jar_dependencies = "#{gem_home}/gems/#{plugin_context.spec.name}-#{plugin_context.spec.version}/vendor/jar-dependencies"
+            jar_files = Dir.glob("#{plugin_jar_dependencies}/**/*.jar")
+          end
+
           expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
           if (jar_files.length != 1 || !jar_files[0].end_with?(expected_jar_name))
             raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"
