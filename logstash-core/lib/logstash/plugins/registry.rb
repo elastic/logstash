@@ -152,7 +152,9 @@ module LogStash module Plugins
 
       GemRegistry.logstash_plugins.each do |plugin_context|
         if plugin_context.spec.metadata.key?('java_plugin')
+          # This jar_files is always be empty if user installed custom java plugin from rubygems.org
           jar_files = plugin_context.spec.files.select {|f| f =~ /.*\.jar/}
+          # if jar_files is empty, logstash will find *.jar files from ${LS_HOME}/vendor/bundle/jruby/2.5.0/gems/${CUSTOM_JAVA_PLUGIN_NAME}/vendor/jar-dependencies
           if jar_files.length == 0
             gem_home = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "2.5.0"))
             plugin_jar_dependencies = "#{gem_home}/gems/#{plugin_context.spec.name}-#{plugin_context.spec.version}/vendor/jar-dependencies"
