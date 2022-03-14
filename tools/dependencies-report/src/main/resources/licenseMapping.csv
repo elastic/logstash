@@ -45,6 +45,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "equalizer:",https://github.com/dkubb/equalizer,MIT
+"et-orbi:",https://github.com/floraison/et-orbi,MIT
 "faraday:",https://github.com/lostisland/faraday,MIT
 "faraday-em_http",https://github.com/lostisland/faraday,MIT
 "faraday-em_synchrony",https://github.com/lostisland/faraday,MIT
@@ -58,6 +59,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "faraday-retry",https://github.com/lostisland/faraday,MIT
 "ffi:",https://github.com/ffi/ffi,BSD-3-CLAUSE
 "filesize:",https://github.com/dominikh,MIT
+"fugit:",https://github.com/floraison/fugit,MIT
 "gelfd2:",https://github.com/ptqa/gelfd2,Apache-2.0
 "gems:",https://github.com/rubygems/gems,MIT
 "gene_pool:",https://github.com/bpardee/gene_pool,MIT
@@ -131,6 +133,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "pry:",http://pryrepl.org,MIT
 "public_suffix:",https://simonecarletti.com/code/publicsuffix-ruby,MIT
 "puma:",http://puma.io,BSD-3-Clause
+"raabro",https://github.com/floraison/raabro,MIT
 "racc:",https://github.com/ruby/rake,Ruby
 "rack-protection:",http://github.com/rkh/rack-protection,MIT
 "rack:",http://rack.github.io/,MIT
