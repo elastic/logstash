@@ -1,0 +1,51 @@
+name: Bump dependencies
+on:
+  workflow_dispatch:
+   inputs:
+      branch:
+        description: 'Release Branch'     
+        required: true
+        default: '8.1' 
+        type: choice
+        options:
+        - "7.14"
+        - "8.0"
+        - "8.1"
+      bump:
+        description: 'Bump type'     
+        required: true
+        default: 'patch' 
+        type: choice
+        options:
+        - "patch"
+        - "minor"
+        - "major"
+    
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  version_bumper:
+    name: Bump versions
+    runs-on: ubuntu-latest
+    steps:
+#      - name: Fetch logstash-core team member list
+#        uses: tspascoal/get-user-teams-membership@v1
+#        with: 
+#          username: ${{ github.actor }}
+#          organization: elastic
+#          team: logstash
+#          GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
+#      - name: Is user a core team member?
+#        if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+#        run: exit 1
+      - name: checkout repo content
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.branch }}
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - run: ./gradlew clean installDefaultGems
+      - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ github.event.inputs.bump }} --conservative
