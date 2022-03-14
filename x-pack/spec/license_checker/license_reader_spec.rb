@@ -71,15 +71,12 @@ describe LogStash::LicenseChecker::LicenseReader do
     context 'and receives HostUnreachableError' do
       let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
       before(:each) do
-        first_call = true
-        allow(mock_client).to receive(:get) do |path|
-          expect(path).to eq('_xpack')
-          if first_call
-            first_call = false
-            raise host_not_reachable
-          end
-          xpack_info
-        end
+        # set up expectation of single failure
+        expect(license_reader.logger).to receive(:warn).with(a_string_including "Attempt to validate Elasticsearch license failed.")
+        expect(mock_client).to receive(:get).with('_xpack').and_raise(host_not_reachable).once
+        
+        # ensure subsequent success
+        expect(mock_client).to receive(:get).with('_xpack').and_return(xpack_info)
       end
       it 'continues to fetch and return an XPackInfo' do
         expect(subject.fetch_xpack_info.failed?).to be false
