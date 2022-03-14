@@ -30,16 +30,16 @@ jobs:
     name: Bump versions
     runs-on: ubuntu-latest
     steps:
-#      - name: Fetch logstash-core team member list
-#        uses: tspascoal/get-user-teams-membership@v1
-#        with: 
-#          username: ${{ github.actor }}
-#          organization: elastic
-#          team: logstash
-#          GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
-#      - name: Is user a core team member?
-#        if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
-#        run: exit 1
+      - name: Fetch logstash-core team member list
+        uses: tspascoal/get-user-teams-membership@v1
+        with: 
+          username: ${{ github.actor }}
+          organization: elastic
+          team: logstash
+          GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
+      - name: Is user a core team member?
+        if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+        run: exit 1
       - name: checkout repo content
         uses: actions/checkout@v2
         with:
@@ -61,4 +61,4 @@ jobs:
           git push origin $BRANCH
       - name: Create Pull Request
         run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ github.event.inputs.branch }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ github.event.inputs.branch }}\"}" https://api.github.com/repos/jsvd/logstash/pulls
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ github.event.inputs.branch }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ github.event.inputs.branch }}\"}" https://api.github.com/repos/elastic/logstash/pulls
