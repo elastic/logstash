@@ -42,7 +42,7 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 )
 
 @setlocal
-for /F "usebackq delims=" %%a in (`CALL %JAVACMD% -cp "!CLASSPATH!" "org.logstash.launchers.JvmOptionsParser" "!LS_HOME!" "!LS_JVM_OPTS!" ^|^| echo jvm_options_parser_failed`) do set LS_JAVA_OPTS=%%a
+for /F "usebackq delims=" %%a in (`CALL "%JAVACMD%" -cp "!CLASSPATH!" "org.logstash.launchers.JvmOptionsParser" "!LS_HOME!" "!LS_JVM_OPTS!" ^|^| echo jvm_options_parser_failed`) do set LS_JAVA_OPTS=%%a
 @endlocal & set "MAYBE_JVM_OPTIONS_PARSER_FAILED=%LS_JAVA_OPTS%" & set LS_JAVA_OPTS=%LS_JAVA_OPTS%
 
 if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
@@ -51,7 +51,7 @@ if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
 )
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
-%JAVACMD% %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
+"%JAVACMD%" %JAVA_OPTS% -cp "%CLASSPATH%" org.logstash.Logstash %*
 
 goto :end
 
