@@ -36,7 +36,7 @@ if defined LS_JAVA_HOME (
   )
 )
 
-if not exist %JAVACMD% (
+if not exist "%JAVACMD%" (
   echo could not find java; set JAVA_HOME or ensure java is in PATH 1>&2
   exit /b 1
 )
