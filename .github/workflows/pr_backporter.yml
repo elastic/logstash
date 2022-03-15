@@ -5,7 +5,7 @@ on:
 
 permissions:
   pull-requests: write
-  contents: read
+  contents: write
 
 jobs:
   pr_commented:
@@ -21,7 +21,7 @@ jobs:
           organization: elastic
           team: logstash
           GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
-      - name: Is user a core team member?
+      - name: Is user not a core team member?
         if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
         run: exit 1
       - name: checkout repo content
