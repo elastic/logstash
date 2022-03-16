@@ -37,7 +37,7 @@ module ServiceTester
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         cmd = sudo_exec!("service #{service} #{action}")
-        raise "#{cmd.stdout}"
+        raise "***** #{cmd.stdout}"
       end
     end
   end
