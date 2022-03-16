@@ -52,6 +52,7 @@ module ServiceTester
         cmd = sudo_exec!("yum install -y  #{package}")
         exit_status += cmd.exit_status
         errors << cmd.stderr unless cmd.stderr.empty?
+        raise "#{cmd.stdout}"
       end
       if exit_status > 0 
         raise InstallException.new("Error installing #{package}, #{errors.join('\n')}")
