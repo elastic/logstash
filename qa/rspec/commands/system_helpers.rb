@@ -24,13 +24,6 @@ module ServiceTester
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
-        exit_status += cmd.exit_status
-        errors << cmd.stderr unless cmd.stderr.empty?
-        outputs << cmd.stdout
-        raise "test ${stdout}"
-      end
-      if exit_status > 0
-        raise InstallException.new("Error installing #{package}, #{errors.join('\n')}, #{outputs.join('\n')}")
       end
       stdout.force_encoding(Encoding::UTF_8)
       (
@@ -43,7 +36,8 @@ module ServiceTester
     def service_manager(service, action, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
-        sudo_exec!("service #{service} #{action}")
+        cmd = sudo_exec!("service #{service} #{action}")
+        raise "#{cmd.stdout}"
       end
     end
   end
