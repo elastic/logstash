@@ -64,7 +64,7 @@ def with_running_logstash_service(logstash)
       expect(logstash).to be_running
     end
     yield
-  #ensure
-  #  logstash.stop_service
+  ensure
+    logstash.stop_service
   end
 end
