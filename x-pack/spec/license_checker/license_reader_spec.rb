@@ -72,7 +72,7 @@ describe LogStash::LicenseChecker::LicenseReader do
       let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
       before(:each) do
         # set up expectation of single failure
-        expect(license_reader.logger).to receive(:warn).with(a_string_including "Attempt to validate Elasticsearch license failed.")
+        expect(subject.logger).to receive(:warn).with(a_string_starting_with("Attempt to validate Elasticsearch license failed."), any_args)
         expect(mock_client).to receive(:get).with('_xpack').and_raise(host_not_reachable).once
         
         # ensure subsequent success
