@@ -23,11 +23,13 @@ module ServiceTester
       stdout = ""
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
+        stdout = cmd.stdout
         exit_status += cmd.exit_status
         errors << cmd.stderr unless cmd.stderr.empty?
+        outputs << cmd.stdout
       end
       if exit_status > 0
-        raise InstallException.new("Error installing #{package}, #{errors.join('\n')}")
+        raise InstallException.new("Error installing #{package}, #{errors.join('\n')}, #{stdout.join('\n')}")
       end
       stdout.force_encoding(Encoding::UTF_8)
       (
