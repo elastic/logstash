@@ -24,6 +24,7 @@ module ServiceTester
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
+        raise "{stdout}"
       end
       stdout.force_encoding(Encoding::UTF_8)
       (
