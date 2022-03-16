@@ -104,7 +104,6 @@ namespace "artifact" do
   end
 
   def files(excl=excludes)
-    puts "DNADBG>> files excl is: #{excl}"
     Rake::FileList.new(*package_files).exclude(*excl)
   end
 
