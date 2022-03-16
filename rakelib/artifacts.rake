@@ -104,6 +104,7 @@ namespace "artifact" do
   end
 
   def files(excl=excludes)
+    puts "DNADBG>> files excl is: #{excl}"
     Rake::FileList.new(*package_files).exclude(*excl)
   end
 
@@ -161,7 +162,7 @@ namespace "artifact" do
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
-    build_tar('ELASTIC-LICENSE')
+    build_tar('ELASTIC-LICENSE', nil, "JDK_VERSION")
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"

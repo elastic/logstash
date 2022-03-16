@@ -7,10 +7,5 @@ class ToolingUtils {
 
     static String jdkReleaseFilePath(String osName) {
         jdkFolderName(osName) + (osName == "darwin" ? "/Contents/Home/" : "")
-//        if (osName == "darwin") {
-//            jdkFolderName(osName) + "/Contents/Home/"
-//        } else {
-//            jdkFolderName(osName)
-//        }
     }
 }
