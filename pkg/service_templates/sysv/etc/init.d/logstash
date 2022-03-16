@@ -44,6 +44,11 @@ set +a
 
 [ -z "$nice" ] && nice=0
 
+# Source function library.
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+fi
+
 trace() {
   logger -t "/etc/init.d/logstash" "$@"
 }
@@ -160,14 +165,17 @@ case "$1" in
   stop) stop ;;
   force-stop) force_stop ;;
   status)
-    status
-    code=$?
-    if [ $code -eq 0 ] ; then
-      emit "$name is running"
-    else
-      emit "$name is not running"
-    fi
-    exit $code
+    status $program
+    RETVAL=$?
+    exit $RETVAL
+    #status
+    #code=$?
+    #if [ $code -eq 0 ] ; then
+    #  emit "$name is running"
+    #else
+    #  emit "$name is not running"
+    #fi
+    #exit $code
     ;;
   restart)
     
