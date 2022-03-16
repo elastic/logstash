@@ -2,7 +2,6 @@ package org.logstash.gradle.tooling
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
@@ -14,20 +13,19 @@ abstract class ExtractBundledJdkVersion extends DefaultTask {
      * Defines the name of the output filename containing the JDK version.
      * */
     @Input
-    abstract Property<String> getOutputFilename()
+    String outputFilename = "JDK_VERSION"
 
     @Input
     String osName
 
     @OutputFile
     File getJdkVersionFile() {
-        project.file("${project.projectDir}/${outputFilename.get()}")
+        project.file("${project.projectDir}/${outputFilename}")
     }
 
     ExtractBundledJdkVersion() {
         description = "Extracts IMPLEMENTOR_VERSION from JDK's release file"
         group = "org.logstash.tooling"
-        outputFilename.convention("JDK_VERSION")
     }
 
     @Internal

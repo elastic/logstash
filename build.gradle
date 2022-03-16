@@ -872,7 +872,7 @@ tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
 }
 
 clean {
-    String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename.get()
+    String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
     delete "${projectDir}/${jdkVersionFilename}"
 }
 
