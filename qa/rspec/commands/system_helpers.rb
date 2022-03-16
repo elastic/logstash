@@ -24,7 +24,6 @@ module ServiceTester
       at(hosts, {in: :serial}) do |host|
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
-        raise "##### #{cmd.stdout}"
       end
       stdout.force_encoding(Encoding::UTF_8)
       (
@@ -37,8 +36,7 @@ module ServiceTester
     def service_manager(service, action, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
-        cmd = sudo_exec!("service #{service} #{action}")
-        raise "***** #{cmd.stdout}"
+        sudo_exec!("service #{service} #{action}")
       end
     end
   end
