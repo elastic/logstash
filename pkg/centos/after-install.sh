@@ -7,5 +7,5 @@ sed -i \
   /etc/logstash/logstash.yml
 chmod 600 /etc/logstash/startup.options
 chmod 600 /etc/default/logstash
-# ensure's the systemctl picks up the systemd
-systemctl daemon-reload
+# Ensure the init script is picked up by systemd
+systemctl daemon-reload || true
