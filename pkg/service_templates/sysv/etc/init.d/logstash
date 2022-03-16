@@ -112,7 +112,7 @@ stop() {
   fi
 }
 
-status() {
+status_old() {
   if [ -f "$pidfile" ] ; then
     pid=$(cat "$pidfile")
     if ps -p $pid > /dev/null 2> /dev/null ; then
