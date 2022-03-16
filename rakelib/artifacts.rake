@@ -30,6 +30,7 @@ namespace "artifact" do
     [
       "NOTICE.TXT",
       "CONTRIBUTORS",
+      "JDK_VERSION",
       "bin/**/*",
       "config/**/*",
       "data",

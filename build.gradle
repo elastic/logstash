@@ -42,6 +42,7 @@ import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
+import org.logstash.gradle.tooling.ToolingUtils
 
 allprojects {
   group = 'org.logstash'
@@ -795,7 +796,7 @@ tasks.register("downloadJdk", Download) {
     project.ext.set("jdkDownloadLocation", "${projectDir}/build/${jdkDetails.localPackageName}")
     project.ext.set("jdkDirectory", "${projectDir}/build/${jdkDetails.unpackedJdkName}")
 
-    String jdkFolderName = osName == "darwin" ? "jdk.app" : "jdk"
+    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
     project.ext.set("jdkBundlingDirectory", "${projectDir}/${jdkFolderName}")
 
     src project.ext.jdkURL
@@ -814,7 +815,7 @@ tasks.register("downloadJdk", Download) {
 tasks.register("deleteLocalJdk", Delete) {
     // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
     String osName = selectOsType()
-    String jdkFolderName = osName == "darwin" ? "jdk.app" : "jdk"
+    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
     String jdkBundlingDirectory = "${projectDir}/${jdkFolderName}"
     delete jdkBundlingDirectory
 }
@@ -857,7 +858,7 @@ tasks.register("decompressJdk") {
 }
 
 tasks.register("copyJdk", Copy) {
-    dependsOn = [decompressJdk, bootstrap]
+    dependsOn = [extractBundledJdkVersion, decompressJdk, bootstrap]
     description = "Download, unpack and copy the JDK"
     // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
     doLast {
@@ -867,6 +868,12 @@ tasks.register("copyJdk", Copy) {
 
 tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
     dependsOn "decompressJdk"
+    osName = selectOsType()
+}
+
+clean {
+    String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename.get()
+    delete "${projectDir}/${jdkVersionFilename}"
 }
 
 if (System.getenv('OSS') != 'true') {

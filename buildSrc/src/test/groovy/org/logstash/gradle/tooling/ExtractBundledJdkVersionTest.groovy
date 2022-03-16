@@ -16,6 +16,7 @@ class ExtractBundledJdkVersionTest {
     void setUp() {
         Project project = ProjectBuilder.builder().build()
         task = project.task('extract', type: ExtractBundledJdkVersion)
+        task.osName = "linux"
 
         task.jdkReleaseFile.parentFile.mkdirs()
     }

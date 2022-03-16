@@ -4,7 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -16,8 +16,8 @@ abstract class ExtractBundledJdkVersion extends DefaultTask {
     @Input
     abstract Property<String> getOutputFilename()
 
-    @InputFile
-    File jdkReleaseFile = project.file("${project.projectDir}/jdk/release")
+    @Input
+    String osName
 
     @OutputFile
     File getJdkVersionFile() {
@@ -28,6 +28,12 @@ abstract class ExtractBundledJdkVersion extends DefaultTask {
         description = "Extracts IMPLEMENTOR_VERSION from JDK's release file"
         group = "org.logstash.tooling"
         outputFilename.convention("JDK_VERSION")
+    }
+
+    @Internal
+    File getJdkReleaseFile() {
+        String jdkReleaseFilePath = ToolingUtils.jdkReleaseFilePath(osName)
+        return project.file("${project.projectDir}/${jdkReleaseFilePath}/release")
     }
 
     @TaskAction
