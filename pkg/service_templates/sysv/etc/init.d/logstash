@@ -45,9 +45,7 @@ set +a
 [ -z "$nice" ] && nice=0
 
 # Source function library.
-if [ -f /etc/rc.d/init.d/functions ]; then
-    . /etc/rc.d/init.d/functions
-fi
+. /etc/rc.d/init.d/functions
 
 trace() {
   logger -t "/etc/init.d/logstash" "$@"
