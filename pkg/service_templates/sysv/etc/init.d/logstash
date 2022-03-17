@@ -165,16 +165,16 @@ case "$1" in
   force-stop) force_stop ;;
   status)
     status $pidopts $program
-    RETVAL=$?
-    exit $RETVAL
+    #RETVAL=$?
+    #exit $RETVAL
     #status
-    #code=$?
-    #if [ $code -eq 0 ] ; then
-    #  emit "$name is running"
-    #else
-    #  emit "$name is not running"
-    #fi
-    #exit $code
+    code=$?
+    if [ $code -eq 0 ] ; then
+      emit "$name is running"
+    else
+      emit "$name is not running"
+    fi
+    exit $code
     ;;
   restart)
     
