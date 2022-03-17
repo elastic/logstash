@@ -57,6 +57,12 @@ emit() {
   echo "$@"
 }
 
+rh_status() {
+  status $pidopts $program
+  RETVAL=$?
+  return $RETVAL
+}
+
 start() {
 
   # Ensure the log directory is setup correctly.
@@ -89,17 +95,17 @@ start() {
 
 stop() {
   # Try a few times to kill TERM the program
-  if status ; then
+  if rh_status ; then
     pid=$(cat "$pidfile")
     trace "Killing $name (pid $pid) with SIGTERM"
     kill -TERM $pid
     # Wait for it to exit.
     for i in 1 2 3 4 5 ; do
       trace "Waiting $name (pid $pid) to die..."
-      status || break
+      rh_status || break
       sleep 1
     done
-    if status ; then
+    if rh_status ; then
       if [ "$KILL_ON_STOP_TIMEOUT" -eq 1 ] ; then
         trace "Timeout reached. Killing $name (pid $pid) with SIGKILL.  This may result in data loss."
         kill -KILL $pid
@@ -132,9 +138,9 @@ status_old() {
 }
 
 force_stop() {
-  if status ; then
+  if rh_status ; then
     stop
-    status && kill -KILL $(cat "$pidfile")
+    rh_status && kill -KILL $(cat "$pidfile")
   fi
 }
 
@@ -151,7 +157,7 @@ case "$1" in
     exec "$0" start
     ;;
   start)
-    status
+    rh_status
     code=$?
     if [ $code -eq 0 ]; then
       emit "$name is already running"
@@ -164,10 +170,7 @@ case "$1" in
   stop) stop ;;
   force-stop) force_stop ;;
   status)
-    status $pidopts $program
-    #RETVAL=$?
-    #exit $RETVAL
-    #status
+    rh_status
     code=$?
     if [ $code -eq 0 ] ; then
       emit "$name is running"
