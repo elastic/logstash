@@ -16,70 +16,31 @@ This section summarizes the changes in the following releases:
 [[logstash-8-1-1]]
 === Logstash 8.1.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.1.1
+==== Notable issues fixed
 
-* Feat: conservative plugin (dependency) updates by default https://github.com/elastic/logstash/pull/13794[#13794]
-* Backport PR #13794 to 8.1: Feat: conservative plugin (dependency) updates by default https://github.com/elastic/logstash/pull/13803[#13803]
-* Backport PR #13820 to 8.1: Build: avoid doing a redundant bundle install https://github.com/elastic/logstash/pull/13823[#13823]
-* Fix Logstash cli tools to use the selected JDK under Windows https://github.com/elastic/logstash/pull/13839[#13839]
-* [Backport 8.1]Fix Logstash cli tools to use the selected JDK under Windows (#13839) https://github.com/elastic/logstash/pull/13860[#13860]
-* Quotes java executable path in case it contains spaces https://github.com/elastic/logstash/pull/13881[#13881]
-* [Backport #13881 8.1]Quotes java executable path in case it contains spaces https://github.com/elastic/logstash/pull/13894[#13894]
-* Backport PR#13891 to 8.1. Updates license checker after inclusion of … https://github.com/elastic/logstash/pull/13897[#13897]
+* Uninstalling a plugin with `bin/logstash-plugin uninstall <plugin>` will no longer fail https://github.com/elastic/logstash/pull/13823[#13823]
+* Logstash CLI tools are now able to use the selected JDK on Windows https://github.com/elastic/logstash/pull/13839[#13839]
+* Logstash will no longer fail to find JVM located in a path including spaces on Windows https://github.com/elastic/logstash/pull/13881[#13881]
+* The GeoIP database lookup will now respect a proxy defined with the http_proxy environment variable. https://github.com/elastic/logstash/pull/13840[#13840]
 
-=== Logstash Commits between 8.1 and 8.1.0
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.1.0..8.1"
-
-3aadd054f - (HEAD -> 8.1, origin/8.1) Update Gemfile.lock for 8.1.1 (#13896) (2 days ago) <Rob Bavey>
-d86d1b67d - Backport PR#13891 to 8.1. Updates license checker after inclusion of et-orbi, fugit and raabro. (#13897) (2 days ago) <Rob Bavey>
-ba7dfd266 - Quotes java executable path in case it contains spaces (#13881) (#13894) (3 days ago) <Andrea Selva>
-bdd1407ac - Deps: unpin jruby-openssl in logstash-core (#13889) (3 days ago) <Karol Bucek>
-a316bea17 - Build: avoid doing a redundant bundle install (#13820) (#13823) (3 days ago) <Karol Bucek>
-80f5a292d - Doc: Clarify monitoring settings [8.1] (#13872) (9 days ago) <Karen Metts>
-879b13ca4 - [Backport 8.1]Fix Logstash cli tools to use the selected JDK under Windows (#13839) (#13860) (9 days ago) <Andrea Selva>
-361e777c4 - [Backport 8.1]Feat: conservative plugin (dependency) updates by default (#13794) (#13803) (9 days ago) <Karol Bucek>
-3749b1fde - Add plugin uninstall release note (#13867) (9 days ago) <Rob Bavey>
-5fe8ee850 - bump jdk to 11.0.14.1+1 (#13687) (#13869) (9 days ago) <João Duarte>
-d3e940661 - Bump version to next 8.1.1 (#13829) (9 days ago) <Andrea Selva>
-887d9427d - Pin jruby-openssl in logstash-core to 0.12.1 (#13866) (10 days ago) <Rob Bavey>
-00b7be5bf - speed up artifact file listing (#13862) (#13864) (10 days ago) <João Duarte>
-cd975b27e - [Backport PR#13728 to 8.1] [Test] Fix acceptance tests to deal with Java 8 removal (#13744) (10 days ago) <Rob Bavey>
-43bdac25a - Doc: Improve formatting and readability for pipeline ordering [8.1] (#13857) (10 days ago) <Karen Metts>
-31e06c0b1 - Release notes for 8.1.0 (#13828) (10 days ago) <Logstash Machine>
-5534ca35c - artifacts: omit openssl_pkcs8_pure specs from built artifacts (#13715) (#13851) (13 days ago) <Ry Biesemeyer>
-3ed67b46f - expose shutdown request state of pipeline (#13811) (#13854) (13 days ago) <kaisecheng>
-e5d79a8eb - geoip-db: support `http_proxy` environment variable (#13410) (#13840) (13 days ago) <Ry Biesemeyer>
-301295e83 - Doc: Correct name for java_home env variable for Windows [8.1] (#13847) (13 days ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.1.0..8.1 *.release"
-Changed plugin versions:
-logstash-filter-dissect: 1.2.4 -> 1.2.5
-logstash-filter-elasticsearch: 3.11.0 -> 3.11.1
-logstash-input-dead_letter_queue: 1.1.9 -> 1.1.11
-logstash-input-elasticsearch: 4.12.1 -> 4.12.2
-logstash-input-http_poller: 5.2.0 -> 5.2.1
-logstash-integration-jdbc: 5.2.2 -> 5.2.4
-logstash-output-tcp: 6.0.0 -> 6.0.1
----------- GENERATED CONTENT ENDS HERE ------------
+* The version of the bundled JDK has been updated to 11.0.14.1+1. https://github.com/elastic/logstash/pull/13869[#13869]
 
 ==== Plugins
 
 *Dissect Filter - 1.2.5*
 
-* fix bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+* Fix: bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
 
 *Elasticsearch Filter - 3.11.1*
 
-*  Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/156[#156]
+* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/156[#156]
 
 *Dead_letter_queue Input - 1.1.11*
 
 * Fix: pre-flight checks before creating DLQ reader https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/35[#35]
-
-* Fix, avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
+* Fix: avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
 
 *Elasticsearch Input - 4.12.2*
 
@@ -97,8 +58,8 @@ logstash-output-tcp: 6.0.0 -> 6.0.1
 
 *Tcp Output - 6.0.1*
 
-* Fixed logging fail retry to stdout https://github.com/logstash-plugins/logstash-output-tcp/pull/43[#43]
-* Fixed to use `reconnect_interval` when establish a connection
+* Fix: logging fail retry to stdout https://github.com/logstash-plugins/logstash-output-tcp/pull/43[#43]
+* Fix: Use `reconnect_interval` when establish a connection
 
 
 [[logstash-8-1-0]]
