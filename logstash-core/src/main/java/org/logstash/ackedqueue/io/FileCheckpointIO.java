@@ -80,7 +80,7 @@ public class FileCheckpointIO implements CheckpointIO {
     public FileCheckpointIO(Path dirPath, boolean retry) {
         this.dirPath = dirPath;
         this.retry = retry;
-        this.backoff = new ExponentialBackoff(retry? 3L: 0L);
+        this.backoff = new ExponentialBackoff(3L);
     }
 
     @Override
@@ -107,10 +107,21 @@ public class FileCheckpointIO implements CheckpointIO {
             out.getFD().sync();
         }
 
+        // Windows can have problem doing file move See: https://github.com/elastic/logstash/issues/12345
+        // retry a couple of times to make it works. The first two runs has no sleep. The rest of reties has exponential backoff.
         try {
-            backoff.retry(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
-        } catch (ExponentialBackoff.RetryException ex) {
-            throw new IOException("Error writing checkpoint", ex);
+            Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException ex) {
+            if (retry) {
+                try {
+                    backoff.retry(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
+                } catch (ExponentialBackoff.RetryException re) {
+                    throw new IOException("Error writing checkpoint", re);
+                }
+            } else {
+                logger.error("Error writing checkpoint without retry: " + ex);
+                throw ex;
+            }
         }
     }
 

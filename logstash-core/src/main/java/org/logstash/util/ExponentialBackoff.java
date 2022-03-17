@@ -33,7 +33,7 @@ public class ExponentialBackoff {
                     logger.info("Retry({}) will execute in {} second", attempt, ms/1000.0);
                     Thread.sleep(ms);
                 } catch (InterruptedException e) {
-                    throw new RetryException("Backoff aborted", e);
+                    throw new RetryException("Backoff retry aborted", e);
                 }
             }
         } while (isRetry(attempt));
