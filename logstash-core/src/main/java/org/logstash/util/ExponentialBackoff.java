@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class ExponentialBackoff {
     private final Long maxRetry;
-    private final int[]  BACKOFF_SCHEDULE_MS = {200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600, 51_200};
+    private final int[]  BACKOFF_SCHEDULE_MS = {100, 200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600, 51_200};
     private final int BACKOFF_MAX_MS = 60_000;
 
     private static final Logger logger = LogManager.getLogger(ExponentialBackoff.class);

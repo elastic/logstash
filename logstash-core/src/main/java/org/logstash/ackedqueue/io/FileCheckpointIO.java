@@ -80,7 +80,7 @@ public class FileCheckpointIO implements CheckpointIO {
     public FileCheckpointIO(Path dirPath, boolean retry) {
         this.dirPath = dirPath;
         this.retry = retry;
-        this.backoff = new ExponentialBackoff(retry? 10L: 0L);
+        this.backoff = new ExponentialBackoff(retry? 3L: 0L);
     }
 
     @Override
