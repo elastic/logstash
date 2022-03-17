@@ -46,6 +46,7 @@ set +a
 
 # Source function library.
 . /etc/rc.d/init.d/functions
+pidopts="-p $pidfile"
 
 trace() {
   logger -t "/etc/init.d/logstash" "$@"
@@ -163,7 +164,7 @@ case "$1" in
   stop) stop ;;
   force-stop) force_stop ;;
   status)
-    status $program
+    status $pidopts $program
     RETVAL=$?
     exit $RETVAL
     #status
