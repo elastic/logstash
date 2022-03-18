@@ -24,7 +24,8 @@ if defined LS_JAVA_HOME (
   set JAVACMD=%LS_JAVA_HOME%\bin\java.exe
   echo Using LS_JAVA_HOME defined java: %LS_JAVA_HOME%
   if exist "%LS_HOME%\jdk" (
-    echo WARNING: Using LS_JAVA_HOME while Logstash distribution comes with a bundled JDK.
+    set /p BUNDLED_JDK_VERSION=<JDK_VERSION
+    echo "WARNING: Logstash comes bundled with the recommended JDK(%BUNDLED_JDK_VERSION%), but is overridden by the version defined in LS_JAVA_HOME. Consider clearing LS_JAVA_HOME to use the bundled JDK."
   )
 ) else (
   if exist "%LS_HOME%\jdk" (

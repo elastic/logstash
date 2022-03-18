@@ -27,7 +27,7 @@ namespace "artifact" do
 
   ## TODO: Install new service files
   def package_files
-    [
+    res = [
       "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
@@ -69,9 +69,15 @@ namespace "artifact" do
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
-      "jdk/**/*",
-      "jdk.app/**/*",
     ]
+    if @bundles_jdk
+      res += [
+        "JDK_VERSION",
+        "jdk/**/*",
+        "jdk.app/**/*",
+      ]
+    end
+    res
   end
 
   def exclude_paths
@@ -126,11 +132,13 @@ namespace "artifact" do
   task "archives" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     license_details = ['ELASTIC-LICENSE']
+    @bundles_jdk = true
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
+    @bundles_jdk = false
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
   end
@@ -160,17 +168,20 @@ namespace "artifact" do
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
+    @bundles_jdk = false
     build_tar('ELASTIC-LICENSE')
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
+    @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0',"-oss", oss_excludes]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
@@ -179,6 +190,7 @@ namespace "artifact" do
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
+    @bundles_jdk = true
     puts("[artifact:rpm] building rpm package x86_64")
     package_with_jdk("centos", "x86_64")
 
@@ -186,6 +198,7 @@ namespace "artifact" do
     package_with_jdk("centos", "arm64")
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos")
   end
@@ -193,6 +206,7 @@ namespace "artifact" do
   desc "Build an RPM of logstash with all dependencies"
   task "rpm_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
+    @bundles_jdk = true
     puts("[artifact:rpm] building rpm OSS package x86_64")
     package_with_jdk("centos", "x86_64", :oss)
 
@@ -200,6 +214,7 @@ namespace "artifact" do
     package_with_jdk("centos", "arm64", :oss)
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", :oss)
   end
@@ -208,6 +223,7 @@ namespace "artifact" do
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
+    @bundles_jdk = true
     puts("[artifact:deb] building deb package for x86_64")
     package_with_jdk("ubuntu", "x86_64")
 
@@ -215,6 +231,7 @@ namespace "artifact" do
     package_with_jdk("ubuntu", "arm64")
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu")
   end
@@ -222,6 +239,7 @@ namespace "artifact" do
   desc "Build a DEB of logstash with all dependencies"
   task "deb_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
+    @bundles_jdk = true
     puts("[artifact:deb_oss] building deb OSS package x86_64")
     package_with_jdk("ubuntu", "x86_64", :oss)
 
@@ -229,6 +247,7 @@ namespace "artifact" do
     package_with_jdk("ubuntu", "arm64", :oss)
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", :oss)
   end
