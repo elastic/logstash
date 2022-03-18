@@ -1,0 +1,9 @@
+[[ls-to-ls-http]]
+==== Logstash-to-Logstash using HTTP
+
+You can set up communication between two Logstash machines using the http output to the http input. 
+
+IMPORTANT: In its current iteration, LS-to-LS using HTTP may not solve all use cases currently addressed by the Beats-Lumberjack approach. 
+We are working on some features that will expand capabilities, and make {ls}-to-{ls} with HTTP easier to configure and use. 
+For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration is the best path forward if you don't need the round-trip acknowledgment and load balancing features provided by the Lumberjack-Beats configuration. 
+
