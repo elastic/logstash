@@ -6,17 +6,17 @@ import org.apache.logging.log4j.Logger;
 import java.util.Random;
 
 public class ExponentialBackoff {
-    private final Long maxRetry;
+    private final long maxRetry;
     private static final int[] BACKOFF_SCHEDULE_MS = {100, 200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600, 51_200};
     private static final int BACKOFF_MAX_MS = 60_000;
 
     private static final Logger logger = LogManager.getLogger(ExponentialBackoff.class);
 
-    public ExponentialBackoff(Long maxRetry) {
+    public ExponentialBackoff(long maxRetry) {
         this.maxRetry = maxRetry;
     }
 
-    public <T> T retry(CheckedSupplier<T> action) throws RetryException {
+    public <T> T retryable(CheckedSupplier<T> action) throws RetryException {
         long attempt = 0L;
 
         do {

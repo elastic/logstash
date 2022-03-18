@@ -11,8 +11,8 @@ public class ExponentialBackoffTest {
     public void testWithoutException() throws Exception {
         ExponentialBackoff backoff = new ExponentialBackoff(1L);
         CheckedSupplier<Integer> supplier = () -> 1 + 1;
-        Assertions.assertThatCode(() -> backoff.retry(supplier)).doesNotThrowAnyException();
-        Assertions.assertThat(backoff.retry(supplier)).isEqualTo(2);
+        Assertions.assertThatCode(() -> backoff.retryable(supplier)).doesNotThrowAnyException();
+        Assertions.assertThat(backoff.retryable(supplier)).isEqualTo(2);
     }
 
     @Test
@@ -21,7 +21,7 @@ public class ExponentialBackoffTest {
         ExponentialBackoff backoff = new ExponentialBackoff(1L);
         CheckedSupplier<Boolean> supplier = Mockito.mock(CheckedSupplier.class);
         Mockito.when(supplier.get()).thenThrow(new IOException("can't write to disk")).thenReturn(true);
-        Boolean b = backoff.retry(supplier);
+        Boolean b = backoff.retryable(supplier);
         Assertions.assertThat(b).isEqualTo(true);
     }
 
@@ -31,7 +31,7 @@ public class ExponentialBackoffTest {
         ExponentialBackoff backoff = new ExponentialBackoff(2L);
         CheckedSupplier<Boolean> supplier = Mockito.mock(CheckedSupplier.class);
         Mockito.when(supplier.get()).thenThrow(new IOException("can't write to disk"));
-        Assertions.assertThatThrownBy(() -> backoff.retry(supplier))
+        Assertions.assertThatThrownBy(() -> backoff.retryable(supplier))
                 .isInstanceOf(ExponentialBackoff.RetryException.class)
                 .hasMessageContaining("max retry");
     }

@@ -114,7 +114,7 @@ public class FileCheckpointIO implements CheckpointIO {
         } catch (IOException ex) {
             if (retry) {
                 try {
-                    backoff.retry(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
+                    backoff.retryable(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
                 } catch (ExponentialBackoff.RetryException re) {
                     throw new IOException("Error writing checkpoint", re);
                 }
