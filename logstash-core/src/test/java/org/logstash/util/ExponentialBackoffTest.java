@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class ExponentialBackoffTest {
     @Test
-    public void testSupplier() throws Exception {
+    public void testWithoutException() throws Exception {
         ExponentialBackoff backoff = new ExponentialBackoff(1L);
         CheckedSupplier<Integer> supplier = () -> 1 + 1;
         Assertions.assertThatCode(() -> backoff.retry(supplier)).doesNotThrowAnyException();
@@ -17,7 +17,7 @@ public class ExponentialBackoffTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testSupplierWithOneException() throws Exception {
+    public void testOneException() throws Exception {
         ExponentialBackoff backoff = new ExponentialBackoff(1L);
         CheckedSupplier<Boolean> supplier = Mockito.mock(CheckedSupplier.class);
         Mockito.when(supplier.get()).thenThrow(new IOException("can't write to disk")).thenReturn(true);
@@ -27,7 +27,7 @@ public class ExponentialBackoffTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testSupplierWithException() throws Exception {
+    public void testExceptionsReachMaxRetry() throws Exception {
         ExponentialBackoff backoff = new ExponentialBackoff(2L);
         CheckedSupplier<Boolean> supplier = Mockito.mock(CheckedSupplier.class);
         Mockito.when(supplier.get()).thenThrow(new IOException("can't write to disk"));

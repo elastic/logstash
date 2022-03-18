@@ -108,7 +108,7 @@ public class FileCheckpointIO implements CheckpointIO {
         }
 
         // Windows can have problem doing file move See: https://github.com/elastic/logstash/issues/12345
-        // retry a couple of times to make it works. The first two runs has no sleep. The rest of reties has exponential backoff.
+        // retry a couple of times to make it works. The first two runs has no break. The rest of reties are exponential backoff.
         try {
             Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
