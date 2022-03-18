@@ -18,9 +18,9 @@ This section summarizes the changes in the following releases:
 
 ==== Notable issues fixed
 
-* Uninstalling a plugin with `bin/logstash-plugin uninstall <plugin>` will no longer fail https://github.com/elastic/logstash/pull/13823[#13823]
+The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
 * Logstash CLI tools are now able to use the selected JDK on Windows https://github.com/elastic/logstash/pull/13839[#13839]
-* Logstash will no longer fail to find JVM located in a path including spaces on Windows https://github.com/elastic/logstash/pull/13881[#13881]
+* Logstash can successfully locate the Windows JVM, even if the path includes spaces https://github.com/elastic/logstash/pull/13881[#13881]
 * The GeoIP database lookup will now respect a proxy defined with the http_proxy environment variable. https://github.com/elastic/logstash/pull/13840[#13840]
 
 ==== Updates to dependencies
@@ -48,7 +48,7 @@ This section summarizes the changes in the following releases:
 
 *Http_poller Input - 5.2.1*
 
-* Deps: unpin rufus-scheduler dependency https://github.com/logstash-plugins/logstash-input-http_poller/pull/130[#130]
+* Deps: unpin rufus-scheduler dependency https://github.com/logstash-plugins/logstash-input-http_poller/pull/132[#132]
 
 *Jdbc Integration - 5.2.4*
 
