@@ -73,7 +73,7 @@ namespace "artifact" do
     ]
   end
 
-  def exclude_paths
+  def default_exclude_paths
     return @exclude_paths if @exclude_paths
 
     @exclude_paths = []
@@ -91,24 +91,19 @@ namespace "artifact" do
     @exclude_paths
   end
 
-  def excludes
-    return @excludes if @excludes
-    @excludes = exclude_paths
-  end
-
-  def oss_excludes
+  def oss_exclude_paths
     return @oss_excludes if @oss_excludes
-    @oss_excludes = excludes + [ "x-pack/**/*" ]
+    @oss_excludes = default_exclude_paths + [ "x-pack/**/*" ]
   end
 
-  def files(excl=excludes)
-    Rake::FileList.new(*package_files).exclude(*excl)
+  def files(exclude_paths=default_exclude_paths)
+    Rake::FileList.new(*package_files).exclude(*exclude_paths)
   end
 
-  def source_modified_since?(time, excluder=nil)
+  def source_modified_since?(time, exclude_paths=default_exclude_paths)
     skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
     result = false
-    files(excluder).each do |file|
+    files(exclude_paths).each do |file|
       next if File.mtime(file) < time || skip_list.include?(file)
       puts "file modified #{file}"
       result = true
@@ -165,7 +160,7 @@ namespace "artifact" do
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_excludes]
+    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux")
 
@@ -407,7 +402,7 @@ namespace "artifact" do
   end
 
 
-  def build_tar(license, tar_suffix = nil, excluder=nil, platform: '')
+  def build_tar(license, tar_suffix = nil, exclude_paths=default_exclude_paths, platform: '')
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
@@ -420,7 +415,7 @@ namespace "artifact" do
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     Gem::Package::TarWriter.new(gz) do |tar|
-      files(excluder).each do |path|
+      files(exclude_paths).each do |path|
         write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
       end
 
@@ -457,14 +452,14 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(license, zip_suffix = "", excluder=nil, platform: '')
+  def build_zip(license, zip_suffix = "", exclude_paths=default_exclude_paths, platform: '')
     require 'zip'
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
-      files(excluder).each do |path|
+      files(exclude_paths).each do |path|
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
         zipfile.add(path_in_zip, path)
       end
@@ -507,13 +502,14 @@ namespace "artifact" do
 
 
     suffix = ""
-    excluder = nil
     if oss
       suffix= "-oss"
-      excludes = oss_excludes
+      exclude_paths = oss_exclude_paths
+    else
+      exclude_paths = default_exclude_paths
     end
 
-    files(excludes).each do |path|
+    files(exclude_paths).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
