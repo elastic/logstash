@@ -18,7 +18,7 @@ This section summarizes the changes in the following releases:
 
 ==== Notable issues fixed
 
-The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
+* The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
 * Logstash CLI tools are now able to use the selected JDK on Windows https://github.com/elastic/logstash/pull/13839[#13839]
 * Logstash can successfully locate the Windows JVM, even if the path includes spaces https://github.com/elastic/logstash/pull/13881[#13881]
 * The GeoIP database lookup will now respect a proxy defined with the http_proxy environment variable. https://github.com/elastic/logstash/pull/13840[#13840]
