@@ -296,6 +296,11 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    if @settings.get_setting("queue.checkpoint.retry").set?
+      logger.warn("`queue.checkpoint.retry` will be deprecated in the next minor release. " \
+        "The default setup have enabled checkpoint retry. ")
+    end
+
     while(msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
     end
