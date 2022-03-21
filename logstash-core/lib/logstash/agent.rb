@@ -93,6 +93,8 @@ class LogStash::Agent
     initialize_agent_metrics
 
     initialize_geoip_database_metrics(metric)
+    
+    @bootstrap_check_pq = LogStash::BootstrapCheck::PersistedQueueConfig.new
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -183,7 +185,7 @@ class LogStash::Agent
       end
     end
 
-    LogStash::BootstrapCheck::PersistedQueueConfig.check(@pipelines_registry.running_user_defined_pipelines, results.response)
+    @bootstrap_check_pq.check(@pipelines_registry.running_user_defined_pipelines, results.response)
 
     converge_result = resolve_actions_and_converge_state(results.response)
     update_metrics(converge_result)

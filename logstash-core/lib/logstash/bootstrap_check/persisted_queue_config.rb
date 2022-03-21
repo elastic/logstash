@@ -22,12 +22,21 @@ java_import "java.nio.file.Files"
 
 module LogStash
   module BootstrapCheck
-    module PersistedQueueConfig
-      extend self
+    class PersistedQueueConfig
 
-      # Check the config of persistent queue. Raise BootstrapCheckError if fail the check.
+      def initialize
+        @last_check_pipeline_configs = Array.new
+        @last_check_pass = false
+      end
+
+      # Check the config of persistent queue. Raise BootstrapCheckError if fail
+      # @param running_pipelines [Hash pipeline_id (sym) => JavaPipeline]
+      # @param pipeline_configs [Array PipelineConfig]
       def check(running_pipelines, pipeline_configs)
-        return unless queue_configs_updated?(running_pipelines, pipeline_configs)
+        # Compare value of new pipeline config and pipeline registry and cache
+        has_update = queue_configs_update?(running_pipelines, pipeline_configs) && cache_check_fail?(pipeline_configs)
+        @last_check_pipeline_configs = pipeline_configs
+        return unless has_update
 
         err_msg = []
         queue_path_file_system = Hash.new # (String: queue path, String: file system)
@@ -54,6 +63,8 @@ module LogStash
         end
 
         check_disk_space(err_msg, queue_path_file_system, required_free_bytes)
+
+        @last_check_pass = err_msg.empty?
 
         raise(LogStash::BootstrapCheckError, err_msg.flatten.join(" ")) unless err_msg.empty?
       end
@@ -86,28 +97,35 @@ module LogStash
         fs.name
       end
 
-      # PQ page size in bytes
+      # PQ pages size in bytes
       def get_page_size(page_glob)
         ::Dir.glob(page_glob).sum { |f| ::File.size(f) }
       end
 
-      # Compare value in pipeline registry and new pipeline config
+      # Compare value in pipeline registry / cache and new pipeline config
       # return true if new pipeline is added or reloadable PQ config has changed
-      # running_pipelines: Map of {pipeline_id (sym) => JavaPipeline}
-      # pipeline_configs: Array of PipelineConfig
-      def queue_configs_updated?(running_pipelines, pipeline_configs)
-        pipeline_configs.each do |pipeline_config|
-          return true unless running_pipelines.has_key?(pipeline_config.pipeline_id.to_sym)
+      # @param pipeline_hash [Hash pipeline_id (sym) => JavaPipeline / PipelineConfig]
+      # @param new_pipeline_configs [Array PipelineConfig]
+      def queue_configs_update?(pipeline_hash, new_pipeline_configs)
+        new_pipeline_configs.each do |new_pipeline_config|
+          return true unless pipeline_hash.has_key?(new_pipeline_config.pipeline_id.to_sym)
 
-          settings = running_pipelines.fetch(pipeline_config.pipeline_id.to_sym).settings
-          return true unless settings.get_value("queue.type") == pipeline_config.settings.get("queue.type") &&
-            settings.get_value("queue.max_bytes") == pipeline_config.settings.get("queue.max_bytes") &&
-            settings.get_value("queue.page_capacity") == pipeline_config.settings.get("queue.page_capacity") &&
-            settings.get_value("path.queue") == pipeline_config.settings.get("path.queue")
+          settings = pipeline_hash.fetch(new_pipeline_config.pipeline_id.to_sym).settings
+          return true unless settings.get("queue.type") == new_pipeline_config.settings.get("queue.type") &&
+            settings.get("queue.max_bytes") == new_pipeline_config.settings.get("queue.max_bytes") &&
+            settings.get("queue.page_capacity") == new_pipeline_config.settings.get("queue.page_capacity") &&
+            settings.get("path.queue") == new_pipeline_config.settings.get("path.queue")
         end
 
         false
       end
+
+      # cache check is to prevent an invalid new pipeline config trigger the check of valid size config repeatedly
+      def cache_check_fail?(pipeline_configs)
+        last_check_pipeline_configs = @last_check_pipeline_configs.map { |pc| [pc.pipeline_id.to_sym, pc] }.to_h
+        queue_configs_update?(last_check_pipeline_configs, pipeline_configs) || !@last_check_pass
+      end
+
     end
   end
 end
