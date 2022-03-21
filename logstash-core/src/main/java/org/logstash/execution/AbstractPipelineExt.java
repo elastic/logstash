@@ -53,6 +53,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.io.QueueType;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -278,13 +279,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
+                final QueueType queueType = QueueType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
+
                 dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
                     context.runtime,
                     DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         getSetting(context, "path.dead_letter_queue").asJavaString(),
                         getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()),
+                        queueType)
                     );
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");

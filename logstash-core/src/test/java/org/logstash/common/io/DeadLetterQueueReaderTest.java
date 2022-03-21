@@ -529,7 +529,7 @@ public class DeadLetterQueueReaderTest {
      * @param millis
      * @return
      */
-    private Timestamp constantSerializationLengthTimestamp(long millis) {
+    static Timestamp constantSerializationLengthTimestamp(long millis) {
         if ( millis % 1000 == 0) { millis += 1; }
 
         final Timestamp timestamp = new Timestamp(millis);
@@ -542,7 +542,7 @@ public class DeadLetterQueueReaderTest {
         return constantSerializationLengthTimestamp(System.currentTimeMillis());
     }
 
-    private Timestamp constantSerializationLengthTimestamp(final Timestamp basis) {
+    private static Timestamp constantSerializationLengthTimestamp(final Timestamp basis) {
         return constantSerializationLengthTimestamp(basis.toEpochMilli());
     }
 
@@ -559,7 +559,7 @@ public class DeadLetterQueueReaderTest {
      * @param data
      * @return
      */
-    private Event createEventWithConstantSerializationOverhead(final Map<String, Object> data) {
+    static Event createEventWithConstantSerializationOverhead(final Map<String, Object> data) {
         final Event event = new Event(data);
 
         final Timestamp existingTimestamp = event.getTimestamp();
@@ -570,7 +570,7 @@ public class DeadLetterQueueReaderTest {
         return event;
     }
 
-    private Event createEventWithConstantSerializationOverhead() {
+    private static Event createEventWithConstantSerializationOverhead() {
         return createEventWithConstantSerializationOverhead(Collections.emptyMap());
     }
 
@@ -579,7 +579,7 @@ public class DeadLetterQueueReaderTest {
         return r.nextInt((to - from) + 1) + from;
     }
 
-    private String generateMessageContent(int size) {
+    static String generateMessageContent(int size) {
         char[] valid = new char[RecordType.values().length + 1];
         int j = 0;
         valid[j] = 'x';
