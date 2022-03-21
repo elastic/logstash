@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -129,6 +130,10 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getCurrentQueueSize() {
         return currentQueueSize.longValue();
+    }
+
+    public String getStoragePolicy() {
+        return queueType.name().toLowerCase(Locale.ROOT);
     }
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {

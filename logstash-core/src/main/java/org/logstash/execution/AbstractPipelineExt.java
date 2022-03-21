@@ -109,6 +109,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
+    private static final RubySymbol STORAGE_POLICY =
+            RubyUtil.RUBY.newSymbol("storage_policy");
+
     private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
     );
@@ -322,6 +325,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
             getDlqMetric(context).gauge(
                 context, QUEUE_SIZE_IN_BYTES,
                 dlqWriter(context).callMethod(context, "get_current_queue_size")
+            );
+            getDlqMetric(context).gauge(
+                    context, STORAGE_POLICY,
+                    dlqWriter(context).callMethod(context, "get_storage_policy")
             );
         }
         return context.nil;

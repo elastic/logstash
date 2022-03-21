@@ -1235,6 +1235,7 @@ describe LogStash::JavaPipeline do
           collect_stats
           # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
           expect(collected_stats[:queue_size_in_bytes].value).to eq(1)
+          expect(collected_stats[:storage_policy].value).to eq("drop_newer")
         end
       end
     end
