@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -205,17 +206,30 @@ public final class DeadLetterQueueWriter implements Closeable {
         lastWrite = Instant.now();
     }
 
-    private void dropTailSegment() throws IOException {
+    // package-private for testing
+    void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = getSegmentPaths(queuePath).sorted().findFirst();
+        final Optional<Path> oldestSegment = getSegmentPaths(queuePath)
+                .sorted(Comparator.comparing(Path::getFileName, DeadLetterQueueWriter::segmentsOrder))
+                .findFirst();
         if (!oldestSegment.isPresent()) {
-            throw new IllegalStateException("Listing of DLQ segments was empty during retain size(" + maxQueueSize + ") check");
+            throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
         }
         final Path beheadedSegment = oldestSegment.get();
         final long segmentSize = Files.size(beheadedSegment);
         currentQueueSize.add(-segmentSize);
         Files.delete(beheadedSegment);
         logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+    }
+
+    private static int segmentsOrder(Path p1, Path p2) {
+        final int i1 = segmentNumberFromFilename(p1);
+        final int i2 = segmentNumberFromFilename(p2);
+        return Integer.compare(i1, i2);
+    }
+
+    private static int segmentNumberFromFilename(Path p) {
+        return Integer.parseInt(p.toString().split("\\.log")[0]);
     }
 
     /**
