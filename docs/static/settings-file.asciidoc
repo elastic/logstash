@@ -227,6 +227,11 @@ Values other than `disabled` are currently considered BETA, and may produce unin
   would increase the size of the dead letter queue beyond this setting.
 | `1024mb`
 
+| `dead_letter_queue.storage_policy`
+| Defines the behavior to apply when the dead_letter_queue.max_bytes is reached. When an event would increase the size
+  over `dead_letter_queue.max_bytes` the event is dropped if valued `drop_never` or remove the oldest segment if `fifo`.
+| `drop_never`
+
 | `path.dead_letter_queue`
 | The directory path where the data files will be stored for the dead-letter queue.
 | `path.data/dead_letter_queue`
