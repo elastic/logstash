@@ -225,13 +225,9 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private static int segmentsOrder(Path p1, Path p2) {
-        final int i1 = segmentNumberFromFilename(p1);
-        final int i2 = segmentNumberFromFilename(p2);
+        final int i1 = DLQUtils.extractSegmentId(p1);
+        final int i2 = DLQUtils.extractSegmentId(p2);
         return Integer.compare(i1, i2);
-    }
-
-    private static int segmentNumberFromFilename(Path p) {
-        return Integer.parseInt(p.toString().split("\\.log")[0]);
     }
 
     /**
