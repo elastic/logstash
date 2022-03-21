@@ -57,7 +57,7 @@ emit() {
   echo "$@"
 }
 
-rh_status_new() {
+rh_status() {
   status $pidopts $program
   RETVAL=$?
   return $RETVAL
@@ -119,7 +119,7 @@ stop() {
   fi
 }
 
-rh_status() {
+rh_status_old() {
   if [ -f "$pidfile" ] ; then
     pid=$(cat "$pidfile")
     if ps -p $pid > /dev/null 2> /dev/null ; then
