@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-1-1,Logstash 8.1.1>>
 * <<logstash-8-1-0,Logstash 8.1.0>>
 * <<logstash-8-0-1,Logstash 8.0.1>>
 * <<logstash-8-0-0,Logstash 8.0.0>>
@@ -11,6 +12,55 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-1-1]]
+=== Logstash 8.1.1 Release Notes
+
+==== Notable issues fixed
+
+* The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
+* Logstash CLI tools are now able to use the selected JDK on Windows https://github.com/elastic/logstash/pull/13839[#13839]
+* Logstash can successfully locate the Windows JVM, even if the path includes spaces https://github.com/elastic/logstash/pull/13881[#13881]
+* The GeoIP database lookup will now respect a proxy defined with the http_proxy environment variable. https://github.com/elastic/logstash/pull/13840[#13840]
+
+==== Updates to dependencies
+
+* The version of the bundled JDK has been updated to 11.0.14.1+1. https://github.com/elastic/logstash/pull/13869[#13869]
+
+==== Plugins
+
+*Dissect Filter - 1.2.5*
+
+* Fix: bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+
+*Elasticsearch Filter - 3.11.1*
+
+* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/156[#156]
+
+*Dead_letter_queue Input - 1.1.11*
+
+* Fix: pre-flight checks before creating DLQ reader https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/35[#35]
+* Fix: avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
+
+*Elasticsearch Input - 4.12.2*
+
+* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/168[#168]
+
+*Http_poller Input - 5.2.1*
+
+* Deps: unpin rufus-scheduler dependency https://github.com/logstash-plugins/logstash-input-http_poller/pull/132[#132]
+
+*Jdbc Integration - 5.2.4*
+
+* Fix: compatibility with all (>= 3.0) rufus-scheduler versions https://github.com/logstash-plugins/logstash-integration-jdbc/pull/97[#97] 
+
+* Performance: avoid contention on scheduler execution https://github.com/logstash-plugins/logstash-integration-jdbc/pull/103[#103]
+
+*Tcp Output - 6.0.1*
+
+* Fix: logging fail retry to stdout https://github.com/logstash-plugins/logstash-output-tcp/pull/43[#43]
+* Fix: Use `reconnect_interval` when establish a connection
+
 
 [[logstash-8-1-0]]
 === Logstash 8.1.0 Release Notes
