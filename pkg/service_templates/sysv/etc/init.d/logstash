@@ -98,7 +98,7 @@ stop() {
   if rh_status ; then
     pid=$(cat "$pidfile")
     trace "Killing $name (pid $pid) with SIGTERM"
-    kill -TERM $pid
+    killproc $pidopts $program
     # Wait for it to exit.
     for i in 1 2 3 4 5 ; do
       trace "Waiting $name (pid $pid) to die..."
@@ -116,24 +116,6 @@ stop() {
     else
       emit "$name stopped."
     fi
-  fi
-}
-
-rh_status_old() {
-  if [ -f "$pidfile" ] ; then
-    pid=$(cat "$pidfile")
-    if ps -p $pid > /dev/null 2> /dev/null ; then
-      # process by this pid is running.
-      # It may not be our pid, but that's what you get with just pidfiles.
-      # TODO(sissel): Check if this process seems to be the same as the one we
-      # expect. It'd be nice to use flock here, but flock uses fork, not exec,
-      # so it makes it quite awkward to use in this case.
-      return 0
-    else
-      return 2 # program is dead but pid file exists
-    fi
-  else
-    return 3 # program is not running
   fi
 }
 
@@ -160,7 +142,6 @@ case "$1" in
     rh_status
     code=$?
     if [ $code -eq 0 ]; then
-      emit "$name is already running"
       exit $code
     else
       start
@@ -172,11 +153,6 @@ case "$1" in
   status)
     rh_status
     code=$?
-    if [ $code -eq 0 ] ; then
-      emit "$name is running"
-    else
-      emit "$name is not running"
-    fi
     exit $code
     ;;
   restart)
