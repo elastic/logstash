@@ -53,7 +53,6 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Comparator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +110,7 @@ public final class DeadLetterQueueReader implements Closeable {
         long startTime = System.currentTimeMillis();
         WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
         if (key != null) {
-            pollEventsOnWatch(key);
+            pollSegmentsOnWatch(key);
         }
         return System.currentTimeMillis() - startTime;
     }
@@ -119,11 +118,11 @@ public final class DeadLetterQueueReader implements Closeable {
     private void pollNewSegments() throws IOException {
         WatchKey key = watchService.poll();
         if (key != null) {
-            pollEventsOnWatch(key);
+            pollSegmentsOnWatch(key);
         }
     }
 
-    private void pollEventsOnWatch(WatchKey key) throws IOException {
+    private void pollSegmentsOnWatch(WatchKey key) throws IOException {
         for (WatchEvent<?> watchEvent : key.pollEvents()) {
             if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                 segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
