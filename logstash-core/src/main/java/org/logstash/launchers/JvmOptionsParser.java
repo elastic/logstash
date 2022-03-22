@@ -167,7 +167,7 @@ public class JvmOptionsParser {
           return Arrays.stream(MANDATORY_JVM_OPTIONS)
                   .map(option -> jvmOptionFromLine(javaMajorVersion, option))
                   .flatMap(Optional::stream)
-                  .collect(Collectors.toList());
+                  .collect(Collectors.toUnmodifiableList());
     }
 
     private List<String> getJvmOptionsFromFile(final Optional<Path> jvmOptionsFile, final int javaMajorVersion) throws IOException, JvmOptionsFileParserException {
