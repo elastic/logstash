@@ -636,9 +636,7 @@ public class DeadLetterQueueReaderTest {
             Files.delete(dir.resolve("1.log"));
             Files.delete(dir.resolve("2.log"));
 
-            final Path firstLog = dir.resolve("1.log");
-            final int startPosition = 1;
-            readManager.setCurrentReaderAndPosition(firstLog, startPosition);
+            readManager.setCurrentReaderAndPosition(dir.resolve("1.log"), 1);
 
             DLQEntry readEntry = readManager.pollEntry(100);
             assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
