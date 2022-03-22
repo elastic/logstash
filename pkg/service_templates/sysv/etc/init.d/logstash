@@ -77,6 +77,7 @@ start() {
   ulimit -n ${limit_open_files}
 
   # Run the program!
+  # TODO: Port this to use 'daemon'
   nice -n "$nice" \
   chroot --userspec "$user":"$group" "$chroot" sh -c "
     ulimit -n ${limit_open_files}
@@ -113,8 +114,6 @@ stop() {
       else
         emit "$name stop failed; still running."
       fi
-    else
-      emit "$name stopped."
     fi
   fi
 }
