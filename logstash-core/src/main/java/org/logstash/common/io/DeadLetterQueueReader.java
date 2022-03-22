@@ -83,14 +83,20 @@ public final class DeadLetterQueueReader implements Closeable {
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
+            if (!Files.exists(segment)) {
+                segments.remove(segment);
+                continue;
+            }
             currentReader = new RecordIOReader(segment);
             byte[] event = currentReader.seekToNextEventPosition(timestamp, DeadLetterQueueReader::extractEntryTimestamp, Timestamp::compareTo);
             if (event != null) {
                 return;
             }
         }
-        currentReader.close();
-        currentReader = null;
+        if (currentReader != null) {
+            currentReader.close();
+            currentReader = null;
+        }
     }
 
     private static Timestamp extractEntryTimestamp(byte[] serialized) {
