@@ -127,13 +127,10 @@ public final class DeadLetterQueueReader implements Closeable {
         for (WatchEvent<?> watchEvent : key.pollEvents()) {
             if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                 segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
-             } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+            } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
                 final int oldSize = segments.size();
                 segments.clear();
-                final List<Path> currentSegments = getSegmentPaths(queuePath)
-                        .sorted(Comparator.comparingInt(DLQUtils::extractSegmentId))
-                        .collect(Collectors.toList());
-                segments.addAll(currentSegments);
+                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
                 logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
             }
             key.reset();
