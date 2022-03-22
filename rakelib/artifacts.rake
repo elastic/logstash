@@ -556,7 +556,6 @@ namespace "artifact" do
       dir.input("#{empty}/=/var/lib/logstash")
       dir.input("#{empty}/=/etc/logstash/conf.d")
       dir.input("#{empty}/=/lib/systemd/system")
-      dir.input("#{empty}/=/etc/init.d/")
       dir.input("#{empty}/=/etc/default")
     end
 
@@ -587,9 +586,6 @@ namespace "artifact" do
     File.join(basedir, "pkg", "service_templates", "systemd", "lib", "systemd", "system", "logstash.service").tap do |path|
       dir.input("#{path}=/lib/systemd/system")
     end
-    File.join(basedir, "pkg", "service_templates", "sysv", "etc", "init.d", "logstash").tap do |path|
-      dir.input("#{path}=/etc/init.d")
-    end
     File.join(basedir, "pkg", "service_templates", "sysv", "etc", "default", "logstash").tap do |path|
       dir.input("#{path}=/etc/default")
     end
@@ -614,7 +610,6 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
-        out.config_files << "/etc/init.d/logstash"
         out.config_files << "/etc/default/logstash"
       when "debian", "ubuntu"
         require "fpm/package/deb"
@@ -633,7 +628,6 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
-        out.config_files << "/etc/init.d/logstash"
         out.config_files << "/etc/default/logstash"
     end
 
