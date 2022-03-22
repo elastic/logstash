@@ -585,6 +585,26 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testSeekToMiddleWhileTheLogIsRemoved() throws IOException, InterruptedException {
+        writeSegmentSizeEntries(3);
+
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
+
+            // removes 2 segments simulating a retention policy action
+            Files.delete(dir.resolve("1.log"));
+            Files.delete(dir.resolve("2.log"));
+
+            final Path firstLog = dir.resolve("1.log");
+            final int startPosition = 1;
+            readManager.setCurrentReaderAndPosition(firstLog, startPosition);
+
+            DLQEntry readEntry = readManager.pollEntry(100);
+            assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
+        }
+    }
+
+
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
      * such that the result will have a constant serialization length of 24 bytes.
