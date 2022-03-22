@@ -54,12 +54,9 @@ import static org.junit.Assert.fail;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
+import static org.logstash.common.io.DeadLetterQueueTestUtils.*;
 
 public class DeadLetterQueueWriterTest {
-
-    public static final int MB = 1024 * 1024;
-    public static final int GB = 1024 * 1024 * 1024;
-    public static final int FULL_SEGMENT_FILE_SIZE = 319 * BLOCK_SIZE + 1; // 319 records that fills completely a block plus the 1 byte header of the segment file
 
     private Path dir;
 
