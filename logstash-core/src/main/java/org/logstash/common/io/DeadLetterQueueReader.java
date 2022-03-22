@@ -169,15 +169,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
         byte[] event = currentReader.readEvent();
         if (event == null && currentReader.isEndOfStream()) {
-            Path lastSegment;
-            try {
-                lastSegment = segments.last();
-            } catch (NoSuchElementException ex) {
-                // the last segment was removed while processing
-                logger.debug("No last segment found, poll for new segments");
-                lastSegment = null;
-            }
-            if (lastSegment == null || currentReader.getPath().equals(lastSegment)) {
+            if (consumedAllSegments()) {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
@@ -193,6 +185,17 @@ public final class DeadLetterQueueReader implements Closeable {
         }
 
         return event;
+    }
+
+    private boolean consumedAllSegments() {
+        try {
+            return currentReader.getPath().equals(segments.last());
+        } catch (NoSuchElementException ex) {
+            // the last segment was removed while processing
+            logger.debug("No last segment found, poll for new segments");
+            return true;
+        }
+
     }
 
     private Path nextExistingSegmentFile(Path currentSegmentPath) {
