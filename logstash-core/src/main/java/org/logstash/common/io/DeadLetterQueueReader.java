@@ -202,11 +202,11 @@ public final class DeadLetterQueueReader implements Closeable {
         if (Files.exists(segmentPath)) {
             currentReader = new RecordIOReader(segmentPath);
             currentReader.seekToOffset(position);
-        }else{
+        } else {
             // Otherwise, set the current reader to be at the beginning of the next
             // segment.
             Path next = segments.higher(segmentPath);
-            if (next != null){
+            if (next != null) {
                 currentReader = new RecordIOReader(next);
             }
         }
