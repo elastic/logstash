@@ -1,17 +1,13 @@
-//////
-This file in not currently pulled into the guide.
-It's here as a placeholder as we expand information and offerings. 
-/////
-
-
-
-
 [[ls-to-ls-http]]
-==== Logstash-to-Logstash using HTTP
+==== HTTP output to HTTP input
 
-You can set up communication between two Logstash machines using the http output to the http input. 
+HTTP output to HTTP input is an alternative approach for Logstash-to-Logstash communication. This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
+Take these considerations into account before you implement:
 
-IMPORTANT: In its current iteration, LS-to-LS using HTTP may not solve all use cases currently addressed by the Beats-Lumberjack approach. 
-We are working on some features that will expand capabilities, and make {ls}-to-{ls} with HTTP easier to configure and use. 
-For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration is the best path forward if you don't need the round-trip acknowledgment and load balancing features provided by the Lumberjack-Beats configuration. 
+* It does not provide built-in high availability. You will need to implement your own load balancer in between the output and the input. 
+* If you need a proxy between the Logstash instances, you can use any HTTP proxy. 
+* Additional connection information is added to events (by the HTTP input), and this may be data you don't want.
 
+For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration is the best path forward if these limitations don't apply to your use case.
+
+NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
