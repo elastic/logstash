@@ -1,11 +1,4 @@
-[[ls-to-ls-lumberjack]]
-==== Logstash-to-Logstash using Lumberjack and Beats
-
-You can set up communication between two Logstash machines by connecting the Lumberjack output to the Beats input. 
-
-===== Configuration overview
-
-Use the Lumberjack protocol to connect two Logstash machines.
+*Configuration overview*
 
 . Generate a trusted SSL certificate (required by the lumberjack protocol).
 . Copy the SSL certificate to the upstream Logstash machine.
@@ -14,8 +7,7 @@ Use the Lumberjack protocol to connect two Logstash machines.
 . Set the downstream Logstash machine to listen for incoming Lumberjack connections through the Beats input.
 . Test it.
 
-[[generate-self-signed-cert]]
-====== Generate a self-signed SSL certificate and key
+*Generate a self-signed SSL certificate and key*
 
 Use the `openssl req` command to generate a self-signed certificate and key. The `openssl req` command is available with some operating systems. You may need to install the openssl command line program for others.
 
@@ -43,15 +35,13 @@ Generating a 2048 bit RSA private key
 writing new private key to 'lumberjack.key'
 ----
 
-[[copy-cert-key]]
-====== Copy the SSL certificate and key
+*Copy the SSL certificate and key*
 
 Copy the SSL certificate to the upstream Logstash machine.
 
 Copy the SSL certificate and key to the downstream Logstash machine.
 
-[[save-cert-ls1]]
-====== Start the upstream Logstash instance
+*Start the upstream Logstash instance*
 
 Start Logstash and generate test events:
 
@@ -62,8 +52,7 @@ bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec 
 
 This sample command sends five events to mydownstreamhost:5000 using the SSL certificate provided.
 
-[[save-cert-ls2]]
-====== Start the downstream Logstash instance
+*Start the downstream Logstash instance*
 
 Start the downstream instance of Logstash:
 
@@ -74,15 +63,14 @@ bin/logstash -e 'input { beats { codec => json port => 5000 ssl => true ssl_cert
 
 This sample command sets port 5000 to listen for incoming Beats input.
 
-[[test-ls-to-ls]]
-====== Verify the communication
+*Verify the communication*
 
 Watch the downstream Logstash machine for the incoming events. You should see five incrementing events similar to the following:
 
 [source,shell]
 ----
 {
-  "@timestamp" => 2018-02-07T12:16:39.415Z,
+  "@timestamp" => 2021-02-07T12:16:39.415Z,
   "sequence"   => 0
   "tags"       => [
     [0] "beats_input_codec_json_applied"

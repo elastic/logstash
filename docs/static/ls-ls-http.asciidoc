@@ -1,3 +1,11 @@
+//////
+This file in not currently pulled into the guide.
+It's here as a placeholder as we expand information and offerings. 
+/////
+
+
+
+
 [[ls-to-ls-http]]
 ==== Logstash-to-Logstash using HTTP
 
