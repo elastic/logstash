@@ -161,7 +161,7 @@ public final class DeadLetterQueueReader implements Closeable {
                 final Path firstSegment = segments.first();
                 currentReader = new RecordIOReader(firstSegment);
             } catch (NoSuchElementException ex) {
-                // all the elements were removed after the empty check
+                // all elements were removed after the empty check
                 logger.debug("No entries found: no segment files found in dead-letter-queue directory");
                 return null;
             }
@@ -191,7 +191,7 @@ public final class DeadLetterQueueReader implements Closeable {
         try {
             return currentReader.getPath().equals(segments.last());
         } catch (NoSuchElementException ex) {
-            // the last segment was removed while processing
+            // last segment was removed while processing
             logger.debug("No last segment found, poll for new segments");
             return true;
         }
@@ -225,7 +225,7 @@ public final class DeadLetterQueueReader implements Closeable {
                 currentReader = new RecordIOReader(next);
             } else {
                 pollNewSegments();
-                // give a second try after a reload of segments from filesystem
+                // give a second try after a re-load of segments from filesystem
                 next = nextExistingSegmentFile(segmentPath);
                 if (next != null) {
                     currentReader = new RecordIOReader(next);
