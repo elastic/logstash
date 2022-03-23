@@ -7,6 +7,7 @@ require "logstash/config/source_loader"
 require "logstash/outputs/elasticsearch"
 require "logstash/json"
 require 'helpers/elasticsearch_options'
+require 'helpers/loggable_try'
 require "license_checker/licensed"
 
 
@@ -53,7 +54,10 @@ module LogStash
 
       # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
       def get_pipeline_fetcher
-        response = client.get("/")
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+          client.get("/")
+        }
 
         if response["error"]
           raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
