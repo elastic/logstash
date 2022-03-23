@@ -15,7 +15,7 @@ describe "Read configuration from elasticsearch" do
         "xpack.management.enabled" => true,
         "xpack.management.pipeline.id" => pipeline_id,
         "xpack.management.logstash.poll_interval" => "1s",
-        "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
+        "xpack.management.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:19200"],
         "xpack.management.elasticsearch.username" => "elastic",
         "xpack.management.elasticsearch.password" => elastic_password,
         "xpack.monitoring.elasticsearch.username" => "elastic",
@@ -37,6 +37,9 @@ describe "Read configuration from elasticsearch" do
     push_elasticsearch_config(PIPELINE_ID, config)
 
     @logstash_service = logstash("bin/logstash -w 1", logstash_options)
+
+    full_log = @logstash_service.stdout_lines.join("\n")
+    expect(full_log).not_to match(/Could not fetch all the sources/)
   end
 
   def stop_services
