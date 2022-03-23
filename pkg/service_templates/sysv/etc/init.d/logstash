@@ -44,6 +44,10 @@ set +a
 
 [ -z "$nice" ] && nice=0
 
+# Source function library.
+. /etc/rc.d/init.d/functions
+pidopts="-p $pidfile"
+
 trace() {
   logger -t "/etc/init.d/logstash" "$@"
 }
@@ -51,6 +55,12 @@ trace() {
 emit() {
   trace "$@"
   echo "$@"
+}
+
+rh_status() {
+  status $pidopts $program
+  RETVAL=$?
+  return $RETVAL
 }
 
 start() {
@@ -67,6 +77,7 @@ start() {
   ulimit -n ${limit_open_files}
 
   # Run the program!
+  # TODO: Port this to use 'daemon'
   nice -n "$nice" \
   chroot --userspec "$user":"$group" "$chroot" sh -c "
     ulimit -n ${limit_open_files}
@@ -85,17 +96,17 @@ start() {
 
 stop() {
   # Try a few times to kill TERM the program
-  if status ; then
+  if rh_status ; then
     pid=$(cat "$pidfile")
     trace "Killing $name (pid $pid) with SIGTERM"
-    kill -TERM $pid
+    killproc $pidopts $program
     # Wait for it to exit.
     for i in 1 2 3 4 5 ; do
       trace "Waiting $name (pid $pid) to die..."
-      status || break
+      rh_status || break
       sleep 1
     done
-    if status ; then
+    if rh_status ; then
       if [ "$KILL_ON_STOP_TIMEOUT" -eq 1 ] ; then
         trace "Timeout reached. Killing $name (pid $pid) with SIGKILL.  This may result in data loss."
         kill -KILL $pid
@@ -103,34 +114,14 @@ stop() {
       else
         emit "$name stop failed; still running."
       fi
-    else
-      emit "$name stopped."
     fi
-  fi
-}
-
-status() {
-  if [ -f "$pidfile" ] ; then
-    pid=$(cat "$pidfile")
-    if ps -p $pid > /dev/null 2> /dev/null ; then
-      # process by this pid is running.
-      # It may not be our pid, but that's what you get with just pidfiles.
-      # TODO(sissel): Check if this process seems to be the same as the one we
-      # expect. It'd be nice to use flock here, but flock uses fork, not exec,
-      # so it makes it quite awkward to use in this case.
-      return 0
-    else
-      return 2 # program is dead but pid file exists
-    fi
-  else
-    return 3 # program is not running
   fi
 }
 
 force_stop() {
-  if status ; then
+  if rh_status ; then
     stop
-    status && kill -KILL $(cat "$pidfile")
+    rh_status && kill -KILL $(cat "$pidfile")
   fi
 }
 
@@ -147,10 +138,9 @@ case "$1" in
     exec "$0" start
     ;;
   start)
-    status
+    rh_status
     code=$?
     if [ $code -eq 0 ]; then
-      emit "$name is already running"
       exit $code
     else
       start
@@ -160,13 +150,8 @@ case "$1" in
   stop) stop ;;
   force-stop) force_stop ;;
   status)
-    status
+    rh_status
     code=$?
-    if [ $code -eq 0 ] ; then
-      emit "$name is running"
-    else
-      emit "$name is not running"
-    fi
     exit $code
     ;;
   restart)
