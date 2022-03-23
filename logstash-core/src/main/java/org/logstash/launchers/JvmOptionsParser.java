@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -163,7 +164,12 @@ public class JvmOptionsParser {
         System.out.println(String.join(" ", jvmOptionsContent));
     }
 
-     static List<String> getMandatoryJvmOptions(int javaMajorVersion){
+    /**
+     * Returns the list of mandatory JVM options for the given version of Java.
+     * @param javaMajorVersion
+     * @return Collection of mandatory options
+     */
+     static Collection<String> getMandatoryJvmOptions(int javaMajorVersion){
           return Arrays.stream(MANDATORY_JVM_OPTIONS)
                   .map(option -> jvmOptionFromLine(javaMajorVersion, option))
                   .flatMap(Optional::stream)
@@ -357,7 +363,7 @@ public class JvmOptionsParser {
 
     private static final Pattern JAVA_VERSION = Pattern.compile("^(?:1\\.)?(?<javaMajorVersion>\\d+)(?:\\.\\d+)?$");
 
-    public static int javaMajorVersion() {
+    private static int javaMajorVersion() {
         final String specVersion = System.getProperty("java.specification.version");
         final Matcher specVersionMatcher = JAVA_VERSION.matcher(specVersion);
         if (!specVersionMatcher.matches()) {
