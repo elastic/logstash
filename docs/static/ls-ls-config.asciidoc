@@ -1,20 +1,27 @@
 [[ls-to-ls]]
 === Logstash-to-Logstash communication
 
-{ls}-to-{ls} communication is available if you need to have one {ls} instance communicate with another {ls} instance. 
-You may need this configuration if the data path crosses network or firewall boundaries, for example. 
-
-Logstash-to-Logstash communication can add complexity to your environment.
-If your use case doesn't need it, then we suggest that you don't implement it.
+{ls}-to-{ls} communication is available if you need to have one {ls} instance communicate with another {ls} instance. Implementing Logstash-to-Logstash communication can add complexity to your environment, but you may need it if the data path crosses network or firewall boundaries. However, we suggest you don't implement unless it is strictly required.
 
 NOTE: If you are looking for information on connecting multiple pipelines within
 one Logstash instance, see <<pipeline-to-pipeline>>.
 
-* <<ls-to-ls-lumberjack>> has been our standard approach for {ls}-to-{ls}, and may still be the best option for more robust use cases (such as scenarios requiring load balancing or round-trip acknowledgments). 
-* <<ls-to-ls-http>> is the approach we're moving toward.  
-For now, consider using the <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> for {ls}-to-{ls} communication if the current limitations don't apply to your use case. 
-We are investigating adding purpose-built plugins to make configuration easier and to fill out the feature set to remove limitations. 
+Logstash-to-Logstash communication can be achieved in two different ways. The first one is using Lumberjack and Beats. The second one is using HTTP.
+
+== Lumberjack and Beats
+<<ls-to-ls-lumberjack>> has been our standard approach for {ls}-to-{ls}, and may still be the best option for more robust use cases. There are some considerations to be taken into account before implementing <<ls-to-ls-lumberjack>>:
+
+* It provides high availability but does not provide load balancing. The plugin allows defining mulitple output hosts for high availability, but instead of load-balancing between all output hosts, it will fallback to one on the list in the case of failure.
+* It provides round-trip acknowledgements, which ensures that if the data is sent and not acknoledged, it will be re-sent.
+ 
+== HTTP
+<<ls-to-ls-http>> is an alternative approach you can use to implement Logstash-to-Logstash communication. This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins, and the following considerations should be taken into account before implementing it:
+
+* It does not provide built-in high availability. You will need to implement your own loadbalancer in between the output and the input.
+
+NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
 
 
 include::ls-ls-http.asciidoc[]
 include::ls-ls-lumberjack.asciidoc[]
+
