@@ -571,7 +571,7 @@ public class DeadLetterQueueReaderTest {
 
             // simulate a storage policy clean, drop the middle segment file
             final List<Path> allSegments = Files.list(dir)
-                    .sorted(Comparator.comparingInt(DLQUtils::extractSegmentId))
+                    .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                     .collect(Collectors.toList());
             assertThat(allSegments.size(), greaterThanOrEqualTo(2));
             Files.delete(allSegments.remove(0)); // tail segment

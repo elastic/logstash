@@ -41,7 +41,7 @@ package org.logstash.common;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.common.io.DeadLetterQueueWriter;
-import org.logstash.common.io.QueueType;
+import org.logstash.common.io.QueueStorageType;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -76,11 +76,11 @@ public class DeadLetterQueueFactory {
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
-     * @param queueType overwriting type in case of queue full, fifo or drop_newer.
+     * @param storageType overwriting type in case of queue full, fifo or drop_newer.
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, QueueType queueType) {
-        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, queueType));
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, QueueStorageType storageType) {
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval, storageType));
     }
 
     public static DeadLetterQueueWriter release(String id) {
@@ -88,9 +88,9 @@ public class DeadLetterQueueFactory {
     }
 
     private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize,
-                                                   final Duration flushInterval, final QueueType queueType) {
+                                                   final Duration flushInterval, final QueueStorageType storageType) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, queueType);
+            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, storageType);
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
         }

@@ -20,7 +20,7 @@ package org.logstash.common.io;
 
 import java.nio.file.Path;
 
-class DLQUtils {
+class DeadLetterQueueUtils {
 
     static int extractSegmentId(Path p) {
         return Integer.parseInt(p.getFileName().toString().split("\\.log")[0]);

@@ -19,10 +19,10 @@
 
 package org.logstash.common.io;
 
-public enum QueueType {
+public enum QueueStorageType {
     DROP_NEWER, FIFO;
 
-    public static QueueType parse(String value) {
+    public static QueueStorageType parse(String value) {
         switch (value) {
             case "drop_newer":
                 return DROP_NEWER;

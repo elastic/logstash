@@ -75,7 +75,7 @@ public final class DeadLetterQueueReader implements Closeable {
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
         this.segments = new ConcurrentSkipListSet<>(
-                Comparator.comparingInt(DLQUtils::extractSegmentId)
+                Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
     }
@@ -195,7 +195,6 @@ public final class DeadLetterQueueReader implements Closeable {
             logger.debug("No last segment found, poll for new segments");
             return true;
         }
-
     }
 
     private Path nextExistingSegmentFile(Path currentSegmentPath) {

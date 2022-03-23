@@ -119,8 +119,8 @@ By default, the maximum size of each dead letter queue is set to 1024mb. To
 change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
 will be dropped if they would increase the size of the dead letter queue beyond
 this setting and the `dead_letter_queue.storage_policy` has value `drop_newer`.
-In case the storage policy is configured to `fifo`, the oldest segment is removed
-to make space for newer events.
+In case the storage policy is configured to `fifo`, the oldest events are removed
+to make space for newer ones.
 
 [[processing-dlq-events]]
 ==== Processing events in the dead letter queue

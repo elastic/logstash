@@ -263,7 +263,7 @@ public class DeadLetterQueueWriterTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB,
-                Duration.ofSeconds(1), QueueType.FIFO)) {
+                Duration.ofSeconds(1), QueueStorageType.FIFO)) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             final int expectedQueueSize = 2 * // number of full segment files
                     FULL_SEGMENT_FILE_SIZE  + // size of a segment file
