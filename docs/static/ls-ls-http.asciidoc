@@ -1,13 +1,10 @@
 [[ls-to-ls-http]]
-==== HTTP output to HTTP input
+=== Logstash-to-Logstash: HTTP output to HTTP input
 
-HTTP output to HTTP input is an alternative approach for Logstash-to-Logstash communication. This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
-Take these considerations into account before you implement:
+HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for Logstash-to-Logstash communication. 
+This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
 
-* It does not provide built-in high availability. You will need to implement your own load balancer in between the output and the input. 
-* If you need a proxy between the Logstash instances, you can use any HTTP proxy. 
-* Additional connection information is added to events (by the HTTP input), and this may be data you don't want.
+NOTE: Check out these <<http-considerations,considerations>> before you implement {ls}-to-{ls} using HTTP. 
 
-For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration is the best path forward if these limitations don't apply to your use case.
+For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
 
-NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
