@@ -19,6 +19,7 @@ require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
 require "logstash-core"
 require "logstash/environment"
+require "logstash/patches/polyglot"
 
 # Bundler + gemspec already setup $LOAD_PATH << '.../lib'
 # but since we load specs from 2 locations we need to hook up these:

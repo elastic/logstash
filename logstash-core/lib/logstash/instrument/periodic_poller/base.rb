@@ -82,7 +82,6 @@ module LogStash module Instrument module PeriodicPoller
     def configure_task
       @task = Concurrent::TimerTask.new { collect }
       @task.execution_interval = @options[:polling_interval]
-      @task.timeout_interval = @options[:polling_timeout]
       @task.add_observer(self)
     end
   end
