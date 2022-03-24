@@ -25,6 +25,7 @@ require "logstash/config/pipeline_config"
 require "logstash/pipeline_action"
 require "logstash/state_resolver"
 require "logstash/pipelines_registry"
+require "logstash/persisted_queue_config_validator"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -93,6 +94,8 @@ class LogStash::Agent
     initialize_agent_metrics
 
     initialize_geoip_database_metrics(metric)
+    
+    @pq_config_validator = LogStash::PersistedQueueConfigValidator.new
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -182,6 +185,8 @@ class LogStash::Agent
         raise "Could not fetch the configuration, message: #{results.error}"
       end
     end
+
+    @pq_config_validator.check(@pipelines_registry.running_user_defined_pipelines, results.response)
 
     converge_result = resolve_actions_and_converge_state(results.response)
     update_metrics(converge_result)
