@@ -48,7 +48,6 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/persisted_queue_config"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'

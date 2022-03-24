@@ -17,10 +17,10 @@
 
 require "spec_helper"
 require "tmpdir"
-require "logstash/bootstrap_check/persisted_queue_config"
-require_relative '../../support/helpers'
+require "logstash/persisted_queue_config_validator"
+require_relative '../support/helpers'
 
-describe LogStash::BootstrapCheck::PersistedQueueConfig do
+describe LogStash::PersistedQueueConfigValidator do
 
   context("when persisted queues are enabled") do
     let(:input_block) { "input { generator {} }" }
@@ -35,12 +35,12 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
       )
     end
     let(:pipeline_configs) { LogStash::Config::Source::Local.new(settings).pipeline_configs }
-    let(:bootstrap_check_pq) { LogStash::BootstrapCheck::PersistedQueueConfig.new }
+    let(:pq_config_validator) { LogStash::PersistedQueueConfigValidator.new }
 
     context("'queue.max_bytes' is less than 'queue.page_capacity'") do
       it "should throw" do
         settings.set_value("queue.max_bytes", 512)
-        expect { bootstrap_check_pq.check({}, pipeline_configs) }
+        expect { pq_config_validator.check({}, pipeline_configs) }
           .to raise_error(LogStash::BootstrapCheckError, /'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
       end
     end
@@ -48,7 +48,7 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
     context("'queue.max_bytes' = 0 which is less than 'queue.page_capacity'") do
       it "should not throw" do
         settings.set_value("queue.max_bytes", 0)
-        expect { bootstrap_check_pq.check({}, pipeline_configs) }
+        expect { pq_config_validator.check({}, pipeline_configs) }
           .not_to raise_error
       end
     end
@@ -67,7 +67,7 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
 
       it "should throw" do
         settings.set_value("queue.max_bytes", "1mb")
-        expect { bootstrap_check_pq.check({}, pipeline_configs) }
+        expect { pq_config_validator.check({}, pipeline_configs) }
           .to raise_error(LogStash::BootstrapCheckError, /greater than 'queue.max_bytes'/)
       end
 
@@ -88,12 +88,12 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
       end
 
       it "should throw" do
-        expect(bootstrap_check_pq).to receive(:check_disk_space) do | _, _, required_free_bytes|
+        expect(pq_config_validator).to receive(:check_disk_space) do | _, _, required_free_bytes|
           expect(required_free_bytes.size).to eq(1)
           expect(required_free_bytes.values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
         end.and_call_original
 
-        expect { bootstrap_check_pq.check({}, pipeline_configs) }
+        expect { pq_config_validator.check({}, pipeline_configs) }
           .to raise_error(LogStash::BootstrapCheckError, /is unable to allocate/)
       end
     end
@@ -101,14 +101,14 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
     context("pipeline registry check queue config") do
       shared_examples "no update" do
         it "gives false" do
-          expect(bootstrap_check_pq.queue_configs_update?(running_pipelines, pipeline_configs))
+          expect(pq_config_validator.queue_configs_update?(running_pipelines, pipeline_configs))
             .to be_falsey
         end
       end
 
       shared_examples "got update" do
         it "gives true" do
-          expect(bootstrap_check_pq.queue_configs_update?(running_pipelines, pipeline_configs))
+          expect(pq_config_validator.queue_configs_update?(running_pipelines, pipeline_configs))
             .to be_truthy
         end
       end
@@ -160,31 +160,31 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
         end
 
         it "gives true when add a new pipeline " do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, true)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
-          expect(bootstrap_check_pq.cache_check_fail?(pipeline_configs2)).to be_truthy
+          pq_config_validator.instance_variable_set(:@last_check_pass, true)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          expect(pq_config_validator.cache_check_fail?(pipeline_configs2)).to be_truthy
         end
 
         it "gives false when remove a old pipeline" do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, true)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs2 )
-          expect(bootstrap_check_pq.cache_check_fail?(pipeline_configs)).to be_falsey
+          pq_config_validator.instance_variable_set(:@last_check_pass, true)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs2 )
+          expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_falsey
         end
       end
 
       context("last check fail") do
         it "gives true" do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, false)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
-          expect(bootstrap_check_pq.cache_check_fail?(pipeline_configs)).to be_truthy
+          pq_config_validator.instance_variable_set(:@last_check_pass, false)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_truthy
         end
       end
 
       context("no update and last check pass") do
         it "gives false" do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, true)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
-          expect(bootstrap_check_pq.cache_check_fail?(pipeline_configs)).to be_falsey
+          pq_config_validator.instance_variable_set(:@last_check_pass, true)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_falsey
         end
       end
     end
@@ -192,19 +192,19 @@ describe LogStash::BootstrapCheck::PersistedQueueConfig do
     context("check") do
       context("add more pipeline and cache check pass") do
         it "does not check PQ size" do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, true)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs)
-          expect(bootstrap_check_pq).not_to receive(:check_disk_space)
-          bootstrap_check_pq.check({}, pipeline_configs)
+          pq_config_validator.instance_variable_set(:@last_check_pass, true)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs)
+          expect(pq_config_validator).not_to receive(:check_disk_space)
+          pq_config_validator.check({}, pipeline_configs)
         end
       end
 
       context("add more pipeline and cache is different") do
         it "check PQ size" do
-          bootstrap_check_pq.instance_variable_set(:@last_check_pass, true)
-          bootstrap_check_pq.instance_variable_set(:@last_check_pipeline_configs, [])
-          expect(bootstrap_check_pq).to receive(:check_disk_space).and_call_original
-          bootstrap_check_pq.check({}, pipeline_configs)
+          pq_config_validator.instance_variable_set(:@last_check_pass, true)
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, [])
+          expect(pq_config_validator).to receive(:check_disk_space).and_call_original
+          pq_config_validator.check({}, pipeline_configs)
         end
       end
     end
