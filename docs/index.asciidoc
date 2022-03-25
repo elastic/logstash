@@ -97,8 +97,6 @@ include::static/glob-support.asciidoc[]
 
 include::static/ingest-convert.asciidoc[]
 
-include::static/ls-ls-config.asciidoc[]
-
 include::static/management/configuring-centralized-pipelines.asciidoc[]
 
 include::static/field-reference.asciidoc[]
@@ -109,6 +107,9 @@ include::static/field-reference.asciidoc[]
 //forward for all subsequent topics under the `configuration.asciidoc` heading.
 //This include should remain after includes for all other topics under the
 //`Advanced Logstash Configuration` heading.
+
+// Logstash-to-Logstash
+include::static/ls-ls-config.asciidoc[]
 
 // Centralized configuration managements
 include::static/config-management.asciidoc[]

@@ -1,98 +1,44 @@
 [[ls-to-ls]]
-=== Logstash-to-Logstash Communication
+== Logstash-to-Logstash communication
 
-You can set up communication between two Logstash machines by connecting the Lumberjack output to the Beats input. You may need this configuration if the data path crosses network or firewall boundaries, for example. If you don't have a compelling need for Logstash-to-Logstash communication, then don't implement it.
+{ls}-to-{ls} communication is available if you need to have one {ls} instance communicate with another {ls} instance. 
+Implementing Logstash-to-Logstash communication can add complexity to your environment, but you may need it if the data path crosses network or firewall boundaries. 
+However, we suggest you don't implement unless it is strictly required.
 
-If you are looking for information on connecting multiple pipelines within one
-Logstash instance, see <<pipeline-to-pipeline>>.
+NOTE: If you are looking for information on connecting multiple pipelines within
+one Logstash instance, see <<pipeline-to-pipeline>>.
 
-==== Configuration overview
+Logstash-to-Logstash communication can be achieved in one of two ways: 
 
-Use the Lumberjack protocol to connect two Logstash machines.
+* <<lumberjack-considerations,Lumberjack output to Beats input>>
+* <<http-considerations,HTTP output to HTTP input>>
 
-. Generate a trusted SSL certificate (required by the lumberjack protocol).
-. Copy the SSL certificate to the upstream Logstash machine.
-. Copy the SSL certificate and key to the downstream Logstash machine.
-. Set the upstream Logstash machine to use the Lumberjack output to send data.
-. Set the downstream Logstash machine to listen for incoming Lumberjack connections through the Beats input.
-. Test it.
+[[lumberjack-considerations]]*Lumberjack-Beats considerations*
 
-[[generate-self-signed-cert]]
-===== Generate a self-signed SSL certificate and key
+Lumberjack output to Beats input has been our standard approach for {ls}-to-{ls} communication, and may still be the best option for more robust use cases. 
+Before you implement the Lumberjack to Beats configuration, keep these points in mind: 
 
-Use the `openssl req` command to generate a self-signed certificate and key. The `openssl req` command is available with some operating systems. You may need to install the openssl command line program for others.
+* Lumberjack to Beats provides high availability, but does not provide load balancing. 
+The Lumberjack output plugin allows defining multiple output hosts for high availability, but instead of load-balancing between all output hosts, it falls back to one host on the list in the case of failure.
+* If you need a proxy between the Logstash instances, TCP proxy is the only option.
+* There's no explicit way to exert back pressure back to the beats input.
 
-Run the following command:
+Ready to see more configuration details? See <<ls-to-ls-lumberjack>>.
 
-[source,shell]
-----
-openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout lumberjack.key -out lumberjack.cert -subj /CN=localhost
-----
+[[http-considerations]]*HTTP-HTTP considerations* 
 
-where:
+This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
+Take these considerations into account before you implement:
 
-* `lumberjack.key` is the name of the SSL key to be created
-* `lumberjack.cert` is the name of the SSL certificate to be created
-* `localhost` is the name of the upstream Logstash computer
+* HTTP does not provide built-in high availability. You will need to implement your own load balancer in between the HTTP output and the HTTP input. 
+* If you need a proxy between the Logstash instances, you can use any HTTP proxy. 
+* The HTTP input adds connection information to events, and this may be data you don't want.
 
+For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
 
-This command produces output similar to the following:
+// Ready to see more configuration details? See <<ls-to-ls-http>>.
 
-[source,shell]
-----
-Generating a 2048 bit RSA private key
-.................................+++
-....................+++
-writing new private key to 'lumberjack.key'
-----
+NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
 
-[[copy-cert-key]]
-===== Copy the SSL certificate and key
-
-Copy the SSL certificate to the upstream Logstash machine.
-
-Copy the SSL certificate and key to the downstream Logstash machine.
-
-[[save-cert-ls1]]
-===== Start the upstream Logstash instance
-
-Start Logstash and generate test events:
-
-[source,shell]
-----
-bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "mydownstreamhost" ssl_certificate => "lumberjack.cert" port => 5000 } }'
-----
-
-This sample command sends five events to mydownstreamhost:5000 using the SSL certificate provided.
-
-[[save-cert-ls2]]
-===== Start the downstream Logstash instance
-
-Start the downstream instance of Logstash:
-
-[source,shell]
-----
-bin/logstash -e 'input { beats { codec => json port => 5000 ssl => true ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
-----
-
-This sample command sets port 5000 to listen for incoming Beats input.
-
-[[test-ls-to-ls]]
-===== Verify the communication
-
-Watch the downstream Logstash machine for the incoming events. You should see five incrementing events similar to the following:
-
-[source,shell]
-----
-{
-  "@timestamp" => 2018-02-07T12:16:39.415Z,
-  "sequence"   => 0
-  "tags"       => [
-    [0] "beats_input_codec_json_applied"
-  ],
-  "message"    => "Hello world",
-  "@version"   => "1",
-  "host"       => "ls1.semicomplete.com"
-}
-----
-If you see all five events with consistent fields and formatting, incrementing by one, then your configuration is correct.
+include::ls-ls-lumberjack.asciidoc[]
+include::ls-ls-http.asciidoc[]
