@@ -106,7 +106,7 @@ public final class WorkerLoop implements Runnable {
         }
     }
 
-    private boolean isDraining() {
+    public boolean isDraining() {
         return drainQueue && !readClient.isEmpty();
     }
 }
