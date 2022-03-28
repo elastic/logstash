@@ -118,7 +118,7 @@ module LogStash
           ::File.join(Environment::LOGSTASH_HOME, "Gemfile.template"), Environment::GEMFILE_PATH
         )
       end
-      # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
+      # create Gemfile.jruby-2.6.lock from template iff a template exists it itself does not exist
       lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-2.6.lock.release")
       if ::File.exists?(lock_template) && !::File.exists?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
@@ -189,6 +189,7 @@ module LogStash
 
     def execute_bundler(options)
       ::Bundler.reset!
+      puts "calling bundler with #{bundler_arguments(options)}"
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
@@ -281,7 +282,7 @@ module LogStash
         arguments << options[:remove_platform]
       end
 
-      arguments << "--verbose" if options[:verbose]
+      arguments << "--verbose" #if options[:verbose]
       arguments.flatten
     end
 
