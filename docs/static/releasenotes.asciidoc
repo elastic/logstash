@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-1-2,Logstash 8.1.2>>
 * <<logstash-8-1-1,Logstash 8.1.1>>
 * <<logstash-8-1-0,Logstash 8.1.0>>
 * <<logstash-8-0-1,Logstash 8.0.1>>
@@ -12,6 +13,65 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-1-2]]
+=== Logstash 8.1.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.1.2
+
+* Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13689[#13689]
+* Print bundled jdk's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
+* add backoff to checkpoint write https://github.com/elastic/logstash/pull/13902[#13902]
+* Doc: Logstash-to-Logstash communication  https://github.com/elastic/logstash/pull/13926[#13926]
+* Backport PR #13902 to 8.1: add backoff to checkpoint write https://github.com/elastic/logstash/pull/13930[#13930]
+* Backport PR #13926 to 8.1: Doc: Logstash-to-Logstash communication  https://github.com/elastic/logstash/pull/13936[#13936]
+* bump lock file for 8.1 https://github.com/elastic/logstash/pull/13939[#13939]
+
+=== Logstash Commits between 8.1 and 8.1.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.1.1..8.1"
+
+c83e95cd2 - (HEAD -> 8.1, origin/8.1) Update patch plugin versions in gemfile lock (#13939) (18 minutes ago) <github-actions[bot]>
+4a346c100 - Doc: Logstash-to-Logstash communication  (#13926) (#13936) (3 days ago) <github-actions[bot]>
+86949bc74 - add backoff to checkpoint write (#13902) (#13930) (4 days ago) <github-actions[bot]>
+94a7aa335 - Bump version to 8.1.2 (#13920) (6 days ago) <Rob Bavey>
+0f5689b8d - Update release notes for 8.1.1 (#13907) (6 days ago) <Rob Bavey>
+86cdc7a38 - Update Jackson databind in ingest-converter tool (#13900) (#13916) (10 days ago) <github-actions[bot]>
+bebd06477 - i18n: alias logstash.runner.configuration.* under logstash.agent.configuration (#13244) (#13842) (10 days ago) <Ry Biesemeyer>
+c37e0457a - fix default argument handling in rake artifact task (#13904) (10 days ago) <João Duarte>
+f758adf78 - Add reference to java 17 to README.md (#13765) (#13913) (10 days ago) <github-actions[bot]>
+be8395e15 - [Doc] update queue.max_bytes and queue.page_capacity (#13833) (#13909) (10 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.1.1..8.1 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.3 -> 6.2.4
+logstash-filter-geoip: 7.2.11 -> 7.2.12
+logstash-filter-truncate: 1.0.4 -> 1.0.5
+logstash-output-tcp: 6.0.1 -> 6.0.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.4*
+
+* [DOC] Emphasize importance of delimiter setting for byte stream inputs https://github.com/logstash-plugins/logstash-codec-cef/pull/95[#95]
+
+*Geoip Filter - 7.2.12*
+
+* [DOC] Add `http_proxy` environment variable for GeoIP service endpoint. The feature is included in 8.1.0, and was back-ported to 7.17.2 https://github.com/logstash-plugins/logstash-filter-geoip/pull/207[#207] 
+
+*Truncate Filter - 1.0.5*
+
+* Switches behavior of add_tag and add_field, now tags and fields are added only when the truncation happens 
+    on any field or nested field https://github.com/logstash-plugins/logstash-filter-truncate/pull/7[#7].
+    
+
+*Tcp Output - 6.0.2*
+
+* Fix: unable to start with password protected key https://github.com/logstash-plugins/logstash-output-tcp/pull/45[#45]
+
 
 [[logstash-8-1-1]]
 === Logstash 8.1.1 Release Notes
