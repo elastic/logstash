@@ -144,13 +144,13 @@ module LogStash
                 "BUNDLE_SILENCE_ROOT_WARNING" => "true",
                 "BUNDLE_WITHOUT" => options[:without].join(":")}) do
 
-        if !debug?
-          # Will deal with transient network errors
-          execute_bundler_with_retry(options)
-        else
+        # if !debug?
+        #   # Will deal with transient network errors
+        #   execute_bundler_with_retry(options)
+        # else
           options[:verbose] = true
           execute_bundler(options)
-        end
+        # end
       end
     end
 
@@ -189,7 +189,7 @@ module LogStash
 
     def execute_bundler(options)
       ::Bundler.reset!
-      puts "calling bundler with #{bundler_arguments(options)}"
+      $stderr.puts "calling bundler with #{bundler_arguments(options)}"
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
@@ -282,7 +282,7 @@ module LogStash
         arguments << options[:remove_platform]
       end
 
-      arguments << "--verbose" #if options[:verbose]
+      arguments << "--verbose" if options[:verbose]
       arguments.flatten
     end
 
