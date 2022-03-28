@@ -145,8 +145,7 @@ module LogStash
                 "BUNDLE_WITHOUT" => options[:without].join(":")}) do
 
         if !debug?
-        #   # Will deal with transient network errors
-        options[:verbose] = true
+        # Will deal with transient network errors
         execute_bundler_with_retry(options)
         else
           options[:verbose] = true
@@ -190,6 +189,7 @@ module LogStash
 
     def execute_bundler(options)
       ::Bundler.reset!
+      $stderr.puts "calling bundler with #{bundler_arguments(options)}"
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
