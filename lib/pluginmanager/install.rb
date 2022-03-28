@@ -229,11 +229,8 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     output = nil
     # Unfreeze the bundle when installing gems
     Bundler.settings.temporary({:frozen => false}) do
-      puts "Installing from bundler with #{bundler_options}"
       output = LogStash::Bundler.invoke!(bundler_options)
-      puts "output from invoke! #{output}"
       output << LogStash::Bundler.genericize_platform.to_s
-      puts "output from genericixe #{output}"
     end
     puts("Installation successful")
   rescue => exception
