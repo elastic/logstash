@@ -64,9 +64,6 @@ if $0 == __FILE__
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ARGV)
   rescue LogStash::PluginManager::Error => e
     $stderr.puts(e.message)
-    $stderr.puts(e.backtrace)
-    $stderr.puts(e.cause)
-    $stderr.puts(e.cause.backtrace)
     exit(1)
   end
 end

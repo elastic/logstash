@@ -96,7 +96,7 @@ module LogStash
     # @option options [Array] :without  Exclude gems that are part of the specified named group (default: [:development])
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def invoke!(options = {})
-      options = {:max_tries => 2, :clean => false, :install => false, :update => false, :local => false,
+      options = {:max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
                  :jobs => 12, :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
@@ -190,7 +190,6 @@ module LogStash
 
     def execute_bundler(options)
       ::Bundler.reset!
-      $stderr.puts "calling bundler with #{bundler_arguments(options)}"
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
