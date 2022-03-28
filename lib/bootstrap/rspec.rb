@@ -30,6 +30,8 @@ end
 require "rspec/core"
 require "rspec"
 require 'ci/reporter/rake/rspec_loader'
+require "logstash/patches/polyglot"
+
 
 RSpec.clear_examples # if multiple rspec runs occur in a single process, the RSpec "world" state needs to be reset.
 
