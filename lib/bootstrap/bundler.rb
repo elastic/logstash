@@ -96,7 +96,7 @@ module LogStash
     # @option options [Array] :without  Exclude gems that are part of the specified named group (default: [:development])
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def invoke!(options = {})
-      options = {:max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
+      options = {:max_tries => 2, :clean => false, :install => false, :update => false, :local => false,
                  :jobs => 12, :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
@@ -144,13 +144,14 @@ module LogStash
                 "BUNDLE_SILENCE_ROOT_WARNING" => "true",
                 "BUNDLE_WITHOUT" => options[:without].join(":")}) do
 
-        # if !debug?
+        if !debug?
         #   # Will deal with transient network errors
-        #   execute_bundler_with_retry(options)
-        # else
+        options[:verbose] = true
+        execute_bundler_with_retry(options)
+        else
           options[:verbose] = true
           execute_bundler(options)
-        # end
+        end
       end
     end
 
