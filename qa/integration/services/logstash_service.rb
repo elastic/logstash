@@ -301,6 +301,9 @@ class LogstashService < Service
     end
 
     def run_raw(cmd, change_dir = true, environment = {})
+      if ENV.key?("BUILD_JAVA_HOME") && !environment.key?("LS_JAVA_HOME")
+        environment["LS_JAVA_HOME"] = ENV["BUILD_JAVA_HOME"]
+      end
       @logstash.run_cmd(cmd.split(' '), change_dir, environment)
     end
   end
