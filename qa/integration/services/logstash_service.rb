@@ -242,6 +242,11 @@ class LogstashService < Service
     environment.each do |k, v|
       process.environment[k] = v
     end
+    # JDK matrix tests value BUILD_JAVA_HOME to select the JDK to use to run the test code
+    # forward this selection also in spawned Logstash
+    if ENV.key?("BUILD_JAVA_HOME") && !process.environment.key?("LS_JAVA_HOME")
+      process.environment["LS_JAVA_HOME"] = ENV["BUILD_JAVA_HOME"]
+    end
     process.io.stdout = process.io.stderr = out
 
     Bundler.with_unbundled_env do
