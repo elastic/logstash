@@ -40,11 +40,7 @@ describe "CLI >" do
     execute = @logstash.run
     lines = execute.stderr_and_stdout.split("\n")
     expect(lines.shift).to match(/^(Using system java)|(Using bundled JDK)|(Using LS_JAVA_HOME defined java):/)
-    next_line = lines.shift
-    loop do
-      break unless next_line.match(/OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated|warning: ignoring JAVA_TOOL_OPTIONS/)
-      next_line = lines.shift
-    end
-    expect(next_line).to match(/^Sending Logstash logs to/)
+    while (up_line = lines.shift).match(/OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated|warning: ignoring JAVA_TOOL_OPTIONS/) do end
+    expect(up_line).to match(/^Sending Logstash logs to/)
   end
 end
