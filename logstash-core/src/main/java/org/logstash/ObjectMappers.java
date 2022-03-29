@@ -30,11 +30,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -73,7 +75,7 @@ public final class ObjectMappers {
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
     ).registerModules(RUBY_SERIALIZERS, CBOR_DESERIALIZERS)
-        .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+            .activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
