@@ -24,8 +24,6 @@ module ::LogStash::Util::SubstitutionVariables
 
   include LogStash::Util::Loggable
 
-  SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
-
   SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
   private_constant :SECRET_STORE
 
@@ -59,9 +57,7 @@ module ::LogStash::Util::SubstitutionVariables
     return value unless value.is_a?(String)
 
     secret_store = SECRET_STORE.instance
-    org.logstash.common.SubstitutionVariables.replacePlaceholders(
-        value, ENV, secret_store
-    );
+    org.logstash.common.SubstitutionVariables.replacePlaceholders(value, ENV, secret_store)
   rescue org.logstash.common.SubstitutionVariables::MissingSubstitutionVariableError => e
     raise ::LogStash::ConfigurationError, e.getMessage
   end # def replace_placeholders

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class SubstitutionVariables {
     private static final Logger logger = LogManager.getLogger(SubstitutionVariables.class);
 
-    private static Pattern SUBSTITUTION_PLACEHOLDER_REGEX = Pattern.compile("\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?\\}");
+    public static final Pattern SUBSTITUTION_PLACEHOLDER_REGEX = Pattern.compile("\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?\\}");
 
     private static final SecretStoreFactory secretStoreFactory = SecretStoreFactory.fromEnvironment();
 
@@ -36,8 +36,8 @@ public class SubstitutionVariables {
             }
 
             if (secretStore != null) {
-                    byte[] secretValue = secretStore.retrieveSecret(new SecretIdentifier(name));
-                    if (secretValue != null) return new String(secretValue);
+                byte[] secretValue = secretStore.retrieveSecret(new SecretIdentifier(name));
+                if (secretValue != null) return new String(secretValue);
             }
 
             return null;
@@ -53,10 +53,14 @@ public class SubstitutionVariables {
             String defaultValue = matchResult.group(3);
 
             final String secureValue = secretLookup != null ? secretLookup.apply(name) : null;
-            if (secureValue != null) return secureValue;
+            if (secureValue != null) {
+                return secureValue;
+            }
 
             final String envValue = environmentVariables.getOrDefault(name, defaultValue);
-            if (envValue != null) return envValue;
+            if (envValue != null) {
+                return envValue;
+            }
 
             String errMsg = String.format(
                     "Cannot evaluate `%s`. Replacement variable `%s` is not defined in a Logstash secret store " +
