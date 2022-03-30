@@ -17,18 +17,10 @@ This section summarizes the changes in the following releases:
 [[logstash-8-1-2]]
 === Logstash 8.1.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.1.2
+[[notable-8.1.2]]
+==== Notable issues fixed
 
-* Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13689[#13689]
-* Print bundled jdk's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
-* add backoff to checkpoint write https://github.com/elastic/logstash/pull/13902[#13902]
-* Doc: Logstash-to-Logstash communication  https://github.com/elastic/logstash/pull/13926[#13926]
-* Backport PR #13902 to 8.1: add backoff to checkpoint write https://github.com/elastic/logstash/pull/13930[#13930]
-* Backport PR #13926 to 8.1: Doc: Logstash-to-Logstash communication  https://github.com/elastic/logstash/pull/13936[#13936]
-* 86cdc7a38 - Update Jackson databind in ingest-converter tool (#13900) (#13916) https://github.com/elastic/logstash/pull/13916
-* Backport PR #13244 to 8.1: i18n: alias logstash.runner.configuration.* under logstash.agent.configuration #13842 https://github.com/elastic/logstash/pull/13842
-* Backport PR #13833 to 8.1: [Doc] update queue.max_bytes and queue.page_capacity #13909
+* Fixed issue where Logstash crashed if Central Management couldn't reach Elasticsearch https://github.com/elastic/logstash/pull/13689[#13689]
 
 ==== Plugins
 
@@ -51,6 +43,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-1-1]]
 === Logstash 8.1.1 Release Notes
 
+[[notable-8.1.1]]
 ==== Notable issues fixed
 
 * The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
