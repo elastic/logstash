@@ -67,6 +67,8 @@ public class SubstitutionVariables {
     }
 
     static class MissingSubstitutionVariableError extends RuntimeException {
+        private static final long serialVersionUID = -5247458493558717395L;
+
         public MissingSubstitutionVariableError(String errMsg) {
             super(errMsg);
         }

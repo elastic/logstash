@@ -16,7 +16,7 @@ import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
  */
 public class MemoryStore implements SecretStore {
 
-    Map<SecretIdentifier, ByteBuffer> secrets = new HashMap(1);
+    private Map<SecretIdentifier, ByteBuffer> secrets = new HashMap<>(1);
 
     public MemoryStore() {
         persistSecret(LOGSTASH_MARKER, LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
