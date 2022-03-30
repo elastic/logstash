@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-2,Logstash 7.17.2>>
 * <<logstash-7-17-1,Logstash 7.17.1>>
 * <<logstash-7-17-0,Logstash 7.17.0>>
 * <<logstash-7-16-3,Logstash 7.16.3>>
@@ -59,6 +60,47 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-17-2]]
+=== Logstash 7.17.2 Release Notes
+
+[[notable-7-17-2]]
+==== Notable issues fixed
+
+* Fixed an issue where the Plugin Manager would upgrade all dependencies in Logstash during an install/update operation of a single plugin. This often caused deployments to break due to unvetted 3rd party gem updates. https://github.com/elastic/logstash/pull/13804[#13804]
+* Fixed an issue where the GeoIP database lookup wasn't respecting the http_proxy environment variable https://github.com/elastic/logstash/pull/13841[#13841]
+* Improved the consistency of pipeline statistics in the HTTP API during pipeline startup https://github.com/elastic/logstash/pull/13845[#13845] and  https://github.com/elastic/logstash/pull/13850[#13850]
+* Changed .bat scripts to ensure paths are correctly quoted, avoiding startup issues on Windows when paths have spaces https://github.com/elastic/logstash/pull/13893[#13893]
+* Turned on checkpoint write retries by default and increased the number of retries. Windows users should no longer observe AccessDeniedException exceptions related to the Persistent Queue https://github.com/elastic/logstash/pull/13931[#13931]
+* Logstash cli tools will now currectly use the selected JDK under Windows https://github.com/elastic/logstash/pull/13863[#13863]
+* Updated JDK to 11.0.14.1+1 https://github.com/elastic/logstash/pull/13870[#13870]
+
+==== Plugins
+
+*Cef Codec - 6.2.4*
+
+* [DOC] Emphasize importance of delimiter setting for byte stream inputs https://github.com/logstash-plugins/logstash-codec-cef/pull/95[#95]
+
+*Geoip Filter - 7.2.12*
+
+* [DOC] Add `http_proxy` environment variable for GeoIP service endpoint. The feature is included in 8.1.0, and was back-ported to 7.17.2 https://github.com/logstash-plugins/logstash-filter-geoip/pull/207[#207] 
+
+*Truncate Filter - 1.0.5*
+
+* Switches behavior of add_tag and add_field, now tags and fields are added only when the truncation happens on any field or nested field https://github.com/logstash-plugins/logstash-filter-truncate/pull/7[#7].
+    
+*Dead_letter_queue Input - 1.1.11*
+
+* Fix: pre-flight checks before creating DLQ reader https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/35[#35]
+
+*Jdbc Integration - 5.2.4*
+
+* Fix: compatibility with all (>= 3.0) rufus-scheduler versions https://github.com/logstash-plugins/logstash-integration-jdbc/pull/97[#97] 
+
+*Tcp Output - 6.0.2*
+
+* Fix: unable to start with password protected key https://github.com/logstash-plugins/logstash-output-tcp/pull/45[#45]
+
 
 [[logstash-7-17-1]]
 === Logstash 7.17.1 Release Notes
