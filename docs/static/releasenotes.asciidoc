@@ -69,7 +69,7 @@ This section summarizes the changes in the following releases:
 
 * Fixed an issue where the Plugin Manager would upgrade all dependencies in Logstash during an install/update operation of a single plugin. This often caused deployments to break due to unvetted 3rd party gem updates. https://github.com/elastic/logstash/pull/13804[#13804]
 * Fixed an issue where the GeoIP database lookup wasn't respecting the http_proxy environment variable https://github.com/elastic/logstash/pull/13841[#13841]
-* A couple of fixes improved the consistency of pipeline statistics in the HTTP API https://github.com/elastic/logstash/pull/13845[#13845] and  https://github.com/elastic/logstash/pull/13850[#13850]
+* A couple of fixes improved the consistency of pipeline statistics in the HTTP API during pipeline startup https://github.com/elastic/logstash/pull/13845[#13845] and  https://github.com/elastic/logstash/pull/13850[#13850]
 * Logstash didn't correctly start on Windows if the folder containted spaces https://github.com/elastic/logstash/pull/13893[#13893]
 * Turned on checkpoint write retries by default and increased the number of retries. Windows users should no longer observe AccessDeniedException exceptions related to the Persistent Queue https://github.com/elastic/logstash/pull/13931[#13931]
 * Logstash cli tools will now currectly use the selected JDK under Windows https://github.com/elastic/logstash/pull/13863[#13863]
