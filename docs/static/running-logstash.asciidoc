@@ -2,10 +2,10 @@
 === Running Logstash as a Service on Debian or RPM
 
 Logstash is not started automatically after installation. Starting and stopping Logstash depends on the
-init system of the underlying Operating System, which as of today are all systemd.
+init system of the underlying operating system, which is now systemd.
 
-Here are some common operating systems and versions with corresponding
-startup styles they use.  This list is intended to be informative, not exhaustive.
+As systemd is now the de-facto init system, here are some common operating systems and versions that
+use it.  This list is intended to be informative, not exhaustive.
 
 |=======================================================================
 | Distribution | Service System |
