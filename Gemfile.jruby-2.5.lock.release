@@ -741,8 +741,8 @@ GEM
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.5)
     rubyzip (1.3.0)
-    rufus-scheduler (3.8.1)
-      fugit (~> 1.1, >= 1.1.6)
+    rufus-scheduler (3.0.9)
+      tzinfo
     sawyer (0.8.2)
       addressable (>= 2.3.5)
       faraday (> 0.8, < 2.0)
