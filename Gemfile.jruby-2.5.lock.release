@@ -140,9 +140,6 @@ GEM
       pleaserun (~> 0.0.29)
       rexml
       stud
-    fugit (1.5.2)
-      et-orbi (~> 1.1, >= 1.1.8)
-      raabro (~> 1.4)
     gelfd2 (0.4.1)
     gem_publisher (1.5.0)
     gems (1.2.0)
