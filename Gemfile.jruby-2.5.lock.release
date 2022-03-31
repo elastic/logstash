@@ -101,8 +101,6 @@ GEM
       faraday (~> 1)
       multi_json
     equalizer (0.0.11)
-    et-orbi (1.2.7)
-      tzinfo
     faraday (1.10.0)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
