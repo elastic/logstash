@@ -391,7 +391,7 @@ class LogStash::Agent
           end
         rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
+          converge_result.add(action, LogStash::ConvergeResult::FailedAction.from_exception(e))
         end
       end
     end.each(&:join)
