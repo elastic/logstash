@@ -1,2 +1,7 @@
 input:
-  elastic_agent: beats
+  - alias_name: elastic_agent
+    maps_to: beats
+    replaces:
+      - ":plugin: beats": ":plugin: elastic_agent"
+      - ":plugin-uc: Beats": ":plugin-uc: Elastic Agent"
+      - ":plugin-singular: Beat": ":plugin-singular: Elastic Agent"
