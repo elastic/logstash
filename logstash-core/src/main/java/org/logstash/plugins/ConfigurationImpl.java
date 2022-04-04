@@ -24,7 +24,11 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Password;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.Codec;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jruby.RubyObject;
 import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.plugins.factory.RubyCodecDelegator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,6 +39,7 @@ import java.util.Map;
  * Configuration for Logstash Java plugins.
  */
 public final class ConfigurationImpl implements Configuration {
+    private static final Logger LOGGER = LogManager.getLogger(ConfigurationImpl.class);
 
     private final RubyIntegration.PluginFactory pluginFactory;
     private final Map<String, Object> rawSettings;
@@ -68,6 +73,9 @@ public final class ConfigurationImpl implements Configuration {
                 return configSpec.type().cast(Boolean.parseBoolean((String) o));
             } else if (configSpec.type() == Codec.class && o instanceof String && pluginFactory != null) {
                 Codec codec = pluginFactory.buildDefaultCodec((String) o);
+                return configSpec.type().cast(codec);
+            } else if (configSpec.type() == Codec.class && o instanceof RubyObject && RubyCodecDelegator.isRubyCodecSubclass((RubyObject) o)) {
+                Codec codec = pluginFactory.buildRubyCodecWrapper((RubyObject) o);
                 return configSpec.type().cast(codec);
             } else if (configSpec.type() == URI.class && o instanceof String) {
                 try {

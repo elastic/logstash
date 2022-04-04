@@ -21,11 +21,10 @@
 package org.logstash.config.ir.compiler;
 
 import co.elastic.logstash.api.Codec;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.common.SourceWithMetadata;
-
-import java.util.Map;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -51,5 +50,6 @@ public final class RubyIntegration {
 
         Codec buildDefaultCodec(String codecName);
 
+        Codec buildRubyCodecWrapper(RubyObject rubyCodec);
     }
 }

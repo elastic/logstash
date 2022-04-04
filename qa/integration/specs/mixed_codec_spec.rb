@@ -80,6 +80,34 @@ describe "Ruby codec when used in" do
     end
   end
 
+  context "input Java plugin with configured codec" do
+    let(:config) { @fixture.config("input_decode_configured") }
+
+    it "should encode correctly to file and don't log any ERROR" do
+      logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
+      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.wait_for_logstash
+
+      #TODO: needs to verify something else to proof the LS process is up, just sleep is synonym of fragile testing.
+      # port opening check, like in wait_for_logstash, is not sufficient, maybe some HTTP API call with parsing of the
+      # response
+      sleep 30
+
+      logstash_service.write_to_stdin('Teleport ray')
+      sleep(2)
+
+      logstash_service.teardown
+
+      plainlog_file = "#{temp_dir}/logstash-plain.log"
+      expect(File.exists?(plainlog_file)).to be true
+      logs = IO.read(plainlog_file)
+      expect(logs).to_not include("ERROR")
+
+      out_capture.rewind
+      expect(out_capture.read).to include("Teleport ray")
+    end
+  end
+
   context "output Java plugin" do
     let(:config) { @fixture.config("output_encode") }
 

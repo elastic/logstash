@@ -182,6 +182,11 @@ public final class PluginFactoryExt extends RubyBasicObject
         return new RubyCodecDelegator(RubyUtil.RUBY.getCurrentContext(), pluginInstance);
     }
 
+    @Override
+    public Codec buildRubyCodecWrapper(RubyObject rubyCodec) {
+        return new RubyCodecDelegator(RubyUtil.RUBY.getCurrentContext(), rubyCodec);
+    }
+
     @SuppressWarnings("unchecked")
     @JRubyMethod(required = 3, optional = 1)
     public IRubyObject plugin(final ThreadContext context, final IRubyObject[] args) {

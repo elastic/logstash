@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
-class RubyCodecDelegator implements Codec {
+public class RubyCodecDelegator implements Codec {
 
     private static final Logger LOGGER = LogManager.getLogger(RubyCodecDelegator.class);
 
@@ -47,13 +47,15 @@ class RubyCodecDelegator implements Codec {
         return id.toString();
     }
 
-    private void verifyCodecAncestry(IRubyObject pluginInstance) {
-        final RubyClass codecBaseClass = RubyUtil.RUBY.getModule("LogStash").getModule("Codecs").getClass("Base");
-//            final boolean isRubyCodec = codecBaseClass.subclasses(true).contains(pluginInstance.getType());
-        final boolean isRubyCodec = pluginInstance.getType().hasModuleInHierarchy(codecBaseClass);
-        if (!isRubyCodec) {
+    private static void verifyCodecAncestry(IRubyObject pluginInstance) {
+        if (!isRubyCodecSubclass(pluginInstance)) {
             throw new IllegalStateException("Ruby wrapped codec is expected to subclass LogStash::Codecs::Base");
         }
+    }
+
+    public static boolean isRubyCodecSubclass(IRubyObject pluginInstance) {
+        final RubyClass codecBaseClass = RubyUtil.RUBY.getModule("LogStash").getModule("Codecs").getClass("Base");
+        return pluginInstance.getType().hasModuleInHierarchy(codecBaseClass);
     }
 
     private void invokeRubyRegister(ThreadContext currentContext, IRubyObject pluginInstance) {
