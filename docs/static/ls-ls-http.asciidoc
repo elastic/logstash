@@ -30,12 +30,6 @@ input {
     http {
         port => 8080
         additional_codecs => { "application/json" => "json_lines" }
-
-        ssl => true
-        ssl_key => "server.key.pk8"
-        ssl_certificate => "server.crt"
-        ssl_certificate_authorities => "ca.crt"
-        ssl_verify_mode => force_peer
     }
 }
 ----
@@ -60,10 +54,6 @@ output {
         retry_non_idempotent => true
         format => json_batch
         http_compression => true
-
-        cacert => "ca.crt"
-        client_key => "client.key.pk8"
-        client_cert => "client.crt"
     }
 }
 ----
@@ -75,15 +65,7 @@ Now that Logstash to Logstash communication is configured, you need to secure th
 
 1. Create a certificate authority (CA) in order to sign the certificates that you plan to use between Logstash instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document, but we recommend you use the elasticsearch-certutil tool.
 
-2. Configure the upstream (sending) Logstash to use SSL. You need to add the following settings to the HTTP Output configuration:
-
- * `cacert`:
- * `client_key`:
- * `client_cert`:
-
- For example:
-
-3. Configure the downstream (receiving) Logstash to use SSL. You need to add the following settings to the HTTP Input configuration:
+2. Configure the downstream (receiving) Logstash to use SSL. You need to add the following settings to the HTTP Input configuration:
 
  * `ssl`:
  * `ssl_key`:
@@ -92,3 +74,39 @@ Now that Logstash to Logstash communication is configured, you need to secure th
  * `ssl_verify_mode`: 
 
  For example:
+
+[source,json]
+----
+input {
+    http {
+        [...]
+
+        ssl => true
+        ssl_key => "server.key.pk8"
+        ssl_certificate => "server.crt"
+        ssl_certificate_authorities => "ca.crt"
+        ssl_verify_mode => force_peer
+    }
+}
+----
+
+3. Configure the upstream (sending) Logstash to use SSL. You need to add the following settings to the HTTP Output configuration:
+
+ * `cacert`:
+ * `client_key`:
+ * `client_cert`:
+
+ For example:
+
+[source,json]
+----
+output {
+    http {
+        [...]
+
+        cacert => "ca.crt"
+        client_key => "client.key.pk8"
+        client_cert => "client.crt"
+    }
+}
+----
