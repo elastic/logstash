@@ -42,6 +42,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -64,6 +65,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.plugins.ConfigVariableExpander;
+import org.logstash.plugins.pipeline.PipelineBus;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
@@ -133,7 +135,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractMetricExt metric;
 
-    private IRubyObject dlqWriter;
+    private PipelineBus pipelineBus;
+
+    protected IRubyObject dlqWriter;
 
     private PipelineReporterExt reporter;
 
@@ -275,22 +279,40 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "dlq_writer")
-    public final IRubyObject dlqWriter(final ThreadContext context) {
+    public final IRubyObject dlqWriter(final ThreadContext context, final IRubyObject agent) {
+        System.out.println("GETTING THE DILL WRITER");
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
-                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
-                    context.runtime,
-                    DeadLetterQueueFactory.getWriter(
-                        pipelineId.asJavaString(),
-                        getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
-                    );
+                PipelineBus pipelineBus = agent.callMethod(context, "pipeline_bus").toJava(PipelineBus.class);
+                dlqWriter = getDlqPipelineWriter(context, pipelineBus);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
+        System.out.println("Returrning " + dlqWriter.getClass());
         return dlqWriter;
+    }
+
+    private IRubyObject getDlqPipelineWriter(ThreadContext context, PipelineBus pipelineBus){
+        System.out.println("GET GLD PIPELING WRITER");
+        return JavaUtil.convertJavaToUsableRubyObject(
+                context.runtime,
+                DeadLetterQueueFactory.getWriter(
+                        pipelineId.asJavaString(),
+                        pipelineId.asJavaString(),
+                        pipelineBus)
+        );
+    }
+
+    private IRubyObject getDlqFileWriter(ThreadContext context) {
+        return JavaUtil.convertJavaToUsableRubyObject(
+                context.runtime,
+                DeadLetterQueueFactory.getWriter(
+                        pipelineId.asJavaString(),
+                        getSetting(context, "path.dead_letter_queue").asJavaString(),
+                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+        );
     }
 
     @JRubyMethod(name = "dlq_enabled?")
@@ -314,12 +336,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "collect_dlq_stats")
     public final IRubyObject collectDlqStats(final ThreadContext context) {
-        if (dlqEnabled(context).isTrue()) {
-            getDlqMetric(context).gauge(
-                context, QUEUE_SIZE_IN_BYTES,
-                dlqWriter(context).callMethod(context, "get_current_queue_size")
-            );
-        }
+//        if (dlqEnabled(context).isTrue()) {
+//            getDlqMetric(context).gauge(
+//                context, QUEUE_SIZE_IN_BYTES,
+//                dlqWriter(context).callMethod(context, "get_current_queue_size")
+//            );
+//        }
         return context.nil;
     }
 

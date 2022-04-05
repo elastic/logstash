@@ -29,6 +29,8 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.common.dlq.DeadLetterQueuePipelineWriter;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -141,7 +143,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
 
         private IRubyObject writerWrapper;
 
-        private DeadLetterQueueWriter innerWriter;
+        private IDeadLetterQueueWriter innerWriter;
 
         private IRubyObject pluginId;
 
@@ -160,9 +162,9 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
             final ThreadContext context, final IRubyObject innerWriter, final IRubyObject pluginId,
             final IRubyObject pluginType) {
             writerWrapper = innerWriter;
-            if (writerWrapper.getJavaClass().equals(DeadLetterQueueWriter.class)) {
+            if (writerWrapper.getJavaClass().equals(DeadLetterQueuePipelineWriter.class)) {
                 this.innerWriter = writerWrapper.toJava(
-                    DeadLetterQueueWriter.class
+                    DeadLetterQueuePipelineWriter.class
                 );
             }
             this.pluginId = pluginId;
@@ -221,6 +223,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
         }
 
         private boolean hasOpenWriter() {
+            System.out.println("The inner writer is " + innerWriter);
             return innerWriter != null && innerWriter.isOpen();
         }
     }

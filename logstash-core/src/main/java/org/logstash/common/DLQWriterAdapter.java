@@ -23,15 +23,16 @@ package org.logstash.common;
 import co.elastic.logstash.api.DeadLetterQueueWriter;
 import co.elastic.logstash.api.Event;
 import co.elastic.logstash.api.Plugin;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 
 import java.io.IOException;
 import java.util.Objects;
 
 public class DLQWriterAdapter implements DeadLetterQueueWriter {
 
-    private final org.logstash.common.io.DeadLetterQueueWriter dlqWriter;
+    private final IDeadLetterQueueWriter dlqWriter;
 
-    public DLQWriterAdapter(org.logstash.common.io.DeadLetterQueueWriter dlqWriter) {
+    public DLQWriterAdapter(IDeadLetterQueueWriter dlqWriter) {
         this.dlqWriter = Objects.requireNonNull(dlqWriter);
     }
 

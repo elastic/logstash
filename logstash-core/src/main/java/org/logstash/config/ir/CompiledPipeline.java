@@ -28,6 +28,7 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
@@ -66,6 +67,7 @@ public final class CompiledPipeline {
 
     private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
+    private IDeadLetterQueueWriter dlqWriter = null;
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
      */
@@ -100,7 +102,7 @@ public final class CompiledPipeline {
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null);
+        this(pipelineIR, pluginFactory, null, null);
     }
 
     public CompiledPipeline(
@@ -108,8 +110,29 @@ public final class CompiledPipeline {
             final RubyIntegration.PluginFactory pluginFactory,
             final SecretStore secretStore)
     {
+        this(pipelineIR, pluginFactory, secretStore, null);
+//        this.pipelineIR = pipelineIR;
+//        this.pluginFactory = pluginFactory;
+//        try (ConfigVariableExpander cve = new ConfigVariableExpander(
+//                secretStore,
+//                EnvironmentVariableProvider.defaultProvider())) {
+//            inputs = setupInputs(cve);
+//            filters = setupFilters(cve);
+//            outputs = setupOutputs(cve);
+//        } catch (Exception e) {
+//            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
+//        }
+    }
+
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory,
+            final SecretStore secretStore,
+            final IDeadLetterQueueWriter dlqWriter)
+    {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
+        this.dlqWriter = dlqWriter;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -299,9 +322,27 @@ public final class CompiledPipeline {
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
-                    _compute(filterBatch, outputBatch, flush, shutdown);
+                    try {
+                        _compute(filterBatch, outputBatch, flush, shutdown);
+                    }catch (Exception ex){
+                        try {
+                            dlqWriter.writeEntry(e.getEvent(), "filter", "none", ex.getMessage());
+                        }catch (Exception dlqEx){
+                            System.out.println("Hi");
+                        }
+                    }
                 }
-                compiledOutputs.compute(outputBatch, flush, shutdown);
+                try {
+                    compiledOutputs.compute(outputBatch, flush, shutdown);
+                }catch (Exception ex){
+                    try {
+                        for (Object re : outputBatch.stream().toArray()) {
+                            dlqWriter.writeEntry(((RubyEvent)re).getEvent(), "output", "none", ex.getMessage());
+                        }
+                    }catch (Exception dlqEx){
+                        System.out.println("Hi");
+                    }
+                }
                 return outputBatch.size();
             } else if (flush || shutdown) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();

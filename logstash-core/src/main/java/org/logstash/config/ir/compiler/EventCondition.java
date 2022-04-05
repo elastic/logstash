@@ -694,6 +694,9 @@ public interface EventCondition {
                     details = (expression.getSourceWithMetadata() != null) ? expression.getSourceWithMetadata().toString()
                                                                            : expression.toString();
                 } else {
+                    if (unexpected == null){
+                        return "null";
+                    }
                     details = unexpected.toString();
                 }
                 return String.format("%s:%s", unexpected.getClass(), details);
