@@ -448,6 +448,9 @@ public interface EventCondition {
                 if (javaEvent.getUnconvertedField(one) == null){
                     throw new IllegalStateException(String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event", left.getSourceWithMetadata().getLine(), left.getSourceWithMetadata().getLine(), left.getFieldName()));
                 }
+                if (javaEvent.getUnconvertedField(one) == null){
+                    throw new IllegalStateException(String.format("Invalid comparison, %s is not in event", left.getFieldName()));
+                }
                 return operator.test(compare(javaEvent.getUnconvertedField(one), other));
             };
         }
