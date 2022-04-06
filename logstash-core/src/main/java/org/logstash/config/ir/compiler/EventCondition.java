@@ -424,35 +424,31 @@ public interface EventCondition {
 
         private static EventCondition compareFields(final EventValueExpression left,
                                                     final EventValueExpression right, final Predicate<Integer> operator) {
-            final FieldReference one = FieldReference.from(left.getFieldName());
-            final FieldReference other = FieldReference.from(right.getFieldName());
-            return event -> {
-                final Event javaEvent = event.getEvent();
-                return operator.test(
-                        compare(
-                                javaEvent.getUnconvertedField(one), javaEvent.getUnconvertedField(other)
-                        )
-                );
-            };
+            return event ->
+                    operator.test(compare(mandatoryObjectFromValueExpression(left, event.getEvent()),
+                                          mandatoryObjectFromValueExpression(right, event.getEvent())));
+        }
+
+        private static Object mandatoryObjectFromValueExpression(EventValueExpression valueExpression, Event event) {
+            FieldReference fieldReference = FieldReference.from(valueExpression.getFieldName());
+            Object object = event.getUnconvertedField(fieldReference);
+            if (object == null){
+                throw new IllegalStateException(
+                        String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event",
+                                      valueExpression.getSourceWithMetadata().getLine(),
+                                      valueExpression.getSourceWithMetadata().getColumn(),
+                                      valueExpression.getFieldName()));
+            }
+            return object;
         }
 
         @SuppressWarnings("unchecked")
         private static EventCondition compareFieldToConstant(final EventValueExpression left,
                                                              final ValueExpression right, final Predicate<Integer> operator) {
-            final FieldReference one = FieldReference.from(left.getFieldName());
-
             final Comparable<IRubyObject> other =
                     (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
-            return event -> {
-                final Event javaEvent = event.getEvent();
-                if (javaEvent.getUnconvertedField(one) == null){
-                    throw new IllegalStateException(String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event", left.getSourceWithMetadata().getLine(), left.getSourceWithMetadata().getLine(), left.getFieldName()));
-                }
-                if (javaEvent.getUnconvertedField(one) == null){
-                    throw new IllegalStateException(String.format("Invalid comparison, %s is not in event", left.getFieldName()));
-                }
-                return operator.test(compare(javaEvent.getUnconvertedField(one), other));
-            };
+            return event ->
+                 operator.test(compare(mandatoryObjectFromValueExpression(left, event.getEvent()), other));
         }
 
         @SuppressWarnings("unchecked")
