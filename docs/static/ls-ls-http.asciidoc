@@ -83,15 +83,15 @@ We recommend you use the elasticsearch-certutil tool to generate your certificat
 [source,json]
 ----
 input {
-    http {
-        [...]
+  http {
+    [...]
 
-        ssl => true
-        ssl_key => "server.key.pk8"
-        ssl_certificate => "server.crt"
-        ssl_certificate_authorities => "ca.crt"
-        ssl_verify_mode => force_peer
-    }
+    ssl => true
+    ssl_key => "server.key.pk8"
+    ssl_certificate => "server.crt"
+    ssl_certificate_authorities => "ca.crt"
+    ssl_verify_mode => force_peer
+  }
 }
 ----
 
@@ -106,13 +106,13 @@ input {
 [source,json]
 ----
 output {
-    http {
-        [...]
+  http {
+    [...]
 
-        cacert => "ca.crt"
-        client_key => "client.key.pk8"
-        client_cert => "client.crt"
-    }
+    cacert => "ca.crt"
+    client_key => "client.key.pk8"
+    client_cert => "client.crt"
+  }
 }
 ----
 
@@ -126,7 +126,7 @@ output {
 [source,json]
 ----
 [...]
-        user => "your-user"
-        password => "your-secret"
+    user => "your-user"
+    password => "your-secret"
 [...]
 ----
