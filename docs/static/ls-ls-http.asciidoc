@@ -61,17 +61,22 @@ output {
 [[securing-logstash-to-logstash]]
 ===== Securing Logstash to Logstash
 
-Now that Logstash to Logstash communication is configured, you need to secure the communication between them. In this example, we will use SSL mutual authentication. This ensures that the upstream Logstash sends encrypted data to a trusted receiving Logstash, and viceversa. For this, you will need:
+Now that you have a Logstash to Logstash communication with HTTP, it is important that you secure the communication between Logstash instances. This is done with SSL/TLS mutual authentication, in order to ensure that the upstream Logstash instance sends encrypted data to a trusted downstream Logstash instance, and viceversa. In order to achieve this, you need the following:
 
-1. Create a certificate authority (CA) in order to sign the certificates that you plan to use between Logstash instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document, but we recommend you use the elasticsearch-certutil tool.
+1. Create a certificate authority (CA) in order to sign the certificates that you plan to use between Logstash instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document.
+
+[NOTE]
+--
+We recommend you use the elasticsearch-certutil tool to generate your certificates.
+--
 
 2. Configure the downstream (receiving) Logstash to use SSL. You need to add the following settings to the HTTP Input configuration:
 
- * `ssl`:
- * `ssl_key`:
- * `ssl_certificate`:
- * `ssl_certificate_authorities`:
- * `ssl_verify_mode`: 
+ * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
+ * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
+ * `ssl_certificate`: Specicies the certificate that Logstash uses to authenticate with the client.
+ * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specicied CA.
+ * `ssl_verify_mode`:  Specicies whether Logstash server verifies the client certificate against the CA.
 
  For example:
 
@@ -92,9 +97,9 @@ input {
 
 3. Configure the upstream (sending) Logstash to use SSL. You need to add the following settings to the HTTP Output configuration:
 
- * `cacert`:
- * `client_key`:
- * `client_cert`:
+ * `cacert`: Configures the Logstash client to trust any certificates signed by the specicied CA.
+ * `client_key`: Specicies the key the LOgstash client uses to authenticate with the Logstash server.
+ * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the logstash server.
 
  For example:
 
@@ -109,4 +114,19 @@ output {
         client_cert => "client.crt"
     }
 }
+----
+
+4. If you would like an additional authentication step, you can also use basic user/password authentication in both Logstash instances:
+
+ * `user`: Sets the username to use for authentication.
+ * `password`: Sets the password to use for authentication.
+
+ For example, you would need to add the following to both Logstash instances:
+
+[source,json]
+----
+[...]
+        user => "your-user"
+        password => "your-secret"
+[...]
 ----
