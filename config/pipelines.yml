@@ -7,30 +7,29 @@
 # Example of two pipelines:
 #
 - pipeline.id: test
-  pipeline.workers: 1
+  pipeline.workers: 2
   pipeline.batch.size: 1
-  config.string: "input { file { path => '/users/robbavey/code/logstash/test.xxx' }} output { elasticsearch { ecs_compatibility => 'disabled'} }"
+  config.string: "input { file { path => '/users/robbavey/code/logstash/test.xxx' mode => 'read' start_position => 'beginning' codec => json }} output { elasticsearch { ecs_compatibility => 'disabled'} }"
 - pipeline.id: testbreak
   pipeline.workers: 1
+  pipeline.failure_pipeline: 'dlq2'
   pipeline.batch.size: 1
-  config.string: 'filter{if [a] == 0 { mutate { add_tag => ["foo"]}} } output { if [a] > 1 { stdout{} }}'
+  config.string: 'input { stdin { codec => json} } filter{if [a] == 0 { mutate { add_tag => ["foo"]}} } output { if [a] > 1 { stdout{} }}'
 #- pipeline.id: test2
 #  pipeline.workers: 1
 #  pipeline.batch.size: 1
 #  config.string: "input { stdin { codec => json }} output { elasticsearch { ecs_compatibility => 'disabled'} }"
+#- pipeline.id: dlq2
+#  queue.type: memory
+#  config.string: "input { pipeline { 'address' => 'dlq2'}} filter { json { source => 'message' target => 'target' }} output { stdout { codec => rubydebug { metadata => true }}}"
 
-- pipeline.id: another_test
+- pipeline.id: dlq
   queue.type: memory
-  config.string: "input { pipeline { 'address' => 'dlq'}} filter { json { source => 'message' target => 'target' }} output { stdout { codec => rubydebug { metadata => true }}}"
-
-#- pipeline.id: another_test
-#  queue.type: memory
-#  config.string: "input { pipeline { 'address' => 'dlq'}} filter { json { source => 'message' } mutate { remove_field => 'geoip'}  mutate { remove_field => ['error','message'] } } output { elasticsearch { index => 'logstash' ecs_compatibility => 'disabled' }}"
-
-
-#- pipeline.id: another_testi_dlq
-#  queue.type: memory
-#  config.string: "input { pipeline { 'address' => 'dlq'}} output { elasticsearch { index => 'logstash_dlq' ecs_compatibility => 'disabled' }}"
+  pipeline.failure_pipeline: 'dlq2'
+  config.string: "input { pipeline { 'address' => 'dlq'}} filter { json { source => 'message' } mutate { remove_field => 'geoip'}  mutate { remove_field => ['error','message'] add_tag => 'repaired' } } output { elasticsearch { index => 'logstash' ecs_compatibility => 'disabled' }}"
+- pipeline.id: another_testi_dlq
+  queue.type: memory
+  config.string: "input { pipeline { 'address' => 'dlq2'}} output { elasticsearch { index => 'logstash_dlq' ecs_compatibility => 'disabled' }}"
 
 #
 # Available options:

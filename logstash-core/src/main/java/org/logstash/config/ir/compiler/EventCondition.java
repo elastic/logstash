@@ -444,6 +444,9 @@ public interface EventCondition {
                     (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
             return event -> {
                 final Event javaEvent = event.getEvent();
+                if (javaEvent.getUnconvertedField(one) == null){
+                    throw new IllegalStateException(String.format("Invalid comparison, %s is not in event", left.getFieldName()));
+                }
                 return operator.test(compare(javaEvent.getUnconvertedField(one), other));
             };
         }

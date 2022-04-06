@@ -48,6 +48,7 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -322,27 +323,27 @@ public final class CompiledPipeline {
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
-                    try {
+//                    try {
                         _compute(filterBatch, outputBatch, flush, shutdown);
-                    }catch (Exception ex){
-                        try {
-                            dlqWriter.writeEntry(e.getEvent(), "filter", "none", ex.getMessage());
-                        }catch (Exception dlqEx){
-                            System.out.println("Hi");
-                        }
-                    }
+//                    }catch (Exception ex){
+//                        try {
+//                            dlqWriter.writeEntry(e.getEvent(), "filter", "none", ex.getMessage());
+//                        }catch (IOException dlqEx){
+//                            dlqEx.printStackTrace();
+//                        }
+//                    }
                 }
-                try {
+//                try {
                     compiledOutputs.compute(outputBatch, flush, shutdown);
-                }catch (Exception ex){
-                    try {
-                        for (Object re : outputBatch.stream().toArray()) {
-                            dlqWriter.writeEntry(((RubyEvent)re).getEvent(), "output", "none", ex.getMessage());
-                        }
-                    }catch (Exception dlqEx){
-                        System.out.println("Hi");
-                    }
-                }
+//                }catch (Exception ex){
+//                    try {
+//                        for (Object re : outputBatch.stream().toArray()) {
+//                            dlqWriter.writeEntry(((RubyEvent)re).getEvent(), "output", "none", ex.getMessage());
+//                        }
+//                    }catch (Exception dlqEx){
+//                        System.out.println("Hi");
+//                    }
+//                }
                 return outputBatch.size();
             } else if (flush || shutdown) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();

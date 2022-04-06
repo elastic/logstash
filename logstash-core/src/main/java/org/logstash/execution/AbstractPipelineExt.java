@@ -280,26 +280,26 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "dlq_writer")
     public final IRubyObject dlqWriter(final ThreadContext context, final IRubyObject agent) {
-        System.out.println("GETTING THE DILL WRITER");
         if (dlqWriter == null) {
-            if (dlqEnabled(context).isTrue()) {
+            if (!getSetting(context, "pipeline.failure_pipeline").isNil()) {
                 PipelineBus pipelineBus = agent.callMethod(context, "pipeline_bus").toJava(PipelineBus.class);
                 dlqWriter = getDlqPipelineWriter(context, pipelineBus);
+            } else if (dlqEnabled(context).isTrue()) {
+                dlqWriter = getDlqFileWriter(context);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
-        System.out.println("Returrning " + dlqWriter.getClass());
         return dlqWriter;
     }
 
     private IRubyObject getDlqPipelineWriter(ThreadContext context, PipelineBus pipelineBus){
-        System.out.println("GET GLD PIPELING WRITER");
         return JavaUtil.convertJavaToUsableRubyObject(
                 context.runtime,
                 DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         pipelineId.asJavaString(),
+                        getSetting(context, "pipeline.failure_pipeline").asJavaString(),
                         pipelineBus)
         );
     }

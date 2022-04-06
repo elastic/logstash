@@ -61,6 +61,7 @@ module LogStash
            Setting::Boolean.new("pipeline.separate_logs", false),
    Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
    Setting::CoercibleString.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
+            Setting::String.new("pipeline.failure_pipeline", nil, false).nullable,
                     Setting.new("path.plugins", Array, []),
     Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),

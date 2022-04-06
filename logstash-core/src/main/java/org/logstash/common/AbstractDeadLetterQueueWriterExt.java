@@ -29,9 +29,8 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.common.dlq.DeadLetterQueuePipelineWriter;
+import org.logstash.common.dlq.FailurePipelineWriter;
 import org.logstash.common.dlq.IDeadLetterQueueWriter;
-import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 @JRubyClass(name = "AbstractDeadLetterQueueWriter")
@@ -162,9 +161,9 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
             final ThreadContext context, final IRubyObject innerWriter, final IRubyObject pluginId,
             final IRubyObject pluginType) {
             writerWrapper = innerWriter;
-            if (writerWrapper.getJavaClass().equals(DeadLetterQueuePipelineWriter.class)) {
+            if (writerWrapper.getJavaClass().equals(FailurePipelineWriter.class)) {
                 this.innerWriter = writerWrapper.toJava(
-                    DeadLetterQueuePipelineWriter.class
+                    FailurePipelineWriter.class
                 );
             }
             this.pluginId = pluginId;

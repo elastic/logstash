@@ -40,7 +40,7 @@ package org.logstash.common;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.common.dlq.DeadLetterQueuePipelineWriter;
+import org.logstash.common.dlq.FailurePipelineWriter;
 import org.logstash.common.dlq.IDeadLetterQueueWriter;
 import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.plugins.pipeline.PipelineBus;
@@ -101,12 +101,12 @@ public class DeadLetterQueueFactory {
      * DLQ Pipeline retrieval
      *
      */
-    public static IDeadLetterQueueWriter getWriter(String id, String pipeline, PipelineBus pipelineBus) {
-        return REGISTRY.computeIfAbsent(id, key -> newPipelineWriter(key, pipeline, pipelineBus));
+    public static IDeadLetterQueueWriter getWriter(String id, String sourcePipeline, String failurePipeline, PipelineBus pipelineBus) {
+        return REGISTRY.computeIfAbsent(id, key -> newPipelineWriter(key, sourcePipeline, failurePipeline, pipelineBus));
     }
 
-    private static IDeadLetterQueueWriter newPipelineWriter(String id, String pipeline, PipelineBus pipelineBus){
-        return new DeadLetterQueuePipelineWriter(id, pipeline, pipelineBus);
+    private static IDeadLetterQueueWriter newPipelineWriter(String id, String sourcePipeline, String failurePipeline, PipelineBus pipelineBus){
+        return new FailurePipelineWriter(id, sourcePipeline, failurePipeline, pipelineBus);
     }
 
 }
