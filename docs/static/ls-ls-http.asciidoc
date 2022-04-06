@@ -65,10 +65,7 @@ Now that you have a Logstash to Logstash communication with HTTP, it is importan
 
 . Create a certificate authority (CA) in order to sign the certificates that you plan to use between Logstash instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document.
 
-[NOTE]
------
-We recommend you use the elasticsearch-certutil tool to generate your certificates.
------
+TIP: We recommend you use the {elasticsearch-ref}/certutil.html[elasticsearch-certutil] tool to generate your certificates.
 
 . Configure the downstream (receiving) Logstash to use SSL. You need to add the following settings to the HTTP Input configuration:
 
