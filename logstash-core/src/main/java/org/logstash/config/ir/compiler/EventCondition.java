@@ -440,12 +440,13 @@ public interface EventCondition {
         private static EventCondition compareFieldToConstant(final EventValueExpression left,
                                                              final ValueExpression right, final Predicate<Integer> operator) {
             final FieldReference one = FieldReference.from(left.getFieldName());
+
             final Comparable<IRubyObject> other =
                     (Comparable<IRubyObject>) Rubyfier.deep(RubyUtil.RUBY, right.get());
             return event -> {
                 final Event javaEvent = event.getEvent();
                 if (javaEvent.getUnconvertedField(one) == null){
-                    throw new IllegalStateException(String.format("Invalid comparison, %s is not in event", left.getFieldName()));
+                    throw new IllegalStateException(String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event", left.getSourceWithMetadata().getLine(), left.getSourceWithMetadata().getLine(), left.getFieldName()));
                 }
                 return operator.test(compare(javaEvent.getUnconvertedField(one), other));
             };
