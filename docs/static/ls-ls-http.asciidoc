@@ -74,7 +74,7 @@ TIP: We recommend you use the {ref}/certutil.html[elasticsearch-certutil] tool t
  * `ssl_certificate`: Specicies the certificate that Logstash uses to authenticate with the client.
  * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specicied CA.
  * `ssl_verify_mode`:  Specicies whether Logstash server verifies the client certificate against the CA.
-
++
 For example:
 
 [source,json]
