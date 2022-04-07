@@ -43,6 +43,7 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.execution.PipelineException;
 import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -112,17 +114,6 @@ public final class CompiledPipeline {
             final SecretStore secretStore)
     {
         this(pipelineIR, pluginFactory, secretStore, null);
-//        this.pipelineIR = pipelineIR;
-//        this.pluginFactory = pluginFactory;
-//        try (ConfigVariableExpander cve = new ConfigVariableExpander(
-//                secretStore,
-//                EnvironmentVariableProvider.defaultProvider())) {
-//            inputs = setupInputs(cve);
-//            filters = setupFilters(cve);
-//            outputs = setupOutputs(cve);
-//        } catch (Exception e) {
-//            throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
-//        }
     }
 
     public CompiledPipeline(
@@ -323,15 +314,26 @@ public final class CompiledPipeline {
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
-//                    try {
+                    try {
                         _compute(filterBatch, outputBatch, flush, shutdown);
-//                    }catch (Exception ex){
-//                        try {
-//                            dlqWriter.writeEntry(e.getEvent(), "filter", "none", ex.getMessage());
-//                        }catch (IOException dlqEx){
-//                            dlqEx.printStackTrace();
-//                        }
-//                    }
+                    } catch (PipelineException pe){
+                        Map<String, String> reason = new HashMap<>();
+                        reason.put("reason", pe.getMessage());
+                        try {
+                            dlqWriter.writeEntry(e.getEvent(), reason);
+                        } catch (IOException dlqException){
+                            dlqException.printStackTrace();
+                        }
+                    }
+                    catch (Exception ex){
+                        try {
+                            Map<String, String> reason = new HashMap<>();
+                            reason.put("reason", ex.getMessage());
+                            dlqWriter.writeEntry(e.getEvent(), "filter", "none", ex.getMessage());
+                        }catch (IOException dlqEx){
+                            dlqEx.printStackTrace();
+                        }
+                    }
                 }
 //                try {
                     compiledOutputs.compute(outputBatch, flush, shutdown);

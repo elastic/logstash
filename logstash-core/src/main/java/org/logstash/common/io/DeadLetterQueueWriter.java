@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -125,6 +126,11 @@ public final class DeadLetterQueueWriter implements Closeable, IDeadLetterQueueW
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
         writeEntry(new DLQEntry(event, pluginName, pluginId, reason));
+    }
+
+    @Override
+    public void writeEntry(Event event, Map<String, String> reason) throws IOException {
+        writeEntry(new DLQEntry(event, "-", "-", reason.toString()));
     }
 
     @Override

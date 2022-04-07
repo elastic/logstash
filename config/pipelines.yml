@@ -12,9 +12,9 @@
   config.string: "input { file { path => '/users/robbavey/code/logstash/test.xxx' mode => 'read' start_position => 'beginning' codec => json }} output { elasticsearch { ecs_compatibility => 'disabled'} }"
 - pipeline.id: testbreak
   pipeline.workers: 1
-  pipeline.failure_pipeline: 'dlq2'
+  pipeline.failure_pipeline: 'stdoutdlq'
   pipeline.batch.size: 1
-  config.string: 'input { stdin { codec => json} } filter{if [a] == 0 { mutate { add_tag => ["foo"]}} } output { if [a] > 1 { stdout{} }}'
+  config.string: 'input { stdin { codec => json} } filter{if [a] > 0 { mutate { add_tag => ["foo"]}} } output { if [a] > 1 { stdout{} }}'
 #- pipeline.id: test2
 #  pipeline.workers: 1
 #  pipeline.batch.size: 1
@@ -22,7 +22,9 @@
 #- pipeline.id: dlq2
 #  queue.type: memory
 #  config.string: "input { pipeline { 'address' => 'dlq2'}} filter { json { source => 'message' target => 'target' }} output { stdout { codec => rubydebug { metadata => true }}}"
-
+- pipeline.id: stdoutdlq
+  queue.type: memory
+  config.string: "input{ pipeline { 'address' => 'stdoutdlq' }} filter { json { source => 'message' target => 'target' }} output { stdout { codec => rubydebug { metadata => true }}}"
 - pipeline.id: dlq
   queue.type: memory
   pipeline.failure_pipeline: 'dlq2'

@@ -40,7 +40,6 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public ExecutionContextFactoryExt initialize(final ThreadContext context, final IRubyObject agent,
                                                  final IRubyObject pipeline, final IRubyObject dlqWriter) {
-        System.out.println("Creating exection contect");
         this.agent = agent;
         this.pipeline = pipeline;
         this.dlqWriter = dlqWriter;

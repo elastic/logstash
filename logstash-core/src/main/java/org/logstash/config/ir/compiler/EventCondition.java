@@ -56,6 +56,7 @@ import org.logstash.config.ir.expression.binary.Or;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
+import org.logstash.execution.PipelineException;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -433,7 +434,7 @@ public interface EventCondition {
             FieldReference fieldReference = FieldReference.from(valueExpression.getFieldName());
             Object object = event.getUnconvertedField(fieldReference);
             if (object == null){
-                throw new IllegalStateException(
+                throw new PipelineException(
                         String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event",
                                       valueExpression.getSourceWithMetadata().getLine(),
                                       valueExpression.getSourceWithMetadata().getColumn(),

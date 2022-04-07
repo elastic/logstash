@@ -10,6 +10,8 @@ import org.logstash.plugins.pipeline.PipelineBus;
 import org.logstash.plugins.pipeline.PipelineOutput;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.logstash.RubyUtil.RUBY;
 
@@ -35,8 +37,9 @@ public class FailurePipelineWriter implements IDeadLetterQueueWriter {
         LOGGER.warn("Registering failure pipeline from {} to {}", sourcePipeline, failurePipeline);
         pipelineBus.registerSender(dlqPipelineOutput, Lists.newArrayList(failurePipeline));
     }
+
     @Override
-    public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
+    public void writeEntry(Event event, Map<String, String> metadata) throws IOException {
         LOGGER.warn("Sending event {} to {}", event, thisPipeline);
         Event newEvent = new Event();
 
@@ -54,15 +57,20 @@ public class FailurePipelineWriter implements IDeadLetterQueueWriter {
             dlqPath = String.format("%s,%s", dlqPath, thisPipeline);
         }
         newEvent.setField("[@metadata][dlq_path]", dlqPath);
-        newEvent.setField("[_meta][dlq_path]", dlqPath);
-        newEvent.setField("[_meta][dlq]", true);
         newEvent.setField("[message]", event.toJson());
+        newEvent.setField("[error]", metadata);
         newEvent.setField("[error][source_pipeline]", sourcePipeline);
-        newEvent.setField("[error][plugin_type]",pluginName);
-        newEvent.setField("[error][plugin_id]", pluginId);
-        newEvent.setField("[error][message]", reason);
         JrubyEventExtLibrary.RubyEvent er = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RUBY, newEvent);
         pipelineBus.sendEvents(dlqPipelineOutput, Lists.newArrayList(er), true);
+
+    }
+
+    @Override
+    public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("pluginName", pluginName);
+        metadata.put("pluginId", pluginId);
+        metadata.put("reason", reason);
     }
 
     @Override
