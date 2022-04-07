@@ -416,7 +416,10 @@ void generateRubySupportFilesForPlugin(String projectDescription, String project
     pluginJarsRb.append("# encoding: utf-8\n")
     pluginJarsRb.append("\n")
     pluginJarsRb.append("require 'jar_dependencies'\n")
+<<<<<<< HEAD
     // explicitly list all the classpath defined jars
+=======
+>>>>>>> Update the java plugin loading logic to process the manifest files into plugin jar entry point
     classpathDependencies.each {
         pluginJarsRb.append("require_jar(\'${it.group}\', \'${it.name}\', \'${it.version}\')\n")
     }
@@ -432,7 +435,10 @@ void validatePluginJar(File pluginJar, String group) {
                 String.join(System.lineSeparator(), validationErrors), null)
     }
 
+<<<<<<< HEAD
     // all the jars bundled in a native Java plugin must be used to create the classpath
+=======
+>>>>>>> Update the java plugin loading logic to process the manifest files into plugin jar entry point
     URL[] runtimeClassPath = []
     runtimeClassPath += pluginJar.toURI().toURL()
     configurations.getByName('implementation').asFileTree.each {File jarFile ->
