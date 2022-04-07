@@ -76,7 +76,7 @@ TIP: We recommend you use the {ref}/certutil.html[elasticsearch-certutil] tool t
  * `ssl_verify_mode`:  Specicies whether Logstash server verifies the client certificate against the CA.
 +
 For example:
-
++
 [source,json]
 ----
 input {
