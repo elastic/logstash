@@ -68,7 +68,7 @@ Now that you have a Logstash to Logstash communication with HTTP, it is importan
 TIP: We recommend you use the {ref}/certutil.html[elasticsearch-certutil] tool to generate your certificates.
 +
 . Configure the downstream (receiving) Logstash to use SSL. You need to add the following settings to the HTTP Input configuration:
-
++
  * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
  * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
  * `ssl_certificate`: Specicies the certificate that Logstash uses to authenticate with the client.
