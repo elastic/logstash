@@ -147,18 +147,45 @@ module LogStash module Plugins
       require("x-pack/logstash_registry")
     end
 
+    JarSearchResult = Struct.new(:jar_file, :relative_path)
+
+    ##
+    # Return the jar containing the Java plugin or nil if not found
+    #
+    # @param spec [Gem::Specification]
+    #
+    # @return [String] relative path to the matching jar or nil
+    def find_plugin_jar(spec)
+      jar_files = spec.files.select {|f| f =~ /.*\.jar/}
+      expected_jar_name = spec.name + "-" + spec.version.to_s + ".jar"
+      if jar_files.length == 1
+        if !jar_files[0].end_with?(expected_jar_name)
+          return nil
+        end
+        return jar_files[0]
+      end
+
+      # plugin with multiple jars, check the Manifest of the main jar is correct
+      java_import 'java.util.jar.JarFile'
+      jar_pathname = Pathname.new(spec.base_dir) + spec.full_name
+
+      jar_files.map { |f| JarSearchResult.new(JarFile.new(jar_pathname.join(f).to_s), f) }
+        .select { |tuple| tuple.jar_file.manifest != nil }
+        .select { |tuple| tuple.jar_file.manifest.main_attributes != nil }
+        .find { |tuple| tuple.jar_file.manifest.main_attributes.get_value("Logstash-plugin") == spec.full_name }
+        .relative_path
+    end
+
     def load_available_plugins
       require "logstash/plugins/builtin"
 
       GemRegistry.logstash_plugins.each do |plugin_context|
         if plugin_context.spec.metadata.key?('java_plugin')
-          # Find *.jar file from the require path
-          jar_files = plugin_context.spec.matches_for_glob("**/*.jar")
-          expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
-          if jar_files.length != 1 || !jar_files.first.end_with?(expected_jar_name)
-            raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"
+          jar_file = find_plugin_jar(plugin_context.spec)
+          if !jar_file
+            raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a any jar file with the plugin's definition"
           end
-          @java_plugins[plugin_context.spec.name] = jar_files.first
+          @java_plugins[plugin_context.spec.name] = jar_file
         end
 
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
