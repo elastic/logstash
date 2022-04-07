@@ -40,7 +40,8 @@
 #
 # pipeline.workers: 2
 #
-pipeline.failure_pipeline: 'dlq'
+pipeline.dead_letter_pipeline: 'dlq'
+pipeline.failure_handler: "dead_letter"
 
 # How many events to retrieve from inputs before sending to filters+workers
 #
@@ -80,7 +81,7 @@ pipeline.failure_pipeline: 'dlq'
 # of ECS for the individual pipeline in its `pipelines.yml` definition. Setting
 # it here will set the default for _all_ pipelines, including new ones.
 #
-pipeline.ecs_compatibility: disabled
+# pipeline.ecs_compatibility: disabled
 #
 # ------------ Pipeline Configuration Settings --------------
 #

@@ -129,7 +129,8 @@ public final class DeadLetterQueueWriter implements Closeable, IDeadLetterQueueW
     }
 
     @Override
-    public void writeEntry(Event event, Map<String, String> reason) throws IOException {
+
+    public void writeEntry(Event event, Map<String, Object> reason) throws IOException {
         writeEntry(new DLQEntry(event, "-", "-", reason.toString()));
     }
 

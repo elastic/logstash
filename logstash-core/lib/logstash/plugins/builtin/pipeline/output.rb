@@ -40,6 +40,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Output
   end
 
   def close
+    puts "Unregistering #{self} from #{@send_to}"
     pipeline_bus.unregisterSender(self, @send_to)
   end
 end; end; end; end; end

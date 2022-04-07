@@ -42,7 +42,6 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -54,6 +53,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.failure.DLQFailureHandler;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -135,9 +135,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractMetricExt metric;
 
-    private PipelineBus pipelineBus;
-
     protected IRubyObject dlqWriter;
+
+    protected IRubyObject failureHandler;
 
     private PipelineReporterExt reporter;
 
@@ -278,12 +278,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return JavaUtil.convertJavaToUsableRubyObject(context.runtime, lir);
     }
 
-    @JRubyMethod(name = "dlq_writer")
-    public final IRubyObject dlqWriter(final ThreadContext context, final IRubyObject agent) {
+    protected final IRubyObject dlqWriter(final ThreadContext context, final IRubyObject agent) {
         if (dlqWriter == null) {
-            if (!getSetting(context, "pipeline.failure_pipeline").isNil()) {
+            if (!getSetting(context, "pipeline.dead_letter_pipeline").isNil()) {
                 PipelineBus pipelineBus = agent.callMethod(context, "pipeline_bus").toJava(PipelineBus.class);
-                dlqWriter = getDlqPipelineWriter(context, pipelineBus);
+                dlqWriter = getDeadLetterPipelineWriter(context, pipelineBus);
             } else if (dlqEnabled(context).isTrue()) {
                 dlqWriter = getDlqFileWriter(context);
             } else {
@@ -293,13 +292,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return dlqWriter;
     }
 
-    private IRubyObject getDlqPipelineWriter(ThreadContext context, PipelineBus pipelineBus){
+
+    @JRubyMethod(name = "dlq_writer")
+    public final IRubyObject dlqWriter(final ThreadContext context) {
+        return dlqWriter;
+    }
+
+    private IRubyObject getDeadLetterPipelineWriter(ThreadContext context, PipelineBus pipelineBus){
         return JavaUtil.convertJavaToUsableRubyObject(
                 context.runtime,
                 DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
-                        pipelineId.asJavaString(),
-                        getSetting(context, "pipeline.failure_pipeline").asJavaString(),
+                        getSetting(context, "pipeline.dead_letter_pipeline").asJavaString(),
                         pipelineBus)
         );
     }
@@ -336,12 +340,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "collect_dlq_stats")
     public final IRubyObject collectDlqStats(final ThreadContext context) {
-//        if (dlqEnabled(context).isTrue()) {
-//            getDlqMetric(context).gauge(
-//                context, QUEUE_SIZE_IN_BYTES,
-//                dlqWriter(context).callMethod(context, "get_current_queue_size")
-//            );
-//        }
+        if (dlqEnabled(context).isTrue()) {
+            getDlqMetric(context).gauge(
+                context, QUEUE_SIZE_IN_BYTES,
+                dlqWriter(context).callMethod(context, "get_current_queue_size")
+            );
+        }
         return context.nil;
     }
 

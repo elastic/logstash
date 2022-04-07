@@ -434,7 +434,7 @@ public interface EventCondition {
             FieldReference fieldReference = FieldReference.from(valueExpression.getFieldName());
             Object object = event.getUnconvertedField(fieldReference);
             if (object == null){
-                throw new PipelineException(
+                throw new IllegalStateException(
                         String.format("Line:%d, Column:%d: Invalid comparison - Field reference %s not in event",
                                       valueExpression.getSourceWithMetadata().getLine(),
                                       valueExpression.getSourceWithMetadata().getColumn(),
