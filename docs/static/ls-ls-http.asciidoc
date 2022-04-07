@@ -97,9 +97,9 @@ input {
  * `cacert`: Configures the Logstash client to trust any certificates signed by the specicied CA.
  * `client_key`: Specicies the key the LOgstash client uses to authenticate with the Logstash server.
  * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the logstash server.
-
++
 For example:
-
++
 [source,json]
 ----
 output {
