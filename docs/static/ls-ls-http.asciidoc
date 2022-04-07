@@ -114,12 +114,12 @@ output {
 ----
 
 . If you would like an additional authentication step, you can also use basic user/password authentication in both Logstash instances:
-
++
  * `user`: Sets the username to use for authentication.
  * `password`: Sets the password to use for authentication.
-
++
 For example, you would need to add the following to both Logstash instances:
-
++
 [source,json]
 ----
 ...
