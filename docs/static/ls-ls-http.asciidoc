@@ -49,7 +49,7 @@ In order to optain the best performance when sending data from one Logstash to a
 ----
 output {
     http {
-        url => 'http://<upstream-logstash>:<port>'
+        url => '<protocol>://<downstream-logstash>:<port>'
         http_method => post
         retry_non_idempotent => true
         format => json_batch
@@ -71,9 +71,9 @@ TIP: We recommend you use the {ref}/certutil.html[elasticsearch-certutil] tool t
 +
  * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
  * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
- * `ssl_certificate`: Specicies the certificate that Logstash uses to authenticate with the client.
- * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specicied CA.
- * `ssl_verify_mode`:  Specicies whether Logstash server verifies the client certificate against the CA.
+ * `ssl_certificate`: Specifies the certificate that Logstash uses to authenticate with the client.
+ * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specified CA.
+ * `ssl_verify_mode`:  Specifies whether Logstash server verifies the client certificate against the CA.
 +
 For example:
 +
@@ -94,8 +94,8 @@ input {
 
 . Configure the upstream (sending) Logstash to use SSL. You need to add the following settings to the HTTP Output configuration:
 +
- * `cacert`: Configures the Logstash client to trust any certificates signed by the specicied CA.
- * `client_key`: Specicies the key the LOgstash client uses to authenticate with the Logstash server.
+ * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
+ * `client_key`: Specifies the key the LOgstash client uses to authenticate with the Logstash server.
  * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the logstash server.
 +
 For example:
