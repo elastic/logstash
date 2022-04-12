@@ -280,6 +280,13 @@ describe LogStash::Agent do
           expect(json_document["message"]).to eq("foo-bar")
         end
       end
+
+      context "referenced environment variable does not exist" do
+
+        it "does not converge the pipeline" do
+          expect(subject.converge_state_and_update).not_to be_a_successful_converge
+        end
+      end
     end
 
     describe "#upgrade_pipeline" do
@@ -302,6 +309,15 @@ describe LogStash::Agent do
         # new pipelines will be created part of the upgrade process so we need
         # to close any initialized pipelines
         subject.shutdown
+      end
+
+      context "when the upgrade contains a bad environment variable" do
+        let(:new_pipeline_config) { "input { generator {} } filter { if '${NOEXIST}' { mutate { add_tag => 'x' } } } output { }" }
+
+        it "leaves the state untouched" do
+          expect(subject.converge_state_and_update).not_to be_a_successful_converge
+          expect(subject.get_pipeline(default_pipeline_id).config_str).to eq(pipeline_config)
+        end
       end
 
       context "when the upgrade fails" do
