@@ -7,6 +7,7 @@ require "logstash/config/source_loader"
 require "logstash/outputs/elasticsearch"
 require "logstash/json"
 require 'helpers/elasticsearch_options'
+require 'helpers/loggable_try'
 require "license_checker/licensed"
 
 
@@ -51,7 +52,10 @@ module LogStash
 
       # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
       def get_pipeline_fetcher
-        response = client.get("/")
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch ES version from Central Management')
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+          client.get("/")
+        }
 
         if response["error"]
           raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
@@ -204,7 +208,10 @@ module LogStash
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
       def fetch_config(pipeline_ids, client)
-        response = client.get("#{SYSTEM_INDICES_API_PATH}/")
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+          client.get("#{SYSTEM_INDICES_API_PATH}/")
+        }
 
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
@@ -253,7 +260,10 @@ module LogStash
 
       def fetch_config(pipeline_ids, client)
         request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
-        response = client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+          client.post("#{PIPELINE_INDEX}/_mget", {}, request_body_string)
+        }
 
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"

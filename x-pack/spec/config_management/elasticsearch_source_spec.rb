@@ -224,6 +224,11 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:pipeline_id) { "super_generator" }
       let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
       let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
+      let(:mock_logger) { double("fetcher's logger") }
+
+      before(:each) {
+        allow(subject).to receive(:logger).and_return(mock_logger)
+      }
 
       it "#fetch_config" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(elasticsearch_response.clone)
@@ -239,13 +244,13 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       describe "wildcard" do
         it "should accept * " do
           expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
-          expect(subject).to receive(:logger).never
+          expect(mock_logger).to receive(:warn).never
           expect(subject.fetch_config(["*"], mock_client).keys.length).to eq(all_pipelines.keys.length)
         end
 
         it "should accept multiple * in one pattern " do
           expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
-          expect(subject).to receive(:logger).never
+          expect(mock_logger).to receive(:warn).never
           expect(subject.fetch_config(["host*_pipeline*"], mock_client).keys).to eq(["host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
         end
 
@@ -257,7 +262,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
         it "should accept a mix of wildcard and non wildcard pattern" do
           expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
-          expect(subject).to receive(:logger).never
+          expect(mock_logger).to receive(:warn).never
           expect(subject.fetch_config(["host1_pipeline*", "host2_pipeline*","super_generator"], mock_client).keys).to eq(["super_generator", "host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
         end
 
@@ -312,9 +317,16 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         {"super_generator"=>{"_index"=>".logstash", "_id"=>"super_generator", "_version"=>2, "_seq_no"=>2, "_primary_term"=>1, "found"=>true, "_source"=>{"pipeline"=>"input { generator { count => 100 } tcp { port => 6005 } } output {  }}"}}}
       }
 
+      let(:mock_logger) { double("fetcher's logger") }
+
+      before(:each) {
+        allow(subject).to receive(:logger).and_return(mock_logger)
+        allow(mock_logger).to receive(:debug)
+      }
+
       it "#fetch_config" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_response)
-        expect(subject).to receive(:logger).never
+        expect(mock_logger).to receive(:warn).never
         expect(subject.fetch_config([pipeline_id, another_pipeline_id], mock_client).size).to eq(2)
         expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
         expect(subject.get_single_pipeline_setting(another_pipeline_id)).to eq({"pipeline" => "#{another_config}"})
@@ -322,7 +334,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "#fetch_config should raise error" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_7_9_err_response)
-        expect(subject).to receive(:logger).never
+        expect(mock_logger).to receive(:warn).never
         expect{ subject.fetch_config([pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
@@ -334,6 +346,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       it "#fetch_config should log unmatched pipeline id" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"},{\"_id\":\"*\"}]}").and_return(elasticsearch_response)
         expect(subject).to receive(:log_pipeline_not_found).with(["*"]).exactly(1)
+        expect(mock_logger).to receive(:warn).with(/is not supported in Elasticsearch version < 7\.10/)
         expect(subject.fetch_config([pipeline_id, another_pipeline_id, "*"], mock_client).size).to eq(2)
         expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
         expect(subject.get_single_pipeline_setting(another_pipeline_id)).to eq({"pipeline" => "#{another_config}"})
@@ -347,8 +360,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       end
 
       it "should log wildcard warning" do
-        result = subject.send(:log_wildcard_unsupported, [pipeline_id, another_pipeline_id, "*"])
-        expect(result).not_to be_nil
+        expect(mock_logger).to receive(:warn).with("wildcard '*' in xpack.management.pipeline.id is not supported in Elasticsearch version < 7.10")
+        subject.send(:log_wildcard_unsupported, [pipeline_id, another_pipeline_id, "*"])
       end
     end
   end
