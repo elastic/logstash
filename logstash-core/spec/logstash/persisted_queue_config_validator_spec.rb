@@ -18,6 +18,7 @@
 require "spec_helper"
 require "tmpdir"
 require "logstash/persisted_queue_config_validator"
+require 'securerandom'
 require_relative '../support/helpers'
 
 describe LogStash::PersistedQueueConfigValidator do
@@ -62,7 +63,9 @@ describe LogStash::PersistedQueueConfigValidator do
 
       before do
         # create a 2MB file
-        page_file.truncate(2 ** 21)
+        ::File.open(page_file, 'wb') do |f|
+          f.write( SecureRandom.random_bytes( 2 ** 21 ) )
+        end
       end
 
       it "should throw" do
