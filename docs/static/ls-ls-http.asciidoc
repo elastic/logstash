@@ -45,7 +45,7 @@ In order to optain the best performance when sending data from one Logstash to a
 * `http_method` - Set to `post`.
 * `retry_non_idempotent` - Set to `true`, in order to retry failed events.
 * `format` - Set to `json_batch` to batch the data.
-* `http_compression` - Set to `true` ensures the data is compressed.
+* `http_compression` - Set to `true` to ensure the data is compressed.
 
 [source,json]
 ----
