@@ -20,7 +20,8 @@ To use the HTTP protocol to connect two Logstash instances:
 [[configure-downstream-logstash-http-input]]
 ===== Configure the downstream Logstash to use HTTP input
 
-To configure the downstream Logstash (the receiving Logstash) you need to configure the HTTP input to receive connections. The minimum recommended configuration requires you to set the following options:
+Configure the HTTP input on the downstream (receiving) Logstash to receive connections. 
+The minimum configuration requires these options:
 
 * `port` - to set a custom port.
 * `additional_codecs` - To set `application/json` to be `json_lines`.
