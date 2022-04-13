@@ -61,7 +61,7 @@ output {
 ----
 
 [[securing-logstash-to-logstash]]
-===== Securing Logstash to Logstash
+===== Secure Logstash to Logstash
 
 Now that you have a Logstash to Logstash communication with HTTP, it is important that you secure the communication between Logstash instances. This is done with SSL/TLS mutual authentication, in order to ensure that the upstream Logstash instance sends encrypted data to a trusted downstream Logstash instance, and viceversa. In order to achieve this, you need the following:
 
