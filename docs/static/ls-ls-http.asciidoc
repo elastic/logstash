@@ -96,7 +96,8 @@ input {
 }
 ----
 
-. Configure the upstream (sending) Logstash to use SSL. You need to add the following settings to the HTTP Output configuration:
+. Configure the upstream (sending) Logstash to use SSL. 
+Add these settings to the HTTP output configuration:
 +
  * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
  * `client_key`: Specifies the key the LOgstash client uses to authenticate with the Logstash server.
