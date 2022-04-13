@@ -8,6 +8,7 @@ NOTE: Check out these <<http-considerations,considerations>> before you implemen
 
 For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
 
+[[overview-http-http]]
 ==== Configuration overview
 
 To use the HTTP protocol to connect two Logstash instances:
