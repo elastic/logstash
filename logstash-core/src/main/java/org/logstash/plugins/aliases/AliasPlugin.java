@@ -40,9 +40,4 @@ public class AliasPlugin {
     public String getFrom() {
         return from;
     }
-
-    @Nullable
-    public List<AliasDocumentReplace> getDocHeaderReplaces() {
-        return docHeaderReplaces;
-    }
 }

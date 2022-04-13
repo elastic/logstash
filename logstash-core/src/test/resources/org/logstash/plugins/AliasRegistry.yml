@@ -1,5 +1,5 @@
 input:
-  - alias: elastic_agent
+  - alias: aliased_input1
     from: beats
     docs:
       - replace: ":plugin: beats"
