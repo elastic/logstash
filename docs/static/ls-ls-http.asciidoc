@@ -23,7 +23,7 @@ To use the HTTP protocol to connect two Logstash instances:
 Configure the HTTP input on the downstream (receiving) Logstash to receive connections. 
 The minimum configuration requires these options:
 
-* `port` - to set a custom port.
+* `port` - To set a custom port.
 * `additional_codecs` - To set `application/json` to be `json_lines`.
 
 [source,json]
