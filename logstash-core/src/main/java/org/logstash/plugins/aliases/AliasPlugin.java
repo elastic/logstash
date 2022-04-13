@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A POJO class to map AliasRegistry.yml structure.
@@ -16,46 +15,34 @@ public class AliasPlugin {
      * Name of the aliased plugin.
      */
     @Nonnull
-    @JsonProperty("alias_name")
+    @JsonProperty("alias")
     private String aliasName;
 
     /**
-     * The plugin name where aliased plugin maps to.
+     * The plugin name where aliased plugin made from.
      */
     @Nonnull
-    @JsonProperty("maps_to")
-    private String mapsTo;
+    private String from;
 
     /**
-     * List of <K,V> entries to replace when transforming artifact to aliased plugin.
+     * List of replace entries when transforming artifact doc to aliased plugin doc.
      */
     @Nullable
-    private List<Map<String, String>> replaces;
+    @JsonProperty("docs")
+    private List<AliasDocumentReplace> docHeaderReplaces;
 
     @Nonnull
     public String getAliasName() {
         return aliasName;
     }
 
-    public void setAliasName(@Nonnull String aliasName) {
-        this.aliasName = aliasName;
-    }
-
     @Nonnull
-    public String getMapsTo() {
-        return mapsTo;
-    }
-
-    public void setMapsTo(@Nonnull String mapsTo) {
-        this.mapsTo = mapsTo;
+    public String getFrom() {
+        return from;
     }
 
     @Nullable
-    public List<Map<String, String>> getReplaces() {
-        return replaces;
-    }
-
-    public void setReplaces(@Nullable List<Map<String, String>> replaces) {
-        this.replaces = replaces;
+    public List<AliasDocumentReplace> getDocHeaderReplaces() {
+        return docHeaderReplaces;
     }
 }

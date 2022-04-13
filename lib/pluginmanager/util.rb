@@ -39,7 +39,7 @@ module LogStash::PluginManager
     result = {}
     yaml.each do |type, alias_defs|
       alias_defs.each do |alias_def|
-        result["logstash-#{type}-#{alias_def["alias_name"]}"] = "logstash-#{type}-#{alias_def["maps_to"]}"
+        result["logstash-#{type}-#{alias_def["alias"]}"] = "logstash-#{type}-#{alias_def["from"]}"
       end
     end
     result

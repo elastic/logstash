@@ -97,9 +97,9 @@ public class AliasRegistry {
         }
 
         @SuppressWarnings("unchecked")
-        private Map<String, List<AliasPlugin>> decodeYaml() throws IOException {
+        private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(yamlContents, new TypeReference<Map<String, List<AliasPlugin>>>() {});
+            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
@@ -141,7 +141,7 @@ public class AliasRegistry {
             }
 
             // decode yaml to Map<PluginType, List<AliasPlugin>> structure
-            final Map<String, List<AliasPlugin>> aliasedDescriptions;
+            final Map<PluginType, List<AliasPlugin>> aliasedDescriptions;
             try {
                 aliasedDescriptions = aliasYml.decodeYaml();
             } catch (IOException ioex) {
@@ -159,15 +159,15 @@ public class AliasRegistry {
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
-                                                                 Map<String, List<AliasPlugin>> aliasesYamlDefinitions) {
-            final List<AliasPlugin> aliasedPlugins = aliasesYamlDefinitions.get(pluginType.name().toLowerCase());
+                                                                 Map<PluginType, List<AliasPlugin>> aliasesYamlDefinitions) {
+            final List<AliasPlugin> aliasedPlugins = aliasesYamlDefinitions.get(pluginType);
             if (Objects.isNull(aliasedPlugins)) {
                 return Collections.emptyMap();
             }
 
             Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
             aliasedPlugins.forEach(aliasPlugin -> {
-                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasPlugin.getAliasName()), aliasPlugin.getMapsTo());
+                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasPlugin.getAliasName()), aliasPlugin.getFrom());
             });
             return defaultDefinitions;
         }

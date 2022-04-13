@@ -1,13 +1,16 @@
 input:
-  - alias_name: aliased_input1
-    maps_to: beats
-    replaces:
-      - ":plugin: beats": ":plugin: elastic_agent"
-      - ":plugin-uc: Beats": ":plugin-uc: Elastic Agent"
-      - ":plugin-singular: Beat": ":plugin-singular: Elastic Agent"
-  - alias_name: aliased_input2
-    maps_to: tcp
+  - alias: elastic_agent
+    from: beats
+    docs:
+      - replace: ":plugin: beats"
+        with: ":plugin: elastic_agent"
+      - replace: ":plugin-uc: Beats"
+        with: ":plugin-uc: Elastic Agent"
+      - replace: ":plugin-singular: Beat"
+        with: ":plugin-singular: Elastic Agent"
+  - alias: aliased_input2
+    from: tcp
 
 filter:
-  - alias_name: aliased_filter
-    maps_to: json
+  - alias: aliased_filter
+    from: json
