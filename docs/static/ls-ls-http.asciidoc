@@ -15,7 +15,7 @@ To use the HTTP protocol to connect two Logstash instances:
 
 . Configure the downstream (server) Logstash to use HTTP input
 . Configure the upstream (client) Logstash to use HTTP ouput
-. Securing the communication between HTTP input and HTTP output
+. Secure the communication between HTTP input and HTTP output
 
 [[configure-downstream-logstash-http-input]]
 ===== Configure the downstream Logstash to use HTTP input
