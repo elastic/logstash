@@ -246,22 +246,29 @@ public final class CompiledPipeline {
     public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
         Map<String, Object> expandedConfig = new HashMap<>();
         for (Map.Entry<String, Object> e : configArgs.entrySet()) {
-            if (e.getValue() instanceof List) {
-                List list = (List) e.getValue();
-                List<Object> expandedObjects = new ArrayList<>();
-                for (Object o : list) {
-                    expandedObjects.add(cve.expand(o));
-                }
-                expandedConfig.put(e.getKey(), expandedObjects);
-            } else if (e.getValue() instanceof Map) {
-                expandedConfig.put(e.getKey(), expandConfigVariables(cve, (Map<String, Object>) e.getValue()));
-            } else if (e.getValue() instanceof String) {
-                expandedConfig.put(e.getKey(), cve.expand(e.getValue()));
-            } else {
-                expandedConfig.put(e.getKey(), e.getValue());
-            }
+            expandedConfig.put(e.getKey(), expandConfigVariable(cve, e.getValue()));
         }
         return expandedConfig;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand) {
+        if (valueToExpand instanceof List) {
+            List list = (List) valueToExpand;
+            List<Object> expandedObjects = new ArrayList<>();
+            for (Object o : list) {
+                expandedObjects.add(cve.expand(o));
+            }
+            return expandedObjects;
+        }
+        if (valueToExpand instanceof Map) {
+            // hidden recursion here expandConfigVariables -> expandConfigVariable
+            return expandConfigVariables(cve, (Map<String, Object>) valueToExpand);
+        }
+        if (valueToExpand instanceof String) {
+            return cve.expand(valueToExpand);
+        }
+        return valueToExpand;
     }
 
     /**
