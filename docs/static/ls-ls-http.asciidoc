@@ -39,7 +39,7 @@ input {
 [[configure-upstream-logstash-http-output]]
 ===== Configure the upstream Logstash to use HTTP output
 
-In order to optain the best performance when sending data from one Logstash to another, it needs to be batched and compressed. As such, the upstream Logstash (the sending Logstash) needs to be configured with the following options:
+In order to obtain the best performance when sending data from one Logstash to another, the data needs to be batched and compressed. As such, the upstream Logstash (the sending Logstash) needs to be configured with these options:
 
 * `url` - The receiving Logstash.
 * `http_method` - Set to `post`.
