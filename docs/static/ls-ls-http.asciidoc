@@ -14,7 +14,7 @@ For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http inpu
 To use the HTTP protocol to connect two Logstash instances:
 
 . Configure the downstream (server) Logstash to use HTTP input
-. Configure the upstream (client) Logstash to use HTTP ouput
+. Configure the upstream (client) Logstash to use HTTP output
 . Secure the communication between HTTP input and HTTP output
 
 [[configure-downstream-logstash-http-input]]
