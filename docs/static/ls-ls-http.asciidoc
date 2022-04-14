@@ -100,7 +100,7 @@ input {
 Add these settings to the HTTP output configuration:
 +
  * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
- * `client_key`: Specifies the key the LOgstash client uses to authenticate with the Logstash server.
+ * `client_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
  * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the logstash server.
 +
 For example:
