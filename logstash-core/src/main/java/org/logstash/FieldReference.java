@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.jruby.RubyString;
+import org.logstash.util.EscapeHandler;
 
 /**
  * Represents a reference to another field of the event {@link Event}
@@ -45,19 +47,39 @@ public final class FieldReference {
         }
     }
 
+    private static EscapeHandler ESCAPE_HANDLER = EscapeHandler.NONE;
+
+    public static void setEscapeStyle(final String escapeStyleSpec) {
+        final EscapeHandler newEscapeHandler;
+        switch(escapeStyleSpec) {
+            case "NONE":
+                newEscapeHandler = EscapeHandler.NONE;
+                break;
+            case "PERCENT":
+                newEscapeHandler = EscapeHandler.PERCENT;
+                break;
+            case "AMPERSAND":
+                newEscapeHandler = EscapeHandler.AMPERSAND;
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("Invalid escape style: `%s`", escapeStyleSpec));
+        }
+        ESCAPE_HANDLER = newEscapeHandler;
+    }
+
     /**
      * This type indicates that the referenced that is the metadata of an {@link Event} found in
-     * {@link Event#metadata}.
+     * {@link Event#getMetadata()}.
      */
     public static final int META_PARENT = 0;
 
     /**
-     * This type indicates that the referenced data must be looked up from {@link Event#metadata}.
+     * This type indicates that the referenced data must be looked up from {@link Event#getMetadata()}.
      */
     public static final int META_CHILD = 1;
 
     /**
-     * This type indicates that the referenced data must be looked up from {@link Event#data}.
+     * This type indicates that the referenced data must be looked up from {@link Event#getData()}.
      */
     private static final int DATA_CHILD = -1;
 
@@ -74,11 +96,6 @@ public final class FieldReference {
     private static final StrictTokenizer TOKENIZER = new StrictTokenizer();
 
     /**
-     * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
-     */
-    public static final FieldReference TIMESTAMP_REFERENCE = FieldReference.from(Event.TIMESTAMP);
-
-    /**
      * Cache of all existing {@link FieldReference} by their {@link RubyString} source.
      */
     private static final Map<RubyString, FieldReference> RUBY_CACHE =
@@ -89,6 +106,11 @@ public final class FieldReference {
      */
     private static final Map<String, FieldReference> CACHE =
         new ConcurrentHashMap<>(64, 0.2F, 1);
+
+    /**
+     * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
+     */
+    public static final FieldReference TIMESTAMP_REFERENCE = FieldReference.from(Event.TIMESTAMP);
 
     private final String[] path;
 
@@ -217,7 +239,9 @@ public final class FieldReference {
     }
 
     private static FieldReference parse(final CharSequence reference) {
-        final List<String> path = TOKENIZER.tokenize(reference);
+        final List<String> path = TOKENIZER.tokenize(reference).stream()
+                .map(ESCAPE_HANDLER::unescape)
+                .collect(Collectors.toList());
 
         final String key = path.remove(path.size() - 1);
         final boolean empty = path.isEmpty();

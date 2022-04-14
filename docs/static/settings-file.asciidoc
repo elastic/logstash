@@ -178,6 +178,17 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
 | `false`
 
+| `config.field_reference.escape_style`
+a| _EXPERIMENTAL_ setting that provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`.
+
+Current options are:
+
+* `PERCENT`: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
+* `AMPERSAND`: HTML-style `&#`+`DD`+`;` encoding of decimal Unicode code-points (`[` -> `&amp;#91;`; `]` -> `&amp;#91;`)
+* `NONE`: field names containing special characters _cannot_ be referenced.
+
+| `NONE`
+
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.
 | None

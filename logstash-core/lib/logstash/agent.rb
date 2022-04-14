@@ -66,6 +66,14 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
+    field_reference_escape_style_setting = settings.get_setting('config.field_reference.escape_style')
+    if field_reference_escape_style_setting.set?
+      logger.warn(I18n.t("logstash.settings.experimental.set", canonical_name: field_reference_escape_style_setting.name))
+    end
+    field_reference_escape_style = field_reference_escape_style_setting.value
+    logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
+    org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
+
     # Initialize, but do not start the webserver.
     @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
 

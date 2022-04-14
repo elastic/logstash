@@ -87,6 +87,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
+  option ["--field-reference-escape-style"], "STYLE",
+         I18n.t("logstash.runner.flag.field-reference-escape-style"),
+         :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
+         :attribute_name => "config.field_reference.escape_style"
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),

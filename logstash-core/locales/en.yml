@@ -219,6 +219,31 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
+        field-reference-escape-style: |+
+          Use the given STYLE when parsing field
+          references. This allows you to reference fields
+          whose name includes characters that are
+          meaningful in a field reference including square
+          brackets (`[` and `]`).
+
+          This feature is EXPERIMENTAL, and implementations
+          are subject to change.
+
+          Available escape styles are:
+           - `NONE`: escape sequences in field references
+             are not processed, which means fields that
+             contain special characters cannot be
+             referenced.
+           - `PERCENT`: characters may be encoded with
+             URI-style percent notation represeting UTF-8
+             bytes (`[` is `%5B`; `]` is `%5D`).
+             Unlike URI-encoding, literal percent characters
+             do not need to be escaped unless followed by a
+             sequence of 2 capital hexadecimal characters.
+           - `AMPERSAND`: characters may be encoded with
+             HTML-style ampersand-hash encoding notation
+             representing decimal unicode codepoints
+             (`[` is `&#91;`; `]` is `&#93;`).
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances
@@ -431,4 +456,8 @@ en:
         ambiguous: >-
           Both `%{canonical_name}` and its deprecated alias `%{deprecated_alias}` have been set.
           Please only set `%{canonical_name}`
+      experimental:
+        set: >-
+          The setting `%{canonical_name}` is EXPERIMENTAL and its implementation is subject to change
+          in a future release of Logstash
 
