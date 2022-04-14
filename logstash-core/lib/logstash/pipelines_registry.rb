@@ -24,8 +24,8 @@ module LogStash
       @pipeline = pipeline
       @loading = Concurrent::AtomicBoolean.new(false)
 
-      # this class uses a lock to ensure thread safe visibility.
-      @lock = Mutex.new
+      # this class uses a reentrant lock to ensure thread safe visibility.
+      @lock = Monitor.new
     end
 
     def terminated?
@@ -58,6 +58,12 @@ module LogStash
       @lock.synchronize do
         raise(ArgumentError, "invalid nil pipeline") if pipeline.nil?
         @pipeline = pipeline
+      end
+    end
+
+    def synchronize
+      @lock.synchronize do
+        yield self
       end
     end
 
@@ -265,8 +271,8 @@ module LogStash
     end
 
     # @return [Hash{String=>Pipeline}]
-    def running_pipelines
-      select_pipelines { |state| state.running? }
+    def running_pipelines(include_loading: false)
+      select_pipelines { |state| state.running? || (include_loading && state.loading?) }
     end
 
     def loading_pipelines
@@ -296,7 +302,7 @@ module LogStash
     # @return [Hash{String=>Pipeline}]
     def select_pipelines(&optional_state_filter)
       @states.each_with_object({}) do |(id, state), memo|
-        if state && (!block_given? || yield(state))
+        if state && (!block_given? || state.synchronize(&optional_state_filter))
           memo[id] = state.pipeline
         end
       end
