@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.logstash.RubyUtil;
 import org.logstash.common.ConfigVariableExpanderTest;
 import org.logstash.common.EnvironmentVariableProvider;
-import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.plugins.ConfigVariableExpander;
 

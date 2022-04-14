@@ -20,6 +20,7 @@
 
 package org.logstash.common;
 
+import co.elastic.logstash.api.Password;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.ConfigVariableExpander;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.logstash.secret.store.SecretStoreFactoryTest.MemoryStore;
 
 public class ConfigVariableExpanderTest {
@@ -84,7 +86,7 @@ public class ConfigVariableExpanderTest {
     }
 
     @Test
-    public void testPrecedenceOfSecretStoreValue() throws Exception {
+    public void testPrecedenceOfSecretStoreValue() {
         String key = "foo";
         String ssVal = "ssbar";
         String evVal = "evbar";
@@ -93,8 +95,9 @@ public class ConfigVariableExpanderTest {
                 Collections.singletonMap(key, ssVal),
                 Collections.singletonMap(key, evVal));
 
-        String expandedValue = (String) cve.expand("${" + key + ":" + defaultValue + "}");
-        Assert.assertEquals(ssVal, expandedValue);
+        Object expandedValue = cve.expand("${" + key + ":" + defaultValue + "}");
+        Assert.assertThat(expandedValue, instanceOf(Password.class));
+        Assert.assertEquals(ssVal, ((Password) expandedValue).getPassword());
     }
 
     @Test
@@ -110,7 +113,7 @@ public class ConfigVariableExpanderTest {
         Assert.assertEquals(evVal, expandedValue);
     }
 
-    // to be used by test IfVertexTest
+    // used by tests IfVertexTest, EventConditionTest
     public static ConfigVariableExpander getFakeCve(
             final Map<String, Object> ssValues, final Map<String, String> envVarValues) {
 
