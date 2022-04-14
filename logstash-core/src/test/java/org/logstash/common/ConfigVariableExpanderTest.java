@@ -110,7 +110,8 @@ public class ConfigVariableExpanderTest {
         Assert.assertEquals(evVal, expandedValue);
     }
 
-    private static ConfigVariableExpander getFakeCve(
+    // to be used by test IfVertexTest
+    public static ConfigVariableExpander getFakeCve(
             final Map<String, Object> ssValues, final Map<String, String> envVarValues) {
 
         MemoryStore ms = new MemoryStore();

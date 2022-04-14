@@ -531,7 +531,7 @@ public final class CompiledPipeline {
                     } else if (isOutput(dependency)) {
                         return outputDataset(dependency, datasets);
                     } else {
-                        // We know that it's an if vertex since the the input children are either
+                        // We know that it's an if vertex since the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
                         final SplitDataset ifDataset = split(

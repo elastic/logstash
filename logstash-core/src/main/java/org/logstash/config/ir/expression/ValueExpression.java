@@ -23,6 +23,8 @@ package org.logstash.config.ir.expression;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+
+import co.elastic.logstash.api.Password;
 import org.jruby.RubyHash;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.InvalidIRException;
@@ -44,7 +46,8 @@ public class ValueExpression extends Expression {
                 value instanceof String ||
                 value instanceof List ||
                 value instanceof RubyHash ||
-                value instanceof Instant
+                value instanceof Instant ||
+                value instanceof Password
         )) {
             // This *should* be caught by the treetop grammar, but we need this case just in case there's a bug
             // somewhere

@@ -20,6 +20,7 @@
 
 package org.logstash.plugins;
 
+import co.elastic.logstash.api.Password;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
@@ -87,7 +88,7 @@ public class ConfigVariableExpander implements AutoCloseable {
             if (secretStore != null) {
                 byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
                 if (ssValue != null) {
-                    return new String(ssValue, StandardCharsets.UTF_8);
+                    return new Password(new String(ssValue, StandardCharsets.UTF_8));
                 }
             }
 

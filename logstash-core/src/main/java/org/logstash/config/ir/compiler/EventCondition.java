@@ -26,9 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import co.elastic.logstash.api.Password;
 import org.jruby.Ruby;
 import org.jruby.RubyRegexp;
 import org.jruby.RubyString;
+import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
@@ -475,8 +477,22 @@ public interface EventCondition {
         private static EventCondition rubyFieldEquals(final Comparable<IRubyObject> left,
                                                       final String field) {
             final FieldReference reference = FieldReference.from(field);
+
+            final Comparable<IRubyObject> decryptedLeft = eventuallyDecryptPasswordValue(left);
             return event ->
-                    left.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
+                    decryptedLeft.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
+        }
+
+        private static Comparable<IRubyObject> eventuallyDecryptPasswordValue(Comparable<IRubyObject> value) {
+            if (!(value instanceof ConcreteJavaProxy)) {
+                return value;
+            }
+            if (!((ConcreteJavaProxy) value).getJavaClass().isAssignableFrom(Password.class)) {
+                return value;
+            }
+            Password password = ((ConcreteJavaProxy) value).toJava(Password.class);
+            String decryptedPassword = password.getPassword();
+            return RubyUtil.RUBY.newString(decryptedPassword);
         }
 
         private static EventCondition constant(final boolean value) {
