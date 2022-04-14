@@ -1,11 +1,13 @@
 package org.logstash.plugins;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
+import org.logstash.plugins.aliases.AliasPlugin;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -95,9 +97,9 @@ public class AliasRegistry {
         }
 
         @SuppressWarnings("unchecked")
-        private Map<String, Map<String, String>> decodeYaml() throws IOException {
+        private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(yamlContents, Map.class);
+            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
@@ -138,8 +140,8 @@ public class AliasRegistry {
                 return Collections.emptyMap();
             }
 
-            // decode yaml to nested maps
-            final Map<String, Map<String, String>> aliasedDescriptions;
+            // decode yaml to Map<PluginType, List<AliasPlugin>> structure
+            final Map<PluginType, List<AliasPlugin>> aliasedDescriptions;
             try {
                 aliasedDescriptions = aliasYml.decodeYaml();
             } catch (IOException ioex) {
@@ -157,15 +159,16 @@ public class AliasRegistry {
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
-                                                                 Map<String, Map<String, String>> aliasesYamlDefinitions) {
-            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
-            final Map<String, String> pluginDefinitions = aliasesYamlDefinitions.get(pluginType.name().toLowerCase());
-            if (pluginDefinitions == null) {
+                                                                 Map<PluginType, List<AliasPlugin>> aliasesYamlDefinitions) {
+            final List<AliasPlugin> aliasedPlugins = aliasesYamlDefinitions.get(pluginType);
+            if (Objects.isNull(aliasedPlugins)) {
                 return Collections.emptyMap();
             }
-            for (Map.Entry<String, String> aliasDef : pluginDefinitions.entrySet()) {
-                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasDef.getKey()), aliasDef.getValue());
-            }
+
+            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            aliasedPlugins.forEach(aliasPlugin -> {
+                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasPlugin.getAliasName()), aliasPlugin.getFrom());
+            });
             return defaultDefinitions;
         }
     }

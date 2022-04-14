@@ -1,6 +1,16 @@
 input:
-  aliased_input1: beats
-  aliased_input2: tcp
+  - alias: aliased_input1
+    from: beats
+    docs:
+      - replace: ":plugin: beats"
+        with: ":plugin: elastic_agent"
+      - replace: ":plugin-uc: Beats"
+        with: ":plugin-uc: Elastic Agent"
+      - replace: ":plugin-singular: Beat"
+        with: ":plugin-singular: Elastic Agent"
+  - alias: aliased_input2
+    from: tcp
 
 filter:
-  aliased_filter: json
+  - alias: aliased_filter
+    from: json
