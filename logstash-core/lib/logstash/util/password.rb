@@ -20,4 +20,5 @@
 
 module LogStash; module Util
     java_import "co.elastic.logstash.api.Password"
+    java_import "org.logstash.util.PasswordValidator"
 end; end # class LogStash::Util::Password
