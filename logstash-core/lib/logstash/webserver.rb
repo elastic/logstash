@@ -125,7 +125,8 @@ module LogStash
       if options.include?(:auth_basic)
         username = options[:auth_basic].fetch(:username)
         password = options[:auth_basic].fetch(:password)
-        app = Rack::Auth::Basic.new(app, "logstash-api") { |u, p| u == username && p == password.value }
+        validated_password = Setting::ValidatedPassword.new("api.auth.basic.password", password).freeze
+        app = Rack::Auth::Basic.new(app, "logstash-api") { |u, p| u == username && p == validated_password.value.value }
       end
 
       @app = app

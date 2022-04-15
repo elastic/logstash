@@ -23,6 +23,7 @@ require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
 
 module LogStash
+
   class Settings
 
     include LogStash::Util::SubstitutionVariables
@@ -539,6 +540,24 @@ module LogStash
 
       def validate(value)
         super(value)
+      end
+    end
+
+    class ValidatedPassword < Setting::Password
+      def initialize(name, value)
+        super(name, value, true)
+      end
+
+      def coerce(password)
+        if password && !password.kind_of?(::LogStash::Util::Password)
+          raise(ArgumentError, "Setting `#{name}` could not coerce LogStash::Util::Password value to password")
+        end
+
+        result = LogStash::Util::PasswordValidator.new().validate(password.value)
+        if result.length() > 0
+          raise(ArgumentError, "#{result}")
+        end
+        password
       end
     end
 
