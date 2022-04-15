@@ -34,7 +34,7 @@ public class ExpressionSubstitution {
                     return constructor.newInstance(unaryBoolExp.getSourceWithMetadata(), substitutedExp);
                 }
             } else if (expression instanceof ValueExpression && !(expression instanceof RegexValueExpression) && (((ValueExpression) expression).get() != null)) {
-                Object expanded = CompiledPipeline.expandConfigVariable(cve, ((ValueExpression) expression).get());
+                Object expanded = CompiledPipeline.expandConfigVariable(cve, ((ValueExpression) expression).get(), true);
                 return new ValueExpression(expression.getSourceWithMetadata(), expanded);
             }
 

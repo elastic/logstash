@@ -22,6 +22,7 @@ package org.logstash.plugins;
 
 import co.elastic.logstash.api.Password;
 import org.logstash.common.EnvironmentVariableProvider;
+import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 
@@ -71,9 +72,10 @@ public class ConfigVariableExpander implements AutoCloseable {
      * If a substitution variable is not found, the value is return unchanged
      *
      * @param value Config value in which substitution variables, if any, should be replaced.
+     * @param keepSecrets True if secret stores resolved variables must be kept secret in a Password instance
      * @return Config value with any substitution variables replaced
      */
-    public Object expand(Object value) {
+    public Object expand(Object value, boolean keepSecrets) {
         String variable;
         if (value instanceof String) {
             variable = (String) value;
@@ -88,7 +90,11 @@ public class ConfigVariableExpander implements AutoCloseable {
             if (secretStore != null) {
                 byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
                 if (ssValue != null) {
-                    return new Password(new String(ssValue, StandardCharsets.UTF_8));
+                    if (keepSecrets) {
+                        return new Password(new String(ssValue, StandardCharsets.UTF_8));
+                    } else {
+                        return new String(ssValue, StandardCharsets.UTF_8);
+                    }
                 }
             }
 
@@ -111,6 +117,10 @@ public class ConfigVariableExpander implements AutoCloseable {
         } else {
             return variable;
         }
+    }
+
+    public Object expand(Object value) {
+        return expand(value, false);
     }
 
     @Override

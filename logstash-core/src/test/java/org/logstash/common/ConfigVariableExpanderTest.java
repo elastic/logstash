@@ -86,7 +86,7 @@ public class ConfigVariableExpanderTest {
     }
 
     @Test
-    public void testPrecedenceOfSecretStoreValue() {
+    public void testPrecedenceOfSecretStoreValue() throws Exception {
         String key = "foo";
         String ssVal = "ssbar";
         String evVal = "evbar";
@@ -95,7 +95,21 @@ public class ConfigVariableExpanderTest {
                 Collections.singletonMap(key, ssVal),
                 Collections.singletonMap(key, evVal));
 
-        Object expandedValue = cve.expand("${" + key + ":" + defaultValue + "}");
+        String expandedValue = (String) cve.expand("${" + key + ":" + defaultValue + "}");
+        Assert.assertEquals(ssVal, expandedValue);
+    }
+
+    @Test
+    public void testPrecedenceOfSecretStoreValueKeepingSecrets() {
+        String key = "foo";
+        String ssVal = "ssbar";
+        String evVal = "evbar";
+        String defaultValue = "defaultbar";
+        ConfigVariableExpander cve = getFakeCve(
+                Collections.singletonMap(key, ssVal),
+                Collections.singletonMap(key, evVal));
+
+        Object expandedValue = cve.expand("${" + key + ":" + defaultValue + "}", true);
         Assert.assertThat(expandedValue, instanceOf(Password.class));
         Assert.assertEquals(ssVal, ((Password) expandedValue).getPassword());
     }

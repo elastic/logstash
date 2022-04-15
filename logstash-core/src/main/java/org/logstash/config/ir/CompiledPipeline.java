@@ -243,32 +243,40 @@ public final class CompiledPipeline {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs, boolean keepSecrets) {
         Map<String, Object> expandedConfig = new HashMap<>();
         for (Map.Entry<String, Object> e : configArgs.entrySet()) {
-            expandedConfig.put(e.getKey(), expandConfigVariable(cve, e.getValue()));
+            expandedConfig.put(e.getKey(), expandConfigVariable(cve, e.getValue(), keepSecrets));
         }
         return expandedConfig;
     }
 
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+        return expandConfigVariables(cve, configArgs, false);
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand) {
+    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand, boolean keepSecrets) {
         if (valueToExpand instanceof List) {
             List list = (List) valueToExpand;
             List<Object> expandedObjects = new ArrayList<>();
             for (Object o : list) {
-                expandedObjects.add(cve.expand(o));
+                expandedObjects.add(cve.expand(o, keepSecrets));
             }
             return expandedObjects;
         }
         if (valueToExpand instanceof Map) {
             // hidden recursion here expandConfigVariables -> expandConfigVariable
-            return expandConfigVariables(cve, (Map<String, Object>) valueToExpand);
+            return expandConfigVariables(cve, (Map<String, Object>) valueToExpand, keepSecrets);
         }
         if (valueToExpand instanceof String) {
-            return cve.expand(valueToExpand);
+            return cve.expand(valueToExpand, keepSecrets);
         }
         return valueToExpand;
+    }
+
+    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand) {
+        return expandConfigVariable(cve, valueToExpand, false);
     }
 
     /**
