@@ -275,8 +275,8 @@ public final class CompiledPipeline {
         return valueToExpand;
     }
 
-    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand) {
-        return expandConfigVariable(cve, valueToExpand, false);
+    public static Object expandConfigVariableKeepingSecrets(ConfigVariableExpander cve, Object valueToExpand) {
+        return expandConfigVariable(cve, valueToExpand, true);
     }
 
     /**
