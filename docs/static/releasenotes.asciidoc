@@ -65,7 +65,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-3]]
 === Logstash 7.17.3 Release Notes
 
-* There are no user facing changes in this release.
+No user facing changes in this release.
 
 [[logstash-7-17-2]]
 === Logstash 7.17.2 Release Notes
