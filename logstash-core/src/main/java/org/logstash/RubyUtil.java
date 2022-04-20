@@ -59,8 +59,11 @@ import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
+import org.logstash.ext.JrubyRecentMemoryReadClientExt;
+import org.logstash.ext.JrubyRecentMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.ext.JrubyWrappedSynchronousRingBufferExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.AbstractSimpleMetricExt;
@@ -117,11 +120,15 @@ public final class RubyUtil {
 
     public static final RubyClass MEMORY_WRITE_CLIENT_CLASS;
 
+    public static final RubyClass RECENT_MEMORY_WRITE_CLIENT_CLASS;
+
     public static final RubyClass ACKED_WRITE_CLIENT_CLASS;
 
     public static final RubyClass ABSTRACT_WRAPPED_QUEUE_CLASS;
 
     public static final RubyClass WRAPPED_SYNCHRONOUS_QUEUE_CLASS;
+
+    public static final RubyClass WRAPPED_SYNCHRONOUS_RING_BUFFER_CLASS;
 
     public static final RubyClass WRAPPED_ACKED_QUEUE_CLASS;
 
@@ -431,6 +438,10 @@ public final class RubyUtil {
             ABSTRACT_WRITE_CLIENT_CLASS, JrubyMemoryWriteClientExt::new,
             JrubyMemoryWriteClientExt.class
         );
+        RECENT_MEMORY_WRITE_CLIENT_CLASS = setupLogstashClass(
+            ABSTRACT_WRITE_CLIENT_CLASS, JrubyRecentMemoryWriteClientExt::new,
+            JrubyRecentMemoryWriteClientExt.class
+        );
         ACKED_WRITE_CLIENT_CLASS = setupLogstashClass(
             ABSTRACT_WRITE_CLIENT_CLASS, JrubyAckedWriteClientExt::new,
             JrubyAckedWriteClientExt.class
@@ -438,6 +449,10 @@ public final class RubyUtil {
         WRAPPED_SYNCHRONOUS_QUEUE_CLASS = setupLogstashClass(
             ABSTRACT_WRAPPED_QUEUE_CLASS, JrubyWrappedSynchronousQueueExt::new,
             JrubyWrappedSynchronousQueueExt.class
+        );
+        WRAPPED_SYNCHRONOUS_RING_BUFFER_CLASS = setupLogstashClass(
+            ABSTRACT_WRAPPED_QUEUE_CLASS, JrubyWrappedSynchronousRingBufferExt::new,
+            JrubyWrappedSynchronousRingBufferExt.class
         );
         WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(
             ABSTRACT_WRAPPED_QUEUE_CLASS, JRubyWrappedAckedQueueExt::new,
