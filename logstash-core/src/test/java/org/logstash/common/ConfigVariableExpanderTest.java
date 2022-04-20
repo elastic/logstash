@@ -28,8 +28,7 @@ import org.logstash.secret.SecretIdentifier;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
-
-import static org.logstash.secret.store.SecretStoreFactoryTest.MemoryStore;
+import org.logstash.secret.MemoryStore;
 
 public class ConfigVariableExpanderTest {
 

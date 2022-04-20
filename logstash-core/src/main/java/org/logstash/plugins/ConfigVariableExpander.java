@@ -27,6 +27,7 @@ import org.logstash.secret.store.SecretStore;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.logstash.common.SubstitutionVariables;
 
 /**
  * Expand the configuration variables used in pipeline configuration, bringing them from secret store or from the
@@ -34,9 +35,7 @@ import java.util.regex.Pattern;
  * */
 public class ConfigVariableExpander implements AutoCloseable {
 
-    private static String SUBSTITUTION_PLACEHOLDER_REGEX = "\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}";
-
-    private Pattern substitutionPattern = Pattern.compile(SUBSTITUTION_PLACEHOLDER_REGEX);
+    private final Pattern substitutionPattern = SubstitutionVariables.SUBSTITUTION_PLACEHOLDER_REGEX;
     private SecretStore secretStore;
     private EnvironmentVariableProvider envVarProvider;
 

@@ -24,13 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.secret.MemoryStore;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.backend.JavaKeyStore;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +56,7 @@ public class SecretStoreFactoryTest {
     @Test
     public void testAlternativeImplementation() {
         SecureConfig secureConfig = new SecureConfig();
-        secureConfig.add("keystore.classname", "org.logstash.secret.store.SecretStoreFactoryTest$MemoryStore".toCharArray());
+        secureConfig.add("keystore.classname", "org.logstash.secret.MemoryStore".toCharArray());
         SecretStore secretStore = secretStoreFactory.load(secureConfig);
         assertThat(secretStore).isInstanceOf(MemoryStore.class);
         validateMarker(secretStore);
@@ -148,62 +147,6 @@ public class SecretStoreFactoryTest {
     private void validateMarker(SecretStore secretStore) {
         byte[] marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
-    }
-
-    /**
-     * Valid alternate implementation
-     */
-    public static class MemoryStore implements SecretStore {
-
-        Map<SecretIdentifier, ByteBuffer> secrets = new HashMap(1);
-
-        public MemoryStore() {
-            persistSecret(LOGSTASH_MARKER, LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
-        }
-
-        @Override
-        public SecretStore create(SecureConfig secureConfig) {
-            return this;
-        }
-
-        @Override
-        public void delete(SecureConfig secureConfig) {
-            secrets.clear();
-        }
-
-        @Override
-        public SecretStore load(SecureConfig secureConfig) {
-            return this;
-        }
-
-        @Override
-        public boolean exists(SecureConfig secureConfig) {
-            return true;
-        }
-
-        @Override
-        public Collection<SecretIdentifier> list() {
-            return secrets.keySet();
-        }
-
-        @Override
-        public void persistSecret(SecretIdentifier id, byte[] secret) {
-            secrets.put(id, ByteBuffer.wrap(secret));
-        }
-
-        @Override
-        public void purgeSecret(SecretIdentifier id) {
-            secrets.remove(id);
-        }
-
-        @Override
-        public boolean containsSecret(SecretIdentifier id) { return secrets.containsKey(id); }
-
-        @Override
-        public byte[] retrieveSecret(SecretIdentifier id) {
-            ByteBuffer bb = secrets.get(id);
-            return bb != null ? bb.array() : null;
-        }
     }
 
 }
