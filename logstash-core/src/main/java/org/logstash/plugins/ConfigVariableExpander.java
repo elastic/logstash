@@ -75,47 +75,44 @@ public class ConfigVariableExpander implements AutoCloseable {
      * @return Config value with any substitution variables replaced
      */
     public Object expand(Object value, boolean keepSecrets) {
-        String variable;
-        if (value instanceof String) {
-            variable = (String) value;
-        } else {
+        if (!(value instanceof String)) {
             return value;
         }
 
+        String variable = (String) value;
+
         Matcher m = substitutionPattern.matcher(variable);
-        if (m.matches()) {
-            String variableName = m.group("name");
+        if (!m.matches()) {
+            return variable;
+        }
+        String variableName = m.group("name");
 
-            if (secretStore != null) {
-                byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
-                if (ssValue != null) {
-                    if (keepSecrets) {
-                        return new SecretVariable(variableName, new String(ssValue, StandardCharsets.UTF_8));
-                    } else {
-                        return new String(ssValue, StandardCharsets.UTF_8);
-                    }
+        if (secretStore != null) {
+            byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
+            if (ssValue != null) {
+                if (keepSecrets) {
+                    return new SecretVariable(variableName, new String(ssValue, StandardCharsets.UTF_8));
+                } else {
+                    return new String(ssValue, StandardCharsets.UTF_8);
                 }
             }
+        }
 
-            if (envVarProvider != null) {
-                String evValue = envVarProvider.get(variableName);
-                if (evValue != null) {
-                    return evValue;
-                }
+        if (envVarProvider != null) {
+            String evValue = envVarProvider.get(variableName);
+            if (evValue != null) {
+                return evValue;
             }
+        }
 
-            String defaultValue = m.group("default");
-            if (defaultValue != null) {
-                return defaultValue;
-            }
-
+        String defaultValue = m.group("default");
+        if (defaultValue == null) {
             throw new IllegalStateException(String.format(
                     "Cannot evaluate `%s`. Replacement variable `%s` is not defined in a Logstash " +
                             "secret store or an environment entry and there is no default value given.",
                     variable, variableName));
-        } else {
-            return variable;
         }
+        return defaultValue;
     }
 
     public Object expand(Object value) {
