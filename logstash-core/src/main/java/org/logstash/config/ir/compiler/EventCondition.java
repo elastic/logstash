@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import co.elastic.logstash.api.Password;
 import org.jruby.Ruby;
 import org.jruby.RubyRegexp;
 import org.jruby.RubyString;
@@ -59,6 +58,7 @@ import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.secret.SecretVariable;
 
 /**
  * A pipeline execution "if" condition, compiled from the {@link BooleanExpression} of an
@@ -478,21 +478,20 @@ public interface EventCondition {
                                                       final String field) {
             final FieldReference reference = FieldReference.from(field);
 
-            final Comparable<IRubyObject> decryptedLeft = eventuallyDecryptPasswordValue(left);
+            final Comparable<IRubyObject> decryptedLeft = eventuallyDecryptSecretVariable(left);
             return event ->
                     decryptedLeft.equals(Rubyfier.deep(RubyUtil.RUBY, event.getEvent().getUnconvertedField(reference)));
         }
 
-        private static Comparable<IRubyObject> eventuallyDecryptPasswordValue(Comparable<IRubyObject> value) {
+        private static Comparable<IRubyObject> eventuallyDecryptSecretVariable(Comparable<IRubyObject> value) {
             if (!(value instanceof ConcreteJavaProxy)) {
                 return value;
             }
-            if (!((ConcreteJavaProxy) value).getJavaClass().isAssignableFrom(Password.class)) {
+            if (!((ConcreteJavaProxy) value).getJavaClass().isAssignableFrom(SecretVariable.class)) {
                 return value;
             }
-            Password password = ((ConcreteJavaProxy) value).toJava(Password.class);
-            String decryptedPassword = password.getPassword();
-            return RubyUtil.RUBY.newString(decryptedPassword);
+            SecretVariable secret = ((ConcreteJavaProxy) value).toJava(SecretVariable.class);
+            return RubyUtil.RUBY.newString(secret.getSecretValue());
         }
 
         private static EventCondition constant(final boolean value) {

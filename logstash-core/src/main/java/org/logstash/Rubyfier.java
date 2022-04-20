@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import co.elastic.logstash.api.Password;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBignum;
@@ -41,6 +40,7 @@ import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.secret.SecretVariable;
 
 public final class Rubyfier {
 
@@ -132,7 +132,7 @@ public final class Rubyfier {
                 runtime, (Timestamp) input
             )
         );
-        converters.put(Password.class, JAVAUTIL_CONVERTER);
+        converters.put(SecretVariable.class, JAVAUTIL_CONVERTER);
         return converters;
     }
 

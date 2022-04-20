@@ -20,11 +20,11 @@
 
 package org.logstash.common;
 
-import co.elastic.logstash.api.Password;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.SecretIdentifier;
+import org.logstash.secret.SecretVariable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -110,8 +110,8 @@ public class ConfigVariableExpanderTest {
                 Collections.singletonMap(key, evVal));
 
         Object expandedValue = cve.expand("${" + key + ":" + defaultValue + "}", true);
-        Assert.assertThat(expandedValue, instanceOf(Password.class));
-        Assert.assertEquals(ssVal, ((Password) expandedValue).getPassword());
+        Assert.assertThat(expandedValue, instanceOf(SecretVariable.class));
+        Assert.assertEquals(ssVal, ((SecretVariable) expandedValue).getSecretValue());
     }
 
     @Test
