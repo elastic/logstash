@@ -227,7 +227,7 @@ public class DeadLetterQueueWriterTest {
     }
 
     @Test
-    public void testRemoveOldestSegmentWhenRetainedSizeIsExceededAndFifoModeIsEnabled() throws IOException {
+    public void testRemoveOldestSegmentWhenRetainedSizeIsExceededAndDropOlderModeIsEnabled() throws IOException {
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
         long startTime = System.currentTimeMillis();

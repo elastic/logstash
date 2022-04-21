@@ -76,7 +76,7 @@ public class DeadLetterQueueFactory {
      * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
      *                     that would make the size of this dlq greater than this value
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
-     * @param storageType overwriting type in case of queue full, fifo or drop_newer.
+     * @param storageType overwriting type in case of queue full: drop_older or drop_newer.
      * @return The write manager for the specific id's dead-letter-queue context
      */
     public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval, QueueStorageType storageType) {

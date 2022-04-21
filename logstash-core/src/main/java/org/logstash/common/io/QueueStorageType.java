@@ -29,7 +29,7 @@ public enum QueueStorageType {
             case "drop_older":
                 return DROP_OLDER;
             default:
-                throw new IllegalArgumentException("Invalid queue type: " + value + ", admitted values are drop_newer or fifo");
+                throw new IllegalArgumentException("Invalid queue type: " + value + ", admitted values are drop_newer or drop_newer");
         }
     }
 }
