@@ -83,14 +83,14 @@ output {
     elasticsearch {
       hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
       manage_template => false
-      index => "%{[@metadata][beat]}-%{[@metadata][version]}" <3>
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}" <1>
       user => "elastic"
       password => "secret"
     }
   }
 }
 -----
-<1><3> Set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`
+<1> Set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`
 if you are disabling the use of Data Streams in your configuration. Data Streams is
 enabled by default starting from 8.0.
 <2> Set the `pipeline` option to `%{[@metadata][pipeline]}`. This setting
