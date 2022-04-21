@@ -20,14 +20,14 @@
 package org.logstash.common.io;
 
 public enum QueueStorageType {
-    DROP_NEWER, FIFO;
+    DROP_NEWER, DROP_OLDER;
 
     public static QueueStorageType parse(String value) {
         switch (value) {
             case "drop_newer":
                 return DROP_NEWER;
-            case "fifo":
-                return FIFO;
+            case "drop_older":
+                return DROP_OLDER;
             default:
                 throw new IllegalArgumentException("Invalid queue type: " + value + ", admitted values are drop_newer or fifo");
         }
