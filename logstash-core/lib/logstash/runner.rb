@@ -49,8 +49,6 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/persisted_queue_config"
-require "set"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
@@ -64,8 +62,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::DefaultConfig,
-      LogStash::BootstrapCheck::PersistedQueueConfig
+      LogStash::BootstrapCheck::DefaultConfig
   ]
 
   # Node Settings
