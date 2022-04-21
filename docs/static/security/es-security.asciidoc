@@ -2,7 +2,6 @@
 [[es-security-on]]
 == {es} security on by default
 
-Security is on by default starting in 8.0.
 {es} generates its own default self-signed Secure Sockets Layer (SSL) certificates at startup. 
 
 {ls} must establish a Secure Sockets Layer (SSL) connection before it can transfer data to a secured {es} cluster. 
