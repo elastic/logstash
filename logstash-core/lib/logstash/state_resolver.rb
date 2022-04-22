@@ -45,7 +45,7 @@ module LogStash
 
       # If one of the running pipeline is not in the pipeline_configs, we assume that we need to
       # stop it and delete it in registry.
-      pipelines_registry.running_pipelines.keys
+      pipelines_registry.running_pipelines(include_loading: true).keys
         .select { |pipeline_id| !configured_pipelines.include?(pipeline_id) }
         .each { |pipeline_id| actions << LogStash::PipelineAction::StopAndDelete.new(pipeline_id) }
 
