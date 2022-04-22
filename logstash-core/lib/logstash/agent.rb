@@ -51,7 +51,7 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    # Mutex to synchonize in the exclusive method
+    # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
     @webserver_control_lock = Mutex.new
 
