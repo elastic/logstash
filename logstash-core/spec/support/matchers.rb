@@ -79,10 +79,24 @@ RSpec::Matchers.define :have_pipeline? do |pipeline_config|
     pipeline = nil
     try(30) do
       pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
+      expect(pipeline).to be_nil
+    end
+  end
+end
+
+RSpec::Matchers.define :have_stopped_pipeline? do |pipeline_config|
+  match do |agent|
+    pipeline = nil
+    try(30) do
+      pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
       expect(pipeline).to_not be_nil
     end
     # either the pipeline_id is not in the running pipelines OR it is but have different configurations
     expect(!agent.running_pipelines.keys.map(&:to_s).include?(pipeline_config.pipeline_id.to_s) ||  pipeline.config_str != pipeline_config.config_string).to be_truthy
+  end
+
+  match_when_negated do
+    raise "Not implemented"
   end
 end
 
