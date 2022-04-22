@@ -51,7 +51,7 @@ RSpec::Matchers.define :have_actions do |*expected|
     expect(actual.size).to eq(expected.size)
 
     expected_values = expected.each_with_object([]) do |i, obj|
-      klass_name = "LogStash::PipelineAction::#{i.first.capitalize}"
+      klass_name = "LogStash::PipelineAction::#{i.first}"
       obj << [klass_name, i.last]
     end
 
