@@ -34,6 +34,7 @@ module LogStash
   end
 
   [
+           Setting::Boolean.new("run_as.root", false),
             Setting::String.new("node.name", Socket.gethostname),
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),

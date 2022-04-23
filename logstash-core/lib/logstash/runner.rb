@@ -285,6 +285,12 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
+    if Process.euid() == 0
+      run_as_root = setting("run_as.root") == true
+      raise(RuntimeError,"can not run logstash as root") if !run_as_root
+      logger.warn("running logstash as root is not recommended because of security reasons") if run_as_root
+    end
+
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
       return 1
