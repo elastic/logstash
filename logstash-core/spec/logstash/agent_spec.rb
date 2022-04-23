@@ -176,7 +176,7 @@ describe LogStash::Agent do
 
             let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
-            it "does upgrade the new config" do
+            it "updates to the new config without stopping logstash" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
                 sleep(0.1) until subject.running_pipelines_count > 0 && subject.running_pipelines.values.first.ready?
@@ -185,9 +185,13 @@ describe LogStash::Agent do
               expect(subject.converge_state_and_update).to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
 
+              # Previously `transition_to_stopped` would be called - the loading pipeline would
+              # not be detected in the `while !Stud.stop?` loop in agent#execute, and the method would
+              # exit prematurely
+              joined = t.join(1)
+              expect(joined).to be(nil)
               Stud.stop!(t)
               t.join
-              subject.shutdown
             end
           end
 

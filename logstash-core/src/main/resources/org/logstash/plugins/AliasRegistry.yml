@@ -8,5 +8,3 @@ input:
         with: ":plugin-uc: Elastic Agent"
       - replace: ":plugin-singular: Beat"
         with: ":plugin-singular: Elastic Agent"
-  - alias: elastic_agent
-    from: temp

@@ -88,7 +88,7 @@ describe LogStash::PluginManager do
   describe "process alias yaml definition" do
     let(:path) { File.expand_path('plugin_aliases.yml', __dir__) }
 
-    it "should decode correctly" do
+    it "decodes correctly" do
       aliases = subject.load_aliases_definitions(path)
       expect(aliases['logstash-input-aliased_input1']).to eq('logstash-input-beats')
       expect(aliases['logstash-input-aliased_input2']).to eq('logstash-input-tcp')

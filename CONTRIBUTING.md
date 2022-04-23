@@ -68,6 +68,24 @@ Or go directly here for an exhaustive list: https://github.com/elastic/logstash/
 
 Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
 
+## Breaking Changes
+
+When introducing new behaviour, we favor implementing it in a non-breaking way that users can opt into, meaning users' existing configurations continue to work as they expect them to after upgrading Logstash.
+
+But sometimes it is necessary to introduce "breaking changes," whether that is removing an option that doesn't make sense anymore, changing the default value of a setting, or reimplementing a major component differently for performance or safety reasons.
+
+When we do so, we need to acknowledge the work we are placing on the rest of our users the next time they upgrade, and work to ensure that they can upgrade confidently.
+
+Where possible, we:
+ 1. first implement new behaviour in a way that users can explicitly opt into (MINOR),
+ 2. commuicate the pending change in behaviour, including the introduction of deprecation warnings when old behaviour is used (MINOR, potentially along-side #1),
+ 3. change the default to be new behaviour, communicate the breaking change, optionally allow users to opt out in favor of the old behaviour (MAJOR), and eventually
+ 4. remove the old behaviour's implementation from the code-base (MAJOR, potentially along-side #3).
+
+After a pull request is marked as a "breaking change," it becomes necessary to either:
+ - refactor into a non-breaking change targeted at next minor; OR
+ - split into non-breaking change targeted at next minor, plus breaking change targeted at next major
+
 ## Contributing to plugins
 
 Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own!

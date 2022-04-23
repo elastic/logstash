@@ -38,8 +38,8 @@ module LogStash::PluginManager
     yaml = YAML.safe_load(yaml_body) || {}
     result = {}
     yaml.each do |type, alias_defs|
-      alias_defs.each do |alias_name, aliased|
-        result["logstash-#{type}-#{alias_name}"] = "logstash-#{type}-#{aliased}"
+      alias_defs.each do |alias_def|
+        result["logstash-#{type}-#{alias_def["alias"]}"] = "logstash-#{type}-#{alias_def["from"]}"
       end
     end
     result
