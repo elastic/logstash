@@ -167,7 +167,7 @@ dependencies {
     runtimeOnly 'commons-logging:commons-logging:1.2'
     // also handle libraries relying on log4j 1.x to redirect their logs
     runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
-    implementation('org.reflections:reflections:0.9.11') {
+    implementation('org.reflections:reflections:0.9.12') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'commons-codec:commons-codec:1.14'
