@@ -261,10 +261,11 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
-# If using dead_letter_queue.enable: true, defines the behavior to apply when the dead_letter_queue.max_bytes is reached.
-# When an event would increase the size over `dead_letter_queue.max_bytes` the event is dropped if valued
-# `drop_newer` or remove the oldest segment if `drop_older`.
-#
+# If using dead_letter_queue.enable: true, defines the behavior to apply when the dead_letter_queue.max_bytes is reached,
+# could be "drop_newer" or "drop_older".
+# With drop_newer the newly inserted messages are dropped, logging an error line.
+# With drop_older setting, the oldest messages are dropped before insert the new ones.
+# Default value is "drop_newer".
 # dead_letter_queue.storage_policy: drop_newer
 
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
@@ -286,11 +287,6 @@
 # path.logs:
 #
 
-# Defines the behavior to apply when the dead_letter_queue.max_bytes is reached, could be "drop_newer" or "drop_older".
-# With drop_newer the newly inserted messages are dropped, logging an error line.
-# With drop_older setting, the oldest messages are dropped before insert the new ones.
-# Default value is "drop_newer".
-# dead_letter_queue.storage_policy: drop_newer
 
 # ------------ Other Settings --------------
 #
