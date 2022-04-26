@@ -123,7 +123,7 @@ module LogStash module Plugins
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
-      @alias_registry = alias_registry || Java::org.logstash.plugins.AliasRegistry.getInstance
+      @alias_registry = alias_registry || Java::org.logstash.plugins.AliasRegistry.instance
     end
 
     def setup!
