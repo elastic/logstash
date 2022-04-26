@@ -261,6 +261,12 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
+# If using dead_letter_queue.enable: true, defines the behavior to apply when the dead_letter_queue.max_bytes is reached.
+# When an event would increase the size over `dead_letter_queue.max_bytes` the event is dropped if valued
+# `drop_newer` or remove the oldest segment if `drop_older`.
+#
+# dead_letter_queue.storage_policy: drop_newer
+
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
 # Default is path.data/dead_letter_queue
 #
