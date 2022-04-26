@@ -60,12 +60,18 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
 
     # TODO This should probably push a batch at some point in the future when doing so
     # buys us some efficiency
-    events.forEach do |event|
-      decorate(event)
-      @queue << event
+    begin
+      stream_position = 0
+      events.forEach do |event|
+        decorate(event)
+        @queue << event
+        stream_position = stream_position + 1
+      end
+      ReceiveResponse.completed()
+    rescue => e
+      # maybe an IOException in enqueueing
+      ReceiveResponse.failed_at(stream_position, e)
     end
-
-    ReceiveResponse.completed()
   end
 
   def stop

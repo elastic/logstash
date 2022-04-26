@@ -58,19 +58,38 @@ public class PipelineBus {
             final ConcurrentHashMap<String, AddressState> addressesToInputs = outputsToAddressStates.get(sender);
 
             addressesToInputs.forEach((address, addressState) -> {
-                final Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream().map(e -> e.rubyClone(RubyUtil.RUBY));
+                Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream().map(e -> e.rubyClone(RubyUtil.RUBY));
 
                 PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
-                boolean sendWasSuccess = input != null && input.internalReceive(clones).wasSuccess();
+                boolean sendWasSuccess = false;
+                PipelineInput.ReceiveResponse lastResponse = null;
+                if (input != null) {
+                    lastResponse = input.internalReceive(clones);
+                    sendWasSuccess = lastResponse.wasSuccess();
+                }
 
                 // Retry send if the initial one failed
                 while (ensureDelivery && !sendWasSuccess) {
                     // We need to refresh the input in case the mapping has updated between loops
                     String message = String.format("Attempted to send event to '%s' but that address was unavailable. " +
                             "Maybe the destination pipeline is down or stopping? Will Retry.", address);
+                    if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                        message = String.format("Attempted to send event to '%s' but that address reached error condition. " +
+                                "Will Retry. Root cause %s", address, lastResponse.getCauseMessage());
+                    }
                     logger.warn(message);
+                    if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                        clones = events.stream()
+                                        .skip(lastResponse.getSequencePosition())
+                                        .map(e -> e.rubyClone(RubyUtil.RUBY));
+                    }
                     input = addressState.getInput();
-                    sendWasSuccess = input != null && input.internalReceive(clones).wasSuccess();
+                    sendWasSuccess = false;
+                    lastResponse = null;
+                    if (input != null) {
+                        lastResponse = input.internalReceive(clones);
+                        sendWasSuccess = lastResponse.wasSuccess();
+                    }
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {

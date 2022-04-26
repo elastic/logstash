@@ -34,22 +34,32 @@ public interface PipelineInput {
     final class ReceiveResponse {
         private final ReceiveStatus status;
         private final Integer sequencePosition;
+        private final Throwable cause;
 
         static ReceiveResponse closing() {
-            return new ReceiveResponse(ReceiveStatus.CLOSING, null);
+            return new ReceiveResponse(ReceiveStatus.CLOSING);
         }
 
         static ReceiveResponse completed() {
-            return new ReceiveResponse(ReceiveStatus.COMPLETED, null);
+            return new ReceiveResponse(ReceiveStatus.COMPLETED);
         }
 
-        static ReceiveResponse failedAt(int sequencePosition) {
-            return new ReceiveResponse(ReceiveStatus.FAIL, sequencePosition);
+        static ReceiveResponse failedAt(int sequencePosition, Throwable cause) {
+            return new ReceiveResponse(ReceiveStatus.FAIL, sequencePosition, cause);
+        }
+
+        private ReceiveResponse(ReceiveStatus status) {
+            this(status, null);
         }
 
         private ReceiveResponse(ReceiveStatus status, Integer sequencePosition) {
+            this(status, sequencePosition, null);
+        }
+
+        private ReceiveResponse(ReceiveStatus status, Integer sequencePosition, Throwable cause) {
             this.status = status;
             this.sequencePosition = sequencePosition;
+            this.cause = cause;
         }
 
         public ReceiveStatus getStatus() {
@@ -62,6 +72,10 @@ public interface PipelineInput {
 
         public boolean wasSuccess() {
             return status == PipelineInput.ReceiveStatus.COMPLETED;
+        }
+
+        public String getCauseMessage() {
+            return cause != null ? cause.getMessage() : "UNDEFINED ERROR";
         }
     }
 
