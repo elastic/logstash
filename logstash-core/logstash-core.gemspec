@@ -56,7 +56,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "mustermann", '~> 1.0.3'
   gem.add_runtime_dependency "sinatra", '~> 2.1.0' # pinned until GH-13777 is resolved
-  gem.add_runtime_dependency 'puma', '~> 5'
+  gem.add_runtime_dependency 'puma', '~> 5', '>= 5.6.2'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
   gem.add_runtime_dependency "chronic_duration", "~> 0.10"
 
