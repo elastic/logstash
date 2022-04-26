@@ -16,160 +16,32 @@ This section summarizes the changes in the following releases:
 [[logstash-8-2-0]]
 === Logstash 8.2.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.2.0
-
-* [DOC] precedence between environment variables and yml in docker https://github.com/elastic/logstash/pull/12198[#12198]
+60af28a0f - update google java format dependency (#13700) https://github.com/elastic/logstash/pull/13700
+43c657634 - Improve safety of stats retrieval from queue (#13942) https://github.com/elastic/logstash/pull/13942
 * Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13689[#13689]
-* Release notes for 8.1.0 https://github.com/elastic/logstash/pull/13828[#13828]
-* Doc: Refine content for generated CA in LS-ES security section https://github.com/elastic/logstash/pull/13834[#13834]
-* Add plugin uninstall release note https://github.com/elastic/logstash/pull/13867[#13867]
 * Print bundled jdk's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
 * Update Jackson databind in ingest-converter tool https://github.com/elastic/logstash/pull/13900[#13900]
-* Backport PR #13828 to main: Release notes for 8.1.0 https://github.com/elastic/logstash/pull/13911[#13911]
-* Backport PR #13867 to main: Add plugin uninstall release note https://github.com/elastic/logstash/pull/13912[#13912]
-* Removal of sys-v init.d scripts https://github.com/elastic/logstash/pull/13922[#13922]
 * Fix/flaky error tests in missed retries to central management https://github.com/elastic/logstash/pull/13941[#13941]
-* ensure puma is at least 5.6.4 https://github.com/elastic/logstash/pull/13944[#13944]
+d2739a875 - Updates the LogstashService launcher to use the JDK specified (#13946) (4 weeks ago) <Andrea Selva>
+
+
+* [DOC] precedence between environment variables and yml in docker https://github.com/elastic/logstash/pull/12198[#12198]
 * [doc] Remove references to sysv and upstart scripts when running logstash as a service. https://github.com/elastic/logstash/pull/13953[#13953]
 * Backport PR #13922 to 8.2: Removal of sys-v init.d scripts https://github.com/elastic/logstash/pull/13954[#13954]
 * Backport PR #13953 to 8.2: [doc] Remove references to sysv and upstart scripts when running logstash as a service. https://github.com/elastic/logstash/pull/13955[#13955]
-* [doc] Add Logstash to Logstash HTTP example configuration. https://github.com/elastic/logstash/pull/13973[#13973]
-* Fix window CI for PQ size checking https://github.com/elastic/logstash/pull/13981[#13981]
 * Backport PR #13981 to 8.2: Fix window CI for PQ size checking https://github.com/elastic/logstash/pull/13987[#13987]
-* Doc: Restructure source files for pipeline configuration https://github.com/elastic/logstash/pull/13990[#13990]
 * Backport PR #13973 to 8.2: [doc] Add Logstash to Logstash HTTP example configuration. https://github.com/elastic/logstash/pull/13999[#13999]
 * Backport PR #13834 to 8.2: Doc: Refine content for generated CA in LS-ES security section https://github.com/elastic/logstash/pull/14012[#14012]
 * Backport PR #13990 to 8.2: Doc: Restructure source files for pipeline configuration https://github.com/elastic/logstash/pull/14015[#14015]
-* Fix Bundled JDK docs to reflect JDK 11 https://github.com/elastic/logstash/pull/14021[#14021]
 * Backport PR #14021 to 8.2: Fix Bundled JDK docs to reflect JDK 11 https://github.com/elastic/logstash/pull/14022[#14022]
 
-=== Logstash Commits between 8.2 and 8.1.3
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.1.3..8.2"
-
-78a9c377f - (HEAD -> 8.2, origin/8.2) Fix Bundled JDK docs to reflect JDK 11 (#14021) (#14022) (13 hours ago) <github-actions[bot]>
-b0e6da487 - Doc: Restructure source files for pipeline configuration 8.2 (#14015) (4 days ago) <github-actions[bot]>
-61067e3ab - Doc: Refine content for generated CA in LS-ES security section 8.2 (#14012) (4 days ago) <github-actions[bot]>
-b98230eb8 - [doc] Add Logstash to Logstash HTTP example configuration. (#13999) (8 days ago) <github-actions[bot]>
-e38e7b761 - Fix window CI for PQ size checking (#13981) (#13987) (2 weeks ago) <github-actions[bot]>
-a323af499 - bump lock file for 8.2 (#13963) (4 weeks ago) <github-actions[bot]>
-fc8b03d55 - [doc] Remove references to sysv and upstart scripts when running logstash as a service. (#13953) (#13955) (4 weeks ago) <github-actions[bot]>
-2464055ea - Removal of sys-v init.d scripts (#13922) (#13954) (4 weeks ago) <github-actions[bot]>
-067abb808 - Update minor plugin versions in gemfile lock (#13951) (4 weeks ago) <github-actions[bot]>
-9bb352e47 - add lockfile from 8.1 (4 weeks ago) <João Duarte>
-682f07b70 - [DOC] precedence between environment variables and yml in docker (#12198) (4 weeks ago) <João Duarte>
-d2739a875 - Updates the LogstashService launcher to use the JDK specified (#13946) (4 weeks ago) <Andrea Selva>
-00e28b1d9 - [Test] Adds explicit unexpected JVM messages test, and simplifies regex in offline_spec (#13892) (4 weeks ago) <Rob Bavey>
-43c657634 - Improve safety of stats retrieval from queue (#13942) (4 weeks ago) <Rob Bavey>
-916ddf2c8 - Fix/flaky error tests in missed retries to central management (#13941) (4 weeks ago) <Andrea Selva>
-b545f55f3 - CI: disable testing against 8.1.1 for 8.x (#13938) (4 weeks ago) <Karol Bucek>
-c64ef889d - Doc: Logstash-to-Logstash communication  (#13926) (5 weeks ago) <Karen Metts>
-b4c54ab68 - [Java17] Add `--add-export` settings to restore JDK17 compatibility (#13825) (5 weeks ago) <Rob Bavey>
-71772074a - PQ size check for multiple pipelines (#13877) (5 weeks ago) <kaisecheng>
-1a5030bd6 - add backoff to checkpoint write (#13902) (5 weeks ago) <kaisecheng>
-e45fa8ae2 - Update branch choices in version bump workflow (5 weeks ago) <João Duarte>
-c544ecb38 - Update failing policy in Central Management fetcher and license checker if hit ES down node (#13689) (5 weeks ago) <Andrea Selva>
-01fd474dc - Fixes centos-7 package init scripts (5 weeks ago) <Andres Rodriguez>
-d64248f62 - Bump releases.json (#13921) (5 weeks ago) <Rob Bavey>
-de062add2 - Add plugin uninstall release note (#13867) (#13912) (6 weeks ago) <github-actions[bot]>
-2a586b982 - Release notes for 8.1.0 (#13828) (#13911) (6 weeks ago) <github-actions[bot]>
-1195b3842 - fix default argument handling in rake artifact task (#13904) (6 weeks ago) <João Duarte>
-8de70172a - Enable content write permission for pr backporter workflow (#13898) (6 weeks ago) <João Duarte>
-fbcbb7084 - Print bundled jdk's version in launch scripts when `LS_JAVA_HOME` is provided (#13880) (6 weeks ago) <Andrea Selva>
-32675c1a8 - Update Jackson databind in ingest-converter tool (#13900) (6 weeks ago) <Andrea Selva>
-27dc80f7e - Fix version bumper workflow target repo and user allow listing (6 weeks ago) <João Duarte>
-85eed0851 - Update and rename main.yml to version_bumps.yml (6 weeks ago) <João Duarte>
-ef69112b7 - Create main.yml (6 weeks ago) <João Duarte>
-a8bd90c22 - Quotes java executable path in case it contains spaces (#13881) (6 weeks ago) <Andrea Selva>
-8c79a0067 - Updates license checker after inclusion of et-orbi, fugit and raabro. (#13891) (6 weeks ago) <Andrea Selva>
-38fbe5aa0 - Remove pleaserun (via bin/system-install) usage (#12415) (7 weeks ago) <Andres Rodriguez>
-d71553e5d - [Doc] update queue.max_bytes and queue.page_capacity (#13833) (7 weeks ago) <kaisecheng>
-8edce8217 - Doc: Clarify monitoring settings (#13871) (7 weeks ago) <Karen Metts>
-a05936418 - Update CI versions after 8.1.0 (#13830) (7 weeks ago) <Andrea Selva>
-0887d7609 - Update pr backporter workflow (#13807) (7 weeks ago) <João Duarte>
-edfbabf2f - speed up artifact file listing (#13862) (7 weeks ago) <João Duarte>
-008449249 - Fix Logstash cli tools to use the selected JDK under Windows (#13839) (7 weeks ago) <Andrea Selva>
-68bacedf4 - Doc: Improve formatting and readability for pipeline ordering (#13084) (7 weeks ago) <Karen Metts>
-0369ba208 - artifacts: omit openssl_pkcs8_pure specs from built artifacts (#13715) (8 weeks ago) <Ry Biesemeyer>
-e9455ca81 - pipeline-info: increase safety of transforming stats (#13345) (8 weeks ago) <Ry Biesemeyer>
-4e226927f - Doc: Correct name for java_home env variable (#13827) (8 weeks ago) <Karen Metts>
-f10059ec7 - tools: allow version bump to use local lockfile as baseline (#13686) (8 weeks ago) <Ry Biesemeyer>
-a6c0e75b5 - api: avoid 5xx when stats/events not yet populated (#13424) (8 weeks ago) <Ry Biesemeyer>
-8bec0e658 - i18n: alias logstash.runner.configuration.* under logstash.agent.configuration (#13244) (8 weeks ago) <Ry Biesemeyer>
-022072c43 - geoip-db: support `http_proxy` environment variable (#13410) (8 weeks ago) <Ry Biesemeyer>
-11f64f92f - CI: update 8.x resolution after 8.0.1 release (#13831) (8 weeks ago) <Karol Bucek>
-c3d2f5750 - Build: avoid doing a redundant bundle install (#13820) (8 weeks ago) <Karol Bucek>
-75f72ee78 - Remove CI definition file. (#13822) (8 weeks ago) <Andrea Selva>
-21de1c1da - expose shutdown request state of pipeline (#13811) (8 weeks ago) <kaisecheng>
-47efdebf3 - update ci release file 7.17.1 (#13818) (8 weeks ago) <kaisecheng>
-44fce4091 - action: add docs preview link when docs change. (#13752) (9 weeks ago) <Ry Biesemeyer>
-5f43d16df - Refactor: drop useless rubygems patch (#13790) (9 weeks ago) <Karol Bucek>
-67fd99b5b - Feat: conservative plugin (dependency) updates by default (#13794) (9 weeks ago) <Karol Bucek>
-5cee5ab45 - Fix backport pr workflow conditional trigger (10 weeks ago) <João Duarte>
-c07568d81 - Doc: Set up redirects for deleted pages (#13772) (10 weeks ago) <Karen Metts>
-ac455ca13 - Set git identity in PR backport action (10 weeks ago) <João Duarte>
-db9318137 - Ensure pr backport actions fetches all git history (10 weeks ago) <João Duarte>
-75a343e7d - Fix backport PR action trigger condition (10 weeks ago) <João Duarte>
-b92ab7bf6 - Add workflow to create backport PRs based off of PR comments (10 weeks ago) <João Duarte>
-eec3f22bb - bump jdk to 11.0.14.1+1 (#13687) (10 weeks ago) <João Duarte>
-4f32c4fd4 - Refactor: revisit logstash bootstraping bits (#13791) (10 weeks ago) <Karol Bucek>
-f1b17be5d - Add reference to java 17 to README.md (#13765) (10 weeks ago) <Rob Bavey>
-fbeb63179 - Chore: fetch merge commit automatically with backport dev tool (#13485) (10 weeks ago) <Karol Bucek>
-07068ae04 - Deps: pin sinatra due (2.2.0) incompatibilities (#13784) (10 weeks ago) <Karol Bucek>
-90a85e1cd - Doc:Update qa readme with BUILD_JAVA_HOME setting info (#11985) (10 weeks ago) <Karen Metts>
-b4e213b31 - fix pqrepair log4j setting (#13726) (2 months ago) <kaisecheng>
-aceb682f1 - Unpin bundler, fix gem installer tests (#13762) (2 months ago) <Rob Bavey>
-e38b25ced - handle fully acked 0 byte PQ pages (#13692) (3 months ago) <kaisecheng>
-21adc90dd - Update ci/logstash_releases.json after 8.0.0 release (#13758) (3 months ago) <Andrea Selva>
-6313da290 - Doc Forwardport 8.0 release notes to main (#13750) (3 months ago) <Karen Metts>
-a15c9771c - Pin bundler to 2.3.6 to fix builder (#13753) (3 months ago) <Rob Bavey>
-e9e7838d8 - Docs remove homebrew (#13747) (3 months ago) <Ry Biesemeyer>
-04d99b938 - Doc: Update upgrade info for 8.0 in main (#13705) (3 months ago) <Karen Metts>
-330b28eb9 - [Test] Fix acceptance tests to deal with Java 8 removal (#13728) (3 months ago) <Rob Bavey>
-30b9ad884 - Update the Upgrading Using a Direct Download guide section. (#13684) (3 months ago) <Andrea Selva>
-999b6750d - Doc: Remove links to beats 7.x content (#13736) (3 months ago) <Karen Metts>
-81dcdc6de - Doc: Replace short link with full link (#13735) (3 months ago) <Karen Metts>
-d8f4784d6 - Publish CPU percentage also non Unix systems (#13727) (3 months ago) <Andrea Selva>
-7748182a9 - pqcheck pqrepair handle .tmp checkpoint (#13721) (3 months ago) <kaisecheng>
-60af28a0f - update google java format dependency (#13700) (3 months ago) <João Duarte>
-11e509401 - Update logstash-releases.json after 8.0.0-rc2 (#13722) (3 months ago) <Andrea Selva>
-3edef1e48 - Doc: Expand breaking changes (#13693) (3 months ago) <Karen Metts>
-df0aee71e - bump version to 8.2.0 (#13720) (3 months ago) <Andres Rodriguez>
-7e582e3db - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-6ab6c18ae - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-33419c672 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-775c353ec - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-259bf4837 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-dfa3a3c7e - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-ed2891529 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-22f6e0e28 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-714db7641 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-a501da6cf - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-08b9525e2 - Update add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-05b8ec8cd - Create add_to_projects_beta.yml (3 months ago) <Andres Rodriguez>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.1.3..8.2 *.release"
-Changed plugin versions:
-logstash-filter-http: 1.3.0 -> 1.4.0
-logstash-filter-kv: 4.6.0 -> 4.7.0
-logstash-input-beats: 6.2.6 -> 6.3.0
-logstash-input-elasticsearch: 4.12.2 -> 4.12.3
-logstash-input-http: 3.4.5 -> 3.5.0
-logstash-input-http_poller: 5.2.1 -> 5.3.0
-logstash-input-sqs: 3.2.0 -> 3.3.0
-logstash-integration-kafka: 10.9.0 -> 10.10.0
-logstash-mixin-http_client: 7.1.0 -> 7.2.0
-logstash-output-http: 5.3.0 -> 5.5.0
----------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
 
 *Http Filter - 1.4.0*
 
 * Feat: added ssl_supported_protocols option https://github.com/logstash-plugins/logstash-filter-http/pull/38[#38]
- 
 
 *Kv Filter - 4.7.0*
 
@@ -206,12 +78,9 @@ logstash-output-http: 5.3.0 -> 5.5.0
 *Http Output - 5.5.0*
 
 * Feat: added `ssl_supported_protocols` option https://github.com/logstash-plugins/logstash-output-http/pull/131[#131]
-
 * Fix retry indefinitely in termination process. This feature requires Logstash 8.1 https://github.com/logstash-plugins/logstash-output-http/pull/129[#129]
 * Docs: Add retry policy description https://github.com/logstash-plugins/logstash-output-http/pull/130[#130]
-
 * Introduce retryable unknown exceptions for "connection reset by peer" and "timeout" https://github.com/logstash-plugins/logstash-output-http/pull/127[#127]
-
 
 [[logstash-8-1-0]]
 === Logstash 8.1.0 Release Notes
