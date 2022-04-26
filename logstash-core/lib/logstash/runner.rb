@@ -285,10 +285,10 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    if Process.euid() == 0
-      run_as_root = setting("run_as.root") == true
-      raise(RuntimeError,"can not run logstash as root") if !run_as_root
-      logger.warn("running logstash as root is not recommended because of security reasons") if run_as_root
+    running_as_root = setting("on_superuser")
+    if Process.euid() == 0 && running_as_root.eql?("ALLOW") == false
+      logger.warn("Running logstash as root is not recommended because of security reasons") if running_as_root.eql?("WARN")
+      raise(RuntimeError, "Logstash cannot be run as root") if running_as_root.eql?("BLOCK")
     end
 
     if log_configuration_contains_javascript_usage?
