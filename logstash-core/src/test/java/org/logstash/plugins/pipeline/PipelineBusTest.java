@@ -214,9 +214,9 @@ public class PipelineBusTest {
         public LongAdder eventCount = new LongAdder();
 
         @Override
-        public boolean internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events) {
+        public ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events) {
             eventCount.add(events.count());
-            return true;
+            return ReceiveResponse.completed();
         }
 
         @Override

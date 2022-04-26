@@ -61,7 +61,7 @@ public class PipelineBus {
                 final Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream().map(e -> e.rubyClone(RubyUtil.RUBY));
 
                 PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
-                boolean sendWasSuccess = input != null && input.internalReceive(clones);
+                boolean sendWasSuccess = input != null && input.internalReceive(clones).wasSuccess();
 
                 // Retry send if the initial one failed
                 while (ensureDelivery && !sendWasSuccess) {
@@ -70,7 +70,7 @@ public class PipelineBus {
                             "Maybe the destination pipeline is down or stopping? Will Retry.", address);
                     logger.warn(message);
                     input = addressState.getInput();
-                    sendWasSuccess = input != null && input.internalReceive(clones);
+                    sendWasSuccess = input != null && input.internalReceive(clones).wasSuccess();
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {

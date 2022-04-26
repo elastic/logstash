@@ -55,7 +55,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   # To understand why this value is useful see Internal.send_to
   # Note, this takes a java Stream, not a ruby array
   def internalReceive(events)
-    return false if !@running.get()
+    return PipelineInput.ReceiveResponse.closing() if !@running.get()
 
     # TODO This should probably push a batch at some point in the future when doing so
     # buys us some efficiency
@@ -64,7 +64,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
       @queue << event
     end
 
-    true
+    PipelineInput.ReceiveResponse.completed()
   end
 
   def stop

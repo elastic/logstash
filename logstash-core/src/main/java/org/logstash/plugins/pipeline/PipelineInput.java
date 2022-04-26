@@ -28,13 +28,51 @@ import java.util.stream.Stream;
  * Represents the in endpoint of a pipeline to pipeline communication.
  * */
 public interface PipelineInput {
+
+    enum ReceiveStatus {CLOSING, COMPLETED, FAIL}
+
+    final class ReceiveResponse {
+        private final ReceiveStatus status;
+        private final Integer sequencePosition;
+
+        static ReceiveResponse closing() {
+            return new ReceiveResponse(ReceiveStatus.CLOSING, null);
+        }
+
+        static ReceiveResponse completed() {
+            return new ReceiveResponse(ReceiveStatus.COMPLETED, null);
+        }
+
+        static ReceiveResponse failedAt(int sequencePosition) {
+            return new ReceiveResponse(ReceiveStatus.FAIL, sequencePosition);
+        }
+
+        private ReceiveResponse(ReceiveStatus status, Integer sequencePosition) {
+            this.status = status;
+            this.sequencePosition = sequencePosition;
+        }
+
+        public ReceiveStatus getStatus() {
+            return status;
+        }
+
+        public Integer getSequencePosition() {
+            return sequencePosition;
+        }
+
+        public boolean wasSuccess() {
+            return status == PipelineInput.ReceiveStatus.COMPLETED;
+        }
+    }
+
     /**
      * Accepts an event. It might be rejected if the input is stopping.
      *
      * @param events a collection of events
-     * @return true if the event was successfully received
+     * @return response instance which contains the status of the execution, if events were successfully received
+     *      or reached an error or the input was closing.
      */
-    boolean internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events);
+    ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events);
 
     /**
      * @return true if the input is running
