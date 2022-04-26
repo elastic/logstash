@@ -42,7 +42,6 @@ LogStash::Environment.load_locale!
 require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/patches/clamp"
-require "logstash/patches/polyglot"
 require "logstash/settings"
 require "logstash/version"
 require 'logstash/plugins'
