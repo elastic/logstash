@@ -70,6 +70,8 @@ This section summarizes the changes in the following releases:
 ==== Notable issues fixed
 
 * Fixed a bug in retrieving pipeline configuration from central management and license validation which make Logstash process crash if a configured node of the Elasticsearch cluster is down. https://github.com/elastic/logstash/issues/12776[#12776]
+* Fix support for reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/issues/13993[#13993]
+* Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/issues/14017[#14017]
 
 ==== Plugins
 
