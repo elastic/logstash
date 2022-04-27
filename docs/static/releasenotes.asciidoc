@@ -66,7 +66,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
 
-* Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13925[#13925]
+* Add retry policy to Centralized Pipeline Management to handle Elasticsearch service unavailable https://github.com/elastic/logstash/pull/13925[#13925]
 
 ==== Plugins
 
