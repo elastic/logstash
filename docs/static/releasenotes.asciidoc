@@ -66,7 +66,10 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
 
-* Add retry policy to Centralized Pipeline Management to handle Elasticsearch service unavailable https://github.com/elastic/logstash/pull/13925[#13925]
+[[notable-7-17-4]]
+==== Notable issues fixed
+
+* Fixed a bug in retrieving pipeline configuration from central management and license validation which make Logstash process crash if a configured node of the Elasticsearch cluster is down. https://github.com/elastic/logstash/issues/12776[#12776]
 
 ==== Plugins
 
