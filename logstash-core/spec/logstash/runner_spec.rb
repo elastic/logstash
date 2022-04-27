@@ -658,7 +658,7 @@ describe LogStash::Runner do
         LogStash::SETTINGS.set("on_superuser", "BLOCK")
         expect(logger).to receive(:fatal) do |msg, hash|
           expect(msg).to eq("An unexpected error occurred!")
-          expect(hash[:error].to_s).to match("Logstash cannot be run as root")
+          expect(hash[:error].to_s).to match("Logstash cannot be run as root.")
         end
         expect(subject.run(args)).to eq(1)
       end
@@ -671,7 +671,7 @@ describe LogStash::Runner do
       it "runs successfully with warning message" do
         LogStash::SETTINGS.set("on_superuser", "WARN")
         expect(logger).not_to receive(:fatal)
-        expect(logger).to receive(:warn).with("Running logstash as root is not recommended because of security reasons")
+        expect(logger).to receive(:warn).with("NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future.")
         expect { subject.run(args) }.not_to raise_error
       end
     end
@@ -683,7 +683,7 @@ describe LogStash::Runner do
       it "runs successfully without any messages" do
         LogStash::SETTINGS.set("on_superuser", "BLOCK")
         expect(logger).not_to receive(:fatal)
-        expect(logger).not_to receive(:warn).with("Running logstash as root is not recommended because of security reasons")
+        expect(logger).not_to receive(:warn).with("NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future.")
         expect { subject.run(args) }.not_to raise_error
       end
     end

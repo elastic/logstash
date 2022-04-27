@@ -285,11 +285,7 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    running_as_root = setting("on_superuser")
-    if Process.euid() == 0 && running_as_root.eql?("ALLOW") == false
-      logger.warn("Running logstash as root is not recommended because of security reasons") if running_as_root.eql?("WARN")
-      raise(RuntimeError, "Logstash cannot be run as root") if running_as_root.eql?("BLOCK")
-    end
+    running_as_root
 
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
@@ -445,6 +441,21 @@ class LogStash::Runner < Clamp::StrictCommand
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
+
+  def running_as_root
+    running_as_root = setting("on_superuser")
+    running_as_root_allowed_options = { "allow" => "ALLOW", "warn" => "WARN", "block" => "BLOCK" }
+    if running_as_root_allowed_options.has_value?(running_as_root) == false
+      logger.warn("Allowed options on on_superuser are WARN, BLOCK and ALLOW. Falling back to default WARN.")
+      running_as_root = running_as_root_allowed_options["warn"]
+    end
+    if Process.euid() == 0 && running_as_root.eql?(running_as_root_allowed_options["allow"]) == false
+      deprecation_message_on_root = "NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future."
+      error_message_on_root = "Logstash cannot be run as root."
+      logger.warn(deprecation_message_on_root) if running_as_root.eql?(running_as_root_allowed_options["warn"])
+      raise(RuntimeError, error_message_on_root) if running_as_root.eql?(running_as_root_allowed_options["block"])
+    end
+  end
 
   def log_configuration_contains_javascript_usage?
      context = LoggerContext.getContext(false)

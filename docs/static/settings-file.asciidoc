@@ -313,4 +313,8 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
+| `on_superuser`
+| Flag to indicate properly utilizing superuser potentials when running Logstash. Offered options are `WARN`, `BLOCK` and `ALLOW`.
+| `WARN`
+
 |=======================================================================
