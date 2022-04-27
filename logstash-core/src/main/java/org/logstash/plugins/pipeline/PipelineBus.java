@@ -74,19 +74,19 @@ public class PipelineBus {
                     }
                     partialProcessing = ensureDelivery && !sendWasSuccess;
                     if (partialProcessing) {
-                        String message = String.format("Attempted to send event to '%s' but that address was unavailable. " +
-                                "Maybe the destination pipeline is down or stopping? Will Retry.", address);
-                        if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
-                            message = String.format("Attempted to send event to '%s' but that address reached error condition. " +
-                                    "Will Retry. Root cause %s", address, lastResponse.getCauseMessage());
-                        }
-                        logger.warn(message);
-
-                        if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                        if (lastResponse != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
                             // when last call to internalReceive generated a fail, restart from the
                             // fail position to avoid reprocessing of some events in the downstream.
                             lastFailedPosition = lastResponse.getSequencePosition();
+
+                            logger.warn("Attempted to send event to '{}' but that address reached error condition. " +
+                                    "Will Retry. Root cause {}", address, lastResponse.getCauseMessage());
+
+                        } else {
+                            logger.warn("Attempted to send event to '{}' but that address was unavailable. " +
+                                    "Maybe the destination pipeline is down or stopping? Will Retry.", address);
                         }
+
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
