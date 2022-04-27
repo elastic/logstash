@@ -1,12 +1,15 @@
 [[connecting-to-cloud]]
 === Sending data to Elastic Cloud (hosted Elasticsearch Service)
 
-Elastic Cloud is our our hosted Elasticsearch Service, and it is
-available on AWS, GCP, and Azure.
-{ess-trial}[You can try the Elasticsearch Service for free].
+Our hosted {ess} on https://cloud.elastic.co/[Elastic Cloud] simplifies safe, secure communication between {ls} and {es}. 
+When you configure the elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> with either the <<plugins-outputs-elasticsearch-cloud_auth,`cloud_auth` option>> or the <<plugins-outputs-elasticsearch-api_key,`api_key` option>>, no additional SSL configuration steps are needed.
 
-Logstash comes with two settings that simplify sending data to
-https://cloud.elastic.co/[Elastic Cloud]: Cloud ID and Cloud Auth. 
+Examples:
+
+* `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
+* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }``
+
+{ess-leadin-short}
 
 [[cloud-id]]
 ==== Cloud ID
