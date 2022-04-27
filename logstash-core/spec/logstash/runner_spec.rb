@@ -649,6 +649,8 @@ describe LogStash::Runner do
   describe "on_superuser" do
     subject { LogStash::Runner.new("") }
     let(:args) { ["-e", "input {} output {}"] }
+    let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
+    before(:each) { allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
 
     context "unintentionally running logstash as root" do
       before do
@@ -671,7 +673,7 @@ describe LogStash::Runner do
       it "runs successfully with warning message" do
         LogStash::SETTINGS.set("on_superuser", "WARN")
         expect(logger).not_to receive(:fatal)
-        expect(logger).to receive(:warn).with("NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future.")
+        expect(deprecation_logger_stub).to receive(:deprecated).with(/NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases./)
         expect { subject.run(args) }.not_to raise_error
       end
     end
@@ -683,7 +685,7 @@ describe LogStash::Runner do
       it "runs successfully without any messages" do
         LogStash::SETTINGS.set("on_superuser", "BLOCK")
         expect(logger).not_to receive(:fatal)
-        expect(logger).not_to receive(:warn).with("NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future.")
+        expect(deprecation_logger_stub).not_to receive(:deprecated).with(/NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases./)
         expect { subject.run(args) }.not_to raise_error
       end
     end

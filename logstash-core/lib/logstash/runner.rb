@@ -443,17 +443,13 @@ class LogStash::Runner < Clamp::StrictCommand
   end # def self.main
 
   def running_as_root
-    running_as_root = setting("on_superuser")
-    running_as_root_allowed_options = { "allow" => "ALLOW", "warn" => "WARN", "block" => "BLOCK" }
-    if running_as_root_allowed_options.has_value?(running_as_root) == false
-      logger.warn("Allowed options on on_superuser are WARN, BLOCK and ALLOW. Falling back to default WARN.")
-      running_as_root = running_as_root_allowed_options["warn"]
-    end
-    if Process.euid() == 0 && running_as_root.eql?(running_as_root_allowed_options["allow"]) == false
-      deprecation_message_on_root = "NOTICE: Running logstash as root is not recommended because of security reasons. This will be deprecated in the future."
-      error_message_on_root = "Logstash cannot be run as root."
-      logger.warn(deprecation_message_on_root) if running_as_root.eql?(running_as_root_allowed_options["warn"])
-      raise(RuntimeError, error_message_on_root) if running_as_root.eql?(running_as_root_allowed_options["block"])
+    on_superuser_setting = setting("on_superuser")
+    if Process.euid() == 0 && on_superuser_setting.eql?("ALLOW") == false
+      if on_superuser_setting.eql?("WARN")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases.")
+      else
+        raise(RuntimeError, "Logstash cannot be run as root.")
+      end
     end
   end
 
