@@ -66,37 +66,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.4
-
-* Backport PR #13689 to 7.17: Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13925[#13925]
-* ensure puma is at least 5.6.4 https://github.com/elastic/logstash/pull/13944[#13944]
-* Backport PR #13946 to 7.17: Updates the LogstashService launcher to use the JDK specified https://github.com/elastic/logstash/pull/13947[#13947]
-*  Deps: unpin jruby-openssl in logstash-core (for real) https://github.com/elastic/logstash/pull/13958[#13958]
-* Bump version to 7.17.4 https://github.com/elastic/logstash/pull/14004[#14004]
-* Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/pull/14018[#14018]
-* Backport PR #13944 to 7.17: ensure puma is at least 5.6.2 https://github.com/elastic/logstash/pull/14025[#14025]
-
-=== Logstash Commits between 7.17 and 7.17.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.3..7.17"
-
-2b0193c5a - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#14029) (23 hours ago) <github-actions[bot]>
-f4a928e0f - ensure puma is at least 5.6.2 (#13944) (#14025) (24 hours ago) <github-actions[bot]>
-08d51f40a - [7.17] PQ size check for multiple pipelines (#13877) | Fix window CI for PQ size checking (#13981) (#13989) (6 days ago) <kaisecheng>
-07f429227 - Updates the LogstashService launcher to use the JDK specified (#13946) (#13947) (7 days ago) <github-actions[bot]>
-5cf174cd0 - Bump version to 7.17.4 (#14004) (7 days ago) <João Duarte>
-6bb075890 - Release notes for 7.17.3 (#13985) (8 days ago) <Logstash Machine>
-0e0723a23 -  Deps: unpin jruby-openssl in logstash-core (#13958) (2 weeks ago) <Karol Bucek>
-2c253c563 - Backport PR #13689 to 7.17: Update failing policy in Central Management fetcher and license checker if hit ES down node (#13925) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.3..7.17 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.4 -> 6.2.5
-logstash-filter-dns: 3.1.4 -> 3.1.5
-logstash-input-elasticsearch: 4.12.2 -> 4.12.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13925[#13925]
 
 ==== Plugins
 
@@ -110,7 +80,7 @@ logstash-input-elasticsearch: 4.12.2 -> 4.12.3
 
 *Elasticsearch Input - 4.12.3*
 
-* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' headerhttps://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
+* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' header https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
 
 
 [[logstash-7-17-3]]
