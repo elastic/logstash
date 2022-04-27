@@ -321,7 +321,7 @@ class LogStash::Agent
   end
 
   def no_pipeline?
-    @pipelines_registry.running_pipelines.empty? && @pipelines_registry.loading_pipelines.empty?
+    @pipelines_registry.running_pipelines(include_loading: true).empty?
   end
 
   private
