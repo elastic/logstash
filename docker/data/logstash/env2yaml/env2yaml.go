@@ -93,6 +93,7 @@ func normalizeSetting(setting string) (string, error) {
 		"modules",
 		"path.logs",
 		"path.plugins",
+		"on_superuser",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",

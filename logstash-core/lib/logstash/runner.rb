@@ -285,6 +285,8 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
+    running_as_root
+
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
       return 1
@@ -439,6 +441,17 @@ class LogStash::Runner < Clamp::StrictCommand
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
+
+  def running_as_root
+    on_superuser_setting = setting("on_superuser")
+    if Process.euid() == 0 && on_superuser_setting.eql?("ALLOW") == false
+      if on_superuser_setting.eql?("WARN")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases.")
+      else
+        raise(RuntimeError, "Logstash cannot be run as root.")
+      end
+    end
+  end
 
   def log_configuration_contains_javascript_usage?
      context = LoggerContext.getContext(false)
