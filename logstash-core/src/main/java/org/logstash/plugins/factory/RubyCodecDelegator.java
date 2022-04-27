@@ -78,7 +78,6 @@ public class RubyCodecDelegator implements Codec {
             public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
                 // Expect only one argument, the LogStash::Event instantiated by the Ruby codec
                 final IRubyObject event = args[0];
-                // TODO should we check the type of the args[0] or assume it's always an RubyEvent?
                 eventConsumer.accept( ((JrubyEventExtLibrary.RubyEvent) event).getEvent().getData() );
                 return event;
             }
@@ -87,9 +86,6 @@ public class RubyCodecDelegator implements Codec {
         byte[] byteInput = new byte[buffer.remaining()];
         buffer.get(byteInput);
         final RubyString data = RubyUtil.RUBY.newString(new String(byteInput));
-        // this causes problem in passing data, it trigger an invocation to #force_encoding if the data is not
-        // already converted to RubyString before passing it
-//                final IRubyObject data = JavaUtil.convertJavaToRuby(RubyUtil.RUBY, byteInput);
         IRubyObject[] methodParams = new IRubyObject[]{data};
         pluginInstance.callMethod(this.currentContext, "decode", methodParams, consumerWrapper);
     }
