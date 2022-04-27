@@ -58,45 +58,43 @@ public class PipelineBus {
             final ConcurrentHashMap<String, AddressState> addressesToInputs = outputsToAddressStates.get(sender);
 
             addressesToInputs.forEach((address, addressState) -> {
-                Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream().map(e -> e.rubyClone(RubyUtil.RUBY));
-
-                PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
                 boolean sendWasSuccess = false;
                 PipelineInput.ReceiveResponse lastResponse = null;
-                if (input != null) {
-                    lastResponse = input.internalReceive(clones);
-                    sendWasSuccess = lastResponse.wasSuccess();
-                }
+                boolean partialProcessing;
+                int lastFailedPosition = 0;
+                do {
+                    Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream()
+                            .skip(lastFailedPosition)
+                            .map(e -> e.rubyClone(RubyUtil.RUBY));
 
-                // Retry send if the initial one failed
-                while (ensureDelivery && !sendWasSuccess) {
-                    // We need to refresh the input in case the mapping has updated between loops
-                    String message = String.format("Attempted to send event to '%s' but that address was unavailable. " +
-                            "Maybe the destination pipeline is down or stopping? Will Retry.", address);
-                    if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
-                        message = String.format("Attempted to send event to '%s' but that address reached error condition. " +
-                                "Will Retry. Root cause %s", address, lastResponse.getCauseMessage());
-                    }
-                    logger.warn(message);
-                    if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
-                        clones = events.stream()
-                                        .skip(lastResponse.getSequencePosition())
-                                        .map(e -> e.rubyClone(RubyUtil.RUBY));
-                    }
-                    input = addressState.getInput();
-                    sendWasSuccess = false;
-                    lastResponse = null;
+                    PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
                     if (input != null) {
                         lastResponse = input.internalReceive(clones);
                         sendWasSuccess = lastResponse.wasSuccess();
                     }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        logger.error("Sleep unexpectedly interrupted in bus retry loop", e);
+                    partialProcessing = ensureDelivery && !sendWasSuccess;
+                    if (partialProcessing) {
+                        String message = String.format("Attempted to send event to '%s' but that address was unavailable. " +
+                                "Maybe the destination pipeline is down or stopping? Will Retry.", address);
+                        if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                            message = String.format("Attempted to send event to '%s' but that address reached error condition. " +
+                                    "Will Retry. Root cause %s", address, lastResponse.getCauseMessage());
+                        }
+                        logger.warn(message);
+
+                        if (input != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                            // when last call to internalReceive generated a fail, restart from the
+                            // fail position to avoid reprocessing of some events in the downstream.
+                            lastFailedPosition = lastResponse.getSequencePosition();
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            logger.error("Sleep unexpectedly interrupted in bus retry loop", e);
+                        }
                     }
-                }
+                } while(partialProcessing);
             });
         }
     }

@@ -209,7 +209,8 @@ public class PipelineBusTest {
         bus.registerSender(output, addresses);
         int expectedReceiveInvocations = 2;
         CountDownLatch sendsCoupleOfCallsLatch = new CountDownLatch(expectedReceiveInvocations);
-        input = new TestFailPipelineInput(sendsCoupleOfCallsLatch, 1);
+        int positionOfFailure = 1;
+        input = new TestFailPipelineInput(sendsCoupleOfCallsLatch, positionOfFailure);
         bus.listen(input, address);
 
         final List<JrubyEventExtLibrary.RubyEvent> events = new ArrayList<>();
@@ -235,7 +236,7 @@ public class PipelineBusTest {
 
         // Verify
         assertThat(coupleOfCallsDone).isTrue();
-        assertThat(((TestFailPipelineInput)input).getLastBatchSize()).isEqualTo(2);
+        assertThat(((TestFailPipelineInput)input).getLastBatchSize()).isEqualTo(events.size() - positionOfFailure);
     }
 
     private JrubyEventExtLibrary.RubyEvent rubyEvent() {
