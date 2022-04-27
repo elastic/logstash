@@ -16,9 +16,11 @@
 # under the License.
 
 module ::LogStash::Plugins::Builtin
+  require 'logstash/plugins/builtin/dead_letter_pipeline/input'
   require 'logstash/plugins/builtin/pipeline/input'
   require 'logstash/plugins/builtin/pipeline/output'
 
   LogStash::PLUGIN_REGISTRY.add(:input, "pipeline", LogStash::Plugins::Builtin::Pipeline::Input)
   LogStash::PLUGIN_REGISTRY.add(:output, "pipeline", LogStash::Plugins::Builtin::Pipeline::Output)
+  LogStash::PLUGIN_REGISTRY.add(:input, "dead_letter_pipeline", LogStash::Plugins::Builtin::DeadLetterPipeline::Input)
 end

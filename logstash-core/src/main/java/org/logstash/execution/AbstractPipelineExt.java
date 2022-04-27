@@ -53,6 +53,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.failure.DLQFailureHandler;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -64,6 +65,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.plugins.ConfigVariableExpander;
+import org.logstash.plugins.pipeline.PipelineBus;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
@@ -133,7 +135,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractMetricExt metric;
 
-    private IRubyObject dlqWriter;
+    protected IRubyObject dlqWriter;
+
+    protected IRubyObject failureHandler;
 
     private PipelineReporterExt reporter;
 
@@ -274,23 +278,45 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return JavaUtil.convertJavaToUsableRubyObject(context.runtime, lir);
     }
 
-    @JRubyMethod(name = "dlq_writer")
-    public final IRubyObject dlqWriter(final ThreadContext context) {
+    protected final IRubyObject dlqWriter(final ThreadContext context, final IRubyObject agent) {
         if (dlqWriter == null) {
-            if (dlqEnabled(context).isTrue()) {
-                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
-                    context.runtime,
-                    DeadLetterQueueFactory.getWriter(
-                        pipelineId.asJavaString(),
-                        getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
-                    );
+            if (!getSetting(context, "pipeline.dead_letter_pipeline").isNil()) {
+                PipelineBus pipelineBus = agent.callMethod(context, "pipeline_bus").toJava(PipelineBus.class);
+                dlqWriter = getDeadLetterPipelineWriter(context, pipelineBus);
+            } else if (dlqEnabled(context).isTrue()) {
+                dlqWriter = getDlqFileWriter(context);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
         return dlqWriter;
+    }
+
+
+    @JRubyMethod(name = "dlq_writer")
+    public final IRubyObject dlqWriter(final ThreadContext context) {
+        return dlqWriter;
+    }
+
+    private IRubyObject getDeadLetterPipelineWriter(ThreadContext context, PipelineBus pipelineBus){
+        return JavaUtil.convertJavaToUsableRubyObject(
+                context.runtime,
+                DeadLetterQueueFactory.getWriter(
+                        pipelineId.asJavaString(),
+                        getSetting(context, "pipeline.dead_letter_pipeline").asJavaString(),
+                        pipelineBus)
+        );
+    }
+
+    private IRubyObject getDlqFileWriter(ThreadContext context) {
+        return JavaUtil.convertJavaToUsableRubyObject(
+                context.runtime,
+                DeadLetterQueueFactory.getWriter(
+                        pipelineId.asJavaString(),
+                        getSetting(context, "path.dead_letter_queue").asJavaString(),
+                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+        );
     }
 
     @JRubyMethod(name = "dlq_enabled?")

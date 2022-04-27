@@ -40,6 +40,9 @@
 #
 # pipeline.workers: 2
 #
+pipeline.dead_letter_pipeline: 'dlq'
+pipeline.failure_handler: "dead_letter"
+
 # How many events to retrieve from inputs before sending to filters+workers
 #
 # pipeline.batch.size: 125
@@ -78,7 +81,7 @@
 # of ECS for the individual pipeline in its `pipelines.yml` definition. Setting
 # it here will set the default for _all_ pipelines, including new ones.
 #
-# pipeline.ecs_compatibility: v8
+# pipeline.ecs_compatibility: disabled
 #
 # ------------ Pipeline Configuration Settings --------------
 #
@@ -97,7 +100,7 @@
 # Periodically check if the configuration has changed and reload the pipeline
 # This can also be triggered manually through the SIGHUP signal
 #
-# config.reload.automatic: false
+#config.reload.automatic: true
 #
 # How often to check if the pipeline configuration has changed (in seconds)
 # Note that the unit value (s) is required. Values without a qualifier (e.g. 60) 
@@ -246,7 +249,7 @@
 # ------------ Dead-Letter Queue Settings --------------
 # Flag to turn on dead-letter queue.
 #
-# dead_letter_queue.enable: false
+# dead_letter_queue.enable: true
 
 # If using dead_letter_queue.enable: true, the maximum size of each dead letter queue. Entries
 # will be dropped if they would increase the size of the dead letter queue beyond this setting.

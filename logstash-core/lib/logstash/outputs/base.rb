@@ -106,6 +106,41 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
   end
 
+  def do_receive(event)
+    begin
+      receive(event)
+    rescue => e
+      on_failure(event, e)
+    end
+  end
+
+  # Replace with failure_handler
+  def on_failure(event, cause)
+    on_failure_dlq(event, cause)
+  end
+
+  def on_failure_dlq(event, cause)
+    failure_message = {
+        "message" => cause.message,
+        "type"=> cause.class.to_s,
+        "stack_trace" => cause.backtrace,
+        "source" => {
+            "plugin_name" => config_name,
+            "plugin_id" => id
+        }
+    }
+    # Need to figure out the correct event shape here.
+    execution_context.dlq_writer.write(event, failure_message)
+  end
+
+  def on_failure_drop(event, cause)
+    event.cancel
+  end
+
+  def on_failure_crash(event, cause)
+    raise cause
+  end
+
   def workers_not_supported(message=nil)
     raise "This plugin (#{self.class.name}) is using the obsolete '#workers_not_supported' method. If you installed this plugin specifically on this Logstash version, it is not compatible. If you are a plugin author, please see https://www.elastic.co/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html for more info"
   end

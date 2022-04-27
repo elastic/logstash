@@ -156,10 +156,42 @@ class LogStash::Filters::Base < LogStash::Plugin
   public
   def do_filter(event, &block)
     time = java.lang.System.nanoTime
-    filter(event, &block)
+    begin
+      filter(event, &block)
+    rescue => cause
+      on_failure(event, cause)
+    end
     @slow_logger.on_event("event processing time", @original_params, event, java.lang.System.nanoTime - time)
   end
 
+  # Replace with failure_handler
+  def on_failure(event, cause)
+    on_failure_dlq(event, cause)
+  end
+  #
+  #
+  def on_failure_dlq(event, cause)
+    failure_message = {
+        "message" => cause.message,
+        "type"=> cause.class.to_s,
+        "stack_trace" => cause.backtrace,
+        "source" => {
+            "plugin_name" => config_name,
+            "plugin_id" => id
+        }
+    }
+    # Need to figure out the correct event shape here.
+    execution_context.dlq_writer.write(event, failure_message)
+    event.cancel
+  end
+
+  def on_failure_drop(event, cause)
+    event.cancel
+  end
+
+  def on_failure_crash(event, cause)
+    raise cause
+  end
 
   # in 1.5.0 multi_filter is meant to be used in the generated filter function in LogStash::Config::AST::Plugin only
   # and is temporary until we refactor the filter method interface to accept events list and return events list,

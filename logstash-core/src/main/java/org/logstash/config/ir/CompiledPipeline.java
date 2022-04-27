@@ -24,10 +24,12 @@ import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.failure.FailureHandler;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
@@ -36,7 +38,6 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
-import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -47,8 +48,6 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,6 +65,7 @@ public final class CompiledPipeline {
 
     private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
+    private FailureHandler failureHandler = null;
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
      */
@@ -100,7 +100,7 @@ public final class CompiledPipeline {
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null);
+        this(pipelineIR, pluginFactory, null, null);
     }
 
     public CompiledPipeline(
@@ -108,8 +108,20 @@ public final class CompiledPipeline {
             final RubyIntegration.PluginFactory pluginFactory,
             final SecretStore secretStore)
     {
+        this(pipelineIR, pluginFactory, secretStore, null);
+    }
+
+
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory,
+            final SecretStore secretStore,
+            final FailureHandler failureHandler)
+    {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
+        // Failure Handler here is to catch weird pipeline bugs, such as field reference comparisons.
+        this.failureHandler = failureHandler;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -314,17 +326,36 @@ public final class CompiledPipeline {
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
-                    _compute(filterBatch, outputBatch, flush, shutdown);
+                    Event copy = e.getEvent().clone();
+                    try {
+                        _compute(filterBatch, outputBatch, flush, shutdown);
+                    }
+                    catch (Exception ex){
+                        LOGGER.error("Error in filters", ex);
+                        failureHandler.handle(copy, ex);
+                    }
                 }
-                compiledOutputs.compute(outputBatch, flush, shutdown);
+                computeOutputs(outputBatch, flush, shutdown);
                 return outputBatch.size();
             } else if (flush || shutdown) {
+                // TODO: Handle errors here.
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
-                compiledOutputs.compute(outputBatch, flush, shutdown);
+                computeOutputs(outputBatch, flush, shutdown);
                 return outputBatch.size();
             }
             return 0;
+        }
+
+        private void computeOutputs(RubyArray<RubyEvent> outputBatch, boolean flush, boolean shutdown) {
+            try {
+                compiledOutputs.compute(outputBatch, flush, shutdown);
+            }catch (Exception ex){
+                LOGGER.error("Error in outputs", ex);
+                for (Object re : outputBatch.toArray()) {
+                    failureHandler.handle(((RubyEvent)re).getEvent(), ex);
+                }
+            }
         }
 
         private void _compute(final RubyArray<RubyEvent> batch, final RubyArray<RubyEvent> outputBatch, final boolean flush, final boolean shutdown) {

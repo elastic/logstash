@@ -40,7 +40,10 @@ package org.logstash.common;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.logstash.common.dlq.DeadLetterPipelineWriter;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.plugins.pipeline.PipelineBus;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -54,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DeadLetterQueueFactory {
 
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueFactory.class);
-    private static final ConcurrentHashMap<String, DeadLetterQueueWriter> REGISTRY = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, IDeadLetterQueueWriter> REGISTRY = new ConcurrentHashMap<>();
     private static final long MAX_SEGMENT_SIZE_BYTES = 10 * 1024 * 1024;
 
     /**
@@ -77,15 +80,15 @@ public class DeadLetterQueueFactory {
      * @param flushInterval Maximum duration between flushes of dead letter queue files if no data is sent.
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval) {
+    public static IDeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize, Duration flushInterval) {
         return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize, flushInterval));
     }
 
-    public static DeadLetterQueueWriter release(String id) {
+    public static IDeadLetterQueueWriter release(String id) {
         return REGISTRY.remove(id);
     }
 
-    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval) {
+    private static IDeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize, final Duration flushInterval) {
         try {
             return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval);
         } catch (IOException e) {
@@ -93,4 +96,17 @@ public class DeadLetterQueueFactory {
         }
         return null;
     }
+
+    /**
+     * DLQ Pipeline retrieval
+     *
+     */
+    public static IDeadLetterQueueWriter getWriter(String sourcePipeline, String deadLetterPipeline, PipelineBus pipelineBus) {
+        return REGISTRY.computeIfAbsent(sourcePipeline, key -> newPipelineWriter(sourcePipeline, deadLetterPipeline, pipelineBus));
+    }
+
+    private static IDeadLetterQueueWriter newPipelineWriter(String sourcePipeline, String deadLetterPipeline, PipelineBus pipelineBus){
+        return new DeadLetterPipelineWriter(sourcePipeline, deadLetterPipeline, pipelineBus);
+    }
+
 }

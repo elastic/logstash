@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -63,11 +64,12 @@ import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 
-public final class DeadLetterQueueWriter implements Closeable {
+public final class DeadLetterQueueWriter implements Closeable, IDeadLetterQueueWriter {
 
     @VisibleForTesting
     static final String SEGMENT_FILE_PATTERN = "%d.log";
@@ -124,6 +126,12 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
         writeEntry(new DLQEntry(event, pluginName, pluginId, reason));
+    }
+
+    @Override
+
+    public void writeEntry(Event event, Map<String, Object> reason) throws IOException {
+        writeEntry(new DLQEntry(event, "-", "-", reason.toString()));
     }
 
     @Override

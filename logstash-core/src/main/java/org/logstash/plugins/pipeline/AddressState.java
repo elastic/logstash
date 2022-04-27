@@ -91,4 +91,12 @@ public class AddressState {
     public Set<PipelineOutput> getOutputs() {
         return outputs;
     }
+
+    @Override
+    public String toString() {
+        return "AddressState{" +
+                "outputs=" + outputs +
+                ", input=" + input +
+                '}';
+    }
 }

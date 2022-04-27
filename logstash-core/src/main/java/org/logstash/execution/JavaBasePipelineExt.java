@@ -20,6 +20,7 @@
 
 package org.logstash.execution;
 
+import com.headius.invokebinder.transform.Drop;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -33,6 +34,11 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
+import org.logstash.common.failure.DLQFailureHandler;
+import org.logstash.common.failure.DestructiveFailureHandler;
+import org.logstash.common.failure.DropFailureHandler;
+import org.logstash.common.failure.FailureHandler;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -79,10 +85,11 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
                 ).initialize(context, pipelineId(), metric()),
                 new ExecutionContextFactoryExt(
                     context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
-                ).initialize(context, args[3], this, dlqWriter(context)),
+                ).initialize(context, args[3], this, dlqWriter(context, args[3])),
                 RubyUtil.FILTER_DELEGATOR_CLASS
             ),
-            getSecretStore(context)
+            getSecretStore(context),
+            getFailureHandler(context)
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -94,6 +101,20 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
             );
         }
         return this;
+    }
+
+    public FailureHandler getFailureHandler(final ThreadContext context){
+        String failureHandler = getSetting(context, "pipeline.failure_handler").asJavaString();
+        switch (failureHandler){
+            case "dead_letter":
+                return new DLQFailureHandler(dlqWriter.toJava(IDeadLetterQueueWriter.class));
+            case "drop":
+                return new DropFailureHandler();
+            case "explode":
+                return new DestructiveFailureHandler();
+            default:
+                throw new IllegalArgumentException("Invalid value for failure handler " + failureHandler);
+        }
     }
 
     @JRubyMethod(name = "lir_execution")

@@ -21,6 +21,8 @@
 package org.logstash.common;
 
 import java.io.IOException;
+import java.util.Map;
+
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -29,7 +31,8 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.common.dlq.DeadLetterPipelineWriter;
+import org.logstash.common.dlq.IDeadLetterQueueWriter;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 @JRubyClass(name = "AbstractDeadLetterQueueWriter")
@@ -141,7 +144,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
 
         private IRubyObject writerWrapper;
 
-        private DeadLetterQueueWriter innerWriter;
+        private IDeadLetterQueueWriter innerWriter;
 
         private IRubyObject pluginId;
 
@@ -160,9 +163,9 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
             final ThreadContext context, final IRubyObject innerWriter, final IRubyObject pluginId,
             final IRubyObject pluginType) {
             writerWrapper = innerWriter;
-            if (writerWrapper.getJavaClass().equals(DeadLetterQueueWriter.class)) {
+            if (writerWrapper.getJavaClass().equals(DeadLetterPipelineWriter.class)) {
                 this.innerWriter = writerWrapper.toJava(
-                    DeadLetterQueueWriter.class
+                    DeadLetterPipelineWriter.class
                 );
             }
             this.pluginId = pluginId;
@@ -192,14 +195,22 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected IRubyObject doWrite(final ThreadContext context, final IRubyObject event,
             final IRubyObject reason) {
             if (hasOpenWriter()) {
                 try {
-                    innerWriter.writeEntry(
-                        ((JrubyEventExtLibrary.RubyEvent) event).getEvent(),
-                        pluginIdString, pluginTypeString, reason.asJavaString()
-                    );
+                    if (reason.getJavaClass().isAssignableFrom(Map.class)){
+                        innerWriter.writeEntry(
+                                ((JrubyEventExtLibrary.RubyEvent) event).getEvent(),
+                                reason.toJava(Map.class)
+                        );
+                    }else{
+                        innerWriter.writeEntry(
+                                ((JrubyEventExtLibrary.RubyEvent) event).getEvent(),
+                                pluginIdString, pluginTypeString, reason.asJavaString()
+                        );
+                    }
                 } catch (final IOException ex) {
                     throw new IllegalStateException(ex);
                 }
