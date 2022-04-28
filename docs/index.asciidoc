@@ -97,8 +97,6 @@ include::static/glob-support.asciidoc[]
 
 include::static/ingest-convert.asciidoc[]
 
-include::static/management/configuring-centralized-pipelines.asciidoc[]
-
 include::static/field-reference.asciidoc[]
 
 //The `field-reference.asciidoc` file (included above) contains a
@@ -113,6 +111,8 @@ include::static/ls-ls-config.asciidoc[]
 
 // Centralized configuration managements
 include::static/config-management.asciidoc[]
+
+include::static/management/configuring-centralized-pipelines.asciidoc[]
 
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
