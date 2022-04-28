@@ -313,4 +313,21 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
+| `password_policy.mode`
+| A policy mode to raise `WARN` or `ERROR` when password requirements do not meet.
+| `WARN`
+
+| `password_policy.length`
+| A policy to validate password length against `minimum`.
+| 8
+
+| `password_policy.include`
+| A policy to validate password based on `upper`, `lower`, `digit` and `symbol` include requirements. When `REQUIRED` is preferred and password does not meet requirements, Logstash will `WARN` or `ERROR` according to `password_policy.mode`.
+| `upper`: `REQUIRED`
+
+`lower`: `REQUIRED`
+
+`digit`: `REQUIRED`
+
+`symbol`: `OPTIONAL`
 |=======================================================================

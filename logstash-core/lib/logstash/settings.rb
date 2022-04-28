@@ -557,8 +557,12 @@ module LogStash
         policies = set_password_policies
         errors = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
         if errors.length() > 0
-          raise(ArgumentError, "Password #{errors}.") unless @password_policies.fetch(:mode).eql?("WARN")
-          logger.warn("Password #{errors}.")\
+          if @password_policies.fetch(:mode).eql?("WARN")
+            logger.warn("Password #{errors}.")
+            deprecation_logger.deprecated("NOTICE: 'WARN' password policy mode won't be allowed in the future. Set the mode to 'ERROR' to avoid startup errors in future releases.")
+          else
+            raise(ArgumentError, "Password #{errors}.")
+          end
         end
         password
       end

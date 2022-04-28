@@ -279,6 +279,16 @@
 # log.level: info
 # path.logs:
 #
+# ------------ Password Policy --------------
+# password_policy.mode: WARN or ERROR
+# password_policy:
+#  length:
+#    minimum: 8
+#  include:
+#    upper: REQUIRED
+#    lower: REQUIRED
+#    digit: REQUIRED
+#    symbol: OPTIONAL
 # ------------ Other Settings --------------
 #
 # Where to find custom plugins

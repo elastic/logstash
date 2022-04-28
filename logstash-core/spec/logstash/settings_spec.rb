@@ -243,7 +243,7 @@ describe LogStash::Settings do
     end
   end
 
-  describe "#validated_password" do
+  describe "#password_policy" do
 
     context "when running PasswordValidator coerce" do
 
