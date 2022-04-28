@@ -261,10 +261,10 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
-# If using dead_letter_queue.enable: true, defines the behavior to apply when the dead_letter_queue.max_bytes is reached,
+# If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
 # could be "drop_newer" or "drop_older".
-# With drop_newer the newly inserted messages are dropped, logging an error line.
-# With drop_older setting, the oldest messages are dropped before insert the new ones.
+# With drop_newer, messages that were inserted most recently are dropped, logging an error line.
+# With drop_older setting, the oldest messages are dropped as new ones are inserted.
 # Default value is "drop_newer".
 # dead_letter_queue.storage_policy: drop_newer
 

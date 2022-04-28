@@ -228,8 +228,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `1024mb`
 
 | `dead_letter_queue.storage_policy`
-| Defines the behavior to apply when the dead_letter_queue.max_bytes is reached. When an event would increase the size
-  over `dead_letter_queue.max_bytes` the event is dropped if valued `drop_newer` or remove the oldest segment if `drop_older`.
+| Defines the action to take when the dead_letter_queue.max_bytes setting is reached: `drop_newer` stops accepting new values that would push the file size over the limit, and `drop_older` removes the oldest events to make space for new ones.
 | `drop_newer`
 
 | `path.dead_letter_queue`
