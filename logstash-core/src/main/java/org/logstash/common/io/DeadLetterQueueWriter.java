@@ -46,6 +46,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +83,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         FieldReference.from(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
     private final long maxSegmentSize;
     private final long maxQueueSize;
+    private final QueueStorageType storageType;
     private LongAdder currentQueueSize;
     private final Path queuePath;
     private final FileLock fileLock;
@@ -91,11 +95,18 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
 
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize, final Duration flushInterval) throws IOException {
+    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                                 final Duration flushInterval) throws IOException {
+        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, QueueStorageType.DROP_NEWER);
+    }
+
+    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                                 final Duration flushInterval, final QueueStorageType storageType) throws IOException {
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;
+        this.storageType = storageType;
         this.flushInterval = flushInterval;
         this.currentQueueSize = new LongAdder();
         this.currentQueueSize.add(getStartupQueueSize());
@@ -120,6 +131,10 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getCurrentQueueSize() {
         return currentQueueSize.longValue();
+    }
+
+    public String getStoragePolicy() {
+        return storageType.name().toLowerCase(Locale.ROOT);
     }
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
@@ -177,13 +192,35 @@ public final class DeadLetterQueueWriter implements Closeable {
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
-            logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
-            return;
-        } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
+            if (storageType == QueueStorageType.DROP_NEWER) {
+                logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
+                return;
+            } else {
+                do {
+                    dropTailSegment();
+                } while (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize);
+            }
+        }
+        if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             finalizeSegment(FinalizeWhen.ALWAYS);
         }
         currentQueueSize.add(currentWriter.writeEvent(record));
         lastWrite = Instant.now();
+    }
+
+    // package-private for testing
+    void dropTailSegment() throws IOException {
+        // remove oldest segment
+        final Optional<Path> oldestSegment = getSegmentPaths(queuePath)
+                .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
+        if (!oldestSegment.isPresent()) {
+            throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
+        }
+        final Path beheadedSegment = oldestSegment.get();
+        final long segmentSize = Files.size(beheadedSegment);
+        currentQueueSize.add(-segmentSize);
+        Files.delete(beheadedSegment);
+        logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
     }
 
     /**
