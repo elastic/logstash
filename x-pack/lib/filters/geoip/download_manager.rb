@@ -93,7 +93,9 @@ module LogStash module Filters module Geoip class DownloadManager
       actual_url = download_url(db_info['url'])
       logger.debug? && logger.debug("download #{actual_url}")
 
-      Down.download(actual_url, destination: zip_path)
+      options = { destination: zip_path }
+      options.merge!({proxy: ENV['http_proxy']}) if ENV.include?('http_proxy')
+      Down.download(actual_url, options)
       raise "the new download has wrong checksum" if md5(zip_path) != db_info['md5_hash']
 
       logger.debug("new database downloaded in ", :path => zip_path)

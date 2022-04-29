@@ -41,14 +41,23 @@ describe LogStash::Filters::Geoip do
       end
 
       context "when ENV['http_proxy'] is set" do
+        let(:mock_resp) { JSON.parse(::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__)))) }
+        let(:db_info) { mock_resp[1] }
         let(:proxy_url) { 'http://user:pass@example.com:1234' }
 
         around(:each) { |example| with_environment('http_proxy' => proxy_url, &example) }
 
-        it "initializes the client with the proxy" do
+        it "initializes the rest client with the proxy" do
           expect(::Manticore::Client).to receive(:new).with(a_hash_including(:proxy => proxy_url)).and_call_original
 
           download_manager.send(:rest_client)
+        end
+
+        it "download database with the proxy" do
+          expect(download_manager).to receive(:md5).and_return(db_info['md5_hash'])
+          expect(::Down).to receive(:download).with(db_info['url'], a_hash_including(:proxy => proxy_url)).and_return(true)
+
+          download_manager.send(:download_database, database_type, second_dirname, db_info)
         end
       end
     end
