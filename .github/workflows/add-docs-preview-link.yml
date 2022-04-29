@@ -11,7 +11,7 @@ jobs:
       pull-requests: write
     steps:
     - name: Add Docs Preview link in PR Comment
-      uses: thollander/actions-comment-pull-request@v1.0.5
+      uses: thollander/actions-comment-pull-request@v1.2.0
       with:
         message: |
           :page_with_curl: **DOCS PREVIEW** :sparkles: https://logstash_${{ github.event.number }}.docs-preview.app.elstc.co/diff
