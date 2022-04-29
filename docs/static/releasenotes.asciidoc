@@ -81,7 +81,7 @@ This section summarizes the changes in the following releases:
 
 *Dns Filter - 3.1.5*
 
-* Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash
+* Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash https://github.com/logstash-plugins/logstash-filter-dns/pull/65[#65]
 
 *Elasticsearch Input - 4.12.3*
 
