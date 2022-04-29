@@ -315,5 +315,5 @@ separating each log lines per pipeline could be helpful in case you need to trou
 
 | `on_superuser`
 | Setting to `BLOCK` or `ALLOW` running Logstash as a superuser.
-| `WARN`
+| `ALLOW`
 |=======================================================================
