@@ -282,7 +282,7 @@
 # ------------ Other Settings --------------
 #
 # Run Logstash with superuser
-# on_superuser: BLOCK, WARN(default), ALLOW
+# on_superuser: BLOCK, ALLOW
 #
 # Where to find custom plugins
 # path.plugins: []

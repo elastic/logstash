@@ -671,7 +671,7 @@ describe LogStash::Runner do
         expect(Process).to receive(:euid).and_return(0)
       end
       it "runs successfully with warning message" do
-        LogStash::SETTINGS.set("on_superuser", "WARN")
+        LogStash::SETTINGS.set("on_superuser", "ALLOW")
         expect(logger).not_to receive(:fatal)
         expect(deprecation_logger_stub).to receive(:deprecated).with(/NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases./)
         expect { subject.run(args) }.not_to raise_error
