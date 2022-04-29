@@ -59,7 +59,7 @@ public class PipelineBus {
 
             addressesToInputs.forEach((address, addressState) -> {
                 boolean sendWasSuccess = false;
-                PipelineInput.ReceiveResponse lastResponse = null;
+                ReceiveResponse lastResponse = null;
                 boolean partialProcessing;
                 int lastFailedPosition = 0;
                 do {

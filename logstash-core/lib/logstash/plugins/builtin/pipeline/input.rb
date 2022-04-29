@@ -17,7 +17,7 @@
 
 module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input < ::LogStash::Inputs::Base
   include org.logstash.plugins.pipeline.PipelineInput
-  java_import org.logstash.plugins.pipeline.PipelineInput::ReceiveResponse
+  java_import org.logstash.plugins.pipeline.ReceiveResponse
 
   config_name "pipeline"
 
