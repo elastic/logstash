@@ -53,7 +53,7 @@ d2739a875 - Updates the LogstashService launcher to use the JDK specified (#1394
 
 *Elasticsearch Input - 4.12.3*
 
-* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' headerhttps://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
+* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' header https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
 
 *Http Input - 3.5.0*
 
