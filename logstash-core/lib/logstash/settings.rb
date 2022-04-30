@@ -555,13 +555,13 @@ module LogStash
         end
 
         policies = set_password_policies
-        errors = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
-        if errors.length() > 0
+        validatedResult = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
+        if validatedResult.length() > 0
           if @password_policies.fetch(:mode).eql?("WARN")
-            logger.warn("Password #{errors}.")
-            deprecation_logger.deprecated("NOTICE: 'WARN' password policy mode won't be allowed in the future. Set the mode to 'ERROR' to avoid startup errors in future releases.")
+            logger.warn("Password #{validatedResult}.")
+            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the mode to 'ERROR' to enforce stricter password requirements now.")
           else
-            raise(ArgumentError, "Password #{errors}.")
+            raise(ArgumentError, "Password #{validatedResult}.")
           end
         end
         password
@@ -569,7 +569,7 @@ module LogStash
 
       def set_password_policies
         policies = {}
-        # check by default for empty password once basic auth ios enabled
+        # check by default for empty password once basic auth is enabled
         policies[Util::PasswordPolicyType::EMPTY_STRING] = Util::PasswordPolicyParam.new
         policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", @password_policies.dig(:length, :minimum).to_s)
         if @password_policies.dig(:include, :upper).eql?("REQUIRED")

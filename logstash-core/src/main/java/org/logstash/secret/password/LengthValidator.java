@@ -42,7 +42,7 @@ public class LengthValidator implements Validator {
     /**
      A policy failure reasoning for password length.
      */
-    private static final String LENGTH_REASONING = "must be length of between 5 and " + MAXIMUM_LENGTH;
+    private static final String LENGTH_REASONING = "must be length of between " + MINIMUM_LENGTH + " and " + MAXIMUM_LENGTH;
 
     /**
      Required minimum length of the password.

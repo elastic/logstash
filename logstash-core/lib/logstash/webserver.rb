@@ -52,14 +52,13 @@ module LogStash
         auth_basic[:username] = required_setting(settings, 'api.auth.basic.username', "api.auth.type")
         auth_basic[:password] = required_setting(settings, 'api.auth.basic.password', "api.auth.type")
 
-        # TODO: create a separate setting global param for password policy.
         password_policies = {}
         password_policies[:mode] = required_setting(settings, 'password_policy.mode', "api.auth.type")
 
         password_policies[:length] = {}
         password_policies[:length][:minimum] = required_setting(settings, 'password_policy.length.minimum', "api.auth.type")
-        if password_policies[:length][:minimum] < 5 || password_policies[:length][:minimum] > 1024
-          fail(ArgumentError, "api.auth.basic.password.policies.length.minimum has to be between 5 and 1024.")
+        if !password_policies[:length][:minimum].between(5, 1024)
+          fail(ArgumentError, "password_policy.length.minimum has to be between 5 and 1024.")
         end
         password_policies[:include] = {}
         password_policies[:include][:upper] = required_setting(settings, 'password_policy.include.upper', "api.auth.type")

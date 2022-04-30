@@ -43,8 +43,6 @@ public class PasswordValidator {
     @VisibleForTesting
     protected List<Validator> validators;
 
-    private static final Logger LOGGER = LogManager.getLogger(PasswordValidator.class);
-
     /**
      * A constructor to initialize the password validator.
      * @param policies required policies with their parameters.

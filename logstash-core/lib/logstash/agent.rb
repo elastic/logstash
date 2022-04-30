@@ -45,7 +45,7 @@ class LogStash::Agent
   #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+  def initialize(settings = LogStash::SETTINGS, password_policy_settings = LogStash::PASSWORD_POLICY_SETTINGS, source_loader = nil)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -67,7 +67,7 @@ class LogStash::Agent
     id
 
     # Initialize, but do not start the webserver.
-    @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
+    @webserver = LogStash::WebServer.from_settings(@logger, self, settings, password_policy_settings)
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
