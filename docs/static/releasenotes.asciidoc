@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-4,Logstash 7.17.4>>
 * <<logstash-7-17-3,Logstash 7.17.3>>
 * <<logstash-7-17-2,Logstash 7.17.2>>
 * <<logstash-7-17-1,Logstash 7.17.1>>
@@ -61,6 +62,32 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+[[logstash-7-17-4]]
+=== Logstash 7.17.4 Release Notes
+
+[[notable-7-17-4]]
+==== Notable issues fixed
+
+* Fixed a bug in retrieving pipeline configuration from central management and license validation which make Logstash process crash if a configured node of the Elasticsearch cluster is down. https://github.com/elastic/logstash/issues/12776[#12776]
+* Fix support for reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/issues/13993[#13993]
+* Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/issues/14017[#14017]
+* Fix geoip database download does not respect `http_proxy` setting https://github.com/elastic/logstash/issues/14047[#14047]
+
+==== Plugins
+
+*Cef Codec - 6.2.5*
+
+* [DOC] Update link to CEF implementation guide https://github.com/logstash-plugins/logstash-codec-cef/pull/97[#97]
+
+*Dns Filter - 3.1.5*
+
+* Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash https://github.com/logstash-plugins/logstash-filter-dns/pull/65[#65]
+
+*Elasticsearch Input - 4.12.3*
+
+* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' header https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
+
 
 [[logstash-7-17-3]]
 === Logstash 7.17.3 Release Notes
