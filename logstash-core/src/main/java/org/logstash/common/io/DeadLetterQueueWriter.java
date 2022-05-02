@@ -100,6 +100,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
+    private String lastError = "no errors";
 
     public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
                                  final Duration flushInterval) throws IOException {
@@ -145,6 +146,10 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getDroppedEvents() {
         return droppedEvents.longValue();
+    }
+
+    public String getLastError() {
+        return lastError;
     }
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
@@ -203,7 +208,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             if (storageType == QueueStorageType.DROP_NEWER) {
-                logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
+                lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
                 droppedEvents.add(1L);
                 return;
             } else {
@@ -233,7 +238,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         final long deletedEvents = countEventsInSegment(beheadedSegment);
         droppedEvents.add(deletedEvents);
         Files.delete(beheadedSegment);
-        logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+        lastError = String.format("Deleted exceeded retained size segment file %s", beheadedSegment);
     }
 
     /**
