@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -56,6 +57,9 @@ public class PipelineBus {
 
         synchronized (sender) {
             final ConcurrentHashMap<String, AddressState> addressesToInputs = outputsToAddressStates.get(sender);
+            // In case of retry on the same set events, a stable order is needed, else
+            // the risk is to reprocess twice some events. Collection can't guarantee order stability.
+            JrubyEventExtLibrary.RubyEvent[] orderedEvents = events.toArray(new JrubyEventExtLibrary.RubyEvent[0]);
 
             addressesToInputs.forEach((address, addressState) -> {
                 boolean sendWasSuccess = false;
@@ -63,7 +67,7 @@ public class PipelineBus {
                 boolean partialProcessing;
                 int lastFailedPosition = 0;
                 do {
-                    Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream()
+                    Stream<JrubyEventExtLibrary.RubyEvent> clones = Arrays.stream(orderedEvents)
                             .skip(lastFailedPosition)
                             .map(e -> e.rubyClone(RubyUtil.RUBY));
 
