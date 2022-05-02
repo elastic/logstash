@@ -317,11 +317,15 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
+| `on_superuser`
+| Setting to `BLOCK` or `ALLOW` running Logstash as a superuser.
+| `ALLOW`
+
 | `password_policy.mode`
 | Raises either `WARN` or `ERROR` message when password requirements are not met.
 | `WARN`
 
-| `password_policy.length`
+| `password_policy.length.minimum`
 | Minimum number of characters required for a valid password.
 | 8
 
