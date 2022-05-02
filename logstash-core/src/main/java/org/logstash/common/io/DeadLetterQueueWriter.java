@@ -40,10 +40,13 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -66,9 +69,11 @@ import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
+import org.logstash.instrument.metrics.counter.LongCounter;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -94,6 +99,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private Instant lastWrite;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
+    private final LongAdder droppedEvents = new LongAdder();
 
     public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
                                  final Duration flushInterval) throws IOException {
@@ -125,7 +131,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return open.get();
     }
 
-    public Path getPath(){
+    public Path getPath() {
         return queuePath;
     }
 
@@ -135,6 +141,10 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public String getStoragePolicy() {
         return storageType.name().toLowerCase(Locale.ROOT);
+    }
+
+    public long getDroppedEvents() {
+        return droppedEvents.longValue();
     }
 
     public void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
@@ -194,6 +204,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             if (storageType == QueueStorageType.DROP_NEWER) {
                 logger.error("cannot write event to DLQ(path: " + this.queuePath + "): reached maxQueueSize of " + maxQueueSize);
+                droppedEvents.add(1L);
                 return;
             } else {
                 do {
@@ -219,8 +230,45 @@ public final class DeadLetterQueueWriter implements Closeable {
         final Path beheadedSegment = oldestSegment.get();
         final long segmentSize = Files.size(beheadedSegment);
         currentQueueSize.add(-segmentSize);
+        final long deletedEvents = countEventsInSegment(beheadedSegment);
+        droppedEvents.add(deletedEvents);
         Files.delete(beheadedSegment);
         logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+    }
+
+    /**
+     * Count the number of 'c' and 's' records in segment.
+     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
+     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
+     * */
+    @SuppressWarnings("fallthrough")
+    private long countEventsInSegment(Path segment) throws IOException {
+        FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ);
+        long countedEvents = 0;
+
+        // verify minimal segment size
+        if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
+            return 0L;
+        }
+
+        // skip the DLQ version byte
+        channel.position(1);
+        do {
+            ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
+            channel.read(headerBuffer);
+            headerBuffer.flip();
+            RecordHeader recordHeader = RecordHeader.get(headerBuffer);
+            switch (recordHeader.getType()) {
+                case START:
+                case COMPLETE:
+                    countedEvents++;
+                case MIDDLE:
+                case END:
+                    channel.position(channel.position() + recordHeader.getSize());
+            }
+        } while(channel.position() < channel.size());
+
+        return countedEvents;
     }
 
     /**
