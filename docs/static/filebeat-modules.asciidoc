@@ -75,7 +75,8 @@ output {
       hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
       manage_template => false
       index => "%{[@metadata][beat]}-%{[@metadata][version]}" <1>
-      pipeline => "%{[@metadata][pipeline]}" <2>
+      action => "create" <2>
+      pipeline => "%{[@metadata][pipeline]}" <3>
       user => "elastic"
       password => "secret"
     }
@@ -84,6 +85,7 @@ output {
       hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
       manage_template => false
       index => "%{[@metadata][beat]}-%{[@metadata][version]}" <1>
+      action => "create"
       user => "elastic"
       password => "secret"
     }
@@ -93,7 +95,9 @@ output {
 <1> Set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`
 if you are disabling the use of Data Streams in your configuration. Data Streams is
 enabled by default starting from 8.0.
-<2> Set the `pipeline` option to `%{[@metadata][pipeline]}`. This setting
+<2> If you are disabling the use of Data Streams on your configuration, you can
+remove this setting, or set it to a different value as appropriate.
+<3> Set the `pipeline` option to `%{[@metadata][pipeline]}`. This setting
 configures {ls} to select the correct ingest pipeline based on metadata
 passed in the event.
 
