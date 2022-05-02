@@ -53,6 +53,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.io.QueueStorageType;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -107,6 +108,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
+
+    private static final RubySymbol STORAGE_POLICY =
+            RubyUtil.RUBY.newSymbol("storage_policy");
 
     private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
@@ -278,13 +282,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
+                final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
+
                 dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
                     context.runtime,
                     DeadLetterQueueFactory.getWriter(
                         pipelineId.asJavaString(),
                         getSetting(context, "path.dead_letter_queue").asJavaString(),
                         getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()))
+                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()),
+                        storageType)
                     );
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
@@ -318,6 +325,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
             getDlqMetric(context).gauge(
                 context, QUEUE_SIZE_IN_BYTES,
                 dlqWriter(context).callMethod(context, "get_current_queue_size")
+            );
+            getDlqMetric(context).gauge(
+                    context, STORAGE_POLICY,
+                    dlqWriter(context).callMethod(context, "get_storage_policy")
             );
         }
         return context.nil;
