@@ -16,25 +16,19 @@ This section summarizes the changes in the following releases:
 [[logstash-8-2-0]]
 === Logstash 8.2.0 Release Notes
 
-60af28a0f - update google java format dependency (#13700) https://github.com/elastic/logstash/pull/13700
-43c657634 - Improve safety of stats retrieval from queue (#13942) https://github.com/elastic/logstash/pull/13942
-* Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13689[#13689]
-* Print bundled jdk's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
-* Update Jackson databind in ingest-converter tool https://github.com/elastic/logstash/pull/13900[#13900]
-* Fix/flaky error tests in missed retries to central management https://github.com/elastic/logstash/pull/13941[#13941]
-d2739a875 - Updates the LogstashService launcher to use the JDK specified (#13946) (4 weeks ago) <Andrea Selva>
+==== Breaking changes
 
+* Starting with Logstash 8.0 all supported and tested operating systems use system.d so this release removes leftover SysVinit scripts from .deb and .rpm packages https://github.com/elastic/logstash/pull/13954[#13954] https://github.com/elastic/logstash/pull/13955[#13955]
 
-* [DOC] precedence between environment variables and yml in docker https://github.com/elastic/logstash/pull/12198[#12198]
-* [doc] Remove references to sysv and upstart scripts when running logstash as a service. https://github.com/elastic/logstash/pull/13953[#13953]
-* Backport PR #13922 to 8.2: Removal of sys-v init.d scripts https://github.com/elastic/logstash/pull/13954[#13954]
-* Backport PR #13953 to 8.2: [doc] Remove references to sysv and upstart scripts when running logstash as a service. https://github.com/elastic/logstash/pull/13955[#13955]
-* Backport PR #13981 to 8.2: Fix window CI for PQ size checking https://github.com/elastic/logstash/pull/13987[#13987]
-* Backport PR #13973 to 8.2: [doc] Add Logstash to Logstash HTTP example configuration. https://github.com/elastic/logstash/pull/13999[#13999]
-* Backport PR #13834 to 8.2: Doc: Refine content for generated CA in LS-ES security section https://github.com/elastic/logstash/pull/14012[#14012]
-* Backport PR #13990 to 8.2: Doc: Restructure source files for pipeline configuration https://github.com/elastic/logstash/pull/14015[#14015]
-* Backport PR #14021 to 8.2: Fix Bundled JDK docs to reflect JDK 11 https://github.com/elastic/logstash/pull/14022[#14022]
+[[notable-8.2.0]]
+==== Notable issues fixed
 
+* Improved resiliency of Central Management requests when an Elasticsearch node is down https://github.com/elastic/logstash/pull/13689[#13689] https://github.com/elastic/logstash/pull/13941[#13941]
+* Ensure safe retrieval of queue stats that may not yet be populated https://github.com/elastic/logstash/pull/13942
+* Print bundled JDK's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
+* Updated jackson-databind to 2.13.2 in ingest-converter tool https://github.com/elastic/logstash/pull/13900[#13900]
+* Updated google-java-format dependency to 1.13.0 and guava to 31.0.1 in core https://github.com/elastic/logstash/pull/13700[#13700]
+* Multiple documentation improvements related to: Logstash to Logstash communication https://github.com/elastic/logstash/pull/13999[#13999], docker variable injection https://github.com/elastic/logstash/pull/12198[#12198], LS-ES security configuration https://github.com/elastic/logstash/pull/14012[#14012], JDK 11 Bundling https://github.com/elastic/logstash/pull/14022[#14022], and other overall documentation restructuring https://github.com/elastic/logstash/pull/14015[#14015].
 
 
 ==== Plugins
