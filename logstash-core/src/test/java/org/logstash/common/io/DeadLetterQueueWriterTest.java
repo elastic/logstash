@@ -48,7 +48,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -321,16 +320,19 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testDropEventCountCorrectlyWithRecordFitEventsAndMultiRecordSpanEvents() throws IOException {
-        Event smallEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        smallEvent.setField("message", "Hello world!");
+        Event blockAlmostFullEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        int serializationHeader = 286;
+        int notEnoughHeaderSpace = 5;
+        blockAlmostFullEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(BLOCK_SIZE - serializationHeader - RECORD_HEADER_SIZE + notEnoughHeaderSpace));
 
         Event bigEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         bigEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(2 * BLOCK_SIZE));
 
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
             // enqueue a record with size smaller than BLOCK_SIZE
-            DLQEntry entry = new DLQEntry(smallEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
-            assertThat("Serialized entry fills is totally contained in one block", entry.serialize().length, is(lessThan(BLOCK_SIZE)));
+            DLQEntry entry = new DLQEntry(blockAlmostFullEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            assertEquals("Serialized plus header must not leave enough space for another record header ",
+                    entry.serialize().length, BLOCK_SIZE - RECORD_HEADER_SIZE - notEnoughHeaderSpace);
             writeManager.writeEntry(entry);
 
             // enqueue a record bigger than BLOCK_SIZE
