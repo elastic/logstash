@@ -151,9 +151,9 @@ module LogStash module Plugins
       require "logstash/plugins/builtin"
 
       GemRegistry.logstash_plugins.each do |plugin_context|
-        if plugin_context.spec.metadata.key?('java_plugin') && LogStash::SETTINGS.get_value('pipeline.plugin_classloaders')
+        if plugin_context.spec.metadata.key?('java_plugin')
           # Find *.jar file from the require path
-          jar_files = Dir.glob(plugin_context.spec.full_require_paths.map{|path| "#{path}/**/*.jar"})
+          jar_files = plugin_context.spec.matches_for_glob("**/*.jar")
           expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
           if jar_files.length != 1 || !jar_files.first.end_with?(expected_jar_name)
             raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"

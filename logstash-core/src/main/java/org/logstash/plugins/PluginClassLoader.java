@@ -44,7 +44,7 @@ public class PluginClassLoader extends URLClassLoader {
 
     /**
      * Creates an instance of the plugin classloader.
-     * @param jarPath Path to the Java plugin's JAR file relative to {@code gemPath}.
+     * @param jarPath Full path to the Java plugin's JAR file.
      * @param appClassLoader Application classloader to be used for classes not found
      *                       in the plugin's JAR file.
      * @return New instance of the plugin classloader.
