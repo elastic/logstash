@@ -173,7 +173,7 @@ public final class MmapPageIOV2 implements PageIO {
                 this.elementCount += 1;
             } catch (MmapPageIOV2.PageIOInvalidElementException e) {
                 // simply stop at first invalid element
-                LOGGER.debug("PageIO recovery element index:{}, readNextElement exception: {}", i, e.getMessage());
+                LOGGER.debug("PageIO recovery for '{}' element index:{}, readNextElement exception: {}", file, i, e.getMessage());
                 break;
             }
         }
