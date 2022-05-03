@@ -221,8 +221,9 @@ public final class MmapPageIOV2 implements PageIO {
     @Override
     public void purge() throws IOException {
         close();
-        Files.delete(this.file.toPath());
         this.head = 0;
+        LOGGER.debug("PageIO deleting '{}'", this.file);
+        Files.delete(this.file.toPath());
     }
 
     @Override
