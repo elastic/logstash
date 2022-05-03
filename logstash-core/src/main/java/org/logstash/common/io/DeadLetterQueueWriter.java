@@ -69,10 +69,11 @@ import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
-import org.logstash.instrument.metrics.counter.LongCounter;
 
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
-import static org.logstash.common.io.RecordIOWriter.*;
+import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -143,7 +144,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return storageType.name().toLowerCase(Locale.ROOT);
     }
 
-    public long getDroppedEvents() {
+    public long getDiscardedEvents() {
         return droppedEvents.longValue();
     }
 
@@ -234,9 +235,12 @@ public final class DeadLetterQueueWriter implements Closeable {
         final Path beheadedSegment = oldestSegment.get();
         final long segmentSize = Files.size(beheadedSegment);
         currentQueueSize.add(-segmentSize);
-        final long deletedEvents = countEventsInSegment(beheadedSegment);
-        droppedEvents.add(deletedEvents);
-        Files.delete(beheadedSegment);
+        try {
+            final long deletedEvents = countEventsInSegment(beheadedSegment);
+            droppedEvents.add(deletedEvents);
+        } finally {
+            Files.delete(beheadedSegment);
+        }
         lastError = String.format("Deleted exceeded retained size segment file %s", beheadedSegment);
     }
 

@@ -275,7 +275,7 @@ public class DeadLetterQueueWriterTest {
             DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", (320 * 2) - 1), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
             writeManager.writeEntry(entry);
             beheadedQueueSize = writeManager.getCurrentQueueSize();
-            droppedEvents = writeManager.getDroppedEvents();
+            droppedEvents = writeManager.getDiscardedEvents();
         }
 
         // 1.log with 319
@@ -357,7 +357,7 @@ public class DeadLetterQueueWriterTest {
             // 1.log with 2 events
             // 2.log with 319
             // 3.log with 319
-            assertEquals(2, writeManager.getDroppedEvents());
+            assertEquals(2, writeManager.getDiscardedEvents());
         }
     }
 }

@@ -112,8 +112,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol STORAGE_POLICY =
             RubyUtil.RUBY.newSymbol("storage_policy");
 
-    private static final RubySymbol DROPPED_EVENTS =
-            RubyUtil.RUBY.newSymbol("dropped_events");
+    private static final RubySymbol DISCARDED_EVENTS =
+            RubyUtil.RUBY.newSymbol("discarded_events");
 
     private static final RubySymbol LAST_ERROR =
             RubyUtil.RUBY.newSymbol("last_error");
@@ -340,8 +340,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     context, MAX_QUEUE_SIZE_IN_BYTES,
                     getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
             getDlqMetric(context).gauge(
-                    context, DROPPED_EVENTS,
-                    dlqWriter(context).callMethod(context, "get_dropped_events")
+                    context, DISCARDED_EVENTS,
+                    dlqWriter(context).callMethod(context, "get_discarded_events")
             );
             getDlqMetric(context).gauge(
                     context, LAST_ERROR,
