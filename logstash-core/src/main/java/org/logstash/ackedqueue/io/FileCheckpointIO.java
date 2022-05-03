@@ -114,6 +114,7 @@ public class FileCheckpointIO implements CheckpointIO {
         } catch (IOException ex) {
             if (retry) {
                 try {
+                    logger.debug("CheckpointIO retry moving '{}'", dirPath.resolve(fileName));
                     backoff.retryable(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
                 } catch (ExponentialBackoff.RetryException re) {
                     throw new IOException("Error writing checkpoint", re);
@@ -128,6 +129,7 @@ public class FileCheckpointIO implements CheckpointIO {
     @Override
     public void purge(String fileName) throws IOException {
         Path path = dirPath.resolve(fileName);
+        logger.debug("CheckpointIO deleting '{}'", path);
         Files.delete(path);
     }
 
