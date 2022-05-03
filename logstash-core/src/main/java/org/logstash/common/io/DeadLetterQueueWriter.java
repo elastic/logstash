@@ -71,9 +71,8 @@ import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
-import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
-import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
+import static org.logstash.common.io.RecordIOWriter.*;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -247,7 +246,7 @@ public final class DeadLetterQueueWriter implements Closeable {
      * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
      * */
     @SuppressWarnings("fallthrough")
-    private long countEventsInSegment(Path segment) throws IOException {
+    long countEventsInSegment(Path segment) throws IOException {
         FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ);
         long countedEvents = 0;
 
@@ -258,20 +257,36 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         // skip the DLQ version byte
         channel.position(1);
+        int posInBlock = 0;
+        int currentBlockIdx = 0;
         do {
             ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
+            long startPosition = channel.position();
+            // if record header can't be fully contained in the block, align to the next
+            if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
+                channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
+                posInBlock = 0;
+            }
+
             channel.read(headerBuffer);
             headerBuffer.flip();
             RecordHeader recordHeader = RecordHeader.get(headerBuffer);
+            if (recordHeader == null) {
+                logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
+                throw new IllegalStateException("Can't decode record header at position " + startPosition);
+            }
+
             switch (recordHeader.getType()) {
                 case START:
                 case COMPLETE:
                     countedEvents++;
                 case MIDDLE:
-                case END:
+                case END: {
                     channel.position(channel.position() + recordHeader.getSize());
+                    posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+                }
             }
-        } while(channel.position() < channel.size());
+        } while (channel.position() < channel.size());
 
         return countedEvents;
     }
@@ -410,7 +425,7 @@ public final class DeadLetterQueueWriter implements Closeable {
                         throw new IllegalStateException("Unexpected value: " + RecordIOReader.getSegmentStatus(tempFile));
                 }
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new IllegalStateException("Unable to clean up temp file: " + tempFile, e);
         }
     }
@@ -432,7 +447,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         Files.delete(deleteTarget);
     }
 
-    private static boolean isWindows(){
+    private static boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows");
     }
 }
