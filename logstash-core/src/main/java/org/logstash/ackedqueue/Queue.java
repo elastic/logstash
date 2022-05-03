@@ -342,10 +342,12 @@ public final class Queue implements Closeable {
      * @param pageIO the tail page {@link PageIO}
      * @throws IOException
      */
-    private void purgeTailPage(Checkpoint checkpoint, PageIO pageIO) throws IOException {
+    private void purgeTailPage(Checkpoint checkpoint, MmapPageIOV2 pageIO) throws IOException {
         try {
             pageIO.purge();
-        } catch (NoSuchFileException e) { /* ignore */ }
+        } catch (NoSuchFileException e) { /* ignore */
+            logger.debug("tail page: {} does not exist", pageIO.getFilePath());
+        }
 
         // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
         // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
