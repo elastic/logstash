@@ -225,9 +225,9 @@ public final class Queue implements Closeable {
             }
             final Checkpoint cp = this.checkpointIO.read(cpFileName);
 
-            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
+            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp);
 
-            PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
+            MmapPageIOV2 pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
             // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
             // we can purge it and we don't care about its integrity for example if it is of zero-byte file size.
             if (cp.isFullyAcked()) {
@@ -250,9 +250,9 @@ public final class Queue implements Closeable {
         // transform the head page into a tail page only if the headpage is non-empty
         // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
-        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
+        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint);
 
-        PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+        MmapPageIOV2 pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
         pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
         pqSizeBytes += (long) pageIO.getHead();
@@ -380,8 +380,9 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
-        PageIO headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
+        MmapPageIOV2 headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
+        logger.debug("created new head page: {}", headPageIO.getFilePath());
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
     }
@@ -442,6 +443,7 @@ public final class Queue implements Closeable {
                 try {
                     notFull.await();
                 } catch (InterruptedException e) {
+                    logger.debug("interrupted waiting for queue to not be full", e);
                     // the thread interrupt() has been called while in the await() blocking call.
                     // at this point the interrupted flag is reset and Thread.interrupted() will return false
                     // to any upstream calls on it. for now our choice is to return normally and set back
