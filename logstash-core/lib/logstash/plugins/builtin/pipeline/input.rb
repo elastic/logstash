@@ -68,7 +68,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
         stream_position = stream_position + 1
       end
       ReceiveResponse.completed()
-    rescue ava.lang.InterruptedException, IOError => e
+    rescue java.lang.InterruptedException, IOError => e
       # maybe an IOException in enqueueing
       ReceiveResponse.failed_at(stream_position, e)
     end
