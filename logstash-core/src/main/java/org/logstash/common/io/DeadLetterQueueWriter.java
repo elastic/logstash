@@ -208,6 +208,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             if (storageType == QueueStorageType.DROP_NEWER) {
+                logger.error(lastError);
                 lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
                 droppedEvents.add(1L);
                 return;
@@ -241,7 +242,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         } finally {
             Files.delete(beheadedSegment);
         }
-        lastError = String.format("Deleted exceeded retained size segment file %s", beheadedSegment);
+        logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
     }
 
     /**
