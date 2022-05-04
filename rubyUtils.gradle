@@ -101,6 +101,10 @@ void gem(File projectDir, File buildDir, String gem, String version, String path
         jruby.runScriptlet("""
                 require 'rubygems/commands/install_command'
                 cmd = Gem::Commands::InstallCommand.new
+                # Temporarily set `DEBUG_RESOLVER` to `true` to get around JDK issue where trying to write to NULL:
+                # on Windows will cause an error.
+                # Note that setting `-Djdk.io.File.enableADS=true` does to seem to resolve this issue
+                ENV['DEBUG_RESOLVER']='true'
                 cmd.handle_options ['--no-document', '${gem}', '-v', '${version}', '-i', '${path}']
                 begin
                     cmd.execute
