@@ -299,6 +299,8 @@ public class DeadLetterQueueWriterTest {
     @Test
     public void testRemoveSegmentsOrder() throws IOException {
         try (DeadLetterQueueWriter sut = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
+            Files.delete(dir.resolve("1.log.tmp"));
+
             // create some segments files
             Files.createFile(dir.resolve("9.log"));
             Files.createFile(dir.resolve("10.log"));
@@ -310,7 +312,6 @@ public class DeadLetterQueueWriterTest {
             final Set<String> segments = Files.list(dir)
                     .map(Path::getFileName)
                     .map(Path::toString)
-                    .filter(s -> !s.endsWith(".tmp")) // skip current writer head file 1.log.tmp
                     .filter(s -> !".lock".equals(s)) // skip .lock file created by writer
                     .collect(Collectors.toSet());
             assertEquals(Collections.singleton("10.log"), segments);
