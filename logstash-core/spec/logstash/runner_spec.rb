@@ -26,6 +26,7 @@ require "logstash/config/modules_common"
 require "logstash/modules/util"
 require "logstash/elasticsearch_client"
 require "json"
+require "webmock/rspec"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
 
@@ -641,6 +642,51 @@ describe LogStash::Runner do
         it "should show help" do
           expect { subject.run(args) }.to raise_error(Clamp::HelpWanted)
         end
+      end
+    end
+  end
+
+  describe "on_superuser" do
+    subject { LogStash::Runner.new("") }
+    let(:args) { ["-e", "input {} output {}"] }
+    let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
+    before(:each) { allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
+
+    context "unintentionally running logstash as root" do
+      before do
+        expect(Process).to receive(:euid).and_return(0)
+      end
+      it "fails with bad exit" do
+        LogStash::SETTINGS.set("on_superuser", "BLOCK")
+        expect(logger).to receive(:fatal) do |msg, hash|
+          expect(msg).to eq("An unexpected error occurred!")
+          expect(hash[:error].to_s).to match("Logstash cannot be run as root.")
+        end
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+
+    context "intentionally running logstash as root " do
+      before do
+        expect(Process).to receive(:euid).and_return(0)
+      end
+      it "runs successfully with warning message" do
+        LogStash::SETTINGS.set("on_superuser", "ALLOW")
+        expect(logger).not_to receive(:fatal)
+        expect(deprecation_logger_stub).to receive(:deprecated).with(/NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases./)
+        expect { subject.run(args) }.not_to raise_error
+      end
+    end
+
+    context "running logstash as non-root " do
+      before do
+        expect(Process).to receive(:euid).and_return(100)
+      end
+      it "runs successfully without any messages" do
+        LogStash::SETTINGS.set("on_superuser", "BLOCK")
+        expect(logger).not_to receive(:fatal)
+        expect(deprecation_logger_stub).not_to receive(:deprecated).with(/NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases./)
+        expect { subject.run(args) }.not_to raise_error
       end
     end
   end

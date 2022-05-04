@@ -15,26 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "spec_helper"
-require "tmpdir"
-require "logstash/bootstrap_check/persisted_queue_config"
+require "logstash/pipeline_action/base"
 
-describe LogStash::BootstrapCheck::PersistedQueueConfig do
+module LogStash module PipelineAction
+  class StopAndDelete < Base
+    attr_reader :pipeline_id
 
-  context("when persisted queues are enabled") do
-    let(:settings) do
-      settings = LogStash::SETTINGS.dup
-      settings.set_value("queue.type", "persisted")
-      settings.set_value("queue.page_capacity", 1024)
-      settings.set_value("path.queue", ::File.join(Dir.tmpdir, "some/path"))
-      settings
+    def initialize(pipeline_id)
+      @pipeline_id = pipeline_id
     end
 
-    context("and 'queue.max_bytes' is set to a value less than the value of 'queue.page_capacity'") do
-      it "should throw" do
-        settings.set_value("queue.max_bytes", 512)
-        expect { LogStash::BootstrapCheck::PersistedQueueConfig.check(settings) }.to raise_error
+    def execute(agent, pipelines_registry)
+      pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
+        pipeline.shutdown
       end
+
+      success = pipelines_registry.delete_pipeline(@pipeline_id)
+
+      LogStash::ConvergeResult::ActionResult.create(self, success)
+    end
+
+    def to_s
+      "PipelineAction::StopAndDelete<#{pipeline_id}>"
     end
   end
-end
+end end

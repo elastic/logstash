@@ -25,6 +25,7 @@ require "logstash/config/pipeline_config"
 require "logstash/pipeline_action"
 require "logstash/state_resolver"
 require "logstash/pipelines_registry"
+require "logstash/persisted_queue_config_validator"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -50,7 +51,7 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    # Mutex to synchonize in the exclusive method
+    # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
     @webserver_control_lock = Mutex.new
 
@@ -93,6 +94,8 @@ class LogStash::Agent
     initialize_agent_metrics
 
     initialize_geoip_database_metrics(metric)
+    
+    @pq_config_validator = LogStash::PersistedQueueConfigValidator.new
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -182,6 +185,8 @@ class LogStash::Agent
         raise "Could not fetch the configuration, message: #{results.error}"
       end
     end
+
+    @pq_config_validator.check(@pipelines_registry.running_user_defined_pipelines, results.response)
 
     converge_result = resolve_actions_and_converge_state(results.response)
     update_metrics(converge_result)
@@ -309,7 +314,7 @@ class LogStash::Agent
   end
 
   def no_pipeline?
-    @pipelines_registry.running_pipelines.empty?
+    @pipelines_registry.running_pipelines(include_loading: true).empty?
   end
 
   private
@@ -386,7 +391,7 @@ class LogStash::Agent
           end
         rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
+          converge_result.add(action, LogStash::ConvergeResult::FailedAction.from_exception(e))
         end
       end
     end.each(&:join)

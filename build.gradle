@@ -81,9 +81,17 @@ allprojects {
       delete "${projectDir}/out/"
   }
 
-  //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
-    testLogging {
+    // Add Exports to enable tests to run in JDK17
+    jvmArgs = [
+      "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    ]
+      //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
+      testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
       showExceptions true

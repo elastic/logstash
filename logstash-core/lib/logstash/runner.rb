@@ -48,7 +48,6 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/persisted_queue_config"
 require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
@@ -62,8 +61,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::DefaultConfig,
-      LogStash::BootstrapCheck::PersistedQueueConfig
+      LogStash::BootstrapCheck::DefaultConfig
   ]
 
   # Node Settings
@@ -287,6 +285,8 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
+    running_as_root
+
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
       return 1
@@ -441,6 +441,17 @@ class LogStash::Runner < Clamp::StrictCommand
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
+
+  def running_as_root
+    on_superuser_setting = setting("on_superuser")
+    if Process.euid() == 0
+      if on_superuser_setting.eql?("ALLOW")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases.")
+      else
+        raise(RuntimeError, "Logstash cannot be run as root.")
+      end
+    end
+  end
 
   def log_configuration_contains_javascript_usage?
      context = LoggerContext.getContext(false)

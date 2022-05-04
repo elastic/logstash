@@ -1,2 +1,10 @@
 input:
-  elastic_agent: beats
+  - alias: elastic_agent
+    from: beats
+    docs:
+      - replace: ":plugin: beats"
+        with: ":plugin: elastic_agent"
+      - replace: ":plugin-uc: Beats"
+        with: ":plugin-uc: Elastic Agent"
+      - replace: ":plugin-singular: Beat"
+        with: ":plugin-singular: Elastic Agent"

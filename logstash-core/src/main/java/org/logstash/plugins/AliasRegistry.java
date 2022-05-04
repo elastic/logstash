@@ -1,16 +1,20 @@
 package org.logstash.plugins;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
+import org.logstash.plugins.aliases.AliasPlugin;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -95,9 +99,9 @@ public class AliasRegistry {
         }
 
         @SuppressWarnings("unchecked")
-        private Map<String, Map<String, String>> decodeYaml() throws IOException {
+        private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(yamlContents, Map.class);
+            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
@@ -121,7 +125,20 @@ public class AliasRegistry {
 
         Map<PluginCoordinate, String> loadAliasesDefinitions() {
             final String filePath = "org/logstash/plugins/plugin_aliases.yml";
-            final InputStream in = AliasYamlLoader.class.getClassLoader().getResourceAsStream(filePath);
+            InputStream in = null;
+            try {
+                URL url = AliasYamlLoader.class.getClassLoader().getResource(filePath);
+                if (url != null) {
+                    URLConnection connection = url.openConnection();
+                    if (connection != null) {
+                        connection.setUseCaches(false);
+                        in = connection.getInputStream();
+                    }
+                }
+            } catch (IOException e){
+                LOGGER.warn("Unable to read alias definition in jar resources: {}", filePath, e);
+                return Collections.emptyMap();
+            }
             if (in == null) {
                 LOGGER.warn("Malformed yaml file in yml definition file in jar resources: {}", filePath);
                 return Collections.emptyMap();
@@ -138,8 +155,8 @@ public class AliasRegistry {
                 return Collections.emptyMap();
             }
 
-            // decode yaml to nested maps
-            final Map<String, Map<String, String>> aliasedDescriptions;
+            // decode yaml to Map<PluginType, List<AliasPlugin>> structure
+            final Map<PluginType, List<AliasPlugin>> aliasedDescriptions;
             try {
                 aliasedDescriptions = aliasYml.decodeYaml();
             } catch (IOException ioex) {
@@ -157,15 +174,16 @@ public class AliasRegistry {
         }
 
         private Map<PluginCoordinate, String> extractDefinitions(PluginType pluginType,
-                                                                 Map<String, Map<String, String>> aliasesYamlDefinitions) {
-            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
-            final Map<String, String> pluginDefinitions = aliasesYamlDefinitions.get(pluginType.name().toLowerCase());
-            if (pluginDefinitions == null) {
+                                                                 Map<PluginType, List<AliasPlugin>> aliasesYamlDefinitions) {
+            final List<AliasPlugin> aliasedPlugins = aliasesYamlDefinitions.get(pluginType);
+            if (Objects.isNull(aliasedPlugins)) {
                 return Collections.emptyMap();
             }
-            for (Map.Entry<String, String> aliasDef : pluginDefinitions.entrySet()) {
-                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasDef.getKey()), aliasDef.getValue());
-            }
+
+            Map<PluginCoordinate, String> defaultDefinitions = new HashMap<>();
+            aliasedPlugins.forEach(aliasPlugin -> {
+                defaultDefinitions.put(new PluginCoordinate(pluginType, aliasPlugin.getAliasName()), aliasPlugin.getFrom());
+            });
             return defaultDefinitions;
         }
     }
@@ -174,7 +192,15 @@ public class AliasRegistry {
     private final Map<PluginCoordinate, String> aliases = new HashMap<>();
     private final Map<PluginCoordinate, String> reversedAliases = new HashMap<>();
 
-    public AliasRegistry() {
+    private static final AliasRegistry INSTANCE = new AliasRegistry();
+    public static AliasRegistry getInstance() {
+        return INSTANCE;
+    }
+
+    // The Default implementation of AliasRegistry.
+    // This needs to be a singleton as multiple threads accessing may cause the first thread to close the jar file
+    // leading to issues with subsequent threads loading the yaml file.
+    private AliasRegistry() {
         final AliasYamlLoader loader = new AliasYamlLoader();
         final Map<PluginCoordinate, String> defaultDefinitions = loader.loadAliasesDefinitions();
         configurePluginAliases(defaultDefinitions);

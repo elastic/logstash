@@ -44,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.common.io.QueueStorageType;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -68,9 +69,9 @@ public class DeadLetterQueueFactoryTest {
     public void testSameBeforeRelease() throws IOException {
         try {
             Path pipelineA = dir.resolve(PIPELINE_NAME);
-            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), QueueStorageType.DROP_NEWER);
             assertTrue(writer.isOpen());
-            DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), QueueStorageType.DROP_NEWER);
             assertSame(writer, writer2);
             writer.close();
         } finally {
@@ -82,11 +83,11 @@ public class DeadLetterQueueFactoryTest {
     public void testOpenableAfterRelease() throws IOException {
         try {
             Path pipelineA = dir.resolve(PIPELINE_NAME);
-            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), QueueStorageType.DROP_NEWER);
             assertTrue(writer.isOpen());
             writer.close();
             DeadLetterQueueFactory.release(PIPELINE_NAME);
-            writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1));
+            writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000, Duration.ofSeconds(1), QueueStorageType.DROP_NEWER);
             assertTrue(writer.isOpen());
             writer.close();
         }finally{
