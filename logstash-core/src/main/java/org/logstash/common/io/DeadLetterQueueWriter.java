@@ -40,13 +40,10 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -71,9 +68,7 @@ import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
-import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
-import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -144,7 +139,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return storageType.name().toLowerCase(Locale.ROOT);
     }
 
-    public long getDiscardedEvents() {
+    public long getDroppedEvents() {
         return droppedEvents.longValue();
     }
 
@@ -236,64 +231,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         final Path beheadedSegment = oldestSegment.get();
         final long segmentSize = Files.size(beheadedSegment);
         currentQueueSize.add(-segmentSize);
-        try {
-            final long deletedEvents = countEventsInSegment(beheadedSegment);
-            droppedEvents.add(deletedEvents);
-        } finally {
-            Files.delete(beheadedSegment);
-        }
+        Files.delete(beheadedSegment);
         logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
-    }
-
-    /**
-     * Count the number of 'c' and 's' records in segment.
-     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
-     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
-     * */
-    @SuppressWarnings("fallthrough")
-    long countEventsInSegment(Path segment) throws IOException {
-        FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ);
-        long countedEvents = 0;
-
-        // verify minimal segment size
-        if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
-            return 0L;
-        }
-
-        // skip the DLQ version byte
-        channel.position(1);
-        int posInBlock = 0;
-        int currentBlockIdx = 0;
-        do {
-            ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
-            long startPosition = channel.position();
-            // if record header can't be fully contained in the block, align to the next
-            if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
-                channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
-                posInBlock = 0;
-            }
-
-            channel.read(headerBuffer);
-            headerBuffer.flip();
-            RecordHeader recordHeader = RecordHeader.get(headerBuffer);
-            if (recordHeader == null) {
-                logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
-                throw new IllegalStateException("Can't decode record header at position " + startPosition);
-            }
-
-            switch (recordHeader.getType()) {
-                case START:
-                case COMPLETE:
-                    countedEvents++;
-                case MIDDLE:
-                case END: {
-                    channel.position(channel.position() + recordHeader.getSize());
-                    posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
-                }
-            }
-        } while (channel.position() < channel.size());
-
-        return countedEvents;
     }
 
     /**
