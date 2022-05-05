@@ -203,8 +203,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             if (storageType == QueueStorageType.DROP_NEWER) {
-                logger.error(lastError);
                 lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
+                logger.error(lastError);
                 droppedEvents.add(1L);
                 return;
             } else {
