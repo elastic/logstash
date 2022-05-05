@@ -70,6 +70,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
       ReceiveResponse.completed()
     rescue java.lang.InterruptedException, IOError => e
       # maybe an IOException in enqueueing
+      logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
       ReceiveResponse.failed_at(stream_position, e)
     end
   end
