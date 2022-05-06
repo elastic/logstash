@@ -162,15 +162,18 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                     reports.remove(0);
                 }
                 if (cycleNumber == reportEvery - 1) {
-                    if (!pipeline.callMethod(context, "worker_threads_draining?").isTrue()) {
+                    boolean pq_is_draining = pipeline.callMethod(context, "worker_threads_draining?").isTrue();
+
+                    if (!pq_is_draining) {
                         LOGGER.warn(reports.get(reports.size() - 1).callMethod(context, "to_s").asJavaString());
                     }
 
                     if (shutdownStalled(context).isTrue()) {
                         if (stalledCount == 0) {
-                            LOGGER.error(
-                                "The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information."
-                            );
+                            LOGGER.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.");
+                            if (pq_is_draining) {
+                                LOGGER.info("The persistent queue is draining before shutdown.");
+                            }
                         }
                         ++stalledCount;
                         if (isUnsafeShutdown(context, null).isTrue() && abortThreshold == stalledCount) {
