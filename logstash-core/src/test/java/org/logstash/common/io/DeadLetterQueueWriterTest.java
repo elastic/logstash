@@ -262,6 +262,7 @@ public class DeadLetterQueueWriterTest {
         // with another 32Kb message write we go to write the third file and trigger the 20Mb limit of retained store
         final long prevQueueSize;
         final long beheadedQueueSize;
+        long droppedEvent;
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB,
                 Duration.ofSeconds(1), QueueStorageType.DROP_OLDER)) {
             prevQueueSize = writeManager.getCurrentQueueSize();
@@ -274,6 +275,7 @@ public class DeadLetterQueueWriterTest {
             DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", (320 * 2) - 1), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
             writeManager.writeEntry(entry);
             beheadedQueueSize = writeManager.getCurrentQueueSize();
+            droppedEvent = writeManager.getDroppedEvents();
         }
 
         // 1.log with 319
@@ -290,6 +292,8 @@ public class DeadLetterQueueWriterTest {
                 FULL_SEGMENT_FILE_SIZE; //the size of the removed segment file
         assertEquals("Total queue size must be decremented by the size of the first segment file",
                 expectedQueueSize, beheadedQueueSize);
+        assertEquals("Last segment removal doesn't increment dropped events counter",
+                0, droppedEvent);
     }
 
     @Test
@@ -310,6 +314,51 @@ public class DeadLetterQueueWriterTest {
                     .filter(s -> !".lock".equals(s)) // skip .lock file created by writer
                     .collect(Collectors.toSet());
             assertEquals(Collections.singleton("10.log"), segments);
+        }
+    }
+
+    @Test
+    public void testDropEventCountCorrectlyNotEnqueuedEvents() throws IOException {
+        Event blockAlmostFullEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        int serializationHeader = 286;
+        int notEnoughHeaderSpace = 5;
+        blockAlmostFullEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(BLOCK_SIZE - serializationHeader - RECORD_HEADER_SIZE + notEnoughHeaderSpace));
+
+        Event bigEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        bigEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(2 * BLOCK_SIZE));
+
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
+            // enqueue a record with size smaller than BLOCK_SIZE
+            DLQEntry entry = new DLQEntry(blockAlmostFullEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            assertEquals("Serialized plus header must not leave enough space for another record header ",
+                    entry.serialize().length, BLOCK_SIZE - RECORD_HEADER_SIZE - notEnoughHeaderSpace);
+            writeManager.writeEntry(entry);
+
+            // enqueue a record bigger than BLOCK_SIZE
+            entry = new DLQEntry(bigEvent, "", "", "00002", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            assertThat("Serialized entry has to split in multiple blocks", entry.serialize().length, is(greaterThan(2 * BLOCK_SIZE)));
+            writeManager.writeEntry(entry);
+        }
+
+        // fill the queue to push out the segment with the 2 previous events
+        Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB,
+                Duration.ofSeconds(1), QueueStorageType.DROP_NEWER)) {
+
+            long startTime = System.currentTimeMillis();
+            // 319 events of 32K generates almost 2 segments of 10 Mb of data
+            for (int i = 0; i < (320 * 2) - 2; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
+                final int serializationLength = entry.serialize().length;
+                assertEquals("Serialized entry fills block payload", BLOCK_SIZE - RECORD_HEADER_SIZE, serializationLength);
+                writeManager.writeEntry(entry);
+            }
+
+            // 1.log with 2 events
+            // 2.log with 319
+            // 3.log with 319
+            assertEquals(2, writeManager.getDroppedEvents());
         }
     }
 }
