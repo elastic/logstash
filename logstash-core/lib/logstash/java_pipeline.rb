@@ -554,7 +554,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def worker_threads_draining?
-    @worker_threads.any? {|t| t.worker_loop.draining? }
+    @worker_threads.any? {|t| t.worker_loop&.draining? }
   end
 
   private
