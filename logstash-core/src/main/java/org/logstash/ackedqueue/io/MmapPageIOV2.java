@@ -405,6 +405,17 @@ public final class MmapPageIOV2 implements PageIO {
         }
     }
 
+    @Override
+    public String toString() {
+        return "MmapPageIOV2{" +
+                "file=" + file +
+                ", capacity=" + capacity +
+                ", minSeqNum=" + minSeqNum +
+                ", elementCount=" + elementCount +
+                ", head=" + head +
+                '}';
+    }
+
     /**
      * Invalid Page structure exception
      * */

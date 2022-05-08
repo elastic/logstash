@@ -227,7 +227,7 @@ public final class Queue implements Closeable {
 
             logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp);
 
-            MmapPageIOV2 pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
+            PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
             // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
             // we can purge it and we don't care about its integrity for example if it is of zero-byte file size.
             if (cp.isFullyAcked()) {
@@ -252,7 +252,7 @@ public final class Queue implements Closeable {
 
         logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint);
 
-        MmapPageIOV2 pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+        PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
         pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
         pqSizeBytes += (long) pageIO.getHead();
@@ -342,11 +342,11 @@ public final class Queue implements Closeable {
      * @param pageIO the tail page {@link PageIO}
      * @throws IOException
      */
-    private void purgeTailPage(Checkpoint checkpoint, MmapPageIOV2 pageIO) throws IOException {
+    private void purgeTailPage(Checkpoint checkpoint, PageIO pageIO) throws IOException {
         try {
             pageIO.purge();
         } catch (NoSuchFileException e) { /* ignore */
-            logger.debug("tail page: {} does not exist", pageIO.getFilePath());
+            logger.debug("tail page does not exist: {}", pageIO);
         }
 
         // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
@@ -382,9 +382,9 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
-        MmapPageIOV2 headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
+        PageIO headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
-        logger.debug("created new head page: {}", headPageIO.getFilePath());
+        logger.debug("created new head page: {}", headPageIO);
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
     }
