@@ -30,6 +30,7 @@ import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,6 +45,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -209,7 +211,7 @@ public class DeadLetterQueueReaderTest {
         final Event event = createEventWithConstantSerializationOverhead();
         long startTime = System.currentTimeMillis();
         DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0), constantSerializationLengthTimestamp(startTime));
-        int size = templateEntry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE + VERSION_SIZE;
+        int size = templateEntry.serialize().length + RECORD_HEADER_SIZE + VERSION_SIZE;
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 1; i <= count; i++) {
                 writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i), constantSerializationLengthTimestamp(startTime++)));
@@ -245,7 +247,7 @@ public class DeadLetterQueueReaderTest {
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
-                assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
+                assertThat(entry.serialize().length + RECORD_HEADER_SIZE, is(BLOCK_SIZE));
                 writeManager.writeEntry(entry);
             }
         }
@@ -271,7 +273,7 @@ public class DeadLetterQueueReaderTest {
                 messageSize += entry.serialize().length;
                 writeManager.writeEntry(entry);
                 if (i == 4){
-                    assertThat(messageSize + (RecordIOWriter.RECORD_HEADER_SIZE * 4), is(BLOCK_SIZE));
+                    assertThat(messageSize + (RECORD_HEADER_SIZE * 4), is(BLOCK_SIZE));
                 }
             }
         }
@@ -418,7 +420,7 @@ public class DeadLetterQueueReaderTest {
         try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
-                assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
+                assertThat(entry.serialize().length + RECORD_HEADER_SIZE, is(BLOCK_SIZE));
                 writeManager.writeEntry(entry);
             }
         }
@@ -925,5 +927,46 @@ public class DeadLetterQueueReaderTest {
                 assertThat(new String(rawStr, StandardCharsets.UTF_8), containsString("Could not index event to Elasticsearch. status: 400"));
             }
         }
+    }
+
+    @Test
+    public void testReaderWithoutSinceDbAndNoReadOperationDoneThenCloseDoesntCreateAnySinceDBFile() throws IOException {
+        DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10);
+        readManager.close();
+
+        Set<File> sincedbs = listSincedbFiles();
+        assertEquals("No sincedb file should be present", 0, sincedbs.size());
+    }
+
+    private Set<File> listSincedbFiles() throws IOException {
+        return Files.list(dir)
+                .filter(file -> file.getFileName().toString().equals("sincedb"))
+                .map(Path::toFile)
+                .collect(Collectors.toSet());
+    }
+
+    @Test
+    public void testReaderCreatesASinceDBFileOnCloseAfterReadSomeEvents() throws IOException, InterruptedException {
+        // write some data into a segment file
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < 10; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10)) {
+            byte[] rawStr = readManager.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
+        }
+
+        Set<File> sincedbs = listSincedbFiles();
+        assertEquals("Sincedb file must be present", 1, sincedbs.size());
+
+        DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
+        assertNotNull(sinceDB.getCurrentSegment());
+        assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
+        assertEquals(VERSION_SIZE + RECORD_HEADER_SIZE + 1, sinceDB.getOffset());
     }
 }

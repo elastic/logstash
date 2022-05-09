@@ -66,13 +66,22 @@ import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
 
 public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
+    private DeadLetterQueueSinceDB consumerPosition;
 
     private RecordIOReader currentReader;
     private final Path queuePath;
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
+    private int readEventsCounter = 0;
+    // config settings
+    private final boolean cleanConsumed;
+    private final int sinceDbFlushThreshold;
 
     public DeadLetterQueueReader(Path queuePath) throws IOException {
+        this(queuePath, false, 1000);
+    }
+
+    public DeadLetterQueueReader(Path queuePath, boolean cleanConsumed, int sinceDbFlushThreshold) throws IOException {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
@@ -80,6 +89,11 @@ public final class DeadLetterQueueReader implements Closeable {
                 Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+        this.cleanConsumed = cleanConsumed;
+        this.sinceDbFlushThreshold = sinceDbFlushThreshold;
+        if (cleanConsumed) {
+            consumerPosition = DeadLetterQueueSinceDB.load(queuePath);
+        }
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
@@ -169,14 +183,23 @@ public final class DeadLetterQueueReader implements Closeable {
         if (bytes == null) {
             return null;
         }
+        if (cleanConsumed) {
+            consumerPosition.updatePosition(this);
+            readEventsCounter++;
+
+            if (readEventsCounter > sinceDbFlushThreshold) {
+                consumerPosition.flush();
+            }
+        }
         return DLQEntry.deserialize(bytes);
     }
 
+    // package-private for test
     byte[] pollEntryBytes() throws IOException, InterruptedException {
         return pollEntryBytes(100);
     }
 
-    byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
+    private byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
         long timeoutRemaining = timeout;
         if (currentReader == null) {
             timeoutRemaining -= pollNewSegments(timeout);
@@ -209,6 +232,12 @@ public final class DeadLetterQueueReader implements Closeable {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
+                if (cleanConsumed) {
+                    consumerPosition.flush();
+                    Files.delete(currentReader.getPath()); // delete segment file only after current reader is closed
+                    // drop from segments list, it's the head of the list
+                    segments.remove(currentReader.getPath());
+                }
                 Optional<RecordIOReader> optReader = openNextExistingReader(currentReader.getPath());
                 if (!optReader.isPresent()) {
                     // segments were all already deleted files, do a poll
@@ -296,5 +325,9 @@ public final class DeadLetterQueueReader implements Closeable {
             currentReader.close();
         }
         this.watchService.close();
+        if (cleanConsumed) {
+            consumerPosition.updatePosition(this);
+            consumerPosition.flush();
+        }
     }
 }
