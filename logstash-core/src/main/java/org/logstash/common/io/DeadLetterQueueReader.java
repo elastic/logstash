@@ -45,15 +45,10 @@ import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -82,11 +77,14 @@ public final class DeadLetterQueueReader implements Closeable {
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
-            if (!Files.exists(segment)) {
+            Optional<RecordIOReader> optReader = openSegmentReader(segment);
+            if (!optReader.isPresent()) {
+                // file was deleted after existence check
                 segments.remove(segment);
                 continue;
             }
-            currentReader = new RecordIOReader(segment);
+            currentReader = optReader.get();
+
             byte[] event = currentReader.seekToNextEventPosition(timestamp, DeadLetterQueueReader::extractEntryTimestamp, Timestamp::compareTo);
             if (event != null) {
                 return;
@@ -95,6 +93,18 @@ public final class DeadLetterQueueReader implements Closeable {
         if (currentReader != null) {
             currentReader.close();
             currentReader = null;
+        }
+    }
+
+    private Optional<RecordIOReader> openSegmentReader(Path segment) throws IOException {
+        if (!Files.exists(segment)) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(new RecordIOReader(segment));
+        } catch (NoSuchFileException ex) {
+            return Optional.empty();
         }
     }
 
@@ -157,14 +167,25 @@ public final class DeadLetterQueueReader implements Closeable {
                 logger.debug("No entries found: no segment files found in dead-letter-queue directory");
                 return null;
             }
-            try {
-                final Path firstSegment = segments.first();
-                currentReader = new RecordIOReader(firstSegment);
-            } catch (NoSuchElementException ex) {
-                // all elements were removed after the empty check
-                logger.debug("No entries found: no segment files found in dead-letter-queue directory");
-                return null;
-            }
+            Optional<RecordIOReader> optReader;
+            do {
+                final Path firstSegment;
+                try {
+                    firstSegment = segments.first();
+                } catch (NoSuchElementException ex) {
+                    // all elements were removed after the empty check
+                    logger.debug("No entries found: no segment files found in dead-letter-queue directory");
+                    return null;
+                }
+
+                optReader = openSegmentReader(firstSegment);
+                if (optReader.isPresent()) {
+                    currentReader = optReader.get();
+                } else {
+                    // file was deleted by upstream process and segments list wasn't yet updated
+                    segments.remove(firstSegment);
+                }
+            } while (!optReader.isPresent());
         }
 
         byte[] event = currentReader.readEvent();
@@ -173,12 +194,12 @@ public final class DeadLetterQueueReader implements Closeable {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
-                final Path nextSegment = nextExistingSegmentFile(currentReader.getPath());
-                if (nextSegment == null) {
+                Optional<RecordIOReader> optReader = openNextExistingReader(currentReader.getPath());
+                if (!optReader.isPresent()) {
                     // segments were all already deleted files, do a poll
                     pollNewSegments(timeoutRemaining);
                 } else {
-                    currentReader = new RecordIOReader(nextSegment);
+                    currentReader = optReader.get();
                     return pollEntryBytes(timeoutRemaining);
                 }
             }
@@ -214,24 +235,44 @@ public final class DeadLetterQueueReader implements Closeable {
 
     public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
         // If the provided segment Path exist, then set the reader to start from the supplied position
-        if (Files.exists(segmentPath)) {
-            currentReader = new RecordIOReader(segmentPath);
+        Optional<RecordIOReader> optReader = openSegmentReader(segmentPath);
+        if (optReader.isPresent()) {
+            currentReader = optReader.get();
             currentReader.seekToOffset(position);
-        } else {
-            // Otherwise, set the current reader to be at the beginning of the next
-            // segment.
-            Path next = nextExistingSegmentFile(segmentPath);
-            if (next != null) {
-                currentReader = new RecordIOReader(next);
-            } else {
-                pollNewSegments();
-                // give a second try after a re-load of segments from filesystem
-                next = nextExistingSegmentFile(segmentPath);
-                if (next != null) {
-                    currentReader = new RecordIOReader(next);
-                }
-            }
+            return;
         }
+        // Otherwise, set the current reader to be at the beginning of the next
+        // segment.
+        optReader = openNextExistingReader(segmentPath);
+        if (optReader.isPresent()) {
+            currentReader = optReader.get();
+            return;
+        }
+
+        pollNewSegments();
+
+        // give a second try after a re-load of segments from filesystem
+        openNextExistingReader(segmentPath)
+                .ifPresent(reader -> currentReader = reader);
+    }
+
+    private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {
+        Path next = nextExistingSegmentFile(segmentPath);
+        if (next == null) {
+            return Optional.empty();
+        }
+
+        do {
+            Optional<RecordIOReader> optReader = openSegmentReader(next);
+            if (optReader.isPresent()) {
+                return optReader;
+            }
+            // file doesn't exists so remove it
+            segments.remove(next);
+            next = nextExistingSegmentFile(segmentPath);
+        } while (next != null);
+
+        return Optional.empty();
     }
 
     public Path getCurrentSegment() {
