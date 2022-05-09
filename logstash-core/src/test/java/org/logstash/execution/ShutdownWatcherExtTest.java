@@ -20,6 +20,10 @@
 
 package org.logstash.execution;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +58,7 @@ import static org.junit.Assert.assertTrue;
 public final class ShutdownWatcherExtTest extends RubyTestBase {
 
     private static final String CONFIG = "log4j2-test1.xml";
+    private static final Path PIPELINE_TEMPLATE = Paths.get("./src/test/resources/shutdown_watcher_ext_pipeline_template.rb").toAbsolutePath();
     private ListAppender appender;
 
     @ClassRule
@@ -98,7 +103,8 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
     );
 
     @Test
-    public void pipelineWithUnsafeShutdownShouldForceShutdown() throws InterruptedException {
+    public void pipelineWithUnsafeShutdownShouldForceShutdown() throws InterruptedException, IOException {
+        String pipeline = getPipeline(false);
         watcherShutdownStallingPipeline(pipeline);
 
         // non drain pipeline should print stall msg
@@ -108,22 +114,15 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
 
 
     @Test
-    public void pipelineWithDrainShouldNotPrintStallMsg() throws InterruptedException {
-        // set drain to true
-        List<CharSequence> drainPipeline = new ArrayList<>(pipeline);
-        int index = IntStream.range(0, drainPipeline.size())
-                    .filter(i -> drainPipeline.get(i).toString().contains("draining?"))
-                    .findFirst()
-                    .getAsInt();
-        drainPipeline.set(index + 1, "true");
-
-        watcherShutdownStallingPipeline(drainPipeline);
+    public void pipelineWithDrainShouldNotPrintStallMsg() throws InterruptedException, IOException {
+        String pipeline = getPipeline(true);
+        watcherShutdownStallingPipeline(pipeline);
 
         boolean printStalling = appender.getMessages().stream().anyMatch((msg) -> msg.contains("stalling"));
         assertFalse(printStalling);
     }
 
-    private void watcherShutdownStallingPipeline(List<CharSequence> rubyScript) throws InterruptedException {
+    private void watcherShutdownStallingPipeline(String rubyScript) throws InterruptedException {
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         try {
             final Future<IRubyObject> res = exec.submit(() -> {
@@ -132,7 +131,7 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
                 return new ShutdownWatcherExt(context.runtime, RubyUtil.SHUTDOWN_WATCHER_CLASS)
                         .initialize(
                                 context, new IRubyObject[]{
-                                        RubyUtil.RUBY.evalScriptlet(String.join("\n", rubyScript)),
+                                        RubyUtil.RUBY.evalScriptlet(rubyScript),
                                         context.runtime.newFloat(0.01)
                                 }
                         ).start(context);
@@ -150,5 +149,13 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
                 Assertions.fail("Failed to shut down shutdown watcher thread");
             }
         }
+    }
+
+    private static String getPipelineTemplate() throws IOException {
+        return new String(Files.readAllBytes(PIPELINE_TEMPLATE));
+    }
+
+    private static String getPipeline(Boolean isDraining) throws IOException {
+        return getPipelineTemplate().replace("%{value_placeholder}", isDraining.toString());
     }
 }
