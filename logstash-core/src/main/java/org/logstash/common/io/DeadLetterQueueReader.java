@@ -45,7 +45,14 @@ import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
