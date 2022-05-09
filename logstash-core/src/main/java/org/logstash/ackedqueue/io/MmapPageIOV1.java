@@ -321,4 +321,15 @@ public final class MmapPageIOV1 implements PageIO {
                 .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
         }
     }
+
+    @Override
+    public String toString() {
+        return "MmapPageIOV1{" +
+                "file=" + file +
+                ", capacity=" + capacity +
+                ", minSeqNum=" + minSeqNum +
+                ", elementCount=" + elementCount +
+                ", head=" + head +
+                '}';
+    }
 }
