@@ -231,10 +231,6 @@ public final class MmapPageIOV2 implements PageIO {
         write(bytes, seqNum, bytes.length, checksum(bytes));
     }
 
-    public String getFilePath() {
-        return file.getPath();
-    }
-
     @Override
     public void close() {
         if (this.buffer != null) {
