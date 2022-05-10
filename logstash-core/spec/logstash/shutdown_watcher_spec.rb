@@ -30,6 +30,7 @@ describe LogStash::ShutdownWatcher do
     allow(pipeline).to receive(:finished_execution?).and_return(false)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
+    allow(pipeline).to receive(:worker_threads_draining?).and_return(false)
   end
 
   context "when pipeline is stalled" do
