@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
+
 /**
  * Parse jvm.options file applying version conditional logic. Heavily inspired by same functionality in Elasticsearch.
  * */
@@ -35,6 +36,7 @@ public class JvmOptionsParser {
 
     private static final String[] MANDATORY_JVM_OPTIONS = new String[]{
             "-Djruby.regexp.interruptible=true",
+            "-Djdk.io.File.enableADS=true",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
@@ -46,6 +48,7 @@ public class JvmOptionsParser {
             "11-:--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
             "11-:--add-opens=java.management/sun.management=ALL-UNNAMED"
     };
+
 
     static class JvmOptionsFileParserException extends Exception {
 
@@ -82,7 +85,7 @@ public class JvmOptionsParser {
      *
      * @param args the args to the program which should consist of a single option, the path to LOGSTASH_HOME
      */
-    public static void main(final String[] args) throws InterruptedException, IOException {
+    public static void main(final String[] args) {
         if (args.length < 1 || args.length > 2) {
             throw new IllegalArgumentException(
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
