@@ -17,6 +17,7 @@
 
 module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input < ::LogStash::Inputs::Base
   include org.logstash.plugins.pipeline.PipelineInput
+  java_import org.logstash.plugins.pipeline.ReceiveResponse
 
   config_name "pipeline"
 
@@ -55,16 +56,23 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   # To understand why this value is useful see Internal.send_to
   # Note, this takes a java Stream, not a ruby array
   def internalReceive(events)
-    return false if !@running.get()
+    return ReceiveResponse.closing() if !@running.get()
 
     # TODO This should probably push a batch at some point in the future when doing so
     # buys us some efficiency
-    events.forEach do |event|
-      decorate(event)
-      @queue << event
+    begin
+      stream_position = 0
+      events.forEach do |event|
+        decorate(event)
+        @queue << event
+        stream_position = stream_position + 1
+      end
+      ReceiveResponse.completed()
+    rescue java.lang.InterruptedException, IOError => e
+      # maybe an IOException in enqueueing
+      logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
+      ReceiveResponse.failed_at(stream_position, e)
     end
-
-    true
   end
 
   def stop

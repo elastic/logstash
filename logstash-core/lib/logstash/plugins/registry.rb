@@ -123,7 +123,7 @@ module LogStash module Plugins
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
-      @alias_registry = alias_registry || Java::org.logstash.plugins.AliasRegistry.new
+      @alias_registry = alias_registry || Java::org.logstash.plugins.AliasRegistry.instance
     end
 
     def setup!
@@ -152,12 +152,13 @@ module LogStash module Plugins
 
       GemRegistry.logstash_plugins.each do |plugin_context|
         if plugin_context.spec.metadata.key?('java_plugin')
-          jar_files = plugin_context.spec.files.select {|f| f =~ /.*\.jar/}
+          # Find *.jar file from the require path
+          jar_files = plugin_context.spec.matches_for_glob("**/*.jar")
           expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
-          if (jar_files.length != 1 || !jar_files[0].end_with?(expected_jar_name))
+          if jar_files.length != 1 || !jar_files.first.end_with?(expected_jar_name)
             raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"
           end
-          @java_plugins[plugin_context.spec.name] = [plugin_context.spec.loaded_from, jar_files[0]]
+          @java_plugins[plugin_context.spec.name] = jar_files.first
         end
 
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
@@ -317,13 +318,11 @@ module LogStash module Plugins
           else
             raise LoadError,  "Could not find metadata for Java plugin: #{full_name}"
           end
-
           java_import org.logstash.plugins.PluginClassLoader
           java_import org.logstash.Logstash
 
-          classloader = PluginClassLoader.create(plugin_paths[0], plugin_paths[1], Logstash.java_class.class_loader)
+          classloader = PluginClassLoader.create(plugin_paths, Logstash.java_class.class_loader)
           klazz = classloader.load_class(klass.javaClass.name)
-
           @registry[key_for(type, name)] = PluginSpecification.new(type, name, klazz.ruby_class.java_class)
         else
           @registry[key_for(type, name)] = PluginSpecification.new(type, name, klass.javaClass)

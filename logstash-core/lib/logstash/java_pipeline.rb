@@ -24,6 +24,7 @@ require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/compiler"
 require "logstash/config/lir_serializer"
+require "logstash/worker_loop_thread"
 
 module LogStash; class JavaPipeline < JavaBasePipeline
   include LogStash::Util::Loggable
@@ -292,7 +293,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # Once all WorkerLoop have been initialized run them in separate threads
 
       worker_loops.each_with_index do |worker_loop, t|
-        thread = Thread.new do
+        thread = WorkerLoopThread.new(worker_loop) do
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           ThreadContext.put("pipeline.id", pipeline_id)
           begin
@@ -550,6 +551,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def shutdown_requested?
     @shutdownRequested.get
+  end
+
+  def worker_threads_draining?
+    @worker_threads.any? {|t| t.worker_loop.draining? }
   end
 
   private

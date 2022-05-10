@@ -154,8 +154,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
             while (true) {
                 TimeUnit.SECONDS.sleep(cyclePeriod);
                 attemptsCount.incrementAndGet();
-                if (stopped(context).isTrue() ||
-                    pipeline.callMethod(context, "finished_execution?").isTrue()) {
+                if (stopped(context).isTrue() || pipeline.callMethod(context, "finished_execution?").isTrue()) {
                     break;
                 }
                 reports.add(pipelineReportSnapshot(context));
@@ -163,17 +162,21 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                     reports.remove(0);
                 }
                 if (cycleNumber == reportEvery - 1) {
-                    LOGGER.warn(reports.get(reports.size() - 1).callMethod(context, "to_s")
-                        .asJavaString());
+                    boolean isPqDraining = pipeline.callMethod(context, "worker_threads_draining?").isTrue();
+
+                    if (!isPqDraining) {
+                        LOGGER.warn(reports.get(reports.size() - 1).callMethod(context, "to_s").asJavaString());
+                    }
+
                     if (shutdownStalled(context).isTrue()) {
                         if (stalledCount == 0) {
-                            LOGGER.error(
-                                "The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information."
-                            );
+                            LOGGER.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.");
+                            if (isPqDraining) {
+                                LOGGER.info("The queue is draining before shutdown.");
+                            }
                         }
                         ++stalledCount;
-                        if (isUnsafeShutdown(context, null).isTrue() &&
-                            abortThreshold == stalledCount) {
+                        if (isUnsafeShutdown(context, null).isTrue() && abortThreshold == stalledCount) {
                             LOGGER.fatal("Forcefully quitting Logstash ...");
                             forceExit(context);
                         }

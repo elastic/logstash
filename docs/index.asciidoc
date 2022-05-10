@@ -75,7 +75,7 @@ include::static/shutdown.asciidoc[]
 include::static/upgrading.asciidoc[]
 
 // Configuring Logstash
-include::static/configuration.asciidoc[]
+include::static/pipeline-configuration.asciidoc[]
 
 include::static/ls-to-cloud.asciidoc[]
 
@@ -97,10 +97,6 @@ include::static/glob-support.asciidoc[]
 
 include::static/ingest-convert.asciidoc[]
 
-include::static/ls-ls-config.asciidoc[]
-
-include::static/management/configuring-centralized-pipelines.asciidoc[]
-
 include::static/field-reference.asciidoc[]
 
 //The `field-reference.asciidoc` file (included above) contains a
@@ -110,8 +106,13 @@ include::static/field-reference.asciidoc[]
 //This include should remain after includes for all other topics under the
 //`Advanced Logstash Configuration` heading.
 
+// Logstash-to-Logstash
+include::static/ls-ls-config.asciidoc[]
+
 // Centralized configuration managements
 include::static/config-management.asciidoc[]
+
+include::static/management/configuring-centralized-pipelines.asciidoc[]
 
 // Working with Logstash Modules
 include::static/modules.asciidoc[]

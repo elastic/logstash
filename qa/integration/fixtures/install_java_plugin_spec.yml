@@ -1,0 +1,13 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    java_input_example {
+      count => 4
+    }
+    stdin{}
+ }
+ output {
+   null {}
+ }

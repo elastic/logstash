@@ -173,7 +173,7 @@ public final class MmapPageIOV2 implements PageIO {
                 this.elementCount += 1;
             } catch (MmapPageIOV2.PageIOInvalidElementException e) {
                 // simply stop at first invalid element
-                LOGGER.debug("PageIO recovery element index:{}, readNextElement exception: {}", i, e.getMessage());
+                LOGGER.debug("PageIO recovery for '{}' element index:{}, readNextElement exception: {}", file, i, e.getMessage());
                 break;
             }
         }
@@ -221,8 +221,9 @@ public final class MmapPageIOV2 implements PageIO {
     @Override
     public void purge() throws IOException {
         close();
-        Files.delete(this.file.toPath());
         this.head = 0;
+        LOGGER.debug("PageIO deleting '{}'", this.file);
+        Files.delete(this.file.toPath());
     }
 
     @Override
@@ -354,8 +355,7 @@ public final class MmapPageIOV2 implements PageIO {
             int checksum = buffer.getInt();
             int computedChecksum = (int) this.checkSummer.getValue();
             if (computedChecksum != checksum) {
-                throw new MmapPageIOV2.PageIOInvalidElementException(
-                    "Element invalid checksum");
+                throw new MmapPageIOV2.PageIOInvalidElementException("Element invalid checksum");
             }
         }
 
@@ -399,6 +399,17 @@ public final class MmapPageIOV2 implements PageIO {
             throw new MmapPageIOV2.PageIOInvalidVersionException(String
                 .format("Expected page version=%d but found version=%d", VERSION_TWO, version));
         }
+    }
+
+    @Override
+    public String toString() {
+        return "MmapPageIOV2{" +
+                "file=" + file +
+                ", capacity=" + capacity +
+                ", minSeqNum=" + minSeqNum +
+                ", elementCount=" + elementCount +
+                ", head=" + head +
+                '}';
     }
 
     /**

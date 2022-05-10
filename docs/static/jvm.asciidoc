@@ -20,7 +20,7 @@ for the official word on supported versions across releases.
 ===== 
 {ls} offers architecture-specific
 https://www.elastic.co/downloads/logstash[downloads] that include
-Adoptium Eclipse Temurin 17, the latest long term support (LTS) release of the JDK.
+Adoptium Eclipse Temurin 11, the latest long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the
 version that is bundled. 

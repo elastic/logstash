@@ -10,20 +10,6 @@ If you're running {ls} as a service, use one of the following commands to stop i
 systemctl stop logstash
 ----
 
-* On upstart, use: 
-+
-[source,shell]
-----
-initctl stop logstash
-----
-
-* On sysv, use: 
-+
-[source,shell]
-----
-/etc/init.d/logstash stop
-----
-
 If you're running {ls} directly in the console on a POSIX system, you can stop 
 it by sending SIGTERM to the {ls} process. For example:
 

@@ -51,7 +51,7 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    # Mutex to synchonize in the exclusive method
+    # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
     @webserver_control_lock = Mutex.new
 
@@ -314,7 +314,7 @@ class LogStash::Agent
   end
 
   def no_pipeline?
-    @pipelines_registry.running_pipelines.empty?
+    @pipelines_registry.running_pipelines(include_loading: true).empty?
   end
 
   private
@@ -391,7 +391,7 @@ class LogStash::Agent
           end
         rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
+          converge_result.add(action, LogStash::ConvergeResult::FailedAction.from_exception(e))
         end
       end
     end.each(&:join)

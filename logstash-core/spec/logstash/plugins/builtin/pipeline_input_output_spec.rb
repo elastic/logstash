@@ -79,6 +79,14 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         output.register
       end
 
+      describe "#internalReceive" do
+        it "should fail" do
+          java_import "org.logstash.plugins.pipeline.PipelineInput"
+          res = input.internalReceive(java.util.ArrayList.new([event]).stream)
+          expect(res.status).to eq PipelineInput::ReceiveStatus::COMPLETED
+        end
+      end
+
       describe "sending a message" do
         before(:each) do
           output.multi_receive([event])

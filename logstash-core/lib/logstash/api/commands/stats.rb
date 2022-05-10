@@ -35,11 +35,11 @@ module LogStash
             type = p_stats[:queue] && p_stats[:queue][:type].value
             pipeline = service.agent.get_pipeline(pipeline_id)
             next if pipeline.nil? || pipeline.system? || type != 'persisted'
-            total_queued_events += p_stats[:queue][:events].value
+            total_queued_events += p_stats.dig(:queue, :events)&.value || 0
           end
 
           {:events_count => total_queued_events}
-        rescue Instrument::MetricStore::MetricNotFound
+        rescue LogStash::Instrument::MetricStore::MetricNotFound
           {}
         end
 
@@ -76,7 +76,7 @@ module LogStash
             [:stats, :events],
             :in, :filtered, :out, :duration_in_millis, :queue_push_duration_in_millis
           )
-        rescue Instrument::MetricStore::MetricNotFound
+        rescue LogStash::Instrument::MetricStore::MetricNotFound
           # if the stats/events metrics have not yet been populated, return an empty map
           {}
         end
