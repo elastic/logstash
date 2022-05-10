@@ -126,6 +126,7 @@ module LogStash
       @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
       @ssl_params = options[:ssl_params] if options.include?(:ssl_params)
       @running = Concurrent::AtomicBoolean.new(false)
+      @mutex = Mutex.new
 
       validate_keystore_access! if @ssl_params
 
@@ -154,8 +155,8 @@ module LogStash
 
       running!
 
-      bind_to_available_port # and block...
-
+      server_thread = create_server_thread
+      server_thread.join unless server_thread.nil?  # and block...
       logger.debug("API WebServer has stopped running")
     end
 
@@ -172,8 +173,10 @@ module LogStash
     end
 
     def stop(options={})
-      @running.make_false
-      @server.stop(true) if @server
+      @mutex.synchronize do
+        @running.make_false
+        @server.stop(true) if @server
+      end
     end
 
     def ssl_enabled?
@@ -189,39 +192,43 @@ module LogStash
       ::Puma::Server.new(@app, events)
     end
 
-    def bind_to_available_port
-      http_ports.each_with_index do |candidate_port, idx|
-        begin
-          break unless running?
-
-          @server = _init_server
-
-          logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
-          if @ssl_params
-            unwrapped_ssl_params = {
-              'keystore'      => @ssl_params.fetch(:keystore_path),
-              'keystore-pass' => @ssl_params.fetch(:keystore_password).value
-            }
-            ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
-            @server.add_ssl_listener(http_host, candidate_port, ssl_context)
-          else
-            @server.add_tcp_listener(http_host, candidate_port)
-          end
-
-          @port = candidate_port
-          logger.info("Successfully started Logstash API endpoint", :port => candidate_port, :ssl_enabled => ssl_enabled?)
-          set_http_address_metric("#{http_host}:#{candidate_port}")
-
-          @server.run.join
-          break
-        rescue Errno::EADDRINUSE
-          if http_ports.count == 1
-            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
-          elsif idx == http_ports.count-1
-            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
+    def create_server_thread
+      server_thread = nil
+      @mutex.synchronize do
+        @server = _init_server
+        http_ports.each_with_index do |candidate_port, idx|
+          begin
+            break unless running?
+            @port = bind_to_port(candidate_port)
+            server_thread = @server.run
+            logger.info("Successfully started Logstash API endpoint", :port => candidate_port, :ssl_enabled => ssl_enabled?)
+            set_http_address_metric("#{http_host}:#{candidate_port}")
+            break
+          rescue Errno::EADDRINUSE
+            if http_ports.count == 1
+              raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
+            elsif idx == http_ports.count-1
+              raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
+            end
           end
         end
       end
+      server_thread
+    end
+
+    def bind_to_port(candidate_port)
+      logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
+      if @ssl_params
+        unwrapped_ssl_params = {
+            'keystore' => @ssl_params.fetch(:keystore_path),
+            'keystore-pass' => @ssl_params.fetch(:keystore_password).value
+        }
+        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
+        @server.add_ssl_listener(http_host, candidate_port, ssl_context)
+      else
+        @server.add_tcp_listener(http_host, candidate_port)
+      end
+      candidate_port
     end
 
     def set_http_address_metric(value)
