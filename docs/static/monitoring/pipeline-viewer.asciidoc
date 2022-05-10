@@ -2,7 +2,6 @@
 [[logstash-pipeline-viewer]]
 === Pipeline Viewer UI
 
-beta::[]
 
 The pipeline viewer UI offers additional visibility into the behavior and
 performance of complex pipeline configurations.
