@@ -71,7 +71,7 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
 
     @Test
     public void pipelineWithUnsafeShutdownShouldForceShutdown() throws InterruptedException, IOException {
-        String pipeline = getPipeline(false);
+        String pipeline = resolvedPipeline(false);
         watcherShutdownStallingPipeline(pipeline);
 
         // non drain pipeline should print stall msg
@@ -82,7 +82,7 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
 
     @Test
     public void pipelineWithDrainShouldNotPrintStallMsg() throws InterruptedException, IOException {
-        String pipeline = getPipeline(true);
+        String pipeline = resolvedPipeline(true);
         watcherShutdownStallingPipeline(pipeline);
 
         boolean printStalling = appender.getMessages().stream().anyMatch((msg) -> msg.contains("stalling"));
@@ -122,7 +122,7 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
         return new String(Files.readAllBytes(PIPELINE_TEMPLATE));
     }
 
-    private static String getPipeline(Boolean isDraining) throws IOException {
+    private static String resolvedPipeline(Boolean isDraining) throws IOException {
         return getPipelineTemplate().replace("%{value_placeholder}", isDraining.toString());
     }
 }
