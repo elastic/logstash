@@ -111,6 +111,7 @@ public final class DeadLetterQueueReader implements Closeable {
         try {
             return Optional.of(new RecordIOReader(segment));
         } catch (NoSuchFileException ex) {
+            logger.debug("Segment file {} was deleted by DLQ writer during DLQ reader opening", segment);
             return Optional.empty();
         }
     }
