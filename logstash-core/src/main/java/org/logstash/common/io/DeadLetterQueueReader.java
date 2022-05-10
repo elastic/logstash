@@ -86,8 +86,6 @@ public final class DeadLetterQueueReader implements Closeable {
         for (Path segment : segments) {
             Optional<RecordIOReader> optReader = openSegmentReader(segment);
             if (!optReader.isPresent()) {
-                // file was deleted after existence check
-                segments.remove(segment);
                 continue;
             }
             currentReader = optReader.get();
@@ -112,6 +110,8 @@ public final class DeadLetterQueueReader implements Closeable {
             return Optional.of(new RecordIOReader(segment));
         } catch (NoSuchFileException ex) {
             logger.debug("Segment file {} was deleted by DLQ writer during DLQ reader opening", segment);
+            // file was deleted by upstream process and segments list wasn't yet updated
+            segments.remove(segment);
             return Optional.empty();
         }
     }
@@ -189,9 +189,6 @@ public final class DeadLetterQueueReader implements Closeable {
                 optReader = openSegmentReader(firstSegment);
                 if (optReader.isPresent()) {
                     currentReader = optReader.get();
-                } else {
-                    // file was deleted by upstream process and segments list wasn't yet updated
-                    segments.remove(firstSegment);
                 }
             } while (!optReader.isPresent());
         }
@@ -275,8 +272,6 @@ public final class DeadLetterQueueReader implements Closeable {
             if (optReader.isPresent()) {
                 return optReader;
             }
-            // file doesn't exists so remove it
-            segments.remove(next);
             next = nextExistingSegmentFile(segmentPath);
         } while (next != null);
 
