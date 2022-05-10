@@ -262,19 +262,13 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {
-        Path next = nextExistingSegmentFile(segmentPath);
-        if (next == null) {
-            return Optional.empty();
-        }
-
-        do {
+        Path next;
+        while ( (next = nextExistingSegmentFile(segmentPath)) != null ) {
             Optional<RecordIOReader> optReader = openSegmentReader(next);
             if (optReader.isPresent()) {
                 return optReader;
             }
-            next = nextExistingSegmentFile(segmentPath);
-        } while (next != null);
-
+        }
         return Optional.empty();
     }
 
