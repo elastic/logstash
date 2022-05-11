@@ -1,5 +1,5 @@
 [[logstash-reference]]
-= Logstash Reference!!!!!!!!!!
+= Logstash Reference!!!
 
 include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
 include::{docs-root}/shared/attributes.asciidoc[]
