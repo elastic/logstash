@@ -674,6 +674,49 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentation() throws IOException, InterruptedException {
+        // 32 Kb - 13b - 5(fragmentation) = 32750
+        writeEventOnSegment(32750, 'A', segmentFileName(0));
+        // write a second segment with small payload
+        writeEventOnSegment(10, 'B', segmentFileName(1));
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+
+            assertNotNull(rawStr);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 32750; i++) {
+                sb.append('A');
+            }
+
+            assertEquals(sb.toString(), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private void writeEventOnSegment(int payloadSize, char fillingChar, String segment) throws IOException {
+        byte[] payload = new byte[payloadSize];
+        Arrays.fill(payload, (byte) fillingChar);
+        Path segmentPath = dir.resolve(segment);
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(payload);
+        writer.close();
+    }
+
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
      * such that the result will have a constant serialization length of 24 bytes.
