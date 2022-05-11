@@ -446,9 +446,9 @@ class LogStash::Runner < Clamp::StrictCommand
     run_as_superuser_setting = setting("run_as_superuser")
     if Process.euid() == 0
       if run_as_superuser_setting.eql?("ALLOW")
-        deprecation_logger.deprecated("NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'run_as_superuser' to 'BLOCK' to avoid startup errors in future releases.")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'run_as_superuser' to 'BLOCK' to avoid startup errors in future releases.")
       else
-        raise(RuntimeError, "Logstash cannot be run as root.")
+        raise(RuntimeError, "Logstash cannot be run as superuser.")
       end
     end
   end
