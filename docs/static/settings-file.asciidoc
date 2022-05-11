@@ -317,9 +317,9 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
-| `run_as_superuser`
-| Setting to `BLOCK` or `ALLOW` running Logstash as a superuser.
-| `ALLOW`
+| `allow_superuser`
+| Setting to `true` to allow or `false` to block running Logstash as a superuser.
+| `true`
 
 | `password_policy.mode`
 | Raises either `WARN` or `ERROR` message when password requirements are not met.

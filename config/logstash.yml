@@ -299,8 +299,8 @@
 #
 # ------------ Other Settings --------------
 #
-# Allow or block running Logstash as superuser (default: ALLOW)
-# run_as_superuser: BLOCK, ALLOW
+# Allow or block running Logstash as superuser (default: true)
+allow_superuser: false
 #
 # Where to find custom plugins
 # path.plugins: []
