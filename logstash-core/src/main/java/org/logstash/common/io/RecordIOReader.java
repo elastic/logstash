@@ -232,6 +232,7 @@ public final class RecordIOReader implements Closeable {
     private void maybeRollToNextBlock() throws IOException {
         // check block position state
         if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
+            channelPosition += this.channel.position();
             consumeBlock(true);
         }
     }
@@ -246,6 +247,7 @@ public final class RecordIOReader implements Closeable {
 
         buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
         currentBlock.position(currentBlock.position() + header.getSize());
+        channelPosition += header.getSize();
     }
 
     public byte[] readEvent() throws IOException {
@@ -254,6 +256,7 @@ public final class RecordIOReader implements Closeable {
                 return null;
             }
             RecordHeader header = RecordHeader.get(currentBlock);
+            channelPosition += RECORD_HEADER_SIZE;
             int cumReadSize = 0;
             int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
             ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
@@ -262,16 +265,13 @@ public final class RecordIOReader implements Closeable {
             while (cumReadSize < bufferSize) {
                 maybeRollToNextBlock();
                 RecordHeader nextHeader = RecordHeader.get(currentBlock);
+                channelPosition += RECORD_HEADER_SIZE;
                 getRecord(buffer, nextHeader);
                 cumReadSize += nextHeader.getSize();
             }
             return buffer.array();
         } catch (ClosedByInterruptException e) {
             return null;
-        } finally {
-            if (channel.isOpen()) {
-                channelPosition = channel.position();
-            }
         }
     }
 

@@ -31,6 +31,7 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -42,8 +43,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
@@ -643,7 +643,6 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
-
     @Test
     public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
         // write some data into a segment file
@@ -657,7 +656,7 @@ public class DeadLetterQueueReaderTest {
         // read the first event and save read position
         Path currentSegment;
         long currentPosition;
-        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, 10)) {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             byte[] rawStr = reader.pollEntryBytes();
             assertNotNull(rawStr);
             assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
@@ -665,9 +664,8 @@ public class DeadLetterQueueReaderTest {
             currentPosition = reader.getCurrentPosition();
         }
 
-
         // reopen the reader from the last saved position and read next element
-        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, 10)) {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
 
             byte[] rawStr = reader.pollEntryBytes();
@@ -675,7 +673,6 @@ public class DeadLetterQueueReaderTest {
             assertEquals("1", new String(rawStr, StandardCharsets.UTF_8));
         }
     }
-
 
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
