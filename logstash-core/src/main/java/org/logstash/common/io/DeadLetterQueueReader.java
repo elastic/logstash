@@ -101,8 +101,18 @@ public final class DeadLetterQueueReader implements Closeable {
         }
     }
 
+    /**
+     * Opens the segment reader for the given path.
+     * Side effect: Will attempt to remove the given segment from the list of active
+     *              segments if segment is not found.
+     * @param segment Path to segment File
+     * @return Optional containing a RecordIOReader if the segment exists
+     * @throws IOException
+     */
     private Optional<RecordIOReader> openSegmentReader(Path segment) throws IOException {
         if (!Files.exists(segment)) {
+            // file was deleted by upstream process and segments list wasn't yet updated
+            segments.remove(segment);
             return Optional.empty();
         }
 
