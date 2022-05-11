@@ -219,15 +219,13 @@ public final class RecordIOReader implements Closeable {
         consumeBlock(false);
         while (true) {
             int eventStartPosition = seekToStartOfEventInBlock();
-            if (eventStartPosition < 0) {
-                if (isEndOfStream()) {
-                    return false;
-                } else {
-                    consumeBlock(true);
-                }
-            } else {
+            if (eventStartPosition >= 0) {
                 return true;
             }
+            if (isEndOfStream()) {
+                return false;
+            }
+            consumeBlock(true);
         }
     }
 
@@ -252,7 +250,7 @@ public final class RecordIOReader implements Closeable {
 
     public byte[] readEvent() throws IOException {
         try {
-            if (channel.isOpen() == false || consumeToStartOfEvent() == false) {
+            if (!channel.isOpen() || !consumeToStartOfEvent()) {
                 return null;
             }
             RecordHeader header = RecordHeader.get(currentBlock);
