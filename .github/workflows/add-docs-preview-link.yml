@@ -15,6 +15,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: elastic
+          # when running with on: pull_request_target we get the PR base ref by default
+          ref: github.head_ref
           statusName: "elasticsearch-ci/docs"
           # https://elasticsearch-ci.elastic.co/job/elastic+logstash+pull-request+build-docs
           # usually finishes in ~ 10 minutes
