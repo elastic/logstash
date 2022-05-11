@@ -644,6 +644,39 @@ public class DeadLetterQueueReaderTest {
     }
 
 
+    @Test
+    public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
+        // write some data into a segment file
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < 10; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, 10)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, 10)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("1", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
      * such that the result will have a constant serialization length of 24 bytes.
