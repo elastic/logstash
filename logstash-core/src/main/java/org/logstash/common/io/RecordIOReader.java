@@ -103,9 +103,16 @@ public final class RecordIOReader implements Closeable {
 
     public void seekToOffset(long channelOffset) throws IOException {
         currentBlock.rewind();
-        currentBlockSizeReadFromChannel = 0;
-        channel.position(channelOffset);
-        streamPosition = channel.position();
+
+        // align to block boundary and move from that with relative positioning
+        long segmentOffset = channelOffset - VERSION_SIZE;
+        long blockIndex = segmentOffset / BLOCK_SIZE;
+        long blockStartOffset = blockIndex * BLOCK_SIZE;
+        channel.position(blockStartOffset + VERSION_SIZE);
+        int readBytes = channel.read(currentBlock);
+        currentBlockSizeReadFromChannel = readBytes;
+        currentBlock.position((int) segmentOffset % BLOCK_SIZE);
+        streamPosition = channelOffset;
     }
 
     public <T> byte[] seekToNextEventPosition(T target, Function<byte[], T> keyExtractor, Comparator<T> keyComparator) throws IOException {

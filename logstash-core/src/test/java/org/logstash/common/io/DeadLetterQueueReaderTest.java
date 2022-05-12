@@ -31,9 +31,12 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -905,5 +909,21 @@ public class DeadLetterQueueReaderTest {
 
         assertEquals(segments, Files.list(dir).count());
         return loopPerSegment;
+    }
+
+    @Test
+    public void testRestartFromCommitPointRealData() throws IOException, InterruptedException, URISyntaxException {
+        URL url = this.getClass().getResource("1.log");
+        Path path = Paths.get(url.toURI());
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(path.getParent())) {
+            reader.setCurrentReaderAndPosition(path, 0x3593F0);
+
+            for (int i = 0; i < 10_000 - 3_376; i++) {
+                byte[] rawStr = reader.pollEntryBytes();
+                assertNotNull(rawStr);
+                assertThat(new String(rawStr, StandardCharsets.UTF_8), containsString("Could not index event to Elasticsearch. status: 400"));
+            }
+        }
     }
 }
