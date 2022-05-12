@@ -14,10 +14,14 @@ jobs:
         uses: autotelic/action-wait-for-status-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          owner: elastic
+          # when running with on: pull_request_target we get the PR base ref by default
+          ref: ${{ github.event.pull_request.head.sha }}
           statusName: "elasticsearch-ci/docs"
           # https://elasticsearch-ci.elastic.co/job/elastic+logstash+pull-request+build-docs
           # usually finishes in ~ 10 minutes
           timeoutSeconds: 900
+          intervalSeconds: 30
       - name: Add Docs Preview link in PR Comment
         if: steps.wait-for-status.outputs.state == 'success'
         uses: thollander/actions-comment-pull-request@v1
