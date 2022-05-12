@@ -737,6 +737,43 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentationOnceMessageIsBiggerThenBlock() throws IOException, InterruptedException {
+        final int payloadSize = INTERNAL_FRAG_PAYLOAD_SIZE + BLOCK_SIZE;
+        byte[] almostFullBlockPayload = new byte[payloadSize];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(payloadSize, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
     private void writeSegmentWithFirstBlockContainingInternalFragmentation() throws IOException {
         byte[] almostFullBlockPayload = new byte[INTERNAL_FRAG_PAYLOAD_SIZE];
         Arrays.fill(almostFullBlockPayload, (byte) 'A');
