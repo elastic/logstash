@@ -63,14 +63,17 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
  */
 public final class RecordIOReader implements Closeable {
 
+    enum SegmentStatus { EMPTY, VALID, INVALID }
+
     private static final Logger logger = LogManager.getLogger(RecordIOReader.class);
+    private static final int UNSET = -1;
+
     private final FileChannel channel;
+    private final Path path;
+
     private ByteBuffer currentBlock;
     private int currentBlockSizeReadFromChannel;
-    private final Path path;
-    private long channelPosition;
-    private static final int UNSET = -1;
-    enum SegmentStatus { EMPTY, VALID, INVALID}
+    private long streamPosition;
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
@@ -87,7 +90,7 @@ public final class RecordIOReader implements Closeable {
                     "Invalid version on DLQ data file %s. Expected version: %c. Version found on file: %c",
                     path, VERSION, versionInFile));
         }
-        this.channelPosition = this.channel.position();
+        this.streamPosition = this.channel.position();
     }
 
     public Path getPath() {
@@ -95,14 +98,14 @@ public final class RecordIOReader implements Closeable {
     }
 
     public void seekToBlock(int bid) throws IOException {
-        seekToOffset(bid * BLOCK_SIZE + VERSION_SIZE);
+        seekToOffset(bid * (long) BLOCK_SIZE + VERSION_SIZE);
     }
 
     public void seekToOffset(long channelOffset) throws IOException {
         currentBlock.rewind();
         currentBlockSizeReadFromChannel = 0;
         channel.position(channelOffset);
-        channelPosition = channel.position();
+        streamPosition = channel.position();
     }
 
     public <T> byte[] seekToNextEventPosition(T target, Function<byte[], T> keyExtractor, Comparator<T> keyComparator) throws IOException {
@@ -155,25 +158,26 @@ public final class RecordIOReader implements Closeable {
     }
 
     public long getChannelPosition() {
-        return channelPosition;
+        return streamPosition;
     }
 
     void consumeBlock(boolean rewind) throws IOException {
-        if (rewind) {
-            currentBlockSizeReadFromChannel = 0;
-            currentBlock.rewind();
-        } else if (currentBlockSizeReadFromChannel == BLOCK_SIZE) {
+        if (!rewind && currentBlockSizeReadFromChannel == BLOCK_SIZE) {
             // already read enough, no need to read more
             return;
         }
-        int processedPosition = currentBlock.position();
+        if (rewind) {
+            currentBlockSizeReadFromChannel = 0;
+            currentBlock.rewind();
+        }
+        currentBlock.mark();
         try {
             // Move to last written to position
             currentBlock.position(currentBlockSizeReadFromChannel);
             channel.read(currentBlock);
             currentBlockSizeReadFromChannel = currentBlock.position();
         } finally {
-            currentBlock.position(processedPosition);
+            currentBlock.reset();
         }
     }
 
@@ -190,22 +194,29 @@ public final class RecordIOReader implements Closeable {
      */
      int seekToStartOfEventInBlock() {
          // Already consumed all the bytes in this block.
-         if (currentBlock.position() >= currentBlockSizeReadFromChannel){
+         if (currentBlock.position() >= currentBlockSizeReadFromChannel) {
              return -1;
          }
          while (true) {
              RecordType type = RecordType.fromByte(currentBlock.array()[currentBlock.arrayOffset() + currentBlock.position()]);
-             if (RecordType.COMPLETE.equals(type) || RecordType.START.equals(type)) {
-                 return currentBlock.position();
-             } else if (RecordType.END.equals(type)) {
-                 RecordHeader header = RecordHeader.get(currentBlock);
-                 currentBlock.position(currentBlock.position() + header.getSize());
-                 // If this is the end of stream, then cannot seek to start of block
-                 if (this.isEndOfStream()){
-                     return -1;
-                 }
-             } else {
+             if (type == null) {
                  return -1;
+             }
+             switch (type) {
+                 case COMPLETE:
+                 case START:
+                     return currentBlock.position();
+                 case MIDDLE:
+                     return -1;
+                 case END:
+                     // reached END record, move forward to the next record in the block if it's present
+                     RecordHeader header = RecordHeader.get(currentBlock);
+                     currentBlock.position(currentBlock.position() + header.getSize());
+                     // If this is the end of stream, then cannot seek to start of block
+                     if (this.isEndOfStream()) {
+                         return -1;
+                     }
+                     break;
              }
          }
      }
@@ -232,7 +243,7 @@ public final class RecordIOReader implements Closeable {
     private void maybeRollToNextBlock() throws IOException {
         // check block position state
         if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
-            channelPosition = this.channel.position();
+            streamPosition = this.channel.position();
             consumeBlock(true);
         }
     }
@@ -250,9 +261,9 @@ public final class RecordIOReader implements Closeable {
         if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
             // if the block buffer doesn't contain enough space for another record
             // update position to last channel position.
-            channelPosition = channel.position();
+            streamPosition = channel.position();
         } else {
-            channelPosition += header.getSize();
+            streamPosition += header.getSize();
         }
     }
 
@@ -262,7 +273,7 @@ public final class RecordIOReader implements Closeable {
                 return null;
             }
             RecordHeader header = RecordHeader.get(currentBlock);
-            channelPosition += RECORD_HEADER_SIZE;
+            streamPosition += RECORD_HEADER_SIZE;
             int cumReadSize = 0;
             int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
             ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
@@ -271,7 +282,7 @@ public final class RecordIOReader implements Closeable {
             while (cumReadSize < bufferSize) {
                 maybeRollToNextBlock();
                 RecordHeader nextHeader = RecordHeader.get(currentBlock);
-                channelPosition += RECORD_HEADER_SIZE;
+                streamPosition += RECORD_HEADER_SIZE;
                 getRecord(buffer, nextHeader);
                 cumReadSize += nextHeader.getSize();
             }
@@ -299,7 +310,7 @@ public final class RecordIOReader implements Closeable {
         this.currentBlock = ByteBuffer.wrap(bufferState.blockContents);
         this.currentBlock.position(bufferState.currentBlockPosition);
         this.channel.position(bufferState.channelPosition);
-        this.channelPosition = channel.position();
+        this.streamPosition = channel.position();
         this.currentBlockSizeReadFromChannel = bufferState.currentBlockSizeReadFromChannel;
     }
 
@@ -309,7 +320,7 @@ public final class RecordIOReader implements Closeable {
         private long channelPosition;
         private byte[] blockContents;
 
-        BufferState(Builder builder){
+        BufferState(Builder builder) {
             this.currentBlockPosition = builder.currentBlockPosition;
             this.currentBlockSizeReadFromChannel = builder.currentBlockSizeReadFromChannel;
             this.channelPosition = builder.channelPosition;
@@ -321,28 +332,28 @@ public final class RecordIOReader implements Closeable {
                     currentBlockPosition, currentBlockSizeReadFromChannel, channelPosition);
         }
 
-        final static class Builder{
+        final static class Builder {
             private int currentBlockPosition;
             private int currentBlockSizeReadFromChannel;
             private long channelPosition;
             private byte[] blockContents;
 
-            Builder currentBlockPosition(final int currentBlockPosition){
+            Builder currentBlockPosition(final int currentBlockPosition) {
                 this.currentBlockPosition = currentBlockPosition;
                 return this;
             }
 
-            Builder currentBlockSizeReadFromChannel(final int currentBlockSizeReadFromChannel){
+            Builder currentBlockSizeReadFromChannel(final int currentBlockSizeReadFromChannel) {
                 this.currentBlockSizeReadFromChannel = currentBlockSizeReadFromChannel;
                 return this;
             }
 
-            Builder channelPosition(final long channelPosition){
+            Builder channelPosition(final long channelPosition) {
                 this.channelPosition = channelPosition;
                 return this;
             }
 
-            Builder blockContents(final byte[] blockContents){
+            Builder blockContents(final byte[] blockContents) {
                 this.blockContents = blockContents;
                 return this;
             }
@@ -368,7 +379,7 @@ public final class RecordIOReader implements Closeable {
                 if (moreEvents) segmentStatus = SegmentStatus.VALID;
             }
             return segmentStatus;
-        } catch (IOException | IllegalStateException e){
+        } catch (IOException | IllegalStateException e) {
             logger.warn("Error reading segment file {}", path, e);
             return SegmentStatus.INVALID;
         }
