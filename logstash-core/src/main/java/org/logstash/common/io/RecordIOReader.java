@@ -232,12 +232,12 @@ public final class RecordIOReader implements Closeable {
     private void maybeRollToNextBlock() throws IOException {
         // check block position state
         if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
-            channelPosition += this.channel.position();
+            channelPosition = this.channel.position();
             consumeBlock(true);
         }
     }
 
-    private void getRecord(ByteBuffer buffer, RecordHeader header) {
+    private void getRecord(ByteBuffer buffer, RecordHeader header) throws IOException {
         Checksum computedChecksum = new CRC32();
         computedChecksum.update(currentBlock.array(), currentBlock.position(), header.getSize());
 
@@ -247,7 +247,13 @@ public final class RecordIOReader implements Closeable {
 
         buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
         currentBlock.position(currentBlock.position() + header.getSize());
-        channelPosition += header.getSize();
+        if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
+            // if the block buffer doesn't contain enough space for another record
+            // update position to last channel position.
+            channelPosition = channel.position();
+        } else {
+            channelPosition += header.getSize();
+        }
     }
 
     public byte[] readEvent() throws IOException {

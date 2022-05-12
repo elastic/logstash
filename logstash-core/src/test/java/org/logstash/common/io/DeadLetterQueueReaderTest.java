@@ -35,20 +35,35 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
+    public static final int INTERNAL_FRAG_PAYLOAD_SIZE = BLOCK_SIZE - RECORD_HEADER_SIZE - 5;
     private Path dir;
     private int defaultDlqSize = 100_000_000; // 100mb
 
@@ -675,25 +690,39 @@ public class DeadLetterQueueReaderTest {
     }
 
     @Test
+    public void testReaderWithBlockInternalFragmentation() throws IOException, InterruptedException {
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+
+            rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private static String stringOf(int length, char ch) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
+    @Test
     public void testStoreReaderPositionWithBlocksWithInternalFragmentation() throws IOException, InterruptedException {
-        // 32 Kb - 13b - 5(fragmentation) = 32750
-        writeEventOnSegment(32750, 'A', segmentFileName(0));
-        // write a second segment with small payload
-        writeEventOnSegment(10, 'B', segmentFileName(1));
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
 
         // read the first event and save read position
         Path currentSegment;
         long currentPosition;
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             byte[] rawStr = reader.pollEntryBytes();
-
             assertNotNull(rawStr);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 32750; i++) {
-                sb.append('A');
-            }
-
-            assertEquals(sb.toString(), new String(rawStr, StandardCharsets.UTF_8));
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
             currentSegment = reader.getCurrentSegment();
             currentPosition = reader.getCurrentPosition();
         }
@@ -708,12 +737,18 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
-    private void writeEventOnSegment(int payloadSize, char fillingChar, String segment) throws IOException {
-        byte[] payload = new byte[payloadSize];
-        Arrays.fill(payload, (byte) fillingChar);
-        Path segmentPath = dir.resolve(segment);
+    private void writeSegmentWithFirstBlockContainingInternalFragmentation() throws IOException {
+        byte[] almostFullBlockPayload = new byte[INTERNAL_FRAG_PAYLOAD_SIZE];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
         RecordIOWriter writer = new RecordIOWriter(segmentPath);
-        writer.writeEvent(payload);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
         writer.close();
     }
 
