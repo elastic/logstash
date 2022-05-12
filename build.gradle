@@ -754,19 +754,20 @@ class JDKDetails {
     }
 
     String createDownloadUrl() {
+        String releaseName = major > 8 ?
+                "jdk-${revision}+${build}":
+                "jdk${revision}u${build}"
+        String vendorOsName = vendorOsName(osName)
         switch (vendor) {
             case "adoptopenjdk":
-                String releaseName = major > 8 ?
-                        "jdk-${revision}+${build}":
-                        "jdk${revision}u${build}"
-                String adoptOsName = adaptOsName(osName)
-                return "https://api.adoptopenjdk.net/v3/binary/version/${releaseName}/${adoptOsName}/${arch}/jdk/hotspot/normal/${vendor}"
+            case "adoptium":
+                return "https://api.${vendor}.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/${vendor}"
             default:
                 throw RuntimeException("Can't handle vendor: ${vendor}")
         }
     }
 
-    private String adaptOsName(String osName) {
+    private String vendorOsName(String osName) {
         if (osName == "darwin")
             return "mac"
         return osName
