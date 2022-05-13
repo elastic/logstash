@@ -750,6 +750,33 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
   end
 
+  describe "#get_es_version" do
+    let(:mock_client)  { double("http_client") }
+
+    before do
+      expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
+      allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
+      allow_any_instance_of(LogStash::LicenseChecker::LicenseReader).to receive(:client).and_return(mock_license_client)
+    end
+
+    it "responses [7.10] ES version" do
+      expected_version = { major: 7, minor: 10 }
+      allow(mock_client).to receive(:get).with("/").and_return(generate_es_version_response("7.10.0-SNAPSHOT"))
+      expect(subject.get_es_version).to eq expected_version
+    end
+
+    it "responses [8.0] ES version" do
+      expected_version = { major: 8, minor: 0 }
+      allow(mock_client).to receive(:get).with("/").and_return(es_version_8_response)
+      expect(subject.get_es_version).to eq expected_version
+    end
+
+    it "responses with an error" do
+      allow(mock_client).to receive(:get).with("/").and_return(elasticsearch_8_err_response)
+      expect{ subject.get_es_version }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+    end
+  end
+
   def generate_es_version_response(version)
     {"name"=>"MacBook-Pro",
      "cluster_name"=>"elasticsearch",

@@ -212,11 +212,11 @@ module LogStash
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
       def fetch_config(es_version, pipeline_ids, client)
-        does_es_support_wildcard_search = (es_version[:major] > 8) || (es_version[:major] == 8 && es_version[:minor] >= 3)
+        es_supports_pipeline_wildcard_search = es_supports_pipeline_wildcard_search?(es_version)
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
-          path = does_es_support_wildcard_search ?
-                   "#{SYSTEM_INDICES_API_PATH}?id=#{pipeline_ids.join(",")}":
+          path = es_supports_pipeline_wildcard_search ?
+                   "#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}":
                    "#{SYSTEM_INDICES_API_PATH}/"
           client.get(path)
         }
@@ -225,9 +225,13 @@ module LogStash
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        @pipelines = does_es_support_wildcard_search ?
+        @pipelines = es_supports_pipeline_wildcard_search ?
                        response :
                        get_wildcard_pipelines(pipeline_ids, response)
+      end
+
+      def es_supports_pipeline_wildcard_search?(es_version)
+        (es_version[:major] > 8) || (es_version[:major] == 8 && es_version[:minor] >= 3)
       end
 
       def get_single_pipeline_setting(pipeline_id)
