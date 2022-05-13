@@ -16,7 +16,7 @@ Because inputs generate events, there are no fields to
 evaluate within the input block--they do not exist yet!
 
 IMPORTANT: <<logstash-config-field-references>>, <<sprintf>>, and <<conditionals,conditionals>> do not work in input blocks.
-These configuration options work only within filter and output blocks because they depend on events and fields.
+These configuration options depend on events and fields, and therefore, work only within filter and output blocks.
 
 [discrete]
 [[logstash-config-field-references]]
