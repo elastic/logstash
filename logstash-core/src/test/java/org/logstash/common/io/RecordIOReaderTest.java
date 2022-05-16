@@ -93,7 +93,6 @@ public class RecordIOReaderTest {
 
         RecordIOReader reader = new RecordIOReader(file);
         reader.seekToBlock(1);
-        reader.consumeBlock(true);
         assertThat(reader.seekToStartOfEventInBlock(), equalTo(1026));
 
         reader.close();
