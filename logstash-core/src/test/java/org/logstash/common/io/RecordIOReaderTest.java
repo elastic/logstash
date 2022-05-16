@@ -156,22 +156,26 @@ public class RecordIOReaderTest {
         int blocks = (int)Math.ceil(expectedSize / (double)BLOCK_SIZE);
         int fillSize = expectedSize - (blocks * RECORD_HEADER_SIZE);
 
-        try(RecordIOWriter writer = new RecordIOWriter(file)){
+        try (RecordIOWriter writer = new RecordIOWriter(file)) {
             for (char i = 0; i < eventCount; i++) {
                 char[] blockSize = fillArray(fillSize);
                 blockSize[0] = i;
-                assertThat(writer.writeEvent(new StringElement(new String(blockSize)).serialize()), is((long)expectedSize));
+                byte[] payload = new StringElement(new String(blockSize)).serialize();
+                assertThat(writer.writeEvent(payload), is((long)expectedSize));
             }
         }
 
-        try(RecordIOReader reader = new RecordIOReader(file)) {
-            Function<byte[], Character> toChar = (b) -> (char) ByteBuffer.wrap(b).get(0);
-
+        try (RecordIOReader reader = new RecordIOReader(file)) {
+            Comparator<Character> charComparator = Comparator.comparing(Function.identity());
             for (char i = 0; i < eventCount; i++) {
-                reader.seekToNextEventPosition(i, toChar, Comparator.comparing(o -> o));
-                assertThat(toChar.apply(reader.readEvent()), equalTo(i));
+                reader.seekToNextEventPosition(i, RecordIOReaderTest::extractFirstChar, charComparator);
+                assertThat(extractFirstChar(reader.readEvent()), equalTo(i));
             }
         }
+    }
+
+    private static Character extractFirstChar(byte[] b) {
+        return (char) ByteBuffer.wrap(b).get(0);
     }
 
     @Test
