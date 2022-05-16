@@ -85,6 +85,10 @@ class LogstashService < Service
     @process.exit_code
   end
 
+  def pid
+    @process.pid
+  end
+
   # Starts a LS process in background with a given config file
   # and shuts it down after input is completely processed
   def start_background(config_file)
