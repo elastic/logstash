@@ -165,6 +165,13 @@
 # api.auth.basic.username: "logstash-user"
 # api.auth.basic.password: "s3cUreP4$$w0rD"
 #
+#
+# When configured with `api.auth.type` `basic`, you may set password policy mode.
+# This allows Logstash to WARN or ERROR when HTTP authentication password doesn't met the password policy requirements.
+# The default is WARN, setting to ERROR encourages using stronger password which is recommended.
+# The password policy requires non-empty minimum 5 char string to include digit, upper case letter and lower case letter.
+# api.auth.basic.password_policy.mode: WARN or ERROR
+#
 # ------------ Module Settings ---------------
 # Define modules here.  Modules definitions must be defined as an array.
 # The simple way to see this is to prepend each `name` with a `-`, and keep
@@ -285,17 +292,6 @@
 #
 # log.level: info
 # path.logs:
-#
-# ------------ Password Policy --------------
-# password_policy.mode: WARN or ERROR
-# password_policy:
-#  length:
-#    minimum: 8
-#  include:
-#    upper: REQUIRED
-#    lower: REQUIRED
-#    digit: REQUIRED
-#    symbol: OPTIONAL
 #
 # ------------ Other Settings --------------
 #

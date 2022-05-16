@@ -283,6 +283,11 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 Ignored unless `api.auth.type` is set to `basic`.
 | _N/A_
 
+| `api.auth.basic.password_policy.mode`
+| Raises either `WARN` or `ERROR` message when password requirements are not met.
+Ignored unless `api.auth.type` is set to `basic`.
+| `WARN`
+
 | `log.level`
 a|
 The log level. Valid options are:
@@ -320,22 +325,4 @@ separating each log lines per pipeline could be helpful in case you need to trou
 | `on_superuser`
 | Setting to `BLOCK` or `ALLOW` running Logstash as a superuser.
 | `ALLOW`
-
-| `password_policy.mode`
-| Raises either `WARN` or `ERROR` message when password requirements are not met.
-| `WARN`
-
-| `password_policy.length.minimum`
-| Minimum number of characters required for a valid password.
-| 8
-
-| `password_policy.include`
-| Validates passwords based on `upper`, `lower`, `digit` and `symbol` requirements. When a character type is `REQUIRED`, Logstash will `WARN` or `ERROR` according to the `password_policy.mode` if the character type is not included in the password. Valid entries are `REQUIRED` and `OPTIONAL`.
-| `upper`: `REQUIRED`
-
-`lower`: `REQUIRED`
-
-`digit`: `REQUIRED`
-
-`symbol`: `OPTIONAL`
 |=======================================================================

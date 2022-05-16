@@ -560,7 +560,7 @@ module LogStash
         if validatedResult.length() > 0
           if @password_policies.fetch(:mode).eql?("WARN")
             logger.warn("Password #{validatedResult}.")
-            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the mode to 'ERROR' to enforce stricter password requirements now.")
+            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the 'api.auth.basic.password_policy.mode' to 'ERROR' to enforce stricter password requirements now.")
           else
             raise(ArgumentError, "Password #{validatedResult}.")
           end
@@ -568,23 +568,15 @@ module LogStash
         password
       end
 
+      # Sets default password policy to require non-empty string with digit,
+      # lower case and upper case letters. Symbol policy is an optional.
       def set_password_policies
         policies = {}
-        # check by default for empty password once basic auth is enabled
         policies[Util::PasswordPolicyType::EMPTY_STRING] = Util::PasswordPolicyParam.new
-        policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", @password_policies.dig(:length, :minimum).to_s)
-        if @password_policies.dig(:include, :upper).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::UPPER_CASE] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :lower).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::LOWER_CASE] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :digit).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::DIGIT] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :symbol).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::SYMBOL] = Util::PasswordPolicyParam.new
-        end
+        policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", "5")
+        policies[Util::PasswordPolicyType::UPPER_CASE] = Util::PasswordPolicyParam.new
+        policies[Util::PasswordPolicyType::LOWER_CASE] = Util::PasswordPolicyParam.new
+        policies[Util::PasswordPolicyType::DIGIT] = Util::PasswordPolicyParam.new
         policies
       end
     end
