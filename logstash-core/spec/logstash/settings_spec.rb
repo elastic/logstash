@@ -266,21 +266,6 @@ describe LogStash::Settings do
         expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
-
-    context "when setting policy to warn" do
-      validated_password_class { LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", { "mode": "WARN" } ) }
-      let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
-
-      before(:each) do
-        allow(validated_password_class).to receive(:logger).and_return(double('Logger').as_null_object)
-        allow(validated_password_class).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
-      end
-
-      it 'warns and logs a deprecation when password does not meet the requirement' do
-        expect(validated_password_class.logger).to have_received(:error).with(/Password must contain at least one digit between 0 and 9/)
-        expect(deprecation_logger_stub).to have_received(:deprecated).with(/Password policies may become more restrictive in future releases. Set the 'api.auth.basic.password_policy.mode' to 'ERROR' to enforce stricter password requirements now./).once
-      end
-    end
   end
 
   context "placeholders in nested logstash.yml" do
