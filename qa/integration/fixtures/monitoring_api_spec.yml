@@ -40,7 +40,7 @@ config:
       tcp {
         port => '<%=options[:port]%>'
       }
-      generator { count => 5000 }
+      generator { count => 3000 }
     }
     filter {
       sleep { 
