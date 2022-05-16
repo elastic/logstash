@@ -86,7 +86,7 @@ specify a different path for the files:
 path.dead_letter_queue: "path/to/data/dead_letter_queue"
 -------------------------------------------------------------------------------
 
-TIP: Use local filesystem for data integrity and performance. NFS is not supported.
+TIP: Use the local filesystem for data integrity and performance. Network File System (NFS) is not supported.
 
 Dead letter queue entries are written to a temporary file, which is then renamed
  to a dead letter queue segment file, which is then eligible for ingestion. The rename
