@@ -84,7 +84,6 @@ describe "Test Monitoring API" do
         second = logstash_service.monitoring_api.event_stats
         expect(second["filtered"].to_i > first["filtered"].to_i).to be_truthy
       end
-      Process.kill("KILL", logstash_service.pid)
     end
   end
 
