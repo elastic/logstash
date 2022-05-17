@@ -311,8 +311,21 @@ public final class DeadLetterQueueReader implements Closeable {
         return Optional.empty();
     }
 
+    /**
+     * @deprecated
+     * This method could throw NullPointerException when there isn't the linkage with a segment file.
+     * Use {@link #getCurrentSegmentPath()}
+     * */
+    @Deprecated
     public Path getCurrentSegment() {
         return currentReader.getPath();
+    }
+
+    public Optional<Path> getCurrentSegmentPath() {
+        if (currentReader == null) {
+            return Optional.empty();
+        }
+        return Optional.of(currentReader.getPath());
     }
 
     public long getCurrentPosition() {

@@ -681,7 +681,7 @@ public class DeadLetterQueueReaderTest {
             byte[] rawStr = reader.pollEntryBytes();
             assertNotNull(rawStr);
             assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
-            currentSegment = reader.getCurrentSegment();
+            currentSegment = reader.getCurrentSegmentPath().get();
             currentPosition = reader.getCurrentPosition();
         }
 
@@ -729,7 +729,7 @@ public class DeadLetterQueueReaderTest {
             byte[] rawStr = reader.pollEntryBytes();
             assertNotNull(rawStr);
             assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
-            currentSegment = reader.getCurrentSegment();
+            currentSegment = reader.getCurrentSegmentPath().get();
             currentPosition = reader.getCurrentPosition();
         }
 
@@ -766,7 +766,7 @@ public class DeadLetterQueueReaderTest {
             byte[] rawStr = reader.pollEntryBytes();
             assertNotNull(rawStr);
             assertEquals(stringOf(payloadSize, 'A'), new String(rawStr, StandardCharsets.UTF_8));
-            currentSegment = reader.getCurrentSegment();
+            currentSegment = reader.getCurrentSegmentPath().get();
             currentPosition = reader.getCurrentPosition();
         }
 
