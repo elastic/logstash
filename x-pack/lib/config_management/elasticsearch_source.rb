@@ -53,21 +53,8 @@ module LogStash
       end
 
       # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
-      def get_pipeline_fetcher
-        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch ES version from Central Management')
-        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
-          client.get("/")
-        }
-
-        if response["error"]
-          raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
-        end
-
-        logger.debug("Reading configuration from Elasticsearch version {}", response["version"]["number"])
-        version_number = response["version"]["number"].split(".")
-        first = version_number[0].to_i
-        second = version_number[1].to_i
-        (first >= 8 || (first == 7 && second >= 10))? SystemIndicesFetcher.new: LegacyHiddenIndicesFetcher.new
+      def get_pipeline_fetcher(es_version)
+        (es_version[:major] >= 8 || (es_version[:major] == 7 && es_version[:minor] >= 10))? SystemIndicesFetcher.new: LegacyHiddenIndicesFetcher.new
       end
 
       def pipeline_configs
@@ -82,13 +69,28 @@ module LogStash
             return @cached_pipelines
           end
         end
-
-        fetcher = get_pipeline_fetcher
-        fetcher.fetch_config(pipeline_ids, client)
+        es_version = get_es_version
+        fetcher = get_pipeline_fetcher(es_version)
+        fetcher.fetch_config(es_version, pipeline_ids, client)
 
         @cached_pipelines = fetcher.get_pipeline_ids.collect do |pid|
           get_pipeline(pid, fetcher)
         end.compact
+      end
+
+      def get_es_version
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch ES version from Central Management')
+        response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+          client.get("/")
+        }
+
+        if response["error"]
+          raise RemoteConfigError, "Cannot find elasticsearch version, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
+        end
+
+        logger.debug("Reading configuration from Elasticsearch version {}", response["version"]["number"])
+        version_number = response["version"]["number"].split(".")
+        { major: version_number[0].to_i, minor: version_number[1].to_i }
       end
 
       def get_pipeline(pipeline_id, fetcher)
@@ -196,7 +198,7 @@ module LogStash
         @pipelines.keys
       end
 
-      def fetch_config(pipeline_ids, client) end
+      def fetch_config(es_version, pipeline_ids, client) end
       def get_single_pipeline_setting(pipeline_id) end
 
       def log_pipeline_not_found(pipeline_ids)
@@ -209,17 +211,27 @@ module LogStash
 
       SYSTEM_INDICES_API_PATH = "_logstash/pipeline"
 
-      def fetch_config(pipeline_ids, client)
+      def fetch_config(es_version, pipeline_ids, client)
+        es_supports_pipeline_wildcard_search = es_supports_pipeline_wildcard_search?(es_version)
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
-          client.get("#{SYSTEM_INDICES_API_PATH}/")
+          path = es_supports_pipeline_wildcard_search ?
+                   "#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}":
+                   "#{SYSTEM_INDICES_API_PATH}/"
+          client.get(path)
         }
 
         if response["error"]
           raise ElasticsearchSource::RemoteConfigError, "Cannot find find configuration for pipeline_id: #{pipeline_ids}, server returned status: `#{response["status"]}`, message: `#{response["error"]}`"
         end
 
-        @pipelines = get_wildcard_pipelines(pipeline_ids, response)
+        @pipelines = es_supports_pipeline_wildcard_search ?
+                       response :
+                       get_wildcard_pipelines(pipeline_ids, response)
+      end
+
+      def es_supports_pipeline_wildcard_search?(es_version)
+        (es_version[:major] > 8) || (es_version[:major] == 8 && es_version[:minor] >= 3)
       end
 
       def get_single_pipeline_setting(pipeline_id)
@@ -260,7 +272,7 @@ module LogStash
 
       PIPELINE_INDEX = ".logstash"
 
-      def fetch_config(pipeline_ids, client)
+      def fetch_config(es_version, pipeline_ids, client)
         request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
