@@ -40,14 +40,9 @@ public class LengthValidator implements Validator {
     private static final int MAXIMUM_LENGTH = 1024;
 
     /**
-     A policy failure reasoning for password length.
-     */
-    private static final String LENGTH_REASONING = "must be length of between " + MINIMUM_LENGTH + " and " + MAXIMUM_LENGTH;
-
-    /**
      Required minimum length of the password.
      */
-    private int minimumLength;
+    private int minimumLength = MINIMUM_LENGTH;
 
     public LengthValidator(int minimumLength) {
         if (minimumLength < MINIMUM_LENGTH || minimumLength > MAXIMUM_LENGTH) {
@@ -58,6 +53,7 @@ public class LengthValidator implements Validator {
 
     @Override
     public Optional<String> validate(String password) {
+        final String LENGTH_REASONING = "must be length of between " + minimumLength + " and " + MAXIMUM_LENGTH;
         return Strings.isNullOrEmpty(password) || password.length() < minimumLength
                 ? Optional.of(LENGTH_REASONING)
                 : Optional.empty();

@@ -555,7 +555,7 @@ module LogStash
           raise(ArgumentError, "Setting `#{name}` could not coerce LogStash::Util::Password value to password")
         end
 
-        policies = set_password_policies
+        policies = build_password_policies
         validatedResult = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
         if validatedResult.length() > 0
           if @password_policies.fetch(:mode).eql?("WARN")
@@ -568,15 +568,22 @@ module LogStash
         password
       end
 
-      # Sets default password policy to require non-empty string with digit,
-      # lower case and upper case letters. Symbol policy is an optional.
-      def set_password_policies
+      def build_password_policies
         policies = {}
         policies[Util::PasswordPolicyType::EMPTY_STRING] = Util::PasswordPolicyParam.new
-        policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", "5")
-        policies[Util::PasswordPolicyType::UPPER_CASE] = Util::PasswordPolicyParam.new
-        policies[Util::PasswordPolicyType::LOWER_CASE] = Util::PasswordPolicyParam.new
-        policies[Util::PasswordPolicyType::DIGIT] = Util::PasswordPolicyParam.new
+        policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", @password_policies.dig(:length, :minimum).to_s)
+        if @password_policies.dig(:include, :upper).eql?("REQUIRED")
+          policies[Util::PasswordPolicyType::UPPER_CASE] = Util::PasswordPolicyParam.new
+        end
+        if @password_policies.dig(:include, :lower).eql?("REQUIRED")
+          policies[Util::PasswordPolicyType::LOWER_CASE] = Util::PasswordPolicyParam.new
+        end
+        if @password_policies.dig(:include, :digit).eql?("REQUIRED")
+          policies[Util::PasswordPolicyType::DIGIT] = Util::PasswordPolicyParam.new
+        end
+        if @password_policies.dig(:include, :symbol).eql?("REQUIRED")
+          policies[Util::PasswordPolicyType::SYMBOL] = Util::PasswordPolicyParam.new
+        end
         policies
       end
     end

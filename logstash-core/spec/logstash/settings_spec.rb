@@ -244,7 +244,11 @@ describe LogStash::Settings do
   end
 
   describe "#password_policy" do
-    let(:password_policies) { { "mode": "ERROR" } }
+    let(:password_policies) { {
+      "mode": "ERROR",
+      "length": { "minimum": "8"},
+      "include": { "upper": "REQUIRED", "lower": "REQUIRED", "digit": "REQUIRED", "symbol": "REQUIRED" }
+    } }
 
     context "when running PasswordValidator coerce" do
 
