@@ -47,8 +47,6 @@ Gem::Specification.new do |gem|
 
   gem.platform = "java"
 
-  gem.add_runtime_dependency "json", "< 2.6.2" # pinned until https://github.com/flori/json/issues/497 is resolved
-
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
