@@ -100,7 +100,7 @@ func normalizeSetting(setting string) (string, error) {
 		"password_policy.include.lower",
 		"password_policy.include.digit",
 		"password_policy.include.symbol",
-		"on_superuser",
+		"allow_superuser",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",
