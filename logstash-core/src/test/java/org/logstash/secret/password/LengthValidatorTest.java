@@ -28,6 +28,6 @@ public class LengthValidatorTest {
     public void testValidateFailure() {
         Optional<String> result = lengthValidator.validate("Pwd");
         Assert.assertTrue(result.isPresent());
-        Assert.assertEquals(result.get(), "must be length of between 5 and 1024");
+        Assert.assertEquals(result.get(), "must be length of between 8 and 1024");
     }
 }
