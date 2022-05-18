@@ -9,7 +9,7 @@ PATH
   specs:
     logstash-core (8.2.1-java)
       clamp (~> 1)
-      concurrent-ruby (~> 1)
+      concurrent-ruby (~> 1, < 1.1.10)
       down (~> 5.2.0)
       elasticsearch (~> 7)
       filesize (~> 0.2)
