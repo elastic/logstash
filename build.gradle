@@ -754,22 +754,36 @@ class JDKDetails {
     }
 
     String createDownloadUrl() {
-        String releaseName = major > 8 ?
-                "jdk-${revision}+${build}":
-                "jdk${revision}u${build}"
-        String vendorOsName = vendorOsName(osName)
+        String vendorOsName = vendorOsName(osName, vendor)
         switch (vendor) {
             case "adoptopenjdk":
             case "adoptium":
+                String releaseName = major > 8 ?
+                        "jdk-${revision}+${build}":
+                        "jdk${revision}u${build}"
                 return "https://api.${vendor}.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/${vendor}"
+            case "openjdk":
+                if (major < 17)
+                    throw new RuntimeException("Cannot handle JDK < 17 for openjdk")
+                return  "https://download.oracle.com/java/${major}/archive/jdk-${revision}_${vendorOsName}-${arch}_bin.${extensionForDownload(osName)}"
             default:
                 throw RuntimeException("Can't handle vendor: ${vendor}")
         }
     }
 
-    private String vendorOsName(String osName) {
+    private String extensionForDownload(String osName) {
+        if (osName == "windows") {
+            return "zip"
+        }
+        return "tar.gz"
+    }
+
+    private String vendorOsName(String osName, String vendor) {
         if (osName == "darwin")
-            return "mac"
+            if (vendor == "openjdk")
+                return "macos"
+            else
+                return "mac"
         return osName
     }
 
