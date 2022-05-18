@@ -183,8 +183,8 @@ a| _EXPERIMENTAL_ setting that provides a way to reference fields that contain <
 
 Current options are:
 
-* `PERCENT`: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
-* `AMPERSAND`: HTML-style `&#`+`DD`+`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#91;`)
+* `PERCENT`: URI-style `%`{plus}`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
+* `AMPERSAND`: HTML-style `&#`{plus}`DD`{plus}`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#91;`)
 * `NONE`: field names containing special characters _cannot_ be referenced.
 
 | `NONE`

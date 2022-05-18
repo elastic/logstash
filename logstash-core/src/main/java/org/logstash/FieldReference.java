@@ -65,6 +65,8 @@ public final class FieldReference {
                 throw new IllegalArgumentException(String.format("Invalid escape style: `%s`", escapeStyleSpec));
         }
         ESCAPE_HANDLER = newEscapeHandler;
+        CACHE.clear();
+        RUBY_CACHE.clear();
     }
 
     /**
@@ -335,7 +337,6 @@ public final class FieldReference {
                 // if we saw no brackets, this is a top-level reference that can be emitted as-is without
                 // further processing
                 path.add(reference.toString());
-                path.trimToSize();
                 return path;
 
             } else if (depth > 0) {
