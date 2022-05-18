@@ -34,6 +34,7 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
@@ -51,8 +52,8 @@ allprojects {
   apply plugin: 'idea'
   apply plugin: 'java-library'
 
-  project.sourceCompatibility = JavaVersion.VERSION_1_8
-  project.targetCompatibility = JavaVersion.VERSION_1_8
+  project.sourceCompatibility = JavaVersion.VERSION_11
+  project.targetCompatibility = JavaVersion.VERSION_11
 
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
