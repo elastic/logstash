@@ -37,15 +37,15 @@ abstract class ExtractBundledJdkVersion extends DefaultTask {
     @TaskAction
     def extractVersionFile() {
         def sw = new StringWriter()
-        jdkReleaseFile.filterLine(sw) { it =~ /IMPLEMENTOR_VERSION=.*/ }
+        jdkReleaseFile.filterLine(sw) { it =~ /(IMPLEMENTOR_VERSION|JAVA_VERSION)=.*/ }
         if (!sw.toString().empty) {
-            def groups = (sw.toString() =~ /^IMPLEMENTOR_VERSION=\"(.*)\"$/)
+            def groups = (sw.toString() =~ /^(?:IMPLEMENTOR_VERSION|JAVA_VERSION)=\"(.*)\"$/)
             if (!groups.hasGroup()) {
-                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
+                throw new GradleException("Malformed IMPLEMENTOR/JAVA_VERSION property in ${jdkReleaseFile}")
             }
 
             if (groups.size() < 1 || groups[0].size() < 2) {
-                throw new GradleException("Malformed IMPLEMENTOR_VERSION property in ${jdkReleaseFile}")
+                throw new GradleException("Malformed IMPLEMENTOR/JAVA_VERSION property in ${jdkReleaseFile}")
             }
             jdkVersionFile.write(groups[0][1])
         }

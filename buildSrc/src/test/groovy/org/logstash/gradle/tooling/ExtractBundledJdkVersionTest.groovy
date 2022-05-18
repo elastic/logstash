@@ -33,6 +33,18 @@ class ExtractBundledJdkVersionTest {
         assert task.jdkVersionFile.text == "Temurin-11.0.14.1+1"
     }
 
+    @Test
+    void "decode openjdk correctly"() {
+        task.jdkReleaseFile << """
+            |IMPLEMENTOR="Oracle"
+            |JAVA_VERSION="11.0.14.1+1"
+        """.stripMargin().stripIndent()
+
+        task.extractVersionFile()
+
+        assert task.jdkVersionFile.text == "11.0.14.1+1"
+    }
+
     // There is some interoperability problem with JUnit5 Assertions.assertThrows and Groovy's string method names,
     // the catching of the exception generates an invalid method name error if it's in string form
     @DisplayName("decode throws error with malformed jdk/release content")
@@ -46,7 +58,7 @@ class ExtractBundledJdkVersionTest {
         def thrown = Assertions.assertThrows(GradleException.class, {
             task.extractVersionFile()
         })
-        assert thrown.message.startsWith("Malformed IMPLEMENTOR_VERSION property in")
+        assert thrown.message.startsWith("Malformed IMPLEMENTOR/JAVA_VERSION property in")
     }
 
 }
