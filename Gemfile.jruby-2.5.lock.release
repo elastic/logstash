@@ -78,7 +78,7 @@ GEM
       rspec (>= 2.14, < 4)
     clamp (1.0.1)
     coderay (1.1.3)
-    concurrent-ruby (1.1.10)
+    concurrent-ruby (1.1.9)
     crack (0.4.5)
       rexml
     dalli (2.7.11)
