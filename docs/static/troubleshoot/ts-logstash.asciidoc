@@ -76,29 +76,31 @@ https://github.com/elastic/logstash/issues/10496[issue].
 [[ts-windows-permission-denied-NUL]]
 ===== 'Permission denied - NUL' errors on Windows
 
-* When running Logstash using certain user supplied versions of the JDK on Windows, Logstash may not be able to start, instead
-  failing with the following error:
+Logstash may not start with some user-supplied versions of the JDK on Windows.  
 
-```
+
+*Sample error*
+
+[source,sh]
+-----
 [FATAL] 2022-04-27 15:13:16.650 [main] Logstash - Logstash stopped processing because of an error: (EACCES) Permission denied - NUL
 org.jruby.exceptions.SystemCallError: (EACCES) Permission denied - NUL
-```
+-----
 
-This appears to be related to a JDK issue (https://bugs.openjdk.java.net/browse/JDK-8285445) where a new property was
+
+This error appears to be related to a https://bugs.openjdk.java.net/browse/JDK-8285445[JDK issue] where a new property was
 added with an inappropriate default.
 
-This is known to be an issue with the following versions of OpenJDK-derived versions of the JVM on Windows:
+This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azul Zulu) on Windows:
 
 * `11.0.15+10`
 * `17.0.3+7`
 
-These include the Adoptium, OpenJDK, and Azul Zulu distributions of the JDK
-
 *Work around*
 
-* Use the bundled version of the JDK included with Logstash
+* Use the {logstash-ref}/getting-started-with-logstash.html#ls-jvm[bundled JDK] included with Logstash
 * Or, try adding this value to the `jvm.options` file, and restarting Logstash
-
++
 [source,sh]
 -----
 -Djdk.io.File.enableADS=true
