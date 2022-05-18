@@ -63,109 +63,6 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.4
-
-* Ensure pipelines.yaml is loaded safely https://github.com/elastic/logstash/pull/13883[#13883]
-* Backport PR #13689 to 7.17: Update failing policy in Central Management fetcher and license checker if hit ES down node https://github.com/elastic/logstash/pull/13925[#13925]
-* Allow metrics update when PQ draining https://github.com/elastic/logstash/pull/13935[#13935]
-* ensure puma is at least 5.6.4 https://github.com/elastic/logstash/pull/13944[#13944]
-* Backport PR #13946 to 7.17: Updates the LogstashService launcher to use the JDK specified https://github.com/elastic/logstash/pull/13947[#13947]
-*  Deps: unpin jruby-openssl in logstash-core (for real) https://github.com/elastic/logstash/pull/13958[#13958]
-* Fix reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/pull/13994[#13994]
-* Further improve check on "running pipelines" after SIGHUP https://github.com/elastic/logstash/pull/13995[#13995]
-* Bump version to 7.17.4 https://github.com/elastic/logstash/pull/14004[#14004]
-* Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/pull/14018[#14018]
-* Backport PR #13944 to 7.17: ensure puma is at least 5.6.2 https://github.com/elastic/logstash/pull/14025[#14025]
-* Backport PR #14018 to 7.17: Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/pull/14033[#14033]
-* Backport PR #13994 to 7.17: Fix reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/pull/14038[#14038]
-* Backport PR #13995 to 7.17: Further improve check on "running pipelines" after SIGHUP https://github.com/elastic/logstash/pull/14040[#14040]
-* Fix geoip database download does not respect http_proxy setting https://github.com/elastic/logstash/pull/14048[#14048]
-* Backport PR #14048 to 7.17: Fix geoip database download does not respect http_proxy setting https://github.com/elastic/logstash/pull/14053[#14053]
-* Refactor: more logging of PQ behavior https://github.com/elastic/logstash/pull/14065[#14065]
-* Backport PR #14065 to 7.17: Refactor: more logging of PQ behavior https://github.com/elastic/logstash/pull/14077[#14077]
-* Backport PR #13883 to 7.17: Ensure pipelines.yaml is loaded safely https://github.com/elastic/logstash/pull/14091[#14091]
-* Fix of DLQ stream position retrieval https://github.com/elastic/logstash/pull/14093[#14093]
-* [Doc] PQ and DLQ does not support NFS https://github.com/elastic/logstash/pull/14095[#14095]
-* Backport PR #14095 to 7.17: [Doc] PQ and DLQ does not support NFS https://github.com/elastic/logstash/pull/14100[#14100]
-* Backport PR #13935 to 7.17: Allow metrics update when PQ draining https://github.com/elastic/logstash/pull/14102[#14102]
-* Backport PR #14093 to 7.17:Fix of DLQ stream position retrieval https://github.com/elastic/logstash/pull/14109[#14109]
-* deps: pin concurrent-ruby pending removal of TimerTask https://github.com/elastic/logstash/pull/14113[#14113]
-* Backport PR #14113 to 7.17: deps: pin concurrent-ruby pending removal of TimerTask https://github.com/elastic/logstash/pull/14119[#14119]
-
-=== Logstash Commits between 7.17 and 7.17.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.3..7.17"
-
-3332e28 - (HEAD -> 7.17, origin/7.17) bump lock file for 7.17 (#14122) (5 minutes ago) <github-actions[bot]>
-6ca4697 - Backport PR #14113 to 7.17: deps: pin concurrent-ruby pending removal of TimerTask (#14119) (2 hours ago) <github-actions[bot]>
-7de5984 - Backport PR #14093 to 7.17:Fix of DLQ stream position retrieval (23 hours ago) <Andrea Selva>
-bd39da7 - [7.17] Allow metrics update when PQ draining (#13935) | fix monitoring api integration test with draining queue (#14106) (#14108) (27 hours ago) <kaisecheng>
-1cd6341 - Ensure pipelines.yaml is loaded safely (#13883) (#14091) (2 days ago) <github-actions[bot]>
-2c1771f - [Doc] PQ and DLQ do not support NFS (#14095) (#14100) (2 days ago) <github-actions[bot]>
-81a3489 - Refactor: more logging of PQ behavior (#14065) (#14077) (7 days ago) <github-actions[bot]>
-8b2f41f - Add `jdk.io.File.enableADS=true` to JVM options (#14086) (8 days ago) <Rob Bavey>
-64a7a71 - Hide Shutdown Watcher stall message when PQ draining (#13934) (#14084) (8 days ago) <kaisecheng>
-56d0bc7 - Release notes for 7.17.4 (#14035) (2 weeks ago) <Logstash Machine>
-c814c8f - Fix geoip database download does not respect http_proxy setting (#14048) (#14053) (3 weeks ago) <github-actions[bot]>
-fe5172b - Fix stopped pipeline unable to be deleted in registry (#14018) (#14033) (3 weeks ago) <github-actions[bot]>
-788c72b - Further improve check on "running pipelines" after SIGHUP (#13995) (#14040) (3 weeks ago) <github-actions[bot]>
-8079f0a - Fix reload of pipelines via `SIGHUP` (#13994) (#14038) (3 weeks ago) <github-actions[bot]>
-2b0193c - Update patch plugin versions in gemfile lock (#14029) (3 weeks ago) <github-actions[bot]>
-f4a928e - ensure puma is at least 5.6.2 (#13944) (#14025) (3 weeks ago) <github-actions[bot]>
-08d51f4 - [7.17] PQ size check for multiple pipelines (#13877) | Fix window CI for PQ size checking (#13981) (#13989) (4 weeks ago) <kaisecheng>
-07f4292 - Updates the LogstashService launcher to use the JDK specified (#13946) (#13947) (4 weeks ago) <github-actions[bot]>
-5cf174c - Bump version to 7.17.4 (#14004) (4 weeks ago) <João Duarte>
-6bb0758 - Release notes for 7.17.3 (#13985) (4 weeks ago) <Logstash Machine>
-0e0723a -  Deps: unpin jruby-openssl in logstash-core (#13958) (5 weeks ago) <Karol Bucek>
-2c253c5 - Backport PR #13689 to 7.17: Update failing policy in Central Management fetcher and license checker if hit ES down node (#13925) (5 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.3..7.17 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.4 -> 6.2.5
-logstash-filter-dns: 3.1.4 -> 3.1.5
-logstash-filter-grok: 4.4.1 -> 4.4.2
-logstash-input-elasticsearch: 4.12.2 -> 4.12.3
-logstash-input-file: 4.4.0 -> 4.4.2
-logstash-integration-jdbc: 5.2.4 -> 5.2.5
-logstash-patterns-core: 4.3.2 -> 4.3.3
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
-*Cef Codec - 6.2.5*
-
-* [DOC] Update link to CEF implementation guide https://github.com/logstash-plugins/logstash-codec-cef/pull/97[#97]
-
-*Dns Filter - 3.1.5*
-
-* Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash
-
-*Grok Filter - 4.4.2*
-
-* Clarify the definition of matches that depend on previous captures https://github.com/logstash-plugins/logstash-filter-grok/pull/169[#169]
-
-*Elasticsearch Input - 4.12.3*
-
-* Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' headerhttps://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
-
-*File Input - 4.4.2*
-
-* Doc: Fix attribute by removing extra character https://github.com/logstash-plugins/logstash-input-file/pull/310[#310]
-
-* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-file/pull/305[#305]
-* [DOC] Add version attributes to doc source file https://github.com/logstash-plugins/logstash-input-file/pull/308[#308]
-  
-
-*Jdbc Integration - 5.2.5*
-
-* Fix: do not execute more queries with debug logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/109[#109]
-
-*Core Patterns - 4.3.3*
-
-- Fix: parsing x-edge-location in CLOUDFRONT_ACCESS_LOG (ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/311[#311]
-
 
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
@@ -177,6 +74,8 @@ logstash-patterns-core: 4.3.2 -> 4.3.3
 * Fix support for reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/issues/13993[#13993]
 * Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/issues/14017[#14017]
 * Fix geoip database download does not respect `http_proxy` setting https://github.com/elastic/logstash/issues/14047[#14047]
+* Fixed no metrics update issue when PQ is draining https://github.com/elastic/logstash/pull/13935[#13935]
+* Fix a seek problem in the dead letter queue reader when asked to restart consuming from specific point https://github.com/elastic/logstash/pull/14093[#14093]
 
 ==== Plugins
 
@@ -188,9 +87,28 @@ logstash-patterns-core: 4.3.2 -> 4.3.3
 
 * Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash https://github.com/logstash-plugins/logstash-filter-dns/pull/65[#65]
 
+*Grok Filter - 4.4.2*
+
+* Clarify the definition of matches that depend on previous captures https://github.com/logstash-plugins/logstash-filter-grok/pull/169[#169]
+
 *Elasticsearch Input - 4.12.3*
 
 * Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' header https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
+
+*File Input - 4.4.2*
+
+* Doc: Fix attribute by removing extra character https://github.com/logstash-plugins/logstash-input-file/pull/310[#310]
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-file/pull/305[#305]
+* [DOC] Add version attributes to doc source file https://github.com/logstash-plugins/logstash-input-file/pull/308[#308]
+
+
+*Jdbc Integration - 5.2.5*
+
+* Fix: do not execute more queries with debug logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/109[#109]
+
+*Core Patterns - 4.3.3*
+
+* Fix: parsing x-edge-location in CLOUDFRONT_ACCESS_LOG (ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/311[#311]
 
 
 [[logstash-7-17-3]]
