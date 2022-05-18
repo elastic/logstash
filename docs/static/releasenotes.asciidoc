@@ -17,67 +17,22 @@ This section summarizes the changes in the following releases:
 [[logstash-8-2-1]]
 === Logstash 8.2.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.2.1
+[[notable-8.2.1]]
+==== Notable issues fixed
 
-* Ensure pipelines.yaml is loaded safely https://github.com/elastic/logstash/pull/13883[#13883]
-* Allow metrics update when PQ draining https://github.com/elastic/logstash/pull/13935[#13935]
-* Fix plugin classloading https://github.com/elastic/logstash/pull/14060[#14060]
-* Bump Logstash version to 8.2.1 https://github.com/elastic/logstash/pull/14064[#14064]
-* Refactor: more logging of PQ behavior https://github.com/elastic/logstash/pull/14065[#14065]
-* Add mandatory option to jvm configuration to handle logstash startup … https://github.com/elastic/logstash/pull/14066[#14066]
-* Backport PR #14060 to 8.2: Fix plugin classloading https://github.com/elastic/logstash/pull/14068[#14068]
-* Backport PR #14065 to 8.2: Refactor: more logging of PQ behavior https://github.com/elastic/logstash/pull/14078[#14078]
-* Backport PR #14066 to 8.2: Add mandatory option to jvm configuration to handle logstash startup … https://github.com/elastic/logstash/pull/14085[#14085]
-* Backport PR #13883 to 8.2: Ensure pipelines.yaml is loaded safely https://github.com/elastic/logstash/pull/14090[#14090]
-* Fix of DLQ stream position retrieval https://github.com/elastic/logstash/pull/14093[#14093]
-* [Doc] PQ and DLQ does not support NFS https://github.com/elastic/logstash/pull/14095[#14095]
-* Backport PR #14095 to 8.2: [Doc] PQ and DLQ does not support NFS https://github.com/elastic/logstash/pull/14101[#14101]
-* Backport PR #13935 to 8.2: Allow metrics update when PQ draining https://github.com/elastic/logstash/pull/14103[#14103]
-* Backport PR #14093 to 8.2: Fix of DLQ stream position retrieval https://github.com/elastic/logstash/pull/14110[#14110]
-* deps: pin concurrent-ruby pending removal of TimerTask https://github.com/elastic/logstash/pull/14113[#14113]
-* Backport PR #14113 to 8.2: deps: pin concurrent-ruby pending removal of TimerTask https://github.com/elastic/logstash/pull/14118[#14118]
+* Added mandatory JVM option to avoid strict path checking introduced with recent JVM versions,
+  starting from 11.0.15+10, 17.0.3+7.
+https://github.com/elastic/logstash/pull/14066[#14066]
 
-=== Logstash Commits between 8.2 and 8.2.0
+* Fixed Dead Letter Queue bug happening in position retrieval and restore. This happened when the DLQ input plugin used
+  `commit_offset` feature.
+https://github.com/elastic/logstash/pull/14093[#14093]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.2.0..8.2"
+* Fixes an issue where custom java plugins were unable to be installed and run correctly when retrieved from rubygems.org.
+https://github.com/elastic/logstash/pull/14060[#14060]
 
-65d3ebe54 - (HEAD -> 8.2, origin/8.2) Backport PR #14113 to 8.2: deps: pin concurrent-ruby pending removal of TimerTask (#14118) (46 minutes ago) <github-actions[bot]>
-38b9a4da9 - Update patch plugin versions in gemfile lock (#14112) (21 hours ago) <github-actions[bot]>
-510e310a3 - Backport PR #14093 to 8.2: Fix of DLQ stream position retrieval (21 hours ago) <Andrea Selva>
-adab550a3 - Fix plugin classloading (#14060) (#14068) (21 hours ago) <github-actions[bot]>
-6bc62dd17 - [8.2] Allow metrics update when PQ draining (#13935) | fix monitoring api integration test with draining queue (#14106) (#14107) (25 hours ago) <kaisecheng>
-3d0808515 - [Doc] PQ and DLQ do not support NFS (#14095) (#14101) (2 days ago) <github-actions[bot]>
-ecb172af3 - Refactor: more logging of PQ behavior (#14065) (#14078) (7 days ago) <github-actions[bot]>
-c20654785 - Ensure pipelines.yaml is loaded safely (#13883) (#14090) (7 days ago) <github-actions[bot]>
-0896c1662 - Add mandatory option to jvm configuration to handle logstash startup … (#14066) (#14085) (8 days ago) <github-actions[bot]>
-8dff3d654 - Hide Shutdown Watcher stall message when PQ draining (#13934) (#14083) (8 days ago) <kaisecheng>
-51a75ab45 - Make AliasRegistry a singleton (#14002) (#14030) (12 days ago) <github-actions[bot]>
-8ea97b0cf - Bump Logstash version to 8.2.1 (#14064) (2 weeks ago) <João Duarte>
-c4fc101e7 - Release notes for 8.2.0 (#14026) (2 weeks ago) <Logstash Machine>
-cb335d517 - Fix geoip database download does not respect http_proxy setting (#14048) (#14054) (3 weeks ago) <github-actions[bot]>
-f47ae30e5 - Doc: Group central mgmt and configuring central mgmt topics 8.2 (#14051) (3 weeks ago) <github-actions[bot]>
-0eec1155b - Fix stopped pipeline unable to be deleted in registry (#14018) (#14034) (3 weeks ago) <github-actions[bot]>
-eb2821720 - Further improve check on "running pipelines" after SIGHUP (#13995) (#14041) (3 weeks ago) <github-actions[bot]>
-975713651 - Fix reload of pipelines via `SIGHUP` (#13994) (#14039) (3 weeks ago) <github-actions[bot]>
-fe7c04bd6 - ensure puma is at least 5.6.2 (#13944) (#14024) (3 weeks ago) <github-actions[bot]>
-78a9c377f - Fix Bundled JDK docs to reflect JDK 11 (#14021) (#14022) (3 weeks ago) <github-actions[bot]>
-b0e6da487 - Doc: Restructure source files for pipeline configuration 8.2 (#14015) (4 weeks ago) <github-actions[bot]>
-61067e3ab - Doc: Refine content for generated CA in LS-ES security section 8.2 (#14012) (4 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.2.0..8.2 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.4 -> 6.2.5
-logstash-filter-dns: 3.1.4 -> 3.1.5
-logstash-filter-grok: 4.4.1 -> 4.4.2
-logstash-filter-http: 1.4.0 -> 1.4.1
-logstash-input-beats: 6.3.0 -> 6.3.1
-logstash-input-file: 4.4.0 -> 4.4.2
-logstash-input-http: 3.5.0 -> 3.5.1
-logstash-integration-jdbc: 5.2.4 -> 5.2.5
-logstash-patterns-core: 4.3.2 -> 4.3.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed no metrics update issue when PQ is draining.
+https://github.com/elastic/logstash/pull/13935[#13935]
 
 ==== Plugins
 
