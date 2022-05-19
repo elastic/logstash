@@ -23,7 +23,6 @@ package org.logstash.config.ir;
 import java.nio.file.Path;
 
 import org.jruby.RubyHash;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LibrarySearcher;
 import org.jruby.runtime.load.LoadService;
 import org.junit.BeforeClass;
