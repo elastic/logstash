@@ -116,7 +116,7 @@ describe "CLI > logstash-plugin install" do
         end
       end
     end
-
+    
     context "install non bundle plugin" do
       let(:plugin_name) { "logstash-input-github" }
       let(:install_command) { "bin/logstash-plugin install" }
@@ -139,6 +139,17 @@ describe "CLI > logstash-plugin install" do
         installed = @logstash_plugin.list(plugin_name)
         expect(installed.stderr_and_stdout).to match(/#{plugin_name}/)
       end
+
+      it "successfully installs the plugin with debug enabled" do
+        execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}", true, {"DEBUG"=>"1"})
+
+        expect(execute.stderr_and_stdout).to match(/Installation successful/)
+        expect(execute.exit_code).to eq(0)
+
+        installed = @logstash_plugin.list(plugin_name)
+        expect(installed.stderr_and_stdout).to match(/#{plugin_name}/)
+      end
+
     end
   end
 end
