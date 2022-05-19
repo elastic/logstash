@@ -191,16 +191,21 @@ tasks.register("configureArtifactInfo") {
 }
 
 abstract class SignAliasDefinitionsTask extends DefaultTask {
+    
+    enum Stage {
+        main, test;
+    }
 
     /**
      * Relative path to the AliasRegistry.yml file to use, relative to project's root
      * */
     @Input
-    String registryPath
+    String registry = 'org/logstash/plugins/AliasRegistry.yml'
 
     @InputFile
     File getRegistryFullPath() {
-        project.file("${project.projectDir}/${registryPath}")
+        String stagedRegistry = "logstash-core/src/${stage}/resources/${registry}"
+        project.file("${project.projectDir}/${stagedRegistry}")
     }
 
     /**
@@ -209,27 +214,34 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
     @OutputFile
     File hashedFile
 
+    private Stage stage = Stage.main
+
     @TaskAction
     def sign() {
         String aliasesDefs = registryFullPath.text
         String hash = aliasesDefs.digest('SHA-256')
+        String stagedRegistry = "logstash-core/src/${stage}/resources/${registry}"
         hashedFile.withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
-            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
+            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${stagedRegistry}"
             writer.write aliasesDefs
         }
+    }
+
+    SignAliasDefinitionsTask stage(Stage stage) {
+        this.stage = stage
+        return this
     }
 }
 
 tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file from original aliases yml definition"
-    registryPath = 'logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml'
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
     description "Create an hashes aliases file for testing aliases yml definition"
-    registryPath = 'logstash-core/src/test/resources/org/logstash/plugins/AliasRegistry.yml'
+    stage SignAliasDefinitionsTask.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
