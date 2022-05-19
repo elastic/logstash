@@ -60,8 +60,11 @@ module LogStash::Api::AppHelpers
   end
 
   def as_boolean(string)
-    return true   if string == true   || string =~ (/(true|t|yes|y|1)$/i)
-    return false  if string == false  || LogStash::Util.blank?(string) || string =~ (/(false|f|no|n|0)$/i)
+    return true if string == true
+    return false if string == false
+
+    return true if string =~ (/(true|t|yes|y|1)$/i)
+    return false if  LogStash::Util.blank?(string) || string =~ (/(false|f|no|n|0)$/i)
     raise ArgumentError.new("invalid value for Boolean: \"#{string}\"")
   end
 

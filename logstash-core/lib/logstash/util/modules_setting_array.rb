@@ -16,5 +16,5 @@
 # under the License.
 
 module LogStash; module Util
-    java_import org.logstash.util.ModulesSettingArray
+    java_import "org.logstash.util.ModulesSettingArray"
 end; end

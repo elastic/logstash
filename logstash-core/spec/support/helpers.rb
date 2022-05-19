@@ -110,7 +110,7 @@ end
 
 RSpec::Matchers.define :ir_eql do |expected|
   match do |actual|
-    next unless expected.java_kind_of?(org.logstash.config.ir.SourceComponent) && actual.java_kind_of?(org.logstash.config.ir.SourceComponent)
+    next unless expected.kind_of?(org.logstash.config.ir.SourceComponent) && actual.kind_of?(org.logstash.config.ir.SourceComponent)
 
     expected.sourceComponentEquals(actual)
   end
