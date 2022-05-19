@@ -199,7 +199,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first. (`queue.type: persisted`)
+| The total capacity of the queue (`queue.type: persisted`) in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
