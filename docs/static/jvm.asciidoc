@@ -49,8 +49,11 @@ Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
 [[java-home]]
 ==== `LS_JAVA_HOME`
 
-{ls} uses the Java version set in `LS_JAVA_HOME`. The `LS_JAVA_HOME` environment
-variable must be set for {ls} to operate correctly.
+{ls} includes a bundled JDK which has been verified to work with each specific version 
+of {ls}, and generally provides the best performance and reliability. 
+If you need to use a JDK other than the bundled version, then set the `LS_JAVA_HOME` 
+environment variable to the version you want to use.
+
 
 On some Linux systems, you may need to have the `LS_JAVA_HOME` environment
 exported before installing {ls}, particularly if you installed Java from
