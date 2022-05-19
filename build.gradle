@@ -198,6 +198,11 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
     @Input
     String registryPath
 
+    @InputFile
+    File getRegistryFullPath() {
+        project.file("${project.projectDir}/${registryPath}")
+    }
+
     /**
      * Full file path to the file containing the marked AliasRegistry file
      * */
@@ -206,12 +211,12 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
 
     @TaskAction
     def sign() {
-        String aliases_defs = new File("${project.projectDir}/${registryPath}").text
-        String hash = aliases_defs.digest('SHA-256')
+        String aliasesDefs = registryFullPath.text
+        String hash = aliasesDefs.digest('SHA-256')
         hashedFile.withWriter('utf-8') { writer ->
             writer.writeLine "#CHECKSUM: ${hash}"
             writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
-            writer.write aliases_defs
+            writer.write aliasesDefs
         }
     }
 }
