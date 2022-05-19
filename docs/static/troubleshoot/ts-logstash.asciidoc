@@ -72,6 +72,41 @@ Try adding these values to the `jvm.options` file.
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
 
+
+[[ts-windows-permission-denied-NUL]]
+===== 'Permission denied - NUL' errors on Windows
+
+Logstash may not start with some user-supplied versions of the JDK on Windows.  
+
+
+*Sample error*
+
+[source,sh]
+-----
+[FATAL] 2022-04-27 15:13:16.650 [main] Logstash - Logstash stopped processing because of an error: (EACCES) Permission denied - NUL
+org.jruby.exceptions.SystemCallError: (EACCES) Permission denied - NUL
+-----
+
+
+This error appears to be related to a https://bugs.openjdk.java.net/browse/JDK-8285445[JDK issue] where a new property was
+added with an inappropriate default.
+
+This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azul Zulu) on Windows:
+
+* `11.0.15+10`
+* `17.0.3+7`
+
+*Work around*
+
+* Use the {logstash-ref}/getting-started-with-logstash.html#ls-jvm[bundled JDK] included with Logstash
+* Or, try adding this value to the `jvm.options` file, and restarting Logstash
++
+[source,sh]
+-----
+-Djdk.io.File.enableADS=true
+-----
+
+
 [[ts-pqs]]
 ==== Troubleshooting persistent queues
 
