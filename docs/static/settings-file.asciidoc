@@ -199,7 +199,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
+| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first. (`queue.type: persisted`)
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
@@ -211,11 +211,11 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | 1024
 
 | `queue.checkpoint.retry`
-| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances.
+| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (`queue.type: persisted`)
 | `true`
 
 | `queue.drain`
-| When enabled, Logstash waits until the persistent queue is drained before shutting down.
+| When enabled, Logstash waits until the persistent queue (`queue.type: persisted`) is drained before shutting down.
 | `false`
 
 | `dead_letter_queue.enable`
