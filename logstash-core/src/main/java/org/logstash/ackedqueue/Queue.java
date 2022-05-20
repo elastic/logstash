@@ -509,19 +509,23 @@ public final class Queue implements Closeable {
     public boolean isFull() {
         lock.lock();
         try {
-            if (this.maxBytes > 0L && isMaxBytesReached()) {
-                return true;
-            } else {
-                return (this.maxUnread > 0 && this.unreadCount >= this.maxUnread);
-            }
+            return isMaxBytesReached() || isMaxUnreadReached();
         } finally {
             lock.unlock();
         }
     }
 
     private boolean isMaxBytesReached() {
+        if (this.maxBytes <= 0L) {
+            return false;
+        }
+
         final long persistedByteSize = getPersistedByteSize();
         return ((persistedByteSize > this.maxBytes) || (persistedByteSize == this.maxBytes && !this.headPage.hasSpace(1)));
+    }
+
+    private boolean isMaxUnreadReached() {
+        return this.maxUnread > 0 && (this.unreadCount >= this.maxUnread);
     }
 
     /**
@@ -636,7 +640,7 @@ public final class Queue implements Closeable {
             }
 
             if (! p.isFullyRead()) {
-                boolean wasFull = isFull();
+                boolean wasFull = isMaxUnreadReached();
 
                 final SequencedList<byte[]> serialized = p.read(left);
                 int n = serialized.getElements().size();
