@@ -101,6 +101,8 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "nio4r:","https://github.com/socketry/nio4r",MIT
 "nokogiri:","http://nokogiri.org/",MIT
 "openssl_pkcs8_pure:",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
+"org.apache.httpcomponents:httpclient:",https://hc.apache.org/,Apache-2.0
+"org.apache.httpcomponents:httpcore:",https://hc.apache.org/,Apache-2.0
 "org.apache.logging.log4j:log4j-1.2-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-api:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-core:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
