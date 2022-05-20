@@ -56,7 +56,7 @@ queue will be sized at the value of `queue.max_bytes` specified in
 `logstash.yml`. 
 The default is 1024mb (1gb).
 +
-Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues.
+NOTE: Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues.
 The total of `queue.max_bytes` for _all_ queues should be
 lower than the capacity of your disk.
 +
