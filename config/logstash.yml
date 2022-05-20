@@ -170,8 +170,8 @@
 # Sets Logstash to WARN or ERROR when HTTP authentication password doesn't meet the password policy requirements.
 # The default is WARN. Setting to ERROR enforces stronger passwords (recommended).
 # The default password policy requires non-empty minimum 5 char string that includes a digit, upper case letter and lower case letter.
-# Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to require the password include special character.
-# Set `api.auth.basic.password_policy.length.minimum` any number to extend 5 char length requirement.
+# Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character.
+# Set `api.auth.basic.password_policy.length.minimum` to a value from 6 to 1024 if you want to require more than the 5 character default setting for passwords.
 # api.auth.basic.password_policy.mode: ERROR
 #
 # ------------ Module Settings ---------------
