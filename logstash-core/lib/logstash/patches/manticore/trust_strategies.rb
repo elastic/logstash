@@ -3,7 +3,7 @@
 require 'manticore'
 
 unless defined?(::Manticore::Client::TrustStrategies)
-  module CATrustedFingerprintSupport
+  module ManticoreTrustStrategiesBackport
     # @override
     def setup_trust_store(ssl_options, context, trust_strategy)
       if ssl_options.include?(:trust_strategy)
@@ -18,25 +18,26 @@ unless defined?(::Manticore::Client::TrustStrategies)
         return rhs if lhs.nil?
         return lhs if rhs.nil?
 
-        Multiple.new([lhs, rhs])
+        Combined.new(lhs, rhs)
       end
 
-      class Multiple
+      class Combined
         include ::Java::OrgApacheHttpConnSSL::TrustStrategy
 
-        def initialize(trust_strategies)
-          @trust_strategies = trust_strategies.compact
+        def initialize(lhs, rhs)
+          @lhs = lhs
+          @rhs = rhs
           super()
         end
 
         # boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException;
         def trusted?(x509_certificate_chain, auth_type)
-          @trust_strategies.any? do |trust_strategy|
-            trust_strategy.trusted?(x509_certificate_chain, auth_type)
-          end
+          return true if @lhs.trusted?(x509_certificate_chain, auth_type)
+
+          @rhs.trusted?(x509_certificate_chain, auth_type)
         end
       end
     end
   end
-  ::Manticore::Client.send(:prepend, CATrustedFingerprintSupport)
+  ::Manticore::Client.send(:prepend, ManticoreTrustStrategiesBackport)
 end
