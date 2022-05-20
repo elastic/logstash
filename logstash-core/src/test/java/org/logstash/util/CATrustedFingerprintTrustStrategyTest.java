@@ -74,7 +74,7 @@ public class CATrustedFingerprintTrustStrategyTest {
         final CATrustedFingerprintTrustStrategy trustStrategy = new CATrustedFingerprintTrustStrategy(FINGERPRINT_ROOT, ()-> DATE_CERTS_VALID);
         final X509Certificate[] chain = {CERTIFICATE_SERVER, CERTIFICATE_ROOT};
 
-        assertFalse(trustStrategy.isTrusted(chain, "noop"));
+        trustStrategy.isTrusted(chain, "noop");
     }
 
     private static InputStream getResource(final String name) {
