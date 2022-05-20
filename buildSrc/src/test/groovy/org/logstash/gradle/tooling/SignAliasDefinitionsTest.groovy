@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 
-class SignAliasDefinitionsTaskTest {
+class SignAliasDefinitionsTest {
     Project project
 
     @BeforeEach
@@ -34,8 +34,8 @@ class SignAliasDefinitionsTaskTest {
         // necessary to avoid FileNotFoundException when the task try to write on the output file
         Files.createDirectories(signedFile.parent)
 
-        def task = project.task("signerTask", type: SignAliasDefinitionsTask) {
-            stage SignAliasDefinitionsTask.Stage.test
+        def task = project.task("signerTask", type: SignAliasDefinitions) {
+            stage SignAliasDefinitions.Stage.test
             registry = "ToSign.yml"
             hashedFile = project.file("${project.buildDir}/hashed_output.yml")
         }

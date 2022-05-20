@@ -43,7 +43,7 @@ import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
-import org.logstash.gradle.tooling.SignAliasDefinitionsTask
+import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 
 allprojects {
@@ -191,14 +191,14 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
-tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file from original aliases yml definition"
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
-tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file for testing aliases yml definition"
-    stage SignAliasDefinitionsTask.Stage.test
+    stage SignAliasDefinitions.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 

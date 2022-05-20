@@ -6,7 +6,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class SignAliasDefinitionsTask extends DefaultTask {
+abstract class SignAliasDefinitions extends DefaultTask {
 
     enum Stage {
         main, test;
@@ -44,7 +44,7 @@ abstract class SignAliasDefinitionsTask extends DefaultTask {
         }
     }
 
-    SignAliasDefinitionsTask stage(Stage stage) {
+    SignAliasDefinitions stage(Stage stage) {
         this.stage = stage
         return this
     }
