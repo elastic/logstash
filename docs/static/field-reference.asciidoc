@@ -4,8 +4,8 @@
 It is often useful to be able to refer to a field or collection of fields by name. To do this,
 you can use the Logstash field reference syntax.
 
-The syntax to access a field specifies the entire path to the field, with each fragment wrapped in square brackets;
-when a field name contains square brackets, they must be properly <<formal-grammar-escape-sequences, _escaped_>>.
+The syntax to access a field specifies the entire path to the field, with each fragment wrapped in square brackets.
+When a field name contains square brackets, they must be properly <<formal-grammar-escape-sequences, _escaped_>>.
 
 _Field References_ can be expressed literally within <<conditionals,_Conditional_>> statements in your pipeline configurations,
 as string arguments to your pipeline plugins, or within sprintf statements that will be used by your pipeline plugins:
@@ -142,7 +142,7 @@ An _Embedded Field Reference_ is a _Field Reference_ that is itself wrapped in s
 In order to reference a field whose name contains a character that has special meaning in the field reference grammar, it needs to be escaped.
 Logstash can be globally configured to use one of two field reference escape modes:
 
- - `NONE` (default): no escape sequence processing is done; fields containing literal square brackets cannot be referenced by the Event API.
- - `PERCENT`: URI-style percent encoding of UTF-8 bytes; the left square bracket (`[`) is expressed as `%5B`, and the right square bracket (`]`) is expressed as `%5D`.
+ - `NONE` (default): no escape sequence processing is done. Fields containing literal square brackets cannot be referenced by the Event API.
+ - `PERCENT`: URI-style percent encoding of UTF-8 bytes. The left square bracket (`[`) is expressed as `%5B`, and the right square bracket (`]`) is expressed as `%5D`.
 // NOTE: the following is _also_ HTML-escaped in the asciidoc source document so that browsers rendering the HTML will unwrap one escape and leave the remaining.
- - `AMPERSAND`: HTML-style ampersand encoding (`&#` + decimal unicode codepoint + `;`); the left square bracket (`[`) is expressed as `&#91;`, and the right square bracket (`]`) is expressed as `&#93;`.
+ - `AMPERSAND`: HTML-style ampersand encoding (`&#` + decimal unicode codepoint + `;`). The left square bracket (`[`) is expressed as `&#91;`, and the right square bracket (`]`) is expressed as `&#93;`.
