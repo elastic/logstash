@@ -1105,4 +1105,44 @@ public class QueueTest {
             queue.open();
         }
     }
+
+    @Test
+    public void firstUnackedPagePointToFullyAckedPurgedPage() throws Exception {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+        // simulate a scenario that a tail page fail to complete fully ack, crash in the middle of purge
+        // normal tail page ack: write fully acked checkpoint -> delete tail page -> (boom!) delete checkpoint -> write head page
+        // the queue head page, firstUnackedPageNum, points to a removed page which is fully acked
+        // the queue should be able to open and remove dangling checkpoint
+
+        try(Queue q = new Queue(settings)) {
+            q.open();
+            // create two pages
+            q.write(element);
+            q.write(element);
+
+            Batch batch = q.readBatch( 1, TimeUnit.SECONDS.toMillis(1));
+            assertThat(batch.size(), is(1));
+        }
+
+
+        try(Queue q = new Queue(settings)) {
+            // now we have head checkpoint pointing to page.0. Manually delete page.0 and checkpoint.0
+            Checkpoint cp = q.getCheckpointIO().read("checkpoint.0");
+            Paths.get(dataPath, "page.0").toFile().delete();
+            Paths.get(dataPath, "checkpoint.0").toFile().delete();
+            // manually create a fully acked checkpoint.0 to mock an incomplete tail page purge
+            Checkpoint mockAckedCp = new Checkpoint(cp.getPageNum(), cp.getFirstUnackedPageNum(), cp.getFirstUnackedSeqNum() + 1, cp.getMinSeqNum(), cp.getElementCount());
+            q.getCheckpointIO().write("checkpoint.0", mockAckedCp);
+
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size is too small to hold elements
+            // because checkpoint has outdated state saying it is not fully acked
+            q.open();
+
+            // dangling checkpoint should be deleted
+            File cp0 = Paths.get(dataPath, "checkpoint.0").toFile();
+            assertThat(cp0.exists(), is(false));
+        }
+    }
 }
