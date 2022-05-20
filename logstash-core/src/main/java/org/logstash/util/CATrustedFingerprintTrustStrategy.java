@@ -1,6 +1,7 @@
 package org.logstash.util;
 
 import com.google.common.io.BaseEncoding;
+import org.apache.http.conn.ssl.TrustStrategy;
 
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -16,7 +17,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class CATrustedFingerprintTrustStrategy implements org.apache.http.conn.ssl.TrustStrategy {
+public class CATrustedFingerprintTrustStrategy implements TrustStrategy {
 
     private final Set<Fingerprint> trustedFingerprints;
     private final Supplier<Date> dateSupplier;
