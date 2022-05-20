@@ -43,6 +43,7 @@ import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
+import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 
 allprojects {
@@ -190,46 +191,14 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
-abstract class SignAliasDefinitionsTask extends DefaultTask {
-
-    /**
-     * Relative path to the AliasRegistry.yml file to use, relative to project's root
-     * */
-    @Input
-    String registryPath
-
-    @InputFile
-    File getRegistryFullPath() {
-        project.file("${project.projectDir}/${registryPath}")
-    }
-
-    /**
-     * Full file path to the file containing the marked AliasRegistry file
-     * */
-    @OutputFile
-    File hashedFile
-
-    @TaskAction
-    def sign() {
-        String aliasesDefs = registryFullPath.text
-        String hash = aliasesDefs.digest('SHA-256')
-        hashedFile.withWriter('utf-8') { writer ->
-            writer.writeLine "#CHECKSUM: ${hash}"
-            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
-            writer.write aliasesDefs
-        }
-    }
-}
-
-tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file from original aliases yml definition"
-    registryPath = 'logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml'
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
-tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file for testing aliases yml definition"
-    registryPath = 'logstash-core/src/test/resources/org/logstash/plugins/AliasRegistry.yml'
+    stage SignAliasDefinitions.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
