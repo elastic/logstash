@@ -82,4 +82,10 @@ Gem::Specification.new do |gem|
   # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
   # SEE: https://github.com/ruby/racc/issues/172
   gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
+
+  # TEMPORARY: Modern Rufus Scheduler 3.x subtly breaks thread joining, which
+  # is done in several plugins to handle shutdowns.
+  # Pin pending migration to shared Scheduler Mixin that can mitigate this issue.
+  # https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/1
+  gem.add_runtime_dependency 'rufus-scheduler', '~> 3.0.9'
 end
