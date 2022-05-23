@@ -139,10 +139,9 @@ An _Embedded Field Reference_ is a _Field Reference_ that is itself wrapped in s
 [[formal-grammar-escape-sequences]]
 === Escape Sequences
 
-In order to reference a field whose name contains a character that has special meaning in the field reference grammar, it needs to be escaped.
+For {ls} to reference a field whose name contains a character that has special meaning in the field reference grammar, the character must be escaped.
 Logstash can be globally configured to use one of two field reference escape modes:
 
- - `NONE` (default): no escape sequence processing is done. Fields containing literal square brackets cannot be referenced by the Event API.
- - `PERCENT`: URI-style percent encoding of UTF-8 bytes. The left square bracket (`[`) is expressed as `%5B`, and the right square bracket (`]`) is expressed as `%5D`.
-// NOTE: the following is _also_ HTML-escaped in the asciidoc source document so that browsers rendering the HTML will unwrap one escape and leave the remaining.
- - `AMPERSAND`: HTML-style ampersand encoding (`&#` + decimal unicode codepoint + `;`). The left square bracket (`[`) is expressed as `&#91;`, and the right square bracket (`]`) is expressed as `&#93;`.
+ - `none` (default): no escape sequence processing is done. Fields containing literal square brackets cannot be referenced by the Event API.
+ - `percent`: URI-style percent encoding of UTF-8 bytes. The left square bracket (`[`) is expressed as `%5B`, and the right square bracket (`]`) is expressed as `%5D`.
+ - `ampersand`: HTML-style ampersand encoding (`&#` + decimal unicode codepoint + `;`). The left square bracket (`[`) is expressed as `&#91;`, and the right square bracket (`]`) is expressed as `&#93;`.

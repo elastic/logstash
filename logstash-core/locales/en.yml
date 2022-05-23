@@ -230,17 +230,17 @@ en:
           are subject to change.
 
           Available escape styles are:
-           - `NONE`: escape sequences in field references
+           - `none`: escape sequences in field references
              are not processed, which means fields that
              contain special characters cannot be
              referenced.
-           - `PERCENT`: characters may be encoded with
+           - `percent`: characters may be encoded with
              URI-style percent notation represeting UTF-8
              bytes (`[` is `%5B`; `]` is `%5D`).
              Unlike URI-encoding, literal percent characters
              do not need to be escaped unless followed by a
              sequence of 2 capital hexadecimal characters.
-           - `AMPERSAND`: characters may be encoded with
+           - `ampersand`: characters may be encoded with
              HTML-style ampersand-hash encoding notation
              representing decimal unicode codepoints
              (`[` is `&#91;`; `]` is `&#93;`).

@@ -53,7 +53,7 @@ public final class FieldReferenceTest {
         @After
         public void restoreGlobalEscapeMode() {
             // Default value for `config.field_reference.escape_style`
-            FieldReference.setEscapeStyle("NONE");
+            FieldReference.setEscapeStyle("none");
         }
 
         @Before
@@ -218,7 +218,7 @@ public final class FieldReferenceTest {
 
         @Override
         public String getEscapeMode() {
-            return "NONE";
+            return "none";
         }
     }
 
@@ -226,7 +226,7 @@ public final class FieldReferenceTest {
 
         @Override
         public String getEscapeMode() {
-            return "PERCENT";
+            return "percent";
         }
 
         @Test
@@ -261,7 +261,7 @@ public final class FieldReferenceTest {
 
         @Override
         public String getEscapeMode() {
-            return "AMPERSAND";
+            return "ampersand";
         }
 
 

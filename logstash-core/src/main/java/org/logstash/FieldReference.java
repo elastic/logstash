@@ -52,13 +52,13 @@ public final class FieldReference {
     public static void setEscapeStyle(final String escapeStyleSpec) {
         final EscapeHandler newEscapeHandler;
         switch(escapeStyleSpec) {
-            case "NONE":
+            case "none":
                 newEscapeHandler = EscapeHandler.NONE;
                 break;
-            case "PERCENT":
+            case "percent":
                 newEscapeHandler = EscapeHandler.PERCENT;
                 break;
-            case "AMPERSAND":
+            case "ampersand":
                 newEscapeHandler = EscapeHandler.AMPERSAND;
                 break;
             default:
