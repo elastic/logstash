@@ -279,16 +279,21 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | _N/A_
 
 | `api.auth.basic.password`
-| The password to require for HTTP Basic auth
-Ignored unless `api.auth.type` is set to `basic`.
+a| The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`.
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter.
+The default password policy can be customized by following options:
+
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
+
 | _N/A_
 
 | `api.auth.basic.password_policy.mode`
 | Raises either `WARN` or `ERROR` message when password requirements are not met.
 Ignored unless `api.auth.type` is set to `basic`.
-The default password policy requires non-empty minimum 5 char string that includes a digit, upper case letter and lower case letter.
-Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character.
-Set `api.auth.basic.password_policy.length.minimum` to a value from 6 to 1024 if you want to require more than the 5 character default setting for passwords.
 | `WARN`
 
 | `log.level`

@@ -32,7 +32,7 @@ public class LengthValidator implements Validator {
     /**
      Required minimum length of the password.
      */
-    private static final int MINIMUM_LENGTH = 5;
+    private static final int MINIMUM_LENGTH = 8;
 
     /**
      Required maximum length of the password.

@@ -78,7 +78,7 @@ module LogStash
             Setting::String.new("api.auth.basic.username", nil, false).nullable,
           Setting::Password.new("api.auth.basic.password", nil, false).nullable,
             Setting::String.new("api.auth.basic.password_policy.mode", "WARN", true, %w[WARN ERROR]),
-           Setting::Numeric.new("api.auth.basic.password_policy.length.minimum", 5),
+           Setting::Numeric.new("api.auth.basic.password_policy.length.minimum", 8),
             Setting::String.new("api.auth.basic.password_policy.include.upper", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::String.new("api.auth.basic.password_policy.include.lower", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::String.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
