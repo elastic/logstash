@@ -331,7 +331,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     field_reference_escape_style_setting = settings.get_setting('config.field_reference.escape_style')
     if field_reference_escape_style_setting.set?
-      logger.warn(I18n.t("logstash.settings.experimental.set", canonical_name: field_reference_escape_style_setting.name))
+      logger.warn(I18n.t("logstash.settings.technical_preview.set", canonical_name: field_reference_escape_style_setting.name))
     end
     field_reference_escape_style = field_reference_escape_style_setting.value
     logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")

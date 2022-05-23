@@ -456,8 +456,8 @@ en:
         ambiguous: >-
           Both `%{canonical_name}` and its deprecated alias `%{deprecated_alias}` have been set.
           Please only set `%{canonical_name}`
-      experimental:
+      technical_preview:
         set: >-
-          The setting `%{canonical_name}` is EXPERIMENTAL and its implementation is subject to change
-          in a future release of Logstash
+          The setting `%{canonical_name}` is in TECHNICAL PREVIEW and its implementation
+          is subject to change in a future release of Logstash
 
