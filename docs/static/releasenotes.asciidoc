@@ -63,6 +63,7 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
 
@@ -73,6 +74,8 @@ This section summarizes the changes in the following releases:
 * Fix support for reload of pipelines via `SIGHUP` https://github.com/elastic/logstash/issues/13993[#13993]
 * Fix stopped pipeline unable to be deleted in registry https://github.com/elastic/logstash/issues/14017[#14017]
 * Fix geoip database download does not respect `http_proxy` setting https://github.com/elastic/logstash/issues/14047[#14047]
+* Fixed no metrics update issue when PQ is draining https://github.com/elastic/logstash/pull/13935[#13935]
+* Fix a seek problem in the dead letter queue reader when asked to restart consuming from specific point https://github.com/elastic/logstash/pull/14093[#14093]
 
 ==== Plugins
 
@@ -84,9 +87,28 @@ This section summarizes the changes in the following releases:
 
 * Fixed an issue where a non-string value existing in the resolve/reverse field could cause the plugin to crash https://github.com/logstash-plugins/logstash-filter-dns/pull/65[#65]
 
+*Grok Filter - 4.4.2*
+
+* Clarify the definition of matches that depend on previous captures https://github.com/logstash-plugins/logstash-filter-grok/pull/169[#169]
+
 *Elasticsearch Input - 4.12.3*
 
 * Fix: update Elasticsearch Ruby client to correctly customize 'user-agent' header https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/171[#171]
+
+*File Input - 4.4.2*
+
+* Doc: Fix attribute by removing extra character https://github.com/logstash-plugins/logstash-input-file/pull/310[#310]
+* Fix: update to Gradle 7 https://github.com/logstash-plugins/logstash-input-file/pull/305[#305]
+* [DOC] Add version attributes to doc source file https://github.com/logstash-plugins/logstash-input-file/pull/308[#308]
+
+
+*Jdbc Integration - 5.2.5*
+
+* Fix: do not execute more queries with debug logging https://github.com/logstash-plugins/logstash-integration-jdbc/pull/109[#109]
+
+*Core Patterns - 4.3.3*
+
+* Fix: parsing x-edge-location in CLOUDFRONT_ACCESS_LOG (ECS mode) https://github.com/logstash-plugins/logstash-patterns-core/pull/311[#311]
 
 
 [[logstash-7-17-3]]
