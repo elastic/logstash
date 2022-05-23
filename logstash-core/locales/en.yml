@@ -226,8 +226,8 @@ en:
           meaningful in a field reference including square
           brackets (`[` and `]`).
 
-          This feature is EXPERIMENTAL, and implementations
-          are subject to change.
+          This feature is in TECHNICAL PREVIEW, and
+          implementations are subject to change.
 
           Available escape styles are:
            - `none`: escape sequences in field references
