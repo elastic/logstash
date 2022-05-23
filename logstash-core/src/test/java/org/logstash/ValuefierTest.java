@@ -20,6 +20,10 @@
 
 package org.logstash;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +95,29 @@ public class ValuefierTest extends RubyTestBase {
         Object result = Valuefier.convert(jo);
 
         assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
+    }
+
+    @Test
+    public void testLocalDate() {
+        LocalDate ld = LocalDate.now();
+        Object result = Valuefier.convert(ld);
+
+        assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
+    }
+
+    @Test
+    public void testLocalDateTime() {
+        LocalDateTime ldt = LocalDateTime.now();
+        Object result = Valuefier.convert(ldt);
+
+        assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
+    }
+
+    @Test
+    public void testZonedDateTime() {
+        ZonedDateTime zdt = ZonedDateTime.of(2022,4,4,5,6,13,123, ZoneId.of("Europe/London"));
+        JrubyTimestampExtLibrary.RubyTimestamp result = (JrubyTimestampExtLibrary.RubyTimestamp) Valuefier.convert(zdt);
+        assertEquals(zdt.toInstant().toEpochMilli(), result.getTimestamp().toEpochMilli());
     }
 
     @Rule
