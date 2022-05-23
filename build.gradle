@@ -733,9 +733,8 @@ class JDKDetails {
                 "jdk${revision}u${build}"
         String vendorOsName = vendorOsName(osName)
         switch (vendor) {
-            case "adoptopenjdk":
             case "adoptium":
-                return "https://api.${vendor}.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/${vendor}"
+                return "https://api.adoptium.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/adoptium"
             default:
                 throw RuntimeException("Can't handle vendor: ${vendor}")
         }
