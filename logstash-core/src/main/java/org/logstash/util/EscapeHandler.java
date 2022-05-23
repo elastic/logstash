@@ -38,6 +38,7 @@ public interface EscapeHandler {
         private final Pattern UNESCAPED_PERCENT_LITERAL = Pattern.compile("%(?![0-9A-F]{2})");
 
         public String unescape(String escaped) {
+            if (!escaped.contains("%")) { return escaped; }
             if (!PERCENT_ENCODED_SEQUENCE.matcher(escaped).find()) { return escaped; }
 
             // In order to support unescaped percent-literals without implementing
