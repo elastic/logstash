@@ -252,7 +252,7 @@ public final class Page implements Closeable {
     }
 
     public boolean hasSpace(int byteSize) {
-        return this.pageIO.hasSpace((byteSize));
+        return this.pageIO.hasSpace(byteSize);
     }
 
     /**

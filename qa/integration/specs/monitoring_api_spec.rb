@@ -52,6 +52,41 @@ describe "Test Monitoring API" do
     end
   end
 
+  context "queue draining" do
+    let(:tcp_port) { random_port }
+    let(:settings_dir) { Stud::Temporary.directory }
+    let(:queue_config) {
+      {
+        "queue.type" => "persisted",
+        "queue.drain" => true
+      }
+    }
+    let(:config_yaml) { queue_config.to_yaml }
+    let(:config_yaml_file) { ::File.join(settings_dir, "logstash.yml") }
+    let(:logstash_service) { @fixture.get_service("logstash") }
+    let(:config) { @fixture.config("draining_events", { :port => tcp_port }) }
+
+    before(:each) do
+      if logstash_service.settings.feature_flag == "persistent_queues"
+        IO.write(config_yaml_file, config_yaml)
+        logstash_service.spawn_logstash("-e", config, "--path.settings", settings_dir)
+      else
+        logstash_service.spawn_logstash("-e", config)
+      end
+      logstash_service.wait_for_logstash
+      wait_for_port(tcp_port, 60)
+    end
+
+    it "can update metrics" do
+      first = logstash_service.monitoring_api.event_stats
+      Process.kill("TERM", logstash_service.pid)
+      try(max_retry) do
+        second = logstash_service.monitoring_api.event_stats
+        expect(second["filtered"].to_i > first["filtered"].to_i).to be_truthy
+      end
+    end
+  end
+
   context "verify global event counters" do
     let(:tcp_port) { random_port }
     let(:sample_data) { 'Hello World!' }

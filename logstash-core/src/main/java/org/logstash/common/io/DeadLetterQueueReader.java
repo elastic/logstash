@@ -45,16 +45,19 @@ import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -73,44 +76,92 @@ public final class DeadLetterQueueReader implements Closeable {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
-        this.segments = new ConcurrentSkipListSet<>((p1, p2) -> {
-            Function<Path, Integer> id = (p) -> Integer.parseInt(p.getFileName().toString().split("\\.")[0]);
-            return id.apply(p1).compareTo(id.apply(p2));
-        });
-
+        this.segments = new ConcurrentSkipListSet<>(
+                Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
+        );
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
-            currentReader = new RecordIOReader(segment);
-            byte[] event = currentReader.seekToNextEventPosition(timestamp, (b) -> {
-                try {
-                    return DLQEntry.deserialize(b).getEntryTime();
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            }, Timestamp::compareTo);
+            Optional<RecordIOReader> optReader = openSegmentReader(segment);
+            if (!optReader.isPresent()) {
+                continue;
+            }
+            currentReader = optReader.get();
+
+            byte[] event = currentReader.seekToNextEventPosition(timestamp, DeadLetterQueueReader::extractEntryTimestamp, Timestamp::compareTo);
             if (event != null) {
                 return;
             }
         }
-        currentReader.close();
-        currentReader = null;
+        if (currentReader != null) {
+            currentReader.close();
+            currentReader = null;
+        }
+    }
+
+    /**
+     * Opens the segment reader for the given path.
+     * Side effect: Will attempt to remove the given segment from the list of active
+     *              segments if segment is not found.
+     * @param segment Path to segment File
+     * @return Optional containing a RecordIOReader if the segment exists
+     * @throws IOException
+     */
+    private Optional<RecordIOReader> openSegmentReader(Path segment) throws IOException {
+        if (!Files.exists(segment)) {
+            // file was deleted by upstream process and segments list wasn't yet updated
+            segments.remove(segment);
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(new RecordIOReader(segment));
+        } catch (NoSuchFileException ex) {
+            logger.debug("Segment file {} was deleted by DLQ writer during DLQ reader opening", segment);
+            // file was deleted by upstream process and segments list wasn't yet updated
+            segments.remove(segment);
+            return Optional.empty();
+        }
+    }
+
+    private static Timestamp extractEntryTimestamp(byte[] serialized) {
+        try {
+            return DLQEntry.deserialize(serialized).getEntryTime();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
         WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
         if (key != null) {
-            for (WatchEvent<?> watchEvent : key.pollEvents()) {
-                if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
-                }
-                key.reset();
-            }
+            pollSegmentsOnWatch(key);
         }
         return System.currentTimeMillis() - startTime;
+    }
+
+    private void pollNewSegments() throws IOException {
+        WatchKey key = watchService.poll();
+        if (key != null) {
+            pollSegmentsOnWatch(key);
+        }
+    }
+
+    private void pollSegmentsOnWatch(WatchKey key) throws IOException {
+        for (WatchEvent<?> watchEvent : key.pollEvents()) {
+            if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+            } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+                final int oldSize = segments.size();
+                segments.clear();
+                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
+            }
+            key.reset();
+        }
     }
 
     public DLQEntry pollEntry(long timeout) throws IOException, InterruptedException {
@@ -134,36 +185,101 @@ public final class DeadLetterQueueReader implements Closeable {
                 logger.debug("No entries found: no segment files found in dead-letter-queue directory");
                 return null;
             }
-            currentReader = new RecordIOReader(segments.first());
+            Optional<RecordIOReader> optReader;
+            do {
+                final Path firstSegment;
+                try {
+                    firstSegment = segments.first();
+                } catch (NoSuchElementException ex) {
+                    // all elements were removed after the empty check
+                    logger.debug("No entries found: no segment files found in dead-letter-queue directory");
+                    return null;
+                }
+
+                optReader = openSegmentReader(firstSegment);
+                if (optReader.isPresent()) {
+                    currentReader = optReader.get();
+                }
+            } while (!optReader.isPresent());
         }
 
         byte[] event = currentReader.readEvent();
         if (event == null && currentReader.isEndOfStream()) {
-            if (currentReader.getPath().equals(segments.last())) {
+            if (consumedAllSegments()) {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
-                currentReader = new RecordIOReader(segments.higher(currentReader.getPath()));
-                return pollEntryBytes(timeoutRemaining);
+                Optional<RecordIOReader> optReader = openNextExistingReader(currentReader.getPath());
+                if (!optReader.isPresent()) {
+                    // segments were all already deleted files, do a poll
+                    pollNewSegments(timeoutRemaining);
+                } else {
+                    currentReader = optReader.get();
+                    return pollEntryBytes(timeoutRemaining);
+                }
             }
         }
 
         return event;
     }
 
+    private boolean consumedAllSegments() {
+        try {
+            return currentReader.getPath().equals(segments.last());
+        } catch (NoSuchElementException ex) {
+            // last segment was removed while processing
+            logger.debug("No last segment found, poll for new segments");
+            return true;
+        }
+    }
+
+    private Path nextExistingSegmentFile(Path currentSegmentPath) {
+        Path nextExpectedSegment;
+        boolean skip;
+        do {
+            nextExpectedSegment = segments.higher(currentSegmentPath);
+            if (nextExpectedSegment != null && !Files.exists(nextExpectedSegment)) {
+                segments.remove(nextExpectedSegment);
+                skip = true;
+            } else {
+                skip = false;
+            }
+        } while (skip);
+        return nextExpectedSegment;
+    }
+
     public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
         // If the provided segment Path exist, then set the reader to start from the supplied position
-        if (Files.exists(segmentPath)) {
-            currentReader = new RecordIOReader(segmentPath);
+        Optional<RecordIOReader> optReader = openSegmentReader(segmentPath);
+        if (optReader.isPresent()) {
+            currentReader = optReader.get();
             currentReader.seekToOffset(position);
-        }else{
-            // Otherwise, set the current reader to be at the beginning of the next
-            // segment.
-            Path next = segments.higher(segmentPath);
-            if (next != null){
-                currentReader = new RecordIOReader(next);
+            return;
+        }
+        // Otherwise, set the current reader to be at the beginning of the next
+        // segment.
+        optReader = openNextExistingReader(segmentPath);
+        if (optReader.isPresent()) {
+            currentReader = optReader.get();
+            return;
+        }
+
+        pollNewSegments();
+
+        // give a second try after a re-load of segments from filesystem
+        openNextExistingReader(segmentPath)
+                .ifPresent(reader -> currentReader = reader);
+    }
+
+    private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {
+        Path next;
+        while ( (next = nextExistingSegmentFile(segmentPath)) != null ) {
+            Optional<RecordIOReader> optReader = openSegmentReader(next);
+            if (optReader.isPresent()) {
+                return optReader;
             }
         }
+        return Optional.empty();
     }
 
     public Path getCurrentSegment() {

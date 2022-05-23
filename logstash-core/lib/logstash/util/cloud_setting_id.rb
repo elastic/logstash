@@ -18,5 +18,5 @@
 require "base64"
 
 module LogStash; module Util
-    java_import org.logstash.util.CloudSettingId
+    java_import "org.logstash.util.CloudSettingId"
 end; end

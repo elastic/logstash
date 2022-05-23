@@ -35,3 +35,17 @@ config:
     output {
       stdout { }
     }
+  draining_events: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+      }
+      generator { count => 3000 }
+    }
+    filter {
+      sleep { 
+       time => "1" 
+        every => 10
+      }
+      drop { }
+    }

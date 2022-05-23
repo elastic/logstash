@@ -31,19 +31,43 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
+    public static final int INTERNAL_FRAG_PAYLOAD_SIZE = BLOCK_SIZE - RECORD_HEADER_SIZE - 5;
     private Path dir;
     private int defaultDlqSize = 100_000_000; // 100mb
 
@@ -186,29 +210,21 @@ public class DeadLetterQueueReaderTest {
         long startTime = System.currentTimeMillis();
         DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0), constantSerializationLengthTimestamp(startTime));
         int size = templateEntry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE + VERSION_SIZE;
-        DeadLetterQueueWriter writeManager = null;
-        try {
-            writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize, Duration.ofSeconds(1));
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 1; i <= count; i++) {
                 writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i), constantSerializationLengthTimestamp(startTime++)));
             }
-        } finally {
-            writeManager.close();
         }
     }
 
 
     private void validateEntries(Path firstLog, int startEntry, int endEntry, int startPosition) throws IOException, InterruptedException {
-        DeadLetterQueueReader readManager = null;
-        try {
-            readManager = new DeadLetterQueueReader(dir);
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
             readManager.setCurrentReaderAndPosition(firstLog, startPosition);
             for (int i = startEntry; i <= endEntry; i++) {
                 DLQEntry readEntry = readManager.pollEntry(100);
                 assertThat(readEntry.getReason(), equalTo(String.valueOf(i)));
             }
-        } finally {
-            readManager.close();
         }
     }
 
@@ -219,7 +235,6 @@ public class DeadLetterQueueReaderTest {
     // This test tests for a single event that ends on a block boundary
     @Test
     public void testBlockBoundary() throws Exception {
-
         final int PAD_FOR_BLOCK_SIZE_EVENT = 32490;
         Event event = createEventWithConstantSerializationOverhead();
         char[] field = new char[PAD_FOR_BLOCK_SIZE_EVENT];
@@ -227,7 +242,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", new String(field));
         Timestamp timestamp = constantSerializationLengthTimestamp();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -250,7 +265,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("message", new String(field));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 1; i <= 5; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", constantSerializationLengthTimestamp(startTime++));
                 messageSize += entry.serialize().length;
@@ -273,7 +288,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT/8));
         Timestamp timestamp = new Timestamp();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
             for (int i = 0; i < 6; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -468,6 +483,47 @@ public class DeadLetterQueueReaderTest {
                           String.valueOf(FIRST_WRITE_EVENT_COUNT));
     }
 
+    @Test
+    public void testSeekByTimestampMoveAfterDeletedSegment() throws IOException, InterruptedException {
+        final long startTime = 1646296760000L;
+        final int eventsPerSegment = prepareFilledSegmentFiles(2, startTime);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // remove the first segment
+            Files.delete(dir.resolve(segmentFileName(1)));
+
+            //Exercise, seek in the middle of first segment
+            final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, hit the first event of the second segment
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertEquals("Must load first event of next available segment", readEntry.getReason(), String.format("%05d", eventsPerSegment));
+            final Timestamp firstEventSecondSegmentTimestamp = new Timestamp(startTime + eventsPerSegment);
+            assertEquals(firstEventSecondSegmentTimestamp, readEntry.getEntryTime());
+        }
+    }
+
+    @Test
+    public void testSeekByTimestampWhenAllSegmentsAreDeleted() throws IOException, InterruptedException {
+        final long startTime = System.currentTimeMillis();
+        final int eventsPerSegment = prepareFilledSegmentFiles(2, startTime);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // remove the first segment
+            Files.delete(dir.resolve(segmentFileName(1)));
+            Files.delete(dir.resolve(segmentFileName(2)));
+
+            //Exercise, seek in the middle of first segment
+            final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, hit the first event of the second segment
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertNull("No entry is available after all segments are deleted", readEntry);
+        }
+    }
+
     /**
      * Tests concurrently reading and writing from the DLQ.
      * @throws Exception On Failure
@@ -519,6 +575,224 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testReaderFindSegmentHoleAfterSimulatingRetentionPolicyClean() throws IOException, InterruptedException {
+        final int eventsPerSegment = prepareFilledSegmentFiles(3);
+        assertEquals(319, eventsPerSegment);
+
+        int remainingEventsInSegment = eventsPerSegment;
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // read the first event to initialize reader structures
+            final DLQEntry dlqEntry = reader.pollEntry(1_000);
+            assertEquals("00000", dlqEntry.getReason());
+            remainingEventsInSegment--;
+
+            // simulate a storage policy clean, drop the middle segment file
+            final List<Path> allSegments = Files.list(dir)
+                    .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
+                    .collect(Collectors.toList());
+            assertThat(allSegments.size(), greaterThanOrEqualTo(2));
+            Files.delete(allSegments.remove(0)); // tail segment
+            Files.delete(allSegments.remove(0)); // the segment after
+
+            // consume the first segment
+            for (int i = 0; i < remainingEventsInSegment; i++) {
+                reader.pollEntry(1_000);
+            }
+
+            // Exercise
+            // consume the first event after the hole
+            final DLQEntry entryAfterHole = reader.pollEntry(1_000);
+
+            assertEquals(String.format("%05d", eventsPerSegment * 2), entryAfterHole.getReason());
+        }
+    }
+
+    @Test
+    public void testReaderWhenAllRemaningSegmentsAreRemoved() throws IOException, InterruptedException {
+        int remainingEventsInSegment = prepareFilledSegmentFiles(3);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            // read the first event to initialize reader structures
+            final DLQEntry dlqEntry = reader.pollEntry(1_000);
+            assertEquals("00000", dlqEntry.getReason());
+            remainingEventsInSegment--;
+
+            // simulate a retention policy clean, that drops the remaining segments
+            Files.list(dir)
+                    .sorted()
+                    .skip(1)
+                    .forEach(DeadLetterQueueReaderTest::deleteSegment);
+
+            // consume the first segment
+            for (int i = 0; i < remainingEventsInSegment; i++) {
+                reader.pollEntry(1_000);
+            }
+
+            // Exercise
+            // consume the first event after the hole
+            final DLQEntry entryAfterHole = reader.pollEntry(1_000);
+            assertNull(entryAfterHole);
+        }
+    }
+
+    private static void deleteSegment(Path file) {
+        try {
+            Files.delete(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSeekToMiddleWhileTheLogIsRemoved() throws IOException, InterruptedException {
+        writeSegmentSizeEntries(3);
+
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
+
+            // removes 2 segments simulating a retention policy action
+            Files.delete(dir.resolve("1.log"));
+            Files.delete(dir.resolve("2.log"));
+
+            readManager.setCurrentReaderAndPosition(dir.resolve("1.log"), 1);
+
+            DLQEntry readEntry = readManager.pollEntry(100);
+            assertThat(readEntry.getReason(), equalTo(String.valueOf(3)));
+        }
+    }
+
+    @Test
+    public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
+        // write some data into a segment file
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < 10; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("1", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
+    public void testReaderWithBlockInternalFragmentation() throws IOException, InterruptedException {
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+
+            rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private static String stringOf(int length, char ch) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentation() throws IOException, InterruptedException {
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentationOnceMessageIsBiggerThenBlock() throws IOException, InterruptedException {
+        final int payloadSize = INTERNAL_FRAG_PAYLOAD_SIZE + BLOCK_SIZE;
+        byte[] almostFullBlockPayload = new byte[payloadSize];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(payloadSize, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private void writeSegmentWithFirstBlockContainingInternalFragmentation() throws IOException {
+        byte[] almostFullBlockPayload = new byte[INTERNAL_FRAG_PAYLOAD_SIZE];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
+        writer.close();
+    }
+
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
      * such that the result will have a constant serialization length of 24 bytes.
@@ -529,7 +803,7 @@ public class DeadLetterQueueReaderTest {
      * @param millis
      * @return
      */
-    private Timestamp constantSerializationLengthTimestamp(long millis) {
+    static Timestamp constantSerializationLengthTimestamp(long millis) {
         if ( millis % 1000 == 0) { millis += 1; }
 
         final Timestamp timestamp = new Timestamp(millis);
@@ -542,7 +816,7 @@ public class DeadLetterQueueReaderTest {
         return constantSerializationLengthTimestamp(System.currentTimeMillis());
     }
 
-    private Timestamp constantSerializationLengthTimestamp(final Timestamp basis) {
+    private static Timestamp constantSerializationLengthTimestamp(final Timestamp basis) {
         return constantSerializationLengthTimestamp(basis.toEpochMilli());
     }
 
@@ -559,7 +833,7 @@ public class DeadLetterQueueReaderTest {
      * @param data
      * @return
      */
-    private Event createEventWithConstantSerializationOverhead(final Map<String, Object> data) {
+    static Event createEventWithConstantSerializationOverhead(final Map<String, Object> data) {
         final Event event = new Event(data);
 
         final Timestamp existingTimestamp = event.getTimestamp();
@@ -570,7 +844,7 @@ public class DeadLetterQueueReaderTest {
         return event;
     }
 
-    private Event createEventWithConstantSerializationOverhead() {
+    private static Event createEventWithConstantSerializationOverhead() {
         return createEventWithConstantSerializationOverhead(Collections.emptyMap());
     }
 
@@ -579,7 +853,7 @@ public class DeadLetterQueueReaderTest {
         return r.nextInt((to - from) + 1) + from;
     }
 
-    private String generateMessageContent(int size) {
+    static String generateMessageContent(int size) {
         char[] valid = new char[RecordType.values().length + 1];
         int j = 0;
         valid[j] = 'x';
@@ -608,6 +882,47 @@ public class DeadLetterQueueReaderTest {
             for (int i = offset; i <= offset + numberOfEvents; i++) {
                 DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(startTime++));
                 writeManager.writeEntry(entry);
+            }
+        }
+    }
+
+    private int prepareFilledSegmentFiles(int segments) throws IOException {
+        return prepareFilledSegmentFiles(segments, System.currentTimeMillis());
+    }
+
+    private int prepareFilledSegmentFiles(int segments, long start) throws IOException {
+        final Event event = createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", generateMessageContent(32479));
+
+        DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 1), constantSerializationLengthTimestamp(start));
+        assertEquals("Serialized dlq entry + header MUST be 32Kb (size of a block)", BLOCK_SIZE, entry.serialize().length + 13);
+
+        final int maxSegmentSize = 10 * MB;
+        final int loopPerSegment = (int) Math.floor((maxSegmentSize - 1.0) / BLOCK_SIZE);
+        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, maxSegmentSize, defaultDlqSize, Duration.ofSeconds(1))) {
+            final int loops = loopPerSegment * segments;
+            for (int i = 0; i < loops; i++) {
+                entry = new DLQEntry(event, "", "", String.format("%05d", i), constantSerializationLengthTimestamp(start++));
+                writer.writeEntry(entry);
+            }
+        }
+
+        assertEquals(segments, Files.list(dir).count());
+        return loopPerSegment;
+    }
+
+    @Test
+    public void testRestartFromCommitPointRealData() throws IOException, InterruptedException, URISyntaxException {
+        URL url = this.getClass().getResource("1.log");
+        Path path = Paths.get(url.toURI());
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(path.getParent())) {
+            reader.setCurrentReaderAndPosition(path, 0x3593F0);
+
+            for (int i = 0; i < 10_000 - 3_376; i++) {
+                byte[] rawStr = reader.pollEntryBytes();
+                assertNotNull(rawStr);
+                assertThat(new String(rawStr, StandardCharsets.UTF_8), containsString("Could not index event to Elasticsearch. status: 400"));
             }
         }
     }

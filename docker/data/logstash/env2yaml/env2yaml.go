@@ -83,6 +83,7 @@ func normalizeSetting(setting string) (string, error) {
 		"dead_letter_queue.enable",
 		"dead_letter_queue.max_bytes",
 		"dead_letter_queue.flush_interval",
+		"dead_letter_queue.storage_policy",
 		"path.dead_letter_queue",
 		"http.enabled",     // DEPRECATED: prefer `api.enabled`
 		"http.environment", // DEPRECATED: prefer `api.environment`
@@ -93,6 +94,13 @@ func normalizeSetting(setting string) (string, error) {
 		"modules",
 		"path.logs",
 		"path.plugins",
+		"password_policy.mode",
+		"password_policy.length.minimum",
+		"password_policy.include.upper",
+		"password_policy.include.lower",
+		"password_policy.include.digit",
+		"password_policy.include.symbol",
+		"allow_superuser",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",

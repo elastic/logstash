@@ -109,12 +109,14 @@ public class FileCheckpointIO implements CheckpointIO {
 
         // Windows can have problem doing file move See: https://github.com/elastic/logstash/issues/12345
         // retry a couple of times to make it works. The first two runs has no break. The rest of reties are exponential backoff.
+        final Path path = dirPath.resolve(fileName);
         try {
-            Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+            Files.move(tmpPath, path, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
             if (retry) {
                 try {
-                    backoff.retryable(() -> Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE));
+                    logger.debug("CheckpointIO retry moving '{}' to '{}'", tmpPath, path);
+                    backoff.retryable(() -> Files.move(tmpPath, path, StandardCopyOption.ATOMIC_MOVE));
                 } catch (ExponentialBackoff.RetryException re) {
                     throw new IOException("Error writing checkpoint", re);
                 }
@@ -128,6 +130,7 @@ public class FileCheckpointIO implements CheckpointIO {
     @Override
     public void purge(String fileName) throws IOException {
         Path path = dirPath.resolve(fileName);
+        logger.debug("CheckpointIO deleting '{}'", path);
         Files.delete(path);
     }
 

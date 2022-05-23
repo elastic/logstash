@@ -622,6 +622,15 @@ module LogStash::Config::Mixin
             return [false, "Expected a valid field reference, got `#{candidate.inspect}`"] unless org.logstash.FieldReference.isValid(candidate)
 
             return [true, candidate]
+          when :sha_256_hex # since 8.3
+            return [false, "Expected exactly one hex-encoded SHA-256 fingerprint, got `#{value.inspect}`"] unless value.kind_of?(Array) && value.size <= 1
+            return [true, nil] if value.empty? || value.first.nil? || value.first.empty?
+
+            candidate = value.first
+
+            return [false, "Expected a hex-encoded SHA-256 fingerprint, got `#{candidate.inspect}`"] unless candidate.kind_of?(String) && candidate =~ /\A(?:[[:xdigit:]]{2}:?){32}\z/
+
+            return [true, candidate.upcase.tr('^0-9A-F','')]
           else
             return false, "Unknown validator symbol #{validator}"
         end # case validator

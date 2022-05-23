@@ -20,20 +20,36 @@
 
 package org.logstash.execution;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import javax.annotation.concurrent.NotThreadSafe;
+
+import org.apache.logging.log4j.junit.LoggerContextRule;
+import org.apache.logging.log4j.test.appender.ListAppender;
 import org.assertj.core.api.Assertions;
 import org.jruby.RubySystemExit;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link ShutdownWatcherExt}.
@@ -41,48 +57,51 @@ import org.logstash.RubyUtil;
 @NotThreadSafe
 public final class ShutdownWatcherExtTest extends RubyTestBase {
 
+    private static final String CONFIG = "log4j2-test1.xml";
+    private static final Path PIPELINE_TEMPLATE = Paths.get("./src/test/resources/shutdown_watcher_ext_pipeline_template.rb").toAbsolutePath();
+    private ListAppender appender;
+
+    @ClassRule
+    public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
+
+    @Before
+    public void setup() {
+        appender = CTX.getListAppender("EventLogger").clear();
+    }
+
     @Test
-    public void testShouldForceShutdown() throws InterruptedException {
+    public void pipelineWithUnsafeShutdownShouldForceShutdown() throws InterruptedException, IOException {
+        String pipeline = resolvedPipeline(false);
+        watcherShutdownStallingPipeline(pipeline);
+
+        // non drain pipeline should print stall msg
+        boolean printStalling = appender.getMessages().stream().anyMatch((msg) -> msg.contains("stalling"));
+        assertTrue(printStalling);
+    }
+
+
+    @Test
+    public void pipelineWithDrainShouldNotPrintStallMsg() throws InterruptedException, IOException {
+        String pipeline = resolvedPipeline(true);
+        watcherShutdownStallingPipeline(pipeline);
+
+        boolean printStalling = appender.getMessages().stream().anyMatch((msg) -> msg.contains("stalling"));
+        assertFalse(printStalling);
+    }
+
+    private void watcherShutdownStallingPipeline(String rubyScript) throws InterruptedException {
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         try {
             final Future<IRubyObject> res = exec.submit(() -> {
                 final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
                 ShutdownWatcherExt.setUnsafeShutdown(context, null, context.tru);
                 return new ShutdownWatcherExt(context.runtime, RubyUtil.SHUTDOWN_WATCHER_CLASS)
-                    .initialize(
-                        context, new IRubyObject[]{
-                            RubyUtil.RUBY.evalScriptlet(
-                                String.join(
-                                    "\n",
-                                    "pipeline = Object.new",
-                                    "reporter = Object.new",
-                                    "snapshot = Object.new",
-                                    "inflight_count = java.util.concurrent.atomic.AtomicInteger.new",
-                                    "snapshot.define_singleton_method(:inflight_count) do",
-                                    "inflight_count.increment_and_get + 1",
-                                    "end",
-                                    "threads = {}",
-                                    "snapshot.define_singleton_method(:stalling_threads) do",
-                                    "threads",
-                                    "end",
-                                    "reporter.define_singleton_method(:snapshot) do",
-                                    "snapshot",
-                                    "end",
-                                    "pipeline.define_singleton_method(:thread) do",
-                                    "Thread.current",
-                                    "end",
-                                    "pipeline.define_singleton_method(:finished_execution?) do",
-                                    "false",
-                                    "end",
-                                    "pipeline.define_singleton_method(:reporter) do",
-                                    "reporter",
-                                    "end",
-                                    "pipeline"
-                                )
-                            ),
-                            context.runtime.newFloat(0.01)
-                        }
-                    ).start(context);
+                        .initialize(
+                                context, new IRubyObject[]{
+                                        RubyUtil.RUBY.evalScriptlet(rubyScript),
+                                        context.runtime.newFloat(0.01)
+                                }
+                        ).start(context);
             });
             res.get();
             Assertions.fail("Shutdown watcher did not invoke system exit(-1)");
@@ -97,6 +116,13 @@ public final class ShutdownWatcherExtTest extends RubyTestBase {
                 Assertions.fail("Failed to shut down shutdown watcher thread");
             }
         }
+    }
 
+    private static String getPipelineTemplate() throws IOException {
+        return new String(Files.readAllBytes(PIPELINE_TEMPLATE));
+    }
+
+    private static String resolvedPipeline(Boolean isDraining) throws IOException {
+        return getPipelineTemplate().replace("%{value_placeholder}", isDraining.toString());
     }
 }
