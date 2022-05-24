@@ -4,7 +4,6 @@ RUN apt-get update && \
     apt-get install -y zlib1g-dev build-essential vim rake git curl libssl-dev libreadline-dev libyaml-dev  \
       libxml2-dev libxslt-dev openjdk-11-jdk-headless curl iputils-ping netcat && \
     apt-get clean
-RUN apt-get install -y git # temporary git depenency of plugin logstash-output-elasticsearch
 
 WORKDIR /root
 
