@@ -35,6 +35,7 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.elasticsearch.username" => [LogStash::Setting::String, "logstash_system"],
         "xpack.management.elasticsearch.password" => [LogStash::Setting::String, nil],
         "xpack.management.elasticsearch.ssl.certificate_authority" => [LogStash::Setting::NullableString, nil],
+        "xpack.management.elasticsearch.ssl.ca_trusted_fingerprint" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.truststore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.truststore.password" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableString, nil],

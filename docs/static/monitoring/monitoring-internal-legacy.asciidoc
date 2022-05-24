@@ -98,6 +98,14 @@ can specify the location of the PEM encoded certificate with the
 xpack.monitoring.elasticsearch.ssl.certificate_authority: /path/to/ca.crt
 --------------------------------------------------
 
+To add a CA without having it loaded on disk, you can specify a hex-encoded
+SHA 256 fingerprint of the DER-formatted CA with the `ca_trusted_fingerprint` setting:
+
+[source,yaml]
+--------------------------------------------------
+xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: 2cfe62e474fb381cc7773c84044c28c9785ac5d1940325f942a3d736508de640
+--------------------------------------------------
+
 Alternatively, you can configure trusted certificates using a truststore
 (a Java Keystore file that contains the certificates):
 

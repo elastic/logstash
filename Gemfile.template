@@ -9,7 +9,7 @@ gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
 gem "ruby-progressbar", "~> 1"
-gem "logstash-output-elasticsearch", ">= 10.4.2"
+gem "logstash-output-elasticsearch", ">= 11.6.0", git: "https://github.com/yaauie/logstash-output-elasticsearch.git", branch: "ca_trusted_fingerprint"
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856
 gem "gems", "~> 1", :group => :build

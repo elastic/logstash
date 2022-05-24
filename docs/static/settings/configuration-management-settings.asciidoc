@@ -64,6 +64,11 @@ If a user has created their own roles and granted them access to the .logstash i
 Optional setting that allows you to specify a proxy URL if Logstash needs to use a proxy
 to reach your Elasticsearch cluster.
 
+`xpack.management.elasticsearch.ssl.ca_trusted_fingerprint`::
+
+Optional setting that enables you to specify the hex-encoded SHA-256 fingerprint of the
+certificate authority for your {es} instance.
+
 `xpack.management.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
