@@ -150,7 +150,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `config.string`
 | A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
   the config file.
-| None
+| _N/A_
 
 | `config.test_and_exit`
 | When set to `true`, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
@@ -178,9 +178,22 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
 | `false`
 
+| `config.field_reference.escape_style`
+a| Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`.
+
+NOTE: This feature is in *technical preview* and may change in the future.
+
+Current options are:
+
+* `percent`: URI-style `%`{plus}`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
+* `ampersand`: HTML-style `&#`{plus}`DD`{plus}`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`)
+* `none`: field names containing special characters _cannot_ be referenced.
+
+| `none`
+
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.
-| None
+| _N/A_
 
 | `queue.type`
 | The internal queuing model to use for event buffering. Specify `memory` for legacy in-memory based queuing, or `persisted` for disk-based ACKed queueing (<<persistent-queues,persistent queues>>).

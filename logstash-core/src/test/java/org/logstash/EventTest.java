@@ -157,6 +157,21 @@ public final class EventTest extends RubyTestBase {
     }
 
     @Test
+    public void testFieldThatIsNotAValidNestedFieldReference() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("this[key]", "value");
+        final Event e = new Event(data);
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"this[key]\":\"value\",\"@version\":\"1\"}", e.toJson());
+    }
+    @Test
+    public void testFieldThatLooksLikeAValidNestedFieldReference() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("[deeply][nested][field]", "value");
+        final Event e = new Event(data);
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"[deeply][nested][field]\":\"value\",\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
     public void testSimpleIntegerFieldToJson() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", 1);

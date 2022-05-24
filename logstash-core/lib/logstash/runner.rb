@@ -86,6 +86,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
+  option ["--field-reference-escape-style"], "STYLE",
+         I18n.t("logstash.runner.flag.field-reference-escape-style"),
+         :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
+         :attribute_name => "config.field_reference.escape_style"
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
@@ -323,6 +328,14 @@ class LogStash::Runner < Clamp::StrictCommand
 
     validate_settings! or return 1
     @dispatcher.fire(:before_bootstrap_checks)
+
+    field_reference_escape_style_setting = settings.get_setting('config.field_reference.escape_style')
+    if field_reference_escape_style_setting.set?
+      logger.warn(I18n.t("logstash.settings.technical_preview.set", canonical_name: field_reference_escape_style_setting.name))
+    end
+    field_reference_escape_style = field_reference_escape_style_setting.value
+    logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
+    org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 

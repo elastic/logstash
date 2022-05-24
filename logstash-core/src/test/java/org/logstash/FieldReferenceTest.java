@@ -27,6 +27,8 @@ import org.jruby.RubyString;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -34,161 +36,260 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public final class FieldReferenceTest extends RubyTestBase {
-    @Before
-    @After
-    public void clearInternalCaches() {
-        getInternalCache("CACHE").clear();
-        getInternalCache("DEDUP").clear();
-        getInternalCache("RUBY_CACHE").clear();
-    }
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        FieldReferenceTest.EscapeNone.class,
+        FieldReferenceTest.EscapePercent.class,
+        FieldReferenceTest.EscapeAmpersand.class,
+})
+public final class FieldReferenceTest {
+    private static abstract class Base extends RubyTestBase {
+        public abstract String getEscapeMode();
 
-    @Test
-    public void deduplicatesTimestamp() throws Exception {
-        assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
-    }
-
-    @Test
-    public void testParseEmptyString() {
-        final FieldReference emptyReference = FieldReference.from("");
-        assertNotNull(emptyReference);
-        assertEquals(
-                emptyReference, FieldReference.from(RubyUtil.RUBY.newString(""))
-        );
-    }
-
-    @Test
-    public void testCacheUpperBound() {
-        final Map<String, FieldReference> cache = getInternalCache("CACHE");
-        final int initial = cache.size();
-        for (int i = 0; i < 10_001 - initial; ++i) {
-            FieldReference.from(String.format("[array][%d]", i));
+        @Before
+        public void overrideGlobalEscapeMode() {
+            FieldReference.setEscapeStyle(getEscapeMode());
         }
-        assertThat(cache.size(), CoreMatchers.is(10_000));
-    }
-
-    @Test
-    public void testRubyCacheUpperBound() {
-        final Map<RubyString, FieldReference> cache = getInternalCache("RUBY_CACHE");
-        final int initial = cache.size();
-        for (int i = 0; i < 10_050 - initial; ++i) {
-            final RubyString rubyString = RubyUtil.RUBY.newString(String.format("[array][%d]", i));
-            FieldReference.from(rubyString);
+        @After
+        public void restoreGlobalEscapeMode() {
+            // Default value for `config.field_reference.escape_style`
+            FieldReference.setEscapeStyle("none");
         }
-        assertThat(cache.size(), CoreMatchers.is(10_000));
+
+        @Before
+        @After
+        public void clearInternalCaches() {
+            getInternalCache("CACHE").clear();
+            getInternalCache("DEDUP").clear();
+            getInternalCache("RUBY_CACHE").clear();
+        }
+
+        @Test
+        public void deduplicatesTimestamp() throws Exception {
+            assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
+        }
+
+        @Test
+        public void testParseEmptyString() {
+            final FieldReference emptyReference = FieldReference.from("");
+            assertNotNull(emptyReference);
+            assertEquals(
+                    emptyReference, FieldReference.from(RubyUtil.RUBY.newString(""))
+            );
+        }
+
+        @Test
+        public void testCacheUpperBound() {
+            final Map<String, FieldReference> cache = getInternalCache("CACHE");
+            final int initial = cache.size();
+            for (int i = 0; i < 10_001 - initial; ++i) {
+                FieldReference.from(String.format("[array][%d]", i));
+            }
+            assertThat(cache.size(), CoreMatchers.is(10_000));
+        }
+
+        @Test
+        public void testRubyCacheUpperBound() {
+            final Map<RubyString, FieldReference> cache = getInternalCache("RUBY_CACHE");
+            final int initial = cache.size();
+            for (int i = 0; i < 10_050 - initial; ++i) {
+                final RubyString rubyString = RubyUtil.RUBY.newString(String.format("[array][%d]", i));
+                FieldReference.from(rubyString);
+            }
+            assertThat(cache.size(), CoreMatchers.is(10_000));
+        }
+
+        @Test
+        public void testParseSingleBareField() throws Exception {
+            FieldReference f = FieldReference.from("foo");
+            assertEquals(0, f.getPath().length);
+            assertEquals("foo", f.getKey());
+        }
+
+        @Test
+        public void testParseSingleFieldPath() throws Exception {
+            FieldReference f = FieldReference.from("[foo]");
+            assertEquals(0, f.getPath().length);
+            assertEquals("foo", f.getKey());
+        }
+
+        @Test
+        public void testParse2FieldsPath() throws Exception {
+            FieldReference f = FieldReference.from("[foo][bar]");
+            assertArrayEquals(new String[]{"foo"}, f.getPath());
+            assertEquals("bar", f.getKey());
+        }
+
+        @Test
+        public void testParse3FieldsPath() throws Exception {
+            FieldReference f = FieldReference.from("[foo][bar][baz]");
+            assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
+            assertEquals("baz", f.getKey());
+        }
+
+        @Test
+        public void testEmbeddedSingleReference() throws Exception {
+            FieldReference f = FieldReference.from("[[foo]][bar]");
+            assertArrayEquals(new String[]{"foo"}, f.getPath());
+            assertEquals("bar", f.getKey());
+        }
+
+        @Test
+        public void testEmbeddedDeepReference() throws Exception {
+            FieldReference f = FieldReference.from("[[foo][bar]][baz]");
+            assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
+            assertEquals("baz", f.getKey());
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidEmbeddedDeepReference() throws Exception {
+            FieldReference f = FieldReference.from("[[foo][bar]nope][baz]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidEmbeddedDeepReference2() throws Exception {
+            FieldReference f = FieldReference.from("[nope[foo][bar]][baz]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidNoCloseBracket() throws Exception {
+            FieldReference.from("[foo][bar][baz");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidNoInitialOpenBracket() throws Exception {
+            FieldReference.from("foo[bar][baz]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidMissingMiddleBracket() throws Exception {
+            FieldReference.from("[foo]bar[baz]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidOnlyOpenBracket() throws Exception {
+            FieldReference.from("[");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidOnlyCloseBracket() throws Exception {
+            FieldReference.from("]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidLotsOfOpenBrackets() throws Exception {
+            FieldReference.from("[[[[[[[[[[[]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseInvalidDoubleCloseBrackets() throws Exception {
+            FieldReference.from("[foo]][bar]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseNestingSquareBrackets() throws Exception {
+            FieldReference.from("[this[is]terrible]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseChainedNestingSquareBrackets() throws Exception {
+            FieldReference.from("[this[is]terrible][and][it[should-not[work]]]");
+        }
+
+        @Test(expected = FieldReference.IllegalSyntaxException.class)
+        public void testParseLiteralSquareBrackets() throws Exception {
+            FieldReference.from("this[index]");
+        }
+
+        @SuppressWarnings("unchecked")
+        private <K, V> Map<K, V> getInternalCache(final String fieldName) {
+            final Field cacheField;
+            try {
+                cacheField = FieldReference.class.getDeclaredField(fieldName);
+                cacheField.setAccessible(true);
+                return (Map<K, V>) cacheField.get(null);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    @Test
-    public void testParseSingleBareField() throws Exception {
-        FieldReference f = FieldReference.from("foo");
-        assertEquals(0, f.getPath().length);
-        assertEquals("foo", f.getKey());
+    public static class EscapeNone extends Base {
+
+        @Override
+        public String getEscapeMode() {
+            return "none";
+        }
     }
 
-    @Test
-    public void testParseSingleFieldPath() throws Exception {
-        FieldReference f = FieldReference.from("[foo]");
-        assertEquals(0, f.getPath().length);
-        assertEquals("foo", f.getKey());
+    public static class EscapePercent extends Base {
+
+        @Override
+        public String getEscapeMode() {
+            return "percent";
+        }
+
+        @Test
+        public void testReadFieldWithSquareBracketLiteralsInPath() {
+            final FieldReference fr = FieldReference.from("[foo][bar%5Bbingo%5D][okay]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("bar[bingo]", fr.getPath()[1]);
+            assertEquals("okay", fr.getKey());
+        }
+
+        @Test
+        public void testReadFieldWithSquareBracketLiteralsInKey() {
+            final FieldReference fr = FieldReference.from("[foo][okay][bar%5Bbingo%5D]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("okay", fr.getPath()[1]);
+            assertEquals("bar[bingo]", fr.getKey());
+        }
+
+        @Test
+        public void testReadFieldWithPercentLiteralInKey() {
+            final FieldReference fr = FieldReference.from("[foo][bar][95%]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("bar", fr.getPath()[1]);
+            assertEquals("95%", fr.getKey());
+        }
     }
 
-    @Test
-    public void testParse2FieldsPath() throws Exception {
-        FieldReference f = FieldReference.from("[foo][bar]");
-        assertArrayEquals(new String[]{"foo"}, f.getPath());
-        assertEquals("bar", f.getKey());
-    }
+    public static class EscapeAmpersand extends Base {
 
-    @Test
-    public void testParse3FieldsPath() throws Exception {
-        FieldReference f = FieldReference.from("[foo][bar][baz]");
-        assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
-        assertEquals("baz", f.getKey());
-    }
+        @Override
+        public String getEscapeMode() {
+            return "ampersand";
+        }
 
-    @Test
-    public void testEmbeddedSingleReference() throws Exception {
-        FieldReference f = FieldReference.from("[[foo]][bar]");
-        assertArrayEquals(new String[]{"foo"}, f.getPath());
-        assertEquals("bar", f.getKey());
-    }
 
-    @Test
-    public void testEmbeddedDeepReference() throws Exception {
-        FieldReference f = FieldReference.from("[[foo][bar]][baz]");
-        assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
-        assertEquals("baz", f.getKey());
-    }
+        @Test
+        public void testReadFieldWithSquareBracketLiteralsInPath() {
+            final FieldReference fr = FieldReference.from("[foo][bar&#91;bingo&#93;][okay]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("bar[bingo]", fr.getPath()[1]);
+            assertEquals("okay", fr.getKey());
+        }
 
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidEmbeddedDeepReference() throws Exception {
-        FieldReference f = FieldReference.from("[[foo][bar]nope][baz]");
-    }
+        @Test
+        public void testReadFieldWithSquareBracketLiteralsInKey() {
+            final FieldReference fr = FieldReference.from("[foo][okay][bar&#91;bingo&#93;]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("okay", fr.getPath()[1]);
+            assertEquals("bar[bingo]", fr.getKey());
+        }
 
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidEmbeddedDeepReference2() throws Exception {
-        FieldReference f = FieldReference.from("[nope[foo][bar]][baz]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidNoCloseBracket() throws Exception {
-        FieldReference.from("[foo][bar][baz");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidNoInitialOpenBracket() throws Exception {
-        FieldReference.from("foo[bar][baz]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidMissingMiddleBracket() throws Exception {
-        FieldReference.from("[foo]bar[baz]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidOnlyOpenBracket() throws Exception {
-        FieldReference.from("[");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidOnlyCloseBracket() throws Exception {
-        FieldReference.from("]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidLotsOfOpenBrackets() throws Exception {
-        FieldReference.from("[[[[[[[[[[[]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseInvalidDoubleCloseBrackets() throws Exception {
-        FieldReference.from("[foo]][bar]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseNestingSquareBrackets() throws Exception {
-        FieldReference.from("[this[is]terrible]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseChainedNestingSquareBrackets() throws Exception {
-        FieldReference.from("[this[is]terrible][and][it[should-not[work]]]");
-    }
-
-    @Test(expected=FieldReference.IllegalSyntaxException.class)
-    public void testParseLiteralSquareBrackets() throws Exception {
-        FieldReference.from("this[index]");
-    }
-
-    @SuppressWarnings("unchecked")
-    private <K,V> Map<K,V> getInternalCache(final String fieldName) {
-        final Field cacheField;
-        try {
-            cacheField = FieldReference.class.getDeclaredField(fieldName);
-            cacheField.setAccessible(true);
-            return (Map<K, V>) cacheField.get(null);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        @Test
+        public void testReadFieldWithAmpersandLiteralInKey() {
+            final FieldReference fr = FieldReference.from("[foo][bar][this&that]");
+            assertEquals(2, fr.getPath().length);
+            assertEquals("foo", fr.getPath()[0]);
+            assertEquals("bar", fr.getPath()[1]);
+            assertEquals("this&that", fr.getKey());
         }
     }
 }
