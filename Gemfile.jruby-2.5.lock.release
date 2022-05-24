@@ -545,7 +545,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
-    logstash-integration-jdbc (5.2.5)
+    logstash-integration-jdbc (5.2.6)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -913,4 +913,4 @@ DEPENDENCIES
   webmock (~> 3)
 
 BUNDLED WITH
-   2.3.13
+   2.3.14
