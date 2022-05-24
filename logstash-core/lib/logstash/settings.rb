@@ -555,12 +555,12 @@ module LogStash
           raise(ArgumentError, "Setting `#{name}` could not coerce LogStash::Util::Password value to password")
         end
 
-        policies = set_password_policies
+        policies = build_password_policies
         validatedResult = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
         if validatedResult.length() > 0
           if @password_policies.fetch(:mode).eql?("WARN")
             logger.warn("Password #{validatedResult}.")
-            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the mode to 'ERROR' to enforce stricter password requirements now.")
+            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the 'api.auth.basic.password_policy.mode' to 'ERROR' to enforce stricter password requirements now.")
           else
             raise(ArgumentError, "Password #{validatedResult}.")
           end
@@ -568,9 +568,8 @@ module LogStash
         password
       end
 
-      def set_password_policies
+      def build_password_policies
         policies = {}
-        # check by default for empty password once basic auth is enabled
         policies[Util::PasswordPolicyType::EMPTY_STRING] = Util::PasswordPolicyParam.new
         policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", @password_policies.dig(:length, :minimum).to_s)
         if @password_policies.dig(:include, :upper).eql?("REQUIRED")

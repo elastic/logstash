@@ -15,7 +15,7 @@ public class LengthValidatorTest {
 
     @Before
     public void setUp() {
-        lengthValidator = new LengthValidator(8);
+        lengthValidator = new LengthValidator(10);
     }
 
     @Test
@@ -28,6 +28,6 @@ public class LengthValidatorTest {
     public void testValidateFailure() {
         Optional<String> result = lengthValidator.validate("Pwd");
         Assert.assertTrue(result.isPresent());
-        Assert.assertEquals(result.get(), "must be length of between 5 and 1024");
+        Assert.assertEquals(result.get(), "must be length of between 10 and 1024");
     }
 }

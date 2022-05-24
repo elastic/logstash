@@ -279,9 +279,22 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | _N/A_
 
 | `api.auth.basic.password`
-| The password to require for HTTP Basic auth
-Ignored unless `api.auth.type` is set to `basic`.
+a| The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`.
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter.
+The default password policy can be customized by following options:
+
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
+
 | _N/A_
+
+| `api.auth.basic.password_policy.mode`
+| Raises either `WARN` or `ERROR` message when password requirements are not met.
+Ignored unless `api.auth.type` is set to `basic`.
+| `WARN`
 
 | `log.level`
 a|
@@ -320,22 +333,4 @@ separating each log lines per pipeline could be helpful in case you need to trou
 | `allow_superuser`
 | Setting to `true` to allow or `false` to block running Logstash as a superuser.
 | `true`
-
-| `password_policy.mode`
-| Raises either `WARN` or `ERROR` message when password requirements are not met.
-| `WARN`
-
-| `password_policy.length.minimum`
-| Minimum number of characters required for a valid password.
-| 8
-
-| `password_policy.include`
-| Validates passwords based on `upper`, `lower`, `digit` and `symbol` requirements. When a character type is `REQUIRED`, Logstash will `WARN` or `ERROR` according to the `password_policy.mode` if the character type is not included in the password. Valid entries are `REQUIRED` and `OPTIONAL`.
-| `upper`: `REQUIRED`
-
-`lower`: `REQUIRED`
-
-`digit`: `REQUIRED`
-
-`symbol`: `OPTIONAL`
 |=======================================================================

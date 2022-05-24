@@ -58,7 +58,7 @@ You can also require HTTP Basic authentication by setting `api.auth.type: basic`
 --------------------------------------------------
 api.auth.type: basic
 api.auth.basic.username: "logstash"
-api.auth.basic.password: "stashy"
+api.auth.basic.password: "s3cUreP4$$w0rD"
 --------------------------------------------------
 
 NOTE: Usage of Keystore or Environment or variable replacements is encouraged for password-type fields to avoid storing them in plain text.
