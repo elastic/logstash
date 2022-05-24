@@ -66,8 +66,8 @@ module LogStash
         password_policies[:include][:lower] = required_setting(settings, 'api.auth.basic.password_policy.include.lower', "api.auth.type")
         password_policies[:include][:digit] = required_setting(settings, 'api.auth.basic.password_policy.include.digit', "api.auth.type")
         password_policies[:include][:symbol] = required_setting(settings, 'api.auth.basic.password_policy.include.symbol', "api.auth.type")
+        Setting::ValidatedPassword.new("api.auth.basic.password", password, password_policies) # TODO: doesn't need to be a Setting, relies on `strict = true` force-validating the default
 
-        auth_basic[:password_policies] = password_policies
         options[:auth_basic] = auth_basic.freeze
       else
         warn_ignored(logger, settings, "api.auth.basic.", "api.auth.type")
@@ -150,9 +150,7 @@ module LogStash
       if options.include?(:auth_basic)
         username = options[:auth_basic].fetch(:username)
         password = options[:auth_basic].fetch(:password)
-        password_policies = options[:auth_basic].fetch(:password_policies)
-        validated_password = Setting::ValidatedPassword.new("api.auth.basic.password", password, password_policies).freeze
-        app = Rack::Auth::Basic.new(app, "logstash-api") { |u, p| u == username && p == validated_password.value.value }
+        app = Rack::Auth::Basic.new(app, "logstash-api") { |u, p| u == username && p == password.value }
       end
 
       @app = app
