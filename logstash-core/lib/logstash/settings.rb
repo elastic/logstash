@@ -560,6 +560,7 @@ module LogStash
         if validatedResult.length() > 0
           if @password_policies.fetch(:mode).eql?("WARN")
             logger.warn("Password #{validatedResult}.")
+            deprecation_logger.deprecated("Password policies may become more restrictive in future releases. Set the 'api.auth.basic.password_policy.mode' to 'ERROR' to enforce stricter password requirements now.")
           else
             raise(ArgumentError, "Password #{validatedResult}.")
           end
