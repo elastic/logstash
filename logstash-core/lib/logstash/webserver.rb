@@ -24,6 +24,7 @@ require "thread"
 
 module LogStash
   class WebServer
+    include Util::Loggable
 
     attr_reader :logger, :config, :http_host, :http_ports, :http_environment, :agent, :port
 
@@ -53,7 +54,7 @@ module LogStash
         auth_basic[:password] = required_setting(settings, 'api.auth.basic.password', "api.auth.type")
 
         password_policies = {}
-        password_policies[:mode] = required_setting(settings, 'api.auth.basic.password_policy.mode', "api.auth.type")
+        password_policies[:mode] = required_setting_with_changing_default(settings, 'api.auth.basic.password_policy.mode', "api.auth.type", "ERROR")
         password_policies[:length] = {}
         password_policies[:length][:minimum] = required_setting(settings, 'api.auth.basic.password_policy.length.minimum', "api.auth.type")
         if !password_policies[:length][:minimum].between?(8, 1024)
@@ -103,6 +104,14 @@ module LogStash
     # @api internal
     def self.required_setting(settings, setting_name, trigger)
       settings.get(setting_name) || fail(ArgumentError, "Setting `#{setting_name}` is required when `#{trigger}` is set to `#{settings.get(trigger)}`. Please provide it in your `logstash.yml`")
+    end
+
+    def self.required_setting_with_changing_default(settings, name, trigger, future_value)
+      effective_value = required_setting(settings, name, trigger)
+      if !settings.set?(name)
+        deprecation_logger.deprecated("The default value of `#{name}` will change to `#{future_value}` in a future release of Logstash. Set it to `#{future_value}` to enforce future requirement now.")
+      end
+      effective_value
     end
 
     ##
