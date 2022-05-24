@@ -140,7 +140,7 @@ public final class Queue implements Closeable {
                 size = 0L;
             } else {
                 size = headPage.getPageIO().getHead()
-                    + tailPages.stream().mapToLong(p -> p.getPageIO().getHead()).sum();
+                    + tailPages.stream().mapToLong(p -> p.getPageIO().getCapacity()).sum();
             }
             return size;
         } finally {
