@@ -24,24 +24,6 @@ This section summarizes the changes in the following releases:
 
 * Backport PR #14129 to 8.2: Avoids unnecessary thread sync of PQ notFull state https://github.com/elastic/logstash/pull/14141[#14141]
 
-=== Logstash Commits between 8.2 and 8.2.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.2.1..8.2"
-
-4371da83a - (HEAD -> 8.2, origin/8.2) This commit avoids unnecessary thread sync of PQ notFull state. (#14129) (#14141) (20 hours ago) <github-actions[bot]>
-fc9f6afd5 - Fix debug output for bin/logstash-plugin (#14132) (#14143) (20 hours ago) <github-actions[bot]>
-78bf6fe3f - Bump version to next 8.2.2 (#14136) (28 hours ago) <Andrea Selva>
-08382205c - Release notes draft for 8.2.1 (#14121) (2 days ago) <Logstash Machine>
-4145b118f - [Doc] queue.max_bytes for all queues (#14128) (#14139) (5 days ago) <github-actions[bot]>
-ca76e8fe4 - Doc: Update settings file doc to call out queue type (#14127) (#14134) (6 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.2.1..8.2 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
 [[logstash-8-2-1]]
 === Logstash 8.2.1 Release Notes
 
