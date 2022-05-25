@@ -161,12 +161,10 @@ public final class Page implements Closeable {
 
         final boolean done = isFullyAcked();
         if (done) {
-            if (this.writable) {
-                headPageCheckpoint();
-            } else {
-                // keep checkpoint up-to-date before purge. In case crash happens in the middle of purging,
-                // queue get the latest state of checkpoint and can clean up in queue.openPages()
-                tailPageCheckpoint();
+            checkpoint();
+
+            // purge fully acked tail page
+            if (!this.writable) {
                 purge();
                 final CheckpointIO cpIO = queue.getCheckpointIO();
                 cpIO.purge(cpIO.tailFileName(pageNum));
