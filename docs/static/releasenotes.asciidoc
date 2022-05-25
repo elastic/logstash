@@ -5,6 +5,9 @@ This section summarizes the changes in the following releases:
 
 * <<logstash-8-2-1,Logstash 8.2.1>>
 * <<logstash-8-2-0,Logstash 8.2.0>>
+* <<logstash-8-1-3,Logstash 8.1.3>>
+* <<logstash-8-1-2,Logstash 8.1.2>>
+* <<logstash-8-1-1,Logstash 8.1.1>>
 * <<logstash-8-1-0,Logstash 8.1.0>>
 * <<logstash-8-0-1,Logstash 8.0.1>>
 * <<logstash-8-0-0,Logstash 8.0.0>>
@@ -139,6 +142,87 @@ https://github.com/elastic/logstash/pull/13935[#13935]
 * Fix retry indefinitely in termination process. This feature requires Logstash 8.1 https://github.com/logstash-plugins/logstash-output-http/pull/129[#129]
 * Docs: Add retry policy description https://github.com/logstash-plugins/logstash-output-http/pull/130[#130]
 * Introduce retryable unknown exceptions for "connection reset by peer" and "timeout" https://github.com/logstash-plugins/logstash-output-http/pull/127[#127]
+
+[[logstash-8-1-3]]
+=== Logstash 8.1.3 Release Notes
+
+No user-facing changes in this release.
+
+[[logstash-8-1-2]]
+=== Logstash 8.1.2 Release Notes
+
+[[notable-8.1.2]]
+==== Notable issues fixed
+
+* Fixed issue where Logstash crashed if Central Management couldn't reach Elasticsearch https://github.com/elastic/logstash/pull/13689[#13689]
+
+==== Plugins
+
+*Cef Codec - 6.2.4*
+
+* [DOC] Emphasize importance of delimiter setting for byte stream inputs https://github.com/logstash-plugins/logstash-codec-cef/pull/95[#95]
+
+*Geoip Filter - 7.2.12*
+
+* [DOC] Add `http_proxy` environment variable for GeoIP service endpoint. The feature is included in 8.1.0, and was back-ported to 7.17.2 https://github.com/logstash-plugins/logstash-filter-geoip/pull/207[#207] 
+
+*Truncate Filter - 1.0.5*
+
+* Switches behavior of add_tag and add_field, now tags and fields are added only when the truncation happens on any field or nested field https://github.com/logstash-plugins/logstash-filter-truncate/pull/7[#7].
+
+*Tcp Output - 6.0.2*
+
+* Fix: unable to start with password protected key https://github.com/logstash-plugins/logstash-output-tcp/pull/45[#45]
+
+[[logstash-8-1-1]]
+=== Logstash 8.1.1 Release Notes
+
+[[notable-8.1.1]]
+==== Notable issues fixed
+
+* The `bin/logstash-plugin uninstall <plugin>` command works as expected, successfully uninstalling the specified plugin https://github.com/elastic/logstash/pull/13823[#13823]
+* Logstash CLI tools are now able to use the selected JDK on Windows https://github.com/elastic/logstash/pull/13839[#13839]
+* Logstash can successfully locate the Windows JVM, even if the path includes spaces https://github.com/elastic/logstash/pull/13881[#13881]
+* The GeoIP database lookup will now respect a proxy defined with the http_proxy environment variable. https://github.com/elastic/logstash/pull/13840[#13840]
+
+==== Updates to dependencies
+
+* The version of the bundled JDK has been updated to 11.0.14.1+1. https://github.com/elastic/logstash/pull/13869[#13869]
+
+==== Plugins
+
+*Dissect Filter - 1.2.5*
+
+* Fix: bad padding `->` suffix with delimiter https://github.com/logstash-plugins/logstash-filter-dissect/pull/84[#84]
+
+*Elasticsearch Filter - 3.11.1*
+
+* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/156[#156]
+
+*Dead_letter_queue Input - 1.1.11*
+
+* Fix: pre-flight checks before creating DLQ reader https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/35[#35]
+* Fix: avoid Logstash crash on shutdown if DLQ files weren't created https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/33[#33]
+
+*Elasticsearch Input - 4.12.2*
+
+* Fix: hosts => "es_host:port" regression https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/168[#168]
+
+*Http_poller Input - 5.2.1*
+
+* Deps: unpin rufus-scheduler dependency https://github.com/logstash-plugins/logstash-input-http_poller/pull/132[#132]
+
+*Jdbc Integration - 5.2.4*
+
+* Fix: compatibility with all (>= 3.0) rufus-scheduler versions https://github.com/logstash-plugins/logstash-integration-jdbc/pull/97[#97] 
+
+* Performance: avoid contention on scheduler execution https://github.com/logstash-plugins/logstash-integration-jdbc/pull/103[#103]
+
+*Tcp Output - 6.0.1*
+
+* Fix: logging fail retry to stdout https://github.com/logstash-plugins/logstash-output-tcp/pull/43[#43]
+* Fix: Use `reconnect_interval` when establish a connection
+
 
 [[logstash-8-1-0]]
 === Logstash 8.1.0 Release Notes
