@@ -19,6 +19,7 @@ require "logstash/config/mixin"
 require "logstash/plugins/ecs_compatibility_support"
 require "concurrent"
 require "logstash/plugins/event_factory_support"
+require "logstash/plugins/ca_trusted_fingerprint_support"
 require "securerandom"
 
 require_relative 'plugin_metadata'

@@ -32,7 +32,6 @@ if !LogStash::OSS
 end
 
 require "clamp"
-
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"
@@ -86,6 +85,11 @@ class LogStash::Runner < Clamp::StrictCommand
       :default_output => LogStash::Config::Defaults.output),
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
+
+  option ["--field-reference-escape-style"], "STYLE",
+         I18n.t("logstash.runner.flag.field-reference-escape-style"),
+         :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
+         :attribute_name => "config.field_reference.escape_style"
 
   # Module settings
   option ["--modules"], "MODULES",
@@ -285,7 +289,7 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    running_as_root
+    running_as_superuser
 
     if log_configuration_contains_javascript_usage?
       logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
@@ -324,6 +328,14 @@ class LogStash::Runner < Clamp::StrictCommand
 
     validate_settings! or return 1
     @dispatcher.fire(:before_bootstrap_checks)
+
+    field_reference_escape_style_setting = settings.get_setting('config.field_reference.escape_style')
+    if field_reference_escape_style_setting.set?
+      logger.warn(I18n.t("logstash.settings.technical_preview.set", canonical_name: field_reference_escape_style_setting.name))
+    end
+    field_reference_escape_style = field_reference_escape_style_setting.value
+    logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
+    org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
@@ -442,13 +454,12 @@ class LogStash::Runner < Clamp::StrictCommand
     @log_fd.close if @log_fd
   end # def self.main
 
-  def running_as_root
-    on_superuser_setting = setting("on_superuser")
+  def running_as_superuser
     if Process.euid() == 0
-      if on_superuser_setting.eql?("ALLOW")
-        deprecation_logger.deprecated("NOTICE: Running Logstash as root is not recommended and won't be allowed in the future. Set 'on_superuser' to 'BLOCK' to avoid startup errors in future releases.")
+      if setting("allow_superuser")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'allow_superuser' to 'false' to avoid startup errors in future releases.")
       else
-        raise(RuntimeError, "Logstash cannot be run as root.")
+        raise(RuntimeError, "Logstash cannot be run as superuser.")
       end
     end
   end

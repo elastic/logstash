@@ -34,6 +34,7 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
@@ -42,6 +43,7 @@ import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
+import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 
 allprojects {
@@ -51,8 +53,8 @@ allprojects {
   apply plugin: 'idea'
   apply plugin: 'java-library'
 
-  project.sourceCompatibility = JavaVersion.VERSION_1_8
-  project.targetCompatibility = JavaVersion.VERSION_1_8
+  project.sourceCompatibility = JavaVersion.VERSION_11
+  project.targetCompatibility = JavaVersion.VERSION_11
 
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
@@ -189,41 +191,14 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
-abstract class SignAliasDefinitionsTask extends DefaultTask {
-
-    /**
-     * Relative path to the AliasRegistry.yml file to use, relative to project's root
-     * */
-    @Input
-    String registryPath
-
-    /**
-     * Full file path to the file containing the marked AliasRegistry file
-     * */
-    @OutputFile
-    File hashedFile
-
-    @TaskAction
-    def sign() {
-        String aliases_defs = new File("${project.projectDir}/${registryPath}").text
-        String hash = aliases_defs.digest('SHA-256')
-        hashedFile.withWriter('utf-8') { writer ->
-            writer.writeLine "#CHECKSUM: ${hash}"
-            writer.writeLine "# DON'T EDIT THIS FILE, PLEASE REFER TO ${registryPath}"
-            writer.write aliases_defs
-        }
-    }
-}
-
-tasks.register("markAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file from original aliases yml definition"
-    registryPath = 'logstash-core/src/main/resources/org/logstash/plugins/AliasRegistry.yml'
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
-tasks.register("markTestAliasDefinitions", SignAliasDefinitionsTask) {
+tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
     description "Create an hashes aliases file for testing aliases yml definition"
-    registryPath = 'logstash-core/src/test/resources/org/logstash/plugins/AliasRegistry.yml'
+    stage SignAliasDefinitions.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
@@ -317,9 +292,9 @@ def bundlerVersion = "~> 2"
 
 tasks.register("installBundler") {
     dependsOn assemblyDeps
-    outputs.files file("${projectDir}/vendor/bundle/jruby/2.5.0/bin/bundle")
+    outputs.files file("${projectDir}/vendor/bundle/jruby/2.6.0/bin/bundle")
     doLast {
-      gem(projectDir, buildDir, "bundler", bundlerVersion, "${projectDir}/vendor/bundle/jruby/2.5.0")
+      gem(projectDir, buildDir, "bundler", bundlerVersion, "${projectDir}/vendor/bundle/jruby/2.6.0")
   }
 }
 
@@ -333,9 +308,9 @@ tasks.register("bootstrap"){
 
 tasks.register("installDefaultGems") {
     dependsOn bootstrap
-  doLast {
-      rake(projectDir, buildDir, 'plugin:install-default')
-  }
+    doLast {
+        rake(projectDir, buildDir, 'plugin:install-default')
+    }
 }
 
 tasks.register("installTestGems") {
@@ -440,7 +415,7 @@ tasks.register("unpackTarDistribution", Copy) {
 
 def qaBuildPath = "${buildDir}/qa/integration"
 def qaVendorPath = "${qaBuildPath}/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.5.0".toString()
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.6.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){
@@ -753,19 +728,19 @@ class JDKDetails {
     }
 
     String createDownloadUrl() {
+        String releaseName = major > 8 ?
+                "jdk-${revision}+${build}":
+                "jdk${revision}u${build}"
+        String vendorOsName = vendorOsName(osName)
         switch (vendor) {
-            case "adoptopenjdk":
-                String releaseName = major > 8 ?
-                        "jdk-${revision}+${build}":
-                        "jdk${revision}u${build}"
-                String adoptOsName = adaptOsName(osName)
-                return "https://api.adoptopenjdk.net/v3/binary/version/${releaseName}/${adoptOsName}/${arch}/jdk/hotspot/normal/${vendor}"
+            case "adoptium":
+                return "https://api.adoptium.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/adoptium"
             default:
                 throw RuntimeException("Can't handle vendor: ${vendor}")
         }
     }
 
-    private String adaptOsName(String osName) {
+    private String vendorOsName(String osName) {
         if (osName == "darwin")
             return "mac"
         return osName

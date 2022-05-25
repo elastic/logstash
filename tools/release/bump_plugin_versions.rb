@@ -66,14 +66,14 @@ puts "Computing #{allow_bump_for} plugin dependency bump from #{base_logstash_ve
 if base_logstash_version == "LOCAL"
   puts "Using local lockfile..."
   begin
-    result = File.read("Gemfile.jruby-2.5.lock.release")
+    result = File.read("Gemfile.jruby-2.6.lock.release")
   rescue => e
     puts "Failed to read local lockfile #{e}"
     exit(1)
   end
 else
   puts "Fetching lock file for #{base_logstash_version}.."
-  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.5.lock.release")
+  uri = URI.parse("https://raw.githubusercontent.com/elastic/logstash/v#{base_logstash_version}/Gemfile.jruby-2.6.lock.release")
   result = Net::HTTP.get(uri)
   if result.match(/404/)
     puts "Lock file or git tag for #{base_logstash_version} not found. Aborting"
@@ -104,7 +104,7 @@ end
 IO.write("Gemfile.template", gemfile)
 
 puts "Cleaning up before running computing dependencies"
-FileUtils.rm_f("Gemfile.jruby-2.5.lock.release")
+FileUtils.rm_f("Gemfile.jruby-2.6.lock.release")
 
 # compute new lock file
 puts "Running: ./gradlew clean installDefaultGems"
@@ -121,18 +121,18 @@ IO.write("Gemfile.lock", new_lock.join("\n"))
 
 # rename file
 puts "Finishing up.."
-FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.5.lock.release")
+FileUtils.mv("Gemfile.lock", "Gemfile.jruby-2.6.lock.release")
 
 `git checkout -- Gemfile.template`
 
-puts `git diff Gemfile.jruby-2.5.lock.release`
+puts `git diff Gemfile.jruby-2.6.lock.release`
 
 exit(0) unless options[:pr]
 puts "Creating commit.."
 
 branch_name = "update_lock_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
-`git commit Gemfile.jruby-2.5.lock.release -m "Update #{allow_bump_for} plugin versions in gemfile lock"`
+`git commit Gemfile.jruby-2.6.lock.release -m "Update #{allow_bump_for} plugin versions in gemfile lock"`
 
 puts "Pushing commit.."
 `git remote add upstream git@github.com:elastic/logstash.git`

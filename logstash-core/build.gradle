@@ -156,6 +156,7 @@ dependencies {
     api(files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
         builtBy ':downloadAndInstallJRuby'
     }) { because "DEPENDENCY: org.jruby:jruby-core:${jrubyVersion}" } // meta-data for generateLicenseReport
+    implementation project(':jvm-options-parser')
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
@@ -190,4 +191,7 @@ dependencies {
     testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testImplementation 'org.elasticsearch:securemock:1.2'
     testImplementation 'org.assertj:assertj-core:3.11.1'
+
+    api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.14'
 }

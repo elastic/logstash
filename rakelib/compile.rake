@@ -16,6 +16,7 @@
 # under the License.
 
 rule ".rb" => ".treetop" do |task, args|
+  require 'logstash/patches/polyglot'
   require "treetop"
   compiler = Treetop::Compiler::GrammarCompiler.new
   compiler.compile(task.source, task.name)

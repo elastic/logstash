@@ -6,16 +6,15 @@ logstash-core-plugin-api: 2.1.16
 
 bundled_jdk:
   # for AdoptOpenJDK/OpenJDK jdk-14.0.1+7.1, the revision is 14.0.1 while the build is 7.1
-  vendor: "adoptopenjdk"
-  revision: 11.0.14.1
-  build: 1
+  vendor: "adoptium"
+  revision: 11.0.15
+  build: 10
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
 jruby:
-  version: 9.2.20.1
-  sha1: 7f45f8a3d53d5f19f69952014abcb542b2670846
-
+  version: 9.3.4.0
+  sha1: 91e54b1c8962dd7a7fbcbab012f5d8ba1f15e5a4
 # jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby
 #jruby-runtime-override:
 #  url: https://oss.sonatype.org/content/repositories/snapshots/org/jruby/jruby-dist/9.3.0.0-SNAPSHOT/jruby-dist-9.3.0.0-20210723.214927-259-bin.tar.gz

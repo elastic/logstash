@@ -31,24 +31,43 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
+    public static final int INTERNAL_FRAG_PAYLOAD_SIZE = BLOCK_SIZE - RECORD_HEADER_SIZE - 5;
     private Path dir;
     private int defaultDlqSize = 100_000_000; // 100mb
 
@@ -643,6 +662,136 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
+        // write some data into a segment file
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < 10; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("1", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
+    public void testReaderWithBlockInternalFragmentation() throws IOException, InterruptedException {
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+
+            rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private static String stringOf(int length, char ch) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentation() throws IOException, InterruptedException {
+        writeSegmentWithFirstBlockContainingInternalFragmentation();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(INTERNAL_FRAG_PAYLOAD_SIZE, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
+    public void testStoreReaderPositionWithBlocksWithInternalFragmentationOnceMessageIsBiggerThenBlock() throws IOException, InterruptedException {
+        final int payloadSize = INTERNAL_FRAG_PAYLOAD_SIZE + BLOCK_SIZE;
+        byte[] almostFullBlockPayload = new byte[payloadSize];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
+        writer.close();
+
+        // read the first event and save read position
+        Path currentSegment;
+        long currentPosition;
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals(stringOf(payloadSize, 'A'), new String(rawStr, StandardCharsets.UTF_8));
+            currentSegment = reader.getCurrentSegment();
+            currentPosition = reader.getCurrentPosition();
+        }
+
+        // reopen the reader from the last saved position and read next element
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+            reader.setCurrentReaderAndPosition(currentSegment, currentPosition);
+
+            byte[] rawStr = reader.pollEntryBytes();
+            assertNotNull(rawStr);
+            assertEquals("BBBBBBBBBB", new String(rawStr, StandardCharsets.UTF_8));
+        }
+    }
+
+    private void writeSegmentWithFirstBlockContainingInternalFragmentation() throws IOException {
+        byte[] almostFullBlockPayload = new byte[INTERNAL_FRAG_PAYLOAD_SIZE];
+        Arrays.fill(almostFullBlockPayload, (byte) 'A');
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        writer.writeEvent(almostFullBlockPayload);
+
+        // write a second segment with small payload
+        byte[] smallPayload = new byte[10];
+        Arrays.fill(smallPayload, (byte) 'B');
+        writer.writeEvent(smallPayload);
+
+        writer.close();
+    }
 
     /**
      * Produces a {@link Timestamp} whose epoch milliseconds is _near_ the provided value
@@ -760,5 +909,21 @@ public class DeadLetterQueueReaderTest {
 
         assertEquals(segments, Files.list(dir).count());
         return loopPerSegment;
+    }
+
+    @Test
+    public void testRestartFromCommitPointRealData() throws IOException, InterruptedException, URISyntaxException {
+        URL url = this.getClass().getResource("1.log");
+        Path path = Paths.get(url.toURI());
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(path.getParent())) {
+            reader.setCurrentReaderAndPosition(path, 0x3593F0);
+
+            for (int i = 0; i < 10_000 - 3_376; i++) {
+                byte[] rawStr = reader.pollEntryBytes();
+                assertNotNull(rawStr);
+                assertThat(new String(rawStr, StandardCharsets.UTF_8), containsString("Could not index event to Elasticsearch. status: 400"));
+            }
+        }
     }
 }

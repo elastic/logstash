@@ -1,6 +1,23 @@
-package org.logstash.launchers;
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+*/
 
-import org.logstash.util.JavaVersion;
+package org.logstash.launchers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +45,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
+
 /**
  * Parse jvm.options file applying version conditional logic. Heavily inspired by same functionality in Elasticsearch.
  * */
@@ -35,6 +53,7 @@ public class JvmOptionsParser {
 
     private static final String[] MANDATORY_JVM_OPTIONS = new String[]{
             "-Djruby.regexp.interruptible=true",
+            "-Djdk.io.File.enableADS=true",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
@@ -46,6 +65,7 @@ public class JvmOptionsParser {
             "11-:--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
             "11-:--add-opens=java.management/sun.management=ALL-UNNAMED"
     };
+
 
     static class JvmOptionsFileParserException extends Exception {
 
@@ -82,7 +102,7 @@ public class JvmOptionsParser {
      *
      * @param args the args to the program which should consist of a single option, the path to LOGSTASH_HOME
      */
-    public static void main(final String[] args) throws InterruptedException, IOException {
+    public static void main(final String[] args) {
         if (args.length < 1 || args.length > 2) {
             throw new IllegalArgumentException(
                     "Expected two arguments specifying path to LOGSTASH_HOME and an optional LS_JVM_OPTS, but was " + Arrays.toString(args)
@@ -103,8 +123,6 @@ public class JvmOptionsParser {
             System.exit(1);
         }
     }
-
-
     static void handleJvmOptions(String[] args, String lsJavaOpts) {
         final JvmOptionsParser parser = new JvmOptionsParser(args[0]);
         final String jvmOpts = args.length == 2 ? args[1] : null;

@@ -150,7 +150,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `config.string`
 | A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
   the config file.
-| None
+| _N/A_
 
 | `config.test_and_exit`
 | When set to `true`, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
@@ -178,9 +178,22 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
 | `false`
 
+| `config.field_reference.escape_style`
+a| Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`.
+
+NOTE: This feature is in *technical preview* and may change in the future.
+
+Current options are:
+
+* `percent`: URI-style `%`{plus}`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
+* `ampersand`: HTML-style `&#`{plus}`DD`{plus}`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`)
+* `none`: field names containing special characters _cannot_ be referenced.
+
+| `none`
+
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.
-| None
+| _N/A_
 
 | `queue.type`
 | The internal queuing model to use for event buffering. Specify `memory` for legacy in-memory based queuing, or `persisted` for disk-based ACKed queueing (<<persistent-queues,persistent queues>>).
@@ -199,7 +212,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
+| The total capacity of the queue (`queue.type: persisted`) in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
@@ -211,11 +224,11 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | 1024
 
 | `queue.checkpoint.retry`
-| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances.
+| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (`queue.type: persisted`)
 | `true`
 
 | `queue.drain`
-| When enabled, Logstash waits until the persistent queue is drained before shutting down.
+| When enabled, Logstash waits until the persistent queue (`queue.type: persisted`) is drained before shutting down.
 | `false`
 
 | `dead_letter_queue.enable`
@@ -279,9 +292,22 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | _N/A_
 
 | `api.auth.basic.password`
-| The password to require for HTTP Basic auth
-Ignored unless `api.auth.type` is set to `basic`.
+a| The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`.
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter.
+The default password policy can be customized by following options:
+
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
+
 | _N/A_
+
+| `api.auth.basic.password_policy.mode`
+| Raises either `WARN` or `ERROR` message when password requirements are not met.
+Ignored unless `api.auth.type` is set to `basic`.
+| `WARN`
 
 | `log.level`
 a|
@@ -317,7 +343,7 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
-| `on_superuser`
-| Setting to `BLOCK` or `ALLOW` running Logstash as a superuser.
-| `ALLOW`
+| `allow_superuser`
+| Setting to `true` to allow or `false` to block running Logstash as a superuser.
+| `true`
 |=======================================================================

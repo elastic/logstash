@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
@@ -35,14 +36,50 @@ import org.jruby.runtime.builtin.IRubyObject;
  * as key.</p>
  * <p>The {@code put} method will work with any {@link String} key but is only intended for use in
  * situations where {@link ConvertedMap#putInterned(String, Object)} would require manually
- * interning the {@link String} key. This is due to the fact that we use our internal
- * {@link FieldReference} cache to get an interned version of the given key instead of JDKs
- * {@link String#intern()}, which is faster since it works from a much smaller and hotter cache
- * in {@link FieldReference#CACHE} than using String interning directly.</p>
+ * interning the {@link String} key.
+ * This is due to the fact that it is based on {@link IdentityHashMap}, and we rely on the String
+ * intern pool to ensure identity match of equivalent strings.
+ * For performance, we keep a global cache of strings that have been interned for use with {@link ConvertedMap},
+ * and encourage interning through {@link ConvertedMap#internStringForUseAsKey(String)} to avoid
+ * the performance pentalty of the global string intern pool.
  */
 public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     private static final long serialVersionUID = 1L;
+
+    private static final ConcurrentHashMap<String,String> KEY_CACHE = new ConcurrentHashMap<>(100, 0.2F, 16);
+
+    /**
+     * Returns an equivalent interned string, possibly avoiding the
+     * global intern pool.
+     *
+     * @param candidate the candidate {@link String}
+     * @return an interned string from the global String intern pool
+     */
+    static String internStringForUseAsKey(final String candidate) {
+        // TODO: replace with LRU cache and/or isolated intern pool
+        final String cached = KEY_CACHE.get(candidate);
+        if (cached != null) { return cached; }
+
+        final String interned = candidate.intern();
+        if (KEY_CACHE.size() <= 10_000 ) {
+            KEY_CACHE.put(interned, interned);
+        }
+        return interned;
+    }
+
+    /**
+     * Ensures that the provided {@code String[]} contains only
+     * instances that have been {@link ConvertedMap::internStringForUseAsKey},
+     * possibly replacing entries with equivalent interned strings.
+     *
+     * @param candidates an array of non-null strings
+     */
+    static void internStringsForUseAsKeys(final String[] candidates) {
+        for (int i = 0; i < candidates.length; i++) {
+            candidates[i] = internStringForUseAsKey(candidates[i]);
+        }
+    }
 
     private static final RubyHash.VisitorWithState<ConvertedMap> RUBY_HASH_VISITOR =
         new RubyHash.VisitorWithState<ConvertedMap>() {
@@ -91,7 +128,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     @Override
     public Object put(final String key, final Object value) {
-        return super.put(FieldReference.from(key).getKey(), value);
+        return super.put(internStringForUseAsKey(key), value);
     }
 
     /**
@@ -118,6 +155,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @return Interned String
      */
     private static String convertKey(final RubyString key) {
-        return FieldReference.from(key).getKey();
+        return internStringForUseAsKey(key.asJavaString());
     }
 }

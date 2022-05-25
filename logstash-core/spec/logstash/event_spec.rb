@@ -192,6 +192,15 @@ describe LogStash::Event do
         expect { e.set('[', 'value') }.to raise_exception(::RuntimeError)
       end
     end
+
+    context 'with map value whose keys have FieldReference-special characters' do
+      let(:event) { LogStash::Event.new }
+      let(:value) { {"this[field]" => "okay"} }
+      it 'sets the value correctly' do
+        event.set('[some][field]', value.dup)
+        expect(event.get('[some][field]')).to eq(value)
+      end
+    end
   end
 
   context "timestamp" do
@@ -351,6 +360,11 @@ describe LogStash::Event do
       expect(e.timestamp.to_iso8601).to eq("2016-05-28T23:02:05.350Z")
     end
 
+    it 'accepts maps whose keys contain FieldReference-special characters' do
+      e = LogStash::Event.new({"nested" => {"i][egal" => "okay"}, "n[0]" => "bene"})
+      expect(e.get('nested')).to eq({"i][egal" => "okay"})
+      expect(e.to_hash).to include("n[0]" => "bene")
+    end
   end
 
   context "method missing exception messages" do
