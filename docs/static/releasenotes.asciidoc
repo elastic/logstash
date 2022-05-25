@@ -21,7 +21,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.2.2]]
 ==== Notable issues fixed
 
-* Backport PR #14129 to 8.2: Avoids unnecessary thread sync of PQ notFull state https://github.com/elastic/logstash/pull/14141[#14141]
+* Avoid unnecessary thread synchronization when the Persistent Queue is full https://github.com/elastic/logstash/pull/14141[#14141]
 
 [[logstash-8-2-1]]
 === Logstash 8.2.1 Release Notes
