@@ -109,7 +109,7 @@ module LogStash
     def self.required_setting_with_changing_default(settings, name, trigger, future_value)
       effective_value = required_setting(settings, name, trigger)
       if !settings.set?(name)
-        deprecation_logger.deprecated("The default value of `#{name}` will change to `#{future_value}` in a future release of Logstash. Set it to `#{future_value}` to enforce future requirement now.")
+        deprecation_logger.deprecated("The default value of `#{name}` will change to `#{future_value}` in a future release of Logstash. Set it to `#{future_value}` to observe the future behavior early, or set it to `#{effective_value}` to lock in the current behavior.")
       end
       effective_value
     end
