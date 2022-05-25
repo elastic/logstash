@@ -88,7 +88,7 @@ https://github.com/elastic/logstash/pull/13935[#13935]
 ==== Notable issues fixed
 
 * Improved resiliency of Central Management requests when an Elasticsearch node is down https://github.com/elastic/logstash/pull/13689[#13689] https://github.com/elastic/logstash/pull/13941[#13941]
-* Ensure safe retrieval of queue stats that may not yet be populated https://github.com/elastic/logstash/pull/13942
+* Ensure safe retrieval of queue stats that may not yet be populated https://github.com/elastic/logstash/pull/13942[#13942]
 * Print bundled JDK's version in launch scripts when `LS_JAVA_HOME` is provided https://github.com/elastic/logstash/pull/13880[#13880]
 * Updated jackson-databind to 2.13.2 in ingest-converter tool https://github.com/elastic/logstash/pull/13900[#13900]
 * Updated google-java-format dependency to 1.13.0 and guava to 31.0.1 in core https://github.com/elastic/logstash/pull/13700[#13700]
