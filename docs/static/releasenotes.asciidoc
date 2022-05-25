@@ -19,9 +19,9 @@ This section summarizes the changes in the following releases:
 === Logstash 8.2.2 Release Notes
 
 ---------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.2.2
+[[notable-8.2.2]]
+==== Notable issues fixed
 
-* Switch adoptopenjdk url to adoptium https://github.com/elastic/logstash/pull/14098[#14098]
 * Backport PR #14129 to 8.2: Avoids unnecessary thread sync of PQ notFull state https://github.com/elastic/logstash/pull/14141[#14141]
 
 === Logstash Commits between 8.2 and 8.2.1
