@@ -1126,9 +1126,10 @@ public class QueueTest {
 
         try(Queue q = new Queue(settings)) {
             // now we have head checkpoint pointing to page.0
-            // Manually delete page.0
+            // manually delete page.0
             Paths.get(dataPath, "page.0").toFile().delete();
-            // create a fully acked checkpoint.0 to mock an incomplete tail page purge
+            // create a fully acked checkpoint.0 to mock a partial acked action
+            // which purges the tail page and the checkpoint file remains
             Checkpoint cp = q.getCheckpointIO().read("checkpoint.0");
             Paths.get(dataPath, "checkpoint.0").toFile().delete();
             Checkpoint mockAckedCp = new Checkpoint(cp.getPageNum(), cp.getFirstUnackedPageNum(), cp.getFirstUnackedSeqNum() + 1, cp.getMinSeqNum(), cp.getElementCount());
