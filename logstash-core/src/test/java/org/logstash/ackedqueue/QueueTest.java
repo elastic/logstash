@@ -1140,7 +1140,7 @@ public class QueueTest {
 
             // dangling checkpoint should be deleted
             File cp0 = Paths.get(dataPath, "checkpoint.0").toFile();
-            assertThat(cp0.exists(), is(false));
+            assertFalse("Dangling page's checkpoint file should be removed", cp0.exists());
         }
     }
 }
