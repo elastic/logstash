@@ -16,7 +16,7 @@
 # under the License.
 
 require "logstash/patches/polyglot"
-require "treetop"
+require 'treetop/runtime'
 require "logstash/compiler/treetop_monkeypatches"
 require "logstash/compiler/lscl/helpers"
 require "logstash/config/string_escape"
