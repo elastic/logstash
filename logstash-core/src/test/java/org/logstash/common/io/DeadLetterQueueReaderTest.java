@@ -30,7 +30,6 @@ import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,7 +44,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -70,17 +68,13 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
     public static final int INTERNAL_FRAG_PAYLOAD_SIZE = BLOCK_SIZE - RECORD_HEADER_SIZE - 5;
-    private Path dir;
-    private int defaultDlqSize = 100_000_000; // 100mb
-
+    private static final int DEFAULT_DLQ_SIZE = 100_000_000; // 100mb
     private static final int PAD_FOR_BLOCK_SIZE_EVENT = 32490;
+
+    private Path dir;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    private static String segmentFileName(int i) {
-        return String.format(DeadLetterQueueWriter.SEGMENT_FILE_PATTERN, i);
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -92,7 +86,7 @@ public class DeadLetterQueueReaderTest {
         RecordIOWriter writer = null;
 
         for (int i = 0; i < 5; i++) {
-            Path segmentPath = dir.resolve(segmentFileName(i));
+            Path segmentPath = dir.resolve(DeadLetterQueueTestUtils.segmentFileName(i));
             writer = new RecordIOWriter(segmentPath);
             for (int j = 0; j < 10; j++) {
                 writer.writeEvent((new StringElement("" + (i * 10 + j))).serialize());
@@ -125,7 +119,7 @@ public class DeadLetterQueueReaderTest {
 
         writer.close();
 
-        Path segmentPath = dir.resolve(segmentFileName(5));
+        Path segmentPath = dir.resolve(DeadLetterQueueTestUtils.segmentFileName(5));
         writer = new RecordIOWriter(segmentPath);
 
         for (int j = 0; j < 10; j++) {
@@ -157,7 +151,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("message", generateMessageContent(32495));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", String.valueOf(i), constantSerializationLengthTimestamp(startTime++));
                 final int serializationLength = entry.serialize().length;
@@ -212,7 +206,7 @@ public class DeadLetterQueueReaderTest {
         long startTime = System.currentTimeMillis();
         DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0), constantSerializationLengthTimestamp(startTime));
         int size = templateEntry.serialize().length + RECORD_HEADER_SIZE + VERSION_SIZE;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, size, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, size, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 1; i <= count; i++) {
                 writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i), constantSerializationLengthTimestamp(startTime++)));
             }
@@ -244,7 +238,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", new String(field));
         Timestamp timestamp = constantSerializationLengthTimestamp();
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -267,7 +261,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("message", new String(field));
         long startTime = System.currentTimeMillis();
         int messageSize = 0;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 1; i <= 5; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", constantSerializationLengthTimestamp(startTime++));
                 messageSize += entry.serialize().length;
@@ -290,7 +284,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT/8));
         Timestamp timestamp = new Timestamp();
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 0; i < 6; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -311,7 +305,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
         Timestamp timestamp = new Timestamp();
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE * EVENTS_BEFORE_FLUSH, defaultDlqSize, Duration.ofHours(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE * EVENTS_BEFORE_FLUSH, DEFAULT_DLQ_SIZE, Duration.ofHours(1))) {
             for (int i = 1; i < EVENTS_BEFORE_FLUSH; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -344,7 +338,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
         Timestamp timestamp = new Timestamp();
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE * eventsInSegment, defaultDlqSize, Duration.ofHours(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE * eventsInSegment, DEFAULT_DLQ_SIZE, Duration.ofHours(1))) {
             for (int i = 1; i < totalEventsToWrite; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -385,7 +379,7 @@ public class DeadLetterQueueReaderTest {
 
         System.out.println("events per block= " + eventsPerBlock);
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(2))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, DEFAULT_DLQ_SIZE, Duration.ofSeconds(2))) {
             for (int i = 1; i < eventsToWrite; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", Integer.toString(i), timestamp);
                 writeManager.writeEntry(entry);
@@ -417,7 +411,7 @@ public class DeadLetterQueueReaderTest {
         event.setField("T", generateMessageContent(PAD_FOR_BLOCK_SIZE_EVENT));
         Timestamp timestamp = constantSerializationLengthTimestamp();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, defaultDlqSize, Duration.ofSeconds(1))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -438,7 +432,7 @@ public class DeadLetterQueueReaderTest {
         int eventCount = 1024; // max = 1000 * 64kb = 64mb
         long startTime = System.currentTimeMillis();
 
-        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try(DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = 0; i < eventCount; i++) {
                 event.setField("message", generateMessageContent((int)(Math.random() * (maxEventSize))));
                 DLQEntry entry = new DLQEntry(event, "", "", String.valueOf(i), new Timestamp(startTime++));
@@ -492,7 +486,7 @@ public class DeadLetterQueueReaderTest {
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             // remove the first segment
-            Files.delete(dir.resolve(segmentFileName(1)));
+            Files.delete(dir.resolve(DeadLetterQueueTestUtils.segmentFileName(1)));
 
             //Exercise, seek in the middle of first segment
             final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
@@ -513,8 +507,8 @@ public class DeadLetterQueueReaderTest {
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
             // remove the first segment
-            Files.delete(dir.resolve(segmentFileName(1)));
-            Files.delete(dir.resolve(segmentFileName(2)));
+            Files.delete(dir.resolve(DeadLetterQueueTestUtils.segmentFileName(1)));
+            Files.delete(dir.resolve(DeadLetterQueueTestUtils.segmentFileName(2)));
 
             //Exercise, seek in the middle of first segment
             final Timestamp seekTarget = new Timestamp(startTime + (eventsPerSegment / 2));
@@ -539,7 +533,7 @@ public class DeadLetterQueueReaderTest {
             exec.submit(() -> {
                 final Event event = new Event();
                 long startTime = System.currentTimeMillis();
-                try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(10))) {
+                try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(10))) {
                     for (int i = 0; i < eventCount; i++) {
                         event.setField(
                                 "message",
@@ -667,7 +661,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
         // write some data into a segment file
-        writeSomeEventsInOneSegment(10);
+        DeadLetterQueueTestUtils.writeSomeEventsInOneSegment(10, dir);
 
         // read the first event and save read position
         Path currentSegment;
@@ -743,7 +737,7 @@ public class DeadLetterQueueReaderTest {
         final int payloadSize = INTERNAL_FRAG_PAYLOAD_SIZE + BLOCK_SIZE;
         byte[] almostFullBlockPayload = new byte[payloadSize];
         Arrays.fill(almostFullBlockPayload, (byte) 'A');
-        Path segmentPath = dir.resolve(segmentFileName(0));
+        Path segmentPath = dir.resolve(DeadLetterQueueTestUtils.segmentFileName(0));
         RecordIOWriter writer = new RecordIOWriter(segmentPath);
         writer.writeEvent(almostFullBlockPayload);
 
@@ -778,7 +772,7 @@ public class DeadLetterQueueReaderTest {
     private void writeSegmentWithFirstBlockContainingInternalFragmentation() throws IOException {
         byte[] almostFullBlockPayload = new byte[INTERNAL_FRAG_PAYLOAD_SIZE];
         Arrays.fill(almostFullBlockPayload, (byte) 'A');
-        Path segmentPath = dir.resolve(segmentFileName(0));
+        Path segmentPath = dir.resolve(DeadLetterQueueTestUtils.segmentFileName(0));
         RecordIOWriter writer = new RecordIOWriter(segmentPath);
         writer.writeEvent(almostFullBlockPayload);
 
@@ -875,7 +869,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private void writeEntries(final Event event, int offset, final int numberOfEvents, long startTime) throws IOException {
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             for (int i = offset; i <= offset + numberOfEvents; i++) {
                 DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(startTime++));
                 writeManager.writeEntry(entry);
@@ -896,7 +890,7 @@ public class DeadLetterQueueReaderTest {
 
         final int maxSegmentSize = 10 * MB;
         final int loopPerSegment = (int) Math.floor((maxSegmentSize - 1.0) / BLOCK_SIZE);
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, maxSegmentSize, defaultDlqSize, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, maxSegmentSize, DEFAULT_DLQ_SIZE, Duration.ofSeconds(1))) {
             final int loops = loopPerSegment * segments;
             for (int i = 0; i < loops; i++) {
                 entry = new DLQEntry(event, "", "", String.format("%05d", i), constantSerializationLengthTimestamp(start++));
@@ -924,82 +918,4 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
-    @Test
-    public void testReaderWithoutSinceDbAndNonReadOperationDoneThenCloseDoesntCreateAnySinceDBFile() throws IOException {
-        DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10);
-        readManager.close();
-
-        Set<File> sincedbs = listSincedbFiles();
-        assertEquals("No sincedb file should be present", 0, sincedbs.size());
-    }
-
-    private Set<File> listSincedbFiles() throws IOException {
-        return Files.list(dir)
-                .filter(file -> file.getFileName().toString().equals("sincedb"))
-                .map(Path::toFile)
-                .collect(Collectors.toSet());
-    }
-
-    @Test
-    public void testReaderCreatesASinceDBFileOnCloseAfterReadSomeEvents() throws IOException, InterruptedException {
-        // write some data into a segment file
-        writeSomeEventsInOneSegment(10);
-
-        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10)) {
-            byte[] rawStr = readManager.pollEntryBytes();
-            assertNotNull(rawStr);
-            assertEquals("0", new String(rawStr, StandardCharsets.UTF_8));
-        }
-
-        Set<File> sincedbs = listSincedbFiles();
-        assertEquals("Sincedb file must be present", 1, sincedbs.size());
-
-        DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
-        assertNotNull(sinceDB.getCurrentSegment());
-        assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
-        assertEquals(VERSION_SIZE + RECORD_HEADER_SIZE + 1, sinceDB.getOffset());
-    }
-
-    private void writeSomeEventsInOneSegment(int eventCount) throws IOException {
-        Path segmentPath = dir.resolve(segmentFileName(0));
-        RecordIOWriter writer = new RecordIOWriter(segmentPath);
-        for (int j = 0; j < eventCount; j++) {
-            writer.writeEvent((new StringElement("" + j)).serialize());
-        }
-        writer.close();
-    }
-
-    @Test
-    public void testReaderFlushSinceDbEverytimePassesTheConfiguredThreshold() throws IOException, InterruptedException {
-        writeSomeEventsInOneSegment(15);
-
-        int thresholdLimit = 5;
-        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, thresholdLimit)) {
-            // read 1 event more  the sinceDb flush threshold
-            for (int i = 0; i < thresholdLimit + 1; i++) {
-                byte[] payload = readManager.pollEntryBytes();
-                assertNotNull(payload);
-                assertEquals(Integer.toString(i), new String(payload, StandardCharsets.UTF_8));
-            }
-
-            // verify sinceDb file is created
-            DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
-            assertNotNull(sinceDB.getCurrentSegment());
-            assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
-            assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * (thresholdLimit + 1), sinceDB.getOffset());
-
-            for (int i = 0; i < thresholdLimit + 1; i++) {
-                byte[] payload = readManager.pollEntryBytes();
-                assertNotNull(payload);
-                assertEquals(Integer.toString(i + thresholdLimit + 1), new String(payload, StandardCharsets.UTF_8));
-            }
-
-            // verify sinceDb is updated
-            sinceDB = DeadLetterQueueSinceDB.load(dir);
-            assertNotNull(sinceDB.getCurrentSegment());
-            assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
-            int doubleDigitsInts = 2; // 10 and 11 occupy 2 characters instead of one
-            assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * 2 * (thresholdLimit + 1) + doubleDigitsInts, sinceDB.getOffset());
-        }
-    }
 }

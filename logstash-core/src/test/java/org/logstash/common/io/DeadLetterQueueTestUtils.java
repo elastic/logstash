@@ -18,10 +18,28 @@
  */
 package org.logstash.common.io;
 
+import org.logstash.ackedqueue.StringElement;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 
 public class DeadLetterQueueTestUtils {
     public static final int MB = 1024 * 1024;
     public static final int GB = 1024 * 1024 * 1024;
     public static final int FULL_SEGMENT_FILE_SIZE = 319 * BLOCK_SIZE + 1; // 319 records that fills completely a block plus the 1 byte header of the segment file
+
+    static void writeSomeEventsInOneSegment(int eventCount, Path outputDir) throws IOException {
+        Path segmentPath = outputDir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < eventCount; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+    }
+
+    static String segmentFileName(int i) {
+        return String.format(DeadLetterQueueWriter.SEGMENT_FILE_PATTERN, i);
+    }
 }
