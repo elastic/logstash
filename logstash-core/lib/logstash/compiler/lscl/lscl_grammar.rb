@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "treetop"
+require "treetop/runtime"
 require "logstash/compiler/lscl.rb"
 
 module LogStashCompilerLSCLGrammar

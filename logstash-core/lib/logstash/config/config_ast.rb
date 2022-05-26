@@ -16,7 +16,7 @@
 # under the License.
 
 require "logstash/compiler/lscl/helpers"
-require "treetop"
+require 'treetop/runtime'
 
 require "logstash/compiler/treetop_monkeypatches"
 
