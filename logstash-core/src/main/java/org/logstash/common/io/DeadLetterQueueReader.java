@@ -183,14 +183,6 @@ public final class DeadLetterQueueReader implements Closeable {
         if (bytes == null) {
             return null;
         }
-        if (cleanConsumed) {
-            consumerPosition.updatePosition(this);
-            readEventsCounter++;
-
-            if (readEventsCounter > sinceDbFlushThreshold) {
-                consumerPosition.flush();
-            }
-        }
         return DLQEntry.deserialize(bytes);
     }
 
@@ -246,6 +238,16 @@ public final class DeadLetterQueueReader implements Closeable {
                     currentReader = optReader.get();
                     return pollEntryBytes(timeoutRemaining);
                 }
+            }
+        }
+
+        if (cleanConsumed) {
+            consumerPosition.updatePosition(this);
+            readEventsCounter++;
+
+            if (readEventsCounter > sinceDbFlushThreshold) {
+                consumerPosition.flush();
+                readEventsCounter = 0;
             }
         }
 

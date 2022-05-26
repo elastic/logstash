@@ -667,12 +667,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testStoreReaderPositionAndRestart() throws IOException, InterruptedException {
         // write some data into a segment file
-        Path segmentPath = dir.resolve(segmentFileName(0));
-        RecordIOWriter writer = new RecordIOWriter(segmentPath);
-        for (int j = 0; j < 10; j++) {
-            writer.writeEvent((new StringElement("" + j)).serialize());
-        }
-        writer.close();
+        writeSomeEventsInOneSegment(10);
 
         // read the first event and save read position
         Path currentSegment;
@@ -930,7 +925,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     @Test
-    public void testReaderWithoutSinceDbAndNoReadOperationDoneThenCloseDoesntCreateAnySinceDBFile() throws IOException {
+    public void testReaderWithoutSinceDbAndNonReadOperationDoneThenCloseDoesntCreateAnySinceDBFile() throws IOException {
         DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10);
         readManager.close();
 
@@ -948,12 +943,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testReaderCreatesASinceDBFileOnCloseAfterReadSomeEvents() throws IOException, InterruptedException {
         // write some data into a segment file
-        Path segmentPath = dir.resolve(segmentFileName(0));
-        RecordIOWriter writer = new RecordIOWriter(segmentPath);
-        for (int j = 0; j < 10; j++) {
-            writer.writeEvent((new StringElement("" + j)).serialize());
-        }
-        writer.close();
+        writeSomeEventsInOneSegment(10);
 
         try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 10)) {
             byte[] rawStr = readManager.pollEntryBytes();
@@ -968,5 +958,48 @@ public class DeadLetterQueueReaderTest {
         assertNotNull(sinceDB.getCurrentSegment());
         assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
         assertEquals(VERSION_SIZE + RECORD_HEADER_SIZE + 1, sinceDB.getOffset());
+    }
+
+    private void writeSomeEventsInOneSegment(int eventCount) throws IOException {
+        Path segmentPath = dir.resolve(segmentFileName(0));
+        RecordIOWriter writer = new RecordIOWriter(segmentPath);
+        for (int j = 0; j < eventCount; j++) {
+            writer.writeEvent((new StringElement("" + j)).serialize());
+        }
+        writer.close();
+    }
+
+    @Test
+    public void testReaderFlushSinceDbEverytimePassesTheConfiguredThreshold() throws IOException, InterruptedException {
+        writeSomeEventsInOneSegment(15);
+
+        int thresholdLimit = 5;
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, thresholdLimit)) {
+            // read 1 event more  the sinceDb flush threshold
+            for (int i = 0; i < thresholdLimit + 1; i++) {
+                byte[] payload = readManager.pollEntryBytes();
+                assertNotNull(payload);
+                assertEquals(Integer.toString(i), new String(payload, StandardCharsets.UTF_8));
+            }
+
+            // verify sinceDb file is created
+            DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
+            assertNotNull(sinceDB.getCurrentSegment());
+            assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
+            assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * (thresholdLimit + 1), sinceDB.getOffset());
+
+            for (int i = 0; i < thresholdLimit + 1; i++) {
+                byte[] payload = readManager.pollEntryBytes();
+                assertNotNull(payload);
+                assertEquals(Integer.toString(i + thresholdLimit + 1), new String(payload, StandardCharsets.UTF_8));
+            }
+
+            // verify sinceDb is updated
+            sinceDB = DeadLetterQueueSinceDB.load(dir);
+            assertNotNull(sinceDB.getCurrentSegment());
+            assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
+            int doubleDigitsInts = 2; // 10 and 11 occupy 2 characters instead of one
+            assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * 2 * (thresholdLimit + 1) + doubleDigitsInts, sinceDB.getOffset());
+        }
     }
 }
