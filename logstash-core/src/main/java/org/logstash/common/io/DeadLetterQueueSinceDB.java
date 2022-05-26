@@ -97,7 +97,7 @@ public class DeadLetterQueueSinceDB {
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
     }
 
-    public void flush() {
+    public synchronized void flush() {
         if (currentSegment == null) {
             return;
         }
@@ -120,16 +120,16 @@ public class DeadLetterQueueSinceDB {
         this.offset = offset;
     }
 
-    public void updatePosition(DeadLetterQueueReader reader) {
+    public synchronized void updatePosition(DeadLetterQueueReader reader) {
         reader.getCurrentSegmentPath()
                 .ifPresent(segment -> updatePosition(segment, reader.getCurrentPosition()));
     }
 
-    public Path getCurrentSegment() {
+    public synchronized Path getCurrentSegment() {
         return currentSegment;
     }
 
-    public long getOffset() {
+    public synchronized long getOffset() {
         return offset;
     }
 }

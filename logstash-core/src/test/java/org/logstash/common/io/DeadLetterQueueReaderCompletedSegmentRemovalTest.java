@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -91,12 +92,8 @@ public class DeadLetterQueueReaderCompletedSegmentRemovalTest {
 
         int thresholdLimit = 5;
         try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, thresholdLimit)) {
-            // read 1 event more  the sinceDb flush threshold
-            for (int i = 0; i < thresholdLimit + 1; i++) {
-                byte[] payload = readManager.pollEntryBytes();
-                assertNotNull(payload);
-                assertEquals(Integer.toString(i), new String(payload, StandardCharsets.UTF_8));
-            }
+            // read 1 event more the sinceDb flush threshold
+            readEvents(readManager, thresholdLimit + 1);
 
             // verify sinceDb file is created
             DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
@@ -105,9 +102,7 @@ public class DeadLetterQueueReaderCompletedSegmentRemovalTest {
             assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * (thresholdLimit + 1), sinceDB.getOffset());
 
             for (int i = 0; i < thresholdLimit + 1; i++) {
-                byte[] payload = readManager.pollEntryBytes();
-                assertNotNull(payload);
-                assertEquals(Integer.toString(i + thresholdLimit + 1), new String(payload, StandardCharsets.UTF_8));
+                readEvent(readManager, i + thresholdLimit + 1);
             }
 
             // verify sinceDb is updated
@@ -116,6 +111,42 @@ public class DeadLetterQueueReaderCompletedSegmentRemovalTest {
             assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
             int doubleDigitsInts = 2; // 10 and 11 occupy 2 characters instead of one
             assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * 2 * (thresholdLimit + 1) + doubleDigitsInts, sinceDB.getOffset());
+        }
+    }
+
+    private void readEvents(DeadLetterQueueReader readManager, int numEvents) throws IOException, InterruptedException {
+        for (int i = 0; i < numEvents; i++) {
+            readEvent(readManager, i);
+        }
+    }
+
+    private void readEvent(DeadLetterQueueReader readManager, int i) throws IOException, InterruptedException {
+        byte[] payload = readManager.pollEntryBytes();
+        assertNotNull(payload);
+        assertEquals(Integer.toString(i), new String(payload, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testAutomaticFlusherUpdatesPosition() throws IOException, InterruptedException {
+        DeadLetterQueueTestUtils.writeSomeEventsInOneSegment(15, dir);
+
+        final Duration flushInterval = Duration.ofSeconds(1);
+
+        try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir, true, 1_000, flushInterval)) {
+            // move forward the tail but keeping under the flush threshold
+            int readEvents = 2;
+            readEvents(readManager, readEvents);
+
+            assertEquals("No sincedb file should be present", 0, listSincedbFiles().size());
+
+            // sleep for a little bit more than a flush interval
+            Thread.sleep(flushInterval.plusMillis(500).toMillis());
+
+            assertEquals("SinceDB file must be created", 1, listSincedbFiles().size());
+            DeadLetterQueueSinceDB sinceDB = DeadLetterQueueSinceDB.load(dir);
+            assertNotNull(sinceDB.getCurrentSegment());
+            assertEquals("0.log", sinceDB.getCurrentSegment().getFileName().toString());
+            assertEquals(VERSION_SIZE + (RECORD_HEADER_SIZE + 1) * readEvents, sinceDB.getOffset());
         }
     }
 }

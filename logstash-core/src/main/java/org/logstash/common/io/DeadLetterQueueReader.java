@@ -53,11 +53,12 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -72,7 +73,35 @@ public final class DeadLetterQueueReader implements Closeable {
     private final Path queuePath;
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
-    private int readEventsCounter = 0;
+    private volatile int readEventsCounter = 0;
+    private final ScheduledExecutorService periodicFlusherPool = Executors.newSingleThreadScheduledExecutor(r -> customizeThreadName(r, "DLQ reader periodic flusher"));
+
+    private class PeriodicPositionFlushTask implements Runnable {
+
+        private int lastSeenReadEventsCounter = 0;
+
+        @Override
+        public void run() {
+            if (!cleanConsumed) {
+                return;
+            }
+            if (readEventsCounter == lastSeenReadEventsCounter) {
+                return;
+            }
+
+            logger.debug("Periodic flush of DLQ({}) tail position", queuePath);
+            consumerPosition.flush();
+            readEventsCounter = 0;
+            lastSeenReadEventsCounter = 0;
+        }
+    }
+
+    private static Thread customizeThreadName(Runnable r, String name) {
+        Thread thread = new Thread(r);
+        thread.setName(name);
+        return thread;
+    }
+
     // config settings
     private final boolean cleanConsumed;
     private final int sinceDbFlushThreshold;
@@ -82,6 +111,10 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     public DeadLetterQueueReader(Path queuePath, boolean cleanConsumed, int sinceDbFlushThreshold) throws IOException {
+        this(queuePath, cleanConsumed, sinceDbFlushThreshold, Duration.of(5, ChronoUnit.SECONDS));
+    }
+
+    public DeadLetterQueueReader(Path queuePath, boolean cleanConsumed, int sinceDbFlushThreshold, Duration flushInterval) throws IOException {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
@@ -93,6 +126,8 @@ public final class DeadLetterQueueReader implements Closeable {
         this.sinceDbFlushThreshold = sinceDbFlushThreshold;
         if (cleanConsumed) {
             consumerPosition = DeadLetterQueueSinceDB.load(queuePath);
+            PeriodicPositionFlushTask flusherTask = new PeriodicPositionFlushTask();
+            periodicFlusherPool.scheduleWithFixedDelay(flusherTask, flushInterval.toMillis(), flushInterval.toMillis(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -343,6 +378,7 @@ public final class DeadLetterQueueReader implements Closeable {
         if (cleanConsumed) {
             consumerPosition.updatePosition(this);
             consumerPosition.flush();
+            periodicFlusherPool.shutdown();
         }
     }
 }
