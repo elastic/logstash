@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-2-2,Logstash 8.2.2>>
 * <<logstash-8-2-1,Logstash 8.2.1>>
 * <<logstash-8-2-0,Logstash 8.2.0>>
 * <<logstash-8-1-3,Logstash 8.1.3>>
@@ -16,6 +17,14 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-2-2]]
+=== Logstash 8.2.2 Release Notes
+
+[[notable-8.2.2]]
+==== Notable issues fixed
+
+* Avoid unnecessary thread synchronization when the Persistent Queue is full https://github.com/elastic/logstash/pull/14141[#14141]
 
 [[logstash-8-2-1]]
 === Logstash 8.2.1 Release Notes
