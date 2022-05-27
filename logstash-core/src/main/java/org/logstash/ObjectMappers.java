@@ -74,11 +74,11 @@ public final class ObjectMappers {
 
     public static final PolymorphicTypeValidator TYPE_VALIDATOR = BasicPolymorphicTypeValidator.builder()
             .allowIfBaseType(java.util.HashMap.class)
-            .allowIfSubType(org.logstash.ConvertedMap.class)
+            .allowIfSubType(org.jruby.RubyNil.class)
             .allowIfSubType(org.jruby.RubyString.class)
+            .allowIfSubType(org.logstash.ConvertedMap.class)
             .allowIfSubType(org.logstash.ConvertedList.class)
             .allowIfSubType(org.logstash.Timestamp.class)
-            .allowIfSubType(org.jruby.RubyNil.class)
             .build();
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
