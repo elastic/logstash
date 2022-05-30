@@ -12,6 +12,7 @@ gem "ruby-progressbar", "~> 1", require: false
 gem "logstash-output-elasticsearch", ">= 10.4.2"
 gem "polyglot", require: false
 gem "treetop", require: false
+gem "faraday", "~> 1", :require => false # due elasticsearch-transport (elastic-transport) depending faraday '~> 1'
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856
 gem "gems", "~> 1", :group => :build
