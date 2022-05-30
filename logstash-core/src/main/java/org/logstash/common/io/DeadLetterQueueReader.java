@@ -329,11 +329,15 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private void trashSegment(Path segment) {
         segments.remove(segment);
-        try {
-            Files.delete(segment);
-        } catch (IOException ex) {
-            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
+        boolean deleted = segment.toFile().delete();
+        if (!deleted) {
+            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment);
         }
+//        try {
+//            Files.delete(segment);
+//        } catch (IOException ex) {
+//            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
+//        }
     }
 
     private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {
