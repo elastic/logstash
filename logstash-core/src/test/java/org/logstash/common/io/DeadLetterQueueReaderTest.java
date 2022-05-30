@@ -38,12 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -58,9 +53,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -926,4 +919,49 @@ public class DeadLetterQueueReaderTest {
             }
         }
     }
+
+    private static class MockSegmentListener implements SegmentListener {
+        boolean notified = false;
+
+        @Override
+        public void segmentCompleted() {
+            notified = true;
+        }
+    }
+
+    @Test
+    public void testReaderWithCleanConsumedIsEnabledDeleteFullyConsumedSegmentsAfterBeingAcknowledged() throws IOException, InterruptedException {
+        final int eventsPerSegment = prepareFilledSegmentFiles(2);
+
+        MockSegmentListener callback = new MockSegmentListener();
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, callback)) {
+            // to reach endOfStream on the first segment, a read more than the size has to be done.
+            for (int i = 0; i < eventsPerSegment + 1; i++) {
+                reader.pollEntry(1_000);
+                reader.markForDelete();
+            }
+
+            assertEquals(1, Files.list(dir).count());
+            assertTrue("Reader's client must be notified of the segment deletion", callback.notified);
+        }
+    }
+
+    @Test
+    public void testReaderWithCleanConsumedIsEnabledWhenSetCurrentPositionCleanupTrashedSegments() throws IOException {
+        prepareFilledSegmentFiles(2);
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            Optional<Path> lastSegmentPath = Files.list(dir).skip(1).findFirst();
+            assert lastSegmentPath.isPresent();
+
+            reader.setCurrentReaderAndPosition(lastSegmentPath.get(), VERSION_SIZE);
+
+            // verify
+            Set<Path> segmentFiles = Files.list(dir).collect(Collectors.toSet());
+            assertEquals(1, segmentFiles.size());
+        }
+    }
+
+    private void silentCallback() {}
 }
