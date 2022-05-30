@@ -953,13 +953,13 @@ public class DeadLetterQueueReaderTest {
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
             Optional<Path> lastSegmentPath = Files.list(dir).skip(1).findFirst();
-            assert lastSegmentPath.isPresent();
+            assertTrue(lastSegmentPath.isPresent());
 
             reader.setCurrentReaderAndPosition(lastSegmentPath.get(), VERSION_SIZE);
 
             // verify
             Set<Path> segmentFiles = Files.list(dir).collect(Collectors.toSet());
-            assertEquals(1, segmentFiles.size());
+            assertEquals(Collections.singleton(lastSegmentPath.get()), segmentFiles);
         }
     }
 
