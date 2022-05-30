@@ -10,10 +10,16 @@ permissions:
 jobs:
   pr_commented:
     name: PR comment
-    if: |
-      (github.event.issue.pull_request && startsWith(github.event.comment.body, '@logstashmachine backport'))
+    if: github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ github.event.comment.body }}
+          regex: '^@logstashmachine backport (main|[0-9\.]+)$'
+      - if: ${{ steps.regex-match.outputs.group1 != '' }}
+        run: exit 1
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@v1
         id: checkUserMember
@@ -36,12 +42,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - env:
-          BODY: ${{ github.event.comment.body }}
-        run: |
-          echo "branch=$(echo "$BODY" | cut -d " " -f 3)" >> $GITHUB_ENV
       - run: |
           mkdir ~/.elastic && echo ${{ github.token }} >> ~/.elastic/github.token
       - run: pip install requests
       - name: run backport
-        run: python devtools/backport ${{ env.branch }} ${{ github.event.issue.number }} --remote=origin --yes
+        run: python devtools/backport ${{ steps.regex-match.outputs.group1 }} ${{ github.event.issue.number }} --remote=origin --yes
