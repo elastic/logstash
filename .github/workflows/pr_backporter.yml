@@ -17,8 +17,8 @@ jobs:
         id: regex-match
         with:
           text: ${{ github.event.comment.body }}
-          regex: '^@logstashmachine backport (main|[0-9\.]+)$'
-      - if: ${{ steps.regex-match.outputs.group1 != '' }}
+          regex: '^@logstashmachine backport (main|[x0-9\.]+)$'
+      - if: ${{ steps.regex-match.outputs.group1 == '' }}
         run: exit 1
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@v1
