@@ -32,6 +32,10 @@ coming[8.3.0]
 [[notable-8.3.0]]
 ==== Performance improvements and notable issues fixed
 
+* {ls} is more efficient at fetching pipelines. 
+When a {ls} instance sends its pipeline IDs to {es} or central pipeline management in {kib}, it gets back only the pipeline configs that belong to that instance. 
++ 
+These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
 
 [[plugins-8.3.0]]
 ==== Plugin releases
