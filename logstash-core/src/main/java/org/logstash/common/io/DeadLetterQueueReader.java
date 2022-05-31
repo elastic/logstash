@@ -56,7 +56,6 @@ import java.nio.file.WatchService;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -333,11 +332,6 @@ public final class DeadLetterQueueReader implements Closeable {
         if (!deleted) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment);
         }
-//        try {
-//            Files.delete(segment);
-//        } catch (IOException ex) {
-//            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
-//        }
     }
 
     private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {
