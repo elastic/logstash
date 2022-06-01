@@ -962,16 +962,13 @@ public class DeadLetterQueueReaderTest {
         prepareFilledSegmentFiles(2);
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
-//            Optional<Path> lastSegmentPath = Files.list(dir).skip(1).findFirst();
-//            assertTrue(lastSegmentPath.isPresent());
             final List<Path> allSegments = Files.list(dir)
                     .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                     .collect(Collectors.toList());
-            assertEquals(2, allSegments.size());
             List<String> segmentPathNames = allSegments.stream().map(segment -> segment.getFileName().toString()).collect(Collectors.toList());
             assertEquals(Arrays.asList("1.log", "2.log"), segmentPathNames);
-            Path lastSegmentPath = allSegments.get(1);
 
+            Path lastSegmentPath = allSegments.get(1);
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
 
             // verify
