@@ -6,7 +6,6 @@ gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
 
 gem "paquet", "~> 0.2"
-gem "pleaserun", "~>0.0.28"
 gem "rake", "~> 12"
 gem "ruby-progressbar", "~> 1"
 gem "logstash-output-elasticsearch", ">= 10.4.2"

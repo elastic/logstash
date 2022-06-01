@@ -91,7 +91,7 @@ locations for the system:
  d|
 
 | settings
-  | Configuration files, including `logstash.yml`, `jvm.options`, and `startup.options`
+  | Configuration files, including `logstash.yml` and `jvm.options`
   | `/etc/logstash`
   | `path.settings`
 
@@ -114,6 +114,11 @@ locations for the system:
   | Data files used by logstash and its plugins for any persistence needs.
   | `/var/lib/logstash`
   | `path.data`
+
+| start-up options
+  | File used by the Logstash daemon to define the default start-up options.
+  | `/etc/default/logstash`
+ d|
 
 |=======================================================================
 
@@ -193,11 +198,3 @@ The settings files are already defined in the Logstash installation. Logstash in
   Specify each flag on a separate line. All other settings in this file are
   considered expert settings.
 *`log4j2.properties`*:: Contains default settings for `log4j 2` library. See <<log4j2>> for more info.
-*`startup.options` (Linux)*::
-  Contains options used by the `system-install` script in `/usr/share/logstash/bin` to build the appropriate startup
-  script for your system. When you install the Logstash package, the `system-install` script executes at the end of the
-  installation process and uses the settings specified in `startup.options` to set options such as the user, group,
-  service name, and service description. By default, Logstash services are installed under the user `logstash`. The `startup.options` file makes it easier for you to install multiple instances of the Logstash service. You can copy
-  the file and change the values for specific settings. Note that the `startup.options` file is not read at startup. If
-  you want to change the Logstash startup script (for example, to change the Logstash user or read from a different
-  configuration path), you must re-run the `system-install` script (as root) to pass in the new settings.

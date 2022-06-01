@@ -25,7 +25,6 @@ namespace "artifact" do
     PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
   end
 
-  ## TODO: Install new service files
   def package_files
     res = [
       "NOTICE.TXT",
@@ -37,7 +36,6 @@ namespace "artifact" do
 
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
-      "lib/systeminstall/**/*",
       "lib/secretstore/**/*",
 
       "logstash-core/lib/**/*",
@@ -61,11 +59,6 @@ namespace "artifact" do
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
 
-      # Without this when JRuby runs 'pleaserun' gem using the AdoptOpenJDK, during the post install script
-      # it claims that modules are not open for private introspection and suggest it's missing --add-opens
-      # so including these files JRuby run with modules opened to private introspection.
-      "vendor/jruby/bin/.jruby.java_opts",
-      "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
@@ -570,9 +563,6 @@ namespace "artifact" do
     ensure_logstash_version_constant_defined
     package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}-#{arch_suffix}.TYPE"
 
-    File.join(basedir, "config", "startup.options").tap do |path|
-      dir.input("#{path}=/etc/logstash")
-    end
     File.join(basedir, "config", "jvm.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
@@ -605,7 +595,6 @@ namespace "artifact" do
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
         out.attributes[:rpm_os] = "linux"
-        out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
@@ -623,7 +612,6 @@ namespace "artifact" do
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
         out.attributes[:deb_suggests] = ["java11-runtime-headless"] unless bundle_jdk
-        out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"

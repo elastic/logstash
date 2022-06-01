@@ -131,7 +131,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "org.reflections:reflections:",https://github.com/ronmamo/reflections,BSD-2-Clause
 "org.slf4j:slf4j-api:",http://www.slf4j.org/,MIT
 "paquet:",https://github.com/elastic/logstash,Apache-2.0
-"pleaserun:",https://github.com/jordansissel/pleaserun,Apache-2.0
 "polyglot:",http://github.com/cjheath/polyglot,MIT
 "pry:",http://pryrepl.org,MIT
 "public_suffix:",https://simonecarletti.com/code/publicsuffix-ruby,MIT
