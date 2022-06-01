@@ -34,7 +34,7 @@ coming[8.3.0]
 
 * {ls} is more efficient at fetching pipelines as of 8.3. 
 When a {ls} instance sends its pipeline IDs to {es} or central pipeline management in {kib}, it gets back only the pipeline configs that belong to that instance. 
-These enhancements required changes to both {ls} https://github.com/elastic/logstash/pull/14076[#14076] and {es} https://github.com/elastic/elasticsearch/pull/85847[#85847].
+These enhancements required changes to both {ls} https://github.com/elastic/logstash/pull/14076[(#14076)] and {es} https://github.com/elastic/elasticsearch/pull/85847[(#85847)].
 + 
 These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
 
