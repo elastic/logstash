@@ -108,10 +108,6 @@ describe "Java integration" do
       it "should include the class name" do
         expect(subject.inspect).to include("ArrayList")
       end
-
-      it "should include the hash code of the collection" do
-        expect(subject.inspect).to include(subject.hashCode.to_s)
-      end
     end
 
     context "when deleting a unique instance" do
