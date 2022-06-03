@@ -63,7 +63,16 @@ modules:
 
 IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
 
-The `logstash.yml` file includes the following settings. 
+The `logstash.yml` file includes these settings. 
+
+// The content for these settings is sourced from attributes-ls.asciidoc
+
+{queuetype}:: {queuetype-desc} {bothyml}
+
+{pathqueue}:: {pathqueue-desc} {bothyml}
+
+{queuepage_capacity}:: {queuepage_capacity-desc} 
+
 
 [options="header"]
 |=======================================================================

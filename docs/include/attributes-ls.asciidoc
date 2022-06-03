@@ -8,3 +8,33 @@ with a corresponding change to the VPR settings in
 logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
 /////
 
+
+//Logstash settings
+
+:lsyml: Available in`logstash.yml`.
+:plyml: Available in`pipelines.yml`.
+:bothyml: Available in `logstash.yml` and `pipelines.yml`.
+
+:queuetype: queue.type
+:queuetype-desc: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled. Default: `queue.type: memory`.
+
+:pathqueue: path.queue
+:pathqueue-desc: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
+
+:queuepage_capacity: queue.page_capacity
+:queuepage_capacity-desc: The queue data consists of append-only files called "pages." This value sets the maximum size of a queue page in bytes. +
+The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. 
+If you change the page capacity of an existing queue, the new size applies only to the new page.
+
+
+ToDo: Test adding indicator for logstash.yml or pipelines.yml
+
+`queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
+`queue.max_events`:: The maximum number of events not yet read by the pipeline worker. The default is 0 (unlimited).
+We use this setting for internal testing. 
+Users generally shouldn't be changing this value.
+`queue.max_bytes`:: The total capacity of _each queue_ in number of bytes. 
+Unless overridden in `pipelines.yml` or central management, each persistent
+queue will be sized at the value of `queue.max_bytes` specified in
+`logstash.yml`. 
+The default is 1024mb (1gb).
