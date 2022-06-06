@@ -85,7 +85,7 @@ export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
 * After cloning the Logstash repo you must first install dependencies:
   - If you are using a gradle:
     ```sh
-    ./gradlew installTestGems
+    ./gradlew installDevelopmentGems
     ``` 
   - If you want to build with bundle, you need to set the local bundle and install dependencies:
     ```sh
