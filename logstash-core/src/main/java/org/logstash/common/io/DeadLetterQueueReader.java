@@ -53,6 +53,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -321,9 +322,33 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private void removeSegmentsBefore(Path validSegment) throws IOException {
+        final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::byFileFimestamp)
+                .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
+
         Files.list(queuePath)
-                .filter(p -> p.compareTo(validSegment) < 0)
+                .filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
                 .forEach(this::trashSegment);
+    }
+
+    private int byFileFimestamp(Path p1, Path p2) {
+        FileTime timestamp1;
+        // if one of the getLastModifiedTime raise an error, consider them equals
+        // and fallback to the other comparator
+        try {
+            timestamp1 = Files.getLastModifiedTime(p1);
+        } catch (IOException ex) {
+            logger.warn("Error reading file's timestamp for {}", p1, ex);
+            return 0;
+        }
+
+        FileTime timestamp2;
+        try {
+            timestamp2 = Files.getLastModifiedTime(p2);
+        } catch (IOException ex) {
+            logger.warn("Error reading file's timestamp for {}", p2, ex);
+            return 0;
+        }
+        return timestamp1.compareTo(timestamp2);
     }
 
     private void trashSegment(Path segment) {
