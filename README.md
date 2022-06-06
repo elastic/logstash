@@ -82,8 +82,17 @@ export LOGSTASH_SOURCE=1
 export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
 ```
 
-* To run Logstash from the repo you must first bootstrap the environment:
-
+* After cloning the Logstash repo you must first install dependencies:
+  - If you are using a gradle:
+    ```sh
+    ./gradlew installTestGems
+    ``` 
+  - If you want to build with bundle, make sure you are using local bundle:
+    ```sh
+    bundle config set --local path vendor/bundle
+    bundle install 
+    ```
+* Before running the Logstash, you must also bootstrap the environment:
 ```sh
 rake bootstrap
 ```
