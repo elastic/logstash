@@ -1,6 +1,19 @@
+[[introduction]]
+== Logstash introduction
+
+Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
+unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all
+your data for diverse advanced downstream analytics and visualization use cases.
+
+While Logstash originally drove innovation in log collection, its capabilities extend well beyond that use case. Any
+type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many
+native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
+volume and variety of data.
+
+
 [float]
 [[power-of-logstash]]
-== The Power of Logstash
+== The power of Logstash
 
 *The ingestion workhorse for Elasticsearch and more*
 
@@ -17,12 +30,12 @@ Over 200 plugins available, plus the flexibility of creating and contributing yo
 image:static/images/logstash.png[]
 
 [float]
-== Logstash Loves Data
+== Logstash loves data
 
 Collect more, so you can know more. Logstash welcomes data of all shapes and sizes.
 
 [float]
-=== Logs and Metrics
+=== Logs and metrics
 
 Where it all started.
 
@@ -49,7 +62,7 @@ Unlock the World Wide Web.
 ** Perfect for scenarios where the control of polling is preferred over receiving
 
 [float]
-=== Data Stores and Streams
+=== Data stores and streams
 
 Discover more value from the data you already own.
 
@@ -69,7 +82,7 @@ harnessing data from connected sensors.
 homes, connected vehicles, healthcare sensors, and many other industry specific applications.
 
 [float]
-== Easily Enrich Everything
+== Easily enrich everything
 
 The better the data, the better the knowledge. Clean and transform your data during ingestion to gain near real-time
 insights immediately at index or output time. Logstash comes out-of-box with many aggregations and mutations along
@@ -89,7 +102,7 @@ and {logstash-ref}/plugins-codecs-multiline.html[multiline] events.
 See {logstash-ref}/transformation.html[Transforming Data] for an overview of some of the popular data processing plugins.
 
 [float]
-== Choose Your Stash
+== Choose your stash
 
 Route your data where it matters most. Unlock various downstream analytical and operational use cases by storing,
 analyzing, and taking action on your data.
