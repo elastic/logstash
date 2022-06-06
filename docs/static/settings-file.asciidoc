@@ -63,16 +63,17 @@ modules:
 
 IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
 
+[discrete]
+[[logstash-yml-settings]]
+=== Logstash settings
+
 The `logstash.yml` file includes these settings. 
 
-// The content for these settings is sourced from attributes-ls.asciidoc
+[discrete]
+[[settings-pq]]
+==== Persistent queue settings
 
-{queuetype}:: {queuetype-desc} {bothyml}
-
-{pathqueue}:: {pathqueue-desc} {bothyml}
-
-{queuepage_capacity}:: {queuepage_capacity-desc} 
-
+include::./settings/dlq-settings.asciidoc[]
 
 [options="header"]
 |=======================================================================

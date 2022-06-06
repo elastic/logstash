@@ -1,0 +1,20 @@
+// The content for these settings is single sourced from attributes-ls.asciidoc
+
+{queuetype}:: {queuetype-desc} {bothyml}
+
+{pathqueue}:: {pathqueue-desc} {bothyml}
+
+{queuepage_capacity}:: {queuepage_capacity-desc} 
+
+{queuedrain}:: {queuedrain-desc}
+
+{queuemaxevents}:: {queuemaxevents-desc}
+
+{queuemaxbytes}:: {queuemaxbytes-desc} 
+
+{queuecheckpointacks}:: {queuecheckpointacks-desc}
+    
+{queuecheckpointwrites}:: {queuecheckpointwrites-desc}
+
+{queuecheckpointinterval}:: {queuecheckpointinterval-desc}
+   

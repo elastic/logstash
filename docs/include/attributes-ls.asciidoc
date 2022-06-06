@@ -9,32 +9,65 @@ logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
 /////
 
 
-//Logstash settings
+/////
+Logstash settings
+/////
 
 :lsyml: Available in`logstash.yml`.
 :plyml: Available in`pipelines.yml`.
 :bothyml: Available in `logstash.yml` and `pipelines.yml`.
 
+//Setup
+
+:nodename: node.name
+:nodename-desc: A descriptive name for the node. Default is machine's hostname.
+
+:pathdata: path.data
+:pathdata-desc: The directory that Logstash and its plugins use for any persistent needs. Default is `LOGSTASH_HOME/data`.
+
+//Pipeline settings
+
+
+
+//Pipeline config settings
+
+
+
+
+//Queue settings
+
 :queuetype: queue.type
 :queuetype-desc: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled. Default: `queue.type: memory`.
 
 :pathqueue: path.queue
-:pathqueue-desc: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
+:pathqueue-desc: The directory path where the data files will be stored. Default: `path.data/queue`. 
 
 :queuepage_capacity: queue.page_capacity
 :queuepage_capacity-desc: The queue data consists of append-only files called "pages." This value sets the maximum size of a queue page in bytes. +
-The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. 
+The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. +
 If you change the page capacity of an existing queue, the new size applies only to the new page.
 
+:queuedrain: queue.drain
+:queuedrain-desc: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 
-ToDo: Test adding indicator for logstash.yml or pipelines.yml
-
-`queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
-`queue.max_events`:: The maximum number of events not yet read by the pipeline worker. The default is 0 (unlimited).
+:queuemaxevents: queue.max_events
+:queuemaxevents-desc: The maximum number of events not yet read by the pipeline worker. The default is 0 (unlimited). +
 We use this setting for internal testing. 
 Users generally shouldn't be changing this value.
-`queue.max_bytes`:: The total capacity of _each queue_ in number of bytes. 
-Unless overridden in `pipelines.yml` or central management, each persistent
-queue will be sized at the value of `queue.max_bytes` specified in
-`logstash.yml`. 
-The default is 1024mb (1gb).
+
+:queuemaxbytes: queue.max_bytes
+:queuemaxbytes-desc: The total capacity of _each queue_ in number of bytes. Unless overridden in `pipelines.yml` or central management, each persistent queue will be sized at the value of `queue.max_bytes` specified in `logstash.yml`. +
+Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues. The total of `queue.max_bytes` for _all_ queues should be lower than the capacity of your disk. Default: 1024mb (1gb).
+
+:queuecheckpointacks: queue.checkpoint.acks 
+:queuecheckpointacks-desc: Sets the number of acked events before forcing a checkpoint. Default is 1024. Set to 0 for unlimited.
+    
+:queuecheckpointwrites: queue.checkpoint.writes 
+:queuecheckpointwrites-desc: Sets the maximum number of written events before a forced checkpoint. Default is 1024. Set to 0 for unlimited. +
+To avoid losing data in the persistent queue, you can set queue.checkpoint.writes: 1 to force a checkpoint after each event is written. Keep in mind that disk writes have a resource cost. Setting this value to 1 ensures maximum durability, but can severely impact performance. See <<durability-persistent-queues>> to better understand the trade-offs.
+   
+:queuecheckpointinterval: queue.checkpoint.interval 
+:queuecheckpointinterval-desc: Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is 1000. Set to 0 to eliminate periodic checkpoints. 
+
+
+
