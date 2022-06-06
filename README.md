@@ -87,7 +87,7 @@ export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
     ```sh
     ./gradlew installTestGems
     ``` 
-  - If you want to build with bundle, make sure you are using local bundle:
+  - If you want to build with bundle, you need to set the local bundle and install dependencies:
     ```sh
     bundle config set --local path vendor/bundle
     bundle install 
