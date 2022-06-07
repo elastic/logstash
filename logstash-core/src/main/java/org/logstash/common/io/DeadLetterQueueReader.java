@@ -330,7 +330,7 @@ public final class DeadLetterQueueReader implements Closeable {
                 .forEach(this::trashSegment);
     }
 
-    private int byFileFimestamp(Path p1, Path p2) {
+    private int compareByFileTimestamp(Path p1, Path p2) {
         FileTime timestamp1;
         // if one of the getLastModifiedTime raise an error, consider them equals
         // and fallback to the other comparator
