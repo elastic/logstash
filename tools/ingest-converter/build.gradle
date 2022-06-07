@@ -24,6 +24,7 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.ym
 
 description = """Ingest JSON to Logstash Grok Config Converter"""
 version = versionMap['logstash-core']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
@@ -42,7 +43,7 @@ buildscript {
 
 dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:4.6'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2'
+  implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   testImplementation "junit:junit:4.12"
   testImplementation 'commons-io:commons-io:2.5'
 }
