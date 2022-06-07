@@ -60,6 +60,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -70,7 +71,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private RecordIOReader currentReader;
     private final Path queuePath;
-    private SegmentListener segmentCallback;
+    private final SegmentListener segmentCallback;
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
     private RecordIOReader lastConsumedReader;
@@ -123,7 +124,7 @@ public final class DeadLetterQueueReader implements Closeable {
      *              segments if segment is not found.
      * @param segment Path to segment File
      * @return Optional containing a RecordIOReader if the segment exists
-     * @throws IOException
+     * @throws IOException if any IO error happens during file management
      */
     private Optional<RecordIOReader> openSegmentReader(Path segment) throws IOException {
         if (!Files.exists(segment)) {
@@ -321,9 +322,10 @@ public final class DeadLetterQueueReader implements Closeable {
         final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
-        Files.list(queuePath)
-                .filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
-                .forEach(this::deleteSegment);
+        try (final Stream<Path> segmentFiles = Files.list(queuePath)) {
+            segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
+                  .forEach(this::deleteSegment);
+        }
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {
