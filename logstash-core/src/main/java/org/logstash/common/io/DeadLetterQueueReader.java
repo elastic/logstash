@@ -322,12 +322,12 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private void removeSegmentsBefore(Path validSegment) throws IOException {
-        final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::byFileFimestamp)
+        final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
         Files.list(queuePath)
                 .filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
-                .forEach(this::trashSegment);
+                .forEach(this::deleteSegment);
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {
