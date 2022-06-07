@@ -259,13 +259,9 @@ public final class DeadLetterQueueReader implements Closeable {
         segmentCallback.segmentCompleted();
 
         Path lastConsumedSegmentPath = lastConsumedReader.getPath();
-        try {
-            Files.delete(lastConsumedSegmentPath); // delete segment file only after current reader is closed
-        } catch (IOException ex) {
-            logger.warn("Problem occurred in removing the segment {}", lastConsumedSegmentPath, ex);
-        }
-        // drop from segments list, it's the head of the list
-        segments.remove(lastConsumedSegmentPath);
+        // delete segment file only after current reader is closed.
+        // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
+        deleteSegment(lastConsumedSegmentPath);
         lastConsumedReader = null;
     }
 
@@ -353,9 +349,11 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private void deleteSegment(Path segment) {
         segments.remove(segment);
-        boolean deleted = segment.toFile().delete();
-        if (!deleted) {
-            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment);
+        try {
+            Files.delete(segment);
+            logger.debug("Deleted segment {}", segment);
+        } catch (IOException ex) {
+            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
         }
     }
 
