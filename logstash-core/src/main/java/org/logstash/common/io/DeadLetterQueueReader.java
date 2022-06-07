@@ -351,7 +351,7 @@ public final class DeadLetterQueueReader implements Closeable {
         return timestamp1.compareTo(timestamp2);
     }
 
-    private void trashSegment(Path segment) {
+    private void deleteSegment(Path segment) {
         segments.remove(segment);
         boolean deleted = segment.toFile().delete();
         if (!deleted) {
