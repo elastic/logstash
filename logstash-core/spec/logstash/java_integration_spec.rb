@@ -97,7 +97,7 @@ describe "Java integration" do
   context "Java::JavaUtil::Collection" do
     subject{Java::JavaUtil::ArrayList.new(initial_array)}
 
-    context "when inspecting" do
+    context "when inspecting a list" do
       let(:items) { [:a, {:b => :c}] }
       subject { java.util.ArrayList.new(items) }
 
@@ -108,9 +108,20 @@ describe "Java integration" do
       it "should include the class name" do
         expect(subject.inspect).to include("ArrayList")
       end
+    end
 
-      it "should include the hash code of the collection" do
-        expect(subject.inspect).to include(subject.hashCode.to_s)
+    context "when inspecting a set" do
+      let(:items) { [:foo, 'bar'] }
+      subject { java.util.HashSet.new(items) }
+
+      it "should include the contents" do
+        expect(subject.inspect).to include 'bar'
+      end
+
+      it "should include the class name" do
+        expect(subject.inspect).to include("HashSet")
+
+        expect(java.util.TreeSet.new.inspect).to include("TreeSet")
       end
     end
 
