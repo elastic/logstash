@@ -29,6 +29,6 @@ rake artifact:docker
 rake artifact:docker_oss
 ```
 
-This image is built on [Centos 7][centos-7].
+This image is built on [Ubuntu 20.04][ubuntu-20.04].
 
-[centos-7]: https://github.com/CentOS/sig-cloud-instance-images/blob/50281d86d6ed5c61975971150adfd0ede86423bb/docker/Dockerfile
+[ubuntu-20.04]: https://hub.docker.com/_/ubuntu/
