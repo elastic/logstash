@@ -43,4 +43,22 @@ describe  FileWatch::BufferedTokenizer  do
     expect(subject.extract("\n")).to eq([""])
     expect(subject.extract("\n\n\n")).to eq(["", "", ""])
   end
+
+  context 'with delimiter' do
+
+    subject { FileWatch::BufferedTokenizer.new(delimiter) }
+
+    let(:delimiter) { "||" }
+
+    it "should tokenize multiple token" do
+      expect(subject.extract("foo||b|r||")).to eq(["foo", "b|r"])
+    end
+
+    it "should ignore empty payload" do
+      expect(subject.extract("")).to eq([])
+      expect(subject.extract("foo||bar")).to eq(["foo"])
+    end
+
+  end
+
 end

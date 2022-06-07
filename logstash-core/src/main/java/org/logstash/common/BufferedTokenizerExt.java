@@ -36,10 +36,11 @@ public class BufferedTokenizerExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
-    private static final IRubyObject MINUS_ONE = RubyUtil.RUBY.newFixnum(-1);
+    private static final RubyString NEW_LINE = (RubyString) RubyUtil.RUBY.newString("\n").
+                                                                freeze(RubyUtil.RUBY.getCurrentContext());
 
     private @SuppressWarnings("rawtypes") RubyArray input = RubyUtil.RUBY.newArray();
-    private IRubyObject delimiter = RubyUtil.RUBY.newString("\n");
+    private RubyString delimiter = NEW_LINE;
     private int sizeLimit;
     private boolean hasSizeLimit;
     private int inputSize;
@@ -51,7 +52,7 @@ public class BufferedTokenizerExt extends RubyObject {
     @JRubyMethod(name = "initialize", optional = 2)
     public IRubyObject init(final ThreadContext context, IRubyObject[] args) {
         if (args.length >= 1) {
-            this.delimiter = args[0];
+            this.delimiter = args[0].convertToString();
         }
         if (args.length == 2) {
             this.sizeLimit = args[1].convertToInteger().getIntValue();
@@ -75,7 +76,7 @@ public class BufferedTokenizerExt extends RubyObject {
     @JRubyMethod
     @SuppressWarnings("rawtypes")
     public RubyArray extract(final ThreadContext context, IRubyObject data) {
-        final RubyArray entities = ((RubyString) data).split(context, delimiter, MINUS_ONE);
+        final RubyArray entities = data.convertToString().split(delimiter, -1);
         if (hasSizeLimit) {
             final int entitiesSize = ((RubyString) entities.first()).size();
             if (inputSize + entitiesSize > sizeLimit) {
