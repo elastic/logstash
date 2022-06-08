@@ -214,7 +214,8 @@
 #
 # queue.type: memory
 #
-# If queue.type: persisted, the directory path where the pipeline data files will be stored.  Logstash creates `pipeline.id` folder for each pipeline
+# If `queue.type: persisted`, the directory path where the pipeline data files will be stored.
+# Each pipeline will group its PQ files in a subdirectory matching its `pipeline.id`.
 # Default is path.data/queue.
 #
 # path.queue:

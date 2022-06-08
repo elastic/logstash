@@ -47,7 +47,7 @@ module LogStash
         max_bytes = config.settings.get("queue.max_bytes").to_i
         page_capacity = config.settings.get("queue.page_capacity").to_i
         pipeline_id = config.settings.get("pipeline.id")
-        queue_path = Paths.get(config.settings.get("path.queue"), pipeline_id).to_s
+        queue_path = ::File.join(config.settings.get("path.queue"), pipeline_id)
         pq_page_glob = ::File.join(queue_path, "page.*")
         create_dirs(queue_path)
         used_bytes = get_page_size(pq_page_glob)
