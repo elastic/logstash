@@ -44,9 +44,9 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
 
-    private final Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
+    private final transient Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
 
-    private PipelineIR lir;
+    private transient PipelineIR lir;
 
     private ExecutionContextFactoryExt executionContextFactory;
 
@@ -54,11 +54,11 @@ public final class PluginFactoryExt extends RubyBasicObject
 
     private RubyClass filterDelegatorClass;
 
-    private ConfigVariableExpander configVariables;
+    private transient ConfigVariableExpander configVariables;
 
-    private PluginResolver pluginResolver;
+    private transient PluginResolver pluginResolver;
 
-    private Map<PluginLookup.PluginType, AbstractPluginCreator<? extends Plugin>> pluginCreatorsRegistry = new HashMap<>(4);
+    private final transient Map<PluginLookup.PluginType, AbstractPluginCreator<? extends Plugin>> pluginCreatorsRegistry = new HashMap<>(4);
 
     @JRubyMethod(name = "filter_delegator", meta = true, required = 5)
     public static IRubyObject filterDelegator(final ThreadContext context,

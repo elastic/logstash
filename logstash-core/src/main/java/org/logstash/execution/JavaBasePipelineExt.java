@@ -54,7 +54,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
     private static final Logger LOGGER = LogManager.getLogger(JavaBasePipelineExt.class);
 
-    private CompiledPipeline lirExecution;
+    private transient CompiledPipeline lirExecution;
 
     private @SuppressWarnings("rawtypes") RubyArray inputs;
 

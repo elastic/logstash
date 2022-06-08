@@ -53,11 +53,11 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
     private RubyString id;
 
-    private LongCounter eventMetricOut;
+    private transient LongCounter eventMetricOut;
 
-    private LongCounter eventMetricIn;
+    private transient LongCounter eventMetricIn;
 
-    private LongCounter eventMetricTime;
+    private transient LongCounter eventMetricTime;
 
     public AbstractOutputDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

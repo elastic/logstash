@@ -117,7 +117,7 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private DynamicMethod outputMethod;
+        private transient DynamicMethod outputMethod;
 
         private RubyClass outputClass;
 
@@ -169,9 +169,9 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private BlockingQueue<IRubyObject> workerQueue;
+        private transient BlockingQueue<IRubyObject> workerQueue;
 
-        private IRubyObject workerCount;
+        private transient IRubyObject workerCount;
 
         private @SuppressWarnings({"rawtypes"}) RubyArray workers;
 
@@ -244,7 +244,7 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private IRubyObject output;
+        private transient IRubyObject output;
 
         protected SimpleAbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
