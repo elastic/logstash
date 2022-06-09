@@ -32,14 +32,24 @@ import org.logstash.secret.store.SecureConfig;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileLock;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.KeyStore;
@@ -49,7 +59,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -158,14 +172,6 @@ public final class JavaKeyStore implements SecretStore {
             return false;
         }
         return new File(new String(path)).exists();
-    }
-
-    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
-    // since this project still supports Java 8, suppress the warning.
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void finalize() throws Throwable {
-        SecretStoreUtil.clearChars(keyStorePass);
     }
 
     /**
