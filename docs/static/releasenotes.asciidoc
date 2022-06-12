@@ -26,11 +26,6 @@ This section summarizes the changes in the following releases:
 === Logstash Pull Requests with label v8.2.3
 
 * update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
-* Remove startup.options and system-install docs https://github.com/elastic/logstash/pull/14197[#14197]
-* Backport PR #14197 to 8.2: Remove startup.options and system-install docs https://github.com/elastic/logstash/pull/14202[#14202]
-* Backport PR #14098 to 8.2. Switch adoptopenjdk url to adoptium https://github.com/elastic/logstash/pull/14224[#14224]
-* Backport PR #14152 to 8.2: update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14225[#14225]
-* bump lock file for 8.2 https://github.com/elastic/logstash/pull/14231[#14231]
 
 === Logstash Commits between 8.2 and 8.2.3
 
