@@ -22,10 +22,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-2-3]]
 === Logstash 8.2.3 Release Notes
 
-
-* update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
-
-
+* Updated bundled JDK to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 [[logstash-8-2-2]]
 === Logstash 8.2.2 Release Notes
 
