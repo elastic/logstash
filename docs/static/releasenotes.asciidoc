@@ -27,16 +27,6 @@ This section summarizes the changes in the following releases:
 
 * update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 
-=== Logstash Commits between 8.2 and 8.2.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.2.3..8.2"
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.2.3..8.2 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
 
 [[logstash-8-2-2]]
 === Logstash 8.2.2 Release Notes
