@@ -671,7 +671,7 @@ GEM
     lru_redux (1.1.0)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
-    manticore (0.9.0-java)
+    manticore (0.9.1-java)
       openssl_pkcs8_pure
     march_hare (4.4.0-java)
     memoizable (0.4.2)
