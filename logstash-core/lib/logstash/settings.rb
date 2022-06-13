@@ -846,7 +846,7 @@ module LogStash
     # or to produce an error when both the canonical name and deprecated
     # alias are used together.
     class SettingWithDeprecatedAlias < SimpleDelegator
-
+      require "i18n"
       ##
       # Wraps the provided setting, returning a pair of connected settings
       # including the canonical setting and a deprecated alias.
