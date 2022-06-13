@@ -21,6 +21,7 @@ require "delegate"
 require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
+require "i18n"
 
 module LogStash
 
@@ -805,7 +806,6 @@ module LogStash
     # to be used exclusively through `SettingWithDeprecatedAlias#wrap`
     class DeprecatedAlias < SimpleDelegator
       # include LogStash::Util::Loggable
-      require "i18n"
       alias_method :wrapped, :__getobj__
       attr_reader :canonical_proxy
 
