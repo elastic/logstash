@@ -805,7 +805,7 @@ module LogStash
     # to be used exclusively through `SettingWithDeprecatedAlias#wrap`
     class DeprecatedAlias < SimpleDelegator
       # include LogStash::Util::Loggable
-
+      require "i18n"
       alias_method :wrapped, :__getobj__
       attr_reader :canonical_proxy
 
@@ -846,7 +846,7 @@ module LogStash
     # or to produce an error when both the canonical name and deprecated
     # alias are used together.
     class SettingWithDeprecatedAlias < SimpleDelegator
-      require "i18n"
+
       ##
       # Wraps the provided setting, returning a pair of connected settings
       # including the canonical setting and a deprecated alias.
