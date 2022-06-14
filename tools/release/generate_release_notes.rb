@@ -30,6 +30,8 @@ require 'net/http'
 RELEASE_NOTES_PATH = "docs/static/releasenotes.asciidoc"
 release_branch = ARGV[0]
 previous_release_tag = ARGV[1]
+user = ARGV[2]
+token = ARGV[3]
 report = []
 
 `git checkout #{release_branch}`
@@ -118,12 +120,15 @@ branch_name = "update_release_notes_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
 `git commit docs/static/releasenotes.asciidoc -m "Update release notes for #{current_release}"`
 
+
 puts "Pushing commit.."
-`git remote add upstream git@github.com:elastic/logstash.git`
-`git push upstream #{branch_name}`
+`git remote set-url origin https://x-access-token:#{token}@github.com/elastic/logstash.git`
+`git push origin #{branch_name}`
 
 puts "Creating Pull Request"
-pr_title = "Release notes draft for #{current_release}"
-`curl -H "Authorization: token #{ENV['GITHUB_TOKEN']}" -d '{"title":"#{pr_title}","base":"#{ENV['branch_specifier']}", "head":"#{branch_name}"}' https://api.github.com/repos/elastic/logstash/pulls`
-
+pr_title = "Release notes for #{current_release}"
+result = `curl -H "Authorization: token #{token}" -d '{"title":"#{pr_title}","base":"#{release_branch}", "head":"#{branch_name}", "draft": true}' https://api.github.com/repos/elastic/logstash/pulls`
+puts result
+pr_number = JSON.parse(result)["number"]
+puts `curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token #{token}" https://api.github.com/repos/elastic/logstash/issues/#{pr_number}/assignees -d '{"assignees":["#{user}"]}'`
 puts "Done"

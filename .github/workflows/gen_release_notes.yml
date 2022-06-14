@@ -1,0 +1,35 @@
+name: Release Notes Draft generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        required: true
+        default: "8.2"
+      last_release:
+        type: string
+        required: true
+        default: "8.2.2"
+
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.0'
+    - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+    - run: git config --global user.name "logstashmachine"
+    - name: Create Release Notes Draft
+      run:  ./tools/release/generate_release_notes.rb ${{ github.event.inputs.branch }} ${{ github.event.inputs.last_release }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
