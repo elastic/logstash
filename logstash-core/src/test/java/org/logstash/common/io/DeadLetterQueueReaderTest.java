@@ -43,7 +43,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -592,9 +591,7 @@ public class DeadLetterQueueReaderTest {
             remainingEventsInSegment--;
 
             // simulate a storage policy clean, drop the middle segment file
-            final List<Path> allSegments = Files.list(dir)
-                    .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
-                    .collect(Collectors.toList());
+            final List<Path> allSegments = listSegmentsSorted(dir);
             assertThat(allSegments.size(), greaterThanOrEqualTo(2));
             Files.delete(allSegments.remove(0)); // tail segment
             Files.delete(allSegments.remove(0)); // the segment after
@@ -962,11 +959,8 @@ public class DeadLetterQueueReaderTest {
         prepareFilledSegmentFiles(2);
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
-            final List<Path> allSegments = Files.list(dir)
-                    .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
-                    .collect(Collectors.toList());
-            List<String> segmentPathNames = allSegments.stream().map(segment -> segment.getFileName().toString()).collect(Collectors.toList());
-            assertEquals(Arrays.asList("1.log", "2.log"), segmentPathNames);
+            final List<Path> allSegments = listSegmentsSorted(dir);
+            verifySegmentFiles(allSegments, "1.log", "2.log");
 
             Path lastSegmentPath = allSegments.get(1);
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
@@ -977,5 +971,39 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    private void verifySegmentFiles(List<Path> allSegments, String... fileNames) {
+        List<String> segmentPathNames = allSegments.stream()
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
+        assertEquals(Arrays.asList(fileNames), segmentPathNames);
+    }
+
+    private List<Path> listSegmentsSorted(Path dir) throws IOException {
+        return Files.list(dir)
+                .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
+                .collect(Collectors.toList());
+    }
+
     private void silentCallback() {}
+
+
+    @Test
+    public void testReaderCleanMultipleConsumedSegmentsAfterMarkForDelete() throws IOException, InterruptedException {
+        int eventPerSegment = prepareFilledSegmentFiles(3);
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
+
+            // consume fully two segments plus one more event to trigger the endOfStream on the second segment
+            for (int i = 0; i < (2 * eventPerSegment) + 1; i++) {
+                reader.pollEntry(100L);
+            }
+
+            verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
+
+            reader.markForDelete();
+
+            verifySegmentFiles(listSegmentsSorted(dir), "3.log");
+        }
+    }
 }

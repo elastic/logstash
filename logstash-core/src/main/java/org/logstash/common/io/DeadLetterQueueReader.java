@@ -260,6 +260,15 @@ public final class DeadLetterQueueReader implements Closeable {
         segmentCallback.segmentCompleted();
 
         Path lastConsumedSegmentPath = lastConsumedReader.getPath();
+
+        // delete also the older segments in case of multiple segments were consumed
+        // before the invocation of the mark method.
+        try {
+            removeSegmentsBefore(lastConsumedSegmentPath);
+        } catch (IOException ex) {
+            logger.warn("Problem occurred in cleaning the segments older than {} ", lastConsumedSegmentPath, ex);
+        }
+
         // delete segment file only after current reader is closed.
         // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
         deleteSegment(lastConsumedSegmentPath);
