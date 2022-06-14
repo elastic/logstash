@@ -42,9 +42,12 @@ import java.io.Closeable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
+import org.logstash.FileLockFactory;
+import org.logstash.LockException;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
+import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -78,6 +81,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
     // config settings
     private final boolean cleanConsumed;
+    private FileLock fileLock;
 
     public DeadLetterQueueReader(Path queuePath) throws IOException {
         this(queuePath, false, null);
@@ -97,6 +101,14 @@ public final class DeadLetterQueueReader implements Closeable {
         }
         this.segmentCallback = segmentCallback;
         this.lastConsumedReader = null;
+        if (cleanConsumed) {
+            // force single DLQ reader when clean consumed is requested
+            try {
+                fileLock = FileLockFactory.obtainLock(queuePath, "dlq_reader.lock");
+            } catch (LockException ex) {
+                throw new LockException("DLQ reader failed to obtain exclusive access, cause: " + ex.getMessage());
+            }
+        }
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
@@ -393,5 +405,9 @@ public final class DeadLetterQueueReader implements Closeable {
             currentReader.close();
         }
         this.watchService.close();
+
+        if (this.cleanConsumed) {
+            FileLockFactory.releaseLock(this.fileLock);
+        }
     }
 }
