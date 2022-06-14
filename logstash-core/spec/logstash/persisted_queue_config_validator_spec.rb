@@ -40,17 +40,17 @@ describe LogStash::PersistedQueueConfigValidator do
 
     context("'queue.max_bytes' is less than 'queue.page_capacity'") do
       it "should throw" do
+        expect(pq_config_validator.logger).to receive(:warn).once.with(/'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
         settings.set_value("queue.max_bytes", 512)
-        expect { pq_config_validator.check({}, pipeline_configs) }
-          .to raise_error(LogStash::BootstrapCheckError, /'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
+        pq_config_validator.check({}, pipeline_configs)
       end
     end
 
     context("'queue.max_bytes' = 0 which is less than 'queue.page_capacity'") do
       it "should not throw" do
+        expect(pq_config_validator.logger).not_to receive(:warn)
         settings.set_value("queue.max_bytes", 0)
-        expect { pq_config_validator.check({}, pipeline_configs) }
-          .not_to raise_error
+        pq_config_validator.check({}, pipeline_configs)
       end
     end
 
@@ -69,9 +69,9 @@ describe LogStash::PersistedQueueConfigValidator do
       end
 
       it "should throw" do
+        expect(pq_config_validator.logger).to receive(:warn).once.with(/greater than 'queue.max_bytes'/)
         settings.set_value("queue.max_bytes", "1mb")
-        expect { pq_config_validator.check({}, pipeline_configs) }
-          .to raise_error(LogStash::BootstrapCheckError, /greater than 'queue.max_bytes'/)
+        pq_config_validator.check({}, pipeline_configs)
       end
 
       after do
@@ -96,8 +96,9 @@ describe LogStash::PersistedQueueConfigValidator do
           expect(required_free_bytes.values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
         end.and_call_original
 
-        expect { pq_config_validator.check({}, pipeline_configs) }
-          .to raise_error(LogStash::BootstrapCheckError, /is unable to allocate/)
+        expect(pq_config_validator.logger).to receive(:warn).once.with(/is unable to allocate/)
+
+        pq_config_validator.check({}, pipeline_configs)
       end
     end
 

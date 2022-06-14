@@ -22,13 +22,14 @@ java_import "java.nio.file.Files"
 
 module LogStash
   class PersistedQueueConfigValidator
+    include LogStash::Util::Loggable
 
     def initialize
       @last_check_pipeline_configs = Array.new
       @last_check_pass = false
     end
 
-    # Check the config of persistent queue. Raise BootstrapCheckError if fail
+    # Check the config of persistent queue. Print warning message if fail
     # @param running_pipelines [Hash pipeline_id (sym) => JavaPipeline]
     # @param pipeline_configs [Array PipelineConfig]
     def check(running_pipelines, pipeline_configs)
@@ -65,7 +66,7 @@ module LogStash
 
       @last_check_pass = err_msg.empty?
 
-      raise(LogStash::BootstrapCheckError, err_msg.flatten.join(" ")) unless err_msg.empty?
+      logger.warn(err_msg.flatten.join(" ")) unless err_msg.empty?
     end
 
     def check_page_capacity(err_msg, pipeline_id, max_bytes, page_capacity)
