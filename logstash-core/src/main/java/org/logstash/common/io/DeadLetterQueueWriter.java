@@ -42,6 +42,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Clock;
@@ -275,9 +276,13 @@ public final class DeadLetterQueueWriter implements Closeable {
             Path beheadedSegment = oldestSegmentPath.orElseThrow(() -> new IllegalStateException("DLQ writer can't find the oldest segment to drop on path: " + queuePath));
             final long segmentSize = Files.size(beheadedSegment);
             this.currentQueueSize.add(-segmentSize);
-            Files.delete(beheadedSegment);
-            logger.debug("Deleted exceeded retained age segment file {}", beheadedSegment);
-
+            try {
+                Files.delete(beheadedSegment);
+                logger.debug("Deleted exceeded retained age segment file {}", beheadedSegment);
+            } catch (NoSuchFileException nsfex) {
+                // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
+                logger.info("File not found {}, maybe removed by the reader pipeline", beheadedSegment);
+            }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
         } while (cleanNextSegment);
