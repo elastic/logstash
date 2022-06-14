@@ -67,13 +67,14 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_reopeningWriterUseCase() throws IOException {
+    public void testWriteOnReopenedQueueWithExpiredSegmentsRemovesTheOlderOnes() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
 
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
-        prepareDLQWithFirstSegmentOlderThanRetainPeriod(event, fakeClock);
+        // given DLQ with first segment filled of expired events
+        prepareDLQWithFirstSegmentOlderThanRetainPeriod(event, fakeClock, Duration.ofDays(2));
 
         // Exercise
         final long prevQueueSize;
@@ -86,21 +87,22 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // write new entry that trigger clean of age retained segment
             DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 320), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            // when a new write happens in a reopened queue
             writeManager.writeEntry(entry);
             beheadedQueueSize = writeManager.getCurrentQueueSize();
         }
 
-        assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+        // then the age policy must remove the expired segments
+        assertEquals("Write should push off the age expired segments", VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
     }
 
-    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event, ForwardableClock fakeClock) throws IOException {
-        Duration retainFor2Days = Duration.ofDays(2);
-        final Duration littleMore2Days = retainFor2Days.plusMinutes(1);
-        long startTime = fakeClock.instant().minus(littleMore2Days).toEpochMilli();
+    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event, ForwardableClock fakeClock, Duration retainedPeriod) throws IOException {
+        final Duration littleMoreThanRetainedPeriod = retainedPeriod.plusMinutes(1);
+        long startTime = fakeClock.instant().minus(littleMoreThanRetainedPeriod).toEpochMilli();
         int messageSize = 0;
 
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), retainFor2Days, fakeClock)) {
+                Duration.ofSeconds(1), retainedPeriod, fakeClock)) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 320 - 1; i++) {
@@ -115,7 +117,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testRemoveOldestSegmentsWhenRetainedAgeIsExceeded_withContinuousWriterUseCase() throws IOException {
+    public void testWriteOnQueueWithExpiredSegmentsRemovesTheOlderOnes() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
@@ -146,10 +148,12 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // write new entry that trigger clean of age retained segment
             DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 320), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
+            // when a new write happens in the same writer
             writeManager.writeEntry(entry);
             final long beheadedQueueSize = writeManager.getCurrentQueueSize();
 
-            assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+            // then the age policy must remove the expired segments
+            assertEquals("Write should push off the age expired segments",VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
         }
     }
 
@@ -168,6 +172,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
                 Duration.ofSeconds(1), retention, fakeClock)) {
 
+            // given DLQ with a couple of segments filled of expired events
             // 320 generates 10 Mb of data
             for (int i = 0; i < 319 * 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime++));
@@ -178,6 +183,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             }
             assertThat(messageSize, Matchers.is(greaterThan(BLOCK_SIZE)));
 
+            // when the age expires the retention and a write is done
             // make the retention age to pass for the first 2 full segments
             fakeClock.forward(retention.plusSeconds(1));
 
@@ -191,7 +197,8 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             writeManager.writeEntry(entry);
             final long beheadedQueueSize = writeManager.getCurrentQueueSize();
 
-            assertEquals(VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
+            // then the age policy must remove the expired segments
+            assertEquals("Write should push off the age expired segments",VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
         }
     }
 }
