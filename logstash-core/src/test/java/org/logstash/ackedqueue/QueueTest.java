@@ -806,7 +806,7 @@ public class QueueTest {
                 seqNum = queue.write(new StringElement("foooo"));
             }
             queue.ensurePersistedUpto(seqNum);
-            assertThat(queue.getPersistedByteSize(), is(1243L));
+            assertThat(queue.getPersistedByteSize(), is(1243L)); // num_pages * page_size + head_page_size
         }
     }
 
