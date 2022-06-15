@@ -40,9 +40,9 @@ describe LogStash::PersistedQueueConfigValidator do
 
     context("'queue.max_bytes' is less than 'queue.page_capacity'") do
       it "should throw" do
-        expect(pq_config_validator.logger).to receive(:warn).once.with(/'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
         settings.set_value("queue.max_bytes", 512)
-        pq_config_validator.check({}, pipeline_configs)
+        expect { pq_config_validator.check({}, pipeline_configs) }
+          .to raise_error(LogStash::BootstrapCheckError, /'queue.page_capacity' must be less than or equal to 'queue.max_bytes'/)
       end
     end
 
