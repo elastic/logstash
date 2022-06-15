@@ -271,6 +271,12 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
+# If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
+# Set the value to `drop_newer` (default) to stop accepting new values that would push the file size over the limit.
+# Set the value to `drop_older` to remove the oldest events to make space for new ones.
+#
+# dead_letter_queue.storage_policy: drop_newer
+
 # If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
 # could be "drop_newer" or "drop_older".
 # With drop_newer, messages that were inserted most recently are dropped, logging an error line.
