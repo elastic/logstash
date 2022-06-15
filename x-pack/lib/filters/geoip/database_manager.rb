@@ -14,9 +14,8 @@ require "stud/try"
 require "down"
 require "rufus/scheduler"
 require "singleton"
-require "concurrent"
+require "concurrent/array"
 require "thread"
-java_import org.apache.logging.log4j.ThreadContext
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -34,6 +33,8 @@ module LogStash module Filters module Geoip class DatabaseManager
   include LogStash::Util::Loggable
   include LogStash::Filters::Geoip::Util
   include Singleton
+
+  java_import org.apache.logging.log4j.ThreadContext
 
   private
   def initialize
