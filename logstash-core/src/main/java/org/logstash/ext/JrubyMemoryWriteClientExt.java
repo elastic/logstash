@@ -36,7 +36,7 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
 
     private static final long serialVersionUID = 1L;
 
-    private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
+    private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
     public JrubyMemoryWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

@@ -46,6 +46,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressWarnings("serial")
     private Queue queue;
 
     public JRubyAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {

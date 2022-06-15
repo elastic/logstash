@@ -37,7 +37,7 @@ public class DeprecationLoggerExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
-    private DeprecationLogger logger;
+    private transient DeprecationLogger logger;
 
     public DeprecationLoggerExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

@@ -122,6 +122,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
     );
 
+    @SuppressWarnings("serial")
     protected PipelineIR lir;
 
     private final RubyString ephemeralId = RubyUtil.RUBY.newString(UUID.randomUUID().toString());
@@ -130,20 +131,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private RubyString configString;
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "serial"})
     private List<SourceWithMetadata> configParts;
 
     private RubyString configHash;
 
-    private IRubyObject settings;
+    private transient IRubyObject settings;
 
-    private IRubyObject pipelineSettings;
+    private transient IRubyObject pipelineSettings;
 
-    private IRubyObject pipelineId;
+    private transient IRubyObject pipelineId;
 
-    private AbstractMetricExt metric;
+    private transient AbstractMetricExt metric;
 
-    private IRubyObject dlqWriter;
+    private transient IRubyObject dlqWriter;
 
     private PipelineReporterExt reporter;
 

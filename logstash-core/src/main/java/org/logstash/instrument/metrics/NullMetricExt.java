@@ -37,7 +37,7 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject collector;
+    private transient IRubyObject collector;
 
     public static NullMetricExt create() {
         return new NullMetricExt(

@@ -67,7 +67,7 @@ public final class JrubyEventExtLibrary {
          */
         private final int hash = nextHash();
 
-        private Event event;
+        private transient Event event;
 
         public RubyEvent(final Ruby runtime, final RubyClass klass) {
             super(runtime, klass);

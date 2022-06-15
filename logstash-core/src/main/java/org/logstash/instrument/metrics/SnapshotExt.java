@@ -34,9 +34,9 @@ public final class SnapshotExt extends RubyBasicObject {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject metricStore;
+    private transient IRubyObject metricStore;
 
-    private RubyTime createdAt;
+    private transient RubyTime createdAt;
 
     public SnapshotExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
