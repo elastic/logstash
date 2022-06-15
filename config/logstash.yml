@@ -273,7 +273,7 @@
 
 # If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
 # Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
-# Set the value to `drop_older` to remove the oldest events to make space for new ones.
+# Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.
 #
 # dead_letter_queue.storage_policy: drop_newer
 
