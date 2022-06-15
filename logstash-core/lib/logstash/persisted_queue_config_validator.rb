@@ -128,7 +128,11 @@ module LogStash
 
     # creates path directories if not exist
     def create_dirs(queue_path)
-      Files.createDirectories(Paths.get(queue_path))
+      path = Paths.get(queue_path)
+      # Files.createDirectories raises a FileAlreadyExistsException
+      # if pipeline path is a symlink
+      return if Files.exists(path)
+      Files.createDirectories(path)
     end
   end
 end
