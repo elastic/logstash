@@ -77,7 +77,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
   gem.add_dependency 'tzinfo-data' #(MIT license)
-  gem.add_dependency 'rufus-scheduler' #(MIT license)
 
   # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
   # SEE: https://github.com/ruby/racc/issues/172
