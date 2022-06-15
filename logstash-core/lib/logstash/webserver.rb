@@ -124,6 +124,8 @@ module LogStash
     # @option :ssl_params [Hash{Symbol=>Object}]
     #             :keystore_path [String]
     #             :keystore_password [LogStash::Util::Password]
+    #             :truststore_path [String] (optional - will use keystore if no truststore set)
+    #             :truststore_password [LogStash::Util::Password] (optional)
     # @option :auth_basic [Hash{Symbol=>Object}]
     #             :username [String]
     #             :password [LogStash::Util::Password]
@@ -137,7 +139,8 @@ module LogStash
       @running = Concurrent::AtomicBoolean.new(false)
       @mutex = Mutex.new
 
-      validate_keystore_access! if @ssl_params
+      validate_keystore_access!(@ssl_params.fetch(:keystore_path), @ssl_params.fetch(:keystore_password)) if @ssl_params
+      validate_keystore_access!(@ssl_params.fetch(:truststore_path), @ssl_params[:truststore_password]) if @ssl_params && @ssl_params[:truststore_path]
 
       # wrap any output that puma could generate into a wrapped logger
       # use the puma namespace to override STDERR, STDOUT in that scope.
@@ -228,10 +231,19 @@ module LogStash
     def bind_to_port(candidate_port)
       logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
       if @ssl_params
+        keystore_path = @ssl_params.fetch(:keystore_path)
         unwrapped_ssl_params = {
-            'keystore' => @ssl_params.fetch(:keystore_path),
-            'keystore-pass' => @ssl_params.fetch(:keystore_password).value
+            'keystore' => keystore_path,
+            'keystore-type' => detect_keystore_type(keystore_path),
+            'keystore-pass' => @ssl_params.fetch(:keystore_password).value,
         }
+        truststore_path = @ssl_params.fetch(:truststore_path, nil)
+        if truststore_path
+          unwrapped_ssl_params['truststore'] = truststore_path
+          unwrapped_ssl_params['truststore-type'] = detect_keystore_type(truststore_path)
+          truststore_password = @ssl_params.fetch(:truststore_password, nil)&.value
+          unwrapped_ssl_params['truststore-pass'] = truststore_password if truststore_password
+        end
         ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
@@ -248,16 +260,17 @@ module LogStash
     # Validate access to the provided keystore.
     # Errors accessing the keystore after binding the webserver to a port are very hard to debug.
     # @api private
-    def validate_keystore_access!
-      return false unless @ssl_params
+    def validate_keystore_access!(path, password)
+      raise("Password not provided!") if password && !password&.value
 
-      raise("Password not provided!") unless @ssl_params.fetch(:keystore_password).value
-
-      java.security.KeyStore.getInstance("JKS")
-          .load(java.io.FileInputStream.new(@ssl_params.fetch(:keystore_path)),
-                @ssl_params.fetch(:keystore_password).value.chars&.to_java(:char))
+      java.security.KeyStore.getInstance(detect_keystore_type(path))
+          .load(java.io.FileInputStream.new(path), password&.value&.chars&.to_java(:char))
     rescue => e
-      raise ArgumentError.new("API Keystore could not be opened (#{e})")
+      raise ArgumentError.new("API Keystore (#{path}) could not be opened (#{e})")
+    end
+
+    def detect_keystore_type(path)
+      path.end_with?('.p12', '.pfx') ? 'pkcs12' : 'jks'
     end
   end
 end
