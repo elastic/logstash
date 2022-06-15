@@ -302,7 +302,7 @@ public final class DeadLetterQueueWriter implements Closeable {
      * Extract the timestamp from the last DLQEntry it finds in the given segment.
      * Start from the end of the latest block, and going backward try to read the next event from its start.
      * */
-    private Timestamp readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
+    private static Timestamp readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
         final int lastBlockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;
         byte[] eventBytes;
         try (RecordIOReader recordReader = new RecordIOReader(segmentPath)) {
