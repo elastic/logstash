@@ -38,6 +38,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   def initialize
     @triggered = false
     @trigger_lock = Mutex.new
+    @download_interval = 24 * 60 * 60 # 24h
   end
 
   def setup
@@ -206,7 +207,8 @@ module LogStash module Filters module Geoip class DatabaseManager
       execute_download_job
       # check database update periodically:
 
-      @download_task = Concurrent::TimerTask.new(execution_interval: 24 * 60 * 60) do
+      @download_task = Concurrent::TimerTask.execute(execution_interval: @download_interval) do
+        LogStash::Util.set_thread_name 'geoip database download task'
         database_update_check # every 24h
       end
       @triggered = true
