@@ -67,7 +67,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testWriteOnReopenedQueueWithExpiredSegmentsRemovesTheOlderOnes() throws IOException {
+    public void testRemovesOlderSegmentsWhenWriteOnReopenedDLQContainingExpiredSegments() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
 
@@ -117,7 +117,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testWriteOnQueueWithExpiredSegmentsRemovesTheOlderOnes() throws IOException {
+    public void testRemovesOlderSegmentsWhenWritesIntoDLQContainingExpiredSegments() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
