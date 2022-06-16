@@ -90,7 +90,7 @@ module LogStash
       disk_warn_msg =
         queue_path_file_system
           .select { |queue_path, file_system| !FsUtil.hasFreeSpace(Paths.get(queue_path), required_free_bytes.fetch(file_system, 0)) }
-          .map { |queue_path, file_system| "Persistent queue #{queue_path} in #{file_system} is unable to allocate #{required_free_bytes.fetch(file_system, 0)} more bytes on top of its current usage." }
+          .map { |queue_path, file_system| "The persistent queue on path \"#{queue_path}\" won't fit in file system \"#{file_system}\" when full. Please free or allocate #{required_free_bytes.fetch(file_system, 0)} more bytes." }
 
       warn_msg << disk_warn_msg unless disk_warn_msg.empty?
     end
