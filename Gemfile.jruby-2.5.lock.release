@@ -639,7 +639,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
       stud
-    logstash-output-s3 (4.3.5)
+    logstash-output-s3 (4.3.7)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
