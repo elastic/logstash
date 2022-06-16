@@ -50,8 +50,9 @@ module LogStash
         max_bytes = config.settings.get("queue.max_bytes").to_i
         page_capacity = config.settings.get("queue.page_capacity").to_i
         pipeline_id = config.settings.get("pipeline.id")
-        queue_path = config.settings.get("path.queue")
-        pq_page_glob = ::File.join(queue_path, pipeline_id, "page.*")
+        queue_path = ::File.join(config.settings.get("path.queue"), pipeline_id)
+        pq_page_glob = ::File.join(queue_path, "page.*")
+        create_dirs(queue_path)
         used_bytes = get_page_size(pq_page_glob)
         file_system = get_file_system(queue_path)
 
@@ -96,7 +97,7 @@ module LogStash
     end
 
     def get_file_system(queue_path)
-      fs = Files.getFileStore(Paths.get(queue_path));
+      fs = Files.getFileStore(Paths.get(queue_path))
       fs.name
     end
 
@@ -129,5 +130,13 @@ module LogStash
       queue_configs_update?(last_check_pipeline_configs, pipeline_configs) || !@last_check_pass
     end
 
+    # creates path directories if not exist
+    def create_dirs(queue_path)
+      path = Paths.get(queue_path)
+      # Files.createDirectories raises a FileAlreadyExistsException
+      # if pipeline path is a symlink
+      return if Files.exists(path)
+      Files.createDirectories(path)
+    end
   end
 end
