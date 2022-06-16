@@ -96,7 +96,7 @@ describe LogStash::PersistedQueueConfigValidator do
           expect(required_free_bytes.values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
         end.and_call_original
 
-        expect(pq_config_validator.logger).to receive(:warn).once.with(/is unable to allocate/)
+        expect(pq_config_validator.logger).to receive(:warn).once.with(/won't fit in file system/)
 
         pq_config_validator.check({}, pipeline_configs)
       end
