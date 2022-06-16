@@ -1,6 +1,5 @@
-# NOTE: this patch is meant to be used when polyglot (a tree-top dependency) is loaded.
-# At runtime we avoid loading polyglot, it's only needed for the rake compile task atm.
 require 'polyglot'
+
 
 module Kernel
   alias original_require require

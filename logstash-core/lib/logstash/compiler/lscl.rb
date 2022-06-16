@@ -15,7 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'treetop/runtime'
+require "logstash/patches/polyglot"
+require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 require "logstash/compiler/lscl/helpers"
 require "logstash/config/string_escape"

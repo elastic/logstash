@@ -1,4 +1,4 @@
-require "treetop/runtime"
+require "treetop"
 require "logstash/config/config_ast"
 
 grammar LogStashConfig
