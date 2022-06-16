@@ -32,6 +32,7 @@ if !LogStash::OSS
 end
 
 require "clamp"
+
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"

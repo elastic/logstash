@@ -31,11 +31,9 @@ import java.util.stream.Stream;
 import org.jruby.Ruby;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyString;
-import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
-import org.jruby.javasupport.Java;
 import org.jruby.javasupport.JavaClass;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
@@ -62,14 +60,14 @@ public final class RubyJavaIntegration {
         ruby.getArray().defineAnnotatedMethods(RubyJavaIntegration.RubyArrayOverride.class);
         ruby.getHash().defineAnnotatedMethods(RubyJavaIntegration.RubyHashOverride.class);
         Stream.of(LinkedHashMap.class, HashMap.class).forEach(cls ->
-            Java.getProxyClass(ruby, cls).defineAnnotatedMethods(
+            JavaClass.get(ruby, cls).getProxyModule().defineAnnotatedMethods(
                 RubyJavaIntegration.RubyMapProxyOverride.class
             )
         );
-        Java.getProxyClass(ruby, Map.class).defineAnnotatedMethods(
+        JavaClass.get(ruby, Map.class).getProxyModule().defineAnnotatedMethods(
             RubyJavaIntegration.JavaMapOverride.class
         );
-        Java.getProxyClass(ruby, Collection.class).defineAnnotatedMethods(
+        JavaClass.get(ruby, Collection.class).getProxyModule().defineAnnotatedMethods(
             RubyJavaIntegration.JavaCollectionOverride.class
         );
     }
@@ -281,8 +279,7 @@ public final class RubyJavaIntegration {
         @JRubyMethod
         public static IRubyObject merge(final ThreadContext context, final IRubyObject self,
             final IRubyObject other) {
-            IRubyObject[] other_array = { other };
-            return ((MapJavaProxy) self.dup()).merge_bang(context, other_array, Block.NULL_BLOCK);
+            return ((MapJavaProxy) self.dup()).merge_bang(context, other, Block.NULL_BLOCK);
         }
     }
 }

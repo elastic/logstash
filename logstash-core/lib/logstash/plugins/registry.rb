@@ -293,6 +293,7 @@ module LogStash module Plugins
     # @return [Boolean] true if klass is a valid plugin for name
     def is_a_plugin?(klass, name)
       (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
+      (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
       (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) &&
         klass.config_name == name)
     end
