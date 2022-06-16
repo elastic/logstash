@@ -204,8 +204,9 @@
 #
 # queue.type: memory
 #
-# If using queue.type: persisted, the directory path where the data files will be stored.
-# Default is path.data/queue
+# If `queue.type: persisted`, the directory path where the pipeline data files will be stored.
+# Each pipeline will group its PQ files in a subdirectory matching its `pipeline.id`.
+# Default is path.data/queue.
 #
 # path.queue:
 #

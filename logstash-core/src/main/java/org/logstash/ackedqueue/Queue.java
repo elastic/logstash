@@ -93,7 +93,11 @@ public final class Queue implements Closeable {
     public Queue(Settings settings) {
         try {
             final Path queueDir = Paths.get(settings.getDirPath());
-            Files.createDirectories(queueDir);
+            // Files.createDirectories raises a FileAlreadyExistsException
+            // if queue dir is symlinked, so worth checking against Files.exists
+            if (Files.exists(queueDir) == false) {
+                Files.createDirectories(queueDir);
+            }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
