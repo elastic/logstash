@@ -74,18 +74,15 @@ describe "Test Logstash service when multiple pipelines are used" do
   end
 
   describe "inter-pipeline communication" do
+    let(:count) { 2 }
     let(:pipelines) do 
       [
         {
           "pipeline.id" => "test",
-          "pipeline.workers" => 1,
-          "pipeline.batch.size" => 1,
-          "config.string" => "input { generator { count => 1 } } output { pipeline { send_to => testaddr } }"
+          "config.string" => "input { generator { count => #{count} } } output { pipeline { send_to => testaddr } }"
         },
         {
           "pipeline.id" => "test2",
-          "pipeline.workers" => 1,
-          "pipeline.batch.size" => 1,
           "config.string" => "input { pipeline { address => testaddr } } output { file { path => \"#{temporary_out_file_1}\" flush_interval => 0} }"
         }
       ]
@@ -97,12 +94,12 @@ describe "Test Logstash service when multiple pipelines are used" do
 
       # Wait for LS to come up
       i = 0
-      until File.exist?(temporary_out_file_1) && IO.readlines(temporary_out_file_1).size >= 1
+      until File.exist?(temporary_out_file_1) && IO.readlines(temporary_out_file_1).size >= count
         i += 1
         sleep 1
         break if i > 30
       end
-      expect(IO.readlines(temporary_out_file_1).size).to eq(1)
+      expect(IO.readlines(temporary_out_file_1).size).to eq(count)
 
       puts "Done"
     end
