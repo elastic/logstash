@@ -42,7 +42,7 @@ When you set values for capacity and sizing settings, remember that the value yo
 TIP: If you want to define values for a specific pipeline, use <<multiple-pipelines,`pipelines.yml`>>.
 
 `queue.type`:: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled (default: `queue.type: memory`).
-`path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
+`path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`.
 `queue.page_capacity`:: The queue data consists of append-only files called "pages." This value sets the maximum size of a queue page in bytes. 
 The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. 
 If you change the page capacity of an existing queue, the new size applies only to the new page.
