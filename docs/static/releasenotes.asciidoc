@@ -24,6 +24,249 @@ This section summarizes the changes in the following releases:
 === Logstash 8.3.0 Release Notes
 
 coming[8.3.0]
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.3.0
+
+* Implements DLQ storage policy https://github.com/elastic/logstash/pull/13923[#13923]
+* update databind to 2.13.3 https://github.com/elastic/logstash/pull/13945[#13945]
+* Correct the class reference to the MetricNotFound exception https://github.com/elastic/logstash/pull/13970[#13970]
+* Add value converters for java.time https://github.com/elastic/logstash/pull/13972[#13972]
+* Fix/avoid leak secrects in debug log of ifs https://github.com/elastic/logstash/pull/13997[#13997]
+* Introduce a retry mechanism in pipeline-to-pipeline https://github.com/elastic/logstash/pull/14027[#14027]
+* update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14031[#14031]
+* Field Reference: handle special characters https://github.com/elastic/logstash/pull/14044[#14044]
+* Adds DLQ drop counter and last error metrics into management API https://github.com/elastic/logstash/pull/14058[#14058]
+* Fix flaky test, the writer head segment is not a tail segment https://github.com/elastic/logstash/pull/14073[#14073]
+* [CPM] Fetch pipelines with wildcard IDs from ES and apply. https://github.com/elastic/logstash/pull/14076[#14076]
+* Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14147[#14147]
+* Forward port of release notes for 8.2.0 and 8.2.1 https://github.com/elastic/logstash/pull/14148[#14148]
+* Fix deprecation logging of password policy. https://github.com/elastic/logstash/pull/14159[#14159]
+* bump lock file for 8.3 https://github.com/elastic/logstash/pull/14163[#14163]
+* Backport PR #14147 to 8.3: Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14165[#14165]
+* Backport PR #14148 to 8.3: Forward port of release notes for 8.2.0 and 8.2.1 https://github.com/elastic/logstash/pull/14167[#14167]
+* Release notes for 8.2.2 https://github.com/elastic/logstash/pull/14168[#14168]
+* Doc: Add missing release notes https://github.com/elastic/logstash/pull/14169[#14169]
+* Backport PR #14169 to 8.3: Doc: Add missing release notes https://github.com/elastic/logstash/pull/14170[#14170]
+* Refactor: avoid loading polyglot https://github.com/elastic/logstash/pull/14175[#14175]
+* Backport PR #14168 to 8.3: Release notes for 8.2.2 https://github.com/elastic/logstash/pull/14179[#14179]
+* Deps: lock faraday to 1.x due elasticsearch-transport https://github.com/elastic/logstash/pull/14185[#14185]
+* Backport PR #14185 to 8.3: Deps: lock faraday to 1.x due elasticsearch-transport https://github.com/elastic/logstash/pull/14187[#14187]
+* Remove startup.options and system-install docs https://github.com/elastic/logstash/pull/14197[#14197]
+* Backport PR #14197 to 8.3: Remove startup.options and system-install docs https://github.com/elastic/logstash/pull/14201[#14201]
+* File system mismatch when each pipeline uses separate file system. https://github.com/elastic/logstash/pull/14212[#14212]
+* [docs] Correctly reference the base OS (ubuntu) for docker https://github.com/elastic/logstash/pull/14214[#14214]
+* Backport PR #13945 to 8.3: update databind to 2.13.3 https://github.com/elastic/logstash/pull/14223[#14223]
+* Backport PR #14175 to 8.3: Refactor: avoid loading polyglot https://github.com/elastic/logstash/pull/14227[#14227]
+
+=== Logstash Commits between 8.3 and 8.2.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.2.3..8.3"
+
+8d96e3078 - (HEAD -> 8.3, origin/8.3) File system mismatch when each pipeline uses separate file system. (#14212) (#14273) (65 seconds ago) <github-actions[bot]>
+9bd8b8c9d - Fix pq size checking to not stop the pipeline (#14258) (#14268) (26 hours ago) <github-actions[bot]>
+96af94f5b - Deps: update manticore due JRuby 9.3 issue (#14247) (3 days ago) <Karol Bucek>
+0e86a4247 - Fix exception of i18n in logstash-keystore (#14246) (#14250) (4 days ago) <github-actions[bot]>
+259153bcc - [docs] Correctly reference the base OS (ubuntu) for docker (#14214) (#14242) (8 days ago) <github-actions[bot]>
+9c86635d2 - Update plugin versions in gemfile lock for 8.3.0 (#14233) (9 days ago) <github-actions[bot]>
+d4e3c6d17 - Remove startup.options and system-install docs (#14197) (#14201) (9 days ago) <github-actions[bot]>
+979016356 - Fix deprecation logging of password policy. (#14159) (#14228) (9 days ago) <github-actions[bot]>
+6036b3d14 - Refactor: avoid loading polyglot (#14175) (#14227) (9 days ago) <github-actions[bot]>
+70eb25dd2 - update jackson and jackson-databind to 2.13.3 (#13945) (#14223) (9 days ago) <github-actions[bot]>
+a78aebcd1 - Doc: Add pipeline improvements to release notes (#14193) (2 weeks ago) <Karen Metts>
+e48ee161e - Deps: lock faraday to 1.x due elasticsearch-transport (#14185) (#14187) (3 weeks ago) <Karol Bucek>
+d1f52eac2 - Doc: Add placeholder for 8.3 release notes (#14180) (3 weeks ago) <Karen Metts>
+6206cdb47 - Release notes for 8.2.2 (#14168) (#14179) (3 weeks ago) <github-actions[bot]>
+2190f3991 - Doc: Add missing release notes (#14169) (#14170) (3 weeks ago) <github-actions[bot]>
+1a70bd578 -  Backport PR #14148 to 8.3: Forward port of release notes for 8.2.0 and 8.2.1 #14167 (3 weeks ago) <github-actions[bot]>
+d1269c05e - Handle out-of-date firstUnackedPageNum in head checkpoint (#14147) (#14165) (3 weeks ago) <github-actions[bot]>
+6bd986124 - Update plugin versions in gemfile lock for 8.3.0 (#14163) (3 weeks ago) <github-actions[bot]>
+681939267 - Introduce 8.3.0 Gemfile lock (3 weeks ago) <João Duarte>
+9daffad8a - update release ci 7.17.4 (#14062) (3 weeks ago) <kaisecheng>
+7dff55c8b - Update CI versions after 8.2.1 (#14137) (3 weeks ago) <Andrea Selva>
+e3988f534 - Revert accidental (#14158) (3 weeks ago) <Ry Biesemeyer>
+67cdbb050 - Improve log readability and remove extra logging. (3 weeks ago) <mashhur>
+46b71b1cd - Password policy deprecation log fixup. (3 weeks ago) <mashhur>
+ea1690d5b - update jdk to 11.0.15+10 (#14152) (3 weeks ago) <Rob Bavey>
+d8454110b - Field Reference: handle special characters (#14044) (3 weeks ago) <Ry Biesemeyer>
+9e2c87a1a - Switch adoptopenjdk url to adoptium (#14098) (3 weeks ago) <Rob Bavey>
+e6520cfee - deps: pin rufus-scheduler to 3.7.x (#14150) (3 weeks ago) <Ry Biesemeyer>
+15dd1babf - Simplifying HTTP basic password policy. (#14105) (3 weeks ago) <Mashhur>
+938db6463 - Add value converters for java.time (#13972) (4 weeks ago) <beirtipol>
+5337cde59 - Add support for ca_trusted_fingerprint in Apache HTTP and Manticore (#14120) (4 weeks ago) <Ry Biesemeyer>
+02c2aec71 - Fix debug output for bin/logstash-plugin (#14132) (4 weeks ago) <Rob Bavey>
+69107a5bc - Simplifies aliass registry marking task config and move into separate class (#14138) (4 weeks ago) <Andrea Selva>
+da68ff380 - This commit avoids unnecessary thread sync of PQ notFull state. (#14129) (4 weeks ago) <kaisecheng>
+205cf4321 - [Doc] queue.max_bytes for all queues (#14128) (4 weeks ago) <kaisecheng>
+2e2dcbb46 - Fixed SignAliasDefinitionsTask task to depend on input yaml registry file (#14126) (4 weeks ago) <Andrea Selva>
+a6e418adf - Doc: Update settings file doc to call out queue type (#14127) (4 weeks ago) <Nicole Albee>
+4209481cc - Add troubleshooting information around using certain versions of the … (#14061) (4 weeks ago) <Rob Bavey>
+4a2268a43 - Update jruby version to `9.3.4.0` (#14114) (4 weeks ago) <Rob Bavey>
+379ebaf1b - Update JVM document to fix issue 13561 (#14099) (4 weeks ago) <RobertShan2000>
+2c7f14d25 - Move JvmOptionParser to separate project (#13657) (4 weeks ago) <Rob Bavey>
+06bca0150 - deps: pin concurrent-ruby pending removal of TimerTask (#14113) (4 weeks ago) <Ry Biesemeyer>
+33328955c - [CPM] Fetch pipelines with wildcard IDs from ES and apply. (#14076) (4 weeks ago) <Mashhur>
+12162cbd8 - Change on_superuser to run_as_superuser to clear a confusion. (#14089) (4 weeks ago) <Mashhur>
+88e607b7b - Revert "Restrict json to avoid 2.6.2 until upstream jruby issue is solved (#14104)" (#14115) (4 weeks ago) <Rob Bavey>
+7641b076f - fix monitoring api integration test with draining queue (#14106) (5 weeks ago) <kaisecheng>
+e72515c87 - Restrict json to avoid 2.6.2 until upstream jruby issue is solved (#14104) (5 weeks ago) <Rob Bavey>
+17d62fa08 - Fix of DLQ stream position retrieval (#14093) (5 weeks ago) <Andrea Selva>
+0af9fb0d5 - Allow metrics update when PQ draining (#13935) (5 weeks ago) <kaisecheng>
+90e7c8864 - [Doc] PQ and DLQ do not support NFS (#14095) (5 weeks ago) <kaisecheng>
+b4c6db29f - Fix hang bug on DLQ test (#14097) (5 weeks ago) <Rob Bavey>
+c9f9c3875 - CI: docs preview comment working, for real (#14094) (5 weeks ago) <Karol Bucek>
+5d46a7238 - CI: improve doc-preview action (#14067) (5 weeks ago) <Karol Bucek>
+1f93672b7 - Ensure pipelines.yaml is loaded safely (#13883) (5 weeks ago) <João Duarte>
+1e3b0a65a - Protected FileChannel open of segment files against NoSuchFileException (#14079) (5 weeks ago) <Andrea Selva>
+092892cdd - Add thread safety around Puma startup/shutdown (#14080) (5 weeks ago) <Rob Bavey>
+6a7077c53 - Add mandatory option to jvm configuration to handle logstash startup … (#14066) (5 weeks ago) <Rob Bavey>
+41cb3d368 - Hide Shutdown Watcher stall message when PQ draining (#13934) (5 weeks ago) <kaisecheng>
+45b7da638 - Refactor: more logging of PQ behavior (#14065) (6 weeks ago) <Karol Bucek>
+09aa7a1aa - Adds DLQ drop counter and last error metrics into management API (#14058) (6 weeks ago) <Andrea Selva>
+229e7ce5e - Introduce a retry mechanism in pipeline-to-pipeline (#14027) (6 weeks ago) <Andrea Selva>
+954d351d5 - Fix flaky test, the writer head segment is not a tail segment (#14073) (6 weeks ago) <Andrea Selva>
+53f23403c - Revert "update jdk to 11.0.15+10 (#14031)" (6 weeks ago) <João Duarte>
+478eb6834 - update jdk to 11.0.15+10 (#14031) (6 weeks ago) <João Duarte>
+2ce081eee - Update releases file with 8.2.0 (6 weeks ago) <João Duarte>
+e02a9e00c - Fix plugin classloading (#14060) (6 weeks ago) <Rob Bavey>
+d8e08e9f2 - Add complex password policy on basic auth (#14045) (6 weeks ago) <Mashhur>
+25796737c - Prevent Logstash from running as root. (#14046) (7 weeks ago) <Mashhur>
+1c851bb15 - Fix geoip database download does not respect http_proxy setting (#14048) (7 weeks ago) <kaisecheng>
+2c5cc00e0 - Doc: Group central mgmt and configuring central mgmt topics (#14050) (7 weeks ago) <Karen Metts>
+c1fe7095c - Implements DLQ storage policy (#13923) (7 weeks ago) <Andrea Selva>
+33b77f02f - Chore: try different version of GH action (#14036) (7 weeks ago) <Karol Bucek>
+e8cd0d303 - Fix stopped pipeline unable to be deleted in registry (#14018) (7 weeks ago) <kaisecheng>
+4e77f1b79 - Make AliasRegistry a singleton (#14002) (7 weeks ago) <Rob Bavey>
+96f7e2949 - ensure puma is at least 5.6.4 (#13944) (7 weeks ago) <João Duarte>
+afc0edca1 - Fix Bundled JDK docs to reflect JDK 11 (#14021) (8 weeks ago) <Andres Rodriguez>
+b16c83681 - Doc: Restructure source files for pipeline configuration (#13990) (8 weeks ago) <Karen Metts>
+2c5b03962 - Doc: Refine content for generated CA in LS-ES security section (#13834) (8 weeks ago) <Karen Metts>
+776b57f15 - Fix/avoid leak secrects in debug log of ifs (#13997) (8 weeks ago) <Andrea Selva>
+0ee3aaa53 - doc: add section on breaking changes to contribution guidelines (#11324) (8 weeks ago) <Ry Biesemeyer>
+0155a2e27 - Update releases file with new 7.17.3 and 8.1.3 versions (#14007) (8 weeks ago) <João Duarte>
+5392ad751 - [doc] Add Logstash to Logstash HTTP example configuration. (9 weeks ago) <Andres Rodriguez>
+76ca3fefa - A structural change for aliased plugin declarations to support alias doc headers. (#13971) (9 weeks ago) <Mashhur>
+1291b5edc - Further improve check on "running pipelines" after SIGHUP (#13995) (9 weeks ago) <Rob Bavey>
+7b2bec2e7 - Fix reload of pipelines via `SIGHUP` (#13994) (9 weeks ago) <Rob Bavey>
+339a67fe3 - Convert Exception during converge to a failed action (#13969) (9 weeks ago) <Rob Bavey>
+5197c8507 - Fix window CI for PQ size checking (#13981) (9 weeks ago) <kaisecheng>
+1d31816a4 - Correct the class reference to the MetricNotFound exception (#13970) (2 months ago) <Andrea Selva>
+fa7b53b58 - Adjust versions.yml to reflect new 7.17.2 and 8.1.2 releases (#13966) (3 months ago) <João Duarte>
+f102b2e87 - Make update strict in version bump github workflow (#13961) (3 months ago) <João Duarte>
+cbb3ffd0d - [doc] Remove references to sysv and upstart scripts when running logstash as a service. (#13953) (3 months ago) <Andres Rodriguez>
+c5ede67fc - Removal of sys-v init.d scripts (#13922) (3 months ago) <Andres Rodriguez>
+6b930aa00 - Remove conservative flag from version bump workflow (#13952) (3 months ago) <João Duarte>
+d339563ea - bump to 8.3.0 (#13950) (3 months ago) <João Duarte>
+5289d4988 - add 8.2 to version bump github workflow (3 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.2.3..8.3 *.release"
+Changed plugin versions:
+logstash-codec-avro: 3.3.1 -> 3.4.0
+logstash-filter-elasticsearch: 3.11.1 -> 3.12.0
+logstash-filter-fingerprint: 3.3.2 -> 3.4.0
+logstash-filter-translate: 3.3.0 -> 3.3.1
+logstash-input-beats: 6.3.1 -> 6.4.0
+logstash-input-elasticsearch: 4.12.3 -> 4.14.0
+logstash-input-http: 3.5.1 -> 3.6.0
+logstash-input-s3: 3.8.3 -> 3.8.4
+logstash-input-sqs: 3.3.0 -> 3.3.2
+logstash-input-tcp: 6.2.7 -> 6.3.0
+logstash-integration-jdbc: 5.2.5 -> 5.3.0
+logstash-integration-kafka: 10.10.0 -> 10.12.0
+logstash-mixin-aws: 4.4.1 -> 5.1.0
+logstash-mixin-ca_trusted_fingerprint_support: 1.0.1 -> 1.0.1
+logstash-mixin-scheduler: 1.0.0 -> 1.0.0
+logstash-output-elasticsearch: 11.4.1 -> 11.6.0
+logstash-output-tcp: 6.0.2 -> 6.1.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Avro Codec - 3.4.0*
+
+* Add `encoding` option to select the encoding of Avro payload, could be `binary` or `base64` https://github.com/logstash-plugins/logstash-codec-avro/pull/39[#39]
+
+*Elasticsearch Filter - 3.12.0*
+
+* Added support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/158[#158]
+
+*Fingerprint Filter - 3.4.0*
+
+* Added support for 128bit murmur variant https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/66[#66].
+
+*Translate Filter - 3.3.1*
+
+* Refactor: reading .csv for JRuby 9.3 compatibility https://github.com/logstash-plugins/logstash-filter-translate/pull/94[#94]
+
+    NOTE: these changes are essential for the plugin to work properly under Logstash 8.3 and later.
+
+*Beats Input - 6.4.0*
+
+* Feat: review and deprecate ssl protocol/cipher settings https://github.com/logstash-plugins/logstash-input-beats/pull/450[#450]
+
+*Elasticsearch Input - 4.14.0*
+
+* Refactor: switch to using scheduler mixin https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/177[#177]
+
+* Added support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/178[#178]
+
+*Http Input - 3.6.0*
+
+* Feat: review and deprecate ssl protocol/cipher related settings https://github.com/logstash-plugins/logstash-input-http/pull/151[#151]
+
+*S3 Input - 3.8.4*
+
+* Refactoring, reuse code to manage `additional_settings` from mixin-aws [#n](https://github.com/logstash-plugins/logstash-input-s3/pull/n)
+
+*Sqs Input - 3.3.2*
+
+* Fix an issue that prevented timely shutdown when subscribed to an inactive queue
+
+* Refactoring: used logstash-mixin-aws to leverage shared code to manage `additional_settings` https://github.com/logstash-plugins/logstash-input-sqs/pull/64[#64]
+
+*Tcp Input - 6.3.0*
+
+* Feat: ssl_supported_protocols (TLSv1.3) + ssl_cipher_suites https://github.com/logstash-plugins/logstash-input-tcp/pull/198[#198]
+
+*Jdbc Integration - 5.3.0*
+
+* Refactor: start using scheduler mixin https://github.com/logstash-plugins/logstash-integration-jdbc/pull/110[#110]
+
+* Fix: change default path of 'last_run_metadata_path' to be rooted in the LS data.path folder and not in $HOME https://github.com/logstash-plugins/logstash-integration-jdbc/pull/106[#106]
+
+*Kafka Integration - 10.12.0*
+
+* bump kafka client to 2.8.1 https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/115[#115]
+
+* Feat: added connections_max_idle_ms setting for output https://github.com/logstash-plugins/logstash-integration-kafka/pull/118[#118]
+* Refactor: mixins to follow shared mixin module naming
+
+* Update CHANGELOG.md https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/114[#114]
+
+*Aws Mixin - 5.1.0*
+
+* Add support for 'addition_settings' configuration options used by S3 and SQS input plugins https://github.com/logstash-plugins/logstash-mixin-aws/pull/53[#53].
+
+* Drop support for aws-sdk-v1
+
+*Ca_trusted_fingerprint_support Mixin - 1.0.1*
+
+*Scheduler Mixin - 1.0.0*
+
+*Elasticsearch Output - 11.6.0*
+
+* Added support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1074[#1074]
+
+* Feat: add ssl_supported_protocols option https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1055[#1055]
+
+* [DOC] Add `v8` to supported values for ecs_compatiblity defaults https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1059[#1059]
+
+*Tcp Output - 6.1.0*
+
+* Feat: ssl_supported_protocols (TLSv1.3) https://github.com/logstash-plugins/logstash-output-tcp/pull/47[#47]
+* Fix: close server and client sockets on plugin close
+
+
 
 [[features-8.3.0]]
 ==== New features and enhancements
