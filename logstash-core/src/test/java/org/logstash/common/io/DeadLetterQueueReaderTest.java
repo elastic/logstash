@@ -37,7 +37,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -980,7 +983,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private List<Path> listSegmentsSorted(Path dir) throws IOException {
-        return Files.list(dir)
+        return DeadLetterQueueWriter.getSegmentPaths(dir)
                 .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                 .collect(Collectors.toList());
     }
@@ -991,6 +994,13 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testReaderCleanMultipleConsumedSegmentsAfterMarkForDelete() throws IOException, InterruptedException {
         int eventPerSegment = prepareFilledSegmentFiles(3);
+        // insert also a .lock file, must be the oldest one
+        Path lockFile = Files.createFile(dir.resolve(".lock"));
+        FileTime oneSecondAgo = FileTime.from(Instant.now().minusMillis(1_000));
+        Files.setAttribute(lockFile, "basic:lastModifiedTime", oneSecondAgo); // this attribute is used in segments sorting
+        // simulate a writer's segment head
+        Files.createFile(dir.resolve("4.log.tmp"));
+
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
             verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
 
@@ -1004,6 +1014,15 @@ public class DeadLetterQueueReaderTest {
             reader.markForDelete();
 
             verifySegmentFiles(listSegmentsSorted(dir), "3.log");
+
+            // verify no other files are removed
+            try (Stream<Path> stream = Files.list(dir)) {
+                Set<String> files = stream
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .collect(Collectors.toSet());
+                assertTrue("No segments file remain untouched", files.containsAll(Arrays.asList(".lock", "4.log.tmp")));
+            }
         }
     }
 }
