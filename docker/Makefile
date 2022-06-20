@@ -148,7 +148,7 @@ venv: requirements.txt
 	pyenv install --skip-existing $(PY_VERSION) &&\
 	pyenv local $(PY_VERSION) &&\
 	python3 -mvenv venv && \
-	for i in $(seq 0 5); do sleep $i; pip install -r requirements.txt && break; done &&\
+	for i in $(seq 0 5); do sleep "$i"; pip install -r requirements.txt && break; done &&\
 	touch venv
 
 # Make a Golang container that can compile our env2yaml tool.
