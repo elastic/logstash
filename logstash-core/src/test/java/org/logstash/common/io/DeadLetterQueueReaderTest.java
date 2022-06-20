@@ -27,8 +27,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
+import org.logstash.LockException;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
+import org.mockito.Matchers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -61,6 +63,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -1022,6 +1025,18 @@ public class DeadLetterQueueReaderTest {
                         .map(Path::toString)
                         .collect(Collectors.toSet());
                 assertTrue("No segments file remain untouched", files.containsAll(Arrays.asList(".lock", "4.log.tmp")));
+            }
+        }
+    }
+
+    @Test
+    @SuppressWarnings("try")
+    public void testReaderLockProhibitMultipleInstances() throws IOException {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            try (DeadLetterQueueReader secondReader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            } catch (LockException lockException) {
+                // ok it's expected to happen here
+                assertThat(lockException.getMessage(), matchesRegex(".*Lock held.*dlq_reader\\.lock"));
             }
         }
     }
