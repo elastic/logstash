@@ -30,7 +30,6 @@ import org.logstash.Event;
 import org.logstash.LockException;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
-import org.mockito.Matchers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -956,7 +955,7 @@ public class DeadLetterQueueReaderTest {
             }
 
             // Verify
-            Set<String> segments = DeadLetterQueueWriter.getSegmentPaths(dir)
+            Set<String> segments = DeadLetterQueueWriter.listSegmentPaths(dir)
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .collect(Collectors.toSet());
@@ -977,7 +976,7 @@ public class DeadLetterQueueReaderTest {
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
 
             // verify
-            Set<Path> segmentFiles = DeadLetterQueueWriter.getSegmentPaths(dir).collect(Collectors.toSet());
+            Set<Path> segmentFiles = DeadLetterQueueWriter.listSegmentPaths(dir).collect(Collectors.toSet());
             assertEquals(Set.of(lastSegmentPath), segmentFiles);
         }
     }
@@ -991,7 +990,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private List<Path> listSegmentsSorted(Path dir) throws IOException {
-        return DeadLetterQueueWriter.getSegmentPaths(dir)
+        return DeadLetterQueueWriter.listSegmentPaths(dir)
                 .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                 .collect(Collectors.toList());
     }

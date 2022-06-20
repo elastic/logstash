@@ -114,7 +114,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.add(getStartupQueueSize());
 
         cleanupTempFiles();
-        currentSegmentIndex = getSegmentPaths(queuePath)
+        currentSegmentIndex = listSegmentPaths(queuePath)
                 .map(s -> s.getFileName().toString().split("\\.")[0])
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
@@ -173,7 +173,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    static Stream<Path> getSegmentPaths(Path path) throws IOException {
+    static Stream<Path> listSegmentPaths(Path path) throws IOException {
         return listFiles(path, ".log");
     }
 
@@ -223,7 +223,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = getSegmentPaths(queuePath)
+        final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
         if (!oldestSegment.isPresent()) {
             throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
@@ -297,7 +297,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private long getStartupQueueSize() throws IOException {
-        return getSegmentPaths(queuePath)
+        return listSegmentPaths(queuePath)
                 .mapToLong((p) -> {
                     try {
                         return Files.size(p);

@@ -67,7 +67,7 @@ import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
+import static org.logstash.common.io.DeadLetterQueueWriter.listSegmentPaths;
 
 public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
@@ -94,7 +94,7 @@ public final class DeadLetterQueueReader implements Closeable {
         this.segments = new ConcurrentSkipListSet<>(
                 Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
-        segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+        segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
         this.cleanConsumed = cleanConsumed;
         if (cleanConsumed && segmentCallback == null) {
             throw new IllegalArgumentException("When cleanConsumed is enabled must be passed also a valid segment listener");
@@ -182,11 +182,11 @@ public final class DeadLetterQueueReader implements Closeable {
     private void pollSegmentsOnWatch(WatchKey key) throws IOException {
         for (WatchEvent<?> watchEvent : key.pollEvents()) {
             if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
             } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
                 final int oldSize = segments.size();
                 segments.clear();
-                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
                 logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
             }
             key.reset();
@@ -343,7 +343,7 @@ public final class DeadLetterQueueReader implements Closeable {
         final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
-        try (final Stream<Path> segmentFiles = DeadLetterQueueWriter.getSegmentPaths(queuePath)) {
+        try (final Stream<Path> segmentFiles = DeadLetterQueueWriter.listSegmentPaths(queuePath)) {
             segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
                   .forEach(this::deleteSegment);
         }
