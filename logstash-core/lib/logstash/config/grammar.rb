@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "treetop/runtime"
+require "treetop"
 require "logstash/config/config_ast"
 
 module LogStashConfig

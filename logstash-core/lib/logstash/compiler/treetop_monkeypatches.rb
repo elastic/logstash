@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'treetop/runtime'
-
 class Treetop::Runtime::SyntaxNode
   def get_meta(key)
     @ast_metadata ||= {}

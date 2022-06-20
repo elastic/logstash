@@ -1,4 +1,4 @@
-require "treetop/runtime"
+require "treetop"
 require "logstash/compiler/lscl.rb"
 
 grammar LogStashCompilerLSCLGrammar
