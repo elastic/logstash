@@ -365,7 +365,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.4.3)
+    logstash-input-azure_event_hubs (1.4.4)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -384,7 +384,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-dead_letter_queue (1.1.11)
+    logstash-input-dead_letter_queue (1.1.12)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-elasticsearch (4.14.0)
@@ -455,7 +455,7 @@ GEM
       mail (~> 2.6.3)
       mime-types (= 2.6.2)
       stud (~> 0.0.22)
-    logstash-input-jms (3.2.1-java)
+    logstash-input-jms (3.2.2-java)
       jruby-jms (>= 1.2.0)
       logstash-codec-json (~> 3.0)
       logstash-codec-plain (~> 3.0)
@@ -639,7 +639,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
       stud
-    logstash-output-s3 (4.3.5)
+    logstash-output-s3 (4.3.7)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 4.3.0)
