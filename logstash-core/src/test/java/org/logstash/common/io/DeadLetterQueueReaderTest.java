@@ -955,7 +955,12 @@ public class DeadLetterQueueReaderTest {
                 reader.markForDelete();
             }
 
-            assertEquals(1, Files.list(dir).count());
+            // Verify
+            Set<String> segments = DeadLetterQueueWriter.getSegmentPaths(dir)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .collect(Collectors.toSet());
+            assertEquals("Only head segment file MUST be present", Set.of("2.log"), segments);
             assertTrue("Reader's client must be notified of the segment deletion", callback.notified);
         }
     }
@@ -972,8 +977,8 @@ public class DeadLetterQueueReaderTest {
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
 
             // verify
-            Set<Path> segmentFiles = Files.list(dir).collect(Collectors.toSet());
-            assertEquals(Collections.singleton(lastSegmentPath), segmentFiles);
+            Set<Path> segmentFiles = DeadLetterQueueWriter.getSegmentPaths(dir).collect(Collectors.toSet());
+            assertEquals(Set.of(lastSegmentPath), segmentFiles);
         }
     }
 
