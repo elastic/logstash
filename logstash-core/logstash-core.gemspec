@@ -78,6 +78,13 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
   gem.add_dependency 'tzinfo-data' #(MIT license)
 
+  # NOTE: plugins now avoid using **rufus-scheduler** directly, if logstash-core would find itself in a need
+  # to use rufus than preferably the **logstash-mixin-scheduler** should be changed to work with non-plugins.
+  #
+  # Using the scheduler directly might lead to issues e.g. when join-ing, see:
+  # https://github.com/logstash-plugins/logstash-mixin-scheduler/blob/v1.0.1/lib/logstash/plugin_mixins/scheduler/rufus_impl.rb#L85=
+  # and https://github.com/elastic/logstash/issues/13773
+
   # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
   # SEE: https://github.com/ruby/racc/issues/172
   gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
