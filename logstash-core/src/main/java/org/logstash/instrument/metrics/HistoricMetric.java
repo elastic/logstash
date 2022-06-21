@@ -71,7 +71,10 @@ public class HistoricMetric<T extends Number> {
         this(clock, metric, null);
     }
 
-    // TODO: recording of an HistoricMetric will need to be scheduled on a repeating cadence
+    /**
+     * Capture the current values of the linked metrics
+     * TODO: capturing of an HistoricMetric will need to be scheduled on a repeating cadence
+     */
     public void capture() {
         capture(clock.instant(), numeratorMetric.getValue(), denominatorMetric.getValue());
     }
@@ -93,14 +96,26 @@ public class HistoricMetric<T extends Number> {
         compact();
     }
 
+    // We do not need entries between our earliest capture and the one
+    // referenced by our 15-minutes-ago quick reference, so we compact
+    // our linked list to free the nodes in between.
     private void compact() {
-        final Capture quick_15 = quickFifteenMinutes.capture.get();
-        final Capture quick_lifetime = quickLifetime.capture.get();
-        if ((Objects.isNull(quick_15) == false) && (Objects.isNull(quick_lifetime) == false)) {
-            quick_lifetime.next.set(quick_15);
-        }
+        final Capture earliest_capture = quickLifetime.capture.get();
+        if (Objects.isNull(earliest_capture)) { return; }
+
+        final Capture fifteen_minutes_ago = quickFifteenMinutes.capture.get();
+        if (Objects.isNull(fifteen_minutes_ago)) { return; }
+
+        earliest_capture.next.set(fifteen_minutes_ago);
     }
 
+    /**
+     * Get the available calculated rates, possibly performing a capture if
+     * this {@link HistoricMetric} has become stale.
+     *
+     * @return a {@code Map<String, Double>} of rates made available by this {@link HistoricMetric}.
+     *         Rates that cannot be computed due to insufficient data points will not be included.
+     */
     public Map<String,Double> availableRates() {
         // staleness safety mechanism ensures at least one recent-ish capture
         final Instant lc = lastCaptured.get();
@@ -161,9 +176,9 @@ public class HistoricMetric<T extends Number> {
         // returns null if this node is not older than the threshold
         Capture seekAhead(final Instant threshold) {
             Capture youngestEligible = null;
-            Capture candidate = this;
+            Capture candidate = Objects.isNull(this.timestamp) ? this.next.get() : this;
 
-            while ((candidate != null) && (candidate.timestamp != null) && candidate.timestamp.isBefore(threshold)) {
+            while ((candidate != null) && candidate.timestamp.isBefore(threshold)) {
                 youngestEligible = candidate;
                 candidate = candidate.next.get();
             }
@@ -198,10 +213,11 @@ public class HistoricMetric<T extends Number> {
     }
 
     /**
-     * A QuickLifetimeReference is a special kind of QuickReference
+     * A QuickLifetimeReference is a special kind of QuickReference that is rotated once to the first usable capture,
+     * causing all subsequent rotations to be a no-op.
      */
     private class QuickLifetimeReference extends QuickReference {
-        public QuickLifetimeReference(String description) {
+        QuickLifetimeReference(String description) {
             super(description, null);
         }
 
