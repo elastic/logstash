@@ -19,10 +19,9 @@ require "spec_helper"
 require "logstash/settings"
 
 describe LogStash::Setting::SplittableStringArray do
-  let(:element_class) { String }
   let(:default_value) { [] }
 
-  subject { described_class.new("testing", element_class, default_value) }
+  subject { described_class.new("testing", default_value) }
 
   before do
     subject.set(candidate)
@@ -55,7 +54,7 @@ describe LogStash::Setting::SplittableStringArray do
   end
 
   context "when defining a custom tokenizer" do
-    subject { described_class.new("testing", element_class, default_value, strict=true, ";") }
+    subject { described_class.new("testing", default_value, strict=true, ";") }
 
     let(:candidate) { "hello;ninja" }
 

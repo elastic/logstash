@@ -33,7 +33,7 @@ module LogStash module Modules class LogStashConfig
 
   def configured_inputs(default = [], aliases = {})
     name = "var.inputs"
-    values = get_setting(LogStash::Setting::SplittableStringArray.new(name, String, default))
+    values = get_setting(LogStash::Setting::SplittableStringArray.new(name, default))
 
     aliases.each { |k,v| values << v if values.include?(k) }
     aliases.invert.each { |k,v| values << v if values.include?(k) }
@@ -93,7 +93,7 @@ module LogStash module Modules class LogStashConfig
   end
 
   def elasticsearch_output_config(type_string = nil)
-    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", String, ["localhost:9200"])))
+    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", ["localhost:9200"])))
     index = "#{@name}-#{setting("var.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
     user = @settings["var.elasticsearch.username"]
     password = @settings["var.elasticsearch.password"]

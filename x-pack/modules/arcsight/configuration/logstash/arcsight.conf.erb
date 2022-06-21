@@ -18,8 +18,8 @@ input {
   <% if defined_inputs.include?("kafka") %>
   kafka {
     codec => cef
-    bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", String, "localhost:39092"))) %>
-    topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", String, ["eb-cef"]))) %>
+    bootstrap_servers => <%= csv_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.bootstrap_servers", "localhost:39092"))) %>
+    topics => <%= array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.input.kafka.topics", ["eb-cef"]))) %>
     <%= LogStash::Arcsight::ConfigHelper.kafka_input_ssl_sasl_config(self) %>
     type => syslog
   }

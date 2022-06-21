@@ -743,10 +743,9 @@ module LogStash
     class SplittableStringArray < ArrayCoercible
       DEFAULT_TOKEN = ","
 
-      def initialize(name, klass, default, strict=true, tokenizer = DEFAULT_TOKEN, &validator_proc)
-        @element_class = klass
+      def initialize(name, default, strict=true, tokenizer = DEFAULT_TOKEN, &validator_proc)
         @token = tokenizer
-        super(name, klass, default, strict, &validator_proc)
+        super(name, ::String, default, strict, &validator_proc)
       end
 
       def coerce(value)
