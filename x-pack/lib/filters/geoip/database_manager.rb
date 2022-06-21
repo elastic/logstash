@@ -7,16 +7,12 @@ require_relative "util"
 require_relative "database_metadata"
 require_relative "download_manager"
 require_relative "database_metric"
-require "faraday"
 require "json"
-require "zlib"
 require "stud/try"
-require "down"
-require "rufus/scheduler"
 require "singleton"
-require "concurrent"
+require "concurrent/array"
+require "concurrent/timer_task"
 require "thread"
-java_import org.apache.logging.log4j.ThreadContext
 
 # The mission of DatabaseManager is to ensure the plugin running an up-to-date MaxMind database and
 #   thus users are compliant with EULA.
@@ -35,10 +31,13 @@ module LogStash module Filters module Geoip class DatabaseManager
   include LogStash::Filters::Geoip::Util
   include Singleton
 
+  java_import org.apache.logging.log4j.ThreadContext
+
   private
   def initialize
     @triggered = false
     @trigger_lock = Mutex.new
+    @download_interval = 24 * 60 * 60 # 24h
   end
 
   def setup
@@ -205,21 +204,25 @@ module LogStash module Filters module Geoip class DatabaseManager
       return if @triggered
       setup
       execute_download_job
-      # check database update periodically. trigger `call` method
-      @scheduler = Rufus::Scheduler.new({:max_work_threads => 1})
-      @scheduler.every('24h', self)
+      # check database update periodically:
+
+      @download_task = Concurrent::TimerTask.execute(execution_interval: @download_interval) do
+        LogStash::Util.set_thread_name 'geoip database download task'
+        database_update_check # every 24h
+      end
       @triggered = true
     end
   end
 
   public
 
-  # scheduler callback
-  def call(job, time)
-    logger.debug "scheduler runs database update check"
+  # @note this method is expected to execute on a separate thread
+  def database_update_check
+    logger.debug "running database update check"
     ThreadContext.put("pipeline.id", nil)
     execute_download_job
   end
+  private :database_update_check
 
   def subscribe_database_path(database_type, database_path, geoip_plugin)
     if database_path.nil?
