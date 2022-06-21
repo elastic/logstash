@@ -1,8 +1,10 @@
 package org.logstash.instrument.metrics;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -11,15 +13,17 @@ import java.util.concurrent.atomic.AtomicReference;
  * An {@link HistoricMetric} contains sufficient historic information about a metric to provide
  * rate-of-change information at several granularities (current, 1-minute, 5-minute, 15-minute, and lifetime).
  *
- * It is threadsafe, optimized first for read performance, and second for write performance.
+ * It is threadsafe and nonblocking, optimized first for read performance, and second for write performance.
  *
- * Its implementation is much like a singularly-linked list, with older entries linking to newer entries.
- * This directionality allows us to keep track of nodes of a certain age, and to efficiently rotate those links
- * to new nodes at insertion time. We are tolerant to a reasonable magnitude of out-of-order insertions.
+ * Its implementation is much like a singly-linked list, with new entries being inserted at the tail.
+ * This directionality allows us to maintain an efficient insertion-time cache of nodes by age and
+ * to compact expired entries without full iteration.
+ * It is tolerant to a reasonable magnitude of out-of-order insertions.
  *
  * At insertion time, we maintain links to useful nodes, rotating them forward as needed to avoid full-scale
  * iteration in either read- or write-modes. These nodes are defined as the _youngest_ node satisfying their
- * category's minimum time threshold.
+ * category's minimum time threshold, and their accuracy is dependent on regularly-scheduled _captures_ of the
+ * underlying metrics.
  */
 public class HistoricMetric<T extends Number> {
 
@@ -30,18 +34,24 @@ public class HistoricMetric<T extends Number> {
     private final Metric<T> numeratorMetric;
     private final Metric<Long> denominatorMetric;
 
-    // Oldest and Newest nodes in linked list
-    private final Node origin;
-    private final AtomicReference<Node> newest;
+    // Oldest and Newest nodes in linked list. Oldest *usable* capture is head.next
+    private final Capture head = new Capture(null, null, null);
+    private final AtomicReference<Capture> tail = new AtomicReference<>(head);
 
     // Important intermediate nodes in our linked list
-    private final AtomicReference<Node> quickInstant = new AtomicReference<>();
-    private final AtomicReference<Node> quickOneMinute = new AtomicReference<>();
-    private final AtomicReference<Node> quickFiveMinutes = new AtomicReference<>();
-    private final AtomicReference<Node> quickFifteenMinutes = new AtomicReference<>();
+    private final QuickReference quickInstant = new QuickReference("current", Duration.ofSeconds(1));
+    private final QuickReference quickOneMinute = new QuickReference("last_1_minute", Duration.ofMinutes(1));
+    private final QuickReference quickFiveMinutes = new QuickReference("last_5_minutes", Duration.ofMinutes(5));
+    private final QuickReference quickFifteenMinutes = new QuickReference("last_15_minutes", Duration.ofMinutes(15));
+    private final QuickReference quickLifetime = new QuickLifetimeReference("lifetime");
 
-    // Safeguard reads against dead writer
-    private final AtomicReference<Instant> lastRecord = new AtomicReference<>();
+    // update- and retrieve-order quick reference lists.
+    private final List<QuickReference> quickUpdateReferences = List.of(quickLifetime, quickInstant, quickOneMinute, quickFiveMinutes, quickFifteenMinutes);
+    private final List<QuickReference> quickReadReferences =   List.of(quickInstant, quickOneMinute, quickFiveMinutes, quickFifteenMinutes, quickLifetime);
+
+    // Safeguard for reads against a dead writer
+    private final AtomicReference<Instant> lastCaptured = new AtomicReference<>();
+    private static final Duration STALENESS_THRESHOLD = Duration.ofSeconds(10);
 
     public HistoricMetric(Metric<T> numeratorMetric, Metric<Long> denominatorMetric) {
         this(Clock.systemUTC(), numeratorMetric, denominatorMetric);
@@ -52,182 +62,153 @@ public class HistoricMetric<T extends Number> {
     }
 
     HistoricMetric(Clock clock, Metric<T> numeratorMetric, Metric<Long> denominatorMetric) {
-        this.clock = clock;
-        this.numeratorMetric = numeratorMetric;
-        this.denominatorMetric = denominatorMetric;
-
-        // TODO: refactor initial capture out of constructor?
-        this.origin = new Node(clock.instant(), numeratorMetric.getValue(), denominatorMetric.getValue());
-        this.lastRecord.set(this.origin.timestamp);
-        this.newest = new AtomicReference<>(origin);
+        this.clock = Objects.requireNonNull(clock, "clock must not be null");
+        this.numeratorMetric = Objects.requireNonNull(numeratorMetric, "numeratorMetric must not be null");
+        this.denominatorMetric = Objects.requireNonNullElseGet(denominatorMetric, () -> new UptimeMetric(clock, null));
     }
 
     HistoricMetric(Clock clock, Metric<T> metric) {
-        this(clock, metric, new UptimeMetric(clock));
+        this(clock, metric, null);
     }
 
-    // TODO: recording of an HistoricMetric will need to be scheduled
-    public void record() {
-        record(clock.instant(), numeratorMetric.getValue(), denominatorMetric.getValue());
+    // TODO: recording of an HistoricMetric will need to be scheduled on a repeating cadence
+    public void capture() {
+        capture(clock.instant(), numeratorMetric.getValue(), denominatorMetric.getValue());
     }
 
-    void record(final Instant timestamp, final T numerator, final Long denominator) {
-        this.newest.getAndUpdate((previousNewest) -> previousNewest.seekAndPrepend(timestamp, numerator, denominator).getNewest());
-        this.lastRecord.set(timestamp);
+    void capture(final Instant timestamp, final T numerator, final Long denominator) {
+        final Capture capture = new Capture(timestamp, numerator, denominator);
+        final Capture previousTail = this.tail.getAndSet(capture);
+        previousTail.next.set(capture);
 
-        // rotate our quick references in ascending age order, bailing entirely if we are too young
-        if (!rotate(quickInstant, timestamp.minusSeconds(1))) { return; }
-        if (!rotate(quickOneMinute, timestamp.minusSeconds(60))) { return; }
-        if (!rotate(quickFiveMinutes, timestamp.minusSeconds(300))) { return; }
-        if (!rotate(quickFifteenMinutes, timestamp.minusSeconds(900))) { return; }
+        this.lastCaptured.set(timestamp);
+
+        // rotate our quick references in ascending age order,
+        // bailing entirely if we are too young to warrant continuing
+        for (QuickReference quickReference : quickUpdateReferences) {
+            if (quickReference.rotate(timestamp) == false) { return; }
+        }
 
         // trim out elements that are no longer necessary
         compact();
     }
 
-    // returns true IFF our rotation ended up with a non-null rotation reference
-    private boolean rotate(final AtomicReference<Node> rotationReference, final Instant threshold) {
-        Node result = rotationReference.updateAndGet((ref) -> Objects.requireNonNullElse(ref, origin).seekAhead(threshold));
-        return Objects.nonNull(result);
-    }
-
     private void compact() {
-        final Node quick_15 = quickFifteenMinutes.get();
-        if (quick_15 != null) {
-            origin.nextNode.set(quick_15);
+        final Capture quick_15 = quickFifteenMinutes.capture.get();
+        final Capture quick_lifetime = quickLifetime.capture.get();
+        if ((Objects.isNull(quick_15) == false) && (Objects.isNull(quick_lifetime) == false)) {
+            quick_lifetime.next.set(quick_15);
         }
     }
 
     public Map<String,Double> availableRates() {
-        if (lastRecord.get().isBefore(clock.instant().minusSeconds(10))) {
-            record();
+        // staleness safety mechanism ensures at least one recent-ish capture
+        final Instant lc = lastCaptured.get();
+        if (Objects.isNull(lc) || lc.isBefore(clock.instant().minus(STALENESS_THRESHOLD))) {
+            capture();
         }
 
         final Map<String, Double> rates = new HashMap<>();
 
-        final Double current = rateCurrent();
-        if (current != null) {
-            rates.put("current", current);
-        }
-        final Double lastOneMinute = rateLastOneMinute();
-        if (lastOneMinute != null) {
-            rates.put("last_1_minute", lastOneMinute);
-        }
-        final Double lastFiveMinutes = rateLastFiveMinutes();
-        if (lastFiveMinutes != null) {
-            rates.put("last_5_minutes", lastFiveMinutes);
-        }
-        final Double lastFifteenMinutes = rateLastFifteenMinutes();
-        if (lastFifteenMinutes != null) {
-            rates.put("last_15_minutes", lastFifteenMinutes);
+        final Capture tailCapture = tail.get();
+        if (tailCapture == head) {
+            throw new IllegalStateException("No captures to compare!");
         }
 
-        final Double lifetime = rateLifetime();
-        if (lifetime != null) {
-            rates.put("lifetime", lifetime);
+        for (QuickReference quickReference : quickReadReferences) {
+            final Double rate = tailCapture.calculateRate(quickReference.capture.get());
+            if (Objects.nonNull(rate)) {
+                rates.put(quickReference.description, rate);
+            }
         }
 
         return rates;
     }
 
-    protected Double rateCurrent() {
-        return rate(quickInstant);
-    }
-
-    protected Double rateLastOneMinute() {
-        return rate(quickOneMinute);
-    }
-
-    protected Double rateLastFiveMinutes() {
-        return rate(quickFiveMinutes);
-    }
-
-    protected Double rateLastFifteenMinutes() {
-        return rate(quickFifteenMinutes);
-    }
-
-    protected Double rateLifetime() {
-        return rate(origin);
-    }
-
-    private Double rate(final AtomicReference<Node> baselineReference) {
-        return rate(baselineReference.get());
-    }
-
-    private Double rate(final Node baseline) {
-        if (baseline == null) {
-            return null;
-        } else {
-            return newest.get().getRate(baseline);
-        }
-    }
-
-    private class Node {
-        private final AtomicReference<Node> nextNode = new AtomicReference<>();
+    /**
+     * A {@link Capture} is a node in the {@link HistoricMetric}'s internal linked list.
+     *
+     * It maintains the timestamp of capture, along with the numerator and denominator metrics values
+     * at time of capture, so that it can be compared against another {@link Capture} to produce a rate
+     * of numerator growth relative to the denominator.
+     */
+    private class Capture {
+        private final AtomicReference<Capture> next = new AtomicReference<>();
 
         private final T numerator;
         private final Long denominator;
 
         private final Instant timestamp;
 
-        Node(final Instant timestamp, final T numerator, final Long denominator) {
+        Capture(final Instant timestamp, final T numerator, final Long denominator) {
             this.timestamp = timestamp;
             this.numerator = numerator;
             this.denominator = denominator;
         }
 
-        double getRate(final Node baseline) {
+        Double calculateRate(final Capture baseline) {
+            if (Objects.isNull(baseline)) { return null; }
+            if (baseline == this) { return null; }
+
             final double deltaNumerator = this.numerator.doubleValue() - baseline.numerator.doubleValue();
             final long deltaDenominator = this.denominator - baseline.denominator;
 
             return deltaNumerator / deltaDenominator;
         }
 
-        // internal method guarantees we insert at the young end of the singly-linked list, without
-        // strict regard to `timestamp` ordering since we are tolerant to minor variations
-        // and strict ordering would require us to be doubly-linked.
-        Node seekAndPrepend(final Instant timestamp, final T numerator, final Long denominator) {
-            return this.nextNode.updateAndGet(oldNextNode -> {
-               if (oldNextNode == null) {
-                   return new Node(timestamp, numerator, denominator);
-               } else {
-                   oldNextNode.getNewest().seekAndPrepend(timestamp, numerator, denominator);
-                   return oldNextNode;
-               }
-            });
-        }
-
-        Node getNextNode() {
-            return nextNode.get();
-        }
-
-        // seeks forward until no more nodes can be found
-        Node getNewest() {
-            Node youngest = this;
-            Node candidate = this;
-
-            while (candidate != null) {
-                youngest = candidate;
-                candidate = candidate.getNextNode();
-            }
-
-            return youngest;
-        }
-
         // seeks _forward_ on the timeline, returning the _last_ candidate that is older than the provided threshold.
         // because strict insertion order is not guaranteed, this may return an entry that is _near_ the boundary.
         // returns null if this node is not older than the threshold
-        // may return
-        Node seekAhead(final Instant threshold) {
-            Node youngestEligible = null;
-            Node candidate = this;
+        Capture seekAhead(final Instant threshold) {
+            Capture youngestEligible = null;
+            Capture candidate = this;
 
-            while (candidate != null && candidate.timestamp.isBefore(threshold)) {
+            while ((candidate != null) && (candidate.timestamp != null) && candidate.timestamp.isBefore(threshold)) {
                 youngestEligible = candidate;
-                candidate = candidate.getNextNode();
+                candidate = candidate.next.get();
             }
 
             return youngestEligible;
+        }
+    }
+
+    /**
+     * A {@link QuickReference} is effectively a named {@link Capture} for a time-frame relative
+     * to the ever-moving current timestamp.
+     *
+     * It provides functionality for *rotating* forward in the {@link HistoricMetric}'s internal
+     * linked list of {@link Capture}s to ensure it references the youngest {@link Capture} that is
+     * older than its {@code minimumAge}, or {@code null} if there is no qualifying {@link Capture}.
+     */
+    private class QuickReference {
+        protected final AtomicReference<Capture> capture = new AtomicReference<>();
+
+        private final Duration minimumAge;
+        private final String description;
+
+        QuickReference(String description, Duration minimumAge) {
+            this.minimumAge = minimumAge;
+            this.description = description;
+        }
+
+        boolean rotate(final Instant currentTimestamp) {
+            Capture capture = this.capture.updateAndGet(current -> Objects.requireNonNullElse(current, head).seekAhead(currentTimestamp.minus(minimumAge)));
+            return Objects.nonNull(capture);
+        }
+    }
+
+    /**
+     * A QuickLifetimeReference is a special kind of QuickReference
+     */
+    private class QuickLifetimeReference extends QuickReference {
+        public QuickLifetimeReference(String description) {
+            super(description, null);
+        }
+
+        @Override
+        boolean rotate(final Instant currentTimestamp) {
+            Capture capture = this.capture.updateAndGet(current -> Objects.nonNull(current) ? current : head.next.get());
+            return Objects.nonNull(capture);
         }
     }
 }
