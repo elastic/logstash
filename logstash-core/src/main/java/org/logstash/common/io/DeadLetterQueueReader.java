@@ -343,7 +343,7 @@ public final class DeadLetterQueueReader implements Closeable {
         final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
-        try (final Stream<Path> segmentFiles = DeadLetterQueueWriter.listSegmentPaths(queuePath)) {
+        try (final Stream<Path> segmentFiles = listSegmentPaths(queuePath)) {
             segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
                   .forEach(this::deleteSegment);
         }
