@@ -743,7 +743,8 @@ module LogStash
     class SplittableStringArray < ArrayCoercible
       DEFAULT_TOKEN = ","
 
-      def initialize(name, default, strict=true, tokenizer = DEFAULT_TOKEN, &validator_proc)
+      def initialize(name, default, strict=true, possible_strings=[], tokenizer = DEFAULT_TOKEN, &validator_proc)
+        @possible_strings = possible_strings
         @token = tokenizer
         super(name, ::String, default, strict, &validator_proc)
       end
@@ -755,6 +756,14 @@ module LogStash
           []
         else
           value.split(@token).map(&:strip)
+        end
+      end
+
+      protected
+      def validate(value)
+        super(value)
+        if !@possible_strings.empty? && coerce(value).find { |val| !@possible_strings.include?(val) }
+          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
         end
       end
     end

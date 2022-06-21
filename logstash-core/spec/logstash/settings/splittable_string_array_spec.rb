@@ -19,7 +19,7 @@ require "spec_helper"
 require "logstash/settings"
 
 describe LogStash::Setting::SplittableStringArray do
-  let(:default_value) { [] }
+  let(:default_value) { ['default'] }
 
   subject { described_class.new("testing", default_value) }
 
@@ -54,12 +54,36 @@ describe LogStash::Setting::SplittableStringArray do
   end
 
   context "when defining a custom tokenizer" do
-    subject { described_class.new("testing", default_value, strict=true, ";") }
+    let(:default_value) { [] }
+    let(:possible_strings) { [] }
+    subject { described_class.new("testing", default_value, strict=true, possible_strings, ";") }
 
     let(:candidate) { "hello;ninja" }
 
     it "returns an array of string" do
       expect(subject.value).to match(["hello", "ninja"])
+    end
+  end
+
+  context "when defining allowed values" do
+    let(:default_value) { [] }
+    let(:possible_strings) { ['foo', 'bar'] }
+    subject { described_class.new("testing", [], strict=true, possible_strings) }
+
+    let(:candidate) { "bar, foo" }
+
+    it "returns an array of string" do
+      expect(subject.value).to eql ["bar", "foo"]
+    end
+
+    it "setting a valid array value" do
+      expect { subject.set(['bar', 'foo']) }.to_not raise_error(ArgumentError)
+    end
+
+    context "when a value is given outside of possible_values" do
+      it "should raise an ArgumentError" do
+        expect { subject.set('baz') }.to raise_error(ArgumentError)
+      end
     end
   end
 end
