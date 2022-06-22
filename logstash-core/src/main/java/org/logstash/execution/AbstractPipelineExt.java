@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -324,10 +325,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
     /**
      * Convert time strings like 3d or 4h or 5m to a duration
      * */
-    private Duration parseToDuration(String timeStr) {
+    @VisibleForTesting
+    static Duration parseToDuration(String timeStr) {
         final Matcher matcher = Pattern.compile("(?<value>\\d+)\\s*(?<time>[dhms])").matcher(timeStr);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Cannot parse time specification [" + timeStr + "]");
+            throw new IllegalArgumentException("Expected a time specification in the form <number>[d,h,m,s], e.g. 3m, but found [" + timeStr + "]");
         }
         final int value = Integer.parseInt(matcher.group("value"));
         final String timeSpecifier = matcher.group("time");
@@ -336,7 +338,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
             case "d": unit = ChronoUnit.DAYS; break;
             case "h": unit = ChronoUnit.HOURS; break;
             case "m": unit = ChronoUnit.MINUTES; break;
-            default: unit = ChronoUnit.SECONDS;
+            case "s": unit = ChronoUnit.SECONDS; break;
+            default: throw new IllegalStateException("Expected a time unit specification from d,h,m,s but found: [" + timeSpecifier + "]");
         }
         return Duration.of(value, unit);
     }
