@@ -295,14 +295,14 @@ public final class DeadLetterQueueWriter implements Closeable {
             return;
         }
         // extract the newest timestamp from the oldest segment
-        oldestSegmentTimestamp = Optional.of(readTimestampOfLastEventInSegment(oldestSegmentPath.get()));
+        oldestSegmentTimestamp = readTimestampOfLastEventInSegment(oldestSegmentPath.get());
     }
 
     /**
      * Extract the timestamp from the last DLQEntry it finds in the given segment.
      * Start from the end of the latest block, and going backward try to read the next event from its start.
      * */
-    private static Timestamp readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
+    private static Optional<Timestamp> readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
         final int lastBlockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;
         byte[] eventBytes;
         try (RecordIOReader recordReader = new RecordIOReader(segmentPath)) {
@@ -312,11 +312,14 @@ public final class DeadLetterQueueWriter implements Closeable {
                 eventBytes = recordReader.readEvent();
                 blockId--;
             } while (eventBytes == null && blockId >= 0); // no event present in last block, try with the one before
+        } catch (NoSuchFileException nsfex) {
+            // the segment file may have been removed by the clean consumed feature on the reader side
+            return Optional.empty();
         }
         if (eventBytes == null) {
             throw new IllegalStateException("Cannot find a complete event into the segment file: " + segmentPath);
         }
-        return DLQEntry.deserialize(eventBytes).getEntryTime();
+        return Optional.of(DLQEntry.deserialize(eventBytes).getEntryTime());
     }
 
     // package-private for testing
