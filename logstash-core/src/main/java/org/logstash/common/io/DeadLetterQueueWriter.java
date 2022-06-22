@@ -273,19 +273,25 @@ public final class DeadLetterQueueWriter implements Closeable {
         // remove all the old segments that verifies the age retention condition
         boolean cleanNextSegment;
         do {
-            Path beheadedSegment = oldestSegmentPath.orElseThrow(() -> new IllegalStateException("DLQ writer can't find the oldest segment to drop on path: " + queuePath));
-            final long segmentSize = Files.size(beheadedSegment);
-            this.currentQueueSize.add(-segmentSize);
-            try {
-                Files.delete(beheadedSegment);
-                logger.debug("Deleted exceeded retained age segment file {}", beheadedSegment);
-            } catch (NoSuchFileException nsfex) {
-                // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
-                logger.info("File not found {}, maybe removed by the reader pipeline", beheadedSegment);
+            if (oldestSegmentPath.isPresent()) {
+                Path beheadedSegment = oldestSegmentPath.get();
+                deleteTailSegment(beheadedSegment);
             }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
         } while (cleanNextSegment);
+    }
+
+    private void deleteTailSegment(Path segment) throws IOException {
+        final long segmentSize = Files.size(segment);
+        this.currentQueueSize.add(-segmentSize);
+        try {
+            Files.delete(segment);
+            logger.debug("Deleted exceeded retained age segment file {}", segment);
+        } catch (NoSuchFileException nsfex) {
+            // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
+            logger.info("File not found {}, maybe removed by the reader pipeline", segment);
+        }
     }
 
     private void updateOldestSegmentReference() throws IOException {
@@ -295,7 +301,13 @@ public final class DeadLetterQueueWriter implements Closeable {
             return;
         }
         // extract the newest timestamp from the oldest segment
-        oldestSegmentTimestamp = readTimestampOfLastEventInSegment(oldestSegmentPath.get());
+        Optional<Timestamp> foundTimestamp = readTimestampOfLastEventInSegment(oldestSegmentPath.get());
+        if (!foundTimestamp.isPresent()) {
+            // clean also the last segment, because doesn't contain a timestamp (corrupted maybe)
+            // or is not present anymore
+            oldestSegmentPath = Optional.empty();
+        }
+        oldestSegmentTimestamp = foundTimestamp;
     }
 
     /**
@@ -317,7 +329,8 @@ public final class DeadLetterQueueWriter implements Closeable {
             return Optional.empty();
         }
         if (eventBytes == null) {
-            throw new IllegalStateException("Cannot find a complete event into the segment file: " + segmentPath);
+            logger.warn("Cannot find a complete event into the segment file [{}], this is a DLQ segment corruption", segmentPath);
+            return Optional.empty();
         }
         return Optional.of(DLQEntry.deserialize(eventBytes).getEntryTime());
     }
