@@ -108,7 +108,10 @@ public class DeadLetterQueueFactory {
     private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize,
                                                    final Duration flushInterval, final QueueStorageType storageType) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, storageType);
+            return DeadLetterQueueWriter
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
+                    .storageType(storageType)
+                    .build();
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
             return null;
@@ -119,8 +122,11 @@ public class DeadLetterQueueFactory {
                                                    final Duration flushInterval, final QueueStorageType storageType,
                                                    final Duration age) {
         try {
-            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval,
-                    storageType, age);
+            return DeadLetterQueueWriter
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
+                    .storageType(storageType)
+                    .retentionTime(age)
+                    .build();
         } catch (IOException e) {
             logger.error("unable to create dead letter queue writer", e);
             return null;

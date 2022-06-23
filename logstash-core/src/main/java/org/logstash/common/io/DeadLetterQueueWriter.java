@@ -106,30 +106,47 @@ public final class DeadLetterQueueWriter implements Closeable {
     private Optional<Path> oldestSegmentPath;
     private final TemporalAmount retentionTime;
 
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, QueueStorageType.DROP_NEWER);
+    public static final class Builder {
+
+        private final Path queuePath;
+        private final long maxSegmentSize;
+        private final long maxQueueSize;
+        private final Duration flushInterval;
+        private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
+        private Duration retentionTime = null;
+        private Clock clock = Clock.systemDefaultZone();
+
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval) {
+            this.queuePath = queuePath;
+            this.maxSegmentSize = maxSegmentSize;
+            this.maxQueueSize = maxQueueSize;
+            this.flushInterval = flushInterval;
+        }
+
+        public Builder storageType(QueueStorageType storageType) {
+            this.storageType = storageType;
+            return this;
+        }
+
+        public Builder retentionTime(Duration retentionTime) {
+            this.retentionTime = retentionTime;
+            return this;
+        }
+
+        @VisibleForTesting
+        Builder clock(Clock clock) {
+            this.clock = clock;
+            return this;
+        }
+
+        public DeadLetterQueueWriter build() throws IOException {
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock);
+        }
     }
 
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval, final Duration retentionTime) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, QueueStorageType.DROP_NEWER, retentionTime);
-    }
-
-    @VisibleForTesting
-    DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                          final Duration flushInterval, final Duration retentionTime, final Clock clock) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, QueueStorageType.DROP_NEWER, retentionTime, clock);
-    }
-
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval, final QueueStorageType storageType) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, null);
-    }
-
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, Clock.systemDefaultZone());
+    public static Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                                     final Duration flushInterval) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval);
     }
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,

@@ -80,8 +80,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), Duration.ofDays(2), fakeClock)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(Duration.ofDays(2))
+                .clock(fakeClock)
+                .build()) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             assertEquals("Queue size is composed of one just one empty file with version byte", VERSION_SIZE, prevQueueSize);
 
@@ -100,9 +103,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final Duration littleMoreThanRetainedPeriod = retainedPeriod.plusMinutes(1);
         long startTime = fakeClock.instant().minus(littleMoreThanRetainedPeriod).toEpochMilli();
         int messageSize = 0;
-
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), retainedPeriod, fakeClock)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(retainedPeriod)
+                .clock(fakeClock)
+                .build()) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 320 - 1; i++) {
@@ -127,8 +132,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         int messageSize = 0;
 
         final Duration retention = Duration.ofDays(2);
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), retention, fakeClock)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(retention)
+                .clock(fakeClock)
+                .build()) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < 320 - 1; i++) {
@@ -169,8 +177,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         int messageSize = 0;
 
         final Duration retention = Duration.ofDays(2);
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 1 * GB,
-                Duration.ofSeconds(1), retention, fakeClock)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(retention)
+                .clock(fakeClock)
+                .build()) {
 
             // given DLQ with a couple of segments filled of expired events
             // 320 generates 10 Mb of data

@@ -74,7 +74,9 @@ public class DeadLetterQueueWriterTest {
     @Test
     public void testLockFileManagement() throws Exception {
         Path lockFile = dir.resolve(".lock");
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000, Duration.ofSeconds(1));
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build();
         assertTrue(Files.exists(lockFile));
         writer.close();
         assertFalse(Files.exists(lockFile));
@@ -82,9 +84,13 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testFileLocking() throws Exception {
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000, Duration.ofSeconds(1));
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build();
         try {
-            new DeadLetterQueueWriter(dir, 100, 1000, Duration.ofSeconds(1));
+            DeadLetterQueueWriter
+                    .newBuilder(dir, 100, 1_000, Duration.ofSeconds(1))
+                    .build();
             fail();
         } catch (LockException e) {
         } finally {
@@ -96,7 +102,9 @@ public class DeadLetterQueueWriterTest {
     public void testUncleanCloseOfPreviousWriter() throws Exception {
         Path lockFilePath = dir.resolve(".lock");
         boolean created = lockFilePath.toFile().createNewFile();
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000, Duration.ofSeconds(1));
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build();
 
         FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
         try {
@@ -111,7 +119,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testWrite() throws Exception {
-        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000, Duration.ofSeconds(1));
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build();
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         writer.writeEntry(entry);
         writer.close();
@@ -124,7 +134,9 @@ public class DeadLetterQueueWriterTest {
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         DLQEntry dlqEntry = new DLQEntry(dlqEvent, "type", "id", "reason");
 
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 100000, Duration.ofSeconds(1));) {
+        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build()) {
             writer.writeEntry(entry);
             long dlqLengthAfterEvent = dlqLength();
 
@@ -143,7 +155,9 @@ public class DeadLetterQueueWriterTest {
         long MAX_QUEUE_LENGTH = payloadLength * MESSAGE_COUNT;
 
 
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, payloadLength, MAX_QUEUE_LENGTH, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, payloadLength, MAX_QUEUE_LENGTH, Duration.ofSeconds(1))
+                .build()) {
 
             for (int i = 0; i < MESSAGE_COUNT; i++)
                 writer.writeEntry(entry);
@@ -159,7 +173,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testSlowFlush() throws Exception {
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1_000_000, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 1_000_000, Duration.ofSeconds(1))
+                .build()) {
             DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
             writer.writeEntry(entry);
             entry = new DLQEntry(new Event(), "type", "id", "2");
@@ -179,7 +195,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testNotFlushed() throws Exception {
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, 1_000_000_000, Duration.ofSeconds(5))) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, BLOCK_SIZE, 1_000_000_000, Duration.ofSeconds(5))
+                .build()) {
             for (int i = 0; i < 4; i++) {
                 DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
                 writeManager.writeEntry(entry);
@@ -200,7 +218,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testCloseFlush() throws Exception {
-        try (DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1_000_000, Duration.ofHours(1))) {
+        try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 1_000_000, Duration.ofHours(1))
+                .build()) {
             DLQEntry entry = new DLQEntry(new Event(), "type", "id", "1");
             writer.writeEntry(entry);
         }
@@ -234,7 +254,9 @@ public class DeadLetterQueueWriterTest {
         long startTime = System.currentTimeMillis();
 
         int messageSize = 0;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+                .build()) {
 
             // 320 generates 10 Mb of data
             for (int i = 0; i < (320 * 2) - 1; i++) {
@@ -264,8 +286,10 @@ public class DeadLetterQueueWriterTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
         long droppedEvent;
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB,
-                Duration.ofSeconds(1), QueueStorageType.DROP_OLDER)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+                .storageType(QueueStorageType.DROP_OLDER)
+                .build()) {
             prevQueueSize = writeManager.getCurrentQueueSize();
             final int expectedQueueSize = 2 * // number of full segment files
                     FULL_SEGMENT_FILE_SIZE  + // size of a segment file
@@ -299,7 +323,9 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void testRemoveSegmentsOrder() throws IOException {
-        try (DeadLetterQueueWriter sut = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+                .build()) {
             // create some segments files
             Files.createFile(dir.resolve("9.log"));
             Files.createFile(dir.resolve("10.log"));
@@ -328,7 +354,9 @@ public class DeadLetterQueueWriterTest {
         Event bigEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         bigEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(2 * BLOCK_SIZE));
 
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+                .build()) {
             // enqueue a record with size smaller than BLOCK_SIZE
             DLQEntry entry = new DLQEntry(blockAlmostFullEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
             assertEquals("Serialized plus header must not leave enough space for another record header ",
@@ -344,8 +372,10 @@ public class DeadLetterQueueWriterTest {
         // fill the queue to push out the segment with the 2 previous events
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
-        try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10 * MB, 20 * MB,
-                Duration.ofSeconds(1), QueueStorageType.DROP_NEWER)) {
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
+                .storageType(QueueStorageType.DROP_NEWER)
+                .build()) {
 
             long startTime = System.currentTimeMillis();
             // 319 events of 32K generates almost 2 segments of 10 Mb of data
