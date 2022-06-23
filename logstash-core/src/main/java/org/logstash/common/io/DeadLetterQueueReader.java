@@ -106,7 +106,7 @@ public final class DeadLetterQueueReader implements Closeable {
             try {
                 fileLock = FileLockFactory.obtainLock(queuePath, "dlq_reader.lock");
             } catch (LockException ex) {
-                throw new LockException("DLQ reader failed to obtain exclusive access, cause: " + ex.getMessage());
+                throw new LockException("Existing `dlg_reader.lock` file in [" + queuePath + "]. Only one DeadLetterQueueReader with `cleanConsumed` set is allowed per Dead Letter Queue.", ex);
             }
         }
     }
