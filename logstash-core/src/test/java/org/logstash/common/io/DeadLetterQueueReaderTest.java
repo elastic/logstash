@@ -955,7 +955,7 @@ public class DeadLetterQueueReaderTest {
             }
 
             // Verify
-            Set<String> segments = DeadLetterQueueWriter.listSegmentPaths(dir)
+            Set<String> segments = DeadLetterQueueUtils.listSegmentPaths(dir)
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .collect(Collectors.toSet());
@@ -976,7 +976,7 @@ public class DeadLetterQueueReaderTest {
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
 
             // verify
-            Set<Path> segmentFiles = DeadLetterQueueWriter.listSegmentPaths(dir).collect(Collectors.toSet());
+            Set<Path> segmentFiles = DeadLetterQueueUtils.listSegmentPaths(dir).collect(Collectors.toSet());
             assertEquals(Set.of(lastSegmentPath), segmentFiles);
         }
     }
@@ -990,7 +990,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private List<Path> listSegmentsSorted(Path dir) throws IOException {
-        return DeadLetterQueueWriter.listSegmentPaths(dir)
+        return DeadLetterQueueUtils.listSegmentPaths(dir)
                 .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                 .collect(Collectors.toList());
     }

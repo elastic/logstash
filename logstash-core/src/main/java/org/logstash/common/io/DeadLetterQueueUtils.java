@@ -18,11 +18,26 @@
  */
 package org.logstash.common.io;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class DeadLetterQueueUtils {
 
     static int extractSegmentId(Path p) {
         return Integer.parseInt(p.getFileName().toString().split("\\.log")[0]);
+    }
+
+    static Stream<Path> listFiles(Path path, String suffix) throws IOException {
+        try(final Stream<Path> files = Files.list(path)) {
+            return files.filter(p -> p.toString().endsWith(suffix))
+                    .collect(Collectors.toList()).stream();
+        }
+    }
+
+    static Stream<Path> listSegmentPaths(Path path) throws IOException {
+        return listFiles(path, ".log");
     }
 }

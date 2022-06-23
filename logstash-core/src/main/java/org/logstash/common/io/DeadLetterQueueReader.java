@@ -67,7 +67,7 @@ import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static org.logstash.common.io.DeadLetterQueueWriter.listSegmentPaths;
+import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 
 public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
