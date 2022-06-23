@@ -287,7 +287,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.add(-segmentSize);
         try {
             Files.delete(segment);
-            logger.debug("Deleted exceeded retained age segment file {}", segment);
+            logger.debug("Removed segment file {} due to age retention policy", segment);
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
             logger.info("File not found {}, maybe removed by the reader pipeline", segment);
