@@ -401,13 +401,15 @@ public final class DeadLetterQueueReader implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (currentReader != null) {
-            currentReader.close();
-        }
-        this.watchService.close();
-
-        if (this.cleanConsumed) {
-            FileLockFactory.releaseLock(this.fileLock);
+        try {
+            if (currentReader != null) {
+                currentReader.close();
+            }
+            this.watchService.close();
+        } finally {
+            if (this.cleanConsumed) {
+                FileLockFactory.releaseLock(this.fileLock);
+            }
         }
     }
 }
