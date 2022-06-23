@@ -56,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -89,7 +90,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private final QueueStorageType storageType;
-    private LongAdder currentQueueSize;
+    private AtomicLong currentQueueSize;
     private final Path queuePath;
     private final FileLock fileLock;
     private volatile RecordIOWriter currentWriter;
@@ -160,8 +161,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.maxQueueSize = maxQueueSize;
         this.storageType = storageType;
         this.flushInterval = flushInterval;
-        this.currentQueueSize = new LongAdder();
-        this.currentQueueSize.add(getStartupQueueSize());
+        this.currentQueueSize = new AtomicLong(computeQueueSize());
         this.retentionTime = retentionTime;
 
         cleanupTempFiles();
@@ -266,7 +266,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             finalizeSegment(FinalizeWhen.ALWAYS);
         }
-        currentQueueSize.add(currentWriter.writeEvent(record));
+        currentQueueSize.getAndAdd(currentWriter.writeEvent(record));
         lastWrite = Instant.now();
     }
 
@@ -297,11 +297,11 @@ public final class DeadLetterQueueWriter implements Closeable {
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
         } while (cleanNextSegment);
+
+        this.currentQueueSize.set(computeQueueSize());
     }
 
     private void deleteTailSegment(Path segment) throws IOException {
-        final long segmentSize = Files.size(segment);
-        this.currentQueueSize.add(-segmentSize);
         try {
             Files.delete(segment);
             logger.debug("Removed segment file {} due to age retention policy", segment);
@@ -362,7 +362,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
         final Path beheadedSegment = oldestSegment.get();
         final long segmentSize = Files.size(beheadedSegment);
-        currentQueueSize.add(-segmentSize);
+        currentQueueSize.getAndAdd(-segmentSize);
         Files.delete(beheadedSegment);
         logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
     }
@@ -430,16 +430,19 @@ public final class DeadLetterQueueWriter implements Closeable {
         flushScheduler.scheduleAtFixedRate(this::flushCheck, 1L, 1L, TimeUnit.SECONDS);
     }
 
-    private long getStartupQueueSize() throws IOException {
-        return listSegmentPaths(queuePath)
-                .mapToLong((p) -> {
-                    try {
-                        return Files.size(p);
-                    } catch (IOException e) {
-                        throw new IllegalStateException(e);
-                    }
-                } )
+
+    private long computeQueueSize() throws IOException {
+        return listSegmentPaths(this.queuePath)
+                .mapToLong(DeadLetterQueueWriter::safeFileSize)
                 .sum();
+    }
+
+    private static long safeFileSize(Path p) {
+        try {
+            return Files.size(p);
+        } catch (IOException e) {
+            return 0L;
+        }
     }
 
     private void releaseFileLock() {
@@ -457,7 +460,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     private void nextWriter() throws IOException {
         currentWriter = new RecordIOWriter(queuePath.resolve(String.format(TEMP_FILE_PATTERN, ++currentSegmentIndex)));
-        currentQueueSize.increment();
+        currentQueueSize.incrementAndGet();
     }
 
     // Clean up existing temp files - files with an extension of .log.tmp. Either delete them if an existing
