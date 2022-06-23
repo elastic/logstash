@@ -23,13 +23,12 @@ module LogStash
     end
   end
 
-  # Puma uses by default the STDERR an the STDOUT for all his error
-  # handling, the server class accept custom a events object that can accept custom io object,
-  # so I just wrap the logger into an IO like object.
+  # Despite {@link DelegatingLogWriter} Puma still uses log_writer.stderr
+  # @private
   class IOWrappedLogger
-    def initialize(new_logger)
-      @logger_lock = Mutex.new
-      @logger = new_logger
+
+    def initialize(log_writer)
+      @log_writer = log_writer
     end
 
     def sync=(v)
@@ -44,34 +43,96 @@ module LogStash
       # noop
     end
 
-    def logger=(logger)
-      @logger_lock.synchronize { @logger = logger }
-    end
-
     def puts(str)
-      # The logger only accept a str as the first argument
-      @logger_lock.synchronize { @logger.debug(str.to_s) }
+      @log_writer.log(str)
     end
     alias_method :write, :puts
     alias_method :<<, :puts
   end
 
+  # Replacement for Puma's `LogWriter` to redirect all logging to a logger.
+  # @private
+  class DelegatingLogWriter
+
+    # NOTE: for env['rack.errors'] Puma does log_writer.stderr
+    attr_reader :stdout, :stderr
+
+    def initialize(logger)
+      @logger = logger
+      @stdout = @stderr = IOWrappedLogger.new(self)
+    end
+
+    # @overload
+    def log(str)
+      @logger.info(format(str))
+    end
+
+    # @overload
+    def write(str)
+      @logger.debug(str) # raw write - no formatting
+    end
+
+    # @overload
+    def debug(str)
+      @logger.debug? && @logger.debug(format(str))
+    end
+
+    # @overload
+    def format(str)
+      str.to_s # we do not want "[#{$$}] #{str}"
+    end
+
+    # An HTTP connection error has occurred.
+    # +error+ a connection exception, +req+ the request,
+    # and +text+ additional info
+    # @overload
+    def connection_error(error, req, text="HTTP connection error")
+      @logger.error(text, error: error, request: req)
+    end
+
+    # An HTTP parse error has occurred.
+    # +error+ a parsing exception, and +req+ the request.
+    def parse_error(error, req)
+      @logger.warn('HTTP parse error, malformed request', error: error, request: req)
+    end
+
+    # An SSL error has occurred.
+    # @param error <Puma::MiniSSL::SSLError>
+    # @param ssl_socket <Puma::MiniSSL::Socket>
+    # @overload
+    def ssl_error(error, ssl_socket)
+      peer = ssl_socket.peeraddr.last rescue "<unknown>"
+      peer_cert = ssl_socket.peercert&.subject
+      @error_logger.info("SSL error", error: error, peer: peer, peer_cert: peer_cert)
+    end
+
+    # An unknown error has occurred.
+    # +error+ an exception object, +req+ the request,
+    # and +text+ additional info
+    # @overload
+    def unknown_error(error, req=nil, text="Unknown error")
+      @logger.error(text, error: error, request: req)
+    end
+
+    # Log occurred error debug dump.
+    # +error+ an exception object, +req+ the request,
+    # and +text+ additional info
+    # @overload
+    def debug_error(error, req=nil, text="")
+      @logger.debug(text, error: error, request: req)
+    end
+
+  end
+
   # ::Puma::Events#error(str) sends Kernel#exit
   # let's raise something sensible instead.
-  UnrecoverablePumaError = Class.new(RuntimeError)
-  class NonCrashingPumaEvents < ::Puma::Events
-    def error(str)
-      raise UnrecoverablePumaError.new(str)
-    end
-  end
-end
-
-# Reopen the puma class to create a scoped STDERR and STDOUT
-# This operation is thread safe since its done at the class level
-# and force JRUBY to flush his classes cache.
-module Puma
-  STDERR = LogStash::IOWrappedLogger.new(LogStash::NullLogger)
-  STDOUT = LogStash::IOWrappedLogger.new(LogStash::NullLogger)
+  # UnrecoverablePumaError = Class.new(RuntimeError)
+  # TODO what is the new way Puma would exit on error?
+  # class NonCrashingPumaEvents < ::Puma::Events
+  #   def error(str)
+  #     raise UnrecoverablePumaError.new(str)
+  #   end
+  # end
 end
 
 # JRuby (>= 9.2.18.0) added support for getsockopt(Socket::IPPROTO_TCP, Socket::TCP_INFO)

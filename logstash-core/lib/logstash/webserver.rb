@@ -142,11 +142,6 @@ module LogStash
       validate_keystore_access!(@ssl_params.fetch(:keystore_path), @ssl_params.fetch(:keystore_password)) if @ssl_params
       validate_keystore_access!(@ssl_params.fetch(:truststore_path), @ssl_params[:truststore_password]) if @ssl_params && @ssl_params[:truststore_path]
 
-      # wrap any output that puma could generate into a wrapped logger
-      # use the puma namespace to override STDERR, STDOUT in that scope.
-      Puma::STDERR.logger = logger
-      Puma::STDOUT.logger = logger
-
       app = LogStash::Api::RackApp.app(logger, agent, http_environment)
 
       if options.include?(:auth_basic)
@@ -198,10 +193,8 @@ module LogStash
     private
 
     def _init_server
-      io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
-      events = LogStash::NonCrashingPumaEvents.new(io_wrapped_logger, io_wrapped_logger)
-
-      ::Puma::Server.new(@app, events)
+      log_writter = LogStash::DelegatingLogWriter.new(logger)
+      ::Puma::Server.new(@app, log_writter)
     end
 
     def create_server_thread
