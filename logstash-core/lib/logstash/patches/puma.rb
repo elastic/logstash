@@ -18,11 +18,6 @@
 # Patch to replace the usage of STDERR and STDOUT
 # see: https://github.com/elastic/logstash/issues/5912
 module LogStash
-  class NullLogger
-    def self.debug(message)
-    end
-  end
-
   # Despite {@link DelegatingLogWriter} Puma still uses log_writer.stderr
   # @private
   class IOWrappedLogger
@@ -123,16 +118,6 @@ module LogStash
     end
 
   end
-
-  # ::Puma::Events#error(str) sends Kernel#exit
-  # let's raise something sensible instead.
-  # UnrecoverablePumaError = Class.new(RuntimeError)
-  # TODO what is the new way Puma would exit on error?
-  # class NonCrashingPumaEvents < ::Puma::Events
-  #   def error(str)
-  #     raise UnrecoverablePumaError.new(str)
-  #   end
-  # end
 end
 
 # JRuby (>= 9.2.18.0) added support for getsockopt(Socket::IPPROTO_TCP, Socket::TCP_INFO)
