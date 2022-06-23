@@ -282,7 +282,7 @@
 # expired the events could be automatically deleted from the DLQ.
 # The interval could be expressed in days, hours, minutes or seconds, using as postfix notation like 5d,
 # to represent a five days interval.
-# The available units are respectively d, h, m, s for day, hours and so on. If not specified it's considered to be seconds.
+# The available units are respectively d, h, m, s for day, hours, minutes and seconds.
 # If not specified then the DLQ doesn't use any age policy for cleaning events.
 #
 # dead_letter_queue.retain.age: 1d
