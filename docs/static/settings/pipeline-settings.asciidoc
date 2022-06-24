@@ -1,0 +1,17 @@
+// The content for these settings is single sourced from attributes-ls.asciidoc
+
+{pipeline-id}:: {pipeline-id-desc} 
+
+{pipeline-workers}:: {pipeline-workers-desc} 
+
+{pipeline-batchsize}:: {pipeline-batchsize-desc} 
+
+{pipeline-batch-delay}:: {pipeline-batch-delay-desc}
+
+{pipeline-unsafe-shutdown}:: {pipeline-unsafe-shutdown-desc} 
+
+{pipeline-plugin_classloaders}:: {pipeline-plugin_classloaders-desc}
+
+{pipeline-ordered}:: {pipeline-ordered-desc} 
+ 
+{pipeline-ecs_compatibility}:: {pipeline-ecs_compatibility-desc} 

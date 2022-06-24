@@ -1,0 +1,25 @@
+// The content for these settings is single sourced from attributes-ls.asciidoc
+
+{path-config}:: {path-config-desc} 
+
+{config-string}:: {config-string-desc} 
+
+{config-test_and_exit}:: {config-test_and_exit-desc} 
+
+{config-reload-automatic}:: {config-reload-automatic-desc} 
+
+{config-reload-interval}:: {config-reload-interval-desc} 
+
+{config-debug}:: {config-debug-desc}
+
+{config-support_escapes}:: {config-support_escapes-desc}
+
+{config-field-ref-escape-style}:: {config-field-ref-escape-style-desc}
+
+config.field_reference.escape_style:: [Technical preview]. Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`. +
+Current options are:   +
+* `percent`: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`). +
+* `ampersand`: HTML-style `&#`+`DD`+`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`). +
+* `none`: field names containing special characters _cannot_ be referenced. 
++
+NOTE: This feature is in *technical preview* and may change in the future.

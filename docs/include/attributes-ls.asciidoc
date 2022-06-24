@@ -23,14 +23,89 @@ Logstash settings
 :nodename-desc: A descriptive name for the node. Default is machine's hostname.
 
 :pathdata: path.data
-:pathdata-desc: The directory that Logstash and its plugins use for any persistent needs. Default is `LOGSTASH_HOME/data`.
+:pathdata-desc: The directory that Logstash and its plugins use for any persistent needs, such as persistent queue (PQ) data or dead letter queue (DLQ) data. Default is `LOGSTASH_HOME/data`.
 
 //Pipeline settings
 
+:pipeline-id: pipeline.id
+:pipeline-id-desc: The ID of the pipeline. Default: `main`.
+
+:pipeline-workers: pipeline.workers
+:pipeline-workers-desc: Set the number of workers that will, in parallel, execute the filters+outputs stage of the pipeline. Defaults to the number of the host's CPU cores. +
+If you have modified this setting and see that events are backing up, or that the CPU is not saturated, consider increasing this number to better utilize machine processing power. 
+
+:pipeline-batchsize: pipeline.batch.size
+:pipeline-batchsize-desc: The maximum number of events an individual worker thread should collect from inputs before attempting to execute its filters and outputs. +
+Larger batch sizes are generally more efficient, but come at the cost of increased memory overhead. +
+You may need to increase JVM heap space in the `jvm.options` config file. +
+See <<config-setting-files>> for more info. Default is 125.
+
+:pipeline-batch-delay: pipeline.batch.delay
+:pipeline-batch-delay-desc: How long to wait in milliseconds while polling for the next event before dispatching an undersized batch to filters+outputs. Default is 50. 
+
+:pipeline-unsafe-shutdown: pipeline.unsafe_shutdown
+:pipeline-unsafe-shutdown-desc: When set to `true`, forces Logstash to exit during shutdown, even if there are still inflight events in memory. +
+By default, Logstash refuses to quit until all received events have been pushed to the outputs. +
+Default is `false`. + 
+WARNING: Enabling this setting can lead to data loss during shutdown. 
+
+:pipeline-plugin_classloaders: pipeline.plugin_classloaders
+:pipeline-plugin_classloaders-desc:	(Beta) Load Java plugins in independent classloaders to isolate their dependencies. Default is `false`. 
+
+:pipeline-ordered: pipeline.ordered
+:pipeline-ordered-desc: Set the pipeline event ordering. Options are "auto" (default), "true", "false". +
+Setting this value to "auto" automatically enables ordering if the 'pipeline.workers' setting is also set to '1', and disables otherwise. +
+Setting this value to "true" enforces ordering on the pipeline and prevent logstash from starting if there are multiple workers. +
+Setting this value to "false" disables any extra processing necessary for preserving ordering.
+
+:pipeline-ecs_compatibility: pipeline.ecs_compatibility
+:pipeline-ecs_compatibility-desc: Sets the pipeline's default value for `ecs_compatibility`, a setting that is available to plugins that implement an ECS Compatibility mode for use with the Elastic Common Schema. +
+Possible values are `disabled`, `v1`, `v8` (default). +
+Pipelines defined before Logstash 8 operate without ECS in mind. +
+To ensure a migrated pipeline continues to operate as it did before your upgrade, opt-OUT of ECS for the individual pipeline in its `pipelines.yml` definition. +
+Setting this value sets the default for _all_ pipelines, including new ones.
 
 
 //Pipeline config settings
 
+:path-config: path.config
+:path-config-desc: The path to the Logstash pipeline configuration for the main pipeline. +
+If you specify a directory or wildcard, config files are read from the directory in alphabetical order. +
+This setting is platform-specific. See <<dir-layout>> for more info.
+
+:config-string: config.string
+:config-string-desc: A string that contains the pipeline configuration for the main pipeline.
+
+:config-test_and_exit: config.test_and_exit: false
+:config-test_and_exit-desc: When set to `true`, at startup checks to ensure that the configuration is valid and then exits. Logstash can read multiple config files from a directory. +
+Note that grok patterns are not checked for correctness. +
+If you combine this setting with `log.level: debug`, Logstash logs the combined config file, annotating each config block with the source file it came from. +
+Default is `false`. 
+
+:config-reload-automatic: config.reload.automatic
+:config-reload-automatic-desc: Periodically checks to see if the pipeline configuration has changed and reloads the pipeline. +
+This can also be triggered manually through the SIGHUP signal. Default is `false`.
+
+:config-reload-interval: config.reload.interval
+:config-reload-interval-desc: How often to check if the pipeline configuration has changed (in seconds). +
+Note that the unit value (s) is required. Values without a qualifier (such as 60) are treated as nanoseconds. Default is 3s. +
+IMPORTANT: Setting the interval this way is not recommended and might change in later versions.
+
+:config-debug: config.debug: false
+:config-debug-desc: When set to `true`, shows the fully compiled configuration as a debug log message. +
+You must also set log.level: debug. Default is `false`.
+WARNING: The log message will include any password options passed to plugin configs as plaintext, and may result in plaintext passwords appearing in your logs.
+
+:config-support_escapes: config.support_escapes: false
+:config-support_escapes-desc: When enabled, process escaped characters such as \n and \" in strings in the pipeline configuration files.
+
+:config-field-ref-escape-style: config.field_reference.escape_style
+:config-field-ref-escape-style-desc: [Technical preview]. Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`. +
+Current options are `percent`, `ampersand`, `none`. +
+The `percent` option: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`). +
+The `ampersand` option is HTML-style `&#`+`DD`+`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`). +
+The `none` option means that field names containing special characters _cannot_ be referenced. +
+NOTE: This feature is in technical preview and may change in the future.
 
 
 
@@ -70,4 +145,54 @@ To avoid losing data in the persistent queue, you can set queue.checkpoint.write
 :queuecheckpointinterval-desc: Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is 1000. Set to 0 to eliminate periodic checkpoints. 
 
 
+//DLQ settings
 
+
+:dlqenable: dead_letter_queue.enable
+:dlqenable-desc: Flag to turn on dead-letter queue.
+
+
+:dlqmaxbytes: dead_letter_queue.max_bytes
+:dlqmaxbytes-desc: Applies when dead_letter_queue.enable: true. The maximum size of each dead letter queue. +
+Entries will be dropped if they would increase the size of the dead letter queue beyond this value. Default is 1024mb.
+
+:dlqflush_interval: dead_letter_queue.flush_interval
+:dlqflush_interval-desc: Applies when dead_letter_queue.enable: true. +
+The interval in milliseconds a dead letter queue file will be written if no additional DLQ events have been created. +
+A low value means that more, smaller queue files may be written. +
+A larger value introduces more latency between items being "written" to the dead letter queue and available to be read by the dead_letter_queue input.
+Default is 5000.
+
+:dlqstorage_policy: dead_letter_queue.storage_policy
+:dlqstorage_policy-desc: Applies when dead_letter_queue.enable: true. +
+Defines the action to take when the dead_letter_queue.max_bytes is reached.
+Options are "drop_newer" (default) or "drop_older". +
+With drop_newer, messages that were inserted most recently are dropped, logging an error line. With drop_older setting, the oldest messages are dropped as new ones are inserted. + 
+Default value is "drop_newer".
+
+:path.dlq: path.dead_letter_queue
+:path.dlq-desc: If using dead_letter_queue.enable: true, the directory path where the data files will be stored. +
+Default is path.data/dead_letter_queue
+
+
+//Debug Settings
+
+:loglevel: log-level
+:loglevel-desc: Options for log.level are `fatal`, `error`, `warn`, `info` (default), `debug`, `trace`.
+
+:pathlogs: path.logs
+:pathlogs-desc: path.logs
+
+
+// Other Settings 
+
+:allowsuperuser: allow_superuser
+:allowsuperuser-desc: Allow or block running Logstash as superuser (default: true)
+
+:path.plugins: path.plugins
+:path.plugins-desc: Where to find custom plugins
+
+// NOTE to self: Can we move this setting to one of the pipelines sections?  It seems more at home there.
+
+:pipeline-separatelogs: pipeline.separate_logs
+:pipeline-separatelogs-desc: Flag to output log lines of each pipeline to a separate log file. Each log filename contains the pipeline.name. Default is false.

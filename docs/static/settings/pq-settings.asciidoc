@@ -1,0 +1,19 @@
+// The content for these settings is single sourced from attributes-ls.asciidoc
+ 
+NOTE: These settings apply only if `queue.type: persisted`.
+ 
+{pathqueue}:: {pathqueue-desc} {lsyml}
+
+{queuepage_capacity}:: {queuepage_capacity-desc} {bothyml}
+
+{queuedrain}:: {queuedrain-desc} {lsyml}
+
+{queuemaxevents}:: {queuemaxevents-desc} {bothyml}
+
+{queuemaxbytes}:: {queuemaxbytes-desc} {bothyml}
+
+{queuecheckpointacks}:: {queuecheckpointacks-desc} {bothyml}
+    
+{queuecheckpointwrites}:: {queuecheckpointwrites-desc} {bothyml}
+   
+{queuecheckpointinterval}:: {queuecheckpointinterval-desc} {bothyml}
