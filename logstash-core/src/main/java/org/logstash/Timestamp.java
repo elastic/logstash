@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 import java.util.Date;
 
@@ -45,6 +46,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     private transient org.joda.time.DateTime time;
 
     private final Instant instant;
+
+    private static final DateTimeFormatter ISO_INSTANT_MILLIS = new DateTimeFormatterBuilder()
+            .appendInstant(3)
+            .toFormatter()
+            .withResolverStyle(ResolverStyle.STRICT);
 
     public Timestamp() {
         this(Clock.systemDefaultZone());
@@ -99,7 +105,9 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     }
 
     public String toString() {
-        return instant.toString();
+        // ensure minimum precision of 3 decimal places by using our own 3-decimal-place formatter when we have no nanos.
+        final DateTimeFormatter formatter = (instant.getNano() == 0 ? ISO_INSTANT_MILLIS : DateTimeFormatter.ISO_INSTANT);
+        return formatter.format(instant);
     }
 
     public long toEpochMilli() {

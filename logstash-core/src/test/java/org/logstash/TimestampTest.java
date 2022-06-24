@@ -53,6 +53,12 @@ public class TimestampTest {
     }
 
     @Test
+    public void testToStringNoNanos() throws Exception {
+        Timestamp t = new Timestamp("2014-09-23T12:34:56.000000000-0800", OFFSET_CLOCK);
+        assertEquals("2014-09-23T20:34:56.000Z", t.toString());
+    }
+
+    @Test
     public void testParsingDateTimeNoOffset() throws Exception {
         final Timestamp t = new Timestamp("2014-09-23T12:34:56.789012345", OFFSET_CLOCK);
         assertEquals("2014-09-23T20:34:56.789012345Z", t.toString());
@@ -60,13 +66,13 @@ public class TimestampTest {
     @Test
     public void testParsingDateNoOffset() throws Exception {
         final Timestamp t = new Timestamp("2014-09-23", OFFSET_CLOCK);
-        assertEquals("2014-09-23T08:00:00Z", t.toString());
+        assertEquals("2014-09-23T08:00:00.000Z", t.toString());
     }
 
     @Test
     public void testParsingDateWithOffset() throws Exception {
         final Timestamp t = new Timestamp("2014-09-23-08:00", OFFSET_CLOCK);
-        assertEquals("2014-09-23T08:00:00Z", t.toString());
+        assertEquals("2014-09-23T08:00:00.000Z", t.toString());
     }
 
     @Test
