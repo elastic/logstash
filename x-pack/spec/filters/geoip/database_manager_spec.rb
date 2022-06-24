@@ -12,7 +12,6 @@ describe LogStash::Filters::Geoip do
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }
     let(:mock_download_manager)  { double("download_manager") }
-    let(:mock_scheduler)  { double("scheduler") }
     let(:agent_metric)  { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
     let(:database_metric) { LogStash::Filters::Geoip::DatabaseMetric.new(agent_metric) }
     let(:db_manager) do
@@ -21,7 +20,6 @@ describe LogStash::Filters::Geoip do
       manager.send(:setup)
       manager.instance_variable_set(:@metadata, mock_metadata)
       manager.instance_variable_set(:@download_manager, mock_download_manager)
-      manager.instance_variable_set(:@scheduler, mock_scheduler)
       manager
     end
     let(:logger) { double("Logger") }
@@ -215,6 +213,27 @@ describe LogStash::Filters::Geoip do
       end
     end
 
+    context "periodic database update" do
+
+      it 'sets up periodic task when download triggered' do
+        db_manager.send :trigger_download
+        download_task = db_manager.instance_variable_get(:@download_task)
+        expect( download_task ).to_not be nil
+        expect( download_task.running? ).to be true
+        expect( download_task.execution_interval ).to eq 86_400
+      end
+
+      it 'executes download job after interval passes' do
+        db_manager.instance_variable_set(:@download_interval, 1.5)
+        db_manager.send :trigger_download
+        download_task = db_manager.instance_variable_get(:@download_task)
+        expect( download_task.running? ).to be true
+        expect( db_manager ).to receive :execute_download_job
+        sleep 2.0 # wait for task execution
+      end
+
+    end
+
     context "check age" do
       context "eula database" do
         let(:db_manager) do
@@ -362,7 +381,7 @@ describe LogStash::Filters::Geoip do
     end
 
     context "shutdown" do
-      let(:db_manager) { manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+      let(:db_manager) { Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
 
       it "should unsubscribe gracefully" do
         db_manager.subscribe_database_path(CITY, default_city_db_path, mock_geoip_plugin)
@@ -371,7 +390,7 @@ describe LogStash::Filters::Geoip do
     end
 
     context "database metric is not assigned" do
-      let(:db_manager) { manager = Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
+      let(:db_manager) { Class.new(LogStash::Filters::Geoip::DatabaseManager).instance }
 
       it "does not throw error" do
         allow(LogStash::Filters::Geoip::DatabaseManager).to receive(:logger).and_return(logger)

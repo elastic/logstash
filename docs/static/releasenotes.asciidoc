@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-0,Logstash 8.3.0>>
 * <<logstash-8-2-2,Logstash 8.2.2>>
 * <<logstash-8-2-1,Logstash 8.2.1>>
 * <<logstash-8-2-0,Logstash 8.2.0>>
@@ -17,6 +18,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-3-0]]
+=== Logstash 8.3.0 Release Notes
+
+coming[8.3.0]
+
+[[features-8.3.0]]
+==== New features and enhancements
+
+
+[[notable-8.3.0]]
+==== Performance improvements and notable issues fixed
+
+* {ls} is more efficient at fetching pipelines as of 8.3. 
+When a {ls} instance sends its pipeline IDs to {es} or central pipeline management in {kib}, it gets back only the pipeline configs that belong to that instance. 
+These enhancements required changes to both {ls} https://github.com/elastic/logstash/pull/14076[(#14076)] and {es} https://github.com/elastic/elasticsearch/pull/85847[(#85847)].
++ 
+These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
+
+[[plugins-8.3.0]]
+==== Plugin releases
+
+
+
 
 [[logstash-8-2-2]]
 === Logstash 8.2.2 Release Notes

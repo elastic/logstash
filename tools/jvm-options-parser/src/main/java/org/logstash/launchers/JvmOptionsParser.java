@@ -67,6 +67,7 @@ public class JvmOptionsParser {
     };
 
 
+    @SuppressWarnings("serial")
     static class JvmOptionsFileParserException extends Exception {
 
         private static final long serialVersionUID = 2446165130736962758L;

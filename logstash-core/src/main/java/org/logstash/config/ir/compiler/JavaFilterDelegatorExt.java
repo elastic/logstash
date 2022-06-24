@@ -52,9 +52,9 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     private RubyString configName;
 
-    private Filter filter;
+    private transient Filter filter;
 
-    private FilterMatchListener filterMatchListener;
+    private transient FilterMatchListener filterMatchListener;
 
     public JavaFilterDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

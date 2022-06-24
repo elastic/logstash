@@ -41,8 +41,6 @@ When you set values for capacity and sizing settings, remember that the value yo
 
 TIP: If you want to define values for a specific pipeline, use <<multiple-pipelines,`pipelines.yml`>>.
 
-{queuetype}:: {queuetype-desc}
-
 include::./settings/pq-settings.asciidoc[]
 
 `path.queue`:: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 

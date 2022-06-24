@@ -62,11 +62,11 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
     # buys us some efficiency
     begin
       stream_position = 0
-      events.forEach do |event|
+      events.forEach (lambda do |event|
         decorate(event)
         @queue << event
         stream_position = stream_position + 1
-      end
+      end)
       ReceiveResponse.completed()
     rescue java.lang.InterruptedException, IOError => e
       # maybe an IOException in enqueueing

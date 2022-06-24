@@ -1146,7 +1146,7 @@ copyright 2013. amazon web services, inc. all rights reserved.
    limitations under the License.
 
 ==========
-Notice for: aws-sigv4-1.4.0
+Notice for: aws-sigv4-1.5.0
 ----------
 
 copyright 2013. amazon web services, inc. all rights reserved.
@@ -1462,7 +1462,7 @@ You can redistribute it and/or modify it under either the terms of the
      PURPOSE.
 
 ==========
-Notice for: bundler-2.3.5
+Notice for: bundler-2.3.14
 ----------
 
 Portions copyright (c) 2010 Andre Arko  
@@ -2884,7 +2884,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.google.googlejavaformat:google-java-format-1.1
+Notice for: com.google.googlejavaformat:google-java-format-1.13.0
 ----------
 
 Copyright 2015 Google Inc.
@@ -3160,7 +3160,7 @@ Program             Directory
 
 
 ==========
-Notice for: com.google.guava:guava-24.1.1-jre
+Notice for: com.google.guava:guava-31.0.1-jre
 ----------
 
 
@@ -4241,7 +4241,7 @@ Elastic Workplace Search Ruby client.
 
 Copyright 2012-2020 Elasticsearch B.V.
 ==========
-Notice for: elasticsearch-7.16.3
+Notice for: elasticsearch-7.17.1
 ----------
 
 source: https://github.com/elastic/elasticsearch-ruby/blob/v5.0.4/elasticsearch-api/LICENSE.txt
@@ -4261,7 +4261,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: elasticsearch-api-7.16.3
+Notice for: elasticsearch-api-7.17.1
 ----------
 
 source: https://github.com/elastic/elasticsearch-ruby/blob/v5.0.4/elasticsearch-transport/LICENSE.txt
@@ -4281,7 +4281,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: elasticsearch-transport-7.16.3
+Notice for: elasticsearch-transport-7.17.1
 ----------
 
 source: https://github.com/elastic/elasticsearch-ruby/blob/v5.0.4/elasticsearch/LICENSE.txt
@@ -4329,7 +4329,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: faraday-1.9.3
+Notice for: faraday-1.10.0
 ----------
 
 source: https://github.com/lostisland/faraday/blob/v0.9.2/LICENSE.md
@@ -4680,7 +4680,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-Notice for: http-cookie-1.0.4
+Notice for: http-cookie-1.0.5
 ----------
 
 source: https://github.com/sparklemotion/http-cookie/blob/v1.0.3/LICENSE.txt
@@ -4768,7 +4768,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 ==========
-Notice for: i18n-1.8.11
+Notice for: i18n-1.10.0
 ----------
 
 source: https://github.com/svenfuchs/i18n/blob/v0.6.9/MIT-LICENSE
@@ -5072,7 +5072,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: jmespath-1.5.0
+Notice for: jmespath-1.6.1
 ----------
 
 source: https://github.com/jmespath/jmespath.rb/blob/v1.4.0/LICENSE.txt
@@ -6968,7 +6968,7 @@ The complete text of the GNU General Public License version 3 is as follows:
     12. No Surrender of Others' Freedom.
 
     If conditions are imposed on you (whether by court order, agreement or
-q  otherwise) that contradict the conditions of this License, they do not
+  otherwise) that contradict the conditions of this License, they do not
   excuse you from the conditions of this License.  If you cannot convey a
   covered work so as to satisfy simultaneously your obligations under this
   License and any other pertinent obligations, then as a consequence you may
@@ -7745,7 +7745,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: jruby-openssl-0.11.0
+Notice for: jruby-openssl-0.13.0
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
@@ -7805,7 +7805,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==========
-Notice for: json-2.6.1
+Notice for: json-2.6.2
 ----------
 
 source: https://github.com/tmattia/json-generator/blob/v0.1.0/LICENSE.txt
@@ -8075,7 +8075,7 @@ terms of Ruby’s licence or the Simplified BSD licence.
 * Portions copyright 2004 Mauricio Julio Fernández Pradier.
 
 ==========
-Notice for: msgpack-1.4.4
+Notice for: msgpack-1.5.1
 ----------
 
 source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
@@ -8275,7 +8275,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: nokogiri-1.12.5
+Notice for: nokogiri-1.13.6
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
@@ -8336,6 +8336,30 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+==========
+Notice for: org.apache.httpcomponents:httpclient-4.5.13
+----------
+
+source: https://github.com/apache/httpcomponents-client/blob/4.5.x/NOTICE.txt
+
+Apache HttpComponents Client
+Copyright 1999-2021 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+==========
+Notice for: org.apache.httpcomponents:httpcore-4.4.14
+----------
+
+source: https://github.com/apache/httpcomponents-core/blob/4.4.x/NOTICE.txt
+
+Apache HttpComponents Core
+Copyright 2005-2021 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
 
 ==========
 Notice for: org.apache.logging.log4j:log4j-1.2-api-2.17.1
@@ -8497,7 +8521,7 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
-Notice for: org.jruby:jruby-complete-9.2.20.1
+Notice for: org.jruby:jruby-core-9.3.4.0
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -8780,7 +8804,7 @@ Eclipse Public License - v 2.0
 
     You may add additional accurate notices of copyright ownership.
 ==========
-Notice for: org.logstash:jvm-options-parser-8.3.0
+Notice for: org.logstash:jvm-options-parser-8.4.0
 ----------
 
 Copyright (c) 2022 Elasticsearch B.V. <http://www.elastic.co>
@@ -8797,7 +8821,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==========
-Notice for: org.reflections:reflections-0.9.11
+Notice for: org.reflections:reflections-0.9.12
 ----------
 
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
@@ -8953,7 +8977,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: puma-5.5.2
+Notice for: puma-5.6.4
 ----------
 
 Some code copyright (c) 2005, Zed Shaw
@@ -9090,7 +9114,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
-Notice for: redis-4.5.1
+Notice for: redis-4.6.0
 ----------
 
 Copyright (c) 2009 Ezra Zygmuntowicz
@@ -9309,7 +9333,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: sequel-5.52.0
+Notice for: sequel-5.56.0
 ----------
 
 Copyright (c) 2007-2008 Sharon Rosner
@@ -9869,7 +9893,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-data-1.2021.5
+Notice for: tzinfo-data-1.2022.1
 ----------
 
 Copyright (c) 2005-2018 Philip Ross

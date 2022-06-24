@@ -48,7 +48,7 @@ public final class JrubyTimestampExtLibrary {
 
         private static final long serialVersionUID = 1L;
 
-        private Timestamp timestamp;
+        private transient Timestamp timestamp;
 
         public RubyTimestamp(Ruby runtime, RubyClass klass) {
             super(runtime, klass);

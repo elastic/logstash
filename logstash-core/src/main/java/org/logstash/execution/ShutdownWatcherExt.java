@@ -49,7 +49,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
 
     private static final AtomicBoolean unsafeShutdown = new AtomicBoolean(false);
 
-    private final List<IRubyObject> reports = new ArrayList<>();
+    private final transient List<IRubyObject> reports = new ArrayList<>();
 
     private final AtomicInteger attemptsCount = new AtomicInteger(0);
 
@@ -61,7 +61,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
 
     private int abortThreshold = 3;
 
-    private IRubyObject pipeline;
+    private transient IRubyObject pipeline;
 
     @JRubyMethod(name = "unsafe_shutdown?", meta = true)
     public static IRubyObject isUnsafeShutdown(final ThreadContext context,
@@ -172,7 +172,8 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                         if (stalledCount == 0) {
                             LOGGER.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.");
                             if (isPqDraining) {
-                                LOGGER.info("The queue is draining before shutdown.");
+                                String pipelineId = pipeline.callMethod(context, "pipeline_id").asJavaString();
+                                LOGGER.info("The queue for pipeline {} is draining before shutdown.", pipelineId);
                             }
                         }
                         ++stalledCount;

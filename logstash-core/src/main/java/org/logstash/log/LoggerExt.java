@@ -49,7 +49,7 @@ public class LoggerExt extends RubyObject {
     private static final long serialVersionUID = 1L;
 
     private static final Object CONFIG_LOCK = new Object();
-    private Logger logger;
+    private transient Logger logger;
 
     public LoggerExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

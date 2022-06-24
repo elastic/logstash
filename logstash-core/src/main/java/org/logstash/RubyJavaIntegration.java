@@ -213,15 +213,6 @@ public final class RubyJavaIntegration {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, dup);
         }
 
-        @JRubyMethod
-        public static IRubyObject inspect(final ThreadContext context, final IRubyObject self) {
-            return RubyString.newString(context.runtime, new StringBuilder("<")
-                .append(self.getMetaClass().name().asJavaString()).append(':')
-                .append(self.hashCode()).append(' ').append(self.convertToArray().inspect())
-                .append('>').toString()
-            );
-        }
-
         private static boolean removeNilAndNull(final Collection<?> collection) {
             final boolean res = collection.removeAll(NIL_COLLECTION);
             return collection.removeAll(NULL_COLLECTION) || res;

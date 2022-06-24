@@ -42,9 +42,9 @@ public final class ExecutionContextExt extends RubyObject {
 
     private AbstractDeadLetterQueueWriterExt dlqWriter;
 
-    private IRubyObject agent;
+    private transient IRubyObject agent;
 
-    private IRubyObject pipeline;
+    private transient IRubyObject pipeline;
 
     public ExecutionContextExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

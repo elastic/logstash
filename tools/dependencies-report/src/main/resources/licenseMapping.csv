@@ -70,6 +70,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "http:",https://github.com/httprb/http,MIT
 "http_parser.rb:",https://github.com/tmm1/http_parser.rb,MIT
 "i18n:",https://github.com/svenfuchs/i18n,MIT
+"io.netty:netty-all:",https://github.com/netty/netty,Apache-2.0
 "insist:",https://github.com/jordansissel/ruby-insist,Apache-2.0
 "jar-dependencies:",https://github.com/mkristian/jar-dependencies,MIT
 "jls-grok:",https://github.com/jordansissel/ruby-grok,Apache-2.0

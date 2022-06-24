@@ -53,12 +53,14 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -69,10 +71,19 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private RecordIOReader currentReader;
     private final Path queuePath;
+    private final SegmentListener segmentCallback;
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
+    private RecordIOReader lastConsumedReader;
+
+    // config settings
+    private final boolean cleanConsumed;
 
     public DeadLetterQueueReader(Path queuePath) throws IOException {
+        this(queuePath, false, null);
+    }
+
+    public DeadLetterQueueReader(Path queuePath, boolean cleanConsumed, SegmentListener segmentCallback) throws IOException {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
@@ -80,6 +91,12 @@ public final class DeadLetterQueueReader implements Closeable {
                 Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+        this.cleanConsumed = cleanConsumed;
+        if (cleanConsumed && segmentCallback == null) {
+            throw new IllegalArgumentException("When cleanConsumed is enabled must be passed also a valid segment listener");
+        }
+        this.segmentCallback = segmentCallback;
+        this.lastConsumedReader = null;
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
@@ -107,7 +124,7 @@ public final class DeadLetterQueueReader implements Closeable {
      *              segments if segment is not found.
      * @param segment Path to segment File
      * @return Optional containing a RecordIOReader if the segment exists
-     * @throws IOException
+     * @throws IOException if any IO error happens during file management
      */
     private Optional<RecordIOReader> openSegmentReader(Path segment) throws IOException {
         if (!Files.exists(segment)) {
@@ -172,11 +189,12 @@ public final class DeadLetterQueueReader implements Closeable {
         return DLQEntry.deserialize(bytes);
     }
 
+    // package-private for test
     byte[] pollEntryBytes() throws IOException, InterruptedException {
         return pollEntryBytes(100);
     }
 
-    byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
+    private byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
         long timeoutRemaining = timeout;
         if (currentReader == null) {
             timeoutRemaining -= pollNewSegments(timeout);
@@ -209,6 +227,9 @@ public final class DeadLetterQueueReader implements Closeable {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
+                if (cleanConsumed) {
+                    lastConsumedReader = currentReader;
+                }
                 Optional<RecordIOReader> optReader = openNextExistingReader(currentReader.getPath());
                 if (!optReader.isPresent()) {
                     // segments were all already deleted files, do a poll
@@ -221,6 +242,37 @@ public final class DeadLetterQueueReader implements Closeable {
         }
 
         return event;
+    }
+
+    /**
+     * Acknowledge last read event, must match every {@code #pollEntry} call.
+     * */
+    public void markForDelete() {
+        if (!cleanConsumed) {
+            // ack-event is useful only when clean consumed is enabled.
+            return;
+        }
+        if (lastConsumedReader == null) {
+            // no reader to a consumed segment is present
+            return;
+        }
+
+        segmentCallback.segmentCompleted();
+
+        Path lastConsumedSegmentPath = lastConsumedReader.getPath();
+
+        // delete also the older segments in case of multiple segments were consumed
+        // before the invocation of the mark method.
+        try {
+            removeSegmentsBefore(lastConsumedSegmentPath);
+        } catch (IOException ex) {
+            logger.warn("Problem occurred in cleaning the segments older than {} ", lastConsumedSegmentPath, ex);
+        }
+
+        // delete segment file only after current reader is closed.
+        // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
+        deleteSegment(lastConsumedSegmentPath);
+        lastConsumedReader = null;
     }
 
     private boolean consumedAllSegments() {
@@ -249,6 +301,10 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
+        if (cleanConsumed) {
+            removeSegmentsBefore(segmentPath);
+        }
+
         // If the provided segment Path exist, then set the reader to start from the supplied position
         Optional<RecordIOReader> optReader = openSegmentReader(segmentPath);
         if (optReader.isPresent()) {
@@ -269,6 +325,47 @@ public final class DeadLetterQueueReader implements Closeable {
         // give a second try after a re-load of segments from filesystem
         openNextExistingReader(segmentPath)
                 .ifPresent(reader -> currentReader = reader);
+    }
+
+    private void removeSegmentsBefore(Path validSegment) throws IOException {
+        final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
+                .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
+
+        try (final Stream<Path> segmentFiles = DeadLetterQueueWriter.getSegmentPaths(queuePath)) {
+            segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
+                  .forEach(this::deleteSegment);
+        }
+    }
+
+    private int compareByFileTimestamp(Path p1, Path p2) {
+        FileTime timestamp1;
+        // if one of the getLastModifiedTime raise an error, consider them equals
+        // and fallback to the other comparator
+        try {
+            timestamp1 = Files.getLastModifiedTime(p1);
+        } catch (IOException ex) {
+            logger.warn("Error reading file's timestamp for {}", p1, ex);
+            return 0;
+        }
+
+        FileTime timestamp2;
+        try {
+            timestamp2 = Files.getLastModifiedTime(p2);
+        } catch (IOException ex) {
+            logger.warn("Error reading file's timestamp for {}", p2, ex);
+            return 0;
+        }
+        return timestamp1.compareTo(timestamp2);
+    }
+
+    private void deleteSegment(Path segment) {
+        segments.remove(segment);
+        try {
+            Files.delete(segment);
+            logger.debug("Deleted segment {}", segment);
+        } catch (IOException ex) {
+            logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
+        }
     }
 
     private Optional<RecordIOReader> openNextExistingReader(Path segmentPath) throws IOException {

@@ -27,11 +27,11 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject agent;
+    private transient IRubyObject agent;
 
-    private IRubyObject pipeline;
+    private transient IRubyObject pipeline;
 
-    private IRubyObject dlqWriter;
+    private transient IRubyObject dlqWriter;
 
     public ExecutionContextFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

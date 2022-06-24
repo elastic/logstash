@@ -47,13 +47,13 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private RubyString configName;
 
-    private Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> outputFunction;
+    private transient Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> outputFunction;
 
-    private Runnable closeAction;
+    private transient Runnable closeAction;
 
-    private Runnable registerAction;
+    private transient Runnable registerAction;
 
-    private Output output;
+    private transient Output output;
 
     public JavaOutputDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
