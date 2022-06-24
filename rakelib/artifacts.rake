@@ -303,14 +303,20 @@ namespace "artifact" do
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building full Dockerfiles")
     build_dockerfile('full')
   end
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
+  end
+
+  desc "Generate build context for ironbank"
+  task "dockerfile_ironbank" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building ironbank Dockerfiles")
+    build_dockerfile('ironbank')
   end
 
   # Auxiliary tasks
@@ -327,6 +333,7 @@ namespace "artifact" do
       Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
+      Rake::Task["artifact:dockerfile_ironbank"].invoke
     end
   end
 
