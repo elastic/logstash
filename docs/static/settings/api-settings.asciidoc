@@ -1,0 +1,27 @@
+// The content for these settings is single sourced from attributes-ls.asciidoc
+
+{apienabled}:: {apienabled-desc}
+
+{apienvironment}:: {apienvironment-desc}
+
+{apihttp_host}:: {apihttp_host-desc}
+
+{apihttp_port}:: {apihttp_port-desc}
+
+{apissl_enabled}:: {apissl_enabled-desc}
+
+{apissl_keystore_path}:: {apissl_keystore_path-desc}
+
+{apissl_keystore_password}:: {apissl_keystore_password-desc}
+
+{apiauthtype}:: {apiauthtype-desc}
+
+{apiauth_basic_username}:: {apiauth_basic_username-desc}
+
+{apiauth_basic_pw}:: {apiauth_basic_pw-desc} +
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
+

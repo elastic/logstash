@@ -1,20 +1,11 @@
 // The content for these settings is single sourced from attributes-ls.asciidoc
 
-{queuetype}:: {queuetype-desc} {bothyml}
+{dlqenable}:: {dlqenable-desc} 
 
-{pathqueue}:: {pathqueue-desc} {bothyml}
+{dlqmaxbytes}:: {dlqmaxbytes-desc} 
 
-{queuepage_capacity}:: {queuepage_capacity-desc} 
+{dlqflush_interval}:: {dlqflush_interval-desc} 
 
-{queuedrain}:: {queuedrain-desc}
+{dlqstorage_policy}::  {dlqstorage_policy-desc} 
 
-{queuemaxevents}:: {queuemaxevents-desc}
-
-{queuemaxbytes}:: {queuemaxbytes-desc} 
-
-{queuecheckpointacks}:: {queuecheckpointacks-desc}
-    
-{queuecheckpointwrites}:: {queuecheckpointwrites-desc}
-
-{queuecheckpointinterval}:: {queuecheckpointinterval-desc}
-   
+{pathdlq}::  {pathdlq-desc} 

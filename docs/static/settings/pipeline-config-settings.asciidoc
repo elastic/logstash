@@ -16,6 +16,8 @@
 
 {config-field-ref-escape-style}:: {config-field-ref-escape-style-desc}
 
+IMPORTANT: The following `config.field_reference.escape_style` setting is a duplicate of the previous setting while we resolve formatting issues. 
+
 config.field_reference.escape_style:: [Technical preview]. Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`. +
 Current options are:   +
 * `percent`: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`). +

@@ -15,5 +15,7 @@ NOTE: These settings apply only if `queue.type: persisted`.
 {queuecheckpointacks}:: {queuecheckpointacks-desc} {bothyml}
     
 {queuecheckpointwrites}:: {queuecheckpointwrites-desc} {bothyml}
+
+{queuecheckpointretry}:: {queuecheckpointretry-desc}
    
 {queuecheckpointinterval}:: {queuecheckpointinterval-desc} {bothyml}

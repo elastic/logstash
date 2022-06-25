@@ -13,5 +13,7 @@
 {pipeline-plugin_classloaders}:: {pipeline-plugin_classloaders-desc}
 
 {pipeline-ordered}:: {pipeline-ordered-desc} 
+
+{pipeline-separatelogs}:: {pipeline-separatelogs-desc}
  
 {pipeline-ecs_compatibility}:: {pipeline-ecs_compatibility-desc} 

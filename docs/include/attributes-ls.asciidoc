@@ -13,17 +13,31 @@ logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
 Logstash settings
 /////
 
+//Tip: Using `.` in attribute names doesn't work.
+
 :lsyml: Available in`logstash.yml`.
 :plyml: Available in`pipelines.yml`.
 :bothyml: Available in `logstash.yml` and `pipelines.yml`.
 
 //Setup
 
+:allowsuperuser: allow_superuser
+:allowsuperuser-desc: Allow or block running Logstash as superuser. Default: `true`.
+
 :nodename: node.name
 :nodename-desc: A descriptive name for the node. Default is machine's hostname.
 
 :pathdata: path.data
 :pathdata-desc: The directory that Logstash and its plugins use for any persistent needs, such as persistent queue (PQ) data or dead letter queue (DLQ) data. Default is `LOGSTASH_HOME/data`.
+
+:pathplugins: path.plugins
+:pathplugins-desc: File location for custom plugins. +
+You can specify this setting multiple times to include multiple paths. +
+Plugins are expected to be in a specific directory hierarchy: `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`, and `NAME` is the name of the plugin. +
+This setting is platform-specific. See <<dir-layout>> for more info.
+
+:modules: modules
+:modules-desc: When configured, modules must be in the nested YAML structure.
 
 //Pipeline settings
 
@@ -58,6 +72,17 @@ Setting this value to "auto" automatically enables ordering if the 'pipeline.wor
 Setting this value to "true" enforces ordering on the pipeline and prevent logstash from starting if there are multiple workers. +
 Setting this value to "false" disables any extra processing necessary for preserving ordering.
 
+:pipeline-separatelogs: pipeline.separate_logs
+:pipeline-separatelogs-desc: Flag to output log lines of each pipeline to a separate log file. If enabled, Logstash creates a different log file for each pipeline, using the pipeline.id as name of the file. +
+When you have many Logstash pipelines, separating each log by pipeline could be helpful in case you need to troubleshoot a single pipeline+
+Default is `false`.
+
+
+
+
+
+
+
 :pipeline-ecs_compatibility: pipeline.ecs_compatibility
 :pipeline-ecs_compatibility-desc: Sets the pipeline's default value for `ecs_compatibility`, a setting that is available to plugins that implement an ECS Compatibility mode for use with the Elastic Common Schema. +
 Possible values are `disabled`, `v1`, `v8` (default). +
@@ -74,16 +99,16 @@ If you specify a directory or wildcard, config files are read from the directory
 This setting is platform-specific. See <<dir-layout>> for more info.
 
 :config-string: config.string
-:config-string-desc: A string that contains the pipeline configuration for the main pipeline.
+:config-string-desc: A string that contains the pipeline configuration for the main pipeline. Use the same syntax as the config file.
 
-:config-test_and_exit: config.test_and_exit: false
+:config-test_and_exit: config.test_and_exit
 :config-test_and_exit-desc: When set to `true`, at startup checks to ensure that the configuration is valid and then exits. Logstash can read multiple config files from a directory. +
 Note that grok patterns are not checked for correctness. +
 If you combine this setting with `log.level: debug`, Logstash logs the combined config file, annotating each config block with the source file it came from. +
 Default is `false`. 
 
 :config-reload-automatic: config.reload.automatic
-:config-reload-automatic-desc: Periodically checks to see if the pipeline configuration has changed and reloads the pipeline. +
+:config-reload-automatic-desc: Periodically checks to see if the pipeline configuration has changed and reloads the pipeline after changes. +
 This can also be triggered manually through the SIGHUP signal. Default is `false`.
 
 :config-reload-interval: config.reload.interval
@@ -91,13 +116,14 @@ This can also be triggered manually through the SIGHUP signal. Default is `false
 Note that the unit value (s) is required. Values without a qualifier (such as 60) are treated as nanoseconds. Default is 3s. +
 IMPORTANT: Setting the interval this way is not recommended and might change in later versions.
 
-:config-debug: config.debug: false
+:config-debug: config.debug
 :config-debug-desc: When set to `true`, shows the fully compiled configuration as a debug log message. +
-You must also set log.level: debug. Default is `false`.
+You must also set log.level: debug. Default is `false`. +
 WARNING: The log message will include any password options passed to plugin configs as plaintext, and may result in plaintext passwords appearing in your logs.
 
-:config-support_escapes: config.support_escapes: false
-:config-support_escapes-desc: When enabled, process escaped characters such as \n and \" in strings in the pipeline configuration files.
+:config-support_escapes: config.support_escapes
+:config-support_escapes-desc: When enabled, process escaped characters such as \n and \" in strings in the pipeline configuration files. Default is `false`. +
+When set to `true`, quoted strings process these escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
 
 :config-field-ref-escape-style: config.field_reference.escape_style
 :config-field-ref-escape-style-desc: [Technical preview]. Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`. +
@@ -112,49 +138,60 @@ NOTE: This feature is in technical preview and may change in the future.
 //Queue settings
 
 :queuetype: queue.type
-:queuetype-desc: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled. Default: `queue.type: memory`.
+:queuetype-desc: The internal queuing model to use for event buffering. + 
+Specify `persisted` to enable <<persistent-queues,persistent queues>> for disk-based ACKed queueing, or `memory` for legacy <<memory-queue,in-memory based queueing>>. +
+Default is `memory`.
 
 :pathqueue: path.queue
-:pathqueue-desc: The directory path where the data files will be stored. Default: `path.data/queue`. 
+:pathqueue-desc: The directory path where the data files will be stored when persistent queues are enabled (`queue.type: persisted`). Default: `path.data/queue`. 
 
 :queuepage_capacity: queue.page_capacity
-:queuepage_capacity-desc: The queue data consists of append-only files called "pages." This value sets the maximum size of a queue page in bytes. +
+:queuepage_capacity-desc: The queue data consists of append-only data files separated into "pages. +
+This option sets the maximum size of the page data files in bytes (`queue.type: persisted`). 
 The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. +
-If you change the page capacity of an existing queue, the new size applies only to the new page.
+If you change the page capacity of an existing queue, the new size applies only to the new page. Default is `64mb`.
 
 :queuedrain: queue.drain
-:queuedrain-desc: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
+:queuedrain-desc: When set to `true`, Logstash waits until the persistent queue is drained before shutting down. +
+The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. +
+Tip: Avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. Default is `false`.
 
 :queuemaxevents: queue.max_events
-:queuemaxevents-desc: The maximum number of events not yet read by the pipeline worker. The default is 0 (unlimited). +
-We use this setting for internal testing. 
-Users generally shouldn't be changing this value.
+:queuemaxevents-desc: The maximum number of events not yet read by the pipeline worker (`queue.type: persisted`). The default is `0` (unlimited). +
+We use this setting for internal testing. +
+Users generally shouldn't change this value.
 
 :queuemaxbytes: queue.max_bytes
-:queuemaxbytes-desc: The total capacity of _each queue_ in number of bytes. Unless overridden in `pipelines.yml` or central management, each persistent queue will be sized at the value of `queue.max_bytes` specified in `logstash.yml`. +
-Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues. The total of `queue.max_bytes` for _all_ queues should be lower than the capacity of your disk. Default: 1024mb (1gb).
+:queuemaxbytes-desc: The total capacity of each queue in number of bytes (`queue.type: persisted`). Unless overridden in `pipelines.yml` or central management, each persistent queue will be sized at the value of `queue.max_bytes` specified in `logstash.yml`. +
+Be sure that your disk has sufficient capacity to handle the cumulative total of `queue.max_bytes` across all persistent queues. The total of `queue.max_bytes` for ALL queues should be lower than the capacity of your disk. +
+If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first. Default: 1024mb (1gb).
 
 :queuecheckpointacks: queue.checkpoint.acks 
-:queuecheckpointacks-desc: Sets the number of acked events before forcing a checkpoint. Default is 1024. Set to 0 for unlimited.
+:queuecheckpointacks-desc: Sets the maximum number of acked events before forcing a checkpoint (`queue.type: persisted`). Default is 1024. Specify `queue.checkpoint.acks: 0` to set this value to unlimited.
     
 :queuecheckpointwrites: queue.checkpoint.writes 
-:queuecheckpointwrites-desc: Sets the maximum number of written events before a forced checkpoint. Default is 1024. Set to 0 for unlimited. +
-To avoid losing data in the persistent queue, you can set queue.checkpoint.writes: 1 to force a checkpoint after each event is written. Keep in mind that disk writes have a resource cost. Setting this value to 1 ensures maximum durability, but can severely impact performance. See <<durability-persistent-queues>> to better understand the trade-offs.
-   
+:queuecheckpointwrites-desc: Sets the maximum number of written events before a forced checkpoint (`queue.type: persisted`). Default is 1024. Specify `queue.checkpoint.writes: 0` to set this value to unlimited. +
+To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is written. +
+ Keep in mind that disk writes have a resource cost. Setting this value to 1 ensures maximum durability, but can severely impact performance. See <<durability-persistent-queues>> to better understand the trade-offs.
+
+:queuecheckpointretry: queue.checkpoint.retry
+:queuecheckpointretry-desc:	When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. +
+This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (queue.type: persisted)+
+Default is `true`.
+
 :queuecheckpointinterval: queue.checkpoint.interval 
-:queuecheckpointinterval-desc: Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is 1000. Set to 0 to eliminate periodic checkpoints. 
+:queuecheckpointinterval-desc: Sets the interval in milliseconds when a checkpoint is forced on the head page (`queue.type: persisted`). Default is 1000. Set to 0 to eliminate periodic checkpoints. 
 
 
 //DLQ settings
 
 
 :dlqenable: dead_letter_queue.enable
-:dlqenable-desc: Flag to turn on dead-letter queue.
-
+:dlqenable-desc: Flag to turn on dead letter queue (DLQ) supported by plugins. Default is `false`.
 
 :dlqmaxbytes: dead_letter_queue.max_bytes
-:dlqmaxbytes-desc: Applies when dead_letter_queue.enable: true. The maximum size of each dead letter queue. +
-Entries will be dropped if they would increase the size of the dead letter queue beyond this value. Default is 1024mb.
+:dlqmaxbytes-desc: Applies when dead_letter_queue.enable: true. The maximum size of each dead letter queue (DLQ). +
+Entries will be dropped if they would increase the size of the dead letter queue beyond this value. Default is `1024mb`.
 
 :dlqflush_interval: dead_letter_queue.flush_interval
 :dlqflush_interval-desc: Applies when dead_letter_queue.enable: true. +
@@ -170,29 +207,76 @@ Options are "drop_newer" (default) or "drop_older". +
 With drop_newer, messages that were inserted most recently are dropped, logging an error line. With drop_older setting, the oldest messages are dropped as new ones are inserted. + 
 Default value is "drop_newer".
 
-:path.dlq: path.dead_letter_queue
-:path.dlq-desc: If using dead_letter_queue.enable: true, the directory path where the data files will be stored. +
-Default is path.data/dead_letter_queue
+:pathdlq: path.dead_letter_queue
+:pathdlq-desc: If `dead_letter_queue.enable: true`, sets the directory path where the data files will be stored. +
+Default is `path.data/dead_letter_queue`.
 
+
+//API settings
+
+:apienabled: api.enabled
+:apienabled-desc: The HTTP API is enabled by default. It can be disabled, but features that rely on it will not work as intended. Default is `true`.
+
+:apienvironment: api.environment
+:apienvironment-desc: The API returns the provided string as a part of its response. Setting your environment may help to disambiguate between similarly-named nodes in production vs test environments. +
+Default is `production`.
+
+:apihttp_host: api.http.host
+:apihttp_host-desc: The bind address for the HTTP API endpoint. +
+By default, the {ls} HTTP API binds only to the local loopback interface.
+When configured securely (`api.ssl.enabled: true` and `api.auth.type: basic`), the HTTP API binds to _all_ available interfaces. +
+Default is `"127.0.0.1"`.
+
+:apihttp_port: api.http.port
+:apihttp_port-desc: The bind port for the HTTP API endpoint. +
+Default is `9600-9700`.
+
+:apissl_enabled: api.ssl.enabled
+:apissl_enabled-desc: Set to `true` to enable SSL on the HTTP API. +
+Doing so requires both `api.ssl.keystore.path` and `api.ssl.keystore.password` to be set. +
+Default is `false.`
+
+:apissl_keystore_path: api.ssl.keystore.path
+:apissl_keystore_path-desc: The path to a valid JKS or PKCS12 keystore for use in securing the {ls} API. +
+The keystore must be password-protected, and must contain a single certificate chain and a private key.  This setting is ignored unless `api.ssl.enabled` is set to `true`.
+
+:apissl_keystore_password: api.ssl.keystore.password
+:apissl_keystore_password-desc: The password to the keystore provided with `api.ssl.keystore.path`. +
+This setting is ignored unless `api.ssl.enabled` is set to `true`.
+
+:apiauthtype: api.auth.type
+:apiauthtype-desc: Set to `basic` to require HTTP Basic auth on the API using the credentials supplied with `api.auth.basic.username` and `api.auth.basic.password`. +
+Default is `none`.
+
+:apiauth_basic_username: api.auth.basic.username
+:apiauth_basic_username-desc: The username to require for HTTP Basic auth. +
+Ignored unless `api.auth.type` is set to `basic`.
+
+:apiauth_basic_pw: api.auth.basic.password
+:apiauth_basic_pw-desc: The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`. +
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter. +
+You can customize the default password policy with these options:
+
+//Additional password_policy options are sourced from api-setting.asciidoc to allow for more formatting flexibility
+:apiauth.basic.pw_policy.digit: api.auth.basic.password_policy.include.digit
+:apiauth.basic.pw_policy.upper: api.auth.basic.password_policy.include.upper
+:apiauth.basic.pw_policy.lower: api.auth.basic.password_policy.include.lower
+:apiauth.basic.pw_policy.symbol: api.auth.basic.password_policy.include.symbol
+:apiauth.basic.pw_policy.minimum: api.auth.basic.password_policy.length.minimum
+
+:apiauth_basic_pw_policy_mode: api.auth.basic.password_policy.mode
+:apiauth_basic_pw_policy_mode-desc: Raises either `WARN` or `ERROR` message when password requirements are not met. +
+Ignored unless `api.auth.type` is set to `basic`. Default is  `WARN`.
 
 //Debug Settings
 
 :loglevel: log-level
-:loglevel-desc: Options for log.level are `fatal`, `error`, `warn`, `info` (default), `debug`, `trace`.
+:loglevel-desc: Options for log.level are `fatal`, `error`, `warn`, `info`, `debug`, `trace`. Default is  `info`.
 
 :pathlogs: path.logs
-:pathlogs-desc: path.logs
+:pathlogs-desc: The directory where Logstash writes its logs.
+Default is `LOGSTASH_HOME/logs`.
 
-
-// Other Settings 
-
-:allowsuperuser: allow_superuser
-:allowsuperuser-desc: Allow or block running Logstash as superuser (default: true)
-
-:path.plugins: path.plugins
-:path.plugins-desc: Where to find custom plugins
-
-// NOTE to self: Can we move this setting to one of the pipelines sections?  It seems more at home there.
-
-:pipeline-separatelogs: pipeline.separate_logs
-:pipeline-separatelogs-desc: Flag to output log lines of each pipeline to a separate log file. Each log filename contains the pipeline.name. Default is false.
+:logformat: log.format
+:logformat-desc: The format to use for outputting logs. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`. +
+Default is `plain`.
