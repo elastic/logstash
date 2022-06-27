@@ -298,7 +298,7 @@ tasks.register("installBundler") {
   }
 }
 
-tasks.register("bootstrap"){
+tasks.register("bootstrap") {
     dependsOn installBundler
     doLast {
       setupJruby(projectDir, buildDir)
@@ -428,7 +428,8 @@ tasks.register("installIntegrationTestBundler"){
 
 tasks.register("installIntegrationTestGems") {
   dependsOn installIntegrationTestBundler
-  inputs.files file("${projectDir}/qa/integration/Gemfile")
+  def gemfilePath = file("${projectDir}/qa/integration/Gemfile")
+  inputs.files gemfilePath
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
@@ -438,7 +439,7 @@ tasks.register("installIntegrationTestGems") {
   doLast {
       bundleWithEnv(
         projectDir, buildDir,
-        qaBuildPath, qaBundleBin, ['install', '--path', qaVendorPath],
+        qaBuildPath, qaBundleBin, ['install', '--path', qaVendorPath, '--gemfile', gemfilePath],
         [ GEM_PATH: qaBundledGemPath, GEM_HOME: qaBundledGemPath ]
       )
   }
