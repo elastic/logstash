@@ -55,15 +55,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.matchesRegex;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1040,7 +1032,7 @@ public class DeadLetterQueueReaderTest {
             try (DeadLetterQueueReader secondReader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
             } catch (LockException lockException) {
                 // ok it's expected to happen here
-                assertThat(lockException.getMessage(), matchesRegex(".*Lock held.*dlq_reader\\.lock"));
+                assertThat(lockException.getMessage(), startsWith("Existing `dlg_reader.lock` file"));
             }
         }
     }
