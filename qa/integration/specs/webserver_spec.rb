@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'openssl'
-
 require 'logstash/util'
 require 'logstash/webserver'
 
