@@ -55,8 +55,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
@@ -67,6 +65,8 @@ import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
+import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
+import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
@@ -114,7 +114,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.add(getStartupQueueSize());
 
         cleanupTempFiles();
-        currentSegmentIndex = getSegmentPaths(queuePath)
+        currentSegmentIndex = listSegmentPaths(queuePath)
                 .map(s -> s.getFileName().toString().split("\\.")[0])
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
@@ -173,10 +173,6 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    static Stream<Path> getSegmentPaths(Path path) throws IOException {
-        return listFiles(path, ".log");
-    }
-
     @VisibleForTesting
     void writeEntry(DLQEntry entry) throws IOException {
         lock.lock();
@@ -223,7 +219,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = getSegmentPaths(queuePath)
+        final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
         if (!oldestSegment.isPresent()) {
             throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
@@ -297,7 +293,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private long getStartupQueueSize() throws IOException {
-        return getSegmentPaths(queuePath)
+        return listSegmentPaths(queuePath)
                 .mapToLong((p) -> {
                     try {
                         return Files.size(p);
@@ -330,15 +326,8 @@ public final class DeadLetterQueueWriter implements Closeable {
     // segment file with the same base name exists, or rename the
     // temp file to the segment file, which can happen when a process ends abnormally
     private void cleanupTempFiles() throws IOException {
-        DeadLetterQueueWriter.listFiles(queuePath, ".log.tmp")
+        listFiles(queuePath, ".log.tmp")
                 .forEach(this::cleanupTempFile);
-    }
-
-    private static Stream<Path> listFiles(Path path, String suffix) throws IOException {
-        try(final Stream<Path> files = Files.list(path)) {
-            return files.filter(p -> p.toString().endsWith(suffix))
-                    .collect(Collectors.toList()).stream();
-        }
     }
 
     // check if there is a corresponding .log file - if yes delete the temp file, if no atomic move the

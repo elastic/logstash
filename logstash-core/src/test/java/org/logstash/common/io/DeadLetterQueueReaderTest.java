@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
+import org.logstash.LockException;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
@@ -54,14 +55,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -952,7 +946,12 @@ public class DeadLetterQueueReaderTest {
                 reader.markForDelete();
             }
 
-            assertEquals(1, Files.list(dir).count());
+            // Verify
+            Set<String> segments = DeadLetterQueueUtils.listSegmentPaths(dir)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .collect(Collectors.toSet());
+            assertEquals("Only head segment file MUST be present", Set.of("2.log"), segments);
             assertTrue("Reader's client must be notified of the segment deletion", callback.notified);
         }
     }
@@ -969,8 +968,8 @@ public class DeadLetterQueueReaderTest {
             reader.setCurrentReaderAndPosition(lastSegmentPath, VERSION_SIZE);
 
             // verify
-            Set<Path> segmentFiles = Files.list(dir).collect(Collectors.toSet());
-            assertEquals(Collections.singleton(lastSegmentPath), segmentFiles);
+            Set<Path> segmentFiles = DeadLetterQueueUtils.listSegmentPaths(dir).collect(Collectors.toSet());
+            assertEquals(Set.of(lastSegmentPath), segmentFiles);
         }
     }
 
@@ -983,7 +982,7 @@ public class DeadLetterQueueReaderTest {
     }
 
     private List<Path> listSegmentsSorted(Path dir) throws IOException {
-        return DeadLetterQueueWriter.getSegmentPaths(dir)
+        return DeadLetterQueueUtils.listSegmentPaths(dir)
                 .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId))
                 .collect(Collectors.toList());
     }
@@ -1022,6 +1021,18 @@ public class DeadLetterQueueReaderTest {
                         .map(Path::toString)
                         .collect(Collectors.toSet());
                 assertTrue("No segments file remain untouched", files.containsAll(Arrays.asList(".lock", "4.log.tmp")));
+            }
+        }
+    }
+
+    @Test
+    @SuppressWarnings("try")
+    public void testReaderLockProhibitMultipleInstances() throws IOException {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            try (DeadLetterQueueReader secondReader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+            } catch (LockException lockException) {
+                // ok it's expected to happen here
+                assertThat(lockException.getMessage(), startsWith("Existing `dlg_reader.lock` file"));
             }
         }
     }
