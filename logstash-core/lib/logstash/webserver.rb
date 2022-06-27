@@ -243,7 +243,8 @@ module LogStash
         ssl_context.protocols = supported_protocols if supported_protocols
         ssl_context.verify_mode = case @ssl_params.fetch(:verification_mode, nil)
                                   when 'none' then ::Puma::MiniSSL::VERIFY_NONE
-                                  else ::Puma::MiniSSL::VERIFY_PEER | ::Puma::MiniSSL::VERIFY_FAIL_IF_NO_PEER_CERT
+                                  when 'full' then ::Puma::MiniSSL::VERIFY_PEER | ::Puma::MiniSSL::VERIFY_FAIL_IF_NO_PEER_CERT
+                                  else ::Puma::MiniSSL::VERIFY_PEER # 'peer' or default (nil)
                                   end
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
