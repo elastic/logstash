@@ -30,9 +30,9 @@ def main():
 
     print(args)
 
-    create_pr(parser, args)
+    create_label(parser, args)
 
-def create_pr(parser, args):
+def create_label(parser, args):
     info("Checking if GitHub API token is available in `~/.elastic/github.token`")
     token = get_github_token()
 
