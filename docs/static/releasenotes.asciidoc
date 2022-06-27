@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-5,Logstash 7.17.5>>
 * <<logstash-7-17-4,Logstash 7.17.4>>
 * <<logstash-7-17-3,Logstash 7.17.3>>
 * <<logstash-7-17-2,Logstash 7.17.2>>
@@ -63,6 +64,57 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-5]]
+=== Logstash 7.17.5 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.5
+
+* Switch adoptopenjdk url to adoptium https://github.com/elastic/logstash/pull/14098[#14098]
+* Backport PR #14129 to 7.17: Avoids unnecessary thread sync of PQ notFull state https://github.com/elastic/logstash/pull/14142[#14142]
+* Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14147[#14147]
+* deps: pin rufus-scheduler to 3.0.9 https://github.com/elastic/logstash/pull/14150[#14150]
+* update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
+* Backport PR #14147 to 7.17: Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14174[#14174]
+* File system mismatch when each pipeline uses separate file system. https://github.com/elastic/logstash/pull/14212[#14212]
+* Backport PR #14098 to 7.17: Switch adoptopenjdk url to adoptium https://github.com/elastic/logstash/pull/14222[#14222]
+* Backport PR #14152 to 7.17: update jdk to 11.0.15+10 https://github.com/elastic/logstash/pull/14226[#14226]
+* improve resiliency of make venv with retrying pip install https://github.com/elastic/logstash/pull/14239[#14239]
+* Fix exception of i18n deprecated msg in logstash-keystore https://github.com/elastic/logstash/pull/14246[#14246]
+* Backport PR #14246 to 7.17: Fix exception of i18n deprecated msg in logstash-keystore https://github.com/elastic/logstash/pull/14249[#14249]
+* Fix pq size checking to not stop the pipeline https://github.com/elastic/logstash/pull/14258[#14258]
+* Backport PR #14258 to 7.17: Fix pq size checking to not stop the pipeline https://github.com/elastic/logstash/pull/14267[#14267]
+* Backport PR #14239 to 7.17: improve resiliency of make venv with retrying pip install https://github.com/elastic/logstash/pull/14277[#14277]
+* make retries in pip and go get extra shell compatible https://github.com/elastic/logstash/pull/14282[#14282]
+* Increase Gradle network timeouts to increment resiliency on network issues https://github.com/elastic/logstash/pull/14283[#14283]
+* Backport PR #14283 to 7.17: Increase Gradle network timeouts to increment resiliency on network issues https://github.com/elastic/logstash/pull/14287[#14287]
+* Backport PR #14282 to 7.17: make retries in pip and go get extra shell compatible https://github.com/elastic/logstash/pull/14294[#14294]
+
+=== Logstash Commits between 7.17 and 7.17.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.4..7.17"
+
+c9b3046f3 - (HEAD -> 7.17, origin/7.17) make retries in pip and go get extra shell compatible (#14282) (#14294) (3 days ago) <github-actions[bot]>
+054f53edd - improve resiliency of make venv and golang Dockerfile with retries (#14239) (#14277) (3 days ago) <github-actions[bot]>
+81f5b1f84 -  Backport PR #14283 to 7.17: Increase Gradle network timeouts to increment resiliency on network issues #14287 (6 days ago) <github-actions[bot]>
+30f020f5f - Fix pq size checking to not stop the pipeline (#14258) (#14267) (11 days ago) <github-actions[bot]>
+6b2b4460a - Fix exception of i18n in logstash-keystore (#14246) (#14249) (2 weeks ago) <github-actions[bot]>
+cd9fb4c39 - update jdk to 11.0.15+10 (#14152) (#14226) (3 weeks ago) <github-actions[bot]>
+b5e72822e - Switch adoptopenjdk url to adoptium (#14098) (#14222) (3 weeks ago) <github-actions[bot]>
+6db9b083a - Handle out-of-date firstUnackedPageNum in head checkpoint (#14147) (#14174) (4 weeks ago) <github-actions[bot]>
+27c512fb1 - This commit avoids unnecessary thread sync of PQ notFull state. (#14129) (#14142) (5 weeks ago) <github-actions[bot]>
+a6cd4bf94 - bump core version (#14063) (5 weeks ago) <kaisecheng>
+24bef9962 - Release notes draft for 7.17.4 (#14124) (5 weeks ago) <Logstash Machine>
+94b5f982c - [Doc] queue.max_bytes for all queues (#14128) (#14140) (5 weeks ago) <github-actions[bot]>
+d2240e072 - Doc: Update settings file doc to call out queue type (#14127) (#14135) (6 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.4..7.17 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
