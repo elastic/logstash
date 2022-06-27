@@ -109,7 +109,7 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full public_dockerfiles_ubi8 public-dockerfiles_ironbank
+public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_ironbank
 
 public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \

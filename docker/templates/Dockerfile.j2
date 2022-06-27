@@ -19,7 +19,6 @@
   # Minimal distributions do not ship with en language packs.
   {% set locale = 'C.UTF-8' -%}
 {% elif image_flavor == 'ironbank' -%}
-    {% set base_image = 'registry1.dsop.io/ironbank/redhat/ubi/ubi8:8.5' -%}
     {% set package_manager = 'yum'  -%}
 {% else -%}
   {% set base_image = 'ubuntu:20.04'  -%}
@@ -128,8 +127,9 @@ RUN \
     find /usr/share/logstash -type d -exec chmod g+s {} \; && \
     ln -s /usr/share/logstash /opt/logstash
 
-
+{% if image_flavor != 'ironbank' -%}
 WORKDIR /usr/share/logstash
+{% endif -%}
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
 
