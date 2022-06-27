@@ -58,7 +58,7 @@ These improvements dramatically decrease network load while also giving users th
 ==== Updates to dependencies
 
 * The bundled JDK 11 has been updated to 11.0.15+10 https://github.com/elastic/logstash/pull/14031[#14031]
-* jackson and jackson-databind has been updated to 2.13.3 https://github.com/elastic/logstash/pull/13945[#13945]
+* Jackson and jackson-databind have been updated to 2.13.3 https://github.com/elastic/logstash/pull/13945[#13945]
 
 [[plugins-8.3.0]]
 ==== Plugin releases
