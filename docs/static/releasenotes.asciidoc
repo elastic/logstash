@@ -72,11 +72,12 @@ This section summarizes the changes in the following releases:
 ==== Notable issues fixed
 * Fix a possible corruption of Persistent Queue during a crash of the Logstash process https://github.com/elastic/logstash/pull/14147[#14147]
 * Fixes to the pre-flight check for starting a pipeline with the Persistent Queue:
-** we correctly validate free capacity on the _volume_ on which the pipeline's PQ is configured https://github.com/elastic/logstash/pull/14212[#14212]
-** starting with insufficient free disk space for the configured PQ size is now a warning instead of an error https://github.com/elastic/logstash/pull/14267[#14267]
+** We correctly validate free capacity on the _volume_ on which the pipeline's PQ is configured https://github.com/elastic/logstash/pull/14212[#14212]
+** Starting with insufficient free disk space for the configured PQ size is now a warning instead of an error https://github.com/elastic/logstash/pull/14267[#14267]
 * Fix exception in `logstash-keystore` util when Logstash is configured with a deprecated setting https://github.com/elastic/logstash/pull/14246[#14246]
 
-=== Updates to dependencies
+[[dependencies-7-17-5]]
+==== Updates to dependencies
 
 * The bundled JDK 11 has been updated to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 
