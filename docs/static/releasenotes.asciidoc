@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-5,Logstash 7.17.5>>
 * <<logstash-7-17-4,Logstash 7.17.4>>
 * <<logstash-7-17-3,Logstash 7.17.3>>
 * <<logstash-7-17-2,Logstash 7.17.2>>
@@ -63,6 +64,22 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-5]]
+=== Logstash 7.17.5 Release Notes
+
+[[notable-7-17-5]]
+==== Notable issues fixed
+* Fix a possible corruption of Persistent Queue during a crash of the Logstash process https://github.com/elastic/logstash/pull/14147[#14147]
+* Fixes to the pre-flight check for starting a pipeline with the Persistent Queue:
+** We correctly validate free capacity on the _volume_ on which the pipeline's PQ is configured https://github.com/elastic/logstash/pull/14212[#14212]
+** Starting with insufficient free disk space for the configured PQ size is now a warning instead of an error https://github.com/elastic/logstash/pull/14267[#14267]
+* Fix exception in `logstash-keystore` util when Logstash is configured with a deprecated setting https://github.com/elastic/logstash/pull/14246[#14246]
+
+[[dependencies-7-17-5]]
+==== Updates to dependencies
+
+* The bundled JDK 11 has been updated to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 
 [[logstash-7-17-4]]
 === Logstash 7.17.4 Release Notes
