@@ -736,7 +736,7 @@ namespace "artifact" do
     }
     Dir.chdir("docker") do |dir|
       system(env, "make public-dockerfiles_#{flavor}")
-      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+      puts "Dockerfiles created in #{env['ARTIFACTS_DIR']}"
     end
   end
 end
