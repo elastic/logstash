@@ -32,7 +32,7 @@ These enhancements required changes to both {ls} https://github.com/elastic/logs
 + 
 These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
 
-* Dead Letter Queues can now be configured to drop older events instead of new ones when they're full. The setting "dead_letter_queue.storage_policy" has been introduced for this purpose, and new metrics - such as a counter for dropped events - are now exposed in the API to better monitor the DLQ behaviour. https://github.com/elastic/logstash/pull/13923[#13923] https://github.com/elastic/logstash/pull/14058[#14058]
+* Dead Letter Queues can now be configured to drop older events instead of new ones when they're full. The setting "dead_letter_queue.storage_policy" has been introduced for this purpose, and new metrics - such as a counter for dropped events - are now exposed in the API to better monitor the DLQ behavior. https://github.com/elastic/logstash/pull/13923[#13923] https://github.com/elastic/logstash/pull/14058[#14058]
 
 * To improve security of Logstash deployments, 8.3.0 brings a new setting "allow_superuser" that defaults to false. When enabled it will prevent Logstash from starting as super user (e.g. root). This setting will be enabled by default in the future and it's advised to explicitly enable it otherwise a deprecation log entry will be emitted. https://github.com/elastic/logstash/pull/14046[#14046] https://github.com/elastic/logstash/pull/14089[#14089]
 
