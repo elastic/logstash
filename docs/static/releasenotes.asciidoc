@@ -52,7 +52,7 @@ These improvements dramatically decrease network load while also giving users th
 * Add thread safety around Puma startup/shutdown https://github.com/elastic/logstash/pull/14080[#14080]
 * Add value converters for java.time classes https://github.com/elastic/logstash/pull/13972[#13972]
 * Correct the class reference to the MetricNotFound exception https://github.com/elastic/logstash/pull/13970[#13970]
-* Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14165[#14165]
+* Fix a possible corruption of Persistent Queue during a crash of the Logstash process https://github.com/elastic/logstash/pull/14165[#14165]
 
 [[dependencies-8.3.0]]
 ==== Updates to dependencies
