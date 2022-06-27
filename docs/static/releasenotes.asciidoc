@@ -54,6 +54,7 @@ These improvements dramatically decrease network load while also giving users th
 * Correct the class reference to the MetricNotFound exception https://github.com/elastic/logstash/pull/13970[#13970]
 * Handle out-of-date firstUnackedPageNum in head checkpoint https://github.com/elastic/logstash/pull/14165[#14165]
 
+[[dependencies-8.3.0]]
 ==== Updates to dependencies
 
 * The bundled JDK 11 has been updated to 11.0.15+10 https://github.com/elastic/logstash/pull/14031[#14031]
