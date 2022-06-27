@@ -293,6 +293,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('ironbank')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -333,7 +334,6 @@ namespace "artifact" do
       Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
-      Rake::Task["artifact:dockerfile_ironbank"].invoke
     end
   end
 
