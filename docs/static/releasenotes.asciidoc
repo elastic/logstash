@@ -42,7 +42,7 @@ These improvements dramatically decrease network load while also giving users th
 
 * Elasticsearch introduced "security on by default" back in 8.0.0, with TLS enabled by default in its HTTP and transport layers. To facilitate connecting to 8.x clusters, Elasticsearch displays the fingerprint of the Certificate Authority it generates on startup. This release of Logstash introduces support for setting "ca_trusted_fingerprint" in Elasticsearch input, filter and outputs plugins. https://github.com/elastic/logstash/pull/14120[#14120]
 
-* EXPERIMENTAL: Receiving events containing keys with characters that have special meaning to Logstash such as `[` and `]` (for field references) has always causes issues to data ingestion. An experimental setting, disabled by default, called "config.field_reference.escape_style" was introduced to handle such special characters by escaping them. https://github.com/elastic/logstash/pull/14044[#14044]
+* Technical Preview: Receiving events containing keys with characters that have special meaning to Logstash such as `[` and `]` (for field references) has always causes issues to data ingestion. A new setting in Technical Preview, disabled by default, called "config.field_reference.escape_style" was introduced to handle such special characters by escaping them. https://github.com/elastic/logstash/pull/14044[#14044]
 
 [[notable-8.3.0]]
 ==== Notable issues fixed
