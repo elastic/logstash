@@ -65,6 +65,8 @@ import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
+import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
+import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
@@ -112,7 +114,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.add(getStartupQueueSize());
 
         cleanupTempFiles();
-        currentSegmentIndex = DeadLetterQueueUtils.listSegmentPaths(queuePath)
+        currentSegmentIndex = listSegmentPaths(queuePath)
                 .map(s -> s.getFileName().toString().split("\\.")[0])
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
@@ -217,7 +219,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = DeadLetterQueueUtils.listSegmentPaths(queuePath)
+        final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
         if (!oldestSegment.isPresent()) {
             throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
@@ -291,7 +293,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private long getStartupQueueSize() throws IOException {
-        return DeadLetterQueueUtils.listSegmentPaths(queuePath)
+        return listSegmentPaths(queuePath)
                 .mapToLong((p) -> {
                     try {
                         return Files.size(p);
@@ -324,7 +326,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // segment file with the same base name exists, or rename the
     // temp file to the segment file, which can happen when a process ends abnormally
     private void cleanupTempFiles() throws IOException {
-        DeadLetterQueueUtils.listFiles(queuePath, ".log.tmp")
+        listFiles(queuePath, ".log.tmp")
                 .forEach(this::cleanupTempFile);
     }
 
