@@ -42,7 +42,10 @@ module LogStash
         ssl_params = {}
         ssl_params[:keystore_path] = required_setting(settings, 'api.ssl.keystore.path', "api.ssl.enabled")
         ssl_params[:keystore_password] = required_setting(settings, 'api.ssl.keystore.password', "api.ssl.enabled")
-
+        ssl_params[:truststore_path] = settings.get('api.ssl.truststore.path')
+        ssl_params[:truststore_password] = settings.get('api.ssl.truststore.password')
+        ssl_params[:supported_protocols] = settings.get('api.ssl.supported_protocols')
+        ssl_params[:verification_mode] = settings.get('api.ssl.verification_mode')
         options[:ssl_params] = ssl_params.freeze
       else
         warn_ignored(logger, settings, "api.ssl.", "api.ssl.enabled")
@@ -224,19 +227,24 @@ module LogStash
       logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
       if @ssl_params
         keystore_path = @ssl_params.fetch(:keystore_path)
-        unwrapped_ssl_params = {
-            'keystore' => keystore_path,
-            'keystore-type' => detect_keystore_type(keystore_path),
-            'keystore-pass' => @ssl_params.fetch(:keystore_password).value,
-        }
         truststore_path = @ssl_params.fetch(:truststore_path, nil)
+
+        ssl_context = ::Puma::MiniSSL::Context.new
+        ssl_context.keystore = keystore_path
+        ssl_context.keystore_type = detect_keystore_type(keystore_path)
+        ssl_context.keystore_pass = @ssl_params.fetch(:keystore_password).value
         if truststore_path
-          unwrapped_ssl_params['truststore'] = truststore_path
-          unwrapped_ssl_params['truststore-type'] = detect_keystore_type(truststore_path)
+          ssl_context.truststore = truststore_path
+          ssl_context.truststore_type = detect_keystore_type(truststore_path)
           truststore_password = @ssl_params.fetch(:truststore_password, nil)&.value
-          unwrapped_ssl_params['truststore-pass'] = truststore_password if truststore_password
+          ssl_context.truststore_pass = truststore_password if truststore_password
         end
-        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
+        supported_protocols = @ssl_params.fetch(:supported_protocols, nil)
+        ssl_context.protocols = supported_protocols if supported_protocols
+        ssl_context.verify_mode = case @ssl_params.fetch(:verification_mode, nil)
+                                  when 'none' then ::Puma::MiniSSL::VERIFY_NONE
+                                  else ::Puma::MiniSSL::VERIFY_PEER | ::Puma::MiniSSL::VERIFY_FAIL_IF_NO_PEER_CERT
+                                  end
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
         @server.add_tcp_listener(http_host, candidate_port)
