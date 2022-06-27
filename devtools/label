@@ -37,10 +37,7 @@ def create_label(parser, args):
     token = get_github_token()
 
     if not token:
-        info("GitHub API token not available.\n" +
-             "Manually create a PR by following this URL: \n\t" +
-             "https://github.com/elastic/logstash/compare/{}...{}:{}?expand=1"
-              .format(args.to_branch, remote, tmp_branch))
+        info("GitHub API token not available.")
     else:
         # initialize github
         session = github_session(token)
