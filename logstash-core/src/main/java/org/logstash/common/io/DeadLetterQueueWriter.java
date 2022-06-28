@@ -357,14 +357,14 @@ public final class DeadLetterQueueWriter implements Closeable {
         // remove oldest segment
         final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
-        if (!oldestSegment.isPresent()) {
-            throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
+        if (oldestSegment.isPresent()) {
+            final Path beheadedSegment = oldestSegment.get();
+            Files.delete(beheadedSegment);
+            logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+        } else {
+            logger.info("Listing of DLQ segments resulted in empty set during storage policy size({}) check", maxQueueSize);
         }
-        final Path beheadedSegment = oldestSegment.get();
-        final long segmentSize = Files.size(beheadedSegment);
-        currentQueueSize.getAndAdd(-segmentSize);
-        Files.delete(beheadedSegment);
-        logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**

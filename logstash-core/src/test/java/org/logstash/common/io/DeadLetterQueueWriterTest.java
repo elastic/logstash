@@ -314,7 +314,8 @@ public class DeadLetterQueueWriterTest {
         assertThat(afterBeheadSegmentFileNames, Matchers.not(Matchers.contains(fileToBeRemoved)));
         final long expectedQueueSize = prevQueueSize +
                 BLOCK_SIZE - // the space of the newly inserted message
-                FULL_SEGMENT_FILE_SIZE; //the size of the removed segment file
+                FULL_SEGMENT_FILE_SIZE - //the size of the removed segment file
+                VERSION_SIZE; // the size of a previous head file (n.log.tmp) that doesn't exist anymore.
         assertEquals("Total queue size must be decremented by the size of the first segment file",
                 expectedQueueSize, beheadedQueueSize);
         assertEquals("Last segment removal doesn't increment dropped events counter",
