@@ -32,14 +32,14 @@ openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in
 # Client certificates - We don't need them now
 
 # client certificate from intermediate CA
-# openssl genrsa -out client_from_intermediate.key 4096
-# openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-# openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
+openssl genrsa -out client_from_intermediate.key 4096
+openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
 
 # client certificate from root
-# openssl genrsa -out client_from_root.key 4096
-# openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-# openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
+openssl genrsa -out client_from_root.key 4096
+openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
 
 # create server chain pems.
 cat intermediate-ca.crt server_from_intermediate.crt > server_from_intermediate.chain.crt
@@ -61,6 +61,8 @@ openssl verify -CAfile root.crt server_from_intermediate.chain.crt
 # create pkcs12 keystores (pass:12345678)
 openssl pkcs12 -export -in server_from_intermediate.chain.crt -inkey server_from_intermediate.key -out server_from_intermediate.p12 -name "server_from_intermediate" -passout 'pass:12345678'
 openssl pkcs12 -export -in server_from_root.chain.crt -inkey server_from_root.key -out server_from_root.p12 -name "server_from_root" -passout 'pass:12345678'
+# truststore (without password)
+openssl pkcs12 -export -in root.crt -inkey root.key -out root.p12 -name "root" -passout 'pass:'
 
 # use java keytool to convert all pkcs12 keystores to jks-format keystores (pass:12345678)
 keytool -importkeystore -srckeystore server_from_intermediate.p12 -srcstoretype pkcs12 -srcstorepass 12345678 -destkeystore server_from_intermediate.jks -deststorepass 12345678 -alias server_from_intermediate
