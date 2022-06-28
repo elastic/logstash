@@ -292,7 +292,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         do {
             if (oldestSegmentPath.isPresent()) {
                 Path beheadedSegment = oldestSegmentPath.get();
-                deleteTailSegment(beheadedSegment);
+                deleteTailSegment(beheadedSegment, "age retention policy");
             }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
@@ -301,10 +301,10 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.set(computeQueueSize());
     }
 
-    private void deleteTailSegment(Path segment) throws IOException {
+    private void deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
             Files.delete(segment);
-            logger.debug("Removed segment file {} due to age retention policy", segment);
+            logger.debug("Removed segment file {} due to {}", motivation, segment);
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
             logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
@@ -359,8 +359,7 @@ public final class DeadLetterQueueWriter implements Closeable {
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
         if (oldestSegment.isPresent()) {
             final Path beheadedSegment = oldestSegment.get();
-            Files.delete(beheadedSegment);
-            logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+            deleteTailSegment(beheadedSegment, "exceeded retained size");
         } else {
             logger.info("Listing of DLQ segments resulted in empty set during storage policy size({}) check", maxQueueSize);
         }
