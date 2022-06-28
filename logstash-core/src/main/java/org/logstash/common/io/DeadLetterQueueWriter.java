@@ -307,7 +307,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             logger.debug("Removed segment file {} due to age retention policy", segment);
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
-            logger.info("File not found {}, maybe removed by the reader pipeline", segment);
+            logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
         }
     }
 
