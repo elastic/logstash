@@ -69,59 +69,64 @@ public class FileLockFactory {
     private static final Map<FileLock, String> LOCK_MAP =  Collections.synchronizedMap(new HashMap<>());
 
     public static FileLock obtainLock(Path dirPath, String lockName) throws IOException {
-        if (!Files.isDirectory(dirPath)) { Files.createDirectories(dirPath); }
+        if (!Files.isDirectory(dirPath)) {
+            Files.createDirectories(dirPath);
+        }
         Path lockPath = dirPath.resolve(lockName);
 
         try {
             Files.createFile(lockPath);
         } catch (IOException ignore) {
             // we must create the file to have a truly canonical path.
-            // if it's already created, we don't care. if it cant be created, it will fail below.
+            // if it's already created, we don't care. if it can't be created, it will fail below.
         }
 
         // fails if the lock file does not exist
         final Path realLockPath = lockPath.toRealPath();
 
-        if (LOCK_HELD.add(realLockPath.toString())) {
-            FileChannel channel = null;
-            FileLock lock = null;
-            try {
-                channel = FileChannel.open(realLockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                lock = channel.tryLock();
-                if (lock != null) {
-                    LOCK_MAP.put(lock, realLockPath.toString());
-                    return lock;
-                } else {
-                    throw new LockException("Lock held by another program on lock path: " + realLockPath);
-                }
-            } finally {
-                if (lock == null) { // not successful - clear up and move out
-                    try {
-                        if (channel != null) {
-                            channel.close();
-                        }
-                    } catch (Throwable t) {
-                        // suppress any channel close exceptions
-                    }
-
-                    boolean removed = LOCK_HELD.remove(realLockPath.toString());
-                    if (removed == false) {
-                        throw new LockException("Lock path was cleared but never marked as held: " + realLockPath);
-                    }
-                }
-            }
-        } else {
+        if (!LOCK_HELD.add(realLockPath.toString())) {
             throw new LockException("Lock held by this virtual machine on lock path: " + realLockPath);
         }
+        FileChannel channel = null;
+        FileLock lock;
+        try {
+            channel = FileChannel.open(realLockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            lock = channel.tryLock();
+            if (lock == null) {
+                throw new LockException("Lock held by another program on lock path: " + realLockPath);
+            }
+        } catch (IOException ex) {
+            try {
+                if (channel != null) {
+                    channel.close();
+                }
+            } catch (Throwable t) {
+                // suppress any channel close exceptions
+            }
+
+            boolean removed = LOCK_HELD.remove(realLockPath.toString());
+            if (!removed) {
+                throw new LockException("Lock path was cleared but never marked as held: " + realLockPath, ex);
+            }
+
+            throw ex;
+        }
+
+        LOCK_MAP.put(lock, realLockPath.toString());
+        return lock;
     }
 
     public static void releaseLock(FileLock lock) throws IOException {
         String lockPath = LOCK_MAP.remove(lock);
-        if (lockPath == null) { throw new LockException("Cannot release unobtained lock"); }
+        if (lockPath == null) {
+            throw new LockException("Cannot release unobtained lock");
+        }
         lock.release();
         lock.channel().close();
-        Boolean removed = LOCK_HELD.remove(lockPath);
-        if (removed == false) { throw new LockException("Lock path was not marked as held: " + lockPath); }
+        boolean removed = LOCK_HELD.remove(lockPath);
+        if (!removed) {
+            throw new LockException("Lock path was not marked as held: " + lockPath);
+        }
     }
 
 }

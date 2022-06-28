@@ -38,9 +38,9 @@ public final class EventDispatcherExt extends RubyBasicObject {
 
     private static final long serialVersionUID = 1L;
 
-    private final Collection<IRubyObject> listeners = new CopyOnWriteArraySet<>();
+    private final transient Collection<IRubyObject> listeners = new CopyOnWriteArraySet<>();
 
-    private IRubyObject emitter;
+    private transient IRubyObject emitter;
 
     public EventDispatcherExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

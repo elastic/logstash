@@ -1,19 +1,19 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 
-# This <%= @plugin_name %> codec will append a string to the message field
+# This <%= plugin_name %> codec will append a string to the message field
 # of an event, either in the decoding or encoding methods
 #
 # This is only intended to be used as an example.
 #
 # input {
-#   stdin { codec => <%= @plugin_name %> }
+#   stdin { codec => <%= plugin_name %> }
 # }
 #
 # or
 #
 # output {
-#   stdout { codec => <%= @plugin_name %> }
+#   stdout { codec => <%= plugin_name %> }
 # }
 #
 class LogStash::Codecs::<%= classify(plugin_name) %> < LogStash::Codecs::Base

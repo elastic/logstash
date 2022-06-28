@@ -293,6 +293,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('ironbank')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -303,14 +304,20 @@ namespace "artifact" do
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building full Dockerfiles")
     build_dockerfile('full')
   end
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
+  end
+
+  desc "Generate build context for ironbank"
+  task "dockerfile_ironbank" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building ironbank Dockerfiles")
+    build_dockerfile('ironbank')
   end
 
   # Auxiliary tasks
@@ -729,7 +736,7 @@ namespace "artifact" do
     }
     Dir.chdir("docker") do |dir|
       system(env, "make public-dockerfiles_#{flavor}")
-      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+      puts "Dockerfiles created in #{env['ARTIFACTS_DIR']}"
     end
   end
 end

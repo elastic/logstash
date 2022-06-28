@@ -214,8 +214,9 @@
 #
 # queue.type: memory
 #
-# If using queue.type: persisted, the directory path where the data files will be stored.
-# Default is path.data/queue
+# If `queue.type: persisted`, the directory path where the pipeline data files will be stored.
+# Each pipeline will group its PQ files in a subdirectory matching its `pipeline.id`.
+# Default is path.data/queue.
 #
 # path.queue:
 #
@@ -270,6 +271,12 @@
 # Default is 5000.
 #
 # dead_letter_queue.flush_interval: 5000
+
+# If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
+# Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
+# Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.
+#
+# dead_letter_queue.storage_policy: drop_newer
 
 # If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
 # could be "drop_newer" or "drop_older".

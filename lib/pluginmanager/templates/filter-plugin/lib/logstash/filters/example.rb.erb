@@ -1,17 +1,17 @@
 # encoding: utf-8
 require "logstash/filters/base"
 
-# This <%= @plugin_name %> filter will replace the contents of the default
+# This <%= plugin_name %> filter will replace the contents of the default
 # message field with whatever you specify in the configuration.
 #
-# It is only intended to be used as an <%= @plugin_name %>.
+# It is only intended to be used as an <%= plugin_name %>.
 class LogStash::Filters::<%= classify(plugin_name) %> < LogStash::Filters::Base
 
   # Setting the config_name here is required. This is how you
   # configure this filter from your Logstash config.
   #
   # filter {
-  #   <%= @plugin_name %> {
+  #   <%= plugin_name %> {
   #     message => "My message..."
   #   }
   # }

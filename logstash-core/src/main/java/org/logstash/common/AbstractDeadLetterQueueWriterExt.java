@@ -139,13 +139,13 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
 
         private static final long serialVersionUID = 1L;
 
-        private IRubyObject writerWrapper;
+        private transient IRubyObject writerWrapper;
 
-        private DeadLetterQueueWriter innerWriter;
+        private transient DeadLetterQueueWriter innerWriter;
 
-        private IRubyObject pluginId;
+        private transient IRubyObject pluginId;
 
-        private IRubyObject pluginType;
+        private transient IRubyObject pluginType;
 
         private String pluginIdString;
 

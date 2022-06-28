@@ -47,9 +47,9 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     private JavaBasePipelineExt pipeline;
 
-    private Input input;
+    private transient Input input;
 
-    private DecoratingQueueWriter decoratingQueueWriter;
+    private transient DecoratingQueueWriter decoratingQueueWriter;
 
     public JavaInputDelegatorExt(Ruby runtime, RubyClass metaClass) {
         super(runtime, metaClass);

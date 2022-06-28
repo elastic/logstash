@@ -35,7 +35,7 @@ public class StructuredMessage implements Message {
     private static final long serialVersionUID = 1L;
 
     private final String message;
-    private final Map<Object, Object> params;
+    private final transient Map<Object, Object> params;
 
     @SuppressWarnings({"unchecked","rawtypes"})
     public StructuredMessage(String message) {
