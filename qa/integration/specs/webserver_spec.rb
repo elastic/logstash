@@ -15,6 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'openssl'
+require 'manticore'
+require 'stud/try'
+
 require 'logstash/util'
 require 'logstash/webserver'
 
@@ -34,6 +38,7 @@ describe 'api webserver' do
     # thread, ensure that a crash doesn't go unnoticed.
     around(:each) do |example|
       abort = Thread.abort_on_exception
+      Thread.abort_on_exception = true
       example.call
       Thread.abort_on_exception = abort
     end
