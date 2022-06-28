@@ -106,6 +106,18 @@ SHA 256 fingerprint of the DER-formatted CA with the `ca_trusted_fingerprint` se
 xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: 2cfe62e474fb381cc7773c84044c28c9785ac5d1940325f942a3d736508de640
 --------------------------------------------------
 
+[NOTE]
+====
+A self-secured Elasticsearch cluster will provide the fingerprint of its CA to the console during setup.
+
+You can also get the SHA256 fingerprint of an Elasticsearch's CA using the `openssl` command-line utility on the Elasticsearch host:
+
+[source,shell]
+--------------------------------------------------
+openssl x509 -fingerprint -sha256 -in $ES_HOME/config/certs/http_ca.crt
+--------------------------------------------------
+====
+
 Alternatively, you can configure trusted certificates using a truststore
 (a Java Keystore file that contains the certificates):
 
