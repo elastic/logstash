@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Cherry pick and backport a PR"""
+from __future__ import print_function
+
+from builtins import input
+import sys
+import os
+import argparse
+from os.path import expanduser
+import re
+from subprocess import check_call, call, check_output
+import requests
+import json
+
+usage = """
+    Example usage:
+        ./devtools/label <pr_number>
+"""
+
+
+def main():
+    """Main"""
+    parser = argparse.ArgumentParser(
+        description="Adds a label to a pull request",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=usage)
+    parser.add_argument("pr_number",
+                        help="The PR number being merged (e.g. 2345)")
+    args = parser.parse_args()
+
+    print(args)
+
+    create_label(parser, args)
+
+def create_label(parser, args):
+    info("Checking if GitHub API token is available in `~/.elastic/github.token`")
+    token = get_github_token()
+
+    if not token:
+        info("GitHub API token not available.")
+    else:
+        # initialize github
+        session = github_session(token)
+        base = "https://api.github.com/repos/elastic/logstash"
+
+        # add labels
+        labels = []
+
+        # get the version (vX.Y.Z) we are merging to
+        version = get_version(os.getcwd())
+        if version:
+            labels.append(version)
+
+        session.post(
+            base + "/issues/{}/labels".format(args.pr_number), json=labels)
+
+def get_version(base_dir):
+    with open(os.path.join(base_dir, "versions.yml"), "r") as f:
+        for line in f:
+            if line.startswith('logstash:'):
+                return "v" + line.split(':')[-1].strip()
+
+def get_github_token():
+    try:
+        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
+    except:
+        token = False
+    return token
+
+def github_session(token):
+    session = requests.Session()
+    session.headers.update({"Authorization": "token " + token})
+    return session
+
+def info(msg):
+    print("\nINFO: {}".format(msg))
+
+if __name__ == "__main__":
+    sys.exit(main())
