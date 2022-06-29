@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-1,Logstash 8.3.1>>
 * <<logstash-8-3-0,Logstash 8.3.0>>
 * <<logstash-8-2-3,Logstash 8.2.3>>
 * <<logstash-8-2-2,Logstash 8.2.2>>
@@ -20,8 +21,27 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+[[logstash-8-3-1]]
+=== Logstash 8.3.1 Release Notes
+
+[[notable-8.3.1]]
+==== Notable issues fixed
+
+* We fixed an event serializing incompatibility introduced in 8.3.0 https://github.com/elastic/logstash/pull/14314[#14314]
+  If you're using dead letter queues or persistent queues we recommend that you do not use Logstash 8.3.0 and upgrade to 8.3.1.
+  
+
 [[logstash-8-3-0]]
 === Logstash 8.3.0 Release Notes
+
+[[known-issue-8-3-0]]
+==== Known issue
+
+An event serialization bug was discovered, which causes an issue when trying to read dead letter or persistent queues created
+in previous versions of Logstash.
+
+We recommend not upgrading to Logstash 8.3.0 if you are using dead letter or persistent queues.
+
 
 [[features-8.3.0]]
 ==== New features and enhancements
