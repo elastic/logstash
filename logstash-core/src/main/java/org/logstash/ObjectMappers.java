@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -72,6 +73,7 @@ public final class ObjectMappers {
     public static final ObjectMapper JSON_MAPPER =
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
+    /* TODO use this validator instead of LaissezFaireSubTypeValidator
     public static final PolymorphicTypeValidator TYPE_VALIDATOR = BasicPolymorphicTypeValidator.builder()
             .allowIfBaseType(java.util.HashMap.class)
             .allowIfSubType(org.jruby.RubyNil.class)
@@ -80,6 +82,9 @@ public final class ObjectMappers {
             .allowIfSubType(org.logstash.ConvertedList.class)
             .allowIfSubType(org.logstash.Timestamp.class)
             .build();
+     */
+
+    public static final PolymorphicTypeValidator TYPE_VALIDATOR = new LaissezFaireSubTypeValidator();
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
