@@ -34,6 +34,15 @@ This section summarizes the changes in the following releases:
 [[logstash-8-3-0]]
 === Logstash 8.3.0 Release Notes
 
+[[known-issue-8-3-0]]
+==== Known issue
+
+An event serialization bug was discovered, which causes an issue when trying to read dead letter queues created
+in previous versions of Logstash.
+
+We recommend not upgrading to Logstash 8.3.0 if you are using the dead letter queue.
+
+
 [[features-8.3.0]]
 ==== New features and enhancements
 
