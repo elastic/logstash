@@ -40,7 +40,7 @@ This section summarizes the changes in the following releases:
 An event serialization bug was discovered, which causes an issue when trying to read dead letter or persistent queues created
 in previous versions of Logstash.
 
-We recommend not upgrading to Logstash 8.3.0 if you are using Dead Letter or Persistent Queues.
+We recommend not upgrading to Logstash 8.3.0 if you are using dead letter or persistent queues.
 
 
 [[features-8.3.0]]
