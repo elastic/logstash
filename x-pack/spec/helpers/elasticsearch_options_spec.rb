@@ -35,6 +35,21 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
     end
   end
 
+  context "with ca_trusted_fingerprint" do
+    let(:ca_trusted_fingerprint) { SecureRandom.hex(32) }
+    let(:settings) { super().merge("xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint" => ca_trusted_fingerprint) }
+
+    it "creates the elasticsearch output options hash" do
+      expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
+                                                                                      "hosts" => elasticsearch_url,
+                                                                                      "user" => elasticsearch_username,
+                                                                                      "password" => elasticsearch_password,
+                                                                                      "ssl" => true,
+                                                                                      "ca_trusted_fingerprint" => ca_trusted_fingerprint
+                                                                                    )
+    end
+  end
+
   context "with truststore" do
     let(:elasticsearch_truststore_path) { Stud::Temporary.file.path }
     let(:elasticsearch_truststore_password) { "truststore_password" }

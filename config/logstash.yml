@@ -329,7 +329,8 @@
 #xpack.monitoring.elasticsearch.cloud_auth: logstash_system:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.monitoring.elasticsearch.api_key: "id:api_key"
-#xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.monitoring.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
+#xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
 #xpack.monitoring.elasticsearch.ssl.truststore.password: password
 #xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
@@ -352,7 +353,8 @@
 #xpack.management.elasticsearch.cloud_auth: logstash_admin_user:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.management.elasticsearch.api_key: "id:api_key"
-#xpack.management.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.management.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
+#xpack.management.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
 #xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.truststore.password: password
 #xpack.management.elasticsearch.ssl.keystore.path: /path/to/file

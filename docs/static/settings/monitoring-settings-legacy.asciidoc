@@ -65,6 +65,22 @@ You can configure the following Transport Layer Security (TLS) or
 Secure Sockets Layer (SSL) settings. For more information, see 
 <<ls-monitoring-user>>.
 
+`xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint`::
+
+Optional setting that enables you to specify the hex-encoded SHA-256 fingerprint of the
+certificate authority for your {es} instance.
+[NOTE]
+=====
+A self-secured Elasticsearch cluster will provide the fingerprint of its CA to the console during setup.
+
+You can also get the SHA256 fingerprint of an Elasticsearch's CA using the `openssl` command-line utility on the Elasticsearch host:
+
+[source,shell]
+--------------------------------------------------
+openssl x509 -fingerprint -sha256 -in $ES_HOME/config/certs/http_ca.crt
+--------------------------------------------------
+=====
+
 `xpack.monitoring.elasticsearch.ssl.certificate_authority`::
 
 Optional setting that enables you to specify a path to the `.pem` file for the
