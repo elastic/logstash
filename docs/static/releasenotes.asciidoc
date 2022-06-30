@@ -145,6 +145,10 @@ These improvements dramatically decrease network load while also giving users th
 * Feat: add support for TLS v1.3 https://github.com/logstash-plugins/logstash-output-tcp/pull/47[#47]
 * Fix: close server and client sockets on plugin close
 
+[[logstash-8-2-3]]
+=== Logstash 8.2.3 Release Notes
+
+* Updated bundled JDK to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 
 [[logstash-8-2-2]]
 === Logstash 8.2.2 Release Notes
