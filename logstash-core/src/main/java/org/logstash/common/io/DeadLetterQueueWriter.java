@@ -359,9 +359,9 @@ public final class DeadLetterQueueWriter implements Closeable {
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
         if (oldestSegment.isPresent()) {
             final Path beheadedSegment = oldestSegment.get();
-            deleteTailSegment(beheadedSegment, "exceeded retained size");
+            deleteTailSegment(beheadedSegment, "dead letter queue size exceeded dead_letter_queue.max_bytes size(" + maxQueueSize + ")");
         } else {
-            logger.info("Listing of DLQ segments resulted in empty set during storage policy size({}) check", maxQueueSize);
+            logger.info("Queue size {} exceeded, but no complete DLQ segments found", maxQueueSize);
         }
         this.currentQueueSize.set(computeQueueSize());
     }
