@@ -3,7 +3,9 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-1,Logstash 8.3.1>>
 * <<logstash-8-3-0,Logstash 8.3.0>>
+* <<logstash-8-2-3,Logstash 8.2.3>>
 * <<logstash-8-2-2,Logstash 8.2.2>>
 * <<logstash-8-2-1,Logstash 8.2.1>>
 * <<logstash-8-2-0,Logstash 8.2.0>>
@@ -19,30 +21,146 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+[[logstash-8-3-1]]
+=== Logstash 8.3.1 Release Notes
+
+[[notable-8.3.1]]
+==== Notable issues fixed
+
+* We fixed an event serializing incompatibility introduced in 8.3.0 https://github.com/elastic/logstash/pull/14314[#14314]
+  If you're using dead letter queues or persistent queues we recommend that you do not use Logstash 8.3.0 and upgrade to 8.3.1.
 
 [[logstash-8-3-0]]
 === Logstash 8.3.0 Release Notes
 
-coming[8.3.0]
+[[known-issue-8-3-0]]
+==== Known issue
+
+An event serialization bug was discovered, which causes an issue when trying to read dead letter or persistent queues created
+in previous versions of Logstash.
+
+We recommend not upgrading to Logstash 8.3.0 if you are using dead letter or persistent queues.
 
 [[features-8.3.0]]
 ==== New features and enhancements
 
+* {ls} is more efficient at fetching pipelines as of 8.3.0.
+When a {ls} instance sends its pipeline IDs to {es} or central pipeline management in {kib}, it gets back only the pipeline configs that belong to that instance.
+These enhancements required changes to both {ls} https://github.com/elastic/logstash/pull/14076[(#14076)] and {es} https://github.com/elastic/elasticsearch/pull/85847[(#85847)].
++
+These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
+
+* Dead Letter Queues can now be configured to drop older events instead of new ones when they're full. The setting "dead_letter_queue.storage_policy" has been introduced for this purpose, and new metrics - such as a counter for dropped events - are now exposed in the API to better monitor the DLQ behavior. https://github.com/elastic/logstash/pull/13923[#13923] https://github.com/elastic/logstash/pull/14058[#14058]
+
+* To improve security of Logstash deployments, 8.3.0 brings a new setting "allow_superuser" that defaults to false. When enabled it prevents Logstash from starting as super user ("root"). This setting will be enabled by default in the future. Consider explicitly enabling it. Otherwise a deprecation log entry will be emitted. https://github.com/elastic/logstash/pull/14046[#14046] https://github.com/elastic/logstash/pull/14089[#14089]
+
+* Continuing with the focus on security, we've introduced "api.auth.basic.password_policy.mode" to ensure the password used to guard Logstash's HTTP API has a minimum set of strength requirements. By default a warning will be emitted if the defined password doesn't meet the criteria, but in a future release the mode will be set to "ERROR". https://github.com/elastic/logstash/pull/14045[#14045] https://github.com/elastic/logstash/pull/14105[#14105] https://github.com/elastic/logstash/pull/14159[#14159]
+
+* Elasticsearch introduced "security on by default" back in 8.0.0, with TLS enabled by default in its HTTP and transport layers. To facilitate connecting to 8.x clusters, Elasticsearch displays the fingerprint of the Certificate Authority it generates on startup. This release of Logstash introduces support for setting "ca_trusted_fingerprint" in Elasticsearch input, filter and outputs plugins. https://github.com/elastic/logstash/pull/14120[#14120]
+
+* Technical Preview: Receiving events containing keys with characters that have special meaning to Logstash such as `[` and `]` (for field references) has always causes issues to data ingestion. A new setting in Technical Preview, disabled by default, called "config.field_reference.escape_style" was introduced to handle such special characters by escaping them. https://github.com/elastic/logstash/pull/14044[#14044]
 
 [[notable-8.3.0]]
-==== Performance improvements and notable issues fixed
+==== Notable issues fixed
 
-* {ls} is more efficient at fetching pipelines as of 8.3. 
-When a {ls} instance sends its pipeline IDs to {es} or central pipeline management in {kib}, it gets back only the pipeline configs that belong to that instance. 
-These enhancements required changes to both {ls} https://github.com/elastic/logstash/pull/14076[(#14076)] and {es} https://github.com/elastic/elasticsearch/pull/85847[(#85847)].
-+ 
-These improvements dramatically decrease network load while also giving users the ability to control pipelines dynamically using wildcards.
+* Don't display values of password type settings in conditionals https://github.com/elastic/logstash/pull/13997[#13997]
+* Introduce a retry mechanism in pipeline-to-pipeline instead of crashing https://github.com/elastic/logstash/pull/14027[#14027]
+* Add thread safety around Puma startup/shutdown https://github.com/elastic/logstash/pull/14080[#14080]
+* Add value converters for java.time classes https://github.com/elastic/logstash/pull/13972[#13972]
+* Correct the class reference to the MetricNotFound exception https://github.com/elastic/logstash/pull/13970[#13970]
+* Fix a possible corruption of Persistent Queue during a crash of the Logstash process https://github.com/elastic/logstash/pull/14165[#14165]
+
+[[dependencies-8.3.0]]
+==== Updates to dependencies
+
+* The bundled JDK 11 has been updated to 11.0.15+10 https://github.com/elastic/logstash/pull/14031[#14031]
+* Jackson and jackson-databind have been updated to 2.13.3 https://github.com/elastic/logstash/pull/13945[#13945]
 
 [[plugins-8.3.0]]
 ==== Plugin releases
 
+*Avro Codec - 3.4.0*
 
+* Add `encoding` option to select the encoding of Avro payload, could be `binary` or `base64` https://github.com/logstash-plugins/logstash-codec-avro/pull/39[#39]
 
+*Elasticsearch Filter - 3.12.0*
+
+* Add support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/158[#158]
+
+*Fingerprint Filter - 3.4.0*
+
+* Add support for 128bit murmur variant https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/66[#66].
+
+*Azure_event_hubs Input - 1.4.4*
+
+* Fix: Replace use of block with lambda to fix wrong number of arguments error on jruby-9.3.4.0 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/75[#75]
+
+*Beats Input - 6.4.0*
+
+* Feat: review and deprecate ssl protocol/cipher settings https://github.com/logstash-plugins/logstash-input-beats/pull/450[#450]
+
+*Elasticsearch Input - 4.14.0*
+
+* Refactor: switch to using scheduler mixin https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/177[#177]
+* Add support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/178[#178]
+
+*Http Input - 3.6.0*
+
+* Feat: review and deprecate ssl protocol/cipher related settings https://github.com/logstash-plugins/logstash-input-http/pull/151[#151]
+
+*Jms Input - 3.2.2*
+
+* Fix: Remove usage of `java_kind_of?` to allow this plugin to be supported for versions of Logstash using jruby-9.3.x
+ https://github.com/logstash-plugins/logstash-input-jms/pull/54[#54]
+
+*S3 Input - 3.8.4*
+
+* Refactoring, reuse code to manage `additional_settings` from mixin-aws https://github.com/logstash-plugins/logstash-input-s3/pull/237[#237]
+
+*Sqs Input - 3.3.2*
+
+* Fix an issue that prevented timely shutdown when subscribed to an inactive queue
+* Refactoring: used logstash-mixin-aws to leverage shared code to manage `additional_settings` https://github.com/logstash-plugins/logstash-input-sqs/pull/64[#64]
+
+*Tcp Input - 6.3.0*
+
+* Feat: ssl_supported_protocols (TLSv1.3) + ssl_cipher_suites https://github.com/logstash-plugins/logstash-input-tcp/pull/198[#198]
+
+*Jdbc Integration - 5.3.0*
+
+* Refactor: start using scheduler mixin https://github.com/logstash-plugins/logstash-integration-jdbc/pull/110[#110]
+* Fix: change default path of 'last_run_metadata_path' to be rooted in the LS data.path folder and not in $HOME https://github.com/logstash-plugins/logstash-integration-jdbc/pull/106[#106]
+
+*Kafka Integration - 10.12.0*
+
+* bump kafka client to 2.8.1 https://github.com/logstash-plugins/logstash-integration-kafka/pull/115[#115]
+* Feat: add connections_max_idle_ms setting for output https://github.com/logstash-plugins/logstash-integration-kafka/pull/118[#118]
+
+*Aws Mixin - 5.1.0*
+
+* Add support for 'additional_settings' configuration options used by S3 and SQS input plugins https://github.com/logstash-plugins/logstash-mixin-aws/pull/53[#53].
+* Drop support for aws-sdk-v1
+
+*Elasticsearch Output - 11.6.0*
+
+* Add support for `ca_trusted_fingerprint` when run on Logstash 8.3+ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1074[#1074]
+* Feat: add ssl_supported_protocols option https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1055[#1055]
+* [DOC] Add `v8` to supported values for ecs_compatiblity defaults https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1059[#1059]
+
+*S3 Output - 4.3.7*
+
+* Refactor: avoid usage of ConcurrentHashMap (JRuby 9.3.4 work-around) https://github.com/logstash-plugins/logstash-output-s3/pull/248[#248]
+* Docs: more documentation on restore + temp dir https://github.com/logstash-plugins/logstash-output-s3/pull/236[#236]
+
+*Tcp Output - 6.1.0*
+
+* Feat: add support for TLS v1.3 https://github.com/logstash-plugins/logstash-output-tcp/pull/47[#47]
+* Fix: close server and client sockets on plugin close
+
+[[logstash-8-2-3]]
+=== Logstash 8.2.3 Release Notes
+
+* Updated bundled JDK to 11.0.15+10 https://github.com/elastic/logstash/pull/14152[#14152]
 
 [[logstash-8-2-2]]
 === Logstash 8.2.2 Release Notes
