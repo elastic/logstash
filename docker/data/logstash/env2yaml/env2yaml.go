@@ -84,6 +84,7 @@ func normalizeSetting(setting string) (string, error) {
 		"dead_letter_queue.max_bytes",
 		"dead_letter_queue.flush_interval",
 		"dead_letter_queue.storage_policy",
+		"dead_letter_queue.retain.age",
 		"path.dead_letter_queue",
 		"http.enabled",     // DEPRECATED: prefer `api.enabled`
 		"http.environment", // DEPRECATED: prefer `api.environment`

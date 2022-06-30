@@ -26,11 +26,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +59,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.common.io.QueueStorageType;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
@@ -289,22 +296,52 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
-                final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
-
-                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
-                    context.runtime,
-                    DeadLetterQueueFactory.getWriter(
-                        pipelineId.asJavaString(),
-                        getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue(),
-                        Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue()),
-                        storageType)
-                    );
+                final DeadLetterQueueWriter javaDlqWriter = createDeadLetterQueueWriterFromSettings(context);
+                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(context.runtime, javaDlqWriter);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
         return dlqWriter;
+    }
+
+    private DeadLetterQueueWriter createDeadLetterQueueWriterFromSettings(ThreadContext context) {
+        final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
+
+        String dlqPath = getSetting(context, "path.dead_letter_queue").asJavaString();
+        long dlqMaxBytes = getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue();
+        Duration dlqFlushInterval = Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue());
+
+        if (hasSetting(context, "dead_letter_queue.retain.age") && !getSetting(context, "dead_letter_queue.retain.age").isNil()) {
+            // convert to Duration
+            final Duration age = parseToDuration(getSetting(context, "dead_letter_queue.retain.age").convertToString().toString());
+            return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes,
+                    dlqFlushInterval, storageType, age);
+        }
+
+        return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes, dlqFlushInterval, storageType);
+    }
+
+    /**
+     * Convert time strings like 3d or 4h or 5m to a duration
+     * */
+    @VisibleForTesting
+    static Duration parseToDuration(String timeStr) {
+        final Matcher matcher = Pattern.compile("(?<value>\\d+)\\s*(?<time>[dhms])").matcher(timeStr);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Expected a time specification in the form <number>[d,h,m,s], e.g. 3m, but found [" + timeStr + "]");
+        }
+        final int value = Integer.parseInt(matcher.group("value"));
+        final String timeSpecifier = matcher.group("time");
+        final TemporalUnit unit;
+        switch (timeSpecifier) {
+            case "d": unit = ChronoUnit.DAYS; break;
+            case "h": unit = ChronoUnit.HOURS; break;
+            case "m": unit = ChronoUnit.MINUTES; break;
+            case "s": unit = ChronoUnit.SECONDS; break;
+            default: throw new IllegalStateException("Expected a time unit specification from d,h,m,s but found: [" + timeSpecifier + "]");
+        }
+        return Duration.of(value, unit);
     }
 
     @JRubyMethod(name = "dlq_enabled?")

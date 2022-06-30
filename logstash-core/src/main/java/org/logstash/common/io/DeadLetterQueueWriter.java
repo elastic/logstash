@@ -42,10 +42,13 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalAmount;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
@@ -53,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -68,7 +72,9 @@ import org.logstash.Timestamp;
 import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
 import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
+import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public final class DeadLetterQueueWriter implements Closeable {
 
@@ -84,7 +90,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private final QueueStorageType storageType;
-    private LongAdder currentQueueSize;
+    private AtomicLong currentQueueSize;
     private final Path queuePath;
     private final FileLock fileLock;
     private volatile RecordIOWriter currentWriter;
@@ -96,24 +102,70 @@ public final class DeadLetterQueueWriter implements Closeable {
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
     private String lastError = "no errors";
+    private final Clock clock;
+    private Optional<Timestamp> oldestSegmentTimestamp;
+    private Optional<Path> oldestSegmentPath;
+    private final TemporalAmount retentionTime;
 
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, QueueStorageType.DROP_NEWER);
+    public static final class Builder {
+
+        private final Path queuePath;
+        private final long maxSegmentSize;
+        private final long maxQueueSize;
+        private final Duration flushInterval;
+        private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
+        private Duration retentionTime = null;
+        private Clock clock = Clock.systemDefaultZone();
+
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval) {
+            this.queuePath = queuePath;
+            this.maxSegmentSize = maxSegmentSize;
+            this.maxQueueSize = maxQueueSize;
+            this.flushInterval = flushInterval;
+        }
+
+        public Builder storageType(QueueStorageType storageType) {
+            this.storageType = storageType;
+            return this;
+        }
+
+        public Builder retentionTime(Duration retentionTime) {
+            this.retentionTime = retentionTime;
+            return this;
+        }
+
+        @VisibleForTesting
+        Builder clock(Clock clock) {
+            this.clock = clock;
+            return this;
+        }
+
+        public DeadLetterQueueWriter build() throws IOException {
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock);
+        }
     }
 
-    public DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                 final Duration flushInterval, final QueueStorageType storageType) throws IOException {
+    public static Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                                     final Duration flushInterval) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval);
+    }
+
+    private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                          final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
+                          final Clock clock) throws IOException {
+        this.clock = clock;
+
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;
         this.storageType = storageType;
         this.flushInterval = flushInterval;
-        this.currentQueueSize = new LongAdder();
-        this.currentQueueSize.add(getStartupQueueSize());
+        this.currentQueueSize = new AtomicLong(computeQueueSize());
+        this.retentionTime = retentionTime;
 
         cleanupTempFiles();
+        updateOldestSegmentReference();
         currentSegmentIndex = listSegmentPaths(queuePath)
                 .map(s -> s.getFileName().toString().split("\\.")[0])
                 .mapToInt(Integer::parseInt)
@@ -197,6 +249,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
+        executeAgeRetentionPolicy();
+
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             if (storageType == QueueStorageType.DROP_NEWER) {
                 lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
@@ -212,8 +266,90 @@ public final class DeadLetterQueueWriter implements Closeable {
         if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             finalizeSegment(FinalizeWhen.ALWAYS);
         }
-        currentQueueSize.add(currentWriter.writeEvent(record));
+        currentQueueSize.getAndAdd(currentWriter.writeEvent(record));
         lastWrite = Instant.now();
+    }
+
+    private void executeAgeRetentionPolicy() throws IOException {
+        if (isOldestSegmentExpired()) {
+            deleteExpiredSegments();
+        }
+    }
+
+    private boolean isOldestSegmentExpired() {
+        if (retentionTime == null) {
+            return false;
+        }
+        final Instant now = clock.instant();
+        return oldestSegmentTimestamp
+                .map(t -> t.toInstant().isBefore(now.minus(retentionTime)))
+                .orElse(false);
+    }
+
+    private void deleteExpiredSegments() throws IOException {
+        // remove all the old segments that verifies the age retention condition
+        boolean cleanNextSegment;
+        do {
+            if (oldestSegmentPath.isPresent()) {
+                Path beheadedSegment = oldestSegmentPath.get();
+                deleteTailSegment(beheadedSegment, "age retention policy");
+            }
+            updateOldestSegmentReference();
+            cleanNextSegment = isOldestSegmentExpired();
+        } while (cleanNextSegment);
+
+        this.currentQueueSize.set(computeQueueSize());
+    }
+
+    private void deleteTailSegment(Path segment, String motivation) throws IOException {
+        try {
+            Files.delete(segment);
+            logger.debug("Removed segment file {} due to {}", motivation, segment);
+        } catch (NoSuchFileException nsfex) {
+            // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
+            logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
+        }
+    }
+
+    private void updateOldestSegmentReference() throws IOException {
+        oldestSegmentPath = listSegmentPaths(this.queuePath).sorted().findFirst();
+        if (!oldestSegmentPath.isPresent()) {
+            oldestSegmentTimestamp = Optional.empty();
+            return;
+        }
+        // extract the newest timestamp from the oldest segment
+        Optional<Timestamp> foundTimestamp = readTimestampOfLastEventInSegment(oldestSegmentPath.get());
+        if (!foundTimestamp.isPresent()) {
+            // clean also the last segment, because doesn't contain a timestamp (corrupted maybe)
+            // or is not present anymore
+            oldestSegmentPath = Optional.empty();
+        }
+        oldestSegmentTimestamp = foundTimestamp;
+    }
+
+    /**
+     * Extract the timestamp from the last DLQEntry it finds in the given segment.
+     * Start from the end of the latest block, and going backward try to read the next event from its start.
+     * */
+    private static Optional<Timestamp> readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
+        final int lastBlockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;
+        byte[] eventBytes;
+        try (RecordIOReader recordReader = new RecordIOReader(segmentPath)) {
+            int blockId = lastBlockId;
+            do {
+                recordReader.seekToBlock(blockId);
+                eventBytes = recordReader.readEvent();
+                blockId--;
+            } while (eventBytes == null && blockId >= 0); // no event present in last block, try with the one before
+        } catch (NoSuchFileException nsfex) {
+            // the segment file may have been removed by the clean consumed feature on the reader side
+            return Optional.empty();
+        }
+        if (eventBytes == null) {
+            logger.warn("Cannot find a complete event into the segment file [{}], this is a DLQ segment corruption", segmentPath);
+            return Optional.empty();
+        }
+        return Optional.of(DLQEntry.deserialize(eventBytes).getEntryTime());
     }
 
     // package-private for testing
@@ -221,14 +357,13 @@ public final class DeadLetterQueueWriter implements Closeable {
         // remove oldest segment
         final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
                 .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
-        if (!oldestSegment.isPresent()) {
-            throw new IllegalStateException("Listing of DLQ segments resulted in empty set during storage policy size(" + maxQueueSize + ") check");
+        if (oldestSegment.isPresent()) {
+            final Path beheadedSegment = oldestSegment.get();
+            deleteTailSegment(beheadedSegment, "dead letter queue size exceeded dead_letter_queue.max_bytes size(" + maxQueueSize + ")");
+        } else {
+            logger.info("Queue size {} exceeded, but no complete DLQ segments found", maxQueueSize);
         }
-        final Path beheadedSegment = oldestSegment.get();
-        final long segmentSize = Files.size(beheadedSegment);
-        currentQueueSize.add(-segmentSize);
-        Files.delete(beheadedSegment);
-        logger.debug("Deleted exceeded retained size segment file {}", beheadedSegment);
+        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**
@@ -271,6 +406,8 @@ public final class DeadLetterQueueWriter implements Closeable {
                 Files.move(queuePath.resolve(String.format(TEMP_FILE_PATTERN, currentSegmentIndex)),
                         queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, currentSegmentIndex)),
                         StandardCopyOption.ATOMIC_MOVE);
+                updateOldestSegmentReference();
+                executeAgeRetentionPolicy();
                 if (isOpen()) {
                     nextWriter();
                 }
@@ -292,16 +429,19 @@ public final class DeadLetterQueueWriter implements Closeable {
         flushScheduler.scheduleAtFixedRate(this::flushCheck, 1L, 1L, TimeUnit.SECONDS);
     }
 
-    private long getStartupQueueSize() throws IOException {
-        return listSegmentPaths(queuePath)
-                .mapToLong((p) -> {
-                    try {
-                        return Files.size(p);
-                    } catch (IOException e) {
-                        throw new IllegalStateException(e);
-                    }
-                } )
+
+    private long computeQueueSize() throws IOException {
+        return listSegmentPaths(this.queuePath)
+                .mapToLong(DeadLetterQueueWriter::safeFileSize)
                 .sum();
+    }
+
+    private static long safeFileSize(Path p) {
+        try {
+            return Files.size(p);
+        } catch (IOException e) {
+            return 0L;
+        }
     }
 
     private void releaseFileLock() {
@@ -319,7 +459,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     private void nextWriter() throws IOException {
         currentWriter = new RecordIOWriter(queuePath.resolve(String.format(TEMP_FILE_PATTERN, ++currentSegmentIndex)));
-        currentQueueSize.increment();
+        currentQueueSize.incrementAndGet();
     }
 
     // Clean up existing temp files - files with an extension of .log.tmp. Either delete them if an existing
