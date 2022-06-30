@@ -40,11 +40,10 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -101,6 +100,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
+    private final LongAdder discardedEvents = new LongAdder();
     private String lastError = "no errors";
     private final Clock clock;
     private Optional<Timestamp> oldestSegmentTimestamp;
@@ -193,6 +193,10 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getDroppedEvents() {
         return droppedEvents.longValue();
+    }
+
+    public long getDiscardedEvents() {
+        return discardedEvents.longValue();
     }
 
     public String getLastError() {
@@ -292,7 +296,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         do {
             if (oldestSegmentPath.isPresent()) {
                 Path beheadedSegment = oldestSegmentPath.get();
-                deleteTailSegment(beheadedSegment, "age retention policy");
+                discardedEvents.add(deleteTailSegment(beheadedSegment, "age retention policy")
+                        .orElse(0L));
             }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
@@ -301,13 +306,77 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.set(computeQueueSize());
     }
 
-    private void deleteTailSegment(Path segment, String motivation) throws IOException {
+    /**
+     * Deletes the segment path, if present. Also return the number of events it contains.
+     *
+     * @param segment
+     *      The segment file to delete.
+     * @param motivation
+     *      Description of delete motivation.
+     * @return the number of events contained in the segment or empty optional if the segment was already
+     *      removed.
+     * */
+    private Optional<Long> deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
+            long eventsInSegment = countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Removed segment file {} due to {}", motivation, segment);
+            return Optional.of(eventsInSegment);
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
             logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Count the number of 'c' and 's' records in segment.
+     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
+     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
+     * */
+    @SuppressWarnings("fallthrough")
+    private long countEventsInSegment(Path segment) throws IOException {
+        try (FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ)) {
+            // verify minimal segment size
+            if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
+                return 0L;
+            }
+
+            // skip the DLQ version byte
+            channel.position(1);
+            int posInBlock = 0;
+            int currentBlockIdx = 0;
+            long countedEvents = 0;
+            do {
+                ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
+                long startPosition = channel.position();
+                // if record header can't be fully contained in the block, align to the next
+                if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
+                    channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
+                    posInBlock = 0;
+                }
+
+                channel.read(headerBuffer);
+                headerBuffer.flip();
+                RecordHeader recordHeader = RecordHeader.get(headerBuffer);
+                if (recordHeader == null) {
+                    logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
+                    throw new IllegalStateException("Can't decode record header at position " + startPosition);
+                }
+
+                switch (recordHeader.getType()) {
+                    case START:
+                    case COMPLETE:
+                        countedEvents++;
+                    case MIDDLE:
+                    case END: {
+                        channel.position(channel.position() + recordHeader.getSize());
+                        posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+                    }
+                }
+            } while (channel.position() < channel.size());
+
+            return countedEvents;
         }
     }
 
