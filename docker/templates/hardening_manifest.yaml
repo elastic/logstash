@@ -40,7 +40,7 @@ labels:
 # List of resources to make available to the offline build context
 resources:
 - filename: logstash-{{ elastic_version }}-linux-x86_64.tar.gz
-  url: https://artifacts.elastic.co/downloads/logstash/logstash-{{ elastic_version }}-linux-x86_64.tar.gz
+  url: <artifact_path>/logstash-{{ elastic_version }}-linux-x86_64.tar.gz
   validation:
     type: sha512
     value: <INSERT SHA512 VALUE FROM https://artifacts.elastic.co/downloads/logstash/logstash-{{ elastic_version }}-linux-x86_64.tar.gz.sha512>
