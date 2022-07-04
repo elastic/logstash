@@ -82,7 +82,9 @@ module LogStash
     # and +text+ additional info
     # @overload
     def connection_error(error, req, text="HTTP connection error")
-      @logger.error(text, error: error, request: req)
+      details = { error: error, request: req }
+      details[:backtrace] = error.backtrace if @logger.debug?
+      @logger.error(text, details)
     end
 
     # An HTTP parse error has occurred.
@@ -98,7 +100,7 @@ module LogStash
     def ssl_error(error, ssl_socket)
       peer = ssl_socket.peeraddr.last rescue "<unknown>"
       peer_cert = ssl_socket.peercert&.subject
-      @error_logger.info("SSL error", error: error, peer: peer, peer_cert: peer_cert)
+      @logger.info("SSL error", error: error, peer: peer, peer_cert: peer_cert)
     end
 
     # An unknown error has occurred.
@@ -106,7 +108,9 @@ module LogStash
     # and +text+ additional info
     # @overload
     def unknown_error(error, req=nil, text="Unknown error")
-      @logger.error(text, error: error, request: req)
+      details = { error: error, request: req }
+      details[:backtrace] = error.backtrace if @logger.debug?
+      @logger.error(text, details)
     end
 
     # Log occurred error debug dump.
@@ -114,7 +118,8 @@ module LogStash
     # and +text+ additional info
     # @overload
     def debug_error(error, req=nil, text="")
-      @logger.debug(text, error: error, request: req)
+      return unless @logger.debug?
+      @logger.debug(text, error: error, request: req, backtrace: error.backtrace)
     end
 
   end

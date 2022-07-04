@@ -23,7 +23,7 @@ require 'logstash/util'
 require 'logstash/webserver'
 
 describe 'api webserver' do
-  let!(:logger) { double("Logger").as_null_object }
+  let(:logger) { LogStash::WebServer.logger }
   let!(:agent) { double("Agent").as_null_object }
   subject(:webserver) { LogStash::WebServer.new(logger, agent, webserver_options) }
 
