@@ -96,7 +96,7 @@ describe 'api webserver' do
           # If this fails, we cannot trust success from the other specs
           context 'without providing CA' do
             it 'fails' do
-              client = Manticore::Client.new(ssl: { })
+              client = Manticore::Client.new(automatic_retries: 0, ssl: { })
               expect do
                 client.get("https://127.0.0.1:#{webserver.port}").code
               end.to raise_error(Manticore::ClientProtocolException, a_string_including("unable to find valid certification path to requested target"))
@@ -106,7 +106,7 @@ describe 'api webserver' do
 
         context 'an HTTP request' do
           it 'fails' do
-            client = Manticore::Client.new
+            client = Manticore::Client.new(automatic_retries: 1)
             expect do
               client.get("http://127.0.0.1:#{webserver.port}").code
             end.to raise_error(Manticore::ClientProtocolException, a_string_including("failed to respond"))
