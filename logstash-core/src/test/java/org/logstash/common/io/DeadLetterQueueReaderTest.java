@@ -957,6 +957,11 @@ public class DeadLetterQueueReaderTest {
         public void segmentCompleted() {
             notified = true;
         }
+
+        @Override
+        public void segmentsDeleted(int numberOfSegments, long numberOfEvents) {
+            // no-op
+        }
     }
 
     @Test
@@ -986,7 +991,7 @@ public class DeadLetterQueueReaderTest {
     public void testReaderWithCleanConsumedIsEnabledWhenSetCurrentPositionCleanupTrashedSegments() throws IOException {
         prepareFilledSegmentFiles(2);
 
-        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, new MockSegmentListener())) {
             final List<Path> allSegments = listSegmentsSorted(dir);
             verifySegmentFiles(allSegments, "1.log", "2.log");
 
@@ -1013,8 +1018,6 @@ public class DeadLetterQueueReaderTest {
                 .collect(Collectors.toList());
     }
 
-    private void silentCallback() {}
-
 
     @Test
     public void testReaderCleanMultipleConsumedSegmentsAfterMarkForDelete() throws IOException, InterruptedException {
@@ -1026,7 +1029,7 @@ public class DeadLetterQueueReaderTest {
         // simulate a writer's segment head
         Files.createFile(dir.resolve("4.log.tmp"));
 
-        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, new MockSegmentListener())) {
             verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
 
             // consume fully two segments plus one more event to trigger the endOfStream on the second segment
@@ -1054,8 +1057,8 @@ public class DeadLetterQueueReaderTest {
     @Test
     @SuppressWarnings("try")
     public void testReaderLockProhibitMultipleInstances() throws IOException {
-        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
-            try (DeadLetterQueueReader secondReader = new DeadLetterQueueReader(dir, true, this::silentCallback)) {
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, new MockSegmentListener())) {
+            try (DeadLetterQueueReader secondReader = new DeadLetterQueueReader(dir, true, new MockSegmentListener())) {
             } catch (LockException lockException) {
                 // ok it's expected to happen here
                 assertThat(lockException.getMessage(), startsWith("Existing `dlg_reader.lock` file"));
