@@ -29,17 +29,26 @@ openssl req -new -key server_from_root.key -out server_from_root.csr -subj "/C=P
 openssl x509 -req -extensions server_cert -extfile ../openssl.cnf -days 1000 -in server_from_root.csr -CA root.crt -CAkey root.key -set_serial 03 -out server_from_root.crt
 
 
-# Client certificates - We don't need them now
+# Client certificates
 
 # client certificate from intermediate CA
-openssl genrsa -out client_from_intermediate.key 4096
-openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
+#openssl genrsa -out client_from_intermediate.key 4096
+#openssl req -new -key client_from_intermediate.key -out client_from_intermediate.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+#openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_intermediate.csr -CA intermediate-ca.crt -CAkey intermediate-ca.key -set_serial 04 -out client_from_intermediate.crt
+
+# client certificate from root
+#openssl genrsa -out client_from_root.key 4096
+#openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
+#openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
+
+# client's certificate authority
+openssl genrsa -out client_root.key 4096
+openssl req -new -x509 -days 1826 -extensions ca -key client_root.key -out client_root.crt -subj "/C=PT/ST=NA/L=Porto/O=MyLab/CN=client_root" -config ../openssl.cnf
 
 # client certificate from root
 openssl genrsa -out client_from_root.key 4096
-openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Lisbon/O=MyLab/CN=client" -config ../openssl.cnf
-openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA root.crt -CAkey root.key -set_serial 04 -out client_from_root.crt
+openssl req -new -key client_from_root.key -out client_from_root.csr -subj "/C=PT/ST=NA/L=Porto/O=MyLab/CN=client" -config ../openssl.cnf
+openssl x509 -req -extensions client_cert -extfile ../openssl.cnf -days 1000 -in client_from_root.csr -CA client_root.crt -CAkey client_root.key -set_serial 04 -out client_from_root.crt
 
 # create server chain pems.
 cat intermediate-ca.crt server_from_intermediate.crt > server_from_intermediate.chain.crt
@@ -61,12 +70,15 @@ openssl verify -CAfile root.crt server_from_intermediate.chain.crt
 # create pkcs12 keystores (pass:12345678)
 openssl pkcs12 -export -in server_from_intermediate.chain.crt -inkey server_from_intermediate.key -out server_from_intermediate.p12 -name "server_from_intermediate" -passout 'pass:12345678'
 openssl pkcs12 -export -in server_from_root.chain.crt -inkey server_from_root.key -out server_from_root.p12 -name "server_from_root" -passout 'pass:12345678'
-# truststore (without password)
-openssl pkcs12 -export -in root.crt -inkey root.key -out root.p12 -name "root" -passout 'pass:'
 
 # use java keytool to convert all pkcs12 keystores to jks-format keystores (pass:12345678)
 keytool -importkeystore -srckeystore server_from_intermediate.p12 -srcstoretype pkcs12 -srcstorepass 12345678 -destkeystore server_from_intermediate.jks -deststorepass 12345678 -alias server_from_intermediate
 keytool -importkeystore -srckeystore server_from_root.p12 -srcstoretype pkcs12 -srcstorepass 12345678 -destkeystore server_from_root.jks -deststorepass 12345678 -alias server_from_root
+
+# generate an empty trust-store and import client CA
+keytool -genkey -keyalg RSA -keysize 2048 -keystore client_root.jks -storepass 123456 -storetype jks -alias temp -keypass unused -dname "CN=temp, OU=Temp, O=MyLab, L=Porto, ST=NA, C=PT"
+keytool -delete -alias temp -storepass 123456 -keystore client_root.jks
+keytool -import -trustcacerts -alias client_root -file client_root.crt -keystore client_root.jks -storepass 123456 -noprompt
 
 # cleanup csr, we don't need them
 rm -rf *.csr
