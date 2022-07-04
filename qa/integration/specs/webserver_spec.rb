@@ -114,5 +114,99 @@ describe 'api webserver' do
         end
       end
     end
+
+    context "when using truststore" do
+      let(:keystore_path) { File.join(certs_path, 'server_from_root.p12') }
+      let(:truststore_path) { File.join(certs_path, 'client_root.jks') }
+      let(:ca_file) { File.join(certs_path, "root.crt") }
+
+      let(:ssl_params) do
+        {
+          :keystore_path => keystore_path,
+          :keystore_password => LogStash::Util::Password.new(keystore_password),
+          :truststore_path => truststore_path
+        }
+      end
+      let(:webserver_options) { super().merge(:ssl_params => ssl_params) }
+
+      context "when started" do
+        include_context 'running webserver'
+
+        context 'an HTTPS request' do
+          it 'succeeds' do
+            client = Manticore::Client.new(automatic_retries: 0, ssl: { ca_file: ca_file })
+            response = client.get("https://127.0.0.1:#{webserver.port}")
+            expect(response.code).to eq(200)
+          end
+
+          # this is mostly a sanity check for our testing methodology
+          # If this fails, we cannot trust success from the other specs
+          context 'without providing CA' do
+            it 'fails' do
+              client = Manticore::Client.new(automatic_retries: 1, ssl: { })
+              expect do
+                client.get("https://127.0.0.1:#{webserver.port}").code
+              end.to raise_error(Manticore::ClientProtocolException, a_string_including("unable to find valid certification path to requested target"))
+            end
+          end
+        end
+
+        context 'full verification' do
+
+          let(:ssl_params) { super().merge :verification_mode => 'full' }
+          let(:client_cert) { File.join(certs_path, "client_from_root.crt") }
+          let(:client_key) { File.join(certs_path, "client_from_root.key") }
+
+          let(:curl_base_opts) { "--tlsv1.2 --tls-max 1.3" }
+
+          it 'works with client certificate' do
+            expect(logger).to_not receive(:info)
+
+            # NOTE: not using Manticore as I failed to get it to properly sent client certificate during TLS.
+            # client = Manticore::Client.new(automatic_retries: 0,
+            #                                ssl: { ca_file: ca_file,
+            #                                       client_cert: OpenSSL::X509::Certificate.new(File.read(client_cert)),
+            #                                       client_key: OpenSSL::PKey.read(client_key),
+            #                                       verify: :strict })
+
+            curl_opts = curl_base_opts + " --cacert #{ca_file}" + " --cert #{client_cert}" + " --key #{client_key}"
+            res = do_curl("https://127.0.0.1:#{webserver.port}", curl_opts)
+          end
+
+          it 'fails' do
+            expect(logger).to receive(:info).with('SSL error', hash_including(error: kind_of(Puma::MiniSSL::SSLError)))
+
+            curl_opts = curl_base_opts + " --cacert #{ca_file}"
+            expect do
+              do_curl("https://127.0.0.1:#{webserver.port}", curl_opts)
+            end.to raise_error(RuntimeError, /Empty reply from server/)
+          end
+        end
+      end
+    end
+
   end
+
+  def do_curl(url, opts); require 'open3'
+    cmd = "curl -s -v --show-error #{opts} -X GET -k #{url}"
+    begin
+      out, err, status = Open3.capture3(cmd)
+    rescue Errno::ENOENT
+      fail "curl not available, make sure curl binary is installed and available on $PATH"
+    end
+
+    if status.success?
+      http_status = err.match(/< HTTP\/1.1 (\d+)/)[1] || '0' # < HTTP/1.1 200 OK\r\n
+
+      if http_status.strip[0].to_i > 2
+        warn out
+        fail "#{cmd.inspect} unexpected response: #{http_status}\n\n#{err}"
+      end
+      return http_status
+    else
+      warn out
+      fail "#{cmd.inspect} process failed: #{status}\n\n#{err}"
+    end
+  end
+
 end
