@@ -58,6 +58,10 @@ describe 'api webserver' do
     end
   end
 
+  let(:certs_path) { File.expand_path("../../fixtures/webserver_certs/generated", __FILE__) }
+  let(:ca_file) { File.join(certs_path, "root.crt") }
+  let(:keystore_password) { "12345678" }
+
   %w(
       server_from_root.p12
       server_from_intermediate.p12
@@ -65,10 +69,8 @@ describe 'api webserver' do
       server_from_intermediate.jks
     ).each do |keystore_name|
     context "when configured with keystore #{keystore_name}" do
-      let(:ca_file) { File.join(certs_path, "root.crt") }
-      let(:certs_path) { File.expand_path("../../fixtures/webserver_certs/generated", __FILE__) }
+
       let(:keystore_path) { File.join(certs_path, "#{keystore_name}") }
-      let(:keystore_password) { "12345678" }
 
       let(:ssl_params) { {:keystore_path => keystore_path, :keystore_password => LogStash::Util::Password.new(keystore_password)} }
       let(:webserver_options) { super().merge(:ssl_params => ssl_params) }
@@ -76,7 +78,7 @@ describe 'api webserver' do
       context 'and invalid credentials' do
         let(:keystore_password) { "wrong" }
         it 'raises a helpful error' do
-          expect { webserver }.to raise_error(ArgumentError, a_string_including("keystore password was incorrect"))
+          expect { webserver }.to raise_error(ArgumentError, /keystore password was incorrect|or password was incorrect/) # .p12 vs .jks error message
         end
       end
 
