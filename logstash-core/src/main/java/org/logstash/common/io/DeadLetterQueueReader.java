@@ -39,6 +39,8 @@
 package org.logstash.common.io;
 
 import java.io.Closeable;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -58,10 +60,12 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
+import java.util.LongSummaryStatistics;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,6 +82,8 @@ public final class DeadLetterQueueReader implements Closeable {
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
     private RecordIOReader lastConsumedReader;
+    private final LongAdder consumedEvents = new LongAdder();
+    private final LongAdder consumedSegments = new LongAdder();
 
     // config settings
     private final boolean cleanConsumed;
@@ -283,7 +289,15 @@ public final class DeadLetterQueueReader implements Closeable {
 
         // delete segment file only after current reader is closed.
         // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
-        deleteSegment(lastConsumedSegmentPath);
+        final long deletedEvents = deleteSegment(lastConsumedSegmentPath).orElse(0L);
+
+        // update consumed metrics
+        consumedEvents.add(deletedEvents);
+        consumedSegments.increment();
+
+        // publish the metrics to the listener
+        segmentCallback.segmentsDeleted(consumedSegments.intValue(), consumedEvents.longValue());
+
         lastConsumedReader = null;
     }
 
@@ -344,8 +358,15 @@ public final class DeadLetterQueueReader implements Closeable {
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
         try (final Stream<Path> segmentFiles = listSegmentPaths(queuePath)) {
-            segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
-                  .forEach(this::deleteSegment);
+            LongSummaryStatistics deletionStats = segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
+                    .map(this::deleteSegment)
+                    .map(o -> o.orElse(0L))
+                    .mapToLong(Long::longValue)
+                    .summaryStatistics();
+
+            // update consumed metrics
+            consumedSegments.add(deletionStats.getCount());
+            consumedEvents.add(deletionStats.getSum());
         }
     }
 
@@ -370,13 +391,22 @@ public final class DeadLetterQueueReader implements Closeable {
         return timestamp1.compareTo(timestamp2);
     }
 
-    private void deleteSegment(Path segment) {
+    /**
+     * Remove the segment from internal tracking data structures and physically delete the corresponding
+     * file from filesystem.
+     *
+     * @return the number events contained in the removed segment, empty if a problem happened during delete.
+     * */
+    private Optional<Long> deleteSegment(Path segment) {
         segments.remove(segment);
         try {
+            long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Deleted segment {}", segment);
+            return Optional.of(eventsInSegment);
         } catch (IOException ex) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
+            return Optional.empty();
         }
     }
 
@@ -397,6 +427,14 @@ public final class DeadLetterQueueReader implements Closeable {
 
     public long getCurrentPosition() {
         return currentReader.getChannelPosition();
+    }
+
+    long getConsumedEvents() {
+        return consumedEvents.longValue();
+    }
+
+    int getConsumedSegments() {
+        return consumedSegments.intValue();
     }
 
     @Override

@@ -40,14 +40,11 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -366,7 +363,7 @@ public final class DeadLetterQueueWriter implements Closeable {
      * */
     private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
-            long eventsInSegment = countEventsInSegment(segment);
+            long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Removed segment file {} due to {}", motivation, segment);
             return eventsInSegment;
@@ -377,57 +374,60 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    /**
-     * Count the number of 'c' and 's' records in segment.
-     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
-     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
-     * */
-    @SuppressWarnings("fallthrough")
-    private long countEventsInSegment(Path segment) throws IOException {
-        try (FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ)) {
-            // verify minimal segment size
-            if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
-                return 0L;
-            }
-
-            // skip the DLQ version byte
-            channel.position(1);
-            int posInBlock = 0;
-            int currentBlockIdx = 0;
-            long countedEvents = 0;
-            do {
-                ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
-                long startPosition = channel.position();
-                // if record header can't be fully contained in the block, align to the next
-                if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
-                    channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
-                    posInBlock = 0;
-                }
-
-                channel.read(headerBuffer);
-                headerBuffer.flip();
-                RecordHeader recordHeader = RecordHeader.get(headerBuffer);
-                if (recordHeader == null) {
-                    // continue with next record, skipping this
-                    logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
-                } else {
-                    switch (recordHeader.getType()) {
-                        case START:
-                        case COMPLETE:
-                            countedEvents++;
-                        case MIDDLE:
-                        case END: {
-                            channel.position(channel.position() + recordHeader.getSize());
-                            posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
-                        }
-                    }
-                }
-            } while (channel.position() < channel.size());
-
-            return countedEvents;
-        }
-    }
-
+//<<<<<<< HEAD
+//    /**
+//     * Count the number of 'c' and 's' records in segment.
+//     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
+//     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
+//     * */
+//    @SuppressWarnings("fallthrough")
+//    private long countEventsInSegment(Path segment) throws IOException {
+//        try (FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ)) {
+//            // verify minimal segment size
+//            if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
+//                return 0L;
+//            }
+//
+//            // skip the DLQ version byte
+//            channel.position(1);
+//            int posInBlock = 0;
+//            int currentBlockIdx = 0;
+//            long countedEvents = 0;
+//            do {
+//                ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
+//                long startPosition = channel.position();
+//                // if record header can't be fully contained in the block, align to the next
+//                if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
+//                    channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
+//                    posInBlock = 0;
+//                }
+//
+//                channel.read(headerBuffer);
+//                headerBuffer.flip();
+//                RecordHeader recordHeader = RecordHeader.get(headerBuffer);
+//                if (recordHeader == null) {
+//                    // continue with next record, skipping this
+//                    logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
+//                } else {
+//                    switch (recordHeader.getType()) {
+//                        case START:
+//                        case COMPLETE:
+//                            countedEvents++;
+//                        case MIDDLE:
+//                        case END: {
+//                            channel.position(channel.position() + recordHeader.getSize());
+//                            posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+//                        }
+//                    }
+//                }
+//            } while (channel.position() < channel.size());
+//
+//            return countedEvents;
+//        }
+//    }
+//
+//=======
+//>>>>>>> da20361e8... Introduced consumed events and segments counters and published through SegmentListener
     private void updateOldestSegmentReference() throws IOException {
         oldestSegmentPath = listSegmentPaths(this.queuePath).sorted().findFirst();
         if (!oldestSegmentPath.isPresent()) {
