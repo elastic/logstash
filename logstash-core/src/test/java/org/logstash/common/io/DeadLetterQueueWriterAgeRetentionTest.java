@@ -18,7 +18,6 @@ import org.logstash.Event;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.FULL_SEGMENT_FILE_SIZE;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.GB;
@@ -97,7 +96,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             // when a new write happens in a reopened queue
             writeManager.writeEntry(entry);
             beheadedQueueSize = writeManager.getCurrentQueueSize();
-            assertEquals("No event is discarded after reopen of DLQ", 0, writeManager.getDiscardedEvents());
+            assertEquals("No event is expired after reopen of DLQ", 0, writeManager.getExpiredEvents());
         }
 
         // then the age policy must remove the expired segments
@@ -165,7 +164,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // then the age policy must remove the expired segments
             assertEquals("Write should push off the age expired segments",VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
-            assertEquals("The number of events removed should count as discarded", EVENTS_TO_FILL_A_SEGMENT, writeManager.getDiscardedEvents());
+            assertEquals("The number of events removed should count as expired", EVENTS_TO_FILL_A_SEGMENT, writeManager.getExpiredEvents());
         }
     }
 
@@ -211,7 +210,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // then the age policy must remove the expired segments
             assertEquals("Write should push off the age expired segments",VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
-            assertEquals("The number of events removed should count as discarded", EVENTS_TO_FILL_A_SEGMENT * 2, writeManager.getDiscardedEvents());
+            assertEquals("The number of events removed should count as expired", EVENTS_TO_FILL_A_SEGMENT * 2, writeManager.getExpiredEvents());
         }
     }
 }

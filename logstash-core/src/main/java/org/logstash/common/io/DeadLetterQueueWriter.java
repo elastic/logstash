@@ -104,7 +104,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
-    private final LongAdder discardedEvents = new LongAdder();
+    private final LongAdder expiredEvents = new LongAdder();
     private String lastError = "no errors";
     private final Clock clock;
     private Optional<Timestamp> oldestSegmentTimestamp;
@@ -199,8 +199,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         return droppedEvents.longValue();
     }
 
-    public long getDiscardedEvents() {
-        return discardedEvents.longValue();
+    public long getExpiredEvents() {
+        return expiredEvents.longValue();
     }
 
     public String getLastError() {
@@ -300,7 +300,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         do {
             if (oldestSegmentPath.isPresent()) {
                 Path beheadedSegment = oldestSegmentPath.get();
-                discardedEvents.add(deleteTailSegment(beheadedSegment, "age retention policy")
+                expiredEvents.add(deleteTailSegment(beheadedSegment, "age retention policy")
                         .orElse(0L));
             }
             updateOldestSegmentReference();
