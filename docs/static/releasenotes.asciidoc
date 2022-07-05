@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-2,Logstash 8.3.2>>
 * <<logstash-8-3-1,Logstash 8.3.1>>
 * <<logstash-8-3-0,Logstash 8.3.0>>
 * <<logstash-8-2-3,Logstash 8.2.3>>
@@ -20,6 +21,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-3-2]]
+=== Logstash 8.3.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.3.2
+
+* Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14319[#14319]
+* Backport PR #14319 to 8.3: Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14321[#14321]
+* Backport PR #14319 to 8.3: Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14322[#14322]
+
+=== Logstash Commits between 8.3 and 8.3.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.3.1..8.3"
+
+bf5366398 - (HEAD -> 8.3, origin/8.3) Fix artifact path for integration with ubireleaser (#14319) (#14322) (5 days ago) <github-actions[bot]>
+f3814c8cd - Version bump to 8.3.2 (#14318) (5 days ago) <Rob Bavey>
+1d6d49773 - Release Notes for 8.3.1 (#14311) (6 days ago) <Rob Bavey>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.3.1..8.3 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-3-1]]
 === Logstash 8.3.1 Release Notes
