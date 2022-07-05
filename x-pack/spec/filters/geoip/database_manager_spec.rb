@@ -214,6 +214,11 @@ describe LogStash::Filters::Geoip do
     end
 
     context "periodic database update" do
+      before do
+        allow(db_manager).to receive(:setup)
+        allow(db_manager).to receive(:execute_download_job)
+        allow(db_manager).to receive(:database_update_check)
+      end
 
       it 'sets up periodic task when download triggered' do
         db_manager.send :trigger_download
@@ -228,10 +233,9 @@ describe LogStash::Filters::Geoip do
         db_manager.send :trigger_download
         download_task = db_manager.instance_variable_get(:@download_task)
         expect( download_task.running? ).to be true
-        expect( db_manager ).to receive :execute_download_job
+        expect( db_manager ).to receive :database_update_check
         sleep 2.0 # wait for task execution
       end
-
     end
 
     context "check age" do
@@ -357,8 +361,8 @@ describe LogStash::Filters::Geoip do
         end
 
         it "should return nil" do
-          allow(mock_download_manager).to receive(:fetch_database).and_raise("boom")
           expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
+          allow(db_manager).to receive(:trigger_download)
           path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
           expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
           expect(path).to be_nil
