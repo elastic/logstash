@@ -153,7 +153,7 @@ describe 'api webserver' do
 
         context 'full verification' do
 
-          let(:ssl_params) { super().merge :verification_mode => 'full' }
+          let(:ssl_params) { super().merge verification_mode: 'full', protocols: [ 'TLSv1.2' ] }
           let(:client_cert) { File.join(certs_path, "client_from_root.crt") }
           let(:client_key) { File.join(certs_path, "client_from_root.key") }
 
