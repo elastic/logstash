@@ -92,9 +92,9 @@ module LogStash module Modules class LogStashConfig
     @settings.fetch(name, default)
   end
 
-  def elasticsearch_output_config(type_string = nil, index_suffix = "%{+YYYY.MM.dd}")
+  def elasticsearch_output_config(type_string = nil, index_suffix = "-%{+YYYY.MM.dd}")
     hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", String, ["localhost:9200"])))
-    index = "#{@name}-#{index_suffix}"
+    index = "#{@name}#{index_suffix}"
     user = @settings["var.elasticsearch.username"]
     password = @settings["var.elasticsearch.password"]
     lines = ["hosts => #{hosts}", "index => \"#{index}\""]
