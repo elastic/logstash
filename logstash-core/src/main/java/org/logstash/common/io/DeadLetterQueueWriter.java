@@ -364,18 +364,18 @@ public final class DeadLetterQueueWriter implements Closeable {
                 headerBuffer.flip();
                 RecordHeader recordHeader = RecordHeader.get(headerBuffer);
                 if (recordHeader == null) {
+                    // continue with next record, skipping this
                     logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
-                    throw new IllegalStateException("Can't decode record header at position " + startPosition);
-                }
-
-                switch (recordHeader.getType()) {
-                    case START:
-                    case COMPLETE:
-                        countedEvents++;
-                    case MIDDLE:
-                    case END: {
-                        channel.position(channel.position() + recordHeader.getSize());
-                        posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+                } else {
+                    switch (recordHeader.getType()) {
+                        case START:
+                        case COMPLETE:
+                            countedEvents++;
+                        case MIDDLE:
+                        case END: {
+                            channel.position(channel.position() + recordHeader.getSize());
+                            posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+                        }
                     }
                 }
             } while (channel.position() < channel.size());
