@@ -258,30 +258,61 @@ public final class DeadLetterQueueWriter implements Closeable {
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         executeAgeRetentionPolicy();
-
-        if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
-            if (storageType == QueueStorageType.DROP_NEWER) {
-                lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
-                logger.error(lastError);
-                droppedEvents.add(1L);
-                return;
-            } else {
-                do {
-                    dropTailSegment();
-                } while (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize);
-            }
+        boolean skipWrite = executeStoragePolicy(eventPayloadSize);
+        if (skipWrite) {
+            return;
         }
-        if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
+
+        if (exceedSegmentSize(eventPayloadSize)) {
             finalizeSegment(FinalizeWhen.ALWAYS);
         }
-        currentQueueSize.getAndAdd(currentWriter.writeEvent(record));
+        long writtenBytes = currentWriter.writeEvent(record);
+        currentQueueSize.getAndAdd(writtenBytes);
         lastWrite = Instant.now();
     }
 
-    private void executeAgeRetentionPolicy() throws IOException {
+    private boolean exceedSegmentSize(int eventPayloadSize) throws IOException {
+        return currentWriter.getPosition() + eventPayloadSize > maxSegmentSize;
+    }
+
+    private void executeAgeRetentionPolicy() {
         if (isOldestSegmentExpired()) {
-            deleteExpiredSegments();
+            try {
+                deleteExpiredSegments();
+            } catch (IOException ex) {
+                logger.error("Can't remove some DLQ files while cleaning expired segments", ex);
+            }
         }
+    }
+
+    /**
+     * @param eventPayloadSize payload size in bytes.
+     * @return boolean true if event write has to be skipped.
+     * */
+    private boolean executeStoragePolicy(int eventPayloadSize) {
+        if (!exceedMaxQueueSize(eventPayloadSize)) {
+            return false;
+        }
+        
+        if (storageType == QueueStorageType.DROP_NEWER) {
+            lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
+            logger.error(lastError);
+            droppedEvents.add(1L);
+            return true;
+        } else {
+            try {
+                do {
+                    dropTailSegment();
+                } while (exceedMaxQueueSize(eventPayloadSize));
+            } catch (IOException ex) {
+                logger.error("Can't remove some DLQ files while removing older segments", ex);
+            }
+            return false;
+        }
+    }
+
+    private boolean exceedMaxQueueSize(int eventPayloadSize) {
+        return currentQueueSize.longValue() + eventPayloadSize > maxQueueSize;
     }
 
     private boolean isOldestSegmentExpired() {
@@ -317,6 +348,7 @@ public final class DeadLetterQueueWriter implements Closeable {
      * @param motivation
      *      Description of delete motivation.
      * @return the number of events contained in the segment or 0 if the segment was already removed.
+     * @throws IOException if any other IO related error happens during deletion of the segment.
      * */
     private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
