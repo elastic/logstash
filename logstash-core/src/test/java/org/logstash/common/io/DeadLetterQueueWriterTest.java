@@ -346,7 +346,7 @@ public class DeadLetterQueueWriterTest {
     }
 
     @Test
-    public void testDropEventCountCorrectlyNotEnqueuedEvents() throws IOException {
+    public void testDropEventCountCorrectlyNotEnqueuedEvents() throws IOException, InterruptedException {
         Event blockAlmostFullEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         int serializationHeader = 286;
         int notEnoughHeaderSpace = 5;
@@ -384,6 +384,11 @@ public class DeadLetterQueueWriterTest {
                 DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", i), DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
                 final int serializationLength = entry.serialize().length;
                 assertEquals("Serialized entry fills block payload", BLOCK_SIZE - RECORD_HEADER_SIZE, serializationLength);
+                if (i == 636) {
+                    // wait flusher thread flushes the data. When DLQ full condition is reached then the size is checked against
+                    // the effective file sizes loaded from FS. This is due to writer-reader interaction
+                    Thread.sleep(2_000);
+                }
                 writeManager.writeEntry(entry);
             }
 
