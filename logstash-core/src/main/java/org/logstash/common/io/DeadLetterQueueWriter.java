@@ -300,8 +300,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         do {
             if (oldestSegmentPath.isPresent()) {
                 Path beheadedSegment = oldestSegmentPath.get();
-                expiredEvents.add(deleteTailSegment(beheadedSegment, "age retention policy")
-                        .orElse(0L));
+                expiredEvents.add(deleteTailSegment(beheadedSegment, "age retention policy"));
             }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
@@ -317,19 +316,18 @@ public final class DeadLetterQueueWriter implements Closeable {
      *      The segment file to delete.
      * @param motivation
      *      Description of delete motivation.
-     * @return the number of events contained in the segment or empty optional if the segment was already
-     *      removed.
+     * @return the number of events contained in the segment or 0 if the segment was already removed.
      * */
-    private Optional<Long> deleteTailSegment(Path segment, String motivation) throws IOException {
+    private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
             long eventsInSegment = countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Removed segment file {} due to {}", motivation, segment);
-            return Optional.of(eventsInSegment);
+            return eventsInSegment;
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
             logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
-            return Optional.empty();
+            return 0;
         }
     }
 
