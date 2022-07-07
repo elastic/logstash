@@ -293,7 +293,18 @@ public final class DeadLetterQueueWriter implements Closeable {
         if (!exceedMaxQueueSize(eventPayloadSize)) {
             return false;
         }
-        
+
+        // load currentQueueSize from filesystem because there could be a consumer
+        // that's already cleaning
+        try {
+            this.currentQueueSize.set(computeQueueSize());
+            if (!exceedMaxQueueSize(eventPayloadSize)) {
+                return false;
+            }
+        } catch (IOException ex) {
+            logger.error("Can't read DLQ size from filesystem", ex);
+        }
+
         if (storageType == QueueStorageType.DROP_NEWER) {
             lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
             logger.error(lastError);
