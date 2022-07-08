@@ -302,7 +302,8 @@ public final class DeadLetterQueueWriter implements Closeable {
                 return false;
             }
         } catch (IOException ex) {
-            logger.error("Can't read DLQ size from filesystem", ex);
+            logger.warn("Unable to determine DLQ size, skipping storage policy check", ex);
+            return false;
         }
 
         if (storageType == QueueStorageType.DROP_NEWER) {
