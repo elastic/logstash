@@ -40,11 +40,14 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -101,6 +104,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
+    private final LongAdder expiredEvents = new LongAdder();
     private String lastError = "no errors";
     private final Clock clock;
     private Optional<Timestamp> oldestSegmentTimestamp;
@@ -195,6 +199,10 @@ public final class DeadLetterQueueWriter implements Closeable {
         return droppedEvents.longValue();
     }
 
+    public long getExpiredEvents() {
+        return expiredEvents.longValue();
+    }
+
     public String getLastError() {
         return lastError;
     }
@@ -250,30 +258,61 @@ public final class DeadLetterQueueWriter implements Closeable {
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         executeAgeRetentionPolicy();
-
-        if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
-            if (storageType == QueueStorageType.DROP_NEWER) {
-                lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
-                logger.error(lastError);
-                droppedEvents.add(1L);
-                return;
-            } else {
-                do {
-                    dropTailSegment();
-                } while (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize);
-            }
+        boolean skipWrite = executeStoragePolicy(eventPayloadSize);
+        if (skipWrite) {
+            return;
         }
-        if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
+
+        if (exceedSegmentSize(eventPayloadSize)) {
             finalizeSegment(FinalizeWhen.ALWAYS);
         }
-        currentQueueSize.getAndAdd(currentWriter.writeEvent(record));
+        long writtenBytes = currentWriter.writeEvent(record);
+        currentQueueSize.getAndAdd(writtenBytes);
         lastWrite = Instant.now();
     }
 
-    private void executeAgeRetentionPolicy() throws IOException {
+    private boolean exceedSegmentSize(int eventPayloadSize) throws IOException {
+        return currentWriter.getPosition() + eventPayloadSize > maxSegmentSize;
+    }
+
+    private void executeAgeRetentionPolicy() {
         if (isOldestSegmentExpired()) {
-            deleteExpiredSegments();
+            try {
+                deleteExpiredSegments();
+            } catch (IOException ex) {
+                logger.error("Can't remove some DLQ files while cleaning expired segments", ex);
+            }
         }
+    }
+
+    /**
+     * @param eventPayloadSize payload size in bytes.
+     * @return boolean true if event write has to be skipped.
+     * */
+    private boolean executeStoragePolicy(int eventPayloadSize) {
+        if (!exceedMaxQueueSize(eventPayloadSize)) {
+            return false;
+        }
+        
+        if (storageType == QueueStorageType.DROP_NEWER) {
+            lastError = String.format("Cannot write event to DLQ(path: %s): reached maxQueueSize of %d", queuePath, maxQueueSize);
+            logger.error(lastError);
+            droppedEvents.add(1L);
+            return true;
+        } else {
+            try {
+                do {
+                    dropTailSegment();
+                } while (exceedMaxQueueSize(eventPayloadSize));
+            } catch (IOException ex) {
+                logger.error("Can't remove some DLQ files while removing older segments", ex);
+            }
+            return false;
+        }
+    }
+
+    private boolean exceedMaxQueueSize(int eventPayloadSize) {
+        return currentQueueSize.longValue() + eventPayloadSize > maxQueueSize;
     }
 
     private boolean isOldestSegmentExpired() {
@@ -292,7 +331,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         do {
             if (oldestSegmentPath.isPresent()) {
                 Path beheadedSegment = oldestSegmentPath.get();
-                deleteTailSegment(beheadedSegment, "age retention policy");
+                expiredEvents.add(deleteTailSegment(beheadedSegment, "age retention policy"));
             }
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
@@ -301,13 +340,77 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.currentQueueSize.set(computeQueueSize());
     }
 
-    private void deleteTailSegment(Path segment, String motivation) throws IOException {
+    /**
+     * Deletes the segment path, if present. Also return the number of events it contains.
+     *
+     * @param segment
+     *      The segment file to delete.
+     * @param motivation
+     *      Description of delete motivation.
+     * @return the number of events contained in the segment or 0 if the segment was already removed.
+     * @throws IOException if any other IO related error happens during deletion of the segment.
+     * */
+    private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
+            long eventsInSegment = countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Removed segment file {} due to {}", motivation, segment);
+            return eventsInSegment;
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
             logger.debug("File not found {}, maybe removed by the reader pipeline", segment);
+            return 0;
+        }
+    }
+
+    /**
+     * Count the number of 'c' and 's' records in segment.
+     * An event can't be bigger than the segments so in case of records split across multiple event blocks,
+     * the segment has to contain both the start 's' record, all the middle 'm' up to the end 'e' records.
+     * */
+    @SuppressWarnings("fallthrough")
+    private long countEventsInSegment(Path segment) throws IOException {
+        try (FileChannel channel = FileChannel.open(segment, StandardOpenOption.READ)) {
+            // verify minimal segment size
+            if (channel.size() < VERSION_SIZE + RECORD_HEADER_SIZE) {
+                return 0L;
+            }
+
+            // skip the DLQ version byte
+            channel.position(1);
+            int posInBlock = 0;
+            int currentBlockIdx = 0;
+            long countedEvents = 0;
+            do {
+                ByteBuffer headerBuffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
+                long startPosition = channel.position();
+                // if record header can't be fully contained in the block, align to the next
+                if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
+                    channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
+                    posInBlock = 0;
+                }
+
+                channel.read(headerBuffer);
+                headerBuffer.flip();
+                RecordHeader recordHeader = RecordHeader.get(headerBuffer);
+                if (recordHeader == null) {
+                    // continue with next record, skipping this
+                    logger.error("Can't decode record header, position {} current post {} current events count {}", startPosition, channel.position(), countedEvents);
+                } else {
+                    switch (recordHeader.getType()) {
+                        case START:
+                        case COMPLETE:
+                            countedEvents++;
+                        case MIDDLE:
+                        case END: {
+                            channel.position(channel.position() + recordHeader.getSize());
+                            posInBlock += RECORD_HEADER_SIZE + recordHeader.getSize();
+                        }
+                    }
+                }
+            } while (channel.position() < channel.size());
+
+            return countedEvents;
         }
     }
 

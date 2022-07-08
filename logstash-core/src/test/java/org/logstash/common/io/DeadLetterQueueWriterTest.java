@@ -235,7 +235,7 @@ public class DeadLetterQueueWriterTest {
     }
 
     private long dlqLength() throws IOException {
-        try(final Stream<Path> files = Files.list(dir)) {
+        try (final Stream<Path> files = Files.list(dir)) {
             return files.filter(p -> p.toString().endsWith(".log"))
                 .mapToLong(p -> p.toFile().length()).sum();
         }
