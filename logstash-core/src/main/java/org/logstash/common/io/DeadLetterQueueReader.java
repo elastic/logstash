@@ -40,7 +40,6 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -289,7 +288,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
         // delete segment file only after current reader is closed.
         // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
-        final long deletedEvents = deleteSegment(lastConsumedSegmentPath).orElse(0L);
+        final long deletedEvents = deleteSegment(lastConsumedSegmentPath);
 
         // update consumed metrics
         consumedEvents.add(deletedEvents);
@@ -359,9 +358,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
         try (final Stream<Path> segmentFiles = listSegmentPaths(queuePath)) {
             LongSummaryStatistics deletionStats = segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
-                    .map(this::deleteSegment)
-                    .map(o -> o.orElse(0L))
-                    .mapToLong(Long::longValue)
+                    .mapToLong(this::deleteSegment)
                     .summaryStatistics();
 
             // update consumed metrics
@@ -395,18 +392,18 @@ public final class DeadLetterQueueReader implements Closeable {
      * Remove the segment from internal tracking data structures and physically delete the corresponding
      * file from filesystem.
      *
-     * @return the number events contained in the removed segment, empty if a problem happened during delete.
+     * @return the number events contained in the removed segment, 0 if a problem happened during delete.
      * */
-    private Optional<Long> deleteSegment(Path segment) {
+    private long deleteSegment(Path segment) {
         segments.remove(segment);
         try {
             long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Deleted segment {}", segment);
-            return Optional.of(eventsInSegment);
+            return eventsInSegment;
         } catch (IOException ex) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
-            return Optional.empty();
+            return 0L;
         }
     }
 
