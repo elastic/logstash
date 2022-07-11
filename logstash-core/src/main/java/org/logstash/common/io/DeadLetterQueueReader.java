@@ -289,11 +289,12 @@ public final class DeadLetterQueueReader implements Closeable {
 
         // delete segment file only after current reader is closed.
         // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
-        final long deletedEvents = deleteSegment(lastConsumedSegmentPath).orElse(0L);
-
-        // update consumed metrics
-        consumedEvents.add(deletedEvents);
-        consumedSegments.increment();
+        final Optional<Long> deletedEvents = deleteSegment(lastConsumedSegmentPath);
+        if (deletedEvents.isPresent()) {
+            // update consumed metrics
+            consumedEvents.add(deletedEvents.get());
+            consumedSegments.increment();
+        }
 
         // publish the metrics to the listener
         segmentCallback.segmentsDeleted(consumedSegments.intValue(), consumedEvents.longValue());

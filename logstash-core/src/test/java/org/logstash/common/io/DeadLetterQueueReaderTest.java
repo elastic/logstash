@@ -1026,7 +1026,7 @@ public class DeadLetterQueueReaderTest {
 
 
     @Test
-    public void testReaderCleanMultipleConsumedSegmentsAfterMarkForDelete() throws IOException, InterruptedException {
+    public void testReaderCleanMultipleConsumedSegmentsAfterMarkForDeleteAndDontTouchLockOrWriterHeadFiles() throws IOException, InterruptedException {
         int eventsPerSegment = prepareFilledSegmentFiles(3);
         // insert also a .lock file, must be the oldest one
         Path lockFile = Files.createFile(dir.resolve(".lock"));
@@ -1061,6 +1061,33 @@ public class DeadLetterQueueReaderTest {
                         .collect(Collectors.toSet());
                 assertTrue("No segments file remain untouched", files.containsAll(Arrays.asList(".lock", "4.log.tmp")));
             }
+        }
+    }
+
+    @Test
+    public void testReaderDoesntIncrementStatisticsOnDeletionError() throws IOException, InterruptedException {
+        int eventsPerSegment = prepareFilledSegmentFiles(3);
+
+        MockSegmentListener listener = new MockSegmentListener();
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, listener)) {
+            verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
+
+            // consume fully two segments plus one more event to trigger the endOfStream on the second segment
+            for (int i = 0; i < (2 * eventsPerSegment) + 1; i++) {
+                reader.pollEntry(100L);
+            }
+
+            verifySegmentFiles(listSegmentsSorted(dir), "1.log", "2.log", "3.log");
+
+            // simulate an error in last consumed segment (2.log)
+            Files.delete(dir.resolve("2.log"));
+
+            reader.markForDelete();
+
+            verifySegmentFiles(listSegmentsSorted(dir), "3.log");
+
+            assertEquals("Must report the deletion of 1 segment", 1, listener.segments);
+            assertEquals("Must report the correct number of deleted events", eventsPerSegment * listener.segments, listener.events);
         }
     }
 
