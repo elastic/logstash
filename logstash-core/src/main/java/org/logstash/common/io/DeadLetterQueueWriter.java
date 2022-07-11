@@ -298,11 +298,13 @@ public final class DeadLetterQueueWriter implements Closeable {
         // that's already cleaning
         try {
             this.currentQueueSize.set(computeQueueSize());
-            if (!exceedMaxQueueSize(eventPayloadSize)) {
-                return false;
-            }
         } catch (IOException ex) {
             logger.warn("Unable to determine DLQ size, skipping storage policy check", ex);
+            return false;
+        }
+
+        // after reload verify the condition is still valid
+        if (!exceedMaxQueueSize(eventPayloadSize)) {
             return false;
         }
 
