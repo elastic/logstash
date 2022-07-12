@@ -620,6 +620,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
         out.config_files << "/etc/default/logstash"
+        out.replaces << "logstash < 7.10.0"
       when "debian", "ubuntu"
         require "fpm/package/deb"
 
@@ -638,6 +639,8 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
         out.config_files << "/etc/default/logstash"
+        out.conflicts << "logstash (<< 7.10.0)"
+        out.replaces << "logstash (<< 7.10.0)"
     end
 
     # Packaging install/removal scripts
