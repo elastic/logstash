@@ -48,6 +48,6 @@ After saving the new version of the gemfile, use <<working-with-plugins,plugin m
 
 The following links contain further material on setting up some commonly used repositories:
 
-* https://github.com/geminabox/geminabox/blob/master/README.markdown[Geminabox]
+* https://github.com/geminabox/geminabox/blob/master/README.md[Geminabox]
 * https://www.jfrog.com/confluence/display/RTF/RubyGems+Repositories[Artifactory]
 * Running a http://guides.rubygems.org/run-your-own-gem-server/[rubygems mirror]
