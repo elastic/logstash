@@ -16,7 +16,7 @@ download the sample data set used in this example. Unpack the file.
 ==== Configuring Filebeat to Send Log Lines to Logstash
 
 Before you create the Logstash pipeline, you'll configure Filebeat to send log lines to Logstash.
-The https://github.com/elastic/beats/tree/master/filebeat[Filebeat] client is a lightweight, resource-friendly tool
+The https://github.com/elastic/beats/tree/main/filebeat[Filebeat] client is a lightweight, resource-friendly tool
 that collects logs from files on the server and forwards these logs to your Logstash instance for processing.
 Filebeat is designed for reliability and low latency. Filebeat has a light resource footprint on the host machine,
 and the {logstash-ref}/plugins-inputs-beats.html[`Beats input`] plugin minimizes the resource demands on the Logstash
@@ -709,7 +709,7 @@ placeholder values shown here:
 [[configuring-lsf]]
 ==== Configuring Filebeat to Send Log Lines to Logstash
 
-As you learned earlier in <<configuring-filebeat>>, the https://github.com/elastic/beats/tree/master/filebeat[Filebeat]
+As you learned earlier in <<configuring-filebeat>>, the https://github.com/elastic/beats/tree/main/filebeat[Filebeat]
 client is a lightweight, resource-friendly tool that collects logs from files on the server and forwards these logs to your
 Logstash instance for processing.
 
