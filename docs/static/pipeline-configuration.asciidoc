@@ -1,7 +1,7 @@
 [[configuration]]
 == Creating a {ls} pipeline
 
-You can create a pipeline and string together plugins--<<input-plugins,inputs>>, <<output-plugins,outputs>>, <<filter-plugins,filters>>, and sometimes <<codec-plugins,codecs>>--in order to process data. 
+You can create a pipeline by stringing together plugins--<<input-plugins,inputs>>, <<output-plugins,outputs>>, <<filter-plugins,filters>>, and sometimes <<codec-plugins,codecs>>--in order to process data. 
 To build a Logstash pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
 
 A very basic pipeline might contain only an input and an output. 
@@ -28,7 +28,6 @@ bin/logstash -f logstash-simple.conf
 -----
 
 Et voilà! Logstash reads the specified configuration file and outputs to both Elasticsearch and stdout. 
-If you see a message in stdout that indicates that Elasticsearch is unreachable, make sure that Elasticsearch is installed and running, and is reachable on port 9200. 
 Before we move on to <<config-examples,more complex examples>>, let's take a look at what's in a pipeline config file.
 
 [[configuration-file-structure]]
@@ -56,6 +55,7 @@ output {
 
 Each section contains configuration options for one or more plugins. 
 If you specify multiple filters, they are applied in the order they appear in the configuration file.
+If you specify multiple outputs, events are sent to each destination sequentially, in the order they appear in the configuration file.
 
 TIP: When you are ready to deploy a pipeline beyond your local machine, add the pipeline config file to <<logstash-settings-file,`logstash.yml`>> using the `pipeline.id` setting. 
 

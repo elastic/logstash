@@ -5,10 +5,10 @@ A Logstash pipeline usually has three stages: inputs -> filters -> outputs.
 Inputs generate events, filters modify them, and outputs ship them elsewhere.
 
 All events have properties. 
-For example, an apache access log would have properties
+For example, an Apache access log would have properties
 like status code (200, 404), request path ("/", "index.html"), HTTP verb
 (GET, POST), client IP address, and so forth. 
-Logstash calls these properties "fields."
+Logstash calls these properties "fields".
 
 Some configuration options in Logstash require the existence of fields in
 order to function.  
@@ -61,7 +61,7 @@ For more detailed information, see <<field-references-deepdive>>.
 ==== sprintf format
 
 The field reference format is also used in what Logstash calls 'sprintf format'. 
-This format enables you to refer to field values from within other strings. 
+This format enables you to embed field values in other strings. 
 For example, the statsd output has an 'increment' setting that enables you to
 keep a count of apache logs by status code:
 
