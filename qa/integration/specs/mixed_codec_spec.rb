@@ -57,21 +57,12 @@ describe "Ruby codec when used in" do
 
     it "should encode correctly to file and don't log any ERROR" do
       logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
-      logstash_service.spawn_logstash("-w", "1" , "-e", config)
-      logstash_service.wait_for_logstash
+#       logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.start_with_stdin(config)
+#       logstash_service.wait_for_logstash
 
-      # TODO extract this busy loop in a utils method inside logstash_service
-      # wait for Logstash to start
-      started = false
-      while !started
-        begin
-          sleep(1)
-          result = @logstash.monitoring_api.event_stats
-          started = !result.nil?
-        rescue
-          retry
-        end
-      end
+      # wait for Logstash to fully start
+      logstash_service.wait_for_rest
 
       logstash_service.write_to_stdin('{"project": "Teleport"}')
       sleep(2)
@@ -95,11 +86,7 @@ describe "Ruby codec when used in" do
       logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.wait_for_logstash
-
-      #TODO: needs to verify something else to proof the LS process is up, just sleep is synonym of fragile testing.
-      # port opening check, like in wait_for_logstash, is not sufficient, maybe some HTTP API call with parsing of the
-      # response
-      sleep 30
+      logstash_service.wait_for_rest
 
       logstash_service.write_to_stdin('Teleport ray')
       sleep(2)
@@ -122,9 +109,7 @@ describe "Ruby codec when used in" do
     it "should encode correctly without any ERROR log" do
       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.wait_for_logstash
-
-      #TODO: needs to verify something else to proof the LS process is up, just sleep is synonym of fragile testing
-      sleep 30
+      logstash_service.wait_for_rest
 
       logstash_service.teardown
 
