@@ -50,12 +50,6 @@ class MonitoringAPI
     JSON.parse(resp)
   end
 
-#   def node_info_pipeline(pipeline_id)
-#     resp = Manticore.get("http://localhost:9600/_node/pipelines/#{pipeline_id}").body
-#     node_response = JSON.parse(resp)
-#     node_response.fetch("pipelines").fetch(pipeline_id)
-#   end
-
   def logging_get
     resp = Manticore.get("http://localhost:9600/_node/logging").body
     JSON.parse(resp)
