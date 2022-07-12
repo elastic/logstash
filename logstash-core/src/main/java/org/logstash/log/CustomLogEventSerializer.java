@@ -28,6 +28,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Json serializer for logging messages, use in json appender.
+ * */
 public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
     @Override
     public void serialize(CustomLogEvent event, JsonGenerator generator, SerializerProvider provider) throws IOException {

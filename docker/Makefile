@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 ELASTIC_REGISTRY ?= docker.elastic.co
-
-export PATH := ./bin:./venv/bin:$(PATH)
+PY_VERSION ?= 3.6.13
+export PATH := ./bin:$(HOME)/.pyenv/bin:$(HOME)/.pyenv/shims:./venv/bin:$(PATH)
 
 # Determine the version to build.
 ELASTIC_VERSION := $(shell ../vendor/jruby/bin/jruby bin/elastic-version)
@@ -10,6 +10,12 @@ ifdef STAGING_BUILD_NUM
   VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
 else
   VERSION_TAG := $(ELASTIC_VERSION)
+endif
+
+ifdef DOCKER_ARCHITECTURE
+  ARCHITECTURE := $(DOCKER_ARCHITECTURE)
+else
+  ARCHITECTURE := $(shell uname -m)
 endif
 
 IMAGE_FLAVORS ?= oss full ubi8
@@ -21,7 +27,6 @@ HTTPD ?= logstash-docker-artifact-server
 FIGLET := pyfiglet -w 160 -f puffy
 
 all: build-from-local-artifacts build-from-local-oss-artifacts public-dockerfiles
-DATE:= $(shell date -u +'%Y-%m-%dT%H:%M:%S.%sZ')
 
 lint: venv
 	flake8 tests
@@ -79,12 +84,38 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public_dockerfiles_full public_dockerfiles_ubi8
+COPY_IRONBANK_FILES = $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/env2yaml.go $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.mod $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.sum $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor/modules.txt $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
+
+$(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml: data/logstash/config/logstash-full.yml
+$(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
+$(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
+$(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/env2yaml.go: data/logstash/env2yaml/env2yaml.go
+$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.mod: ironbank/go/src/env2yaml/go.mod
+$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.sum: ironbank/go/src/env2yaml/go.sum
+$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor/modules.txt: ironbank/go/src/env2yaml/vendor/modules.txt
+$(ARTIFACTS_DIR)/ironbank/LICENSE: ironbank/LICENSE
+$(ARTIFACTS_DIR)/ironbank/README.md: ironbank/README.md
+
+$(ARTIFACTS_DIR)/ironbank/%:
+	cp -f $< $@
+
+ironbank_docker_paths:
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/bin
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/config
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
+
+public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_ironbank
 
 public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
-	  -D created_date='$(DATE)' \
+	  -D created_date='$(BUILD_DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='full' \
 	  -D local_artifacts='false' \
@@ -96,8 +127,9 @@ public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 
 public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
-	  -D created_date='$(DATE)' \
+	  -D created_date='$(BUILD_DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='oss' \
 	  -D local_artifacts='false' \
@@ -109,8 +141,9 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 
 public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
-	  -D created_date='$(DATE)' \
+	  -D created_date='$(BUILD_DATE)' \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='ubi8' \
 	  -D local_artifacts='false' \
@@ -119,6 +152,23 @@ public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_ironbank: templates/hardening_manifest.yaml templates/Dockerfile.j2 ironbank_docker_paths $(COPY_IRONBANK_FILES)
+	jinja2 \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  templates/hardening_manifest.yaml > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
+	jinja2 \
+	  -D created_date='$(BUILD_DATE)' \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D arch='${ARCHITECTURE}' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='ironbank' \
+	  -D local_artifacts='false' \
+	  -D release='$(RELEASE)' \
+	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ironbank && \
+	cd $(ARTIFACTS_DIR)/ironbank && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
+	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push:
@@ -134,20 +184,14 @@ push:
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
-	@if [ -z $$PYTHON3 ]; then\
-	    PY3_MINOR_VER=`python3 --version 2>&1 | cut -d " " -f 2 | cut -d "." -f 2`;\
-	    if (( $$PY3_MINOR_VER < 5 )); then\
-		echo "Couldn't find python3 in \$PATH that is >=3.5";\
-		echo "Please install python3.5 or later or explicity define the python3 executable name with \$PYTHON3";\
-		echo "Exiting here";\
-		exit 1;\
-	    else\
-		export PYTHON3="python3.$$PY3_MINOR_VER";\
-	   fi;\
-	fi;\
-	test -d venv || virtualenv --python=$$PYTHON3 venv;\
-	pip install -r requirements.txt;\
-	touch venv;\
+	LOCAL_PY_VER=`python3 --version 2>&1`&&\
+	echo "Was using $$LOCAL_PY_VER" &&\
+	eval "$$(pyenv init -)" && eval "$$(pyenv init --path)" &&\
+	pyenv install --skip-existing $(PY_VERSION) &&\
+	pyenv local $(PY_VERSION) &&\
+	python3 -mvenv venv && \
+	for i in 0 1 2 3 4 5; do sleep "$i"; pip install -r requirements.txt && break; done &&\
+	touch venv
 
 # Make a Golang container that can compile our env2yaml tool.
 golang:
@@ -164,8 +208,9 @@ env2yaml: golang
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	  jinja2 \
-	    -D created_date='$(DATE)' \
+	    -D created_date='$(BUILD_DATE)' \
 	    -D elastic_version='$(ELASTIC_VERSION)' \
+	    -D arch='${ARCHITECTURE}' \
 	    -D version_tag='$(VERSION_TAG)' \
 	    -D image_flavor='$(FLAVOR)' \
 	    -D local_artifacts='true' \

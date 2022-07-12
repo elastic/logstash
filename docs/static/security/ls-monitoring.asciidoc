@@ -1,0 +1,35 @@
+[discrete]
+[[ls-monitoring-user]]
+=== Configuring credentials for {ls} monitoring
+
+If you want to monitor your Logstash instance with {stack-monitor-features}, and
+store the monitoring data in a secured {es} cluster, you must configure Logstash
+with a username and password for a user with the appropriate permissions.
+
+The {security-features} come preconfigured with a
+{ref}/built-in-users.html[`logstash_system` built-in user]
+for this purpose. This user has the minimum permissions necessary for the
+monitoring function, and _should not_ be used for any other purpose - it is
+specifically _not intended_ for use within a Logstash pipeline.
+
+By default, the `logstash_system` user does not have a password. The user will
+not be enabled until you set a password. See
+{ref}/built-in-users.html#set-built-in-user-passwords[Setting built-in user passwords].
+
+Then configure the user and password in the `logstash.yml` configuration file:
+
+[source,yaml]
+----------------------------------------------------------
+xpack.monitoring.elasticsearch.username: logstash_system
+xpack.monitoring.elasticsearch.password: t0p.s3cr3t
+----------------------------------------------------------
+
+If you initially installed an older version of {xpack} and then upgraded, the
+`logstash_system` user may have defaulted to `disabled` for security reasons.
+You can enable the user through the `user` API:
+
+[source,js]
+---------------------------------------------------------------------
+PUT _security/user/logstash_system/_enable
+---------------------------------------------------------------------
+// CONSOLE

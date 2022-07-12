@@ -21,7 +21,6 @@ require_relative "./commands/redhat"
 require_relative "./commands/suse"
 require_relative "./commands/centos/centos-6"
 require_relative "./commands/oel/oel-6"
-require_relative "./commands/ubuntu/ubuntu-1604"
 require_relative "./commands/suse/sles-11"
 
 require "forwardable"
@@ -42,7 +41,6 @@ module ServiceTester
       @host    = host
       @options = options
       @client  = CommandsFactory.fetch(options["type"], options["host"])
-      @bundled_jdk = false
       @skip_jdk_infix = false
     end
 
@@ -76,10 +74,9 @@ module ServiceTester
 
     def install(options={})
       base      = options.fetch(:base, ServiceTester::Base::LOCATION)
-      @bundled_jdk = options.fetch(:bundled_jdk, false)
       @skip_jdk_infix = options.fetch(:skip_jdk_infix, false)
       filename = filename(options)
-      package   = client.package_for(filename, @skip_jdk_infix, @bundled_jdk, base)
+      package   = client.package_for(filename, @skip_jdk_infix, base)
       client.install(package, host)
     end
 
@@ -97,6 +94,10 @@ module ServiceTester
 
     def plugin_installed?(name, version = nil)
       client.plugin_installed?(host, name, version)
+    end
+
+    def gem_vendored?(gem_name)
+      client.gem_vendored?(host, gem_name)
     end
 
     def download(from, to)
@@ -131,11 +132,7 @@ module ServiceTester
       case type
       when "debian"
         if host.start_with?("ubuntu")
-          if host == "ubuntu-1604"
-            return Ubuntu1604Commands.new
-          else
-            return UbuntuCommands.new
-          end
+          return UbuntuCommands.new
         else
           return DebianCommands.new
         end

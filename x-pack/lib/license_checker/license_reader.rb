@@ -15,15 +15,20 @@ module LogStash
       def initialize(settings, feature, options)
         @namespace = "xpack.#{feature}"
         @settings = settings
-        @es_options = options.merge('resurrect_delay' => 30)
+
+        es_options = options.merge('resurrect_delay' => 30)
+        @es_options = Helpers::ElasticsearchOptions::es_options_with_product_origin_header(es_options)
       end
 
       ##
       # fetches an XPackInfo, or log and return nil if unavailable.
       # @return [XPathInfo, nil]
       def fetch_xpack_info
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'validate Elasticsearch license')
         begin
-          response = client.get('_xpack')
+          response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+            client.get("_xpack")
+          }
 
           # TODO: do we need both this AND the exception-based control flow??
           return XPackInfo.xpack_not_installed if xpack_missing_response?(response)

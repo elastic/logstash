@@ -13,7 +13,8 @@ shared_examples_for 'it runs with different configurations' do |flavor|
     let(:options) { {"HostConfig" => { "Binds" => ["#{FIXTURES_DIR}/simple_pipeline/:/usr/share/logstash/pipeline/"] } } }
 
     it 'should show the stats for that pipeline' do
-      expect(get_node_stats(@container)['pipelines']['main']['plugins']['inputs'][0]['id']).to eq 'simple_pipeline'
+      wait_for_pipeline(@container)
+      expect(get_plugin_info(@container, 'inputs', 'simple_pipeline')).not_to be nil
     end
   end
 
@@ -22,8 +23,10 @@ shared_examples_for 'it runs with different configurations' do |flavor|
                                                    "#{FIXTURES_DIR}/multiple_pipelines/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml"] } } }
 
     it "should show stats for both pipelines" do
-      expect(get_node_stats(@container)['pipelines']['pipeline_one']['plugins']['inputs'][0]['id']).to eq 'multi_pipeline1'
-      expect(get_node_stats(@container)['pipelines']['pipeline_two']['plugins']['inputs'][0]['id']).to eq 'multi_pipeline2'
+      wait_for_pipeline(@container, 'pipeline_one')
+      wait_for_pipeline(@container, 'pipeline_two')
+      expect(get_plugin_info(@container, 'inputs', 'multi_pipeline1', 'pipeline_one')).not_to be nil
+      expect(get_plugin_info(@container, 'inputs', 'multi_pipeline2', 'pipeline_two')).not_to be nil
     end
   end
 
@@ -31,7 +34,8 @@ shared_examples_for 'it runs with different configurations' do |flavor|
     let(:options) { {"HostConfig" => { "Binds" => ["#{FIXTURES_DIR}/custom_logstash_yml/logstash.yml:/usr/share/logstash/config/logstash.yml"] } } }
 
     it 'should change the value of pipeline.batch.size' do
-      expect(get_node_info(@container)['pipelines']['main']['batch_size']).to eq 200
+      wait_for_pipeline(@container)
+      expect(get_pipeline_setting(@container, 'batch_size')).to eq 200
     end
   end
 end

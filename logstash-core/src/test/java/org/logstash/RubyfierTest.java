@@ -41,7 +41,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class RubyfierTest {
+public class RubyfierTest extends RubyTestBase {
 
     @Test
     public void testDeepWithString() {

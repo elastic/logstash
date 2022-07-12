@@ -48,9 +48,9 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     private RubyClass filterClass;
 
-    private IRubyObject filter;
+    private transient IRubyObject filter;
 
-    private DynamicMethod filterMethod;
+    private transient DynamicMethod filterMethod;
 
     private boolean flushes;
 

@@ -13,6 +13,9 @@ import org.logstash.instrument.metrics.NullMetricExt;
 
 import java.util.Arrays;
 
+/**
+ * JRuby extension to implement a factory class for Plugin's metrics
+ * */
 @JRubyClass(name = "PluginMetricsFactory")
 public final class PluginMetricsFactoryExt extends RubyBasicObject {
 

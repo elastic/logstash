@@ -26,6 +26,9 @@ import java.util.Collection;
 
 import static org.logstash.RubyUtil.RUBY;
 
+/**
+ * In memory queue collection of events implementation
+ * */
 public final class MemoryReadBatch implements QueueBatch {
 
     private final Collection<RubyEvent> events;

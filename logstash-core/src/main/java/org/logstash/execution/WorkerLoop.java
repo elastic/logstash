@@ -25,6 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.config.ir.CompiledPipeline;
 
+/**
+ * Pipeline execution worker, it's responsible to execute filters and output plugins for each {@link QueueBatch} that
+ * pull out from queue.
+ * */
 public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
@@ -80,10 +84,10 @@ public final class WorkerLoop implements Runnable {
                 if (batch.filteredSize() > 0 || isFlush) {
                     consumedCounter.add(batch.filteredSize());
                     readClient.startMetrics(batch);
-                    execution.compute(batch, isFlush, false);
+                    final int outputCount = execution.compute(batch, isFlush, false);
                     int filteredCount = batch.filteredSize();
                     filteredCounter.add(filteredCount);
-                    readClient.addOutputMetrics(filteredCount);
+                    readClient.addOutputMetrics(outputCount);
                     readClient.addFilteredMetrics(filteredCount);
                     readClient.closeBatch(batch);
                     if (isFlush) {
@@ -102,7 +106,7 @@ public final class WorkerLoop implements Runnable {
         }
     }
 
-    private boolean isDraining() {
+    public boolean isDraining() {
         return drainQueue && !readClient.isEmpty();
     }
 }

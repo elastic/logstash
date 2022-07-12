@@ -191,7 +191,9 @@ describe LogStash::Agent do
           end
 
           it "it will keep trying to converge" do
-            sleep(agent_settings.get("config.reload.interval").to_seconds * 20) # let the interval reload a few times
+            # we can't do .to_seconds here as values under 1 seconds are rounded to 0
+            # causing a race condition in the test. So we get the nanos and convert to seconds
+            sleep(agent_settings.get("config.reload.interval").to_nanos * 1e-9 * 20) # let the interval reload a few times
             expect(subject.pipelines_count).to eq(0)
             expect(source_loader.fetch_count).to be > 1
           end
@@ -287,7 +289,7 @@ describe LogStash::Agent do
           expect(subject.converge_state_and_update).to be_a_successful_converge
         }.not_to change { subject.running_pipelines_count }
         expect(subject).to have_running_pipeline?(modified_pipeline_config)
-        expect(subject).not_to have_pipeline?(pipeline_config)
+        expect(subject).to have_stopped_pipeline?(pipeline_config)
       end
     end
 

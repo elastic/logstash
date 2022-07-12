@@ -49,15 +49,15 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp", "~> 0.6" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
-  gem.add_runtime_dependency "concurrent-ruby", "~> 1"
+  gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "mustermann", '~> 1.0.3'
-  gem.add_runtime_dependency "sinatra", '~> 2'
-  gem.add_runtime_dependency 'puma', '~> 4'
-  gem.add_runtime_dependency "jruby-openssl", "~> 0.10" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency "sinatra", '~> 2.1.0' # pinned until GH-13777 is resolved
+  gem.add_runtime_dependency 'puma', '~> 5', '>= 5.6.2'
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
@@ -72,4 +72,20 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "elasticsearch", '~> 7'
   gem.add_runtime_dependency "manticore", '~> 0.6'
+
+  # xpack geoip database service
+  gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
+  gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
+  gem.add_dependency 'tzinfo-data' #(MIT license)
+
+  # NOTE: plugins now avoid using **rufus-scheduler** directly, if logstash-core would find itself in a need
+  # to use rufus than preferably the **logstash-mixin-scheduler** should be changed to work with non-plugins.
+  #
+  # Using the scheduler directly might lead to issues e.g. when join-ing, see:
+  # https://github.com/logstash-plugins/logstash-mixin-scheduler/blob/v1.0.1/lib/logstash/plugin_mixins/scheduler/rufus_impl.rb#L85=
+  # and https://github.com/elastic/logstash/issues/13773
+
+  # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
+  # SEE: https://github.com/ruby/racc/issues/172
+  gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
 end

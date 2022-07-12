@@ -43,7 +43,7 @@ OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject outputClass;
+    private transient IRubyObject outputClass;
 
     private OutputStrategyExt.AbstractOutputStrategyExt strategy;
 

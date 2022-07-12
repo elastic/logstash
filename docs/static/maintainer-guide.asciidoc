@@ -49,7 +49,7 @@ reviewing and merging patches.
 ==== Patch Requirements
 
 A patch is a minimal and accurate answer to exactly one identified and agreed upon problem. It must conform to the
-https://github.com/elastic/logstash/blob/master/STYLE.md[code style guidelines] and must include RSpec tests that verify
+https://github.com/elastic/logstash/blob/main/STYLE.md[code style guidelines] and must include RSpec tests that verify
 the fitness of the solution.
 
 A patch will be automatically tested by a CI system that will report on the Pull Request status.
@@ -88,7 +88,7 @@ Review non-source changes such as documentation in the same way as source code c
 [float]
 ==== Branch Management
 
-The plugin has a master branch that always holds the latest in-progress version and should always build.  Topic branches
+The plugin has a main branch that always holds the latest in-progress version and should always build.  Topic branches
 should kept to the minimum.
 
 [float]
@@ -106,7 +106,7 @@ Changes that are not user facing should be tagged as `internal:`.  For example:
 ===== Detailed format of CHANGELOG.md
 
 Sharing a similar format of CHANGELOG.md in plugins ease readability for users.
-Please see following annotated example and see a concrete example in https://raw.githubusercontent.com/logstash-plugins/logstash-filter-date/master/CHANGELOG.md[logstash-filter-date].
+Please see following annotated example and see a concrete example in https://raw.githubusercontent.com/logstash-plugins/logstash-filter-date/main/CHANGELOG.md[logstash-filter-date].
 
 [source,markdown]
 ----

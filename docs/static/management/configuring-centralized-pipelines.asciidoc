@@ -1,9 +1,5 @@
-[role="xpack"]
 [[configuring-centralized-pipelines]]
-=== Configuring Centralized Pipeline Management
-++++
-<titleabbrev>Centralized Pipeline Management</titleabbrev>
-++++
+=== Configure Centralized Pipeline Management
 
 To configure
 {logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management]:
@@ -43,3 +39,4 @@ that the `pipelines.yml` file and settings like `path.config` and
 `config.string` are inactive when this feature is enabled.
 
 include::{log-repo-dir}/static/settings/configuration-management-settings.asciidoc[]
+include::{log-repo-dir}/static/settings/configuration-wildcard-pipeline-id.asciidoc[]

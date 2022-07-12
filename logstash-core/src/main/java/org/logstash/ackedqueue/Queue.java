@@ -46,6 +46,9 @@ import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
 
+/**
+ * Persistent queue implementation.
+ * */
 public final class Queue implements Closeable {
 
     private long seqNum;
@@ -90,7 +93,11 @@ public final class Queue implements Closeable {
     public Queue(Settings settings) {
         try {
             final Path queueDir = Paths.get(settings.getDirPath());
-            Files.createDirectories(queueDir);
+            // Files.createDirectories raises a FileAlreadyExistsException
+            // if queue dir is symlinked, so worth checking against Files.exists
+            if (Files.exists(queueDir) == false) {
+                Files.createDirectories(queueDir);
+            }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
@@ -222,7 +229,7 @@ public final class Queue implements Closeable {
             }
             final Checkpoint cp = this.checkpointIO.read(cpFileName);
 
-            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
+            logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp);
 
             PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
             // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
@@ -241,10 +248,13 @@ public final class Queue implements Closeable {
             }
         }
 
+        // delete zero byte page and recreate checkpoint if corrupted page is detected
+        if ( cleanedUpFullyAckedCorruptedPage(headCheckpoint, pqSizeBytes)) { return; }
+
         // transform the head page into a tail page only if the headpage is non-empty
         // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
-        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
+        logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint);
 
         PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
         pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
@@ -299,6 +309,35 @@ public final class Queue implements Closeable {
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
     }
 
+    /**
+     * When the queue is fully acked and zero byte page is found, delete corrupted page and recreate checkpoint head
+     * @param headCheckpoint
+     * @param pqSizeBytes
+     * @return true when corrupted page is found and cleaned
+     * @throws IOException
+     */
+    private boolean cleanedUpFullyAckedCorruptedPage(Checkpoint headCheckpoint, long pqSizeBytes) throws IOException {
+        if (headCheckpoint.isFullyAcked()) {
+            PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            if (pageIO.isCorruptedPage()) {
+                logger.debug("Queue is fully acked. Found zero byte page.{}. Recreate checkpoint.head and delete corrupted page", headCheckpoint.getPageNum());
+
+                this.checkpointIO.purge(checkpointIO.headFileName());
+                pageIO.purge();
+
+                if (headCheckpoint.maxSeqNum() > this.seqNum) {
+                    this.seqNum = headCheckpoint.maxSeqNum();
+                }
+
+                newCheckpointedHeadpage(headCheckpoint.getPageNum() + 1);
+
+                pqSizeBytes += (long) pageIO.getHead();
+                ensureDiskAvailable(this.maxBytes, pqSizeBytes);
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * delete files for the given page
@@ -310,7 +349,9 @@ public final class Queue implements Closeable {
     private void purgeTailPage(Checkpoint checkpoint, PageIO pageIO) throws IOException {
         try {
             pageIO.purge();
-        } catch (NoSuchFileException e) { /* ignore */ }
+        } catch (NoSuchFileException e) { /* ignore */
+            logger.debug("tail page does not exist: {}", pageIO);
+        }
 
         // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
         // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
@@ -347,6 +388,7 @@ public final class Queue implements Closeable {
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
+        logger.debug("created new head page: {}", headPageIO);
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
     }
@@ -407,6 +449,7 @@ public final class Queue implements Closeable {
                 try {
                     notFull.await();
                 } catch (InterruptedException e) {
+                    logger.debug("interrupted waiting for queue to not be full", e);
                     // the thread interrupt() has been called while in the await() blocking call.
                     // at this point the interrupted flag is reset and Thread.interrupted() will return false
                     // to any upstream calls on it. for now our choice is to return normally and set back
@@ -470,19 +513,23 @@ public final class Queue implements Closeable {
     public boolean isFull() {
         lock.lock();
         try {
-            if (this.maxBytes > 0L && isMaxBytesReached()) {
-                return true;
-            } else {
-                return (this.maxUnread > 0 && this.unreadCount >= this.maxUnread);
-            }
+            return isMaxBytesReached() || isMaxUnreadReached();
         } finally {
             lock.unlock();
         }
     }
 
     private boolean isMaxBytesReached() {
+        if (this.maxBytes <= 0L) {
+            return false;
+        }
+
         final long persistedByteSize = getPersistedByteSize();
         return ((persistedByteSize > this.maxBytes) || (persistedByteSize == this.maxBytes && !this.headPage.hasSpace(1)));
+    }
+
+    private boolean isMaxUnreadReached() {
+        return this.maxUnread > 0 && (this.unreadCount >= this.maxUnread);
     }
 
     /**
@@ -597,7 +644,7 @@ public final class Queue implements Closeable {
             }
 
             if (! p.isFullyRead()) {
-                boolean wasFull = isFull();
+                boolean wasFull = isMaxUnreadReached();
 
                 final SequencedList<byte[]> serialized = p.read(left);
                 int n = serialized.getElements().size();

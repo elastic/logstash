@@ -52,7 +52,7 @@ module LogStash module PluginManager module Utils
         response = http.request(request)
 
         if response.code == "302"
-          new_uri = response.headers["location"]
+          new_uri = response["location"]
           remote_file_exist?(new_uri, redirect_count + 1)
         elsif response.code == "200"
           true

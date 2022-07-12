@@ -2,7 +2,7 @@
 
 === How to write a Logstash {plugintype} plugin
 
-To develop a new {plugintype} for Logstash, you build a self-contained Ruby gem
+To develop a new {plugintype} for Logstash, build a self-contained Ruby gem
 whose source code lives in its own GitHub repository. The Ruby gem can then be
 hosted and shared on RubyGems.org. You can use the example {plugintype}
 implementation as a starting point. (If you're unfamiliar with
@@ -27,7 +27,7 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 
 ===== Use the plugin generator tool
 
-You can now create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
+You can create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
 for a new Logstash plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
 can start adding custom code to process data with Logstash.
 
@@ -528,8 +528,8 @@ ifndef::blockcodec[]
 ----------------------------------
 The codec's `decode` method is where data coming in from an input is transformed
 into an event.  There are complex examples like the
-https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/lib/logstash/codecs/collectd.rb#L386-L484[collectd]
-codec, and simpler examples like the https://github.com/logstash-plugins/logstash-codec-spool/blob/master/lib/logstash/codecs/spool.rb#L11-L16[spool]
+https://github.com/logstash-plugins/logstash-codec-collectd/blob/main/lib/logstash/codecs/collectd.rb#L386-L484[collectd]
+codec, and simpler examples like the https://github.com/logstash-plugins/logstash-codec-spool/blob/main/lib/logstash/codecs/spool.rb#L11-L16[spool]
 codec.
 
 There must be a `yield` statement as part of the `decode` method which will
@@ -554,9 +554,9 @@ ifndef::blockcodec[]
   end # def encode
 ----------------------------------
 The `encode` method takes an event and serializes it (_encodes_) into another
-format.  Good examples of `encode` methods include the simple https://github.com/logstash-plugins/logstash-codec-plain/blob/master/lib/logstash/codecs/plain.rb#L39-L46[plain]
-codec, the slightly more involved https://github.com/logstash-plugins/logstash-codec-msgpack/blob/master/lib/logstash/codecs/msgpack.rb#L38-L46[msgpack]
-codec, and even an https://github.com/logstash-plugins/logstash-codec-avro/blob/master/lib/logstash/codecs/avro.rb#L38-L45[avro]
+format.  Good examples of `encode` methods include the simple https://github.com/logstash-plugins/logstash-codec-plain/blob/main/lib/logstash/codecs/plain.rb#L39-L46[plain]
+codec, the slightly more involved https://github.com/logstash-plugins/logstash-codec-msgpack/blob/main/lib/logstash/codecs/msgpack.rb#L38-L46[msgpack]
+codec, and even an https://github.com/logstash-plugins/logstash-codec-avro/blob/main/lib/logstash/codecs/avro.rb#L38-L45[avro]
 codec.
 
 In most cases, your `encode` method should have an `@on_event.call()` statement.
@@ -588,9 +588,9 @@ The {pluginname} input plugin has the following `run` Method:
 The `run` method is where a stream of data from an input becomes an event.
 
 The stream can be plain or generated as with the
-https://github.com/logstash-plugins/logstash-input-heartbeat/blob/master/lib/logstash/inputs/heartbeat.rb#L43-L61[heartbeat]
+https://github.com/logstash-plugins/logstash-input-heartbeat/blob/main/lib/logstash/inputs/heartbeat.rb#L43-L61[heartbeat]
 input plugin.  In these cases, though no codec is used,
-https://github.com/logstash-plugins/logstash-input-heartbeat/blob/master/lib/logstash/inputs/heartbeat.rb#L17[a default codec]
+https://github.com/logstash-plugins/logstash-input-heartbeat/blob/main/lib/logstash/inputs/heartbeat.rb#L17[a default codec]
 must be set in the code to avoid errors.
 
 Here's another example `run` method:
@@ -643,10 +643,10 @@ This inserts the event into the pipeline.
 Because input plugins can range from simple to complex, it is helpful to see
 more examples of how they have been created:
 
- - https://github.com/logstash-plugins/logstash-input-syslog/blob/master/lib/logstash/inputs/syslog.rb[syslog]
- - https://github.com/logstash-plugins/logstash-input-zeromq/blob/master/lib/logstash/inputs/zeromq.rb[zeromq]
- - https://github.com/logstash-plugins/logstash-input-stdin/blob/master/lib/logstash/inputs/stdin.rb[stdin]
- - https://github.com/logstash-plugins/logstash-input-tcp/blob/master/lib/logstash/inputs/tcp.rb[tcp]
+ - https://github.com/logstash-plugins/logstash-input-syslog/blob/main/lib/logstash/inputs/syslog.rb[syslog]
+ - https://github.com/logstash-plugins/logstash-input-zeromq/blob/main/lib/logstash/inputs/zeromq.rb[zeromq]
+ - https://github.com/logstash-plugins/logstash-input-stdin/blob/main/lib/logstash/inputs/stdin.rb[stdin]
+ - https://github.com/logstash-plugins/logstash-input-tcp/blob/main/lib/logstash/inputs/tcp.rb[tcp]
 
 There are many more more examples in the https://github.com/logstash-plugins?query=logstash-input[logstash-plugin github repository].
 ======
@@ -668,17 +668,17 @@ ifdef::receive_method[]
   end # def event
 ----------------------------------
 This empty `receive` method does absolutely nothing, which is valid code from
-the https://github.com/logstash-plugins/logstash-output-null/blob/master/lib/logstash/outputs/null.rb[null]
+the https://github.com/logstash-plugins/logstash-output-null/blob/main/lib/logstash/outputs/null.rb[null]
 output plugin.
 
 The `receive` method _receives_ events from the pipeline and further processes
 them before sending them to their final destination.  These destinations can
-be as varied as https://github.com/logstash-plugins/logstash-output-file/blob/master/lib/logstash/outputs/file.rb[files],
-https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/lib/logstash/outputs/elasticsearch.rb[elasticsearch],
-https://github.com/logstash-plugins/logstash-output-email/blob/master/lib/logstash/outputs/email.rb[email],
-https://github.com/logstash-plugins/logstash-output-rabbitmq/blob/master/lib/logstash/outputs/rabbitmq.rb[RabbitMQ],
-https://github.com/logstash-plugins/logstash-output-tcp/blob/master/lib/logstash/outputs/tcp.rb[tcp],
-https://github.com/logstash-plugins/logstash-output-stdout/blob/master/lib/logstash/outputs/stdout.rb[stdout],
+be as varied as https://github.com/logstash-plugins/logstash-output-file/blob/main/lib/logstash/outputs/file.rb[files],
+https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/main/lib/logstash/outputs/elasticsearch.rb[elasticsearch],
+https://github.com/logstash-plugins/logstash-output-email/blob/main/lib/logstash/outputs/email.rb[email],
+https://github.com/logstash-plugins/logstash-output-rabbitmq/blob/main/lib/logstash/outputs/rabbitmq.rb[RabbitMQ],
+https://github.com/logstash-plugins/logstash-output-tcp/blob/main/lib/logstash/outputs/tcp.rb[tcp],
+https://github.com/logstash-plugins/logstash-output-stdout/blob/main/lib/logstash/outputs/stdout.rb[stdout],
 and dozens more!
 
 Output plugins do not require you to make use of codecs, but you can use a
@@ -727,13 +727,13 @@ a Ruby Gem from it. The following information will help you complete the process
 
 A `require` statement in Ruby is used to include necessary code. In some cases
 your plugin may require additional files.  For example, the collectd plugin
-https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/lib/logstash/codecs/collectd.rb#L148[uses]
+https://github.com/logstash-plugins/logstash-codec-collectd/blob/main/lib/logstash/codecs/collectd.rb#L148[uses]
 the `types.db` file provided by collectd.  In the main directory of your plugin,
 a file called `vendor.json` is where these files are described.
 
 The `vendor.json` file contains an array of JSON objects, each describing a file
 dependency. This example comes from the
-https://github.com/logstash-plugins/logstash-codec-collectd/blob/master/vendor.json[collectd]
+https://github.com/logstash-plugins/logstash-codec-collectd/blob/main/vendor.json[collectd]
 codec plugin:
 
 [source,txt]
@@ -754,7 +754,7 @@ absolute in this array.  If `files` is not present, all files will be
 uncompressed and extracted into the vendor directory.
 
 Another example of the `vendor.json` file is the
-https://github.com/logstash-plugins/logstash-filter-geoip/blob/master/vendor.json[`geoip` filter]
+https://github.com/logstash-plugins/logstash-filter-geoip/blob/main/vendor.json[`geoip` filter]
 
 The process used to download these dependencies is to call `rake vendor`.  This
 will be discussed further in the testing section of this document.
@@ -774,7 +774,7 @@ easier. You can use the
 https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support[adapter]
 to ensure that your plugin can use the deprecation logger while still supporting
 older versions of {ls}. See the
-https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support/blob/master/README.md[readme]
+https://github.com/logstash-plugins/logstash-mixin-deprecation_logger_support/blob/main/README.md[readme]
 for more information and for instructions on using the adapter.
 
 Deprecations are noted in the `logstash-deprecation.log` file in the
@@ -876,7 +876,7 @@ a development dependency on `logstash-devutils`.
 ===== Jar dependencies
 
 In some cases, such as the
-https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/logstash-output-elasticsearch.gemspec#L22-L23[Elasticsearch output plugin],
+https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/main/logstash-output-elasticsearch.gemspec#L22-L23[Elasticsearch output plugin],
 your code may depend on a jar file.  In cases such as this, the dependency is
 added in the gemspec file in this manner:
 
@@ -1168,7 +1168,7 @@ Logstash users by simply publishing it to RubyGems.org.
 
 ===== Licensing
 Logstash and all its plugins are licensed under
-https://github.com/elasticsearch/logstash/blob/master/LICENSE[Apache License, version 2 ("ALv2")].
+https://github.com/elasticsearch/logstash/blob/main/LICENSE[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
 please make sure to have this line in your gemspec:
 

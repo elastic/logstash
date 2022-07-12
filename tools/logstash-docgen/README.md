@@ -33,7 +33,7 @@ you can interrupt the process and it will output the current errors before exiti
 
 ## Generating the documentation for all the plugins from the organization
 
-You can now generate the documentation from master for all the plugin in the *logstash-plugins* organization.
+You can now generate the documentation from main for all the plugin in the *logstash-plugins* organization.
 
 *prerequisite*
 
@@ -47,7 +47,7 @@ You can now generate the documentation from master for all the plugin in the *lo
  bundle install
  ```
 
-You can use the the `bin/logstash-docgen` command to generate any plugin that you want, this executable can generate all the plugins or specific one from their master branch.
+You can use the the `bin/logstash-docgen` command to generate any plugin that you want, this executable can generate all the plugins or specific one from their main branch.
 
 Usages:
 

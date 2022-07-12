@@ -25,12 +25,14 @@ import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.logstash.RubyUtil;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.RubyEnvTestCase;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.MetricTestCase;
 import org.logstash.plugins.PluginLookup;
 
@@ -98,8 +100,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
         RubyString pluginName = RubyUtil.RUBY.newString("mockinput");
 
         // Exercise
-        IRubyObject pluginInstance = sut.buildInput(pluginName, sourceWithMetadata, RubyHash.newHash(RubyUtil.RUBY),
-                Collections.emptyMap());
+        IRubyObject pluginInstance = sut.buildInput(pluginName, RubyHash.newHash(RubyUtil.RUBY), sourceWithMetadata);
 
         //Verify
         IRubyObject id = pluginInstance.callMethod(RUBY.getCurrentContext(), "id");
@@ -107,7 +108,8 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
     }
 
     private static PipelineIR compilePipeline(SourceWithMetadata sourceWithMetadata) throws InvalidIRException {
-        return ConfigCompiler.configToPipelineIR(Collections.singletonList(sourceWithMetadata), false);
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        return ConfigCompiler.configToPipelineIR(Collections.singletonList(sourceWithMetadata), false, cve);
     }
 
     private static ExecutionContextFactoryExt createExecutionContextFactory() {

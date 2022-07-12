@@ -45,7 +45,7 @@ public final class MainTest {
     public void downloadsDependenciesForGithub() throws Exception {
         final File pwd = temp.newFolder();
         Main.main(String.format("--workdir=%s", pwd.getAbsolutePath()));
-        final Path logstash = pwd.toPath().resolve("logstash").resolve("logstash-master");
+        final Path logstash = pwd.toPath().resolve("logstash").resolve("logstash-main");
         assertThat(logstash.toFile().exists(), is(true));
         final File jruby = pwd.toPath().resolve("jruby").toFile();
         assertThat(jruby.exists(), is(true));

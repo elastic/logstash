@@ -33,7 +33,8 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 
-public class StringInterpolationTest {
+public class StringInterpolationTest extends RubyTestBase {
+
     @Test
     public void testCompletelyStaticTemplate() throws IOException {
         Event event = getTestEvent();
@@ -77,6 +78,13 @@ public class StringInterpolationTest {
     }
 
     @Test
+    public void TestMixDateAndFieldsJavaSyntax() throws IOException {
+        Event event = getTestEvent();
+        String path = "/full/%{{YYYY-DDD}}/weeee/%{bar}";
+        assertEquals("/full/2015-274/weeee/foo", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
     public void testUnclosedTag() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYY/web";
@@ -91,6 +99,13 @@ public class StringInterpolationTest {
     }
 
     @Test
+    public void TestStringIsJavaDateTag() throws IOException {
+        Event event = getTestEvent();
+        String path = "%{{YYYY-'W'ww}}";
+        assertEquals("2015-W40", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
     public void TestFieldRef() throws IOException {
         Event event = getTestEvent();
         String path = "%{[j][k1]}";
@@ -101,6 +116,8 @@ public class StringInterpolationTest {
     public void TestEpochSeconds() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%ss}";
+        // `+%ss` bypasses the EPOCH syntax and instead matches the JODA syntax.
+        // which produces the literal `%` followed by a two-s seconds value `00`
         assertEquals("%00", StringInterpolation.evaluate(event, path));
     }
 

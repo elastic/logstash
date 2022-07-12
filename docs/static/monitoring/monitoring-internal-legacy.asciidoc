@@ -61,15 +61,17 @@ monitoring cluster will show the Logstash metrics under the _monitoring_ cluster
 production cluster. If that setting is `false`, the collection of monitoring data
 is disabled in {es} and data is ignored from all other sources.
 
-. Configure your Logstash nodes to send metrics by setting the
-`xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {security-features}
-are enabled, you also need to specify the credentials for the
-{ref}/built-in-users.html[built-in `logstash_system` user]. For more information
-about these settings, see <<monitoring-settings-legacy>>.
+. Configure your Logstash nodes to send metrics by setting
+`xpack.monitoring.enabled` to `true` and specifying the destination {es} node(s)
+as `xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. 
+If {security-features} are enabled, you also need to specify the credentials for
+the {ref}/built-in-users.html[built-in `logstash_system` user]. 
+For more information about these settings, see <<monitoring-settings-legacy>>.
 +
 --
 [source,yaml]
 --------------------------------------------------
+xpack.monitoring.enabled: true  
 xpack.monitoring.elasticsearch.hosts: ["http://es-prod-node-1:9200", "http://es-prod-node-2:9200"] <1>
 xpack.monitoring.elasticsearch.username: "logstash_system"
 xpack.monitoring.elasticsearch.password: "changeme"
@@ -95,6 +97,26 @@ can specify the location of the PEM encoded certificate with the
 --------------------------------------------------
 xpack.monitoring.elasticsearch.ssl.certificate_authority: /path/to/ca.crt
 --------------------------------------------------
+
+To add a CA without having it loaded on disk, you can specify a hex-encoded
+SHA 256 fingerprint of the DER-formatted CA with the `ca_trusted_fingerprint` setting:
+
+[source,yaml]
+--------------------------------------------------
+xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: 2cfe62e474fb381cc7773c84044c28c9785ac5d1940325f942a3d736508de640
+--------------------------------------------------
+
+[NOTE]
+====
+A self-secured Elasticsearch cluster will provide the fingerprint of its CA to the console during setup.
+
+You can also get the SHA256 fingerprint of an Elasticsearch's CA using the `openssl` command-line utility on the Elasticsearch host:
+
+[source,shell]
+--------------------------------------------------
+openssl x509 -fingerprint -sha256 -in $ES_HOME/config/certs/http_ca.crt
+--------------------------------------------------
+====
 
 Alternatively, you can configure trusted certificates using a truststore
 (a Java Keystore file that contains the certificates):

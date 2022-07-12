@@ -164,7 +164,7 @@ describe LogStash::Config::Source::MultiLocal do
 
     context "using non pipeline related settings" do
       let(:retrieved_pipelines) do [
-          { "pipeline.id" => "main", "config.string" => "", "http.port" => 22222 },
+          { "pipeline.id" => "main", "config.string" => "", "api.http.port" => 22222 },
         ]
       end
       it "should raise and error" do

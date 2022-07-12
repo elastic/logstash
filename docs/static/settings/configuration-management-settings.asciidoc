@@ -40,6 +40,7 @@ The default is 5s.
 Specify a comma-separated list of pipeline IDs to register for centralized
 pipeline management. After changing this setting, you need to restart Logstash
 to pick up changes.
+Pipeline IDs support `*` as a <<wildcard-in-pipeline-id, wildcard>> for matching multiple IDs
 
 `xpack.management.elasticsearch.hosts`::
 
@@ -53,13 +54,31 @@ section in your Logstash configuration, or a different one. Defaults to
 If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
 authenticate for accessing the configuration data. The username you specify here
-should have the built-in `logstash_admin` role and the customized `logstash_writer` role, which provides access to `.logstash-*`
-indices for managing configurations. 
+should have the built-in `logstash_admin` role and the customized `logstash_writer` role, which provides access to system
+indices for managing configurations. Starting with Elasticsearch version 7.10.0, the
+`logstash_admin` role inherits the `manage_logstash_pipelines` cluster privilege for centralized pipeline management.
+If a user has created their own roles and granted them access to the .logstash index, those roles will continue to work in 7.x but will need to be updated for 8.0.
 
 `xpack.management.elasticsearch.proxy`::
 
 Optional setting that allows you to specify a proxy URL if Logstash needs to use a proxy
 to reach your Elasticsearch cluster.
+
+`xpack.management.elasticsearch.ssl.ca_trusted_fingerprint`::
+
+Optional setting that enables you to specify the hex-encoded SHA-256 fingerprint of the
+certificate authority for your {es} instance.
+[NOTE]
+=====
+A self-secured Elasticsearch cluster will provide the fingerprint of its CA to the console during setup.
+
+You can also get the SHA256 fingerprint of an Elasticsearch's CA using the `openssl` command-line utility on the Elasticsearch host:
+
+[source,shell]
+--------------------------------------------------
+openssl x509 -fingerprint -sha256 -in $ES_HOME/config/certs/http_ca.crt
+--------------------------------------------------
+=====
 
 `xpack.management.elasticsearch.ssl.certificate_authority`::
 
@@ -98,7 +117,7 @@ This setting is an alternative to both `xpack.management.elasticsearch.username`
 and `xpack.management.elasticsearch.password`. If `cloud_auth` is configured,
 those settings should not be used.
 The credentials you specify here should be for a user with the `logstash_admin` role, which
-provides access to `.logstash-*` indices for managing configurations.
+provides access to system indices for managing configurations.
 
 `xpack.management.elasticsearch.api_key`::
 

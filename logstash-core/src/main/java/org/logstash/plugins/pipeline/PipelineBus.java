@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -56,28 +57,48 @@ public class PipelineBus {
 
         synchronized (sender) {
             final ConcurrentHashMap<String, AddressState> addressesToInputs = outputsToAddressStates.get(sender);
+            // In case of retry on the same set events, a stable order is needed, else
+            // the risk is to reprocess twice some events. Collection can't guarantee order stability.
+            JrubyEventExtLibrary.RubyEvent[] orderedEvents = events.toArray(new JrubyEventExtLibrary.RubyEvent[0]);
 
             addressesToInputs.forEach((address, addressState) -> {
-                final Stream<JrubyEventExtLibrary.RubyEvent> clones = events.stream().map(e -> e.rubyClone(RubyUtil.RUBY));
+                boolean sendWasSuccess = false;
+                ReceiveResponse lastResponse = null;
+                boolean partialProcessing;
+                int lastFailedPosition = 0;
+                do {
+                    Stream<JrubyEventExtLibrary.RubyEvent> clones = Arrays.stream(orderedEvents)
+                            .skip(lastFailedPosition)
+                            .map(e -> e.rubyClone(RubyUtil.RUBY));
 
-                PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
-                boolean sendWasSuccess = input != null && input.internalReceive(clones);
-
-                // Retry send if the initial one failed
-                while (ensureDelivery && !sendWasSuccess) {
-                    // We need to refresh the input in case the mapping has updated between loops
-                    String message = String.format("Attempted to send event to '%s' but that address was unavailable. " +
-                            "Maybe the destination pipeline is down or stopping? Will Retry.", address);
-                    logger.warn(message);
-                    input = addressState.getInput();
-                    sendWasSuccess = input != null && input.internalReceive(clones);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        logger.error("Sleep unexpectedly interrupted in bus retry loop", e);
+                    PipelineInput input = addressState.getInput(); // Save on calls to getInput since it's volatile
+                    if (input != null) {
+                        lastResponse = input.internalReceive(clones);
+                        sendWasSuccess = lastResponse.wasSuccess();
                     }
-                }
+                    partialProcessing = ensureDelivery && !sendWasSuccess;
+                    if (partialProcessing) {
+                        if (lastResponse != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
+                            // when last call to internalReceive generated a fail, restart from the
+                            // fail position to avoid reprocessing of some events in the downstream.
+                            lastFailedPosition = lastResponse.getSequencePosition();
+
+                            logger.warn("Attempted to send event to '{}' but that address reached error condition. " +
+                                    "Will Retry. Root cause {}", address, lastResponse.getCauseMessage());
+
+                        } else {
+                            logger.warn("Attempted to send event to '{}' but that address was unavailable. " +
+                                    "Maybe the destination pipeline is down or stopping? Will Retry.", address);
+                        }
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            logger.error("Sleep unexpectedly interrupted in bus retry loop", e);
+                        }
+                    }
+                } while(partialProcessing);
             });
         }
     }

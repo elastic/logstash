@@ -25,8 +25,9 @@ namespace "artifact" do
     PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
   end
 
+  ## TODO: Install new service files
   def package_files
-    [
+    res = [
       "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
@@ -68,12 +69,18 @@ namespace "artifact" do
       "Gemfile",
       "Gemfile.lock",
       "x-pack/**/*",
-      "jdk/**/*",
-      "jdk.app/**/*",
     ]
+    if @bundles_jdk
+      res += [
+        "JDK_VERSION",
+        "jdk/**/*",
+        "jdk.app/**/*",
+      ]
+    end
+    res
   end
 
-  def exclude_paths
+  def default_exclude_paths
     return @exclude_paths if @exclude_paths
 
     @exclude_paths = []
@@ -84,42 +91,26 @@ namespace "artifact" do
     @exclude_paths << "bin/rspec"
     @exclude_paths << "bin/rspec.bat"
 
+    # vendored test/spec artifacts from upstream
+    @exclude_paths << 'vendor/**/gems/*/test/**/*'
+    @exclude_paths << 'vendor/**/gems/*/spec/**/*'
+
     @exclude_paths
   end
 
-  def excludes
-    return @excludes if @excludes
-    @excludes = exclude_paths.collect { |g| Rake::FileList[g] }.flatten
+  def oss_exclude_paths
+    return @oss_excludes if @oss_excludes
+    @oss_excludes = default_exclude_paths + [ "x-pack/**/*" ]
   end
 
-  def exclude?(path)
-    excludes.any? { |ex| path_matches_exclude?(path, ex) }
+  def files(exclude_paths=default_exclude_paths)
+    Rake::FileList.new(*package_files).exclude(*exclude_paths)
   end
 
-  def exclude_oss?(path)
-    path_matches_exclude?(path, "x-pack" ) || exclude?(path)
-  end
-
-  def oss_excluder
-    @oss_excluder ||= self.method(:exclude_oss?)
-  end
-
-  def path_matches_exclude?(path, ex)
-    path == ex || (File.directory?(ex) && path =~ /^#{ex}\//)
-  end
-
-  def files(excluder=nil)
-    excluder ||= self.method(:exclude?)
-
-    package_files.collect do |glob|
-      Rake::FileList[glob].reject(&excluder)
-    end.flatten.uniq
-  end
-
-  def source_modified_since?(time, excluder=nil)
+  def source_modified_since?(time, exclude_paths=default_exclude_paths)
     skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
     result = false
-    files(excluder).each do |file|
+    files(exclude_paths).each do |file|
       next if File.mtime(file) < time || skip_list.include?(file)
       puts "file modified #{file}"
       result = true
@@ -135,102 +126,125 @@ namespace "artifact" do
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    ["linux", "windows", "darwin"].each do |os_name|
-      puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}")
-      system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name}")
-      case os_name
-      when "linux"
-        build_tar('ELASTIC-LICENSE', platform: '-linux-x86_64')
-      when "windows"
-        build_zip('ELASTIC-LICENSE', platform: '-windows-x86_64')
-      when "darwin"
-        build_tar('ELASTIC-LICENSE', platform: '-darwin-x86_64')
-      end
-      system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
-    end
+    license_details = ['ELASTIC-LICENSE']
+    @bundles_jdk = true
+    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
-    build_tar('ELASTIC-LICENSE', platform: '-no-jdk')
-    build_zip('ELASTIC-LICENSE', platform: '-no-jdk')
+    @bundles_jdk = false
+    build_tar(*license_details, platform: '-no-jdk')
+    build_zip(*license_details, platform: '-no-jdk')
+  end
+
+  def create_archive_pack(license_details, arch, *oses)
+    oses.each do |os_name|
+      puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}, arch: #{arch}")
+      create_single_archive_pack(os_name, arch, license_details)
+    end
+  end
+
+  def create_single_archive_pack(os_name, arch, license_details)
+    system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
+    if arch == 'arm64'
+      arch = 'aarch64'
+    end
+    case os_name
+    when "linux"
+      build_tar(*license_details, platform: "-linux-#{arch}")
+    when "windows"
+      build_zip(*license_details, platform: "-windows-#{arch}")
+    when "darwin"
+      build_tar(*license_details, platform: "-darwin-#{arch}")
+    end
+    system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
+    @bundles_jdk = false
     build_tar('ELASTIC-LICENSE')
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    ["linux", "windows", "darwin"].each do |os_name|
-      puts("[artifact:archives_oss] Building OSS tar.gz/zip of default plugins for OS: #{os_name}")
-      system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name}")
-      case os_name
-      when "linux"
-        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-linux-x86_64')
-      when "windows"
-        build_zip('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-windows-x86_64')
-      when "darwin"
-        build_tar('APACHE-LICENSE-2.0', "-oss", oss_excluder, platform: '-darwin-x86_64')
-      end
-      system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
-    end
+    @bundles_jdk = true
+    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_exclude_paths]
+    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
-    build_tar('APACHE-LICENSE-2.0',"-oss", oss_excluder, platform: '-no-jdk')
-    build_zip('APACHE-LICENSE-2.0',"-oss", oss_excluder, platform: '-no-jdk')
+    build_tar(*license_details, platform: '-no-jdk')
+    build_zip(*license_details, platform: '-no-jdk')
   end
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:rpm] building rpm package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("centos", "5")
-    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+    #with bundled JDKs
+    @bundles_jdk = true
+    puts("[artifact:rpm] building rpm package x86_64")
+    package_with_jdk("centos", "x86_64")
+
+    puts("[artifact:rpm] building rpm package arm64")
+    package_with_jdk("centos", "arm64")
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
-    package("centos", "5")
+    package("centos")
   end
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:rpm] building rpm package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("centos", "5", :oss)
-    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+    #with bundled JDKs
+    @bundles_jdk = true
+    puts("[artifact:rpm] building rpm OSS package x86_64")
+    package_with_jdk("centos", "x86_64", :oss)
+
+    puts("[artifact:rpm] building rpm OSS package arm64")
+    package_with_jdk("centos", "arm64", :oss)
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
-    package("centos", "5", :oss)
+    package("centos", :oss)
   end
 
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
-    puts("[artifact:deb] building deb package for OS: linux")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("ubuntu", "12.04")
-    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+    @bundles_jdk = true
+    puts("[artifact:deb] building deb package for x86_64")
+    package_with_jdk("ubuntu", "x86_64")
+
+    puts("[artifact:deb] building deb package for OS: linux arm64")
+    package_with_jdk("ubuntu", "arm64")
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
-    package("ubuntu", "12.04")
+    package("ubuntu")
   end
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb_oss" => ["prepare", "generate_build_metadata"] do
-    puts("[artifact:deb_oss] building deb package")
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux")
-    package_with_jdk("ubuntu", "12.04", :oss)
-    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+    #with bundled JDKs
+    @bundles_jdk = true
+    puts("[artifact:deb_oss] building deb OSS package x86_64")
+    package_with_jdk("ubuntu", "x86_64", :oss)
+
+    puts("[artifact:deb_oss] building deb OSS package arm64")
+    package_with_jdk("ubuntu", "arm64", :oss)
 
     #without JDKs
+    @bundles_jdk = false
     system("./gradlew bootstrap") #force the build of Logstash jars
-    package("ubuntu", "12.04", :oss)
+    package("ubuntu", :oss)
   end
 
   desc "Generate logstash core gems"
@@ -279,6 +293,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('ironbank')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -289,14 +304,20 @@ namespace "artifact" do
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building full Dockerfiles")
     build_dockerfile('full')
   end
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
+  end
+
+  desc "Generate build context for ironbank"
+  task "dockerfile_ironbank" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building ironbank Dockerfiles")
+    build_dockerfile('ironbank')
   end
 
   # Auxiliary tasks
@@ -326,14 +347,23 @@ namespace "artifact" do
     Rake::Task["artifact:dockerfile_oss"].invoke
   end
 
+  task "build_docker_ubi8" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_ubi8"].invoke
+    Rake::Task["artifact:dockerfile_ubi8"].invoke
+  end
+
   task "generate_build_metadata" do
+    require 'time'
+
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
+    BUILD_DATE=Time.now.iso8601
     build_info = {
-      "build_date" => Time.now.iso8601,
+      "build_date" => BUILD_DATE,
       "build_sha" => `git rev-parse HEAD`.chomp,
       "build_snapshot" => SNAPSHOT_BUILD
     }
+
     metadata = [ "# encoding: utf-8", "BUILD_INFO = #{build_info}" ]
     IO.write(BUILD_METADATA_FILE.path, metadata.join("\n"))
   end
@@ -401,7 +431,7 @@ namespace "artifact" do
   end
 
 
-  def build_tar(license, tar_suffix = nil, excluder=nil, platform: '')
+  def build_tar(license, tar_suffix = nil, exclude_paths=default_exclude_paths, platform: '')
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
@@ -414,7 +444,7 @@ namespace "artifact" do
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     Gem::Package::TarWriter.new(gz) do |tar|
-      files(excluder).each do |path|
+      files(exclude_paths).each do |path|
         write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
       end
 
@@ -451,14 +481,14 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(license, zip_suffix = "", excluder=nil, platform: '')
+  def build_zip(license, zip_suffix = "", exclude_paths=default_exclude_paths, platform: '')
     require 'zip'
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
-      files(excluder).each do |path|
+      files(exclude_paths).each do |path|
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
         zipfile.add(path_in_zip, path)
       end
@@ -477,21 +507,19 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package_with_jdk(platform, version, variant=:standard)
-    package(platform, version, variant, true)
+  def package_with_jdk(platform, jdk_arch, variant=:standard)
+    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
+    package(platform, variant, true, jdk_arch)
+    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
   end
 
-  def package(platform, version, variant=:standard, bundle_jdk=false)
+  def package(platform, variant=:standard, bundle_jdk=false, jdk_arch='x86_64')
     oss = variant == :oss
 
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
-    require "childprocess/jruby/pump"
-    # TODO(ph): Cabin is closing the fd when it reach EOF, childprocess will attempt to write to it and hit an IOError.
-    # This will make a the thread dies, in 1.7.25 we had a Thread Death
-    require_relative "childprocess_patch"
 
     basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
@@ -503,13 +531,14 @@ namespace "artifact" do
 
 
     suffix = ""
-    excluder = nil
     if oss
       suffix= "-oss"
-      excluder = oss_excluder
+      exclude_paths = oss_exclude_paths
+    else
+      exclude_paths = default_exclude_paths
     end
 
-    files(excluder).each do |path|
+    files(exclude_paths).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
@@ -535,22 +564,15 @@ namespace "artifact" do
       dir.input("#{empty}/=/var/log/logstash")
       dir.input("#{empty}/=/var/lib/logstash")
       dir.input("#{empty}/=/etc/logstash/conf.d")
+      dir.input("#{empty}/=/lib/systemd/system")
+      dir.input("#{empty}/=/etc/default")
     end
 
     File.join(basedir, "config", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
 
-    if bundle_jdk
-      case platform
-        when "debian", "ubuntu"
-          arch_suffix = "amd64"
-        else
-          arch_suffix = "x86_64"
-      end
-    else
-      arch_suffix = "no-jdk"
-    end
+    arch_suffix = bundle_jdk ? map_architecture_for_package_type(platform, jdk_arch) : "no-jdk"
 
     ensure_logstash_version_constant_defined
     package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}-#{arch_suffix}.TYPE"
@@ -569,6 +591,12 @@ namespace "artifact" do
     end
     File.join(basedir, "pkg", "pipelines.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
+    end
+    File.join(basedir, "pkg", "service_templates", "systemd", "lib", "systemd", "system", "logstash.service").tap do |path|
+      dir.input("#{path}=/lib/systemd/system")
+    end
+    File.join(basedir, "pkg", "service_templates", "sysv", "etc", "default", "logstash").tap do |path|
+      dir.input("#{path}=/etc/default")
     end
 
     case platform
@@ -590,6 +618,8 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/logstash.yml"
         out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
+        out.config_files << "/lib/systemd/system/logstash.service"
+        out.config_files << "/etc/default/logstash"
       when "debian", "ubuntu"
         require "fpm/package/deb"
 
@@ -599,13 +629,15 @@ namespace "artifact" do
         out.license = license
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
-        out.attributes[:deb_suggests] = "java8-runtime-headless" unless bundle_jdk
+        out.attributes[:deb_suggests] = ["java11-runtime-headless"] unless bundle_jdk
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
         out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
+        out.config_files << "/lib/systemd/system/logstash.service"
+        out.config_files << "/etc/default/logstash"
     end
 
     # Packaging install/removal scripts
@@ -623,17 +655,7 @@ namespace "artifact" do
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
     out.name = oss ? "logstash-oss" : "logstash"
-    out.architecture = "all"
-    if bundle_jdk
-      case platform
-        when "redhat", "centos"
-          out.architecture = "x86_64"
-        when "debian", "ubuntu"
-          out.architecture = "amd64"
-      end
-    else
-      out.architecture = "all"
-    end
+    out.architecture = bundle_jdk ? map_architecture_for_package_type(platform, jdk_arch) : "all"
     out.version = "#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}".gsub(/[.-]([[:alpha:]])/, '~\1')
     # TODO(sissel): Include the git commit hash?
     out.iteration = "1" # what revision?
@@ -673,11 +695,32 @@ namespace "artifact" do
     end
   end # def package
 
+  def map_architecture_for_package_type(platform, jdk_arch)
+    if jdk_arch == 'x86_64'
+      case platform
+        when "debian", "ubuntu"
+          return "amd64"
+        else
+          return "x86_64"
+      end
+    elsif jdk_arch == 'arm64'
+      case platform
+        when "debian", "ubuntu"
+          return "arm64"
+        else
+          return "aarch64"
+      end
+    else
+      raise "CPU architecture not recognized: #{jdk_arch}"
+    end
+  end
+
   def build_docker(flavor)
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
         system(env, "make build-from-local-#{flavor}-artifacts")
@@ -688,11 +731,12 @@ namespace "artifact" do
     env = {
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
       system(env, "make public-dockerfiles_#{flavor}")
-      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+      puts "Dockerfiles created in #{env['ARTIFACTS_DIR']}"
     end
   end
 end

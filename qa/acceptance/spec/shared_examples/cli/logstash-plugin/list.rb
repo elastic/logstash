@@ -30,7 +30,7 @@ shared_examples "logstash list" do |logstash|
     end
 
     let(:plugin_name) { /logstash-(?<type>\w+)-(?<name>\w+)/ }
-    let(:plugin_name_with_version) { /#{plugin_name}\s\(\d+\.\d+.\d+(.\w+)?\)/ }
+    let(:plugin_name_with_version) { /(\s*[├└]──\s*)?#{plugin_name}\s(\(\d+\.\d+.\d+(.\w+)?\)|\(alias\))/ }
 
     context "without a specific plugin" do
       it "display a list of plugins" do
@@ -49,7 +49,7 @@ shared_examples "logstash list" do |logstash|
         stdout = StringIO.new(result.stdout)
         stdout.set_encoding(Encoding::UTF_8)
         while line = stdout.gets
-          next if line.match(/^Using system java:.*$/)
+          next if line.match(/^Using system java:.*$/) || line.match(/^Using bundled JDK:.*$/)
           match = line.match(/^#{plugin_name_with_version}$/)
           expect(match).to_not be_nil
 
@@ -61,7 +61,7 @@ shared_examples "logstash list" do |logstash|
           # ~~~
           if match[:type] == 'integration'
             while line = stdout.gets
-              match = line.match(/^(?: [├└]── )#{plugin_name}$/)
+              match = line.match(/^(?: [├└]──\s+)#{plugin_name}$/)
               expect(match).to_not be_nil
               break if line.start_with?(' └')
             end

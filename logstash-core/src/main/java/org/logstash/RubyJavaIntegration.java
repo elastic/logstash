@@ -31,9 +31,11 @@ import java.util.stream.Stream;
 import org.jruby.Ruby;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyString;
+import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
+import org.jruby.javasupport.Java;
 import org.jruby.javasupport.JavaClass;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
@@ -60,14 +62,14 @@ public final class RubyJavaIntegration {
         ruby.getArray().defineAnnotatedMethods(RubyJavaIntegration.RubyArrayOverride.class);
         ruby.getHash().defineAnnotatedMethods(RubyJavaIntegration.RubyHashOverride.class);
         Stream.of(LinkedHashMap.class, HashMap.class).forEach(cls ->
-            JavaClass.get(ruby, cls).getProxyModule().defineAnnotatedMethods(
+            Java.getProxyClass(ruby, cls).defineAnnotatedMethods(
                 RubyJavaIntegration.RubyMapProxyOverride.class
             )
         );
-        JavaClass.get(ruby, Map.class).getProxyModule().defineAnnotatedMethods(
+        Java.getProxyClass(ruby, Map.class).defineAnnotatedMethods(
             RubyJavaIntegration.JavaMapOverride.class
         );
-        JavaClass.get(ruby, Collection.class).getProxyModule().defineAnnotatedMethods(
+        Java.getProxyClass(ruby, Collection.class).defineAnnotatedMethods(
             RubyJavaIntegration.JavaCollectionOverride.class
         );
     }
@@ -125,6 +127,9 @@ public final class RubyJavaIntegration {
         }
     }
 
+    /**
+     * Helper class to provide some typical Ruby methods to Java Collection class when used from Ruby
+     * */
     public static final class JavaCollectionOverride {
 
         private static final Collection<IRubyObject> NIL_COLLECTION =
@@ -208,21 +213,15 @@ public final class RubyJavaIntegration {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, dup);
         }
 
-        @JRubyMethod
-        public static IRubyObject inspect(final ThreadContext context, final IRubyObject self) {
-            return RubyString.newString(context.runtime, new StringBuilder("<")
-                .append(self.getMetaClass().name().asJavaString()).append(':')
-                .append(self.hashCode()).append(' ').append(self.convertToArray().inspect())
-                .append('>').toString()
-            );
-        }
-
         private static boolean removeNilAndNull(final Collection<?> collection) {
             final boolean res = collection.removeAll(NIL_COLLECTION);
             return collection.removeAll(NULL_COLLECTION) || res;
         }
     }
 
+    /**
+     * Helper class to provide "is_a?" method to Java Map class when use dfrom Ruby
+     * */
     public static final class JavaMapOverride {
 
         private JavaMapOverride() {
@@ -273,7 +272,8 @@ public final class RubyJavaIntegration {
         @JRubyMethod
         public static IRubyObject merge(final ThreadContext context, final IRubyObject self,
             final IRubyObject other) {
-            return ((MapJavaProxy) self.dup()).merge_bang(context, other, Block.NULL_BLOCK);
+            IRubyObject[] other_array = { other };
+            return ((MapJavaProxy) self.dup()).merge_bang(context, other_array, Block.NULL_BLOCK);
         }
     }
 }

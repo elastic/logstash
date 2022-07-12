@@ -91,6 +91,9 @@ public final class Main {
         final OptionSpec<File> testcaseconfig = parser.accepts(
                 UserInput.TEST_CASE_CONFIG_PARAM, UserInput.TEST_CASE_CONFIG_HELP
         ).withRequiredArg().ofType(File.class).forHelp();
+        final OptionSpec<File> testcasedata = parser.accepts(
+            UserInput.TEST_CASE_DATA_PARAM, UserInput.TEST_CASE_DATA_HELP
+            ).withRequiredArg().ofType(File.class).forHelp();
         final OptionSpec<File> pwd = parser.accepts(
             UserInput.WORKING_DIRECTORY_PARAM, UserInput.WORKING_DIRECTORY_HELP
         ).withRequiredArg().ofType(File.class).defaultsTo(UserInput.WORKING_DIRECTORY_DEFAULT)
@@ -134,6 +137,7 @@ public final class Main {
         );
 
         Path testCaseConfigPath = null;
+        Path testCaseDataPath = null;
         if (options.valueOf(testcase).equals("custom")) {
             if (options.has(testcaseconfig)) {
                 testCaseConfigPath = options.valueOf(testcaseconfig).toPath();
@@ -141,10 +145,17 @@ public final class Main {
             else {
                 throw new IllegalArgumentException("Path to Test Case Config must be provided");
             }
+            if (options.has(testcasedata)) {
+                testCaseDataPath = options.valueOf(testcasedata).toPath();
+            }
+        } else {
+            if (options.has(testcaseconfig) || options.has(testcasedata)) {
+                throw new IllegalArgumentException("Path to Test Case Config or Data can only be used with Custom Test Case");
         }
+    }
 
         final BenchmarkMeta runConfig = new BenchmarkMeta(
-            options.valueOf(testcase), testCaseConfigPath, version, type, options.valueOf(workers),
+            options.valueOf(testcase), testCaseConfigPath, testCaseDataPath, version, type, options.valueOf(workers),
             options.valueOf(batchsize)
         );
         execute(

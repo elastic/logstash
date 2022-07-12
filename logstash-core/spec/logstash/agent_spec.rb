@@ -65,6 +65,8 @@ describe LogStash::Agent do
       allow(described_class).to receive(:logger).and_return(logger)
       [:debug, :info, :error, :fatal, :trace].each {|level| allow(logger).to receive(level) }
       [:debug?, :info?, :error?, :fatal?, :trace?].each {|level| allow(logger).to receive(level) }
+
+      allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
     end
 
     after :each do
@@ -174,7 +176,7 @@ describe LogStash::Agent do
 
             let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
-            it "does upgrade the new config" do
+            it "updates to the new config without stopping logstash" do
               t = Thread.new { subject.execute }
               Timeout.timeout(timeout) do
                 sleep(0.1) until subject.running_pipelines_count > 0 && subject.running_pipelines.values.first.ready?
@@ -183,9 +185,13 @@ describe LogStash::Agent do
               expect(subject.converge_state_and_update).to be_a_successful_converge
               expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
 
+              # Previously `transition_to_stopped` would be called - the loading pipeline would
+              # not be detected in the `while !Stud.stop?` loop in agent#execute, and the method would
+              # exit prematurely
+              joined = t.join(1)
+              expect(joined).to be(nil)
               Stud.stop!(t)
               t.join
-              subject.shutdown
             end
           end
 
@@ -278,6 +284,13 @@ describe LogStash::Agent do
           expect(json_document["message"]).to eq("foo-bar")
         end
       end
+
+      context "referenced environment variable does not exist" do
+
+        it "does not converge the pipeline" do
+          expect(subject.converge_state_and_update).not_to be_a_successful_converge
+        end
+      end
     end
 
     describe "#upgrade_pipeline" do
@@ -300,6 +313,15 @@ describe LogStash::Agent do
         # new pipelines will be created part of the upgrade process so we need
         # to close any initialized pipelines
         subject.shutdown
+      end
+
+      context "when the upgrade contains a bad environment variable" do
+        let(:new_pipeline_config) { "input { generator {} } filter { if '${NOEXIST}' { mutate { add_tag => 'x' } } } output { }" }
+
+        it "leaves the state untouched" do
+          expect(subject.converge_state_and_update).not_to be_a_successful_converge
+          expect(subject.get_pipeline(default_pipeline_id).config_str).to eq(pipeline_config)
+        end
       end
 
       context "when the upgrade fails" do
@@ -329,6 +351,31 @@ describe LogStash::Agent do
         it "starts the pipeline" do
           expect(subject.converge_state_and_update).to be_a_successful_converge
           expect(subject.get_pipeline(default_pipeline_id).running?).to be_truthy
+        end
+      end
+    end
+
+    describe "#stop_pipeline" do
+      let(:config_string) { "input { generator { id => 'old'} } output { }" }
+      let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
+      let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
+      subject { described_class.new(agent_settings, source_loader) }
+
+      before(:each) do
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+        expect(subject.get_pipeline('main').running?).to be_truthy
+      end
+
+      after(:each) do
+        subject.shutdown
+      end
+
+      context "when agent stops the pipeline" do
+        it "should stop successfully", :aggregate_failures do
+          converge_result = subject.stop_pipeline('main')
+
+          expect(converge_result).to be_a_successful_converge
+          expect(subject.get_pipeline('main').stopped?).to be_truthy
         end
       end
     end

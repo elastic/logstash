@@ -17,7 +17,7 @@
 
 require "logstash/agent"
 require "logstash/java_pipeline"
-require "logstash/event"
+
 require "stud/try"
 require "rspec/expectations"
 require "thread"

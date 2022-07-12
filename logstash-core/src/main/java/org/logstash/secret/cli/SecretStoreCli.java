@@ -149,13 +149,11 @@ public class SecretStoreCli {
                 SecretIdentifier id = new SecretIdentifier(argument);
 
                 SecretStore secretStore = secretStoreFactory.load(config);
-                byte[] s = secretStore.retrieveSecret(id);
-                if (s == null) {
-                    terminal.writeLine(String.format("ERROR: '%s' does not exist in the Logstash keystore.", argument));
-                } else {
-                    SecretStoreUtil.clearBytes(s);
+                if (secretStore.containsSecret(id)) {
                     secretStore.purgeSecret(id);
                     terminal.writeLine(String.format("Removed '%s' from the Logstash keystore.", id.getKey()));
+                } else {
+                    terminal.writeLine(String.format("ERROR: '%s' does not exist in the Logstash keystore.", argument));
                 }
                 break;
             }

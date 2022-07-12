@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/**
+ * Java implementation of the "dots" codec
+ * */
 @LogstashPlugin(name = "jdots")
 public class Dots implements Codec {
 

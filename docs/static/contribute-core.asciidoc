@@ -1,0 +1,10 @@
+[[contribute-to-core]]
+=== Extending Logstash core
+
+We also welcome contributions and bug fixes to the Logstash core feature set.
+
+Please read through our
+https://github.com/elastic/logstash/blob/main/CONTRIBUTING.md[contribution]
+guide, and the Logstash
+https://github.com/elastic/logstash/blob/main/README.md[readme]
+document.

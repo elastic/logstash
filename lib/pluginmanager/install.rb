@@ -30,6 +30,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   option "--preserve", :flag, "preserve current gem options", :default => false
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
   option "--local", :flag, "force local-only plugin installation. see bin/logstash-plugin package|unpack", :default => false
+  option "--[no-]conservative", :flag, "do a conservative update of plugin's dependencies", :default => true
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
@@ -70,10 +71,11 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       gems = plugins_development_gems
     else
       gems = plugins_gems
-      verify_remote!(gems) if !local? && verify?
+      gems = verify_remote!(gems) if !local? && verify?
     end
 
     check_for_integrations(gems)
+    update_logstash_mixin_dependencies(gems)
     install_gems_list!(gems)
     remove_unused_locally_installed_gems!
     remove_unused_integration_overlaps!
@@ -123,11 +125,29 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Check if the specified gems contains
   # the logstash `metadata`
   def verify_remote!(gems)
+    gems_swap = {}
     options = { :rubygems_source => gemfile.gemset.sources }
     gems.each do |plugin, version|
       puts("Validating #{[plugin, version].compact.join("-")}")
       next if validate_plugin(plugin, version, options)
+
+      signal_usage_error("Installs of an alias doesn't require version specification --version") if version
+
+      # if the plugin is an alias then fallback to the original name
+      if LogStash::PluginManager::ALIASES.has_key?(plugin)
+        resolved_plugin = LogStash::PluginManager::ALIASES[plugin]
+        if validate_plugin(resolved_plugin, version, options)
+          puts "Remapping alias #{plugin} to #{resolved_plugin}"
+          gems_swap[plugin] = resolved_plugin
+          next
+        end
+      end
       signal_error("Installation aborted, verification failed for #{plugin} #{version}")
+    end
+
+    # substitute in gems the list the alias plugin with the original
+    gems.collect do |plugin, version|
+      [gems_swap.fetch(plugin, plugin), version]
     end
   end
 
@@ -157,6 +177,28 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     version ? [plugins_arg << version] : plugins_arg.map { |plugin| [plugin, nil] }
   end
 
+  def local_gem?
+    plugins_arg.any? { |plugin_arg| LogStash::PluginManager.plugin_file?(plugin_arg) }
+  end
+
+  def update_logstash_mixin_dependencies(install_list)
+    return if !verify? || preserve? || development? || local? || local_gem?
+
+    puts "Resolving mixin dependencies"
+    LogStash::Bundler.prepare
+    plugins_to_update = install_list.map(&:first)
+    unlock_dependencies = LogStash::Bundler.expand_logstash_mixin_dependencies(plugins_to_update) - plugins_to_update
+
+    if unlock_dependencies.any?
+      puts "Updating mixin dependencies #{unlock_dependencies.join(', ')}"
+      LogStash::Bundler.invoke! update: unlock_dependencies,
+                                rubygems_source: gemfile.gemset.sources,
+                                conservative: conservative?
+    end
+
+    unlock_dependencies
+  end
+
   # install_list will be an array of [plugin name, version, options] tuples, version it
   # can be nil at this point we know that plugins_arg is not empty and if the
   # --version is specified there is only one plugin in plugins_arg
@@ -184,9 +226,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     bundler_options[:without] = [] if development?
     bundler_options[:rubygems_source] = gemfile.gemset.sources
     bundler_options[:local] = true if local?
-
-    output = LogStash::Bundler.invoke!(bundler_options)
-
+    output = nil
+    # Unfreeze the bundle when installing gems
+    Bundler.settings.temporary({:frozen => false}) do
+      output = LogStash::Bundler.invoke!(bundler_options)
+      output << LogStash::Bundler.genericize_platform.to_s
+    end
     puts("Installation successful")
   rescue => exception
     gemfile.restore!

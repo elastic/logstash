@@ -2,7 +2,7 @@
 require "logstash/devutils/rspec/spec_helper"
 require "logstash/outputs/<%= plugin_name %>"
 require "logstash/codecs/plain"
-require "logstash/event"
+
 
 describe LogStash::Outputs::<%= classify(plugin_name) %> do
   let(:sample_event) { LogStash::Event.new }

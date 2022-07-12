@@ -22,6 +22,10 @@ package org.logstash;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -155,7 +159,7 @@ public final class Valuefier {
         );
         converters.put(
             RubyTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                RubyUtil.RUBY, new Timestamp(((RubyTime) input).getDateTime())
+                RubyUtil.RUBY, new Timestamp(((RubyTime) input).toInstant())
             )
         );
         converters.put(
@@ -181,6 +185,21 @@ public final class Valuefier {
         );
         converters.put(
             RubyArray.class, input -> ConvertedList.newFromRubyArray((RubyArray) input)
+        );
+        converters.put(
+                LocalDate.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                        RubyUtil.RUBY, new Timestamp(((LocalDate) input).atStartOfDay().toInstant(ZoneOffset.UTC))
+                )
+        );
+        converters.put(
+                LocalDateTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                        RubyUtil.RUBY, new Timestamp(((LocalDateTime) input).toInstant(ZoneOffset.UTC))
+                )
+        );
+        converters.put(
+                ZonedDateTime.class, input -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                        RubyUtil.RUBY, new Timestamp(((ZonedDateTime) input).toInstant())
+                )
         );
         return converters;
     }

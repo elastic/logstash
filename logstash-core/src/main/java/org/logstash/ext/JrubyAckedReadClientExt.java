@@ -35,6 +35,9 @@ import org.logstash.execution.QueueReadClientBase;
 
 import java.io.IOException;
 
+/**
+ * JRuby extension to provide an implementation of queue client for Persistent queue
+ * */
 @JRubyClass(name = "AckedReadClient", parent = "QueueReadClientBase")
 public final class JrubyAckedReadClientExt extends QueueReadClientBase implements QueueReadClient {
 

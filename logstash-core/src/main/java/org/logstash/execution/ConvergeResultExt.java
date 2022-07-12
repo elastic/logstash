@@ -33,12 +33,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * JRuby extension, used by agent to collect the results of running pipeliene actions (Create, Update, Delete)
+ * */
 @JRubyClass(name = "ConvergeResult")
 public class ConvergeResultExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject expectedActionsCount;
+    private transient IRubyObject expectedActionsCount;
     private ConcurrentHashMap<IRubyObject, ActionResultExt> actions;
 
     public ConvergeResultExt(Ruby runtime, RubyClass metaClass) {
@@ -102,12 +105,15 @@ public class ConvergeResultExt extends RubyObject {
     }
 
 
+    /**
+     * Base class for all action results classes (Failed / Success)
+     * */
     @JRubyClass(name = "ActionResult")
     public static abstract class ActionResultExt extends RubyBasicObject {
 
         private static final long serialVersionUID = 1L;
 
-        private IRubyObject executedAt;
+        private transient IRubyObject executedAt;
 
         protected ActionResultExt(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -153,13 +159,16 @@ public class ConvergeResultExt extends RubyObject {
         protected abstract boolean getSuccessFul();
     }
 
+    /**
+     * Failed result of running an action.
+     * */
     @JRubyClass(name = "FailedAction")
     public static final class FailedActionExt extends ActionResultExt {
 
         private static final long serialVersionUID = 1L;
 
-        private IRubyObject message;
-        private IRubyObject backtrace;
+        private transient IRubyObject message;
+        private transient IRubyObject backtrace;
 
         public FailedActionExt(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -209,6 +218,9 @@ public class ConvergeResultExt extends RubyObject {
         }
     }
 
+    /**
+     * Successful result of running an action.
+     * */
     @JRubyClass(name = "SuccessfulAction")
     public static final class SuccessfulActionExt extends ActionResultExt {
 

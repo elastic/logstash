@@ -17,7 +17,6 @@
 
 require "spec_helper"
 require "logstash/filter_delegator"
-require "logstash/event"
 require "support/shared_contexts"
 
 java_import org.logstash.RubyUtil

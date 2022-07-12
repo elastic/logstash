@@ -1,0 +1,49 @@
+name: Backport PR to another branch
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  pr_commented:
+    name: PR comment
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ github.event.comment.body }}
+          regex: '^@logstashmachine backport (main|[x0-9\.]+)$'
+      - if: ${{ steps.regex-match.outputs.group1 == '' }}
+        run: exit 1
+      - name: Fetch logstash-core team member list
+        uses: tspascoal/get-user-teams-membership@v1
+        id: checkUserMember
+        with: 
+          username: ${{ github.actor }}
+          organization: elastic
+          team: logstash
+          GITHUB_TOKEN: ${{ secrets.READ_ORG_SECRET_JSVD }}
+      - name: Is user not a core team member?
+        if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+        run: exit 1
+      - name: checkout repo content
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: 'main'
+      - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+      - run: git config --global user.name "logstashmachine"
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: |
+          mkdir ~/.elastic && echo ${{ github.token }} >> ~/.elastic/github.token
+      - run: pip install requests
+      - name: run backport
+        run: python devtools/backport ${{ steps.regex-match.outputs.group1 }} ${{ github.event.issue.number }} --remote=origin --yes

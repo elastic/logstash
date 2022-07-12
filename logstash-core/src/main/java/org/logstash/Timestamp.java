@@ -22,62 +22,82 @@ package org.logstash;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
 import java.util.Date;
-import org.joda.time.Chronology;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.joda.time.LocalDateTime;
-import org.joda.time.chrono.ISOChronology;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
+
 import org.logstash.ackedqueue.Queueable;
 
 /**
- * Wrapper around a {@link DateTime} with Logstash specific serialization behaviour.
- * This class is immutable and thread-safe since its only state is held in a final {@link DateTime}
- * reference and {@link DateTime} which itself is immutable and thread-safe.
+ * Wrapper around a {@link Instant} with Logstash specific serialization behaviour.
+ * This class is immutable and thread-safe since its only state is held in a final {@link Instant}
+ * reference and {@link Instant} which itself is immutable and thread-safe.
  */
 @JsonSerialize(using = ObjectMappers.TimestampSerializer.class)
 @JsonDeserialize(using = ObjectMappers.TimestampDeserializer.class)
 public final class Timestamp implements Comparable<Timestamp>, Queueable {
 
-    // all methods setting the time object must set it in the UTC timezone
-    private final DateTime time;
+    private transient org.joda.time.DateTime time;
 
-    private static final DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
+    private final Instant instant;
 
-    private static final LocalDateTime JAN_1_1970 = new LocalDateTime(1970, 1, 1, 0, 0);
-
-    /**
-     * {@link Chronology} for UTC timezone, cached here to avoid lookup of it when constructing
-     * {@link DateTime} instances.
-     */
-    private static final Chronology UTC_CHRONOLOGY = ISOChronology.getInstance(DateTimeZone.UTC);
+    private static final DateTimeFormatter ISO_INSTANT_MILLIS = new DateTimeFormatterBuilder()
+            .appendInstant(3)
+            .toFormatter()
+            .withResolverStyle(ResolverStyle.STRICT);
 
     public Timestamp() {
-        this.time = new DateTime(UTC_CHRONOLOGY);
+        this(Clock.systemDefaultZone());
     }
 
     public Timestamp(String iso8601) {
-        this.time =
-            ISODateTimeFormat.dateTimeParser().parseDateTime(iso8601).toDateTime(UTC_CHRONOLOGY);
+        this(iso8601, Clock.systemDefaultZone());
+    }
+
+    Timestamp(final String iso8601, final Clock clock) {
+        this.instant = tryParse(iso8601, clock);
+    }
+
+    Timestamp(final Clock clock) {
+        this(clock.instant());
     }
 
     public Timestamp(long epoch_milliseconds) {
-        this.time = new DateTime(epoch_milliseconds, UTC_CHRONOLOGY);
+        this(Instant.ofEpochMilli(epoch_milliseconds));
     }
 
-    public Timestamp(Date date) {
-        this.time = new DateTime(date, UTC_CHRONOLOGY);
+    public Timestamp(final Date date) {
+        this(date.toInstant());
     }
 
-    public Timestamp(DateTime date) {
-        this.time = date.toDateTime(UTC_CHRONOLOGY);
+    public Timestamp(final org.joda.time.DateTime date) {
+        this(date.getMillis());
     }
 
-    public DateTime getTime() {
+    public Timestamp(final Instant instant) {
+        this.instant = instant;
+    }
+
+    /**
+     * @deprecated This method returns JodaTime which is deprecated in favor of JDK Instant.
+     *   * <p> Use {@link Timestamp#toInstant()} instead. </p>
+     */
+    @Deprecated
+    public org.joda.time.DateTime getTime() {
+        if (time == null) {
+            time = new org.joda.time.DateTime(instant.toEpochMilli(), org.joda.time.DateTimeZone.UTC);
+        }
         return time;
+    }
+
+    public Instant toInstant() {
+        return instant;
     }
 
     public static Timestamp now() {
@@ -85,37 +105,72 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     }
 
     public String toString() {
-        return iso8601Formatter.print(this.time);
+        // ensure minimum precision of 3 decimal places by using our own 3-decimal-place formatter when we have no nanos.
+        final DateTimeFormatter formatter = (instant.getNano() == 0 ? ISO_INSTANT_MILLIS : DateTimeFormatter.ISO_INSTANT);
+        return formatter.format(instant);
     }
 
     public long toEpochMilli() {
-        return time.getMillis();
+        return instant.toEpochMilli();
     }
 
-    // returns the fraction of a second as microseconds, not the number of microseconds since epoch
+    /**
+     * @return the fraction of a second as microseconds from 0 to 999,999; not the number of microseconds since epoch
+     */
     public long usec() {
-        // JodaTime only supports milliseconds precision we can only return usec at millisec precision.
-        // note that getMillis() return millis since epoch
-        return (new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis() % 1000) * 1000;
+        return instant.getNano() / 1000;
+    }
+
+    /**
+     * @return the fraction of a second as nanoseconds from 0 to 999,999,999; not the number of nanoseconds since epoch
+     */
+    public long nsec() {
+        return instant.getNano();
     }
 
     @Override
     public int compareTo(Timestamp other) {
-        return time.compareTo(other.time);
+        return instant.compareTo(other.instant);
     }
     
     @Override
     public boolean equals(final Object other) {
-        return other instanceof Timestamp && time.equals(((Timestamp) other).time);
+        return other instanceof Timestamp && instant.equals(((Timestamp) other).instant);
     }
 
     @Override
     public int hashCode() {
-        return time.hashCode();
+        return instant.hashCode();
     }
 
     @Override
     public byte[] serialize() {
         return toString().getBytes();
+    }
+
+    // Here we build a DateTimeFormatter that is as forgiving as Joda's ISODateTimeFormat.dateTimeParser()
+    // Required yyyy-MM-dd date
+    // Optional 'T'-prefixed HH:mm:ss.SSS time (defaults to 00:00:00.000)
+    // Optional Zone information, in standard or colons-optional formats (defaults to system zone)
+    private static final DateTimeFormatter LENIENT_ISO_DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder())
+            .parseCaseInsensitive()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            // Time is optional, but if present will begin with a T
+            .optionalStart().appendLiteral('T').append(DateTimeFormatter.ISO_LOCAL_TIME).optionalEnd()
+            // Timezone is optional, and may land in one of a couple different formats.
+            .optionalStart().appendZoneOrOffsetId().optionalEnd()
+            .optionalStart().appendOffset("+HHmmss", "Z").optionalEnd()
+            .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+            .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+            .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+            .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
+            .toFormatter().withZone(ZoneId.systemDefault());
+
+    private static Instant tryParse(final String iso8601, final Clock clock) {
+        try {
+            return LENIENT_ISO_DATE_TIME_FORMATTER.withZone(clock.getZone()).parse(iso8601, Instant::from);
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException(String.format("Invalid ISO8601 input `%s`", iso8601), e);
+        }
     }
 }

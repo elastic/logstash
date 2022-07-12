@@ -51,7 +51,7 @@ RSpec::Matchers.define :have_actions do |*expected|
     expect(actual.size).to eq(expected.size)
 
     expected_values = expected.each_with_object([]) do |i, obj|
-      klass_name = "LogStash::PipelineAction::#{i.first.capitalize}"
+      klass_name = "LogStash::PipelineAction::#{i.first}"
       obj << [klass_name, i.last]
     end
 
@@ -79,10 +79,24 @@ RSpec::Matchers.define :have_pipeline? do |pipeline_config|
     pipeline = nil
     try(30) do
       pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
+      expect(pipeline).to be_nil
+    end
+  end
+end
+
+RSpec::Matchers.define :have_stopped_pipeline? do |pipeline_config|
+  match do |agent|
+    pipeline = nil
+    try(30) do
+      pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
       expect(pipeline).to_not be_nil
     end
     # either the pipeline_id is not in the running pipelines OR it is but have different configurations
     expect(!agent.running_pipelines.keys.map(&:to_s).include?(pipeline_config.pipeline_id.to_s) ||  pipeline.config_str != pipeline_config.config_string).to be_truthy
+  end
+
+  match_when_negated do
+    raise "Not implemented"
   end
 end
 
@@ -95,7 +109,7 @@ RSpec::Matchers.define :have_running_pipeline? do |pipeline_config|
       expect(pipeline.running?).to be_truthy
     end
     expect(pipeline.config_str).to eq(pipeline_config.config_string)
-    expect(agent.running_pipelines.keys.map(&:to_s)).to include(pipeline_config.pipeline_id.to_s)
+    expect(agent.running_pipelines.keys.map(&:to_s) + agent.loading_pipelines.keys.map(&:to_s)).to include(pipeline_config.pipeline_id.to_s)
   end
 
   failure_message do |agent|
@@ -108,6 +122,10 @@ RSpec::Matchers.define :have_running_pipeline? do |pipeline_config|
         "Found '#{pipeline_config.pipeline_id.to_s}' in the list of pipelines but its not running"
       elsif pipeline.config_str != pipeline_config.config_string
         "Found '#{pipeline_config.pipeline_id.to_s}' in the list of pipelines and running, but the config_string doesn't match,\nExpected:\n#{pipeline_config.config_string}\n\ngot:\n#{pipeline.config_str}"
+      elsif agent.running_pipelines.keys.map(&:to_s).include?(pipeline_config.pipeline_id.to_s)
+        "Found '#{pipeline_config.pipeline_id.to_s}' in running but not included in the list of agent.running_pipelines or agent.loading_pipelines"
+      else
+        "Unrecognized error condition, probably you missed to track properly a newly added expect in :have_running_pipeline?"
       end
     end
   end

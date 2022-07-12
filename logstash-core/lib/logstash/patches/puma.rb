@@ -36,6 +36,14 @@ module LogStash
       # noop
     end
 
+    def sync
+      # noop
+    end
+
+    def flush
+      # noop
+    end
+
     def logger=(logger)
       @logger_lock.synchronize { @logger = logger }
     end
@@ -48,6 +56,14 @@ module LogStash
     alias_method :<<, :puts
   end
 
+  # ::Puma::Events#error(str) sends Kernel#exit
+  # let's raise something sensible instead.
+  UnrecoverablePumaError = Class.new(RuntimeError)
+  class NonCrashingPumaEvents < ::Puma::Events
+    def error(str)
+      raise UnrecoverablePumaError.new(str)
+    end
+  end
 end
 
 # Reopen the puma class to create a scoped STDERR and STDOUT
@@ -56,4 +72,20 @@ end
 module Puma
   STDERR = LogStash::IOWrappedLogger.new(LogStash::NullLogger)
   STDOUT = LogStash::IOWrappedLogger.new(LogStash::NullLogger)
+end
+
+# JRuby (>= 9.2.18.0) added support for getsockopt(Socket::IPPROTO_TCP, Socket::TCP_INFO)
+# however it isn't working correctly on ARM64 likely due an underlying issue in JNR/JFFI.
+#
+# Puma uses the TCP_INFO to detect a closed socket when handling a request and has a dummy
+# fallback in place when Socket constants :TCP_INFO && :IPPROTO_TCP are not defined, see:
+# https://github.com/puma/puma/blob/v5.5.2/lib/puma/server.rb#L169-L192
+#
+# Remove this patch once https://github.com/elastic/logstash/issues/13444 gets resolved!
+if ENV_JAVA['os.name'].match?(/Linux/i) && ENV_JAVA['os.arch'].eql?('aarch64')
+  Puma::Server.class_eval do
+    def closed_socket?(socket)
+      false
+    end
+  end
 end

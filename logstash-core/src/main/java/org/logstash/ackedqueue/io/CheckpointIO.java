@@ -23,6 +23,9 @@ package org.logstash.ackedqueue.io;
 import org.logstash.ackedqueue.Checkpoint;
 import java.io.IOException;
 
+/**
+ * Internal API to access checkpoint stored in files.
+ * */
 public interface CheckpointIO {
 
     // @return Checkpoint the written checkpoint object

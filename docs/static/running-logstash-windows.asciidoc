@@ -9,31 +9,31 @@ Logstash is not started automatically after installation. How to start and stop 
 NOTE: It is recommended to validate your configuration works by running Logstash manually before running Logstash as a service or a scheduled task.
 
 [[running-logstash-windows-validation]]
-==== Validating JVM Pre-Requisites on Windows
-After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JVM], open a https://docs.microsoft.com/en-us/powershell/[PowerShell] session and run the following commands to verify `JAVA_HOME` is set and the Java version:
+==== Validating JVM prerequisites on Windows
+After installing a https://www.elastic.co/support/matrix#matrix_jvm[supported JVM], open a https://docs.microsoft.com/en-us/powershell/[PowerShell] session and run the following commands to verify `LS_JAVA_HOME` is set and the Java version:
 
-===== `Write-Host $env:JAVA_HOME`
+===== `Write-Host $env:LS_JAVA_HOME`
 ** The output should be pointed to where the JVM software is located, for example:
 +
 [source,sh]
 -----
-PS C:\> Write-Host $env:JAVA_HOME
+PS C:\> Write-Host $env:LS_JAVA_HOME
 C:\Program Files\Java\jdk-11.0.3
 -----
 
-** If `JAVA_HOME` is not set, perform one of the following:
+** If `LS_JAVA_HOME` is not set, perform one of the following:
 *** Set using the GUI:
 **** Navigate to the Windows https://docs.microsoft.com/en-us/windows/win32/procthread/environment-variables[Environmental Variables] window
-**** In the Environmental Variables window, edit JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
+**** In the Environmental Variables window, edit LS_JAVA_HOME to point to where the JDK software is located, for example: `C:\Program Files\Java\jdk-11.0.3`
 *** Set using PowerShell:
 **** In an Administrative PowerShell session, execute the following https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/setx[SETX] commands:
 +
 [source,sh]
 -----
-PS C:\Windows\system32> SETX /m JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"
+PS C:\Windows\system32> SETX /m LS_JAVA_HOME "C:\Program Files\Java\jdk-11.0.3"
 PS C:\Windows\system32> SETX /m PATH "$env:PATH;C:\Program Files\Java\jdk-11.0.3\bin;"
 -----
-**** Exit PowerShell, then open a new PowerShell session and run `Write-Host $env:JAVA_HOME` to verify
+**** Exit PowerShell, then open a new PowerShell session and run `Write-Host $env:LS_JAVA_HOME` to verify
 
 ===== `Java -version`
 ** This command produces output similar to the following:

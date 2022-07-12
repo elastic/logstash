@@ -1,6 +1,6 @@
-[float]
+[discrete]
 [[ls-api-keys]]
-==== Grant access using API keys
+=== Grant access using API keys
 
 Instead of using usernames and passwords, you can use API keys to grant
 access to {es} resources. You can set API keys to expire at a certain time,
@@ -25,9 +25,9 @@ NOTE: For security reasons, we recommend using a unique API key per {ls} instanc
 You can create as many API keys per user as necessary.
 
 
-[float]
+[discrete]
 [[ls-create-api-key]]
-===== Create an API key 
+==== Create an API key 
 
 You can create API keys using either the
 {ref}/security-api-create-api-key.html[Create API key API] or the
@@ -74,9 +74,9 @@ The return value should look similar to this:
 <2> Generated API key
 
 
-[float]
+[discrete]
 [[ls-api-key-publish]]
-====== Create an API key for publishing
+===== Create an API key for publishing
 
 You're in luck! The example we used in the <<ls-create-api-key>> section creates
 an API key for publishing to {es} using the
@@ -112,9 +112,9 @@ output {
 <1> Format is `id:api_key` (as returned by
 {ref}/security-api-create-api-key.html[Create API key])
 
-[float]
+[discrete]
 [[ls-api-key-input]]
-====== Create an API key for reading
+===== Create an API key for reading
 
 Creating an API key to use for reading data from {es} is similar to creating an
 API key for publishing described earlier. You can use the example in the
@@ -149,9 +149,9 @@ input {
 {ref}/security-api-create-api-key.html[Create API key])s
 
 
-[float]
+[discrete]
 [[ls-api-key-filter]]
-====== Create an API key for filtering
+===== Create an API key for filtering
 
 Creating an API key to use for processing data from {es} is similar to creating
 an API key for publishing described earlier. You can use the example in the
@@ -186,9 +186,9 @@ filter {
 <1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
 
 
-[float]
+[discrete]
 [[ls-api-key-monitor]]
-====== Create an API key for monitoring
+===== Create an API key for monitoring
 
 To create an API key to use for sending monitoring data to {es}, use the
 {ref}/security-api-create-api-key.html[Create API key API]. For example:
@@ -235,9 +235,9 @@ xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0H
 <1> Format is `id:api_key` (as returned by {ref}/security-api-create-api-key.html[Create API key])
 
 
-[float]
+[discrete]
 [[ls-api-key-man]]
-====== Create an API key for central management
+===== Create an API key for central management
 
 To create an API key to use for central management, use the
 {ref}/security-api-create-api-key.html[Create API key API]. For example:
@@ -280,9 +280,9 @@ xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0H
 {ref}/security-api-create-api-key.html[Create API key])
 
 
-[float]
+[discrete]
 [[learn-more-api-keys]]
-===== Learn more about API keys
+==== Learn more about API keys
 
 See the {es} API key documentation for more information:
 

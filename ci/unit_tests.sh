@@ -9,7 +9,6 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false
 
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
-export OSS=true
 export TEST_DEBUG=true
 
 if [ -n "$BUILD_JAVA_HOME" ]; then

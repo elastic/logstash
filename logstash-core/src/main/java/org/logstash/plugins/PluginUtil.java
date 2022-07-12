@@ -33,6 +33,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Plugin's utility methods
+ * */
 public class PluginUtil {
 
     private PluginUtil() { /* utility methods */ }

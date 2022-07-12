@@ -32,12 +32,15 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 
+/**
+ * JRuby extension to wrap in memory queue
+ * */
 @JRubyClass(name = "WrappedSynchronousQueue")
 public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueExt {
 
     private static final long serialVersionUID = 1L;
 
-    private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
+    private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

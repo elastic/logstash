@@ -1,7 +1,7 @@
 [[docker]]
 === Running Logstash on Docker
 Docker images for Logstash are available from the Elastic Docker
-registry. The base image is https://hub.docker.com/_/centos/[centos:7].
+registry. The base image is https://hub.docker.com/_/ubuntu/[ubuntu:20.04].
 
 A list of all published Docker images and tags is available at
 https://www.docker.elastic.co[www.docker.elastic.co]. The source code is in
@@ -140,11 +140,11 @@ that you don't retain the example config from the base image.
 Under Docker, Logstash settings can be configured via environment
 variables. When the container starts, a helper process checks the environment
 for variables that can be mapped to Logstash settings. Settings that are found
-in the environment are merged into `logstash.yml` as the container starts up.
+in the environment override those in the `logstash.yml` as the container starts up.
 
 For compatibility with container orchestration systems, these environment
 variables are written in all capitals, with underscores as word
-separators
+separators.
 
 Some example translations are shown here:
 

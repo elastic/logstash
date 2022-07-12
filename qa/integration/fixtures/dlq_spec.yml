@@ -5,7 +5,7 @@ services:
 config:
   input {
     generator{
-      message => '{"test":"one"}'
+      message => '{"ip":1}'
       codec => "json"
       count => 1000
     }
@@ -17,22 +17,16 @@ config:
   }
 
   filter {
-    if ([geoip]) {
+    if ([ip]) {
         mutate {
-            remove_field => ["geoip"]
+            remove_field => ["ip"]
             add_field => {
               "mutated" => "true"
             }
         }
-    }else{
-      mutate {
-        add_field => {
-          "geoip" => "somewhere"
-        }
-      }
     }
   }
   output {
-    elasticsearch {}
+    elasticsearch { index => "test-index" }
   }
 teardown_script:

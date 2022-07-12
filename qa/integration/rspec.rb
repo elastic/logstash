@@ -20,13 +20,18 @@ require 'rubygems'
 ::Gem.clear_paths
 
 ENV['GEM_HOME'] = ENV['GEM_PATH'] = ::File.expand_path(
-    ::File.join(__FILE__, "..", "..", "..", "build", "qa", "integration", "vendor", "jruby", "2.5.0")
+    ::File.join(__FILE__, "..", "..", "..", "build", "qa", "integration", "vendor", "jruby", "2.6.0")
 )
+
+::Gem.paths = ENV
 
 require "bundler"
 ::Bundler.setup
 
-require "rspec/core"
 require "rspec"
+require "rspec/core"
+
+RSpec.clear_examples
+
 
 return RSpec::Core::Runner.run($JUNIT_ARGV).to_i

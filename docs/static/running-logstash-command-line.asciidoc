@@ -101,10 +101,6 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   If you wish to use both defaults, please use the empty string for the `-e` flag.
   The default is nil.
 
-*`--java-execution`*::
-  Specify `false` for this option to revert to the legacy Ruby execution engine instead
-  of the default Java execution engine.
-
 *`--plugin-classloaders`*::
   (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
 
@@ -157,6 +153,15 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   When creating pipeline batches, how long to wait while polling for the next event. This option defines
   how long in milliseconds to wait while polling for the next event before dispatching an undersized batch
   to filters and outputs. The default is 50ms.
+  
+  *`--pipeline.ecs_compatibility MODE`*::
+  Sets the process default value for  ECS compatibility mode.
+  Can be an ECS version like `v1` or `v8`, or `disabled`.
+  The default is `v8`.
+  Pipelines defined before Logstash 8 operated without ECS in mind.
+  To ensure a migrated pipeline continues to operate as it did in older releases of Logstash, opt-OUT of ECS for the individual pipeline by setting `pipeline.ecs_compatibility: disabled` in its `pipelines.yml` definition.
+  Using the command-line flag will set the default for _all_ pipelines, including new ones.
+  See <<ecs-compatibility>> for more info.
 
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events
@@ -211,10 +216,13 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   How frequently to poll the configuration location for changes. The default value is "3s".
   Note that the unit qualifier (`s`) is required.
 
-*`--http.host HTTP_HOST`*::
+*`--api-enabled ENABLED`*::
+  The HTTP API is enabled by default, but can be disabled by passing `false` to this option.
+
+*`--api.http.host HTTP_HOST`*::
   Web API binding host. This option specifies the bind address for the metrics REST endpoint. The default is "127.0.0.1".
 
-*`--http.port HTTP_PORT`*::
+*`--api.http.port HTTP_PORT`*::
   Web API http port. This option specifies the bind port for the metrics REST endpoint. The default is 9600-9700.
   This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
 
@@ -226,6 +234,15 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
   as the log4j logging configuration. This can also be set through the LS_SETTINGS_DIR environment variable.
   The default is the `config` directory under Logstash home.
+
+*`--enable-local-plugin-development`*::
+  This flag enables developers to update their local Gemfile without running into issues caused by a frozen lockfile.
+  This flag can be helpful when you are developing/testing plugins locally.
+
+NOTE: This flag is for Logstash developers only. End users should not need it.
+
+
+
 
 *`-h, --help`*::
   Print help

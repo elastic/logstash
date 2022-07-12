@@ -44,18 +44,15 @@ public class PluginClassLoader extends URLClassLoader {
 
     /**
      * Creates an instance of the plugin classloader.
-     * @param gemPath Path to the Ruby gem containing the Java plugin as reported by
-     *                <code>Gem::BasicSpecification#loaded_from</code>.
-     * @param jarPath Path to the Java plugin's JAR file relative to {@code gemPath}.
+     * @param jarPath Full path to the Java plugin's JAR file.
      * @param appClassLoader Application classloader to be used for classes not found
      *                       in the plugin's JAR file.
      * @return New instance of the plugin classloader.
      */
-    public static PluginClassLoader create(String gemPath, String jarPath, ClassLoader appClassLoader) {
-        String pluginPath = gemPath.substring(0, gemPath.lastIndexOf(File.separator)) + File.separator + jarPath;
-        Path pluginJar = Paths.get(pluginPath);
+    public static PluginClassLoader create(String jarPath, ClassLoader appClassLoader) {
+        Path pluginJar = Paths.get(jarPath);
         if (!Files.exists(pluginJar)) {
-            throw new IllegalStateException("PluginClassLoader unable to locate jar file: " + pluginPath);
+            throw new IllegalStateException("PluginClassLoader unable to locate jar file: " + jarPath);
         }
         try {
             URL[] pluginJarUrl = new URL[]{pluginJar.toUri().toURL()};

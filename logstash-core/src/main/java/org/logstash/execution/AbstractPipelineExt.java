@@ -26,10 +26,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +57,10 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.io.DeadLetterQueueWriter;
+import org.logstash.common.io.QueueStorageType;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
@@ -61,9 +71,13 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
+/**
+ * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
+ * */
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
 
@@ -102,10 +116,23 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
+    private static final RubySymbol STORAGE_POLICY =
+            RubyUtil.RUBY.newSymbol("storage_policy");
+
+    private static final RubySymbol DROPPED_EVENTS =
+            RubyUtil.RUBY.newSymbol("dropped_events");
+
+    private static final RubySymbol EXPIRED_EVENTS =
+            RubyUtil.RUBY.newSymbol("expired_events");
+
+    private static final RubySymbol LAST_ERROR =
+            RubyUtil.RUBY.newSymbol("last_error");
+
     private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
         RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
     );
 
+    @SuppressWarnings("serial")
     protected PipelineIR lir;
 
     private final RubyString ephemeralId = RubyUtil.RUBY.newString(UUID.randomUUID().toString());
@@ -114,20 +141,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private RubyString configString;
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "serial"})
     private List<SourceWithMetadata> configParts;
 
     private RubyString configHash;
 
-    private IRubyObject settings;
+    private transient IRubyObject settings;
 
-    private IRubyObject pipelineSettings;
+    private transient IRubyObject pipelineSettings;
 
-    private IRubyObject pipelineId;
+    private transient IRubyObject pipelineId;
 
-    private AbstractMetricExt metric;
+    private transient AbstractMetricExt metric;
 
-    private IRubyObject dlqWriter;
+    private transient IRubyObject dlqWriter;
 
     private PipelineReporterExt reporter;
 
@@ -179,8 +206,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
-        try {
-            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes);
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context), EnvironmentVariableProvider.defaultProvider())) {
+            lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes, cve);
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
@@ -272,20 +299,52 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
-                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
-                    context.runtime,
-                    DeadLetterQueueFactory.getWriter(
-                        pipelineId.asJavaString(),
-                        getSetting(context, "path.dead_letter_queue").asJavaString(),
-                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger()
-                            .getLongValue()
-                    )
-                );
+                final DeadLetterQueueWriter javaDlqWriter = createDeadLetterQueueWriterFromSettings(context);
+                dlqWriter = JavaUtil.convertJavaToUsableRubyObject(context.runtime, javaDlqWriter);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
             }
         }
         return dlqWriter;
+    }
+
+    private DeadLetterQueueWriter createDeadLetterQueueWriterFromSettings(ThreadContext context) {
+        final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
+
+        String dlqPath = getSetting(context, "path.dead_letter_queue").asJavaString();
+        long dlqMaxBytes = getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue();
+        Duration dlqFlushInterval = Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue());
+
+        if (hasSetting(context, "dead_letter_queue.retain.age") && !getSetting(context, "dead_letter_queue.retain.age").isNil()) {
+            // convert to Duration
+            final Duration age = parseToDuration(getSetting(context, "dead_letter_queue.retain.age").convertToString().toString());
+            return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes,
+                    dlqFlushInterval, storageType, age);
+        }
+
+        return DeadLetterQueueFactory.getWriter(pipelineId.asJavaString(), dlqPath, dlqMaxBytes, dlqFlushInterval, storageType);
+    }
+
+    /**
+     * Convert time strings like 3d or 4h or 5m to a duration
+     * */
+    @VisibleForTesting
+    static Duration parseToDuration(String timeStr) {
+        final Matcher matcher = Pattern.compile("(?<value>\\d+)\\s*(?<time>[dhms])").matcher(timeStr);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Expected a time specification in the form <number>[d,h,m,s], e.g. 3m, but found [" + timeStr + "]");
+        }
+        final int value = Integer.parseInt(matcher.group("value"));
+        final String timeSpecifier = matcher.group("time");
+        final TemporalUnit unit;
+        switch (timeSpecifier) {
+            case "d": unit = ChronoUnit.DAYS; break;
+            case "h": unit = ChronoUnit.HOURS; break;
+            case "m": unit = ChronoUnit.MINUTES; break;
+            case "s": unit = ChronoUnit.SECONDS; break;
+            default: throw new IllegalStateException("Expected a time unit specification from d,h,m,s but found: [" + timeSpecifier + "]");
+        }
+        return Duration.of(value, unit);
     }
 
     @JRubyMethod(name = "dlq_enabled?")
@@ -313,6 +372,25 @@ public class AbstractPipelineExt extends RubyBasicObject {
             getDlqMetric(context).gauge(
                 context, QUEUE_SIZE_IN_BYTES,
                 dlqWriter(context).callMethod(context, "get_current_queue_size")
+            );
+            getDlqMetric(context).gauge(
+                    context, STORAGE_POLICY,
+                    dlqWriter(context).callMethod(context, "get_storage_policy")
+            );
+            getDlqMetric(context).gauge(
+                    context, MAX_QUEUE_SIZE_IN_BYTES,
+                    getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
+            getDlqMetric(context).gauge(
+                    context, DROPPED_EVENTS,
+                    dlqWriter(context).callMethod(context, "get_dropped_events")
+            );
+            getDlqMetric(context).gauge(
+                    context, LAST_ERROR,
+                    dlqWriter(context).callMethod(context, "get_last_error")
+            );
+            getDlqMetric(context).gauge(
+                    context, EXPIRED_EVENTS,
+                    dlqWriter(context).callMethod(context, "get_expired_events")
             );
         }
         return context.nil;

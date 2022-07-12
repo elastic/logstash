@@ -2,3 +2,50 @@
 name: Metrics test
 services:
   - logstash
+config:
+  dropping_events: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+        type => 'type1'
+      }
+    }
+
+    filter {
+      drop { }
+    }
+
+    output {
+      stdout { }
+    }
+  cloning_events: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+        type => 'type1'
+      }
+    }
+
+    filter {
+      clone {
+        clones => ["sun", "moon"]
+      }
+    }
+
+    output {
+      stdout { }
+    }
+  draining_events: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+      }
+      generator { count => 3000 }
+    }
+    filter {
+      sleep { 
+       time => "1" 
+        every => 10
+      }
+      drop { }
+    }

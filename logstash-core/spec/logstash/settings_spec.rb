@@ -21,8 +21,10 @@ require "logstash/settings"
 require "fileutils"
 
 describe LogStash::Settings do
+
   let(:numeric_setting_name) { "number" }
   let(:numeric_setting) { LogStash::Setting.new(numeric_setting_name, Numeric, 1) }
+
   describe "#register" do
     context "if setting has already been registered" do
       before :each do
@@ -44,6 +46,7 @@ describe LogStash::Settings do
       end
     end
   end
+
   describe "#get_setting" do
     context "if setting has been registered" do
       before :each do
@@ -59,6 +62,7 @@ describe LogStash::Settings do
       end
     end
   end
+
   describe "#get_subset" do
     let(:numeric_setting_1) { LogStash::Setting.new("num.1", Numeric, 1) }
     let(:numeric_setting_2) { LogStash::Setting.new("num.2", Numeric, 2) }
@@ -108,6 +112,17 @@ describe LogStash::Settings do
       it "should succeed" do
         expect { subject.validate_all }.not_to raise_error
       end
+    end
+  end
+
+  describe '#names' do
+    subject(:settings) { described_class.new }
+    before(:each) do
+      settings.register(LogStash::Setting.new("one.two.three", String, "123", false))
+      settings.register(LogStash::Setting.new("this.that", Integer, 123, false))
+    end
+    it 'returns a list of setting names' do
+      expect(settings.names).to contain_exactly("one.two.three", "this.that")
     end
   end
   
@@ -224,6 +239,35 @@ describe LogStash::Settings do
         expect(subject.get('interpolated_env')).to eq("correct_setting_env")
         expect(subject.get('with_dot_env')).to eq("correct_setting_for_dotted_env")
         expect(subject.get('interpolated_store')).to eq("A")
+      end
+    end
+  end
+
+  describe "#password_policy" do
+    let(:password_policies) { {
+      "mode": "ERROR",
+      "length": { "minimum": "8"},
+      "include": { "upper": "REQUIRED", "lower": "REQUIRED", "digit": "REQUIRED", "symbol": "REQUIRED" }
+    } }
+
+    context "when running PasswordValidator coerce" do
+
+      it "raises an error when supplied value is not LogStash::Util::Password" do
+        expect {
+          LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", password_policies)
+        }.to raise_error(ArgumentError, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
+      end
+
+      it "fails on validation" do
+        password = LogStash::Util::Password.new("Password!")
+        expect {
+          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
+        }.to raise_error(ArgumentError, a_string_including("Password must contain at least one digit between 0 and 9."))
+      end
+
+      it "validates the password successfully" do
+        password = LogStash::Util::Password.new("Password123!")
+        expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
   end

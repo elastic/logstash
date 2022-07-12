@@ -33,6 +33,9 @@ import java.util.Locale;
 
 import static org.logstash.log.SlowLoggerExt.toLong;
 
+/**
+ * JRuby extension, it's part of log4j wrapping for JRuby.
+ * */
 @JRubyModule(name = "Loggable")
 public final class LoggableExt {
 

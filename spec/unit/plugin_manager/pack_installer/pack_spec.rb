@@ -29,8 +29,8 @@ describe LogStash::PluginManager::PackInstaller::Pack do
     end
 
     it "returns the plugins" do
-      expect(subject.plugins.size).to eq(1)
-      expect(subject.plugins.collect(&:name)).to include("logstash-input-packtest")
+      expect(subject.plugins.size).to eq(2)
+      expect(subject.plugins.collect(&:name)).to include("logstash-input-packtest_pim", "logstash-input-packtest")
     end
 
     it "returns the dependencies" do
@@ -39,8 +39,8 @@ describe LogStash::PluginManager::PackInstaller::Pack do
     end
 
     it "returns all the gems" do
-      expect(subject.gems.size).to eq(2)
-      expect(subject.gems.collect(&:name)).to include("logstash-input-packtest", "logstash-input-packtestdep")
+      expect(subject.gems.size).to eq(3)
+      expect(subject.gems.collect(&:name)).to include("logstash-input-packtest", "logstash-input-packtest_pim", "logstash-input-packtestdep")
     end
   end
 

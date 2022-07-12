@@ -17,18 +17,18 @@
  * under the License.
  */
 
-import java.nio.file.Files
-import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's master versions.yml file
+// fetch version from Logstash's main versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
 
 description = """Logstash Core Java"""
-version = versionMap['logstash-core']
-String jrubyVersion = versionMap['jruby']['version']
+
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
+String jrubyVersion = versionMap['jruby']['version']
+
+String log4jVersion = '2.17.1'
 
 repositories {
     mavenCentral()
@@ -39,7 +39,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.17'
+        classpath 'org.yaml:snakeyaml:1.29'
     }
 }
 
@@ -59,7 +59,9 @@ tasks.register("javadocJar", Jar) {
 
 tasks.register("copyRuntimeLibs", Copy) {
     into project.file('lib/jars/')
-    from configurations.compileClasspath, configurations.runtimeClasspath
+    from configurations.runtimeClasspath {
+        exclude { it.file.name == 'jruby.jar' }
+    }
 }
 
 // copy jar file into the gem lib dir but without the version number in filename
@@ -88,6 +90,7 @@ configurations.archives {
 }
 
 tasks.register("javaTests", Test) {
+    dependsOn ':bootstrap'
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
@@ -103,7 +106,7 @@ tasks.register("javaTests", Test) {
 tasks.register("rubyTests", Test) {
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
-    systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+    systemProperty 'logstash.root.dir', projectDir.parent
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
@@ -149,19 +152,23 @@ idea {
     }
 }
 
-def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
-def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
-
 dependencies {
-    implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
-    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.13.3'
-    api 'org.apache.logging.log4j:log4j-core:2.13.3'
-    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
+    api(files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
+        builtBy ':downloadAndInstallJRuby'
+    }) { because "DEPENDENCY: org.jruby:jruby-core:${jrubyVersion}" } // meta-data for generateLicenseReport
+    implementation project(':jvm-options-parser')
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    runtimeOnly "org.slf4j:slf4j-api:1.7.30"
     // concerns libraries such as manticore's http-client 4.5 (using commons-logging)
-    runtimeOnly 'org.apache.logging.log4j:log4j-jcl:2.13.3'
+    runtimeOnly "org.apache.logging.log4j:log4j-jcl:${log4jVersion}"
     // for the log4j-jcl bridge to work commons-logging needs to be on the same class-path
     runtimeOnly 'commons-logging:commons-logging:1.2'
-    implementation('org.reflections:reflections:0.9.11') {
+    // also handle libraries relying on log4j 1.x to redirect their logs
+    runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
+    implementation('org.reflections:reflections:0.9.12') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'commons-codec:commons-codec:1.14'
@@ -171,22 +178,20 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
-    if (customJRubyDir == "") {
-        api "org.jruby:jruby-complete:${jrubyVersion}"
-    } else {
-        api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
-    }
-    implementation group: 'com.google.guava', name: 'guava', version: '24.1.1-jre'
-    // WARNING: DO NOT UPGRADE "google-java-format"
-    // later versions require GPL licensed code in javac-shaded that is
-    // Apache2 incompatible
-    implementation('com.google.googlejavaformat:google-java-format:1.1') {
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
+    implementation('com.google.googlejavaformat:google-java-format:1.13.0') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.javassist:javassist:3.26.0-GA'
-    testImplementation 'org.apache.logging.log4j:log4j-core:2.13.3:tests'
+    testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'net.javacrumbs.json-unit:json-unit:2.3.0'
     testImplementation 'org.elasticsearch:securemock:1.2'
     testImplementation 'org.assertj:assertj-core:3.11.1'
+
+    api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.14'
 }

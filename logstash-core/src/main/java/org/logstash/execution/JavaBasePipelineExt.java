@@ -44,6 +44,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+/**
+ * JRuby extension used as parent for Ruby's JavaPipelines
+ * */
 @JRubyClass(name = "JavaBasePipeline")
 public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
@@ -51,7 +54,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
     private static final Logger LOGGER = LogManager.getLogger(JavaBasePipelineExt.class);
 
-    private CompiledPipeline lirExecution;
+    private transient CompiledPipeline lirExecution;
 
     private @SuppressWarnings("rawtypes") RubyArray inputs;
 
@@ -137,6 +140,11 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
             plugin -> !plugin.callMethod(context, "reloadable?").isTrue()
         ).forEach(result::add);
         return result;
+    }
+
+    @JRubyMethod(name = "shutdown_requested?")
+    public IRubyObject isShutdownRequested(final ThreadContext context) {
+        throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
     }
 
     public QueueWriter getQueueWriter(final String inputName) {

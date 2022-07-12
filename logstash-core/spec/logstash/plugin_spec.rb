@@ -69,13 +69,28 @@ describe LogStash::Plugin do
   end
 
   context "#execution_context" do
-    subject { Class.new(LogStash::Plugin).new({}) }
+    let(:klass) { Class.new(LogStash::Plugin) }
+    subject(:instance) { klass.new({}) }
     include_context "execution_context"
 
-    it "can be set and get" do
-      expect(subject.execution_context).to be_nil
-      subject.execution_context = execution_context
-      expect(subject.execution_context).to eq(execution_context)
+    context 'execution_context=' do
+      let(:deprecation_logger_stub) { double('DeprecationLogger').as_null_object }
+      before(:each) do
+        allow(klass).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
+      end
+
+      it "can be set and get" do
+        new_ctx = execution_context.dup
+        subject.execution_context = new_ctx
+        expect(subject.execution_context).to eq(new_ctx)
+      end
+
+      it 'emits a deprecation warning' do
+        expect(deprecation_logger_stub).to receive(:deprecated) do |message|
+          expect(message).to match(/execution_context=/)
+        end
+        instance.execution_context = execution_context
+      end
     end
   end
 
@@ -282,7 +297,7 @@ describe LogStash::Plugin do
 
         context "When a user provide an ID for the plugin" do
           let(:id) { "ABC" }
-          let(:config) { super.merge("id" => id) }
+          let(:config) { super().merge("id" => id) }
 
           it "uses the user provided ID" do
             expect(subject.id).to eq(id)
@@ -331,7 +346,7 @@ describe LogStash::Plugin do
 
 
           context(desc) do
-            let(:config) { super.merge(config_override) }
+            let(:config) { super().merge(config_override) }
 
             it "has a PluginMetadata" do
               expect(plugin_instance.plugin_metadata).to be_a_kind_of(LogStash::PluginMetadata)
@@ -385,7 +400,7 @@ describe LogStash::Plugin do
 
     context "when the id is provided" do
       let(:my_id) { "mysuper-plugin" }
-      let(:config) { super.merge({ "id" => my_id })}
+      let(:config) { super().merge({ "id" => my_id })}
       subject { plugin.new(config) }
 
       it "return a human readable ID" do
@@ -400,6 +415,59 @@ describe LogStash::Plugin do
         expect(subject.id).to match(/^simple_plugin_/)
       end
     end
+  end
+
+  describe "#ecs_compatibility" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base) do
+        config_name "ecs_validator_sample"
+        def register; end
+      end
+    end
+    let(:config) { Hash.new }
+    let(:instance) { plugin_class.new(config) }
+
+    let(:deprecation_logger_stub) { double('DeprecationLogger').as_null_object }
+    before(:each) do
+      allow(plugin_class).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
+    end
+
+    context 'when plugin initialized with explicit value' do
+      let(:config) { super().merge("ecs_compatibility" => "v17") }
+      it 'returns the explicitly-given value' do
+        expect(instance.ecs_compatibility).to eq(:v17)
+      end
+    end
+
+    context 'when plugin is not initialized with an explicit value' do
+      let(:settings_stub) { LogStash::SETTINGS.clone }
+
+      before(:each) do
+        allow(settings_stub).to receive(:get_value).with(anything).and_call_original # allow spies
+        stub_const('LogStash::SETTINGS', settings_stub)
+      end
+
+      context 'and pipeline-level setting is explicitly `v1`' do
+        let(:settings_stub) do
+          super().tap do |settings|
+            settings.set_value('pipeline.ecs_compatibility', 'v1')
+          end
+        end
+        it 'reads the setting' do
+          expect(instance.ecs_compatibility).to eq(:v1)
+
+          expect(settings_stub).to have_received(:get_value)
+        end
+      end
+
+      context 'and pipeline-level setting is not specified' do
+        it 'returns `v8`' do
+          # Default value of `pipeline.ecs_compatibility`
+          expect(instance.ecs_compatibility).to eq(:v8)
+        end
+      end
+    end
+
   end
 
   describe "deprecation logger" do

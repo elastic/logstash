@@ -1,24 +1,26 @@
 [[contributing-patch-plugin]]
-=== Contributing a Patch to a Logstash Plugin
+=== Contributing a patch to a Logstash plugin
 
 This section discusses the information you need to know to successfully contribute a patch to a Logstash plugin.
 
-Each plugin defines its own configuration options. These control the behaviour of the plugin to some degree. Configuration 
-option definitions commonly include:
+Each plugin defines its own configuration options. These control the behavior of the plugin to some degree. 
+Configuration option definitions commonly include:
 
 * Data validation
-* The default value
+* Default value
 * Any required flags
 
 Plugins are subclasses of a Logstash base class. A plugin's base class defines common configuration and methods.
 
-==== Input Plugins
+[[contrib-patch-input]]
+==== Input plugins
 
 Input plugins ingest data from an external source. Input plugins are always associated with a codec. An input plugin 
 always has an associated codec plugin. Input and codec plugins operate in conjunction to create a Logstash event and add 
 that event to the processing queue. An input codec is a subclass of the `LogStash::Inputs::Base` class.
 
-.Input API
+[[input-api]]
+===== Input API
 [horizontal]
 `#register() -> nil`:: Required. This API sets up resources for the plugin, typically the connection to the 
 external source.
@@ -27,12 +29,14 @@ errors inside the loop. Pushes any created events to the queue object specified 
 receive batched data to minimize the external call overhead.
 `#stop() -> nil`:: Optional. Stops external connections and cleans up.
 
-==== Codec Plugins
+[[contrib-patch-codec]]
+==== Codec plugins
 
 Codec plugins decode input data that has a specific structure, such as JSON input data. A codec plugin is a subclass of 
 `LogStash::Codecs::Base`.
 
-.Codec API
+[[codec-api]]
+===== Codec API
 [horizontal]
 `#register() -> nil`:: Identical to the API of the same name for input plugins.
 `#decode(data){|event| block} -> nil`:: Must be implemented. Used to create an Event from the raw data given in the method 
@@ -41,22 +45,26 @@ argument. Must handle errors. The caller must provide a Ruby block. The block is
 errors. This method calls a block that was previously stored as @on_event with two arguments: the original event and the 
 data object.
 
-==== Filter Plugins
+[[contrib-patch-filter]]
+==== Filter plugins
 
 A mechanism to change, mutate or merge one or more Events. A filter plugin is a subclass of the `LogStash::Filters::Base` 
 class.
 
-.Filter API
+[[filter-api]]
+===== Filter API
 [horizontal]
 `#register() -> nil`:: Identical to the API of the same name for input plugins.
 `#filter(event) -> nil`:: Required. May handle errors. Used to apply a mutation function to the given event.
 
-==== Output Plugins
+[[contrib-patch-output]]
+==== Output plugins
 
 A mechanism to send an event to an external destination. This process may require serialization. An output plugin is a 
 subclass of the `LogStash::Outputs::Base` class.
 
-.Output API
+[[output-api]]
+===== Output API
 [horizontal]
 `#register() -> nil`:: Identical to the API of the same name for input plugins.
 `#receive(event) -> nil`:: Required. Must handle errors. Used to prepare the given event for transmission to 
@@ -72,23 +80,27 @@ The <<community-maintainer,Community Maintainer Guide>> explains, in more detail
 merged and published.  The Community Maintainer Guide also details the roles that contributors and maintainers are 
 expected to perform.
 
-==== Testing Methodologies
+[[test-methods]]
+==== Testing methodologies
 
-===== Test Driven Development
+[[tdd]]
+===== Test driven development
 
-Test Driven Development, colloquially known as TDD, describes a methodology for using tests to guide evolution of source
-code. For our purposes, we are only going to use a part of it, that is, before writing the fix - we create tests that 
-illustrate the bug by failing. We stop when we have written enough code to make the tests pass and submit the fix and 
-tests as a patch. It is not necessary to write the tests before the fix, but it is very easy to write a passing test 
+Test driven development (TDD) describes a methodology for using tests to guide evolution of source code. 
+For our purposes, we are use only a part of it.
+Before writing the fix, we create tests that illustrate the bug by failing. 
+We stop when we have written enough code to make the tests pass and submit the fix and tests as a patch. 
+It is not necessary to write the tests before the fix, but it is very easy to write a passing test 
 afterwards that may not actually verify that the fault is really fixed especially if the fault can be triggered via 
 multiple execution paths or varying input data.
 
-===== The RSpec Framework
+[[rspec]]
+===== RSpec framework
 
 Logstash uses Rspec, a Ruby testing framework, to define and run the test suite. What follows is a summary of various 
 sources.
 
-. Rspec Example
+.Rspec Example
 [source,ruby]
  2 require "logstash/devutils/rspec/spec_helper"
  3 require "logstash/plugin"
@@ -220,6 +232,7 @@ eql(object) -> matcher instance
 In RSpec, a matcher is an object generated by the equivalent method call (be, eq) that will be used to evaluate the 
 expected against the actual values.
 
+[[all-together]]
 ==== Putting it all together
 
 This example fixes an https://github.com/logstash-plugins/logstash-output-zeromq/issues/9[issue] in the ZeroMQ output 

@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'stud', '~> 0.0.22'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'rspec', '~> 3.5'
-  s.add_development_dependency 'logstash-devutils', '= 1.3.5'
+  s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'flores'
   s.add_development_dependency 'rubyzip'
 end

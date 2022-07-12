@@ -47,7 +47,6 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -314,7 +313,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-        thrown.expect(SecretStoreException.AccessException.class);
+        thrown.expect(SecretStoreException.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;

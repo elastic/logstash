@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Container for a set of events from queue to be processed by filters/outputs.
+ * */
 public class Batch implements Closeable {
 
     private final List<Queueable> elements;

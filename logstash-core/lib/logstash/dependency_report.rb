@@ -30,7 +30,8 @@ class LogStash::DependencyReport < Clamp::Command
     :required => true, :attribute_name => :output_path
 
   OTHER_DEPENDENCIES = [
-    ["jruby", "", "http://jruby.org", "EPL-2.0"]
+    ["jruby", "", "http://jruby.org", "EPL-2.0"],
+    ["Red Hat Universal Base Image minimal","8","https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8","Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf","","https://oss-dependencies.elastic.co/red-hat-universal-base-image-minimal/8/ubi-minimal-8-source.tar.gz"]
   ]
 
   def execute
@@ -39,7 +40,7 @@ class LogStash::DependencyReport < Clamp::Command
     tmp_dir = java.lang.System.getProperty("java.io.tmpdir")
     ruby_output_path = File.join(tmp_dir, SecureRandom.uuid)
     # Write a CSV with just the ruby stuff
-    CSV.open(ruby_output_path, "wb", :headers => [ "name", "version", "url", "license" ], :write_headers => true) do |csv|
+    CSV.open(ruby_output_path, "wb", :headers => [ "name", "version", "url", "license","copyright","sourceURL" ], :write_headers => true) do |csv|
       puts "Finding gem dependencies"
       gems.each { |d| csv << d }
       puts "Finding gem embedded java/jar dependencies"

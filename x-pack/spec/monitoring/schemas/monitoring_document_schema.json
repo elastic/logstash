@@ -71,7 +71,7 @@
       "type": "object",
       "required": ["http_address", "uuid", "ephemeral_id"],
       "properties": {
-        "http_address": { "type": "string" },
+        "http_address": { "type": ["string", "null"] },
         "uuid": { "type": "string" },
         "ephemeral_id": { "type": "string" }
       }

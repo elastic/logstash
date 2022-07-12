@@ -30,6 +30,9 @@ import co.elastic.logstash.api.PluginHelper;
 
 import java.util.Collection;
 
+/**
+ * Java implementation of "sink" output plugin
+ * */
 @LogstashPlugin(name = "sink")
 public class Sink implements Output {
 

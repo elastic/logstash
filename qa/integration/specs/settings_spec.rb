@@ -142,7 +142,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "start on a different HTTP port" do
     # default in 9600
     http_port = random_port
-    change_setting("http.port", http_port)
+    change_setting("api.http.port", http_port)
     @logstash_service.spawn_logstash("-e", tcp_config)
     wait_for_port(http_port, 60)
     expect(is_port_open?(http_port)).to be true

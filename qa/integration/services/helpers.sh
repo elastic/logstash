@@ -46,6 +46,7 @@ test_port_ruby() {
       fi
       echo "Setting logstash ruby home to $LS_RUBY_HOME"
     fi
+    export LS_GEM_HOME="$GEM_HOME"
     $LS_RUBY_HOME/bin/ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
   fi
 }

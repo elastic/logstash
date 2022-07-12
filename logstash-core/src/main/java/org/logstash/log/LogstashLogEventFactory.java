@@ -29,6 +29,9 @@ import org.apache.logging.log4j.message.Message;
 
 import java.util.List;
 
+/**
+ * Logstash implementation of factory for Log4j LogEvent
+ * */
 public class LogstashLogEventFactory implements LogEventFactory {
     @Override
     public LogEvent createEvent(String loggerName, Marker marker, String fqcn, Level level, Message data, List<Property> properties, Throwable t) {

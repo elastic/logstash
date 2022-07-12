@@ -56,7 +56,7 @@ class Fixture
     end
 
     if options != nil
-       ERB.new(config, nil, "-").result(TemplateContext.new(options).get_binding)
+      ERB.new(config, nil, "-").result(TemplateContext.new(options).get_binding)
     else
       config
     end
@@ -66,16 +66,7 @@ class Fixture
     @service_locator.get_service(name)
   end
 
-  def output_equals_expected?
-    FileUtils.identical?(@actual_output, @input)
-  end
-
-  def output_exists?
-    File.exists?(@actual_output)
-  end
-
   def teardown
-    File.delete(@actual_output) if @settings.is_set?("actual_output") && output_exists?
     puts "Tearing down services"
     services = @settings.get("services")
     services.each do |name|
@@ -87,7 +78,7 @@ class Fixture
     puts "Setting up services"
     services = @settings.get("services")
     services.each do |name|
-     @service_locator.get_service(name).setup
+      @service_locator.get_service(name).setup
     end
     if @settings.is_set?("setup_script")
       puts "Setting up test specific fixtures"

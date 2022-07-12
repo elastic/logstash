@@ -95,6 +95,14 @@ public final class PqRepairTest {
         verifyQueue(0, 1, 4, 5);
     }
 
+    @Test
+    public void testRemoveTempCheckPoint() throws Exception {
+        Files.createFile(dataPath.resolve("checkpoint.head.tmp"));
+        Files.createFile(dataPath.resolve("checkpoint.1.tmp"));
+        PqRepair.repair(dataPath);
+        verifyQueue();
+    }
+
     private void verifyQueue() throws IOException {
         verifyQueue(IntStream.range(0, 6).toArray());
     }

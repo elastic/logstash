@@ -37,6 +37,9 @@ import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 
 import java.util.Collection;
 
+/**
+ * JRuby extension
+ * */
 @JRubyClass(name = "PipelineReporter")
 public final class PipelineReporterExt extends RubyBasicObject {
 
@@ -78,9 +81,9 @@ public final class PipelineReporterExt extends RubyBasicObject {
     private static final RubyString DEAD_STATUS =
         RubyUtil.RUBY.newString("dead").newFrozen();
 
-    private IRubyObject logger;
+    private transient IRubyObject logger;
 
-    private IRubyObject pipeline;
+    private transient IRubyObject pipeline;
 
     public PipelineReporterExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

@@ -51,7 +51,7 @@ class DLQCommittingFilter < LogStash::Filters::Base
   def close() end
 end
 
-describe LogStash::Pipeline do
+describe LogStash::JavaPipeline do
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) do
     {
@@ -72,7 +72,7 @@ describe LogStash::Pipeline do
     eos
   }
 
-  subject { mock_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
+  subject { mock_java_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
 
   before(:each) do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
@@ -91,7 +91,7 @@ describe LogStash::Pipeline do
     let(:pipeline_id) { "test-dlq" }
 
     it "retrieves proper pipeline-level DLQ writer" do
-      expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).and_call_original
+      expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).at_least(:once).and_call_original
       subject.start
       subject.shutdown
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
@@ -108,7 +108,7 @@ describe LogStash::Pipeline do
 
     it "does not write to the DLQ" do
       expect(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:new).and_call_original
-      expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).and_call_original
+      expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).at_least(:once).and_call_original
       subject.start
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       expect(java.nio.file.Files.exists(dlq_path)).to eq(false)

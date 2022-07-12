@@ -33,6 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Logstash configuration factory customization used to remove the routing appender from log4j configuration
+ * if "separate_logs" settings is false.
+ * */
 @Plugin(name = "LogstashConfigurationFactory", category = ConfigurationFactory.CATEGORY)
 @Order(9)
 public class LogstashConfigurationFactory extends ConfigurationFactory {

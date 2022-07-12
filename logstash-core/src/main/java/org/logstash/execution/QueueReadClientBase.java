@@ -39,6 +39,9 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Common code shared by Persistent and In-Memory queues clients implementation
+ * */
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 
@@ -48,16 +51,15 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
     protected long waitForMillis = 50;
 
-    private final ConcurrentHashMap<Long, QueueBatch> inflightBatches =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, QueueBatch> inflightBatches = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Long> inflightClocks = new ConcurrentHashMap<>();
 
-    private LongCounter eventMetricOut;
-    private LongCounter eventMetricFiltered;
-    private LongCounter eventMetricTime;
-    private LongCounter pipelineMetricOut;
-    private LongCounter pipelineMetricFiltered;
-    private LongCounter pipelineMetricTime;
+    private transient LongCounter eventMetricOut;
+    private transient LongCounter eventMetricFiltered;
+    private transient LongCounter eventMetricTime;
+    private transient LongCounter pipelineMetricOut;
+    private transient LongCounter pipelineMetricFiltered;
+    private transient LongCounter pipelineMetricTime;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

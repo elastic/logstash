@@ -27,6 +27,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
+  option "--[no-]conservative", :flag, "do a conservative update of plugin's dependencies", :default => true
 
   def execute
     # Turn off any jar dependencies lookup when running with `--local`
@@ -63,6 +64,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
     # calling update without requirements will remove any previous requirements
     plugins = plugins_to_update(previous_gem_specs_map)
+
     # Skipping the major version validation when using a local cache as we can have situations
     # without internet connection.
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
@@ -75,11 +77,17 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     puts("Updating #{filtered_plugins.collect(&:name).join(", ")}") unless filtered_plugins.empty?
 
+    output = nil
     # any errors will be logged to $stderr by invoke!
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
-    options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
-    options[:local] = true if local?
-    output = LogStash::Bundler.invoke!(options)
+    Bundler.settings.temporary(:frozen => false) do # Unfreeze the bundle when updating gems
+      output = LogStash::Bundler.invoke! update: plugins,
+                                         rubygems_source: gemfile.gemset.sources,
+                                         local: local?,
+                                         conservative: conservative?
+      output << LogStash::Bundler.genericize_platform unless output.nil?
+    end
+
     # We currently dont removed unused gems from the logstash installation
     # see: https://github.com/elastic/logstash/issues/6339
     # output = LogStash::Bundler.invoke!(:clean => true)
@@ -99,9 +107,25 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
       # If the plugins isn't available in the gemspec or in 
       # the gemfile defined with a local path, we assume the plugins is not
       # installed.
-      not_installed = plugins_arg.select{|plugin| !previous_gem_specs_map.has_key?(plugin.downcase) && !gemfile.find(plugin) }
+      not_installed = plugins_arg.select { |plugin| !previous_gem_specs_map.has_key?(plugin.downcase) && !gemfile.find(plugin) }
+
+      # find only the not installed that doesn't correspond to an alias
+      not_installed_aliases = not_installed.select { |plugin| LogStash::PluginManager::ALIASES.has_key?(plugin)}
+      not_installed -= not_installed_aliases
+
       signal_error("Plugin #{not_installed.join(', ')} is not installed so it cannot be updated, aborting") unless not_installed.empty?
-      plugins_arg
+
+      # resolve aliases that doesn't correspond to a real gem
+      plugins_to_update = plugins_arg.map do |plugin|
+        if not_installed_aliases.include?(plugin)
+          resolved_plugin = LogStash::PluginManager::ALIASES[plugin]
+          puts "Remapping alias #{plugin} to #{resolved_plugin}"
+          resolved_plugin
+        else
+          plugin
+        end
+      end
+      plugins_to_update
     end
   end
 

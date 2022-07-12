@@ -19,16 +19,19 @@ import org.logstash.plugins.ContextImpl;
 import org.logstash.plugins.NamespacedMetricImpl;
 import org.logstash.plugins.PluginLookup;
 
+/**
+ * JRuby extension, factory class for plugins execution contexts
+ * */
 @JRubyClass(name = "ExecutionContextFactory")
 public final class ExecutionContextFactoryExt extends RubyBasicObject {
 
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject agent;
+    private transient IRubyObject agent;
 
-    private IRubyObject pipeline;
+    private transient IRubyObject pipeline;
 
-    private IRubyObject dlqWriter;
+    private transient IRubyObject dlqWriter;
 
     public ExecutionContextFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -46,10 +49,14 @@ public final class ExecutionContextFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public ExecutionContextExt create(final ThreadContext context, final IRubyObject id,
                                       final IRubyObject classConfigName) {
+        final AbstractDeadLetterQueueWriterExt dlqWriterForInstance = new AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt(
+                context.runtime, RubyUtil.PLUGIN_DLQ_WRITER_CLASS
+        ).initialize(context, dlqWriter, id, classConfigName);
+
         return new ExecutionContextExt(
             context.runtime, RubyUtil.EXECUTION_CONTEXT_CLASS
         ).initialize(
-            context, new IRubyObject[]{pipeline, agent, id, classConfigName, dlqWriter}
+            context, new IRubyObject[]{pipeline, agent, dlqWriterForInstance}
         );
     }
 

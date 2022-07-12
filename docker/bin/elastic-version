@@ -12,7 +12,7 @@ end
 
 def qualify(version)
   qualifier = ENV['VERSION_QUALIFIER']
-  qualifier ? [version, qualifier].join("-") : version
+  qualifier.nil? || qualifier.empty? ? version : [version, qualifier].join("-")
 end
 
 def get_version

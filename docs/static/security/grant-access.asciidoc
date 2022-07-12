@@ -1,0 +1,36 @@
+[discrete]
+[[ls-user-access]]
+=== Granting access to the Logstash indices
+
+To access the indices Logstash creates, users need the `read` and
+`view_index_metadata` privileges:
+
+. Create a `logstash_reader` role that has the `read` and `view_index_metadata`
+privileges  for the Logstash indices. You can create roles from the
+**Management > Roles** UI in {kib} or through the `role` API:
++
+[source, sh]
+---------------------------------------------------------------
+POST _security/role/logstash_reader
+{
+  "cluster": ["manage_logstash_pipelines"]
+}
+---------------------------------------------------------------
+
+. Assign your Logstash users the `logstash_reader` role. If the Logstash user
+will be using
+{logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management],
+also assign the `logstash_admin` role. You can create and manage users from the
+**Management > Users** UI in {kib} or through the `user` API:
++
+[source, sh]
+---------------------------------------------------------------
+POST _security/user/logstash_user
+{
+  "password" : "x-pack-test-password",
+  "roles" : [ "logstash_reader", "logstash_admin"], <1>
+  "full_name" : "Kibana User for Logstash"
+}
+---------------------------------------------------------------
+<1> `logstash_admin` is a built-in role that provides access to system
+indices for managing configurations.

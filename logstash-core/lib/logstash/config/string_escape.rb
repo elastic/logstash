@@ -34,6 +34,8 @@ module LogStash; module Config; module StringEscape
         "\r"
       when "t"
         "\t"
+      when "0"
+        "\x00"
       else
         value
       end

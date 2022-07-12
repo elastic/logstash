@@ -67,7 +67,7 @@ describe TimeValue do
         a = TimeValue.from_value(32)
         fail "should not parse"
       rescue ArgumentError => e
-        expect(e.message).to eq("value is not a string: 32 [Integer]")
+        expect(e.message).to start_with("value is not a string: 32 ")
       end
     end
 end

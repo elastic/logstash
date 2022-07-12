@@ -27,21 +27,24 @@ import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.CoreMatchers;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.exceptions.RuntimeError;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.ObjectMappers;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
 /**
  * Tests for {@link JrubyEventExtLibrary.RubyEvent}.
  */
-public final class JrubyEventExtLibraryTest {
+public final class JrubyEventExtLibraryTest extends RubyTestBase {
 
     @Test
     public void shouldSetJavaProxy() throws IOException {
@@ -97,19 +100,21 @@ public final class JrubyEventExtLibraryTest {
     }
 
     @Test
-    public void correctlyRaiseRubyRuntimeErrorWhenGivenInvalidFieldReferencesInMap() {
+    public void correctlySetsValueWhenGivenMapWithKeysThatHaveFieldReferenceSpecialCharacters() {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         final JrubyEventExtLibrary.RubyEvent event =
                 JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime);
         final RubyString key = rubyString("foo");
         final RubyHash value = RubyHash.newHash(context.runtime, Collections.singletonMap(rubyString("il[[]]]legal"), rubyString("okay")), context.nil);
-        try {
-            event.ruby_set_field(context, key, value);
-        } catch (RuntimeError rubyRuntimeError) {
-            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
-            return;
-        }
-        Assert.fail("expected ruby RuntimeError was not thrown.");
+
+        event.ruby_set_field(context, key, value);
+        IRubyObject retrievedValue = event.ruby_get_field(context, key);
+        Assert.assertThat(retrievedValue, CoreMatchers.equalTo(value));
+
+        RubyHash eventHash = (RubyHash) event.ruby_to_hash_with_metadata(context);
+        IRubyObject nestedValue = eventHash.dig(context, rubyString("foo"), rubyString("il[[]]]legal"));
+        Assert.assertFalse(nestedValue.isNil());
+        Assert.assertEquals(rubyString("okay"), nestedValue);
     }
 
     private static RubyString rubyString(final String java) {

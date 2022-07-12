@@ -32,8 +32,6 @@ if !LogStash::OSS
 end
 
 require "clamp"
-require "net/http"
-
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"
@@ -49,10 +47,10 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/persisted_queue_config"
-require "set"
+require 'logstash/deprecation_message'
 
 java_import 'org.logstash.FileLockFactory'
+java_import 'org.logstash.util.JavaVersion'
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -62,8 +60,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::DefaultConfig,
-      LogStash::BootstrapCheck::PersistedQueueConfig
+      LogStash::BootstrapCheck::DefaultConfig
   ]
 
   # Node Settings
@@ -71,6 +68,11 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.name"),
     :attribute_name => "node.name",
     :default => LogStash::SETTINGS.get_default("node.name")
+
+  option ["--enable-local-plugin-development"], :flag,
+         I18n.t("logstash.runner.flag.enable-local-plugin-development"),
+         :attribute_name => "enable-local-plugin-development",
+         :default => LogStash::SETTINGS.get_default("enable-local-plugin-development")
 
   # Config Settings
   option ["-f", "--path.config"], "CONFIG_PATH",
@@ -84,10 +86,10 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
 
-  option ["--field-reference-parser"], "MODE",
-         I18n.t("logstash.runner.flag.field-reference-parser"),
-         :attribute_name => "config.field_reference.parser",
-         :default => LogStash::SETTINGS.get_default("config.field_reference.parser")
+  option ["--field-reference-escape-style"], "STYLE",
+         I18n.t("logstash.runner.flag.field-reference-escape-style"),
+         :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
+         :attribute_name => "config.field_reference.escape_style"
 
   # Module settings
   option ["--modules"], "MODULES",
@@ -129,11 +131,6 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.ordered",
     :default => LogStash::SETTINGS.get_default("pipeline.ordered")
 
-  option ["--java-execution"], :flag,
-         I18n.t("logstash.runner.flag.java-execution"),
-         :attribute_name => "pipeline.java_execution",
-         :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
-
   option ["--plugin-classloaders"], :flag,
          I18n.t("logstash.runner.flag.plugin-classloaders"),
          :attribute_name => "pipeline.plugin_classloaders",
@@ -153,6 +150,11 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
     :attribute_name => "pipeline.unsafe_shutdown",
     :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
+
+  option ["--pipeline.ecs_compatibility"], "STRING",
+    I18n.t("logstash.runner.flag.ecs_compatibility"),
+    :attribute_name => "pipeline.ecs_compatibility",
+    :default => LogStash::SETTINGS.get_default('pipeline.ecs_compatibility')
 
   # Data Path Setting
   option ["--path.data"] , "PATH",
@@ -204,20 +206,20 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "config.reload.interval",
     :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
-  option ["--http.enabled"], "ENABLED",
-         I18n.t("logstash.runner.flag.http_enabled"),
-         :attribute_name => 'http.enabled',
-         :default => LogStash::SETTINGS.get_default('http.enabled')
+  option ["--api.enabled"], "ENABLED",
+    I18n.t("logstash.runner.flag.api_enabled"),
+    :attribute_name => 'api.enabled',
+    :default => LogStash::SETTINGS.get_default('api.enabled')
 
-  option ["--http.host"], "HTTP_HOST",
-    I18n.t("logstash.runner.flag.http_host"),
-    :attribute_name => "http.host",
-    :default => LogStash::SETTINGS.get_default("http.host")
+  option ["--api.http.host"], "HTTP_HOST",
+    I18n.t("logstash.runner.flag.api_http_host"),
+    :attribute_name => "api.http.host",
+    :default => LogStash::SETTINGS.get_default("api.http.host")
 
-  option ["--http.port"], "HTTP_PORT",
-    I18n.t("logstash.runner.flag.http_port"),
-    :attribute_name => "http.port",
-    :default => LogStash::SETTINGS.get_default("http.port")
+  option ["--api.http.port"], "HTTP_PORT",
+    I18n.t("logstash.runner.flag.api_http_port"),
+    :attribute_name => "api.http.port",
+    :default => LogStash::SETTINGS.get_default("api.http.port")
 
   option ["--log.format"], "FORMAT",
     I18n.t("logstash.runner.flag.log_format"),
@@ -241,6 +243,18 @@ class LogStash::Runner < Clamp::StrictCommand
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
+
+  deprecated_option ["--http.enabled"], :flag,
+    I18n.t("logstash.runner.flag.http_enabled"),
+    :new_flag => "api.enabled", :passthrough => true # use settings to disambiguate
+
+  deprecated_option ["--http.host"], "HTTP_HOST",
+    I18n.t("logstash.runner.flag.http_host"),
+    :new_flag => "api.http.host", :passthrough => true # use settings to disambiguate
+
+  deprecated_option ["--http.port"], "HTTP_PORT",
+    I18n.t("logstash.runner.flag.http_port"),
+    :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
@@ -275,26 +289,27 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings and the log level is correctly defined.
-    java.lang.System.setProperty("ls.logs", setting("path.logs"))
-    java.lang.System.setProperty("ls.log.format", setting("log.format"))
-    java.lang.System.setProperty("ls.log.level", setting("log.level"))
-    java.lang.System.setProperty("ls.pipeline.separate_logs", setting("pipeline.separate_logs").to_s)
-    unless java.lang.System.getProperty("log4j.configurationFile")
-      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
+    running_as_superuser
 
-      # Windows safe way to produce a file: URI.
-      file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
-      LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
+    if log_configuration_contains_javascript_usage?
+      logger.error("Logging configuration uses Script log appender or filter with Javascript, which is no longer supported.")
+      return 1
     end
-    # override log level that may have been introduced from a custom log4j config file
-    LogStash::Logging::Logger::configure_logging(setting("log.level"))
 
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    while(msg = LogStash::DeprecationMessage.instance.shift)
+      deprecation_logger.deprecated msg
+    end
+
+    if JavaVersion::CURRENT < JavaVersion::JAVA_11
+      logger.warn I18n.t("logstash.runner.java.version",
+                                             :java_home => java.lang.System.getProperty("java.home"))
+    end
+
+    logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
     # Skip any validation and just return the version
     if version?
       show_version
@@ -302,6 +317,8 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
+    jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
+    logger.info "JVM bootstrap flags: #{jvmArgs}"
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
@@ -309,8 +326,16 @@ class LogStash::Runner < Clamp::StrictCommand
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
 
-    @settings.validate_all
+    validate_settings! or return 1
     @dispatcher.fire(:before_bootstrap_checks)
+
+    field_reference_escape_style_setting = settings.get_setting('config.field_reference.escape_style')
+    if field_reference_escape_style_setting.set?
+      logger.warn(I18n.t("logstash.settings.technical_preview.set", canonical_name: field_reference_escape_style_setting.name))
+    end
+    field_reference_escape_style = field_reference_escape_style_setting.value
+    logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
+    org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
@@ -364,10 +389,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
         # TODO(ph): make it better for multiple pipeline
         if results.success?
-          results.response.each do |pipeline_config|
-            pipeline_class = pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::BasePipeline
-            pipeline_class.new(pipeline_config)
-          end
+          results.response.each { |pipeline_config| LogStash::JavaPipeline.new(pipeline_config) }
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         else
@@ -431,6 +453,36 @@ class LogStash::Runner < Clamp::StrictCommand
     FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
+
+  def running_as_superuser
+    if Process.euid() == 0
+      if setting("allow_superuser")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'allow_superuser' to 'false' to avoid startup errors in future releases.")
+      else
+        raise(RuntimeError, "Logstash cannot be run as superuser.")
+      end
+    end
+  end
+
+  def log_configuration_contains_javascript_usage?
+     context = LoggerContext.getContext(false)
+     config = context.configuration
+     config_file = config.configuration_source.file
+     # no config file so nothing to check
+     return false if config_file.nil?
+
+     logger.info("Log4j configuration path used is: #{config_file.path}")
+     log_config = File.open(config_file.absolute_path).read
+     (log_config =~ /^[^#]+script\.language\s*=\s*JavaScript/) != nil
+  end
+
+  def validate_settings!
+    @settings.validate_all
+    true
+  rescue => e
+    $stderr.puts(I18n.t("logstash.runner.invalid-settings", :error => e.message))
+    return false
+  end
 
   def show_version
     show_version_logstash

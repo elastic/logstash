@@ -44,7 +44,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public final class EventTest {
+public final class EventTest extends RubyTestBase {
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {
@@ -154,6 +154,21 @@ public final class EventTest {
         data.put("foo", "bar");
         Event e = new Event(data);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
+    public void testFieldThatIsNotAValidNestedFieldReference() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("this[key]", "value");
+        final Event e = new Event(data);
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"this[key]\":\"value\",\"@version\":\"1\"}", e.toJson());
+    }
+    @Test
+    public void testFieldThatLooksLikeAValidNestedFieldReference() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("[deeply][nested][field]", "value");
+        final Event e = new Event(data);
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"[deeply][nested][field]\":\"value\",\"@version\":\"1\"}", e.toJson());
     }
 
     @Test

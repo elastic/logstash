@@ -36,6 +36,9 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 
+/**
+ * Persistent queue factory JRuby extension.
+ * */
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 
@@ -54,7 +57,13 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 getSetting(context, settings, "path.queue").asJavaString(),
                 getSetting(context, settings, "pipeline.id").asJavaString()
             );
-            Files.createDirectories(queuePath);
+
+            // Files.createDirectories raises a FileAlreadyExistsException
+            // if pipeline queue path is a symlink, so worth checking against Files.exists
+            if (Files.exists(queuePath) == false) {
+                Files.createDirectories(queuePath);
+            }
+
             return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS)
                 .initialize(
                     context, new IRubyObject[]{

@@ -54,7 +54,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     private static final RubySymbol SET = RubyUtil.RUBY.newSymbol("set");
 
-    private IRubyObject collector;
+    private transient IRubyObject collector;
 
     public MetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -185,9 +185,9 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
         private MetricExt metric;
 
-        private IRubyObject namespace;
+        private transient IRubyObject namespace;
 
-        private IRubyObject key;
+        private transient IRubyObject key;
 
         public static MetricExt.TimedExecution create(final MetricExt metric,
             final IRubyObject namespace, final IRubyObject key) {

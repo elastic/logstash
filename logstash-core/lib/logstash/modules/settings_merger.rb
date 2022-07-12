@@ -21,6 +21,8 @@ module LogStash module Modules module SettingsMerger
   include LogStash::Util::Loggable
   extend self
 
+  # cli_settings Array or LogStash::Util::ModulesSettingArray
+  # yml_settings Array or LogStash::Util::ModulesSettingArray
   def merge(cli_settings, yml_settings)
     # both args are arrays of hashes, e.g.
     # [{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}]
@@ -28,6 +30,7 @@ module LogStash module Modules module SettingsMerger
     merged = []
     # union and group_by preserves order
     # union will also coalesce identical hashes
+    # this "|" operator is provided to Java List by RubyJavaIntegration
     union_of_settings = (cli_settings | yml_settings)
     grouped_by_name = union_of_settings.group_by{|e| e["name"]}
     grouped_by_name.each do |_, array|

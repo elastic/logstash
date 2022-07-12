@@ -18,7 +18,7 @@
 require "logstash/devutils/rspec/spec_helper"
 require "logstash/outputs/secret"
 require "logstash/codecs/plain"
-require "logstash/event"
+
 
 describe LogStash::Outputs::Secret do
   let(:sample_event) { LogStash::Event.new }

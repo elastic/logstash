@@ -21,7 +21,11 @@ require          'logstash/version'
 # This test checks if the current package could used to update from the latest version released.
 RSpec.shared_examples "updated" do |logstash|
 
-  before(:all) { logstash.uninstall }
+  before(:all) {
+    #unset to force it using bundled JDK to run LS
+    logstash.run_command("unset LS_JAVA_HOME")
+    logstash.uninstall
+  }
   after(:all)  do
     logstash.stop_service # make sure the service is stopped
     logstash.uninstall #remove the package to keep uniform state
@@ -32,13 +36,15 @@ RSpec.shared_examples "updated" do |logstash|
     logstash.install(options) # make sure latest version is installed
   end
 
-  it "can be updated an run on #{logstash.hostname}" do
+  it "can be updated and run on #{logstash.hostname}" do
+    pending('Cannot install on OS') if logstash.hostname == 'oel-6'
     expect(logstash).to be_installed
     # Performing the update
     logstash.install({:version => LOGSTASH_VERSION})
     expect(logstash).to be_installed
     # starts the service to be sure it runs after the upgrade
-    logstash.start_service
-    expect(logstash).to be_running
+    with_running_logstash_service(logstash) do
+      expect(logstash).to be_running
+    end
   end
 end

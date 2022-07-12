@@ -1,0 +1,19 @@
+[role="xpack"]
+[[wildcard-in-pipeline-id]]
+==== Wildcard support in pipeline ID
+++++
+<titleabbrev>Wildcard support in pipeline ID</titleabbrev>
+++++
+Pipeline IDs must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers.
+You can use `*` in `xpack.management.pipeline.id` to match any number of letters, underscores, dashes, and numbers.
+
+[source,shell]
+-----
+xpack.management.pipeline.id: ["*logs", "*apache*", "tomcat_log"]
+-----
+
+In this example, `"*logs"` matches all IDs ending in `logs`. `"*apache*"` matches any IDs with `apache` in the name.
+
+Wildcard in pipeline IDs is available starting with Elasticsearch 7.10. Logstash can pick up new pipeline without a restart if the new pipeline ID matches the wildcard pattern.
+
+

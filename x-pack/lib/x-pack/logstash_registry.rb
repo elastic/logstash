@@ -13,6 +13,7 @@ require "monitoring/monitoring"
 require "monitoring/inputs/metrics"
 require "monitoring/outputs/elasticsearch_monitoring"
 require "config_management/extension"
+require "filters/geoip/extension"
 require "modules/xpack_scaffold"
 require "filters/azure_event"
 
@@ -20,6 +21,7 @@ LogStash::PLUGIN_REGISTRY.add(:input, "metrics", LogStash::Inputs::Metrics)
 LogStash::PLUGIN_REGISTRY.add(:output, "elasticsearch_monitoring", LogStash::Outputs::ElasticSearchMonitoring)
 LogStash::PLUGIN_REGISTRY.add(:universal, "monitoring", LogStash::MonitoringExtension)
 LogStash::PLUGIN_REGISTRY.add(:universal, "config_management", LogStash::ConfigManagement::Extension)
+LogStash::PLUGIN_REGISTRY.add(:universal, "geoip_auto_update", LogStash::Filters::Geoip::Extension)
 
 license_levels = Hash.new
 license_levels.default = LogStash::LicenseChecker::LICENSE_TYPES

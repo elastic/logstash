@@ -23,19 +23,33 @@ package org.logstash.secret.store.backend;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.*;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.SecureConfig;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileLock;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.KeyStore;
@@ -45,7 +59,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -156,14 +174,6 @@ public final class JavaKeyStore implements SecretStore {
         return new File(new String(path)).exists();
     }
 
-    // Object#finalize() is deprecated, but `Cleaner` alternative did not ship until Java 9;
-    // since this project still supports Java 8, suppress the warning.
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void finalize() throws Throwable {
-        SecretStoreUtil.clearChars(keyStorePass);
-    }
-
     /**
      * Obtains the keystore password depending on if the password is explicitly defined and/or if this is a new keystore.
      *
@@ -188,35 +198,35 @@ public final class JavaKeyStore implements SecretStore {
 
         useDefaultPass = !config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY);
 
-        if (useDefaultPass) {
-            if (existing) {
-                //read the pass
-                SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
-                if (byteChannel.size() > 1) {
-                    byteChannel.position(byteChannel.size() - 1);
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(1);
-                    byteChannel.read(byteBuffer);
-                    int size = byteBuffer.array()[0] & 0xff;
-                    if (size > 0 && byteChannel.size() >= size + 1) {
-                        byteBuffer = ByteBuffer.allocate(size);
-                        byteChannel.position(byteChannel.size() - size - 1);
-                        byteChannel.read(byteBuffer);
-                        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
-                    }
-                }
-            } else {
-                //create the pass
-                byte[] randomBytes = new byte[32];
-                new Random().nextBytes(randomBytes);
-                return SecretStoreUtil.base64EncodeToChars(randomBytes);
-            }
-        } else {
+        if (!useDefaultPass) {
             //explicit user defined pass
             //keystore passwords require ascii encoding, only base64 encode if necessary
             return asciiEncoder.canEncode(CharBuffer.wrap(plainText)) ? plainText : SecretStoreUtil.base64Encode(plainText);
         }
-        throw new SecretStoreException.AccessException(
-                String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        if (!existing) {
+            //create the pass
+            byte[] randomBytes = new byte[32];
+            new Random().nextBytes(randomBytes);
+            return SecretStoreUtil.base64EncodeToChars(randomBytes);
+        }
+        //read the pass
+        SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
+        if (byteChannel.size() == 0) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Keystore file is empty. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteChannel.position(byteChannel.size() - 1);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        byteChannel.read(byteBuffer);
+        int size = byteBuffer.array()[0] & 0xff;
+        if (size <= 0 || byteChannel.size() < size + 1) {
+            throw new SecretStoreException.AccessException(
+                    String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+        }
+        byteBuffer = ByteBuffer.allocate(size);
+        byteChannel.position(byteChannel.size() - size - 1);
+        byteChannel.read(byteBuffer);
+        return SecretStoreUtil.deObfuscate(SecretStoreUtil.asciiBytesToChar(byteBuffer.array()));
     }
 
     private void init(SecureConfig config) throws IOException, KeyStoreException {
@@ -349,6 +359,17 @@ public final class JavaKeyStore implements SecretStore {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
             releaseLock(lock);
+        }
+    }
+
+    @Override
+    public boolean containsSecret(SecretIdentifier identifier) {
+        try {
+            loadKeyStore();
+            return keyStore.containsAlias(identifier.toExternalForm());
+        } catch (Exception e) {
+            throw new SecretStoreException.LoadException(String.format("Found a keystore at %s, but failed to load it.",
+                    keyStorePath.toAbsolutePath().toString()));
         }
     }
 

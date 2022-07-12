@@ -39,11 +39,47 @@ test {
   exclude '/**'
 }
 
+tasks.register("copyProductionLog4jConfiguration", Copy) {
+  description "Copy the production log4j config to be tested in QA (qa/integration/fixtures/logs_rollover)"
+
+  from "${projectDir}/../../config/log4j2.properties"
+  into "${projectDir}/fixtures/logs_rollover/"
+  filter {
+    // modify rollover policy to make it happen in integration test without need to generate tons of log lines
+    line -> line
+            .replace('appender.rolling.policies.size.size = 100MB',
+                    'appender.rolling.policies.size.size = 1KB')
+            .replace('appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}-%i.log.gz',
+                    'appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}.log')
+            .replace('appender.routing.pipeline.policy.size = 100MB',
+                    'appender.routing.pipeline.policy.size = 1KB')
+  }
+}
+
+clean {
+  delete "${projectDir}/fixtures/logs_rollover/log4j2.properties"
+}
+
 tasks.register("integrationTests", Test) {
+  if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
+    jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
+  }
+  dependsOn copyProductionLog4jConfiguration
+
   inputs.files fileTree("${projectDir}/services")
   inputs.files fileTree("${projectDir}/framework")
   inputs.files fileTree("${projectDir}/fixtures")
   inputs.files fileTree("${projectDir}/specs")
-  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+
+  systemProperty 'logstash.root.dir', projectDir.toPath().getParent().getParent().toString()
   include '/org/logstash/integration/RSpecTests.class'
+
+  outputs.upToDateWhen {
+    if (project.hasProperty('integrationTests.rerun')) {
+      println "Rerunning Integration Tests"
+      return false
+    } else {
+      return true
+    }
+  }
 }

@@ -48,11 +48,11 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
 
     protected RubyString id;
 
-    protected LongCounter eventMetricOut;
+    protected transient LongCounter eventMetricOut;
 
-    protected LongCounter eventMetricIn;
+    protected transient LongCounter eventMetricIn;
 
-    protected LongCounter eventMetricTime;
+    protected transient LongCounter eventMetricTime;
 
     public AbstractFilterDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

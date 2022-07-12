@@ -1,0 +1,4 @@
+[[ts-plugins]] 
+=== Troubleshooting specific plugins
+
+include::ts-kafka.asciidoc[]

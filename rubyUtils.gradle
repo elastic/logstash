@@ -23,9 +23,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.23'
+        classpath 'org.yaml:snakeyaml:1.29'
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-complete:9.2.13.0"
+        classpath "org.jruby:jruby-complete:9.3.6.0"
     }
 }
 
@@ -139,7 +139,7 @@ void buildGem(File projectDir, File buildDir, String gemspec) {
 void rake(File projectDir, File buildDir, String task) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
-        jruby.runScriptlet("require 'rake'")
+        jruby.runScriptlet("require 'rake'; require 'time'")
         jruby.runScriptlet("""
                 rake = Rake.application
                 rake.init
@@ -155,6 +155,7 @@ void setupJruby(File projectDir, File buildDir) {
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
         jruby.runScriptlet("LogStash::Bundler.invoke!")
+        jruby.runScriptlet("LogStash::Bundler.genericize_platform")
     }
 }
 
@@ -167,7 +168,7 @@ void setupJruby(File projectDir, File buildDir) {
 Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block) {
     def jruby = new ScriptingContainer()
     def env = jruby.environment
-    def gemDir = "${projectDir}/vendor/bundle/jruby/2.5.0".toString()
+    def gemDir = "${projectDir}/vendor/bundle/jruby/2.6.0".toString()
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
@@ -272,10 +273,7 @@ tasks.register("downloadAndInstallJRuby", Copy) {
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
     exclude "**/stdlib/rdoc/**"
-    exclude "**/stdlib/bundler/**"
-    exclude "**/stdlib/bundler.rb"
-    exclude "**/bundler-1.16.6/**"
-    exclude "**/bundler-1.16.6.*"
+    exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"

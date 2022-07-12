@@ -47,6 +47,66 @@ describe LogStash::Config::Mixin do
     end
   end
 
+  context 'DSL::validate_value(String, :codec)' do
+    subject(:plugin_class) { Class.new(LogStash::Filters::Base) { config_name "test_deprecated_two" } }
+    let(:codec_class) { Class.new(LogStash::Codecs::Base) { config_name 'dummy' } }
+    let(:deprecation_logger) { double("DeprecationLogger").as_null_object }
+
+    before(:each) do
+      allow(plugin_class).to receive(:deprecation_logger).and_return(deprecation_logger)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", codec_class.config_name).and_return(codec_class)
+    end
+
+    it 'instantiates the codec' do
+      success, codec = plugin_class.validate_value(codec_class.config_name, :codec)
+
+      expect(success).to be true
+      expect(codec.class).to eq(codec_class)
+    end
+
+    it 'logs a deprecation' do
+      plugin_class.validate_value(codec_class.config_name, :codec)
+      expect(deprecation_logger).to have_received(:deprecated) do |message|
+        expect(message).to include("validate_value(String, :codec)")
+      end
+    end
+  end
+
+  context "validating :field_reference" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base) do
+        config :target, :validate => :field_reference
+      end
+    end
+    let(:params) do
+      { "target" => target_param }
+    end
+
+    before(:each) do
+      allow(plugin_class).to receive(:logger).and_return(double('Logger').as_null_object)
+    end
+
+    context "when input is valid" do
+      let(:target_param) { "[@metadata][target]" }
+      it 'successfully initializes the plugin' do
+        expect(plugin_class.new(params)).to be_a_kind_of plugin_class
+      end
+      it 'coerces the value' do
+        instance = plugin_class.new(params)
+        expect(instance.target).to_not be_nil
+        expect(instance.target).to eq(target_param)
+      end
+    end
+
+    context "when input is invalid" do
+      let(:target_param) { "][Nv@l][d" }
+      it 'does not initialize the plugin' do
+        expect { plugin_class.new(params) }.to raise_exception(LogStash::ConfigurationError)
+        expect(plugin_class.logger).to have_received(:error).with(/must be a field_reference/)
+      end
+    end
+  end
+
   context "when validating :bytes successfully" do
     subject do
       local_num_bytes = num_bytes # needs to be locally scoped :(

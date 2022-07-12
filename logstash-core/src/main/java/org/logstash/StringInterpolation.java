@@ -21,9 +21,12 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -66,21 +69,40 @@ public final class StringInterpolation {
         }
         final StringBuilder builder = STRING_BUILDER.get();
         int pos = 0;
+        final int len = template.length();
         while (open > -1 && close > -1) {
             if (open > 0) {
                 builder.append(template, pos, open);
             }
             if (template.regionMatches(open + 2, "+%s", 0, close - open - 2)) {
+                // UNIX-style @timestamp formatter:
+                // - `%{+%s}` -> 1234567890
                 Timestamp t = event.getTimestamp();
-                builder.append(t == null ? "" : t.getTime().getMillis() / 1000L);
+                builder.append(t == null ? "" : t.toInstant().getEpochSecond());
+            } else if (template.charAt(open+2) == '{' && (close < len) && template.charAt(close+1) == '}') {
+                // JAVA-style @timestamp formatter:
+                // - `%{{yyyy-MM-dd}}` -> `2021-08-11`
+                // - `%{{YYYY-'W'ww}}` -> `2021-W32`
+                close = close + 1; // consume extra closing squiggle
+                final Timestamp t =  event.getTimestamp();
+                if (t != null) {
+                    final String javaTimeFormatPattern = template.substring(open+3, close-1);
+                    final java.time.format.DateTimeFormatter javaDateTimeFormatter = DateTimeFormatter.ofPattern(javaTimeFormatPattern).withZone(ZoneOffset.UTC);
+                    final String formattedTimestamp = javaDateTimeFormatter.format(t.toInstant());
+                    builder.append(formattedTimestamp);
+                }
             } else if (template.charAt(open + 2) == '+') {
-                Timestamp t = event.getTimestamp();
-                builder.append(t != null
-                        ? event.getTimestamp().getTime().toString(
-                                DateTimeFormat.forPattern(template.substring(open + 3, close))
-                                        .withZone(DateTimeZone.UTC))
-                        : ""
-                    );
+                // JODA-style @timestamp formatter:
+                // - `%{+YYYY.MM.dd}` -> `2021-08-11`
+                // - `%{+xxxx-'W'ww}  -> `2021-W32`
+                final Timestamp t = event.getTimestamp();
+                if (t != null) {
+                    final String jodaTimeFormatPattern = template.substring(open + 3, close);
+                    final org.joda.time.format.DateTimeFormatter jodaDateTimeFormatter = DateTimeFormat.forPattern(jodaTimeFormatPattern).withZone(DateTimeZone.UTC);
+                    final DateTime jodaTimestamp = new DateTime(t.toInstant().toEpochMilli(), DateTimeZone.UTC);
+                    final String formattedTimestamp = jodaTimestamp.toString(jodaDateTimeFormatter);
+                    builder.append(formattedTimestamp);
+                }
             } else {
                 final String found = template.substring(open + 2, close);
                 final Object value = event.getField(found);
@@ -100,7 +122,6 @@ public final class StringInterpolation {
             open = template.indexOf("%{", pos);
             close = template.indexOf('}', open);
         }
-        final int len = template.length();
         if (pos < len) {
             builder.append(template, pos, len);
         }

@@ -18,7 +18,6 @@
 require_relative "monitoring_api"
 
 require "childprocess"
-require_relative "../patch/childprocess-modern-java"
 require "bundler"
 require "socket"
 require "tempfile"
@@ -86,6 +85,10 @@ class LogstashService < Service
     @process.exit_code
   end
 
+  def pid
+    @process.pid
+  end
+
   # Starts a LS process in background with a given config file
   # and shuts it down after input is completely processed
   def start_background(config_file)
@@ -94,8 +97,8 @@ class LogstashService < Service
 
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
-    Bundler.with_clean_env do
-      `cat #{Shellwords.escape(input)} | #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
+    Bundler.with_unbundled_env do
+      `cat #{Shellwords.escape(input)} | LS_JAVA_HOME=#{java.lang.System.getProperty('java.home')} #{Shellwords.escape(@logstash_bin)} -e \'#{config}\'`
     end
   end
 
@@ -111,7 +114,7 @@ class LogstashService < Service
   # Useful to test metrics and such
   def start_with_stdin
     puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true
       @process = build_child_process("-e", STDIN_CONFIG)
@@ -119,10 +122,10 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
       java_home = java.lang.System.getProperty('java.home')
-      @process.environment['JAVA_HOME'] = java_home
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.start
       wait_for_logstash
-      puts "Logstash started with PID #{@process.pid}, JAVA_HOME: #{java_home}" if alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if alive?
     end
   end
 
@@ -134,14 +137,14 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
-      @process.environment['JAVA_HOME'] = java_home
+      @process.environment['LS_JAVA_HOME'] = java_home
       @process.io.inherit!
       @process.start
-      puts "Logstash started with PID #{@process.pid}, JAVA_HOME: #{java_home}" if @process.alive?
+      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
     end
   end
 
@@ -155,7 +158,7 @@ class LogstashService < Service
       args << feature_config_dir
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
-    puts "Starting Logstash: #{@logstash_bin} #{args}"
+    puts "Starting Logstash: #{@logstash_bin} #{args} (pwd: #{Dir.pwd})"
     ChildProcess.build(@logstash_bin, *args)
   end
 
@@ -243,9 +246,14 @@ class LogstashService < Service
     environment.each do |k, v|
       process.environment[k] = v
     end
+    # JDK matrix tests value BUILD_JAVA_HOME to select the JDK to use to run the test code
+    # forward this selection also in spawned Logstash
+    if ENV.key?("BUILD_JAVA_HOME") && !process.environment.key?("LS_JAVA_HOME")
+      process.environment["LS_JAVA_HOME"] = ENV["BUILD_JAVA_HOME"]
+    end
     process.io.stdout = process.io.stderr = out
 
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       if change_dir
         Dir.chdir(@logstash_home) do
           process.start

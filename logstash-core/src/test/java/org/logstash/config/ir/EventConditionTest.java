@@ -21,11 +21,15 @@
 package org.logstash.config.ir;
 
 import org.jruby.RubyArray;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.RubyUtil;
+import org.logstash.common.ConfigVariableExpanderTest;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -74,6 +78,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void testInclusionWithFieldInField() throws Exception {
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
@@ -81,8 +86,8 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         "  if [left] in [right] { " +
                         "    mockoutput{}" +
                         "  } }"),
-                false
-        );
+                false,
+                cve);
 
         // left list values never match
         RubyEvent leftIsList = RubyEvent.newRubyEvent(RubyUtil.RUBY);
@@ -156,6 +161,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
 
     @SuppressWarnings({"unchecked"})
     private void testConditionWithConstantValue(String condition, int expectedMatches) throws Exception {
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { " +
                         "mockfilter {} } " +
@@ -163,8 +169,8 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         "  if " + condition + " { " +
                         "    mockoutput{}" +
                         "  } }"),
-                false
-        );
+                false,
+                cve);
 
         new CompiledPipeline(
                 pipelineIR,
@@ -184,5 +190,44 @@ public final class EventConditionTest extends RubyEnvTestCase {
         return () -> events -> events.forEach(
                 event -> EVENT_SINKS.get(runId).add(event)
         );
+    }
+
+    private Supplier<IRubyObject> nullInputSupplier() {
+        return () -> null;
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void testConditionWithSecretStoreVariable() throws InvalidIRException {
+        ConfigVariableExpander cve = ConfigVariableExpanderTest.getFakeCve(
+                Collections.singletonMap("secret_key", "s3cr3t"), Collections.emptyMap());
+
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} " +
+                        "output { " +
+                        "  if [left] == \"${secret_key}\" { " +
+                        "    mockoutput{}" +
+                        "  } }"),
+                false,
+                cve);
+
+        // left and right string values match when right.contains(left)
+        RubyEvent leftIsString1 = RubyEvent.newRubyEvent(RubyUtil.RUBY);
+        leftIsString1.getEvent().setField("left", "s3cr3t");
+
+        RubyArray inputBatch = RubyUtil.RUBY.newArray(leftIsString1);
+
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", nullInputSupplier()),
+                        Collections.emptyMap(), // no filters
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                )
+        ).buildExecution().compute(inputBatch, false, false);
+        final RubyEvent[] outputEvents = EVENT_SINKS.get(runId).toArray(new RubyEvent[0]);
+
+        assertThat(outputEvents.length, is(1));
+        assertThat(outputEvents[0], is(leftIsString1));
     }
 }

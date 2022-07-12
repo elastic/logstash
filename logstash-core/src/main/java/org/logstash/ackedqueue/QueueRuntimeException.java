@@ -20,6 +20,9 @@
 
 package org.logstash.ackedqueue;
 
+/**
+ * Runtime exception specialization for persistent queue related runtime errors.
+ * */
 public class QueueRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

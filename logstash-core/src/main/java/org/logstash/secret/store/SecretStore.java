@@ -94,4 +94,11 @@ public interface SecretStore {
      */
     byte[] retrieveSecret(SecretIdentifier id);
 
+    /**
+     * Check if a secret exists in the store.
+     *
+     * @param id The {@link SecretIdentifier} to identify the secret to find
+     * @return true if a secret exists, false otherwise
+     */
+    boolean containsSecret(SecretIdentifier id);
 }

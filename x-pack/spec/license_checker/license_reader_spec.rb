@@ -20,6 +20,7 @@ describe LogStash::LicenseChecker::LicenseReader do
       apply_settings(settings, system_settings) # apply `settings`
     end
   end
+  let(:product_origin_header) { { "x-elastic-product-origin" => "logstash" } }
 
   let(:settings) do
     {
@@ -50,20 +51,35 @@ describe LogStash::LicenseChecker::LicenseReader do
   describe '#fetch_xpack_info' do
     let(:xpack_info_class) { LogStash::LicenseChecker::XPackInfo }
     let(:mock_client) { double('Client') }
-    before(:each) { expect(subject).to receive(:client).and_return(mock_client) }
+    before(:each) { expect(subject).to receive(:client).and_return(mock_client).at_most(:twice) }
+    let(:xpack_info) do
+      {
+          "license" => {},
+          "features" => {},
+      }
+    end
 
     context 'when client fetches xpack info' do
-      let(:xpack_info) do
-        {
-            "license" => {},
-            "features" => {},
-        }
-      end
       before(:each) do
         expect(mock_client).to receive(:get).with('_xpack').and_return(xpack_info)
       end
       it 'returns an XPackInfo' do
         expect(subject.fetch_xpack_info).to eq(xpack_info_class.from_es_response(xpack_info))
+      end
+    end
+
+    context 'and receives HostUnreachableError' do
+      let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
+      before(:each) do
+        # set up expectation of single failure
+        expect(subject.logger).to receive(:warn).with(a_string_starting_with("Attempt to validate Elasticsearch license failed."), any_args)
+        expect(mock_client).to receive(:get).with('_xpack').and_raise(host_not_reachable).once
+        
+        # ensure subsequent success
+        expect(mock_client).to receive(:get).with('_xpack').and_return(xpack_info)
+      end
+      it 'continues to fetch and return an XPackInfo' do
+        expect(subject.fetch_xpack_info.failed?).to be false
       end
     end
     context 'when client raises a ConnectionError' do
@@ -112,6 +128,7 @@ describe LogStash::LicenseChecker::LicenseReader do
     expect( subject.client.options[:hosts].size ).to eql 1
     expect( subject.client.options[:hosts][0].to_s ).to eql elasticsearch_url # URI#to_s
     expect( subject.client.options ).to include(:user => elasticsearch_username, :password => elasticsearch_password)
+    expect( subject.client.client_settings[:headers] ).to include(product_origin_header)
   end
 
   context 'with cloud_id' do
@@ -134,6 +151,7 @@ describe LogStash::LicenseChecker::LicenseReader do
       expect( subject.client.options[:hosts].size ).to eql 1
       expect( subject.client.options[:hosts][0].to_s ).to eql 'https://e1e631201fb64d55a75f431eb6349589.westeurope.azure.elastic-cloud.com:9243'
       expect( subject.client.options ).to include(:user => 'elastic', :password => 'LnWMLeK3EQPTf3G3F1IBdFvO')
+      expect( subject.client.client_settings[:headers] ).to include(product_origin_header)
     end
   end
 
@@ -148,7 +166,8 @@ describe LogStash::LicenseChecker::LicenseReader do
     end
 
     it "builds ES client" do
-      expect( subject.client.options[:client_settings][:headers] ).to include("Authorization" => "ApiKey Zm9vOmJhcg==")
+      expect( subject.client.client_settings[:headers] ).to include("Authorization" => "ApiKey Zm9vOmJhcg==")
+      expect( subject.client.client_settings[:headers] ).to include(product_origin_header)
     end
   end
 end

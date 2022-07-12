@@ -22,6 +22,9 @@ package org.logstash.execution;
 
 import java.io.IOException;
 
+/**
+ * Defines the methods to interact with queues from the the reader perspective
+ * */
 public interface QueueReadClient {
     QueueBatch readBatch() throws InterruptedException;
     QueueBatch newBatch();

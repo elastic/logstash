@@ -25,6 +25,9 @@ import org.logstash.ackedqueue.SequencedList;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Internal API to access pages stored in files.
+ * */
 public interface PageIO extends Closeable {
 
     // the concrete class should be constructed with the pageNum, capacity and dirPath attributes
@@ -81,4 +84,7 @@ public interface PageIO extends Closeable {
 
     // @return the data container min sequence number
     long getMinSeqNum();
+
+    // check if the page size is < minimum size
+    boolean isCorruptedPage() throws IOException;
 }

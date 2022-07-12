@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/event"
+
 require "logstash/instrument/namespaced_metric"
 
 describe LogStash::WrappedAckedQueue, :stress_test => true do

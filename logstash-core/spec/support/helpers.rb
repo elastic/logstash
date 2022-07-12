@@ -16,6 +16,7 @@
 # under the License.
 
 require "stud/task"
+require "rspec/wait"
 
 def silence_warnings
   warn_level = $VERBOSE
@@ -62,12 +63,7 @@ def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)
                            "config.string" => config_string,
                            "config.reload.automatic" => reloadable)
   pipeline_config = mock_pipeline_config(pipeline_id, config_string, settings)
-  LogStash::Pipeline.new(pipeline_config)
-end
-
-def mock_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
-  pipeline_config = mock_pipeline_config(settings.get("pipeline.id"), config_string, settings)
-  LogStash::Pipeline.new(pipeline_config, metric)
+  LogStash::JavaPipeline.new(pipeline_config)
 end
 
 def mock_java_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
@@ -114,7 +110,7 @@ end
 
 RSpec::Matchers.define :ir_eql do |expected|
   match do |actual|
-    next unless expected.java_kind_of?(org.logstash.config.ir.SourceComponent) && actual.java_kind_of?(org.logstash.config.ir.SourceComponent)
+    next unless expected.kind_of?(org.logstash.config.ir.SourceComponent) && actual.kind_of?(org.logstash.config.ir.SourceComponent)
 
     expected.sourceComponentEquals(actual)
   end

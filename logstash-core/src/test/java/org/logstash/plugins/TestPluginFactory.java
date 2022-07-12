@@ -30,31 +30,29 @@ import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.plugins.codecs.Line;
 
 import java.util.Collections;
-import java.util.Map;
 
 public class TestPluginFactory implements RubyIntegration.PluginFactory {
 
     @Override
-    public IRubyObject buildInput(RubyString name, SourceWithMetadata source,
-                                  IRubyObject args, Map<String, Object> pluginArgs) {
+    public IRubyObject buildInput(RubyString name, IRubyObject args,
+                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public AbstractOutputDelegatorExt buildOutput(RubyString name, SourceWithMetadata source,
-                                                  IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractOutputDelegatorExt buildOutput(RubyString name, IRubyObject args,
+                                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public AbstractFilterDelegatorExt buildFilter(RubyString name, SourceWithMetadata source,
-                                                  IRubyObject args, Map<String, Object> pluginArgs) {
+    public AbstractFilterDelegatorExt buildFilter(RubyString name, IRubyObject args,
+                                                  SourceWithMetadata source) {
         return null;
     }
 
     @Override
-    public IRubyObject buildCodec(RubyString name, SourceWithMetadata source, IRubyObject args,
-                                  Map<String, Object> pluginArgs) {
+    public IRubyObject buildCodec(RubyString name, IRubyObject args, SourceWithMetadata source) {
         return null;
     }
 

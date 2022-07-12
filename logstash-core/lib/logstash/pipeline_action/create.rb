@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/pipeline_action/base"
-require "logstash/pipeline"
 require "logstash/java_pipeline"
 
 
@@ -48,8 +47,7 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines_registry)
-      pipeline_class = @pipeline_config.settings.get_value("pipeline.java_execution") ? LogStash::JavaPipeline : LogStash::Pipeline
-      new_pipeline = pipeline_class.new(@pipeline_config, @metric, agent)
+      new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end

@@ -7,9 +7,16 @@ require 'logstash/devutils/rspec/spec_helper'
 require 'logstash/json'
 require 'filters/azure_event'
 require 'logstash/config/pipeline_config'
-
+require_relative '../../../../../logstash-core/spec/support/pipeline/pipeline_helpers'
 
 describe LogStash::Filters::AzureEvent do
+  extend PipelineHelpers
+
+  let(:settings) do
+    s = LogStash::SETTINGS.clone
+    s.set_value("pipeline.workers", 1)
+    s
+  end
 
   describe "Parses the admin activity log" do
     let(:config) do
@@ -25,7 +32,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as documented
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/administrative1.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("DD042F02-6B3E-4F79-939A-6A381FFED3C0")
       expect(subject.get("[azure][resource_group]")).to eq("MYRESOURCEGROUP")
@@ -51,7 +58,7 @@ describe LogStash::Filters::AzureEvent do
       end
       # as observed
       file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/administrative2.json'))
-      sample(LogStash::Json.load(file)) do
+      sample_one(LogStash::Json.load(file)) do
         expect(subject).to include("resourceId")
         expect(subject.get("[azure][subscription]")).to eq("9103C2E0-A392-4CE3-BADD-E50F19378DEB")
         expect(subject.get("[azure][resource_group]")).to eq("MYLINUXVMRG")
@@ -67,7 +74,7 @@ describe LogStash::Filters::AzureEvent do
 
       # as observed, missing the resource group, type, and name
       file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/administrative3.json'))
-      sample(LogStash::Json.load(file)) do
+      sample_one(LogStash::Json.load(file)) do
         expect(subject).to include("resourceId")
         expect(subject.get("[azure][subscription]")).to eq("872F2E12-6CCC-4EAD-8D3C-AC833009C1A4")
         expect(subject.get("[azure][resource_group]")).to be_nil
@@ -97,7 +104,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as documented
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/service_health1.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("MYSUBSCRIPTIONID")
       expect(subject.get("[azure][resource_group]")).to be_nil
@@ -112,7 +119,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as observed
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/service_health2.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("13100E9F-5DCE-4686-B4F4-FF997D407A75")
       expect(subject.get("[azure][resource_group]")).to be_nil
@@ -140,7 +147,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as documented
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/security1.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("D4742BB8-C279-4903-9653-9858B17D0C2E")
       expect(subject.get("[azure][resource_group]")).to be_nil
@@ -155,7 +162,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as observed
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/security2.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("F628BA4C-F07B-4AEB-86CB-C89784BBD9B3")
       expect(subject.get("[azure][resource_group]")).to be_nil
@@ -183,13 +190,13 @@ describe LogStash::Filters::AzureEvent do
 
     # as documented
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/auto_scale1.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       assert
     end
 
     # as observed TODO: actually observe this ! (I don't have any examples for autoscale)
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/auto_scale2.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       assert
     end
 
@@ -222,7 +229,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as documented
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/alert1.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("MYSUBSCRIPTIONID")
       expect(subject.get("[azure][resource_group]")).to eq("MYRESOURCEGROUP")
@@ -237,7 +244,7 @@ describe LogStash::Filters::AzureEvent do
 
     # as observed
     file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/alert2.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("C27F13D5-E19A-4A4C-8415-4056C7C752BC")
       expect(subject.get("[azure][resource_group]")).to eq("DEFAULT-ACTIVITYLOGALERTS")
@@ -265,7 +272,7 @@ describe LogStash::Filters::AzureEvent do
 
     # sql diagnostic
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/database_wait_statistics.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("741FD6F5-9FB8-462C-97C3-3HF4CH23HC2A")
       expect(subject.get("[azure][resource_group]")).to eq("GO5RG")
@@ -298,7 +305,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/blocks.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("851FD0F5-9GB8-552C-41C3-3TH4FA231C3A")
       expect(subject.get("[azure][resource_group]")).to eq("DEMTP789")
@@ -330,7 +337,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/errors.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("846FY0F5-9C8H-452C-95C3-555555666C2A")
       expect(subject.get("[azure][resource_group]")).to eq("OPT489")
@@ -362,7 +369,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/timeouts.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("E3E7F07F-161E-4591-BB76-711473D4940C")
       expect(subject.get("[azure][resource_group]")).to eq("ST76")
@@ -394,7 +401,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/querystore_runtime_statistics.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("CBB8D135-BF4F-4792-B835-5872F7EAC917")
       expect(subject.get("[azure][resource_group]")).to eq("WWD66")
@@ -426,7 +433,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/querystore_wait_statistics.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("70E322AB-5B33-40C7-AD1E-88B2B7CFA236")
       expect(subject.get("[azure][resource_group]")).to eq("W66PT")
@@ -458,7 +465,7 @@ describe LogStash::Filters::AzureEvent do
     end
 
     file = File.read(File.join(File.dirname(__FILE__), '../samples/sql_diagnostics/metric.json'))
-    sample(LogStash::Json.load(file)) do
+    sample_one(LogStash::Json.load(file)) do
       expect(subject).to include("resourceId")
       expect(subject.get("[azure][subscription]")).to eq("D427EE51-17CB-441A-9363-07390D5DC79E")
       expect(subject.get("[azure][resource_group]")).to eq("RG5")
@@ -488,7 +495,7 @@ describe LogStash::Filters::AzureEvent do
       CONFIG
     end
 
-    sample("{'a': 'b'}") do
+    sample_one("{'a': 'b'}") do
       expect(subject).to include("tags")
       expect(subject.get("[tags][0]")).to eq("_azure_event_failure")
     end

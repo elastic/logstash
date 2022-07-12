@@ -1,4 +1,4 @@
-[float]
+[discrete]
 [[monitoring]]
 == APIs for monitoring {ls}
 
@@ -31,23 +31,53 @@ Example response:
 --------------------------------------------------
 
 NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
-[float]
+[discrete]
+[[monitoring-api-security]]
+==== Securing the Logstash API
+
+The {ls} Monitoring APIs are not secured by default, but you can configure {ls} to secure them in one of several ways to meet your organization's needs.
+
+You can enable SSL for the Logstash API by setting `api.ssl.enabled: true` in the `logstash.yml`, and providing the relevant keystore settings `api.ssl.keystore.path` and `api.ssl.keystore.password`:
+
+[source]
+--------------------------------------------------
+api.ssl.enabled: true
+api.ssl.keystore.path: /path/to/keystore.jks
+api.ssl.keystore.password: "s3cUr3p4$$w0rd"
+--------------------------------------------------
+
+The keystore must be in either jks or p12 format, and must contain both a certificate and a private key.
+Connecting clients receive this certificate, allowing them to authenticate the Logstash endpoint.
+
+You can also require HTTP Basic authentication by setting `api.auth.type: basic` in the `logstash.yml`, and providing the relevant credentials `api.auth.basic.username` and `api.auth.basic.password`:
+
+[source]
+--------------------------------------------------
+api.auth.type: basic
+api.auth.basic.username: "logstash"
+api.auth.basic.password: "s3cUreP4$$w0rD"
+--------------------------------------------------
+
+NOTE: Usage of Keystore or Environment or variable replacements is encouraged for password-type fields to avoid storing them in plain text.
+      For example, specifying the value `"${HTTP_PASS}"` will resolve to the value stored in the <<keystore,secure keystore's>> `HTTP_PASS` variable if present or the same variable from the <<environment-variables,environment>>)
+
+[discrete]
 [[monitoring-common-options]]
-==== Common Options
+==== Common options
 
 The following options can be applied to all of the Logstash monitoring APIs.
 
-[float]
-===== Pretty Results
+[discrete]
+===== Pretty results
 
 When appending `?pretty=true` to any request made, the JSON returned
 will be pretty formatted (use it for debugging only!).
 
-[float]
-===== Human-Readable Output
+[discrete]
+===== Human-readable output
 
 NOTE: For Logstash {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
 only. When you specify `human=true`, the results are returned in plain text instead of
@@ -88,9 +118,9 @@ Gets node-level JVM info, including info about threads.
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
 Logstash monitoring APIs.
 
-[float]
+[discrete]
 [[node-pipeline-info]]
-===== Pipeline Info
+===== Pipeline info
 
 The following request returns a JSON document that shows pipeline info, such as the number of workers,
 batch size, and batch delay:
@@ -152,9 +182,9 @@ Example response:
 
 If you specify an invalid pipeline ID, the request returns a 404 Not Found error.
 
-[float]
+[discrete]
 [[node-os-info]]
-==== OS Info
+==== OS info
 
 The following request returns a JSON document that shows the OS name, architecture, version, and
 available processors:
@@ -177,9 +207,9 @@ Example response:
   }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[node-jvm-info]]
-==== JVM Info
+==== JVM info
 
 The following request returns a JSON document that shows node-level JVM stats, such as the JVM process id, version,
 VM info, memory usage, and info about garbage collectors:
@@ -217,7 +247,7 @@ Example response:
 
 
 [[plugins-api]]
-=== Plugins Info API
+=== Plugins info API
 
 The plugins info API gets information about all Logstash plugins that are currently installed.
 This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
@@ -291,13 +321,15 @@ Gets runtime stats about each Logstash pipeline.
 Gets runtime stats about config reload successes and failures.
 <<os-stats,`os`>>::
 Gets runtime stats about cgroups when Logstash is running in a container.
+<<geoip-database-stats,`geoip_download_manager`>>::
+Gets stats for databases used with the <<plugins-filters-geoip, Geoip filter plugin>>.
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
 Logstash monitoring APIs.
 
-[float]
+[discrete]
 [[jvm-stats]]
-==== JVM Stats
+==== JVM stats
 
 The following request returns a JSON document containing JVM stats:
 
@@ -363,9 +395,9 @@ Example response:
   }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[process-stats]]
-==== Process Stats
+==== Process stats
 
 The following request returns a JSON document containing process stats:
 
@@ -396,9 +428,9 @@ Example response:
   }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[event-stats]]
-==== Event Stats
+==== Event stats
 
 The following request returns a JSON document containing event-related statistics
 for the Logstash instance:
@@ -422,9 +454,9 @@ Example response:
   }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[pipeline-stats]]
-==== Pipeline Stats
+==== Pipeline stats
 
 The following request returns a JSON document containing pipeline stats,
 including:
@@ -624,9 +656,9 @@ Example response:
 }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[reload-stats]]
-==== Reload Stats
+==== Reload stats
 
 The following request returns a JSON document that shows info about config reload successes and failures.
 
@@ -647,9 +679,9 @@ Example response:
 }
 --------------------------------------------------
 
-[float]
+[discrete]
 [[os-stats]]
-==== OS Stats
+==== OS stats
 
 When Logstash is running in a container, the following request returns a JSON document that
 contains cgroup information to give you a more accurate view of CPU load, including whether
@@ -685,6 +717,18 @@ Example response:
   }
 --------------------------------------------------
 
+[discrete]
+[[geoip-database-stats]]
+==== Geoip database stats
+
+You can monitor stats for the geoip databases used with the <<plugins-filters-geoip, Geoip filter plugin>>.
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/geoip_download_manager?pretty'
+--------------------------------------------------
+
+For more info, see <<plugins-filters-geoip-metrics,Database Metrics>> in the Geoip filter plugin docs. 
 
 [[hot-threads-api]]
 === Hot Threads API

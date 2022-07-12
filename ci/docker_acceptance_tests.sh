@@ -8,6 +8,10 @@ set -x
 export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 
+if [ -n "$BUILD_JAVA_HOME" ]; then
+  GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+fi
+
 # Can run either a specific flavor, or all flavors -
 # eg `ci/acceptance_tests.sh oss` will run tests for open source container
 #    `ci/acceptance_tests.sh full` will run tests for the default container

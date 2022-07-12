@@ -35,6 +35,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Java implementation of the "stdout" output plugin
+ * */
 @LogstashPlugin(name = "java_stdout")
 public class Stdout implements Output {
 

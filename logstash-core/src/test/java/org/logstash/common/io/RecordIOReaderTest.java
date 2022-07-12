@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -92,7 +93,6 @@ public class RecordIOReaderTest {
 
         RecordIOReader reader = new RecordIOReader(file);
         reader.seekToBlock(1);
-        reader.consumeBlock(true);
         assertThat(reader.seekToStartOfEventInBlock(), equalTo(1026));
 
         reader.close();
@@ -156,22 +156,59 @@ public class RecordIOReaderTest {
         int blocks = (int)Math.ceil(expectedSize / (double)BLOCK_SIZE);
         int fillSize = expectedSize - (blocks * RECORD_HEADER_SIZE);
 
-        try(RecordIOWriter writer = new RecordIOWriter(file)){
+        try (RecordIOWriter writer = new RecordIOWriter(file)) {
             for (char i = 0; i < eventCount; i++) {
                 char[] blockSize = fillArray(fillSize);
                 blockSize[0] = i;
-                assertThat(writer.writeEvent(new StringElement(new String(blockSize)).serialize()), is((long)expectedSize));
+                byte[] payload = new StringElement(new String(blockSize)).serialize();
+                assertThat(writer.writeEvent(payload), is((long)expectedSize));
             }
         }
 
-        try(RecordIOReader reader = new RecordIOReader(file)) {
-            Function<byte[], Character> toChar = (b) -> (char) ByteBuffer.wrap(b).get(0);
-
+        try (RecordIOReader reader = new RecordIOReader(file)) {
+            Comparator<Character> charComparator = Comparator.comparing(Function.identity());
             for (char i = 0; i < eventCount; i++) {
-                reader.seekToNextEventPosition(i, toChar, Comparator.comparing(o -> o));
-                assertThat(toChar.apply(reader.readEvent()), equalTo(i));
+                reader.seekToNextEventPosition(i, RecordIOReaderTest::extractFirstChar, charComparator);
+                assertThat(extractFirstChar(reader.readEvent()), equalTo(i));
             }
         }
+    }
+
+    private static Character extractFirstChar(byte[] b) {
+        return (char) ByteBuffer.wrap(b).get(0);
+    }
+
+    @Test
+    public void testObviouslyInvalidSegment() throws Exception {
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.INVALID));
+    }
+
+    @Test
+    public void testPartiallyWrittenSegment() throws Exception {
+        try(RecordIOWriter writer = new RecordIOWriter(file)) {
+            writer.writeRecordHeader(
+                    new RecordHeader(RecordType.COMPLETE, 100, OptionalInt.empty(), 0));
+        }
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.INVALID));
+    }
+
+    @Test
+    public void testEmptySegment() throws Exception {
+        try(RecordIOWriter writer = new RecordIOWriter(file)){
+            // Do nothing. Creating a new writer is the same behaviour as starting and closing
+            // This line avoids a compiler warning.
+            writer.toString();
+        }
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.EMPTY));
+    }
+
+    @Test
+    public void testValidSegment() throws Exception {
+        try(RecordIOWriter writer = new RecordIOWriter(file)){
+            writer.writeEvent(new byte[]{ 72, 101, 108, 108, 111});
+        }
+
+        assertThat(RecordIOReader.getSegmentStatus(file), is(RecordIOReader.SegmentStatus.VALID));
     }
 
     @Test

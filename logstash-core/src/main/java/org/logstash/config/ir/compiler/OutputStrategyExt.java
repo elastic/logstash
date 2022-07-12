@@ -32,9 +32,14 @@ import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.ExecutionContextExt;
+import org.logstash.plugins.factory.ContextualizerExt;
+
+import static org.logstash.RubyUtil.PLUGIN_CONTEXTUALIZER_MODULE;
 
 public final class OutputStrategyExt {
 
@@ -112,7 +117,7 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private DynamicMethod outputMethod;
+        private transient DynamicMethod outputMethod;
 
         private RubyClass outputClass;
 
@@ -164,9 +169,9 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private BlockingQueue<IRubyObject> workerQueue;
+        private transient BlockingQueue<IRubyObject> workerQueue;
 
-        private IRubyObject workerCount;
+        private transient IRubyObject workerCount;
 
         private @SuppressWarnings({"rawtypes"}) RubyArray workers;
 
@@ -176,6 +181,9 @@ public final class OutputStrategyExt {
 
         @JRubyMethod(required = 4)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
+            final RubyClass outputClass = (RubyClass) args[0];
+            final IRubyObject metric = args[1];
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
             final RubyHash pluginArgs = (RubyHash) args[3];
             workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
             if (workerCount.isNil()) {
@@ -185,12 +193,9 @@ public final class OutputStrategyExt {
             workerQueue = new ArrayBlockingQueue<>(count);
             workers = context.runtime.newArray(count);
             for (int i = 0; i < count; ++i) {
-                final RubyClass outputClass = (RubyClass) args[0];
-                // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-                final IRubyObject output = outputClass.callMethod(context, "new", pluginArgs);
+                final IRubyObject output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
                 initOutputCallsite(outputClass);
-                output.callMethod(context, "metric=", args[1]);
-                output.callMethod(context, "execution_context=", args[2]);
+                output.callMethod(context, "metric=", metric);
                 workers.append(output);
                 workerQueue.add(output);
             }
@@ -239,7 +244,7 @@ public final class OutputStrategyExt {
 
         private static final long serialVersionUID = 1L;
 
-        private IRubyObject output;
+        private transient IRubyObject output;
 
         protected SimpleAbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
@@ -248,11 +253,15 @@ public final class OutputStrategyExt {
         @JRubyMethod(required = 4)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final RubyClass outputClass = (RubyClass) args[0];
+            final IRubyObject metric = args[1];
+            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
+            final RubyHash pluginArgs = (RubyHash) args[3];
+            // TODO: fixup mocks
             // Calling "new" here manually to allow mocking the ctor in RSpec Tests
-            output = args[0].callMethod(context, "new", args[3]);
+            output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
+
             initOutputCallsite(outputClass);
-            output.callMethod(context, "metric=", args[1]);
-            output.callMethod(context, "execution_context=", args[2]);
+            output.callMethod(context, "metric=", metric);
             return this;
         }
 

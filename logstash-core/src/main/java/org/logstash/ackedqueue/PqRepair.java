@@ -62,6 +62,11 @@ public final class PqRepair {
                 String.format("Given PQ path %s is not a directory.", path)
             );
         }
+
+        LOGGER.info("Start repairing queue dir: {}", path.toString());
+
+        deleteTempCheckpoint(path);
+
         final Map<Integer, Path> pageFiles = new HashMap<>();
         try (final DirectoryStream<Path> pfs = Files.newDirectoryStream(path, "page.*")) {
             pfs.forEach(p -> pageFiles.put(
@@ -85,6 +90,17 @@ public final class PqRepair {
         fixMissingPages(pageFiles, checkpointFiles);
         fixZeroSizePages(pageFiles, checkpointFiles);
         fixMissingCheckpoints(pageFiles, checkpointFiles);
+
+        LOGGER.info("Repair is done");
+    }
+
+    private static void deleteTempCheckpoint(final Path root) throws IOException {
+        try (final DirectoryStream<Path> cpTmp = Files.newDirectoryStream(root, "checkpoint.*.tmp")) {
+            for (Path cpTmpPath: cpTmp) {
+                LOGGER.info("Deleting temp checkpoint {}", cpTmpPath);
+                Files.delete(cpTmpPath);
+            }
+        }
     }
 
     private static void deleteFullyAcked(final Path root, final Map<Integer, Path> pages,

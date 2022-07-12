@@ -1,0 +1,232 @@
+#!/usr/bin/env python3
+"""Cherry pick and backport a PR"""
+from __future__ import print_function
+
+from builtins import input
+import sys
+import os
+import argparse
+from os.path import expanduser
+import re
+from subprocess import check_call, call, check_output
+import requests
+import json
+
+usage = """
+    Example usage:
+        ./devtools/backport 7.16 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527
+
+    In case of backporting errors, fix them, then run
+        git cherry-pick --continue
+        ./devtools/backport 7.16 2565 6490604aa0cf7fa61932a90700e6ca988fc8a527 --continue
+
+    This script does the following:
+        * cleanups both from_branch and to_branch (warning: drops local changes)
+        * creates a temporary branch named something like "branch_2565"
+        * calls the git cherry-pick command in this branch
+        * after fixing the merge errors (if needed), pushes the branch to your
+          remote
+        * it will attempt to create a PR for you using the GitHub API, but requires
+          the GitHub token, with the public_repo scope, available in `~/.elastic/github.token`.
+          Keep in mind this token has to also be authorized to the Elastic organization as
+          well as to work with SSO.
+          (see https://help.github.com/en/articles/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on)
+
+    Note that you need to take the commit hashes from `git log` on the
+    from_branch, copying the IDs from Github doesn't work in case we squashed the
+    PR.
+"""
+
+
+def main():
+    """Main"""
+    parser = argparse.ArgumentParser(
+        description="Creates a PR for cherry-picking commits",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=usage)
+    parser.add_argument("to_branch",
+                        help="To branch (e.g 7.x)")
+    parser.add_argument("pr_number",
+                        help="The PR number being merged (e.g. 2345)")
+    parser.add_argument("commit_hashes", metavar="hash", nargs="*",
+                        help="The commit hashes to cherry pick." +
+                        " You can specify multiple.")
+    parser.add_argument("--yes", action="store_true",
+                        help="Assume yes. Warning: discards local changes.")
+    parser.add_argument("--continue", action="store_true",
+                        help="Continue after fixing merging errors.")
+    parser.add_argument("--from_branch", default="main",
+                        help="From branch")
+    parser.add_argument("--diff", action="store_true",
+                        help="Display the diff before pushing the PR")
+    parser.add_argument("--remote", default="",
+                        help="Which remote to push the backport branch to")
+    #parser.add_argument("--zube-team", default="",
+    #                    help="Team the PR belongs to")
+    #parser.add_argument("--keep-backport-label", action="store_true",
+    #                    help="Preserve label needs_backport in original PR")
+    args = parser.parse_args()
+
+    print(args)
+
+    create_pr(parser, args)
+
+def create_pr(parser, args):
+    info("Checking if GitHub API token is available in `~/.elastic/github.token`")
+    token = get_github_token()
+
+    tmp_branch = "backport_{}_{}".format(args.pr_number, args.to_branch)
+
+    if not vars(args)["continue"]:
+        if not args.yes and input("This will destroy all local changes. " +
+                                      "Continue? [y/n]: ") != "y":
+            return 1
+        info("Destroying local changes...")
+        check_call("git reset --hard", shell=True)
+        check_call("git clean -df", shell=True)
+        check_call("git fetch", shell=True)
+
+        info("Checkout of {} to backport from....".format(args.from_branch))
+        check_call("git checkout {}".format(args.from_branch), shell=True)
+        check_call("git pull", shell=True)
+
+        info("Checkout of {} to backport to...".format(args.to_branch))
+        check_call("git checkout {}".format(args.to_branch), shell=True)
+        check_call("git pull", shell=True)
+
+        info("Creating backport branch {}...".format(tmp_branch))
+        call("git branch -D {} > /dev/null".format(tmp_branch), shell=True)
+        check_call("git checkout -b {}".format(tmp_branch), shell=True)
+
+        if len(args.commit_hashes) == 0:
+            if token:
+                session = github_session(token)
+                base = "https://api.github.com/repos/elastic/logstash"
+                original_pr = session.get(base + "/pulls/" + args.pr_number).json()
+                merge_commit = original_pr['merge_commit_sha']
+                if not merge_commit:
+                    info("Could not auto resolve merge commit - PR isn't merged yet")
+                    return 1
+                info("Merge commit detected from PR: {}".format(merge_commit))
+                commit_hashes = merge_commit
+            else:
+                info("GitHub API token not available. " +
+                     "Please manually specify commit hash(es) argument(s)\n")
+                parser.print_help()
+                return 1
+        else:
+            commit_hashes = "{}".format(" ").join(args.commit_hashes)
+
+        info("Cherry-picking {}".format(commit_hashes))
+        if call("git cherry-pick -x {}".format(commit_hashes), shell=True) != 0:
+            info("Looks like you have cherry-pick errors.")
+            info("Fix them, then run: ")
+            info("    git cherry-pick --continue")
+            info("    {} --continue".format(" ".join(sys.argv)))
+            return 1
+
+    if len(check_output("git status -s", shell=True).strip()) > 0:
+        info("Looks like you have uncommitted changes." +
+              " Please execute first: git cherry-pick --continue")
+        return 1
+
+    if len(check_output("git log HEAD...{}".format(args.to_branch),
+                        shell=True).strip()) == 0:
+        info("No commit to push")
+        return 1
+
+    if args.diff:
+        call("git diff {}".format(args.to_branch), shell=True)
+        if input("Continue? [y/n]: ") != "y":
+            info("Aborting cherry-pick.")
+            return 1
+
+    info("Ready to push branch.")
+
+    remote = args.remote
+    if not remote:
+        remote = input("To which remote should I push? (your fork): ")
+
+    info("Pushing branch {} to remote {}".format(tmp_branch, remote))
+    call("git push {} :{} > /dev/null".format(remote, tmp_branch), shell=True)
+    check_call("git push --set-upstream {} {}".format(remote, tmp_branch), shell=True)
+
+    if not token:
+        info("GitHub API token not available.\n" +
+             "Manually create a PR by following this URL: \n\t" +
+             "https://github.com/elastic/logstash/compare/{}...{}:{}?expand=1"
+              .format(args.to_branch, remote, tmp_branch))
+    else:
+        info("Automatically creating a PR for you...")
+
+        session = github_session(token)
+        base = "https://api.github.com/repos/elastic/logstash"
+        original_pr = session.get(base + "/pulls/" + args.pr_number).json()
+
+        # get the github username from the remote where we pushed
+        remote_url = check_output("git remote get-url {}".format(remote), shell=True)
+        remote_user = re.search("github.com[:/](.+)/logstash", str(remote_url)).group(1)
+
+        # create PR
+        request = session.post(base + "/pulls", json=dict(
+            title="Backport PR #{} to {}: {}".format(args.pr_number, args.to_branch, original_pr["title"]),
+            head=remote_user + ":" + tmp_branch,
+            base=args.to_branch,
+            body="**Backport PR #{} to {} branch, original message:**\n\n---\n\n{}"
+            .format(args.pr_number, args.to_branch, original_pr["body"])
+        ))
+        if request.status_code > 299:
+            info("Creating PR failed: {}".format(request.json()))
+            sys.exit(1)
+        new_pr = request.json()
+
+        # add labels
+        labels = ["backport"]
+        # get the version (vX.Y.Z) we are backporting to
+        version = get_version(os.getcwd())
+        if version:
+            labels.append(version)
+
+        session.post(
+            base + "/issues/{}/labels".format(new_pr["number"]), json=labels)
+
+        """
+        if not args.keep_backport_label:
+            # remove needs backport label from the original PR
+            session.delete(base + "/issues/{}/labels/needs_backport".format(args.pr_number))
+        """
+        # Set a version label on the original PR
+        if version:
+            session.post(
+                base + "/issues/{}/labels".format(args.pr_number), json=[version])
+
+        info("Done. PR created: {}".format(new_pr["html_url"]))
+        info("Please go and check it and add the review tags")
+
+def get_version(base_dir):
+    #pattern = re.compile(r'(const\s|)\w*(v|V)ersion\s=\s"(?P<version>.*)"')
+    with open(os.path.join(base_dir, "versions.yml"), "r") as f:
+        for line in f:
+            if line.startswith('logstash:'):
+                return "v" + line.split(':')[-1].strip()
+            #match = pattern.match(line)
+            #if match:
+            #    return match.group('version')
+
+def get_github_token():
+    try:
+        token = open(expanduser("~/.elastic/github.token"), "r").read().strip()
+    except:
+        token = False
+    return token
+
+def github_session(token):
+    session = requests.Session()
+    session.headers.update({"Authorization": "token " + token})
+    return session
+
+def info(msg):
+    print("\nINFO: {}".format(msg))
+
+if __name__ == "__main__":
+    sys.exit(main())

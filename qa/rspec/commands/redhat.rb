@@ -29,7 +29,7 @@ module ServiceTester
         stdout = cmd.stdout
       end
       stdout.match(/^Installed Packages$/)
-      stdout.match(/^logstash.noarch/)
+      stdout.match(/^logstash.noarch/) || stdout.match(/^logstash.#{architecture_extension}/)
     end
 
     def package_extension
@@ -37,7 +37,11 @@ module ServiceTester
     end
 
     def architecture_extension
-      "x86_64"
+      if java.lang.System.getProperty("os.arch") == "amd64"
+        "x86_64"
+      else
+        "aarch64"
+      end
     end
 
     def install(package, host=nil)
@@ -50,7 +54,7 @@ module ServiceTester
         errors << cmd.stderr unless cmd.stderr.empty?
       end
       if exit_status > 0 
-        raise InstallException.new(errors.join("\n"))
+        raise InstallException.new("Error installing #{package}, #{errors.join('\n')}")
       end
     end
 

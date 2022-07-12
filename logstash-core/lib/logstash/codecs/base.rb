@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/event"
+
 require "logstash/plugin"
 
 # This is the base class for logstash codecs.
@@ -92,6 +92,8 @@ module LogStash::Codecs; class Base < LogStash::Plugin
 
   public
   def clone
-    return self.class.new(params)
+    LogStash::Plugins::Contextualizer.initialize_plugin(execution_context, self.class, params).tap do |klone|
+      klone.metric = @metric if klone.instance_variable_get(:@metric).nil?
+    end
   end
 end; end # class LogStash::Codecs::Base

@@ -29,12 +29,15 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -70,10 +73,24 @@ public final class ObjectMappers {
     public static final ObjectMapper JSON_MAPPER =
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
+    /* TODO use this validator instead of LaissezFaireSubTypeValidator
+    public static final PolymorphicTypeValidator TYPE_VALIDATOR = BasicPolymorphicTypeValidator.builder()
+            .allowIfBaseType(java.util.HashMap.class)
+            .allowIfSubType(org.jruby.RubyNil.class)
+            .allowIfSubType(org.jruby.RubyString.class)
+            .allowIfSubType(org.logstash.ConvertedMap.class)
+            .allowIfSubType(org.logstash.ConvertedList.class)
+            .allowIfSubType(org.logstash.Timestamp.class)
+            .build();
+     */
+
+    public static final PolymorphicTypeValidator TYPE_VALIDATOR = new LaissezFaireSubTypeValidator();
+
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
     ).registerModules(RUBY_SERIALIZERS, CBOR_DESERIALIZERS)
-        .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+            .activateDefaultTyping(TYPE_VALIDATOR, ObjectMapper.DefaultTyping.NON_FINAL);
+
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.

@@ -55,14 +55,20 @@ describe LogStash::WebServer do
   end
 
   let(:logger) { LogStash::Logging::Logger.new("testing") }
-  let(:agent) { OpenStruct.new({:webserver => webserver, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
-  let(:webserver) { OpenStruct.new({}) }
+  let(:agent) { OpenStruct.new({:webserver => webserver_block, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
+  let(:webserver_block) { OpenStruct.new({}) }
 
-  subject { LogStash::WebServer.new(logger,
-                                    agent,
-                                    { :http_host => "127.0.0.1", :http_ports => port_range })}
+  subject(:webserver) { LogStash::WebServer.new(logger, agent, webserver_options) }
+
+  let(:webserver_options) do
+    {
+      :http_host => api_host,
+      :http_ports => port_range,
+    }
+  end
 
   let(:port_range) { 10000..10010 }
+  let(:api_host) { "127.0.0.1" }
 
   context "when an exception occur in the server thread" do
     let(:spy_output) { spy("stderr").as_null_object }
@@ -138,6 +144,68 @@ describe LogStash::WebServer do
       end
     end
   end
+
+  context "when configured with http basic auth" do
+    around(:each) do |example|
+      begin
+        thread = Thread.new(webserver, &:run)
+
+        Stud.try(10.times) { fail('webserver not running') unless webserver.port }
+
+        example.call
+      ensure
+        webserver.stop
+        thread.join
+      end
+    end
+
+    let(:password_policies) { {
+      "mode": "ERROR",
+      "length": { "minimum": "8"},
+      "include": { "upper": "REQUIRED", "lower": "REQUIRED", "digit": "REQUIRED", "symbol": "REQUIRED" }
+    } }
+    let(:webserver_options) {
+      super().merge(:auth_basic => {
+         :username => "a-user",
+         :password => LogStash::Util::Password.new("s3cur3dPas!"),
+         :password_policies => password_policies
+      }) }
+
+    context "and no auth is provided" do
+      it 'emits an HTTP 401 with WWW-Authenticate header' do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}").get('/')
+        aggregate_failures do
+          expect(response.status).to eq(401)
+          expect(response.headers.to_hash).to include('www-authenticate' => 'Basic realm="logstash-api"')
+        end
+      end
+    end
+    context "and invalid basic auth is provided" do
+      it 'emits an HTTP 401 with WWW-Authenticate header' do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
+          conn.request :basic_auth, 'john-doe', 'open-sesame'
+        end.get('/')
+        aggregate_failures do
+          expect(response.status).to eq(401)
+          expect(response.headers.to_hash).to include('www-authenticate' => 'Basic realm="logstash-api"')
+        end
+      end
+    end
+    context "and valid auth is provided" do
+      it "returns a relevant response" do
+        response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
+          conn.request :basic_auth, 'a-user', 's3cur3dPas!'
+        end.get('/')
+        aggregate_failures do
+          expect(response.status).to eq(200)
+          expect(response.headers).to_not include('www-authenticate')
+        end
+        expect(response.body).to match(/\A{.*}\z/)
+        decoded_response = LogStash::Json.load(response.body)
+        expect(decoded_response).to include("id" => "myid")
+      end
+    end
+  end
 end
 
 describe LogStash::IOWrappedLogger do
@@ -163,5 +231,13 @@ describe LogStash::IOWrappedLogger do
 
   it "responds to sync=(v)" do
     expect{ subject.sync = true }.not_to raise_error
+  end
+
+  it "responds to sync" do
+    expect{ subject.sync }.not_to raise_error
+  end
+
+  it "responds to flush" do
+    expect{ subject.flush }.not_to raise_error
   end
 end

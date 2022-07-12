@@ -92,6 +92,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       :author => git_data.author,
       :email  => git_data.email,
       :min_version => "2.0",
+      :logstash_path => File.expand_path('../..', File.dirname(__FILE__))
     }
   end
 

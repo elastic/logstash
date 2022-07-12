@@ -25,7 +25,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Static utility methods that provide merge methods for List and Map.
+ */
 public class Util {
     private Util() {}
 

@@ -1,0 +1,83 @@
+[discrete]
+[[es-security-on]]
+== {es} security on by default
+
+{es} generates its own default self-signed Secure Sockets Layer (SSL) certificates at startup. 
+
+{ls} must establish a Secure Sockets Layer (SSL) connection before it can transfer data to a secured {es} cluster. 
+{ls} must have a copy of the certificate authority (CA) that signed the {es} cluster's certificates.
+When a new {es} cluster is started up _without_ dedicated certificates, it generates its own default self-signed Certificate Authority at startup.
+See {ref}/configuring-stack-security.html[Starting the Elastic Stack with security enabled] for more info.
+  
+{ess} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
+
+.Hosted {ess} simplifies security
+[NOTE]
+=====
+Our hosted {ess} on Elastic Cloud simplifies safe, secure communication between {ls} and {es}. 
+When you configure the elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> with either the <<plugins-outputs-elasticsearch-cloud_auth,`cloud_auth` option>> or the <<plugins-outputs-elasticsearch-api_key,`api_key` option>>, no additional SSL configuration steps are needed.
+
+Examples:
+
+* `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
+* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }``
+
+For more details, check out the
+{logstash-ref}/connecting-to-cloud.html[Logstash-to-Cloud documentation].
+
+{ess-leadin-short}
+=====
+
+[discrete]
+[[es-security-onprem]]
+=== Secure communication with an on-premise {es} cluster
+
+If you are running {es} on your own hardware and using the Elasticsearch cluster's default self-signed certificates, you need to complete a few more steps to establish secure communication between {ls} and {es}.
+
+You need to:
+
+* Copy the self-signed CA certificate from {es} and save it to {ls}.
+* Configure the elasticsearch-output plugin to use the certificate.
+
+These steps are not necessary if your cluster is using public trusted certificates. 
+
+[discrete]
+[[es-sec-copy-cert]]
+==== Copy and save the certificate
+
+By default an on-premise {es} cluster generates a self-signed CA and creates its own SSL certificates when it starts. 
+Therefore {ls} needs its own copy of the self-signed CA from the {es} cluster in order for {ls} to validate the certificate presented by {es}.
+
+Copy the {ref}/configuring-stack-security.html#stack-security-certificates[self-signed CA certificate] from the {es} `config/certs` directory.
+
+Save it to a location that Logstash can access, such as `config/certs` on the {ls} instance. 
+
+/////
+ToDo: 
+Verify location. 
+I don't see an existing config/certs folder. 
+If this is the location we'd like users to use, we should stub out a folder in https://github.com/elastic/logstash/tree/main/config. 
+As always, there's a definite argument for consistency across deployments. 
+/////
+
+[discrete]
+[[es-sec-plugin]]
+==== Configure the elasticsearch output
+
+Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-outputs-elasticsearch-cacert,`cacert` option>> to point to the certificate's location. 
+
+**Example**
+
+[source,ruby] 
+-------
+output {
+  elasticsearch {
+    hosts => ["https://...] <1>
+    cacert => '/etc/logstash/config/certs/ca.crt' <2>
+  }
+}
+-------
+<1> Note that the `hosts` url must begin with `https` 
+<2> Path to the {ls} copy of the {es} certificate
+
+For more information about establishing secure communication with {es}, see {ref}/configuring-stack-security.html[security is on by default]. 

@@ -32,9 +32,11 @@ import java.util.List;
 import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.LogstashJavaCompat;
 import org.logstash.ackedqueue.SequencedList;
 
+/**
+ * Internal API, v2 mmap implementation of {@link PageIO}
+ * */
 public final class MmapPageIOV2 implements PageIO {
 
     public static final byte VERSION_TWO = (byte) 2;
@@ -51,8 +53,7 @@ public final class MmapPageIOV2 implements PageIO {
     /**
      * Cleaner function for forcing unmapping of backing {@link MmapPageIOV2#buffer}.
      */
-    private static final ByteBufferCleaner BUFFER_CLEANER =
-        LogstashJavaCompat.setupBytebufferCleaner();
+    private static final ByteBufferCleaner BUFFER_CLEANER = new ByteBufferCleanerImpl();
 
     private final File file;
 
@@ -172,7 +173,7 @@ public final class MmapPageIOV2 implements PageIO {
                 this.elementCount += 1;
             } catch (MmapPageIOV2.PageIOInvalidElementException e) {
                 // simply stop at first invalid element
-                LOGGER.debug("PageIO recovery element index:{}, readNextElement exception: {}", i, e.getMessage());
+                LOGGER.debug("PageIO recovery for '{}' element index:{}, readNextElement exception: {}", file, i, e.getMessage());
                 break;
             }
         }
@@ -190,6 +191,7 @@ public final class MmapPageIOV2 implements PageIO {
         }
         buffer.position(0);
         buffer.put(VERSION_TWO);
+        buffer.force();
         this.head = 1;
         this.minSeqNum = 0L;
         this.elementCount = 0;
@@ -219,8 +221,9 @@ public final class MmapPageIOV2 implements PageIO {
     @Override
     public void purge() throws IOException {
         close();
-        Files.delete(this.file.toPath());
         this.head = 0;
+        LOGGER.debug("PageIO deleting '{}'", this.file);
+        Files.delete(this.file.toPath());
     }
 
     @Override
@@ -269,6 +272,13 @@ public final class MmapPageIOV2 implements PageIO {
         return this.head;
     }
 
+    @Override
+    public boolean isCorruptedPage() throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            return raf.length() < MIN_CAPACITY;
+        }
+    }
+
     private int checksum(byte[] bytes) {
         checkSummer.reset();
         checkSummer.update(bytes, 0, bytes.length);
@@ -292,7 +302,8 @@ public final class MmapPageIOV2 implements PageIO {
             this.capacity = pageFileCapacity;
 
             if (this.capacity < MIN_CAPACITY) {
-                throw new IOException(String.format("Page file size is too small to hold elements"));
+                throw new IOException("Page file size is too small to hold elements. " +
+                        "This is potentially a queue corruption problem. Run `pqcheck` and `pqrepair` to repair the queue.");
             }
             this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         }
@@ -344,8 +355,7 @@ public final class MmapPageIOV2 implements PageIO {
             int checksum = buffer.getInt();
             int computedChecksum = (int) this.checkSummer.getValue();
             if (computedChecksum != checksum) {
-                throw new MmapPageIOV2.PageIOInvalidElementException(
-                    "Element invalid checksum");
+                throw new MmapPageIOV2.PageIOInvalidElementException("Element invalid checksum");
             }
         }
 
@@ -391,6 +401,20 @@ public final class MmapPageIOV2 implements PageIO {
         }
     }
 
+    @Override
+    public String toString() {
+        return "MmapPageIOV2{" +
+                "file=" + file +
+                ", capacity=" + capacity +
+                ", minSeqNum=" + minSeqNum +
+                ", elementCount=" + elementCount +
+                ", head=" + head +
+                '}';
+    }
+
+    /**
+     * Invalid Page structure exception
+     * */
     public static final class PageIOInvalidElementException extends IOException {
 
         private static final long serialVersionUID = 1L;
@@ -400,6 +424,9 @@ public final class MmapPageIOV2 implements PageIO {
         }
     }
 
+    /**
+     * Invalid page version exception.
+     * */
     public static final class PageIOInvalidVersionException extends IOException {
 
         private static final long serialVersionUID = 1L;

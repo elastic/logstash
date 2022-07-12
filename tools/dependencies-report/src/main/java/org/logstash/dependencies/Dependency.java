@@ -23,15 +23,11 @@ package org.logstash.dependencies;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.SortedSet;
@@ -42,13 +38,15 @@ class Dependency implements Comparable<Dependency> {
     String version;
     String url;
     String spdxLicense;
+    String sourceURL;
+    String copyright;
 
     /**
      * Returns an object array representing this dependency as a CSV record according
      * to the format requested here: https://github.com/elastic/logstash/issues/8725
      */
     Object[] toCsvReportRecord() {
-        return new String[] {name, version, "", url, spdxLicense, ""};
+        return new String[] {name, version, "", url, spdxLicense, copyright, sourceURL};
     }
 
     /**
@@ -78,10 +76,15 @@ class Dependency implements Comparable<Dependency> {
     private static Dependency fromRubyCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
-        // name, version, url, license
+        // name, version, url, license, copyright, sourceURL
         d.name = record.get(0);
         d.version = record.get(1);
-
+        if (record.size() > 4) {
+            d.copyright = record.get(4);
+        }
+        if (record.size() > 5) {
+            d.sourceURL = record.get(5);
+        }
         return d;
     }
 
@@ -177,6 +180,10 @@ class Dependency implements Comparable<Dependency> {
 
     public String getVersion() {
         return version;
+    }
+
+    public String getSourceURL() {
+        return sourceURL;
     }
 
     @Override

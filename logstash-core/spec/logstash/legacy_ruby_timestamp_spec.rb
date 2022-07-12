@@ -28,23 +28,31 @@ describe LogStash::Timestamp do
   it "should parse its own iso8601 output" do
     t = Time.now
     ts = LogStash::Timestamp.new(t)
-    expect(LogStash::Timestamp.parse_iso8601(ts.to_iso8601).to_i).to eq(t.to_i)
+    parsed = LogStash::Timestamp.parse_iso8601(ts.to_iso8601)
+    expect(parsed.to_i).to eq(t.to_i)
+    expect(parsed).to eq(ts)
   end
 
   it "should coerce iso8601 string" do
     t = DateTime.now.to_time
     ts = LogStash::Timestamp.new(t)
-    expect(LogStash::Timestamp.coerce(ts.to_iso8601).to_i).to eq(t.to_i)
+    coerced = LogStash::Timestamp.coerce(ts.to_iso8601)
+    expect(coerced.to_i).to eq(t.to_i)
+    expect(coerced).to eq(ts)
   end
 
   it "should coerce Time" do
     t = Time.now
-    expect(LogStash::Timestamp.coerce(t).to_i).to eq(t.to_i)
+    coerced = LogStash::Timestamp.coerce(t)
+    expect(coerced.to_i).to eq(t.to_i)
+    expect(coerced.time).to eq(t)
   end
 
   it "should coerce Timestamp" do
     t = LogStash::Timestamp.now
-    expect(LogStash::Timestamp.coerce(t).to_i).to eq(t.to_i)
+    coerced = LogStash::Timestamp.coerce(t)
+    expect(coerced.to_i).to eq(t.to_i)
+    expect(coerced).to eq(t)
   end
 
   it "should raise on invalid string coerce" do
@@ -55,12 +63,42 @@ describe LogStash::Timestamp do
     expect(LogStash::Timestamp.coerce(:foobar)).to be_nil
   end
 
-  it "should support to_json" do
-    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json).to eq("\"2014-09-23T08:00:00.000Z\"")
-  end
+  context '#to_json' do
+    it "should support to_json" do
+      expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00.123-0800").to_json).to eq("\"2014-09-23T08:00:00.123Z\"")
+    end
 
-  it "should support to_json and ignore arguments" do
-    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json(:some => 1, :arguments => "test")).to eq("\"2014-09-23T08:00:00.000Z\"")
+    it "should support to_json and ignore arguments" do
+      expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00.456-0800").to_json(:some => 1, :arguments => "test")).to eq("\"2014-09-23T08:00:00.456Z\"")
+    end
+
+    context 'variable serialization length' do
+      subject(:timestamp) { LogStash::Timestamp.parse_iso8601(time_string) }
+      context 'with whole seconds' do
+        let(:time_string) { "2014-09-23T00:00:00.000-0800" }
+        it 'serializes a 24-byte string' do
+          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000Z"')
+        end
+      end
+      context 'with excess millis' do
+        let(:time_string) { "2014-09-23T00:00:00.123000-0800" }
+        it 'serializes a 24-byte string' do
+          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.123Z"')
+        end
+      end
+      context 'with excess micros' do
+        let(:time_string) { "2014-09-23T00:00:00.000100-0800" }
+        it 'serializes a 27-byte string' do
+          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000100Z"')
+        end
+      end
+      context 'with excess nanos' do
+        let(:time_string) { "2014-09-23T00:00:00.000000010-0800" }
+        it 'serializes a 30-byte string' do
+          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000000010Z"')
+        end
+      end
+    end
   end
 
   it "should support timestamp comparison" do
@@ -145,23 +183,21 @@ describe LogStash::Timestamp do
 
     context "with float epoch" do
       it "should convert to correct date" do
-        expect(LogStash::Timestamp.at(946702800.123456.to_f).to_iso8601).to eq("2000-01-01T05:00:00.123Z")
+        expect(LogStash::Timestamp.at(946702800.123456).to_f).to be_within(0.000001).of(946702800.123456)
       end
 
       it "should return usec with a minimum of millisec precision" do
-        expect(LogStash::Timestamp.at(946702800.123456.to_f).usec).to be_within(1000).of(123456)
+        expect(LogStash::Timestamp.at(946702800.123456789.to_f).usec).to be_within(1000).of(123456)
       end
     end
 
     context "with BigDecimal epoch" do
       it "should convert to correct date" do
-        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456")).to_iso8601).to eq("2000-01-01T05:00:00.123Z")
+        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456789")).to_iso8601).to eq("2000-01-01T05:00:00.123456789Z")
       end
 
       it "should return usec with a minimum of millisec precision" do
-        # since Java Timestamp relies on JodaTime which supports only milliseconds precision
-        # the usec method will only be precise up to milliseconds.
-        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456")).usec).to be_within(1000).of(123456)
+        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456789")).usec).to be_within(1000).of(123456)
       end
     end
 
@@ -181,10 +217,37 @@ describe LogStash::Timestamp do
       expect(LogStash::Timestamp.at(946702800.123).usec).to eq(123000)
     end
 
-    it "should try to preserve and report microseconds precision if possible" do
-      # since Java Timestamp relies on JodaTime which supports only milliseconds precision
-      # the usec method will only be precise up to milliseconds.
-      expect(LogStash::Timestamp.at(946702800.123456).usec).to be_within(1000).of(123456)
+    it "preserves microseconds precision if possible" do
+      expect(LogStash::Timestamp.at(946702800.123456).usec).to eq(123456)
+    end
+
+    it "truncates excess nanos" do
+      expect(LogStash::Timestamp.at(946702800.123456789).usec).to eq(123456)
+    end
+  end
+
+  context "nsec" do
+    # iterate through a list of known edge-cases, plus one random.
+    # if we get a test failure and identify a regression, add its value to the list.
+    [
+      000000000,
+      499999999,
+      500000000,
+      999999999,
+      Random.rand(1_000_000_000)
+    ].each do |excess_nanos|
+      context "with excess_nanos=`#{'%09d'% excess_nanos}`" do
+        let(:epoch_seconds) { Time.now.to_i }
+        let(:excess_nanos) {  }
+
+        let(:rational_time) { epoch_seconds + Rational(excess_nanos, 1_000_000_000) }
+
+        subject(:timestamp) { LogStash::Timestamp.at(rational_time) }
+
+        it "supports nanosecond precision" do
+          expect(timestamp.nsec).to eq(excess_nanos)
+        end
+      end
     end
   end
 end

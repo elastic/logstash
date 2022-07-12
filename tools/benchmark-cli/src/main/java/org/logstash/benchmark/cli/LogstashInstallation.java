@@ -114,12 +114,73 @@ public interface LogstashInstallation {
 
         private static void download(final File pwd, final String version)
             throws IOException, NoSuchAlgorithmException {
-            LsBenchDownloader.downloadDecompress(
-                pwd,
-                String.format(
-                    "https://artifacts.elastic.co/downloads/logstash/logstash-%s.zip", version
-                )
-            );
+
+            final String arch = retrieveCPUArchitecture();
+            final String os = retrieveOS();
+            final String extension = "windows".equals(os) ? "zip" : "tar.gz";
+
+            final String downloadUrl;
+            if (compareVersions(version, "7.10.0") >= 0) {
+                // version >= 7.10.0 url format
+                downloadUrl = String.format(
+                        "https://artifacts.elastic.co/downloads/logstash/logstash-%s-%s-%s.%s", version, os, arch, extension
+                );
+            } else {
+                // version < 7.10.0 url format
+                downloadUrl = String.format(
+                        "https://artifacts.elastic.co/downloads/logstash/logstash-%s.%s", version, extension
+                );
+            }
+
+            LsBenchDownloader.downloadDecompress(pwd, downloadUrl);
+        }
+
+        private static int compareVersions(String s, String t) {
+            final String[] sSplits = s.split("\\.");
+            final int sMajor = Integer.parseInt(sSplits[0]);
+            final int sMinor = Integer.parseInt(sSplits[1]);
+            final int sPatch = Integer.parseInt(sSplits[2]);
+
+            final String[] tSplits = t.split("\\.");
+            final int tMajor = Integer.parseInt(tSplits[0]);
+            final int tMinor = Integer.parseInt(tSplits[1]);
+            final int tPatch = Integer.parseInt(tSplits[2]);
+
+            if (sMajor == tMajor) {
+                if (sMinor == tMinor) {
+                    return Integer.compare(sPatch, tPatch);
+                } else {
+                    return Integer.compare(sMinor, tMinor);
+                }
+            } else {
+                return Integer.compare(sMajor, tMajor);
+            }
+        }
+
+        private static String retrieveOS() {
+            String osName = System.getProperty("os.name");
+            if (osName.matches("Mac OS X")) {
+                return "darwin";
+            }
+            if (osName.matches("[Ll]inux")) {
+                return "linux";
+            }
+            if (osName.matches("Windows")) {
+                return "windows";
+            }
+            throw new IllegalArgumentException("Unrecognized OS: " + osName);
+        }
+
+        private static String retrieveCPUArchitecture() {
+            final String arch = System.getProperty("os.arch");
+            switch (arch) {
+                case "aarch64":
+                    return "aarch64";
+                case "amd64":
+                    return "x86_64";
+                default:
+                    return arch;
+            }
         }
 
         private static LogstashInstallation setup(final Path location) {

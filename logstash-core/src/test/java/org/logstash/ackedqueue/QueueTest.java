@@ -20,6 +20,7 @@
 
 package org.logstash.ackedqueue;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,6 +55,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
@@ -972,6 +976,44 @@ public class QueueTest {
     }
 
     @Test
+    public void testZeroByteFullyAckedHeadPageOnOpen() throws IOException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+
+        // the goal here is to recreate a condition where the queue has a head page of size zero with
+        // a checkpoint that indicates it is full acknowledged
+        // see issue #10855
+
+        try(Queue q = new Queue(settings)) {
+            q.open();
+            q.write(element);
+
+            Batch batch = q.readBatch( 1, TimeUnit.SECONDS.toMillis(1));
+            batch.close();
+            assertThat(batch.size(), is(1));
+            assertThat(q.isFullyAcked(), is(true));
+        }
+
+        // now we have a queue state where page 0 is fully acked but not purged
+        // manually truncate page 0 to zero byte to mock corrupted page
+        FileChannel c = new FileOutputStream(Paths.get(dataPath, "page.0").toFile(), true).getChannel();
+        c.truncate(0);
+        c.close();
+
+        try(Queue q = new Queue(settings)) {
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size is too small to hold elements
+            // because head page recover() check integrity of file size
+            q.open();
+
+            // recreated head page and checkpoint
+            File page1 = Paths.get(dataPath, "page.1").toFile();
+            assertThat(page1.exists(), is(true));
+            assertThat(page1.length(), is(greaterThan(0L)));
+        }
+    }
+
+    @Test
     public void pageCapacityChangeOnExistingQueue() throws IOException {
         final Queueable element = new StringElement("foobarbaz1");
         final int ORIGINAL_CAPACITY = computeCapacityForMmapPageIO(element, 2);
@@ -1062,6 +1104,45 @@ public class QueueTest {
         // at this point the Queue lock should be released and Queue.open should not throw a LockException
         try (Queue queue = new Queue(TestSettings.persistedQueueSettings(10, dataPath))) {
             queue.open();
+        }
+    }
+
+    @Test
+    public void firstUnackedPagePointToFullyAckedPurgedPage() throws Exception {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        Settings settings = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
+        // simulate a scenario that a tail page fail to complete fully ack, crash in the middle of purge
+        // normal purge: write fully acked checkpoint -> delete tail page -> (boom!) delete checkpoint -> write head page
+        // the queue head page, firstUnackedPageNum, points to a removed page which is fully acked
+        // the queue should be able to open and remove dangling checkpoint
+
+        try(Queue q = new Queue(settings)) {
+            q.open();
+            // create two pages
+            q.write(element);
+            q.write(element);
+        }
+
+
+        try(Queue q = new Queue(settings)) {
+            // now we have head checkpoint pointing to page.0
+            // manually delete page.0
+            Paths.get(dataPath, "page.0").toFile().delete();
+            // create a fully acked checkpoint.0 to mock a partial acked action
+            // which purges the tail page and the checkpoint file remains
+            Checkpoint cp = q.getCheckpointIO().read("checkpoint.0");
+            Paths.get(dataPath, "checkpoint.0").toFile().delete();
+            Checkpoint mockAckedCp = new Checkpoint(cp.getPageNum(), cp.getFirstUnackedPageNum(), cp.getFirstUnackedSeqNum() + 1, cp.getMinSeqNum(), cp.getElementCount());
+            q.getCheckpointIO().write("checkpoint.0", mockAckedCp);
+
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size is too small to hold elements
+            // because checkpoint has outdated state saying it is not fully acked
+            q.open();
+
+            // dangling checkpoint should be deleted
+            File cp0 = Paths.get(dataPath, "checkpoint.0").toFile();
+            assertFalse("Dangling page's checkpoint file should be removed", cp0.exists());
         }
     }
 }

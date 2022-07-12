@@ -1,0 +1,7 @@
+source: https://github.com/apache/httpcomponents-client/blob/4.5.x/NOTICE.txt
+
+Apache HttpComponents Client
+Copyright 1999-2021 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).

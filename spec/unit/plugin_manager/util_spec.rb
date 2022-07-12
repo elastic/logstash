@@ -61,7 +61,7 @@ describe LogStash::PluginManager do
     let(:plugin)  { "foo" }
     let(:version) { "9.0.0.0" }
 
-    let(:sources) { ["http://source.01", "http://source.02"] }
+    let(:sources) { ["https://rubygems.org"] }
     let(:options) { {:rubygems_source => sources} }
 
     let(:gemset)  { double("gemset") }
@@ -82,6 +82,17 @@ describe LogStash::PluginManager do
 
       subject.logstash_plugin?(plugin, version, options)
       expect(Gem.sources.map { |source| source }).to eq(sources)
+    end
+  end
+
+  describe "process alias yaml definition" do
+    let(:path) { File.expand_path('plugin_aliases.yml', __dir__) }
+
+    it "decodes correctly" do
+      aliases = subject.load_aliases_definitions(path)
+      expect(aliases['logstash-input-aliased_input1']).to eq('logstash-input-beats')
+      expect(aliases['logstash-input-aliased_input2']).to eq('logstash-input-tcp')
+      expect(aliases['logstash-filter-aliased_filter']).to eq('logstash-filter-json')
     end
   end
 end

@@ -2,33 +2,70 @@
 services:
   - logstash
   - elasticsearch
-config: |-
-  input {
-    stdin { }
-  }
+config:
+  default: |-
+    input {
+      stdin { }
+    }
 
-  filter {
-    grok {
-      match => {
-        "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+    filter {
+      grok {
+        match => {
+          "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+        }
+      }
+
+      date {
+        match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
+        locale => en
+      }
+      geoip {
+        ecs_compatibility => disabled
+        source => "clientip"
+      }
+      useragent {
+        ecs_compatibility => disabled
+        source => "agent"
+        target => "useragent"
       }
     }
 
-    date {
-      match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
-      locale => en
+    output {
+      elasticsearch {}
     }
-    geoip {
-      source => "clientip"
+  ds_ecs_off: |-
+    input {
+      stdin { ecs_compatibility => disabled }
     }
-    useragent {
-      source => "agent"
-      target => "useragent"
+
+    filter {
+      grok {
+        match => {
+          "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+        }
+      }
+
+      date {
+        match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
+        locale => en
+      }
+      geoip {
+        ecs_compatibility => disabled
+        source => "clientip"
+      }
+      useragent {
+        ecs_compatibility => disabled
+        source => "agent"
+        target => "useragent"
+      }
     }
-  }
-  output {
-    elasticsearch {}
-  }
+    output {
+      elasticsearch {
+        data_stream => "false"
+        ecs_compatibility => disabled
+        index => "logstash-integration-test"
+      }
+    }
 
 input: how_sample.input
 teardown_script:

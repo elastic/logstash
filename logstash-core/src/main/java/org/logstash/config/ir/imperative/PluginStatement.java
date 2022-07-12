@@ -27,6 +27,7 @@ import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
+import org.logstash.plugins.ConfigVariableExpander;
 
 public class PluginStatement extends Statement {
     private final PluginDefinition pluginDefinition;
@@ -53,7 +54,7 @@ public class PluginStatement extends Statement {
     }
 
     @Override
-    public Graph toGraph() throws InvalidIRException {
+    public Graph toGraph(ConfigVariableExpander cve) throws InvalidIRException {
         Vertex pluginVertex = new PluginVertex(getSourceWithMetadata(), pluginDefinition);
         Graph g = Graph.empty();
         g.addVertex(pluginVertex);

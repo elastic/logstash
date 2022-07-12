@@ -1,10 +1,29 @@
 ## Logstash Integration Tests aka RATS
 
-These set of tests are full integration tests as in: they can start LS from a binary, run configs using `-e` and can use any external services like Kafka, ES and S3. This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
+These test sets are full integration tests. They can: 
 
+* start Logstash from a binary, 
+* run configs using `-e`, and 
+* use external services such as Kafka, Elasticsearch, and Beats.
 
+This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
 
-## Running integration tests locally (Mac/Linux)
+## Environment setup
+
+### Directory Layout
+
+* `fixtures`: Specify services to run, Logstash config, and test specific scripts ala `.travis.yml`. You test settings in form of `test_name.yml`. 
+* `services`: This directory has bash scripts that download and bootstrap binaries for services. This is where services like Elasticsearch will be downloaded and run. Service can have 3 files: `<service>_setup.sh`, `<service>_teardown.sh` and `<service>`.rb. The bash scripts deal with downloading and bootstrapping, but the ruby source will trigger them from the test as a shell out (using backticks). The tests are blocked until the setup/teardown completes. For example, Elasticsearch service has `elasticsearch_setup.sh`, `elasticsearch_teardown.sh` and `elasticsearch.rb`. The service name in yml is "elasticsearch".
+* `framework`: Test framework source code.
+* `specs`: Rspec tests that use services and validates stuff
+
+### Setup Java
+
+The integration test scripts use `gradle` to run the tests.
+Gradle requires a valid version of Java either on the system path, or specified using the `JAVA_HOME` environment variable pointing to the location of a valid JDK.
+
+To run integration tests using a different version of Java, set the `BUILD_JAVA_HOME` environment variable to the location of the JDK that you wish to test with.
+## Testing on Mac/Linux
 
 ### Dependencies 
 * `JRuby`
@@ -12,34 +31,47 @@ These set of tests are full integration tests as in: they can start LS from a bi
 * `rake`
 * `bundler`
 
-From the Logstash root directory:
+### Running integration tests locally (Mac/Linux) 
+Run tests from the Logstash root directory.
 
-* Run all tests: `ci/integration_tests.sh`
-* Run a single test: `ci/integration_tests.sh specs/es_output_how_spec.rb`
+* Run all tests: 
+
+  `ci/integration_tests.sh`
+  
+* Run a single test: 
+
+  `ci/integration_tests.sh specs/es_output_how_spec.rb`
+  
 * Debug tests: 
-```
-ci/integration_tests.sh setup 
-cd qa/integration
-bundle exec rspec specs/es_output_how_spec.rb (single test)
-bundle exec rspec specs/*  (all tests)
-```
-## Running integration tests locally via Docker 
+  ```
+  ci/integration_tests.sh setup 
+  cd qa/integration
+  bundle exec rspec specs/es_output_how_spec.rb (single test)
+  bundle exec rspec specs/*  (all tests)
+  ```
+  
+## Testing with Docker 
 
 ### Dependencies 
 * `Docker`
 
-From the Logstash root directory:
+### Running integration tests locally using Docker 
+
+Run tests from the Logstash root directory.
 
 * Run all tests:
-```
-docker build  -t logstash-integration-tests .
-docker run -it --rm logstash-integration-tests ci/integration_tests.sh 
-```
+
+  ```
+  docker build  -t logstash-integration-tests .
+  docker run -it --rm logstash-integration-tests ci/integration_tests.sh 
+  ```
+  
 * Run a single test: 
 ```
 docker build  -t logstash-integration-tests .
 docker run -it --rm logstash-integration-tests ci/integration_tests.sh specs/es_output_how_spec.rb
 ``` 
+
 * Debug tests:
 ```
 (Mac/Linux) docker ps --all -q -f status=exited | xargs docker rm  
@@ -54,24 +86,19 @@ exit
 docker kill debug
 docker rm debug
 ```
-## Running integration tests locally from Windows
 
-The integration tests need to be run from MacOS or Linux.  However, the tests may be run locally within Docker.   
+### Docker clean up (Mac/Linux)
 
-## Docker clean up (Mac/Linux)
-
-! Warning this will remove all images and containers except for the `logstash-base` container !
+WARNING: Docker cleanup removes all images and containers except for the `logstash-base` container!
 
 * `ci/docker_prune.sh`
 
-### Directory Layout
+## Testing on Windows
 
-* `fixtures`: In this dir you will test settings in form of `test_name.yml`. Here you specify services to run, LS config, test specific scripts ala `.travis.yml`
-* `services`: This dir has bash scripts that download and bootstrap binaries for services. This is where services like ES will be downloaded and run from. Service can have 3 files: `<service>_setup.sh`, `<service>_teardown.sh` and `<service>`.rb. The bash scripts deal with downloading and bootstrapping, but the ruby source will trigger them from the test as a shell out (using backticks). The tests are blocked until the setup/teardown completes. For example, Elasticsearch service has `elasticsearch_setup.sh`, `elasticsearch_teardown.sh` and `elasticsearch.rb`. The service name in yml is "elasticsearch".
-* `framework`: Test framework source code.
-* `specs`: Rspec tests that use services and validates stuff
+The integration tests should be run from MacOS or Linux.  However, the tests can be run locally within Docker on Windows.
 
-### Adding a new test
+
+## Adding a new test
 
 1. Creating a new test -- lets use as example. Call it "test_file_input" which brings up LS to read from a file and assert file contents (file output) were as expected.
 2. You'll have to create a yml file in `fixtures` called `test_file_input_spec.yml`. Here you define any external services you need and any LS config.

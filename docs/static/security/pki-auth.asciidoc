@@ -1,0 +1,22 @@
+[discrete]
+[[ls-http-auth-pki]]
+=== Configuring the {es} output to use PKI authentication
+
+The `elasticsearch` output supports PKI authentication. To use an X.509
+client-certificate for authentication, you configure the `keystore` and
+`keystore_password` options in your Logstash `.conf` file:
+
+[source,js]
+--------------------------------------------------
+output {
+  elasticsearch {
+    ...
+    keystore => /path/to/keystore.jks
+    keystore_password => realpassword
+    truststore =>  /path/to/truststore.jks <1>
+    truststore_password =>  realpassword
+  }
+}
+--------------------------------------------------
+<1> If you use a separate truststore, the truststore path and password are
+also required.

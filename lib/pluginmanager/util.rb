@@ -16,9 +16,37 @@
 # under the License.
 
 require "rubygems/package"
-require_relative "../bootstrap/patches/remote_fetcher"
+require "yaml"
 
 module LogStash::PluginManager
+
+  def self.load_aliases_definitions(path = File.expand_path('plugin_aliases.yml', __dir__))
+    content = IO.read(path)
+
+    #Verify header
+    header = content.lines[0]
+    if !header.start_with?('#CHECKSUM:')
+      raise ValidationError.new "Bad header format, expected '#CHECKSUM: ...' but found #{header}"
+    end
+    yaml_body = content.lines[2..-1].join
+    extracted_sha = header.delete_prefix('#CHECKSUM:').chomp.strip
+    sha256_hex = Digest::SHA256.hexdigest(yaml_body)
+    if sha256_hex != extracted_sha
+      raise ValidationError.new "Bad checksum value, expected #{sha256_hex} but found #{extracted_sha}"
+    end
+
+    yaml = YAML.safe_load(yaml_body) || {}
+    result = {}
+    yaml.each do |type, alias_defs|
+      alias_defs.each do |alias_def|
+        result["logstash-#{type}-#{alias_def["alias"]}"] = "logstash-#{type}-#{alias_def["from"]}"
+      end
+    end
+    result
+  end
+
+  # Defines the plugin alias, must be kept in synch with Java class org.logstash.plugins.AliasRegistry
+  ALIASES = load_aliases_definitions()
 
   class ValidationError < StandardError; end
 
@@ -40,9 +68,9 @@ module LogStash::PluginManager
         return false
       end
     else
-      dep = Gem::Dependency.new(plugin, version || Gem::Requirement.default)
-      Gem.sources = Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
-      specs, errors = Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
+      dep = ::Gem::Dependency.new(plugin, version || ::Gem::Requirement.default)
+      ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
+      specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
 
       # dump errors
       errors.each { |error| $stderr.puts(error.wordy) }
@@ -84,7 +112,7 @@ module LogStash::PluginManager
   # @return [Gem::Specification] .get file gem specification
   # @raise [Exception] Gem::Package::FormatError will be raised on invalid .gem file format, might be other exceptions too
   def self.plugin_file_spec(path)
-    Gem::Package.new(path).spec
+    ::Gem::Package.new(path).spec
   end
 
   # @param plugin [String] the plugin name or the local path to a .gem file
@@ -97,7 +125,7 @@ module LogStash::PluginManager
   # @param name [String] specific plugin name to find or nil for all plugins
   # @return [Array<Gem::Specification>] all local logstash plugin gem specs
   def self.find_plugins_gem_specs(name = nil)
-    specs = name ? Gem::Specification.find_all_by_name(name) : Gem::Specification.find_all
+    specs = name ? ::Gem::Specification.find_all_by_name(name) : ::Gem::Specification.find_all
     specs.select{|spec| logstash_plugin_gem_spec?(spec)}
   end
 

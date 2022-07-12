@@ -22,12 +22,17 @@ package org.logstash.plugins;
 
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.secret.SecretIdentifier;
+import org.logstash.secret.SecretVariable;
 import org.logstash.secret.store.SecretStore;
 
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Expand the configuration variables used in pipeline configuration, bringing them from secret store or from the
+ * environment.
+ * */
 public class ConfigVariableExpander implements AutoCloseable {
 
     private static String SUBSTITUTION_PLACEHOLDER_REGEX = "\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}";
@@ -66,46 +71,52 @@ public class ConfigVariableExpander implements AutoCloseable {
      * If a substitution variable is not found, the value is return unchanged
      *
      * @param value Config value in which substitution variables, if any, should be replaced.
+     * @param keepSecrets True if secret stores resolved variables must be kept secret in a Password instance
      * @return Config value with any substitution variables replaced
      */
-    public Object expand(Object value) {
-        String variable;
-        if (value instanceof String) {
-            variable = (String) value;
-        } else {
+    public Object expand(Object value, boolean keepSecrets) {
+        if (!(value instanceof String)) {
             return value;
         }
 
-        Matcher m = substitutionPattern.matcher(variable);
-        if (m.matches()) {
-            String variableName = m.group("name");
+        String variable = (String) value;
 
-            if (secretStore != null) {
-                byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
-                if (ssValue != null) {
+        Matcher m = substitutionPattern.matcher(variable);
+        if (!m.matches()) {
+            return variable;
+        }
+        String variableName = m.group("name");
+
+        if (secretStore != null) {
+            byte[] ssValue = secretStore.retrieveSecret(new SecretIdentifier(variableName));
+            if (ssValue != null) {
+                if (keepSecrets) {
+                    return new SecretVariable(variableName, new String(ssValue, StandardCharsets.UTF_8));
+                } else {
                     return new String(ssValue, StandardCharsets.UTF_8);
                 }
             }
+        }
 
-            if (envVarProvider != null) {
-                String evValue = envVarProvider.get(variableName);
-                if (evValue != null) {
-                    return evValue;
-                }
+        if (envVarProvider != null) {
+            String evValue = envVarProvider.get(variableName);
+            if (evValue != null) {
+                return evValue;
             }
+        }
 
-            String defaultValue = m.group("default");
-            if (defaultValue != null) {
-                return defaultValue;
-            }
-
+        String defaultValue = m.group("default");
+        if (defaultValue == null) {
             throw new IllegalStateException(String.format(
                     "Cannot evaluate `%s`. Replacement variable `%s` is not defined in a Logstash " +
                             "secret store or an environment entry and there is no default value given.",
                     variable, variableName));
-        } else {
-            return variable;
         }
+        return defaultValue;
+    }
+
+    public Object expand(Object value) {
+        return expand(value, false);
     }
 
     @Override

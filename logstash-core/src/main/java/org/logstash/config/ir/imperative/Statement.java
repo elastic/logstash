@@ -24,13 +24,14 @@ import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.BaseSourceComponent;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
+import org.logstash.plugins.ConfigVariableExpander;
 
 public abstract class Statement extends BaseSourceComponent {
     public Statement(SourceWithMetadata meta) {
         super(meta);
     }
 
-    public abstract Graph toGraph() throws InvalidIRException;
+    public abstract Graph toGraph(ConfigVariableExpander cve) throws InvalidIRException;
 
     public String toString() {
         return toString(2);

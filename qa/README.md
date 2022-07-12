@@ -1,8 +1,7 @@
 ## Acceptance test Framework
 
-Welcome to the acceptance test framework for logstash, in this small
-README we're going to describe it's features and the necessary steps you will need to
-follow to setup your environment.
+Welcome to the acceptance test framework for Logstash. In this small README we
+describe its features and the steps necessary for setting up your environment.
 
 ### Setup your environment
 
@@ -21,6 +20,7 @@ As of this, you need to have installed:
 Is important to notice that the first time you set everything up, or when a
 new VM is added, there is the need to download the box (this will
 take a while depending on your internet speed).
+
 
 ### Running Tests
 
@@ -192,10 +192,10 @@ tests, a collection of them using filtering, etc.
 
 Check https://relishapp.com/rspec/rspec-core/v/3-4/docs/command-line for more details, but here is a quick cheat sheet to run them:
 
-# Run the examples that get "is installed" in their description
+#### Run the examples that get "is installed" in their description
 
 *  bundle exec rspec acceptance/spec -e "is installed" 
 
-# Run the example defined at line 11
+#### Run the example defined at line 11
 
 *  bundle exec rspec acceptance/spec/lib/artifact_operation_spec.rb:11

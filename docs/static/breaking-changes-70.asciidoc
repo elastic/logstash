@@ -1,0 +1,195 @@
+[[breaking-7.0]]
+=== Breaking changes in 7.0
+
+Here are the breaking changes for {ls} 7.0. 
+
+[discrete]
+==== Changes in Logstash Core
+
+These changes can affect any instance of Logstash that uses impacted features.
+Changes to Logstash Core are plugin agnostic.
+
+[discrete]
+[[java-exec-default]]
+===== Java execution engine enabled by default
+
+The new Java execution engine is enabled by default. It features faster
+performance, reduced memory usage, and lower config startup and reload times.
+
+For more information, see the blog post about the
+https://www.elastic.co/blog/meet-the-new-logstash-java-execution-engine[initial
+release of the Java execution engine].  
+
+We went to considerable lengths to make this change seamless. Still, it's a big
+change. If you notice different behaviors that might be related, please 
+https://github.com/elastic/logstash/issues[open a GitHub issue] to let us
+know.
+
+[discrete]
+[[beats-ecs]]
+===== Beats conform to the Elastic Common Schema (ECS)
+
+As of 7.0, Beats fields conform to the {ecs-ref}/index.html[Elastic Common
+Schema (ECS)].
+
+If you upgrade Logstash before you upgrade Beats, the payloads continue to use
+the pre-ECS schema. If you upgrade your Beats before you upgrade Logstash, then
+you'll get payloads with the ECS schema in advance of any Logstash upgrade.
+
+If you see mapping conflicts after upgrade, that is an indication that the
+Beats/ECS change is influencing the data reaching existing indices. 
+
+
+[discrete]
+[[field-ref-strict]]
+===== Field Reference parser is more strict
+
+The Field Reference parser, which is used to interpret references to fields in
+your pipelines and plugins, was made to be more strict and will now reject
+inputs that are either ambiguous or illegal. Since 6.4, Logstash has emitted
+warnings when encountering input that is ambiguous, and allowed an early opt-in
+of strict-mode parsing either by providing the command-line flag
+`--field-reference-parser STRICT` or by adding `config.field_reference.parser:
+STRICT` to `logstash.yml`.
+
+Here's an example. 
+
+*Before*
+
+[source,txt]
+-----
+logstash-6.7.0 % echo "hello"| bin/logstash -e 'filter { mutate { replace => { "message" => "%{[[]]message]} you" } } }'
+[2019-04-05T16:52:18,691][WARN ][org.logstash.FieldReference] Detected ambiguous Field Reference `[[]]message]`, which we expanded to the path `[message]`; in a future release of Logstash, ambiguous Field References will not be expanded.
+{
+       "message" => "hello you",
+      "@version" => "1",
+    "@timestamp" => 2019-04-05T15:52:18.546Z,
+          "type" => "stdin",
+          "host" => "overcraft.lan"
+}
+-----
+
+*After* 
+
+[source,txt]
+-----
+logstash-7.0.0 % echo "hello"| bin/logstash -e 'filter { mutate { replace => { "message" => "%{[[]]message]} you" } } }'
+[2019-04-05T16:48:09,135][FATAL][logstash.runner          ] An unexpected error occurred! {:error=>java.lang.IllegalStateException: org.logstash.FieldReference$IllegalSyntaxException: Invalid FieldReference: `[[]]message]`
+[2019-04-05T16:48:09,167][ERROR][org.logstash.Logstash    ] java.lang.IllegalStateException: Logstash stopped processing because of an error: (SystemExit) exit
+-----
+
+  
+[discrete]
+==== Changes in Logstash Plugins
+
+With 7.0.0, we have taken the opportunity to upgrade a number of bundled plugins
+to their newest major version, absorbing their breaking changes into the
+Logstash distribution.
+
+While these upgrades included new features and important fixes, only the
+breaking changes are called out below.
+
+NOTE: The majority of the changes to plugins are the removal of previously-deprecated
+and now-obsolete options. Please ensure that your pipeline
+configurations do not use these removed options before upgrading.
+
+[discrete]
+===== Codec Plugins
+
+Here are the breaking changes for codec plugins.
+
+*CEF Codec*
+
+* Removed obsolete `sev` option
+* Removed obsolete `deprecated_v1_fields` option
+
+*Netflow Codec*
+
+* Changed decoding of application_id to implement RFC6759; the format changes from a pair of colon-separated ids (e.g. `0:40567`) to a variable number of double-dot-separated ids (e.g. `0..12356..40567`).
+
+[discrete]
+===== Filter Plugins
+
+Here are the breaking changes for filter plugins.
+
+*Clone Filter*
+
+* Make `clones` a required option
+
+*Geoip Filter*
+
+* Removed obsolete `lru_cache_size` option
+
+*HTTP Filter*
+
+* Removed obsolete `ssl_certificate_verify` option
+
+[discrete]
+===== Input Plugins
+
+Here are the breaking changes for  input plugins.
+
+*Beats Input*
+
+* Removed obsolete `congestion_threshold` option
+* Removed obsolete `target_field_for_codec` option
+* Changed default value of `add_hostname` to false
+
+NOTE: In Beats 7.0.0, the fields exported by Beats _to_ the Logstash Beats Input
+conform to the {ecs-ref}/index.html[Elastic Common Schema (ECS)]. Many of the
+exported fields have been renamed, so you may need to modify your pipeline
+configurations to access them at their new locations prior to upgrading your
+Beats. 
+
+*HTTP Input*
+
+* Removed obsolete `ssl_certificate_verify` option
+
+*HTTP Poller Input*
+
+* Removed obsolete `interval` option
+* Removed obsolete `ssl_certificate_verify` option
+
+*Tcp Input*
+
+* Removed obsolete `data_timeout` option
+* Removed obsolete `ssl_cacert` option
+
+[discrete]
+===== Output Plugins
+
+Here are the breaking changes for output plugins.
+
+*Elasticsearch Output*
+
+* {es} {ref}/index-lifecycle-management.html[Index lifecycle management (ILM)] is
+auto-detected and enabled by default if your {es} cluster supports it.
+* Remove support for parent/child (still support join data type) since we don't
+support multiple document types any more
+* Removed obsolete `flush_size` option
+* Removed obsolete `idle_flush_time` option
+
+*HTTP Output*
+
+* Removed obsolete `ssl_certificate_verify` option
+
+*Kafka Output*
+
+* Removed obsolete `block_on_buffer_full` option
+* Removed obsolete `ssl` option
+* Removed obsolete `timeout_ms` option
+
+*Redis Output*
+
+* Removed obsolete `queue` option
+* Removed obsolete `name` option
+
+*Sqs Output*
+
+* Removed obsolete `batch` option
+* Removed obsolete `batch_timeout` option
+
+*Tcp Output*
+
+* Removed obsolete `message_format` option
+

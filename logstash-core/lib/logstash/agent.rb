@@ -19,13 +19,13 @@ require "logstash/environment"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
 require "logstash/instrument/periodic_pollers"
-require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/config/source_loader"
 require "logstash/config/pipeline_config"
 require "logstash/pipeline_action"
 require "logstash/state_resolver"
 require "logstash/pipelines_registry"
+require "logstash/persisted_queue_config_validator"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -51,7 +51,7 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    # Mutex to synchonize in the exclusive method
+    # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
     @webserver_control_lock = Mutex.new
 
@@ -63,17 +63,11 @@ class LogStash::Agent
     @pipelines_registry = LogStash::PipelinesRegistry.new
 
     @name = setting("node.name")
-    @http_host = setting("http.host")
-    @http_port = setting("http.port")
-    @http_environment = setting("http.environment")
     # Generate / load the persistent uuid
     id
 
-    # Set the global FieldReference parsing mode
-    if @settings.set?('config.field_reference.parser')
-      # TODO: i18n
-      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
-    end
+    # Initialize, but do not start the webserver.
+    @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
@@ -84,7 +78,9 @@ class LogStash::Agent
     end
 
     # Normalize time interval to seconds
-    @reload_interval = setting("config.reload.interval").to_seconds
+    # we can't do .to_seconds here as values under 1 seconds are rounded to 0
+    # so we get the nanos and convert to seconds instead.
+    @reload_interval = setting("config.reload.interval").to_nanos * 1e-9
 
     @collect_metric = setting("metric.collect")
 
@@ -96,6 +92,10 @@ class LogStash::Agent
     @pipeline_reload_metric = metric.namespace([:stats, :pipelines])
     @instance_reload_metric = metric.namespace([:stats, :reloads])
     initialize_agent_metrics
+
+    initialize_geoip_database_metrics(metric)
+    
+    @pq_config_validator = LogStash::PersistedQueueConfigValidator.new
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -111,9 +111,9 @@ class LogStash::Agent
 
     transition_to_running
 
-    converge_state_and_update
-
     start_webserver_if_enabled
+
+    converge_state_and_update
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
@@ -186,6 +186,8 @@ class LogStash::Agent
       end
     end
 
+    @pq_config_validator.check(@pipelines_registry.running_user_defined_pipelines, results.response)
+
     converge_result = resolve_actions_and_converge_state(results.response)
     update_metrics(converge_result)
 
@@ -205,6 +207,15 @@ class LogStash::Agent
     logger.error("An exception happened when converging configuration", attributes)
   end
 
+  ##
+  # Shut down a pipeline and wait for it to fully stop.
+  # WARNING: Calling from `Plugin#initialize` or `Plugin#register` will result in deadlock.
+  # @param pipeline_id [String]
+  def stop_pipeline(pipeline_id)
+    action = LogStash::PipelineAction::Stop.new(pipeline_id.to_sym)
+    converge_state_with_resolved_actions([action])
+  end
+
   # Calculate the Logstash uptime in milliseconds
   #
   # @return [Integer] Uptime in milliseconds
@@ -217,9 +228,9 @@ class LogStash::Agent
     # in order of dependency.
     pipeline_bus.setBlockOnUnlisten(true)
 
-    stop_collecting_metrics
     transition_to_stopped
     converge_result = shutdown_pipelines
+    stop_collecting_metrics
     stop_webserver
     converge_result
   end
@@ -278,6 +289,10 @@ class LogStash::Agent
     @pipelines_registry.running_pipelines
    end
 
+   def loading_pipelines
+    @pipelines_registry.loading_pipelines
+   end
+
   def non_running_pipelines
     @pipelines_registry.non_running_pipelines
   end
@@ -299,7 +314,7 @@ class LogStash::Agent
   end
 
   def no_pipeline?
-    @pipelines_registry.running_pipelines.empty?
+    @pipelines_registry.running_pipelines(include_loading: true).empty?
   end
 
   private
@@ -317,6 +332,15 @@ class LogStash::Agent
   def resolve_actions_and_converge_state(pipeline_configs)
     @convergence_lock.synchronize do
       pipeline_actions = resolve_actions(pipeline_configs)
+      converge_state(pipeline_actions)
+    end
+  end
+
+  # Beware the usage with #resolve_actions_and_converge_state
+  # Calling this method in `Plugin#register` causes deadlock.
+  # For example, resolve_actions_and_converge_state -> pipeline reload_action -> plugin register -> converge_state_with_resolved_actions
+  def converge_state_with_resolved_actions(pipeline_actions)
+    @convergence_lock.synchronize do
       converge_state(pipeline_actions)
     end
   end
@@ -367,7 +391,7 @@ class LogStash::Agent
           end
         rescue SystemExit, Exception => e
           logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
+          converge_result.add(action, LogStash::ConvergeResult::FailedAction.from_exception(e))
         end
       end
     end.each(&:join)
@@ -400,17 +424,15 @@ class LogStash::Agent
   end
 
   def start_webserver_if_enabled
-    if @settings.get_value("http.enabled")
+    if @settings.get_value("api.enabled")
       start_webserver
     else
-      @logger.info("HTTP API is disabled (`http.enabled=false`); webserver will not be started.")
+      @logger.info("HTTP API is disabled (`api.enabled=false`); webserver will not be started.")
     end
   end
 
   def start_webserver
     @webserver_control_lock.synchronize do
-      options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
-      @webserver = LogStash::WebServer.new(@logger, self, options)
       @webserver_thread = Thread.new(@webserver) do |webserver|
         LogStash::Util.set_thread_name("Api Webserver")
         webserver.run
@@ -420,7 +442,7 @@ class LogStash::Agent
 
   def stop_webserver
     @webserver_control_lock.synchronize do
-      if @webserver
+      if @webserver_thread
         @webserver.stop
         if @webserver_thread.join(5).nil?
           @webserver_thread.kill
@@ -528,6 +550,36 @@ class LogStash::Agent
     @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
       n.increment(:successes)
       n.gauge(:last_success_timestamp, action_result.executed_at)
+    end
+  end
+
+  def initialize_geoip_database_metrics(metric)
+    begin
+      relative_path = ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip")
+      require_relative ::File.join(relative_path, "database_manager")
+      require_relative ::File.join(relative_path, "database_metric")
+
+      geoip_metric = metric.namespace([:geoip_download_manager]).tap do |n|
+        db = n.namespace([:database])
+        [:ASN, :City].each do  |database_type|
+          db_type = db.namespace([database_type])
+          db_type.gauge(:status, nil)
+          db_type.gauge(:last_updated_at, nil)
+          db_type.gauge(:fail_check_in_days, 0)
+        end
+
+        dl = n.namespace([:download_stats])
+        dl.increment(:successes, 0)
+        dl.increment(:failures, 0)
+        dl.gauge(:last_checked_at, nil)
+        dl.gauge(:status, nil)
+      end
+
+      database_metric = LogStash::Filters::Geoip::DatabaseMetric.new(geoip_metric)
+      database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
+      database_manager.database_metric = database_metric
+    rescue LoadError => e
+      @logger.trace("DatabaseManager is not in classpath")
     end
   end
 end # class LogStash::Agent

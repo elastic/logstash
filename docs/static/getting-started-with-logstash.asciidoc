@@ -18,13 +18,13 @@ include::jvm.asciidoc[]
 [[installing-logstash]]
 === Installing Logstash
 
-[float]
+[discrete]
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
 The {ls} binaries are available from 
 https://www.elastic.co/downloads/logstash[https://www.elastic.co/downloads].
-Download the Logstash installation file for your host environment--TARG.GZ, DEB,
+Download the Logstash installation file for your host environment--TAR.GZ, DEB,
 ZIP, or RPM. 
 
 Unpack the file. Do not install Logstash into a directory path that
@@ -45,7 +45,7 @@ that are available under the Apache 2.0 license.
 
 On supported Linux operating systems, you can use a package manager to install Logstash.
 
-[float]
+[discrete]
 [[package-repositories]]
 === Installing from Package Repositories
 
@@ -65,7 +65,21 @@ Elastic's Signing Key, with fingerprint
 
 to sign all our packages. It is available from https://pgp.mit.edu.
 
-[float]
+[NOTE]
+--
+When installing from a package repository (or from the DEB or RPM installation file),
+you will need to run Logstash as a service. Please refer to
+{logstash-ref}/running-logstash.html[Running Logstash as a Service] for more
+information.
+
+For testing purposes, you may still run Logstash from the command line, but
+you may need to define the default setting options (described in
+{logstash-ref}/dir-layout.html[Logstash Directory Layout]) manually. Please
+refer to {logstash-ref}/running-logstash-command-line.html[Running Logstash from the Command Line]
+for more information.
+--
+
+[discrete]
 ==== APT
 
 ifeval::["{release-state}"=="unreleased"]
@@ -141,7 +155,7 @@ See {logstash-ref}/running-logstash.html[Running Logstash] for details about man
 
 endif::[]
 
-[float]
+[discrete]
 ==== YUM
 
 ifeval::["{release-state}"=="unreleased"]
@@ -212,51 +226,7 @@ See the {logstash-ref}/running-logstash.html[Running Logstash] document for mana
 
 endif::[]
 
-[float]
-[[brew]]
-=== Installing {ls} on macOS with Homebrew
-
-Elastic publishes Homebrew formulae so you can install {ls} with the
-https://brew.sh/[Homebrew] package manager.
-
-To install with Homebrew, you first need to tap the Elastic Homebrew repository:
-
-[source,sh]
--------------------------
-brew tap elastic/tap
--------------------------
-
-After you've tapped the Elastic Homebrew repo, you can use `brew install` to
-install the default distribution of {ls}:
-
-[source,sh]
--------------------------
-brew install elastic/tap/logstash-full
--------------------------
-
-This installs the most recently released default distribution of {ls}.
-To install the OSS distribution, specify `elastic/tap/logstash-oss`.
-
-
-[float]
-[[brew-start]]
-==== Starting {ls} with Homebrew
-
-To have launchd start elastic/tap/logstash-full now and restart at login, run:
-
-[source,sh]
------
-brew services start elastic/tap/logstash-full
------
-
-To run {ls}, in the foreground, run:
-
-[source,sh]
------
-logstash
------
-
-
+[discrete]
 ==== Docker
 
 Images are available for running Logstash as a Docker container. They are
@@ -278,8 +248,9 @@ the data to a destination.
 
 image::static/images/basic_logstash_pipeline.png[]
 
-To test your Logstash installation, run the most basic Logstash pipeline. For
-example:
+To test your Logstash installation, run the most basic Logstash pipeline. 
+
+**MacOS, Linux**
 
 ["source","sh",subs="attributes"]
 --------------------------------------------------
@@ -287,8 +258,20 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
-NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
-to find the location of `bin\logstash` on your system.
+**Windows**
+
+["source","sh",subs="attributes"]
+--------------------------------------------------
+cd logstash-{logstash_version}
+.\bin\logstash.bat -e "input { stdin { } } output { stdout {} }"
+--------------------------------------------------
+
+The command might vary slightly, depending on the terminal or shell you
+are using.
+
+NOTE: The location of the `bin` directory varies by platform. See
+{logstash-ref}/dir-layout.html[Directory layout] to find the location of
+`bin\logstash` on your system.
 
 [IMPORTANT]
 .macOS Gatekeeper warnings

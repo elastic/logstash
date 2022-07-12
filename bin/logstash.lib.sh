@@ -14,7 +14,7 @@
 # The following env var will be used by this script if set:
 #   LS_GEM_HOME and LS_GEM_PATH to overwrite the path assigned to GEM_HOME and GEM_PATH
 #   LS_JAVA_OPTS to append extra options to the JVM options provided by logstash
-#   JAVA_HOME to point to the java home
+#   LS_JAVA_HOME to point to the java home
 
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
@@ -47,6 +47,7 @@ export LS_HOME="${LOGSTASH_HOME}"
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
 LOGSTASH_JARS=${LOGSTASH_HOME}/logstash-core/lib/jars
+JRUBY_HOME="${LOGSTASH_HOME}/vendor/jruby"
 
 # iterate over the command line args and look for the argument
 # after --path.settings to see if the jvm.options file is in
@@ -66,12 +67,6 @@ for i in "$@"; do
  fi
 done
 
-parse_jvm_options() {
-  if [ -f "$1" ]; then
-    echo "$(grep "^-" "$1" | tr '\n' ' ')"
-  fi
-}
-
 setup_bundled_jdk_part() {
   OS_NAME="$(uname -s)"
   if [ $OS_NAME = "Darwin" ]; then
@@ -81,20 +76,35 @@ setup_bundled_jdk_part() {
   fi
 }
 
+# Accepts 1 parameter which is the path the directory where logstash jar are contained.
+setup_classpath() {
+  local classpath="${1?classpath (and jar_directory) required}"
+  local jar_directory="${2}"
+  for J in $(cd "${jar_directory}"; ls *.jar); do
+    classpath=${classpath}${classpath:+:}${jar_directory}/${J}
+  done
+  echo "${classpath}"
+}
+
+# set up CLASSPATH once (we start more than one java process)
+CLASSPATH="${JRUBY_HOME}/lib/jruby.jar"
+CLASSPATH="$(setup_classpath $CLASSPATH $LOGSTASH_JARS)"
+
 setup_java() {
   # set the path to java into JAVACMD which will be picked up by JRuby to launch itself
   if [ -z "$JAVACMD" ]; then
     setup_bundled_jdk_part
     JAVACMD_TEST=`command -v java`
-    if [ -n "$JAVA_HOME" ]; then
-      echo "Using JAVA_HOME defined java: ${JAVA_HOME}"
-      if [ -x "$JAVA_HOME/bin/java" ]; then
-        JAVACMD="$JAVA_HOME/bin/java"
+    if [ -n "$LS_JAVA_HOME" ]; then
+      echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}."
+      if [ -x "$LS_JAVA_HOME/bin/java" ]; then
+        JAVACMD="$LS_JAVA_HOME/bin/java"
         if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-          echo "WARNING, using JAVA_HOME while Logstash distribution comes with a bundled JDK"
+          BUNDLED_JDK_VERSION=`cat JDK_VERSION`
+          echo "WARNING: Logstash comes bundled with the recommended JDK(${BUNDLED_JDK_VERSION}), but is overridden by the version defined in LS_JAVA_HOME. Consider clearing LS_JAVA_HOME to use the bundled JDK."
         fi
       else
-        echo "Invalid JAVA_HOME, doesn't contain bin/java executable"
+        echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable."
       fi
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
       echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
@@ -108,7 +118,7 @@ setup_java() {
   fi
 
   if [ ! -x "$JAVACMD" ]; then
-    echo "could not find java; set JAVA_HOME or ensure java is in PATH"
+    echo "Could not find java; set LS_JAVA_HOME or ensure java is in PATH."
     exit 1
   fi
 
@@ -130,29 +140,20 @@ setup_java() {
     LS_GC_LOG_FILE="./logstash-gc.log"
   fi
 
-  # Set the initial JVM options from the jvm.options file.  Look in
-  # /etc/logstash first, and break if that file is found readable there.
-  if [ -z "$LS_JVM_OPTS" ]; then
-      for jvm_options in /etc/logstash/jvm.options \
-                        "$LOGSTASH_HOME"/config/jvm.options;
-                         do
-          if [ -r "$jvm_options" ]; then
-              LS_JVM_OPTS=$jvm_options
-              break
-          fi
-      done
-  fi
-  # then override with anything provided
-  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
-  JAVA_OPTS=$LS_JAVA_OPTS
-
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
   export JAVACMD
+
+  JAVA_OPTS=`exec "${JAVACMD}" -cp "${CLASSPATH}" org.logstash.launchers.JvmOptionsParser "$LOGSTASH_HOME" "$LS_JVM_OPTS"`
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    exit $EXIT_CODE
+  fi
+
   export JAVA_OPTS
 }
 
 setup_vendored_jruby() {
-  JRUBY_BIN="${LOGSTASH_HOME}/vendor/jruby/bin/jruby"
+  JRUBY_BIN="${JRUBY_HOME}/bin/jruby"
 
   if [ ! -f "${JRUBY_BIN}" ] ; then
     echo "Unable to find JRuby."
@@ -162,7 +163,7 @@ setup_vendored_jruby() {
   fi
 
   if [ -z "$LS_GEM_HOME" ] ; then
-    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.5.0"
+    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.6.0"
   else
     export GEM_HOME=${LS_GEM_HOME}
   fi

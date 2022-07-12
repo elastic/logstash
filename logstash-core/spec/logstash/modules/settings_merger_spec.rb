@@ -20,6 +20,7 @@ require "logstash/util/cloud_setting_id"
 require "logstash/util/cloud_setting_auth"
 require "logstash/modules/settings_merger"
 require "logstash/util/password"
+require "logstash/util/modules_setting_array"
 
 class SubstituteSettingsForRSpec
   def initialize(hash = {}) @hash = hash; end
@@ -29,7 +30,7 @@ end
 
 describe LogStash::Modules::SettingsMerger do
   describe "#merge" do
-    let(:cli) {[{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}]}
+    let(:cli) { LogStash::Util::ModulesSettingArray.new [{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}] }
     let(:yml) {[{"name"=>"mod1", "var.input.tcp.port"=>2222, "var.kibana.username"=>"rupert", "var.kibana.password"=>"fotherington"}, {"name"=>"mod3", "var.input.tcp.port"=>4445}]}
     subject(:results) { described_class.merge(cli, yml) }
     it "merges cli overwriting any common fields in yml" do

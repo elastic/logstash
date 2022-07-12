@@ -1,0 +1,206 @@
+[[ts-logstash]] 
+=== Troubleshooting {ls}
+
+
+[[ts-install]] 
+==== Installation and setup
+
+[[ts-temp-dir]] 
+===== Inaccessible temp directory
+
+Certain versions of the JRuby runtime and libraries
+in certain plugins (the Netty network library in the TCP input, for example) copy
+executable files to the temp directory. This situation causes subsequent failures when
+`/tmp` is mounted `noexec`. 
+
+*Sample error*
+
+[source,sh]
+-----
+[2018-03-25T12:23:01,149][ERROR][org.logstash.Logstash ]
+java.lang.IllegalStateException: org.jruby.exceptions.RaiseException:
+(LoadError) Could not load FFI Provider: (NotImplementedError) FFI not
+available: java.lang.UnsatisfiedLinkError: /tmp/jffi5534463206038012403.so:
+/tmp/jffi5534463206038012403.so: failed to map segment from shared object:
+Operation not permitted
+-----
+
+*Possible solutions*
+
+* Change setting to mount `/tmp` with `exec`.
+* Specify an alternate directory using the `-Djava.io.tmpdir` setting in the `jvm.options` file.
+
+
+[[ts-startup]]
+==== {ls} start up
+
+[[ts-illegal-reflective-error]]
+===== 'Illegal reflective access' errors
+
+// https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
+
+After an upgrade, Logstash may show warnings similar to these:
+
+[source,sh]
+-----
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.jruby.ext.openssl.SecurityHelper (file:/{...}/jruby{...}jopenssl.jar) to field java.security.MessageDigest.provider
+WARNING: Please consider reporting this to the maintainers of org.jruby.ext.openssl.SecurityHelper
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+-----
+
+These errors appear related to https://github.com/jruby/jruby/issues/4834[a known issue with JRuby].
+
+*Work around*
+
+Try adding these values to the `jvm.options` file.
+
+[source,sh]
+-----
+--add-opens=java.base/java.security=ALL-UNNAMED
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.nio.channels=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=org.ALL-UNNAMED
+--add-opens=java.management/sun.management=ALL-UNNAMED
+-----
+
+*Notes:*
+
+* These settings allow Logstash to start without warnings.
+* This workaround has been tested with simple pipelines. If you have experiences
+to share, please comment in the
+https://github.com/elastic/logstash/issues/10496[issue].
+
+
+[[ts-windows-permission-denied-NUL]]
+===== 'Permission denied - NUL' errors on Windows
+
+Logstash may not start with some user-supplied versions of the JDK on Windows.  
+
+
+*Sample error*
+
+[source,sh]
+-----
+[FATAL] 2022-04-27 15:13:16.650 [main] Logstash - Logstash stopped processing because of an error: (EACCES) Permission denied - NUL
+org.jruby.exceptions.SystemCallError: (EACCES) Permission denied - NUL
+-----
+
+
+This error appears to be related to a https://bugs.openjdk.java.net/browse/JDK-8285445[JDK issue] where a new property was
+added with an inappropriate default.
+
+This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azul Zulu) on Windows:
+
+* `11.0.15+10`
+* `17.0.3+7`
+
+*Work around*
+
+* Use the {logstash-ref}/getting-started-with-logstash.html#ls-jvm[bundled JDK] included with Logstash
+* Or, try adding this value to the `jvm.options` file, and restarting Logstash
++
+[source,sh]
+-----
+-Djdk.io.File.enableADS=true
+-----
+
+
+[[ts-pqs]]
+==== Troubleshooting persistent queues
+
+Symptoms of persistent queue problems include {ls} or one or more pipelines not starting successfully, accompanied by an error message similar to this one.
+
+```
+message=>"java.io.IOException: Page file size is too small to hold elements"
+```
+
+See the <<troubleshooting-pqs,troubleshooting information>> in the persistent
+queue section for more information on remediating problems with persistent queues. 
+
+
+[[ts-ingest]] 
+==== Data ingestion
+
+[[ts-429]] 
+===== Error response code 429
+
+A `429` message indicates that an application is busy handling other requests. For
+example, Elasticsearch sends a `429` code to notify Logstash (or other indexers)
+that the bulk failed because the ingest queue is full. Logstash will retry sending documents.
+
+*Possible actions*
+
+Check {es} to see if it needs attention.
+
+* {ref}/cluster-stats.html[Cluster stats API]
+* {ref}/monitor-elasticsearch-cluster.html[Monitor a cluster]
+
+*Sample error*
+
+-----
+[2018-08-21T20:05:36,111][INFO ][logstash.outputs.elasticsearch] retrying
+failed action with response code: 429
+({"type"=>"es_rejected_execution_exception", "reason"=>"rejected execution of
+org.elasticsearch.transport.TransportService$7@85be457 on
+EsThreadPoolExecutor[bulk, queue capacity = 200,
+org.elasticsearch.common.util.concurrent.EsThreadPoolExecutor@538c9d8a[Running,
+pool size = 16, active threads = 16, queued tasks = 200, completed tasks =
+685]]"})
+-----
+
+
+[[ts-performance]] 
+==== Performance
+
+For general performance tuning tips and guidelines, see <<performance-tuning>>.
+
+
+[[ts-pipeline]] 
+==== Troubleshooting a pipeline
+
+Pipelines, by definition, are unique. Here are some guidelines to help you get
+started.
+
+* Identify the offending pipeline.
+* Start small. Create a minimum pipeline that manifests the problem.
+
+
+For basic pipelines, this configuration could be enough to make the problem show itself.
+
+[source,ruby]
+-----
+input {stdin{}} output {stdout{}}
+-----
+
+{ls} can separate logs by pipeline. This feature can help you identify the offending pipeline. 
+Set `pipeline.separate_logs: true` in your `logstash.yml` to enable the log per pipeline feature.
+
+For more complex pipelines, the problem could be caused by a series of plugins in
+a specific order. Troubleshooting these pipelines usually requires trial and error.
+Start by systematically removing input and output plugins until you're left with
+the minimum set that manifest the issue.
+
+We want to expand this section to make it more helpful. If you have
+troubleshooting tips to share, please:
+
+* create an issue at https://github.com/elastic/logstash/issues, or
+* create a pull request with your proposed changes at https://github.com/elastic/logstash.
+
+[[ts-pipeline-logging-level-performance]]
+==== Logging level can affect performances
+
+*Symptoms* 
+
+Simple filters such as `mutate` or `json` filter can take several milliseconds per event to execute.
+Inputs and outputs might be affected, too.
+
+*Background*
+
+The different plugins running on Logstash can be quite verbose if the logging level is set to `debug` or `trace`.
+As the logging library used in Logstash is synchronous, heavy logging can affect performances.
+
+*Solution*
+
+Reset the logging level to `info`.

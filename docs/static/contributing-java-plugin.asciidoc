@@ -5,8 +5,7 @@ Now you can write your own Java plugin for use with {ls}.
 We have provided instructions and GitHub examples to give
 you a head start. 
 
-Native support for Java plugins in {ls} consists of several components
-including:
+Native support for Java plugins in {ls} consists of several components:
 
 * Extensions to the Java execution engine to support running Java plugins in
 Logstash pipelines
@@ -17,7 +16,7 @@ implementations of API interfaces outside that package. The implementation of
 classes outside of the API package may change at any time.
 * Tooling to automate the packaging and deployment of Java plugins in Logstash.
 
-[float]
+[discrete]
 === Process overview
 Here are the steps:
 

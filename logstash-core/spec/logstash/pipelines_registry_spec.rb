@@ -210,13 +210,14 @@ describe LogStash::PipelinesRegistry do
           end
         end
 
-        # make sure we entered the block executioin
+        # make sure we entered the block execution
         wait(10).for {in_block.true?}.to be_truthy
 
         # at this point the thread is suspended waiting on queue
 
         # since in reloading state, running_pipelines is not empty
-        expect(subject.running_pipelines).not_to be_empty
+        expect(subject.running_pipelines).to be_empty
+        expect(subject.loading_pipelines).not_to be_empty
 
         # unblock thread
         queue.push(:dummy)
@@ -224,11 +225,81 @@ describe LogStash::PipelinesRegistry do
 
         # 3rd call: finished_execution? is true
         expect(subject.running_pipelines).to be_empty
+        expect(subject.loading_pipelines).to be_empty
+      end
+    end
+  end
+
+  context "deleting a pipeline" do
+    context "when pipeline is in registry" do
+      before :each do
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+      end
+
+      it "should not delete pipeline if pipeline is not terminated" do
+        expect(pipeline).to receive(:finished_execution?).and_return(false)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_falsey
+        expect(subject.get_pipeline(pipeline_id)).not_to be_nil
+      end
+
+      it "should delete pipeline if pipeline is terminated" do
+        expect(pipeline).to receive(:finished_execution?).and_return(true)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_truthy
+        expect(subject.get_pipeline(pipeline_id)).to be_nil
+      end
+
+      it "should recreate pipeline if pipeline is delete and create again" do
+        expect(pipeline).to receive(:finished_execution?).and_return(true)
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:info)
+        expect(subject.delete_pipeline(pipeline_id)).to be_truthy
+        expect(subject.get_pipeline(pipeline_id)).to be_nil
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+        expect(subject.get_pipeline(pipeline_id)).not_to be_nil
+      end
+    end
+
+    context "when pipeline is not in registry" do
+      it "should log error" do
+        expect(LogStash::PipelinesRegistry).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:error)
+        expect(subject.delete_pipeline(pipeline_id)).to be_falsey
       end
     end
   end
 
   context "pipelines collections" do
+    context "with a reloading pipeline" do
+      before :each do
+        subject.create_pipeline(pipeline_id, pipeline) { true }
+#         expect(pipeline).to receive(:finished_execution?).and_return(false)
+        in_block = Concurrent::AtomicBoolean.new(false)
+        queue = Queue.new # threadsafe queue
+        thread = Thread.new(in_block) do |in_block|
+          subject.reload_pipeline(pipeline_id) do
+            in_block.make_true
+#             sleep(3) # simulate a long loading pipeline
+            queue.pop
+          end
+        end
+        # make sure we entered the block execution
+        wait(10).for {in_block.true?}.to be_truthy
+      end
+
+      it "should not find running pipelines" do
+        expect(subject.running_pipelines).to be_empty
+      end
+
+      it "should not find non_running pipelines" do
+        # non running pipelines are those terminated
+        expect(subject.non_running_pipelines).to be_empty
+      end
+    end
+
     context "with a non terminated pipelines" do
       before :each do
         subject.create_pipeline(pipeline_id, pipeline) { true }

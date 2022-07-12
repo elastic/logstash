@@ -32,7 +32,12 @@ import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.util.ExponentialBackoff;
 
+
+/**
+ * File implementation for {@link CheckpointIO}
+ * */
 public class FileCheckpointIO implements CheckpointIO {
 //    Checkpoint file structure
 //
@@ -66,6 +71,7 @@ public class FileCheckpointIO implements CheckpointIO {
     private static final String HEAD_CHECKPOINT = "checkpoint.head";
     private static final String TAIL_CHECKPOINT = "checkpoint.";
     private final Path dirPath;
+    private final ExponentialBackoff backoff;
 
     public FileCheckpointIO(Path dirPath) {
         this(dirPath, false);
@@ -74,6 +80,7 @@ public class FileCheckpointIO implements CheckpointIO {
     public FileCheckpointIO(Path dirPath, boolean retry) {
         this.dirPath = dirPath;
         this.retry = retry;
+        this.backoff = new ExponentialBackoff(3L);
     }
 
     @Override
@@ -100,20 +107,21 @@ public class FileCheckpointIO implements CheckpointIO {
             out.getFD().sync();
         }
 
+        // Windows can have problem doing file move See: https://github.com/elastic/logstash/issues/12345
+        // retry a couple of times to make it works. The first two runs has no break. The rest of reties are exponential backoff.
+        final Path path = dirPath.resolve(fileName);
         try {
-            Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
+            Files.move(tmpPath, path, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
             if (retry) {
                 try {
-                    logger.error("Retrying after exception writing checkpoint: " + ex);
-                    Thread.sleep(500);
-                    Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
-                } catch (IOException | InterruptedException ex2) {
-                    logger.error("Aborting after second exception writing checkpoint: " + ex2);
-                    throw ex;
+                    logger.debug("CheckpointIO retry moving '{}' to '{}'", tmpPath, path);
+                    backoff.retryable(() -> Files.move(tmpPath, path, StandardCopyOption.ATOMIC_MOVE));
+                } catch (ExponentialBackoff.RetryException re) {
+                    throw new IOException("Error writing checkpoint", re);
                 }
             } else {
-                logger.error("Error writing checkpoint: " + ex);
+                logger.error("Error writing checkpoint without retry: " + ex);
                 throw ex;
             }
         }
@@ -122,6 +130,7 @@ public class FileCheckpointIO implements CheckpointIO {
     @Override
     public void purge(String fileName) throws IOException {
         Path path = dirPath.resolve(fileName);
+        logger.debug("CheckpointIO deleting '{}'", path);
         Files.delete(path);
     }
 

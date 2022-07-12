@@ -239,7 +239,7 @@ responsible for returning the buffer to write mode via either
 `byteBuffer.clear()` or `byteBuffer.compact()` before resuming writes. In the
 example above, the `decode` method simply splits the incoming byte stream on the
 specified delimiter. A production-grade codec such as
-https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
+https://github.com/elastic/logstash/blob/main/logstash-core/src/main/java/org/logstash/plugins/codecs/Line.java[`java-line`]
 would not make the simplifying assumption that the end of the supplied byte
 stream corresponded with the end of an event.
 
@@ -322,8 +322,6 @@ To test the plugin, start Logstash with:
 echo "foo,bar" | bin/logstash -e 'input { java_stdin { codec => java_codec_example } }'
 -----
 
-NOTE: The Java execution engine, the default execution engine since Logstash 7.0, is required
-as Java plugins are not supported in the Ruby execution engine.
 
 The expected Logstash output (excluding initialization) with the configuration above is:
 

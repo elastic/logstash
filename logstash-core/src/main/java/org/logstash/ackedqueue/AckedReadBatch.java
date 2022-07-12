@@ -31,6 +31,9 @@ import java.util.Collection;
 
 import static org.logstash.RubyUtil.RUBY;
 
+/**
+ * Persistent queue collection of events implementation
+ * */
 public final class AckedReadBatch implements QueueBatch {
 
     private AckedBatch ackedBatch;

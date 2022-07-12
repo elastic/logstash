@@ -20,18 +20,24 @@
 
 package org.logstash.ext;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
+import org.jruby.RubyString;
+import org.jruby.RubyTime;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
+import org.logstash.Timestamp;
 
 /**
  * Tests for {@link JrubyTimestampExtLibrary}.
  */
-public final class JrubyTimestampExtLibraryTest {
+public final class JrubyTimestampExtLibraryTest extends RubyTestBase {
 
     @Test
     public void testConstructorNew() {
@@ -58,10 +64,8 @@ public final class JrubyTimestampExtLibraryTest {
     @Test
     public void testConstructFromRubyDateTime() {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject now =
-            context.runtime.evalScriptlet("require 'date'\nDateTime.now.to_time.utc");
-        final JrubyTimestampExtLibrary.RubyTimestamp t =
-            newRubyTimestamp(context, new IRubyObject[]{now});
+        final IRubyObject now = RubyTime.newTime(context.runtime, System.currentTimeMillis());
+        final JrubyTimestampExtLibrary.RubyTimestamp t = newRubyTimestamp(context, new IRubyObject[]{now});
         Assertions.assertThat(
             Math.abs(
                 t.ruby_time(context).to_f().getDoubleValue() - now.convertToFloat().getDoubleValue()
@@ -98,6 +102,49 @@ public final class JrubyTimestampExtLibraryTest {
                 context, context.runtime.newString("-")
             ).isTrue()
         ).isFalse();
+    }
+
+    @Test
+    public void testCoerceInstanceOfRubyTimestamp() {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final JrubyTimestampExtLibrary.RubyTimestamp source = JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, Timestamp.now());
+
+        final IRubyObject coerced = JrubyTimestampExtLibrary.RubyTimestamp.ruby_coerce(context, RubyUtil.RUBY_TIMESTAMP_CLASS, source);
+
+        Assertions.assertThat(coerced)
+                .isNotNull()
+                .isInstanceOfSatisfying(JrubyTimestampExtLibrary.RubyTimestamp.class, koerced -> {
+                   Assertions.assertThat(koerced).isEqualTo(source);
+                });
+    }
+
+    @Test
+    public void testCoerceInstanceOfRubyTime() {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final RubyTime rubyTime = RubyTime.newTimeFromNanoseconds(context.runtime, 1L);
+
+        final IRubyObject coerced = JrubyTimestampExtLibrary.RubyTimestamp.ruby_coerce(context, RubyUtil.RUBY_TIMESTAMP_CLASS, rubyTime);
+
+        Assertions.assertThat(coerced)
+                .isNotNull()
+                .isInstanceOfSatisfying(JrubyTimestampExtLibrary.RubyTimestamp.class, koerced -> {
+                    Assertions.assertThat(koerced.getTimestamp().toInstant()).isEqualTo(rubyTime.toInstant());
+                });
+    }
+
+    @Test
+    public void testCoerceInstanceOfRubyString() {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final RubyString timestamp = RubyString.newString(context.runtime, "2021-08-30T08:04:57.918273645-08:00");
+        final Instant instant = ZonedDateTime.parse(timestamp).toInstant();
+        final JrubyTimestampExtLibrary.RubyTimestamp source = newRubyTimestamp(context, new IRubyObject[]{ timestamp });
+
+        final IRubyObject coerced = JrubyTimestampExtLibrary.RubyTimestamp.ruby_coerce(context, RubyUtil.RUBY_TIMESTAMP_CLASS, source);
+
+        Assertions.assertThat(coerced)
+                .isNotNull()
+                .isInstanceOfSatisfying(JrubyTimestampExtLibrary.RubyTimestamp.class, koerced -> Assertions.assertThat(koerced.getTimestamp().toInstant()).isEqualTo(instant));
+
     }
 
     private static JrubyTimestampExtLibrary.RubyTimestamp newRubyTimestamp(

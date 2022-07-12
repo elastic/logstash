@@ -49,14 +49,14 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private JRubyAbstractQueueWriteClientExt writeClient;
 
-    private LongCounter eventsMetricsCounter;
-    private LongCounter eventsMetricsTime;
+    private transient LongCounter eventsMetricsCounter;
+    private transient LongCounter eventsMetricsTime;
 
-    private LongCounter pipelineMetricsCounter;
-    private LongCounter pipelineMetricsTime;
+    private transient LongCounter pipelineMetricsCounter;
+    private transient LongCounter pipelineMetricsTime;
 
-    private LongCounter pluginMetricsCounter;
-    private LongCounter pluginMetricsTime;
+    private transient LongCounter pluginMetricsCounter;
+    private transient LongCounter pluginMetricsTime;
 
     public JRubyWrappedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

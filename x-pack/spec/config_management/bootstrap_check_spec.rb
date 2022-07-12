@@ -177,6 +177,40 @@ describe LogStash::ConfigManagement::BootstrapCheck do
         end
       end
 
+      context "when defining invalid patterns" do
+        let(:pipeline_ids) { ["pipeline1", "pipeline2", "@o@"] }
+        let(:settings) do
+          apply_settings(
+            {
+              "xpack.management.enabled" => true,
+              "xpack.management.pipeline.id" => pipeline_ids
+            },
+            system_settings
+          )
+        end
+
+        it "raises a `LogStash::BootstrapCheckError` with the invalid patterns" do
+          expect { subject.check(settings) }.to raise_error LogStash::BootstrapCheckError, /@o@/
+        end
+      end
+
+      context "when defining wildcard patterns" do
+        let(:pipeline_ids) { ["pipeline1", "pipeline2", "*pipeline*"] }
+        let(:settings) do
+          apply_settings(
+              {
+                  "xpack.management.enabled" => true,
+                  "xpack.management.pipeline.id" => pipeline_ids
+              },
+              system_settings
+          )
+        end
+
+        it "does not raise a `LogStash::BootstrapCheckError` error" do
+          expect { subject.check(settings) }.to_not raise_error
+        end
+      end
+
       context "when defining duplicate ids" do
         let(:pipeline_ids) { ["pipeline1", "pipeline2", "pipeline1"] }
         let(:settings) do

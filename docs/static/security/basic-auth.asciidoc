@@ -1,0 +1,82 @@
+[discrete]
+[[ls-http-auth-basic]]
+=== Configuring Logstash to use basic authentication
+
+Logstash needs to be able to manage index templates, create indices,
+and write and delete documents in the indices it creates.
+
+To set up authentication credentials for Logstash:
+
+. Use the the **Management > Roles** UI in {kib} or the `role` API to create a
+`logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
+For *indices* privileges, add `write`, `create`, and `create_index`.
++
+Add `manage_ilm` for cluster and `manage` and `manage_ilm` for indices if you
+plan to use {ref}/getting-started-index-lifecycle-management.html[index
+lifecycle management].
++
+[source, sh]
+---------------------------------------------------------------
+POST _security/role/logstash_writer
+{
+  "cluster": ["manage_index_templates", "monitor", "manage_ilm"], <1>
+  "indices": [
+    {
+      "names": [ "logstash-*" ], <2>
+      "privileges": ["write","create","create_index","manage","manage_ilm"]  <3>
+    }
+  ]
+}
+---------------------------------------------------------------
+<1> The cluster needs the `manage_ilm` privilege if 
+{ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
+is enabled.
+<2> If you use a custom Logstash index pattern, specify your custom pattern
+instead of the default `logstash-*` pattern.
+<3> If {ref}/getting-started-index-lifecycle-management.html[index lifecycle
+management] is enabled, the role requires the `manage` and `manage_ilm`
+privileges to load index lifecycle policies, create rollover aliases, and create
+and manage rollover indices.
+
+. Create a `logstash_internal` user and assign it the `logstash_writer` role.
+You can create users from the **Management > Users** UI in {kib} or through
+the `user` API:
++
+[source, sh]
+---------------------------------------------------------------
+POST _security/user/logstash_internal
+{
+  "password" : "x-pack-test-password",
+  "roles" : [ "logstash_writer"],
+  "full_name" : "Internal Logstash User"
+}
+---------------------------------------------------------------
+
+. Configure Logstash to authenticate as the `logstash_internal` user you just
+created. You configure credentials separately for each of the {es} plugins in
+your Logstash `.conf` file. For example:
++
+[source,js]
+--------------------------------------------------
+input {
+  elasticsearch {
+    ...
+    user => logstash_internal
+    password => x-pack-test-password
+  }
+}
+filter {
+  elasticsearch {
+    ...
+    user => logstash_internal
+    password => x-pack-test-password
+  }
+}
+output {
+  elasticsearch {
+    ...
+    user => logstash_internal
+    password => x-pack-test-password
+  }
+}
+--------------------------------------------------

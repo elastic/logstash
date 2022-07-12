@@ -31,12 +31,15 @@ import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClientBase;
 
+/**
+ * JRuby extension to provide an implementation of queue client for InMemory queue
+ * */
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
 public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
     private static final long serialVersionUID = 1L;
 
-    @SuppressWarnings("rawtypes") private BlockingQueue queue;
+    @SuppressWarnings({"rawtypes", "serial"}) private BlockingQueue queue;
 
     public JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);

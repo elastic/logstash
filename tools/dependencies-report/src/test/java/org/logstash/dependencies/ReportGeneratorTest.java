@@ -77,8 +77,8 @@ public class ReportGeneratorTest {
 
         // verify that the two components in the test input with missing licenses are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
-        assertTrue(csvOutput.toString().contains("commons-io:commons-io,2.5,,,,\r\n"));
-        assertTrue(csvOutput.toString().contains("filesize,0.0.4,,,,\r\n"));
+        assertTrue(csvOutput.toString().contains("commons-io:commons-io,2.5,,,,,\r\n"));
+        assertTrue(csvOutput.toString().contains("filesize,0.0.4,,,,,\r\n"));
         String unusedLicenses = unusedLicenseWriter.toString();
         assertThat(unusedLicenses, containsString("43 license mappings were specified but unused"));
     }
@@ -103,7 +103,7 @@ public class ReportGeneratorTest {
         // verify that the two components in the test input with unacceptable licenses are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
         String csvString = csvOutput.toString();
-        assertThat(csvString, containsString("com.fasterxml.jackson.core:jackson-core,2.7.3,,,,\r\n"));
+        assertThat(csvString, containsString("com.fasterxml.jackson.core:jackson-core,2.7.3,,,,,\r\n"));
 
         Pattern bundlerPattern = Pattern.compile(".*bundler,1\\.16\\.[0-1],,,,.*");
         assertThat(bundlerPattern.matcher(csvString).find(), is(true));
@@ -119,8 +119,8 @@ public class ReportGeneratorTest {
 
         // verify that the two components in the test input with missing URLs are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
-        assertTrue(csvOutput.toString().contains("org.codehaus.janino:commons-compiler,3.0.8,,,,\r\n"));
-        assertTrue(csvOutput.toString().contains("json-parser,,,,,\r\n"));
+        assertTrue(csvOutput.toString().contains("org.codehaus.janino:commons-compiler,3.0.8,,,,,\r\n"));
+        assertTrue(csvOutput.toString().contains("json-parser,,,,,,\r\n"));
         String unusedLicenses = unusedLicenseWriter.toString();
         assertThat(unusedLicenses, containsString("43 license mappings were specified but unused"));
     }

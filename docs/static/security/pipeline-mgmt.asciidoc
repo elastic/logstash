@@ -1,0 +1,18 @@
+[discrete]
+[[ls-pipeline-management-user]]
+=== Configuring credentials for Centralized Pipeline Management
+
+If you plan to use Logstash
+{logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management],
+you need to configure the username and password that Logstash uses for managing
+configurations.
+
+You configure the user and password in the `logstash.yml` configuration file:
+
+[source,yaml]
+----------------------------------------------------------
+xpack.management.elasticsearch.username: logstash_admin_user <1>
+xpack.management.elasticsearch.password: t0p.s3cr3t
+----------------------------------------------------------
+<1> The user you specify here must have the built-in `logstash_admin` role as
+well as the `logstash_writer` role that you created earlier.

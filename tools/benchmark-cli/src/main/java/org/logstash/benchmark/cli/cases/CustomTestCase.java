@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 package org.logstash.benchmark.cli.cases;
 
 import org.apache.commons.io.IOUtils;
@@ -40,24 +39,37 @@ public class CustomTestCase implements Case {
     private final LogstashInstallation logstash;
     private final DataStore store;
     private final Path configpath;
+    private final File data;
+    private final int repeats;
 
-    public CustomTestCase(DataStore store, LogstashInstallation logstash, Path cwd, Properties settings, UserOutput output, BenchmarkMeta runConfig) {
+    public CustomTestCase(DataStore store, LogstashInstallation logstash, Path cwd, Properties settings,
+            UserOutput output, BenchmarkMeta runConfig) {
         this.logstash = logstash;
         logstash.configure(runConfig);
+        if (runConfig.getDataPath() != null) {
+            data = runConfig.getDataPath().toFile();
+        } else {
+            data = null;
+        }
         this.store = store;
         this.configpath = runConfig.getConfigPath();
+        this.repeats = Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT));
     }
 
     @Override
     public AbstractMap<LsMetricStats, ListStatistics> run() {
-        try (final LsMetricsMonitor.MonitorExecution monitor =
-                     new LsMetricsMonitor.MonitorExecution(logstash.metrics(), store)) {
+        try (final LsMetricsMonitor.MonitorExecution monitor = new LsMetricsMonitor.MonitorExecution(logstash.metrics(),
+                store)) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            try (final InputStream cfg = Files.newInputStream(configpath)){
+            try (final InputStream cfg = Files.newInputStream(configpath)) {
                 IOUtils.copy(cfg, baos);
             }
-            logstash.execute(baos.toString());
+            if (data != null) {
+                logstash.execute(baos.toString(), data, repeats);
+            } else {
+                logstash.execute(baos.toString());
+            }
             return monitor.stopAndGet();
         } catch (final IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new IllegalStateException(ex);

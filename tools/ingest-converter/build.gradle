@@ -19,30 +19,31 @@
 
 import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's master versions.yml file
+// fetch version from Logstash's main versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
 
 description = """Ingest JSON to Logstash Grok Config Converter"""
 version = versionMap['logstash-core']
+String jacksonDatabindVersion = versionMap['jackson-databind']
 
 repositories {
   mavenCentral()
-  jcenter()
 }
 
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
+    gradlePluginPortal()
   }
   dependencies {
-    classpath 'org.yaml:snakeyaml:1.17'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+    classpath 'org.yaml:snakeyaml:1.29'
+    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
   }
 }
 
 dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:4.6'
+  implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   testImplementation "junit:junit:4.12"
   testImplementation 'commons-io:commons-io:2.5'
 }

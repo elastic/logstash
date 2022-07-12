@@ -21,10 +21,12 @@
 package org.logstash.config.ir.imperative;
 
 import org.junit.Test;
+import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.IRHelpers.assertSyntaxEquals;
@@ -35,7 +37,8 @@ public class ImperativeToGraphtest {
 
     @Test
     public void convertSimpleExpression() throws InvalidIRException {
-        Graph imperative =  iComposeSequence(randMeta(), iPlugin(randMeta(), FILTER, "json"), iPlugin(randMeta(), FILTER, "stuff")).toGraph();
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        Graph imperative =  iComposeSequence(randMeta(), iPlugin(randMeta(), FILTER, "json"), iPlugin(randMeta(), FILTER, "stuff")).toGraph(cve);
         imperative.validate(); // Verify this is a valid graph
 
         Graph regular = Graph.empty();
@@ -46,10 +49,11 @@ public class ImperativeToGraphtest {
 
     @Test
     public void testIdsDontAffectSourceComponentEquality() throws InvalidIRException {
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         Graph imperative =  iComposeSequence(
                 iPlugin(randMeta(), FILTER, "json", "oneid"),
                 iPlugin(randMeta(), FILTER, "stuff", "anotherid")
-        ).toGraph();
+        ).toGraph(cve);
         imperative.validate(); // Verify this is a valid graph
 
         Graph regular = Graph.empty();
@@ -63,6 +67,7 @@ public class ImperativeToGraphtest {
 
     @Test
     public void convertComplexExpression() throws InvalidIRException {
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         Graph imperative = iComposeSequence(
                 iPlugin(randMeta(), FILTER, "p1"),
                 iPlugin(randMeta(), FILTER, "p2"),
@@ -70,7 +75,7 @@ public class ImperativeToGraphtest {
                         iPlugin(randMeta(), FILTER, "p3"),
                         iComposeSequence(iPlugin(randMeta(), FILTER, "p4"), iPlugin(randMeta(), FILTER, "p5"))
                 )
-        ).toGraph();
+        ).toGraph(cve);
         imperative.validate(); // Verify this is a valid graph
 
         PluginVertex p1 = gPlugin(randMeta(), FILTER, "p1");
@@ -93,6 +98,7 @@ public class ImperativeToGraphtest {
     // partial leaves. This makes sure they all wire-up right
     @Test
     public void deepDanglingPartialLeaves() throws InvalidIRException {
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         Graph imperative = iComposeSequence(
                  iPlugin(randMeta(), FILTER, "p0"),
                  iIf(randMeta(), eTruthy(eValue(1)),
@@ -106,7 +112,7 @@ public class ImperativeToGraphtest {
                  ),
                  iPlugin(randMeta(), FILTER, "pLast")
 
-         ).toGraph();
+         ).toGraph(cve);
         imperative.validate(); // Verify this is a valid graph
 
         IfVertex if1 = gIf(randMeta(), eTruthy(eValue(1)));
@@ -141,6 +147,7 @@ public class ImperativeToGraphtest {
     // single node
     @Test
     public void convertComplexExpressionWithTerminal() throws InvalidIRException {
+        ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         Graph imperative = iComposeSequence(
             iPlugin(randMeta(), FILTER, "p1"),
             iIf(randMeta(), eTruthy(eValue(1)),
@@ -154,7 +161,7 @@ public class ImperativeToGraphtest {
                 )
             ),
             iPlugin(randMeta(), FILTER, "terminal")
-        ).toGraph();
+        ).toGraph(cve);
         imperative.validate(); // Verify this is a valid graph
 
         PluginVertex p1 = gPlugin(randMeta(), FILTER,"p1");

@@ -20,6 +20,12 @@
 
 package org.logstash.ackedqueue.io;
 
+/**
+ * Internal class used in persistent queue implementation.
+ *
+ * It'a vector that stores primitives long (no autoboxing) expanding, by copy, the underling array when
+ * more space is needed.
+ * */
 public final class LongVector {
 
     private int count;

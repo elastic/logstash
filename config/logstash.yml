@@ -53,18 +53,32 @@
 # events in memory. By default, logstash will refuse to quit until all
 # received events have been pushed to the outputs.
 #
-# WARNING: enabling this can lead to data loss during shutdown
+# WARNING: Enabling this can lead to data loss during shutdown
 #
 # pipeline.unsafe_shutdown: false
 #
 # Set the pipeline event ordering. Options are "auto" (the default), "true" or "false".
-# "auto" will  automatically enable ordering if the 'pipeline.workers' setting
-# is also set to '1'.
-# "true" will enforce ordering on the pipeline and prevent logstash from starting
+# "auto" automatically enables ordering if the 'pipeline.workers' setting
+# is also set to '1', and disables otherwise.
+# "true" enforces ordering on the pipeline and prevent logstash from starting
 # if there are multiple workers.
-# "false" will disable any extra processing necessary for preserving ordering.
+# "false" disables any extra processing necessary for preserving ordering.
 #
-pipeline.ordered: auto
+# pipeline.ordered: auto
+#
+# Sets the pipeline's default value for `ecs_compatibility`, a setting that is
+# available to plugins that implement an ECS Compatibility mode for use with
+# the Elastic Common Schema.
+# Possible values are:
+# - disabled
+# - v1
+# - v8 (default)
+# Pipelines defined before Logstash 8 operated without ECS in mind. To ensure a
+# migrated pipeline continues to operate as it did before your upgrade, opt-OUT
+# of ECS for the individual pipeline in its `pipelines.yml` definition. Setting
+# it here will set the default for _all_ pipelines, including new ones.
+#
+# pipeline.ecs_compatibility: v8
 #
 # ------------ Pipeline Configuration Settings --------------
 #
@@ -102,26 +116,64 @@ pipeline.ordered: auto
 #
 # config.support_escapes: false
 #
-# ------------ HTTP API Settings -------------
+# ------------ API Settings -------------
 # Define settings related to the HTTP API here.
 #
 # The HTTP API is enabled by default. It can be disabled, but features that rely
 # on it will not work as intended.
-# http.enabled: true
 #
-# By default, the HTTP API is bound to only the host's local loopback interface,
-# ensuring that it is not accessible to the rest of the network. Because the API
-# includes neither authentication nor authorization and has not been hardened or
-# tested for use as a publicly-reachable API, binding to publicly accessible IPs
-# should be avoided where possible.
+# api.enabled: true
 #
-# http.host: 127.0.0.1
+# By default, the HTTP API is not secured and is therefore bound to only the
+# host's loopback interface, ensuring that it is not accessible to the rest of
+# the network.
+# When secured with SSL and Basic Auth, the API is bound to _all_ interfaces
+# unless configured otherwise.
+#
+# api.http.host: 127.0.0.1
 #
 # The HTTP API web server will listen on an available port from the given range.
 # Values can be specified as a single port (e.g., `9600`), or an inclusive range
 # of ports (e.g., `9600-9700`).
 #
-# http.port: 9600-9700
+# api.http.port: 9600-9700
+#
+# The HTTP API includes a customizable "environment" value in its response,
+# which can be configured here.
+#
+# api.environment: "production"
+#
+# The HTTP API can be secured with SSL (TLS). To do so, you will need to provide
+# the path to a password-protected keystore in p12 or jks format, along with credentials.
+#
+# api.ssl.enabled: false
+# api.ssl.keystore.path: /path/to/keystore.jks
+# api.ssl.keystore.password: "y0uRp4$$w0rD"
+#
+# The HTTP API can be configured to require authentication. Acceptable values are
+#  - `none`:  no auth is required (default)
+#  - `basic`: clients must authenticate with HTTP Basic auth, as configured
+#             with `api.auth.basic.*` options below
+# api.auth.type: none
+#
+# When configured with `api.auth.type` `basic`, you must provide the credentials
+# that requests will be validated against. Usage of Environment or Keystore
+# variable replacements is encouraged (such as the value `"${HTTP_PASS}"`, which
+# resolves to the value stored in the keystore's `HTTP_PASS` variable if present
+# or the same variable from the environment)
+#
+# api.auth.basic.username: "logstash-user"
+# api.auth.basic.password: "s3cUreP4$$w0rD"
+#
+# When setting `api.auth.basic.password`, the password should meet
+# the default password policy requirements.
+# The default password policy requires non-empty minimum 8 char string that
+# includes a digit, upper case letter and lower case letter.
+# Policy mode sets Logstash to WARN or ERROR when HTTP authentication password doesn't
+# meet the password policy requirements.
+# The default is WARN. Setting to ERROR enforces stronger passwords (recommended).
+#
+# api.auth.basic.password_policy.mode: WARN
 #
 # ------------ Module Settings ---------------
 # Define modules here.  Modules definitions must be defined as an array.
@@ -162,8 +214,9 @@ pipeline.ordered: auto
 #
 # queue.type: memory
 #
-# If using queue.type: persisted, the directory path where the data files will be stored.
-# Default is path.data/queue
+# If `queue.type: persisted`, the directory path where the pipeline data files will be stored.
+# Each pipeline will group its PQ files in a subdirectory matching its `pipeline.id`.
+# Default is path.data/queue.
 #
 # path.queue:
 #
@@ -211,21 +264,40 @@ pipeline.ordered: auto
 # Default is 1024mb
 # dead_letter_queue.max_bytes: 1024mb
 
+# If using dead_letter_queue.enable: true, the interval in milliseconds where if no further events eligible for the DLQ
+# have been created, a dead letter queue file will be written. A low value here will mean that more, smaller, queue files
+# may be written, while a larger value will introduce more latency between items being "written" to the dead letter queue, and
+# being available to be read by the dead_letter_queue input when items are written infrequently.
+# Default is 5000.
+#
+# dead_letter_queue.flush_interval: 5000
+
+# If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
+# Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
+# Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.
+#
+# dead_letter_queue.storage_policy: drop_newer
+
+# If using dead_letter_queue.enable: true, the interval that events have to be considered valid. After the interval has
+# expired the events could be automatically deleted from the DLQ.
+# The interval could be expressed in days, hours, minutes or seconds, using as postfix notation like 5d,
+# to represent a five days interval.
+# The available units are respectively d, h, m, s for day, hours, minutes and seconds.
+# If not specified then the DLQ doesn't use any age policy for cleaning events.
+#
+# dead_letter_queue.retain.age: 1d
+
+# If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
+# could be "drop_newer" or "drop_older".
+# With drop_newer, messages that were inserted most recently are dropped, logging an error line.
+# With drop_older setting, the oldest messages are dropped as new ones are inserted.
+# Default value is "drop_newer".
+# dead_letter_queue.storage_policy: drop_newer
+
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
 # Default is path.data/dead_letter_queue
 #
 # path.dead_letter_queue:
-#
-# ------------ Metrics Settings --------------
-#
-# Bind address for the metrics REST endpoint
-#
-# http.host: "127.0.0.1"
-#
-# Bind port for the metrics REST endpoint, this option also accept a range
-# (9600-9700) and logstash will pick up the first available ports.
-#
-# http.port: 9600-9700
 #
 # ------------ Debugging Settings --------------
 #
@@ -241,6 +313,9 @@ pipeline.ordered: auto
 # path.logs:
 #
 # ------------ Other Settings --------------
+#
+# Allow or block running Logstash as superuser (default: true)
+# allow_superuser: false
 #
 # Where to find custom plugins
 # path.plugins: []
@@ -263,7 +338,8 @@ pipeline.ordered: auto
 #xpack.monitoring.elasticsearch.cloud_auth: logstash_system:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.monitoring.elasticsearch.api_key: "id:api_key"
-#xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.monitoring.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
+#xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
 #xpack.monitoring.elasticsearch.ssl.truststore.password: password
 #xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
@@ -286,7 +362,8 @@ pipeline.ordered: auto
 #xpack.management.elasticsearch.cloud_auth: logstash_admin_user:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.management.elasticsearch.api_key: "id:api_key"
-#xpack.management.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.management.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
+#xpack.management.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
 #xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.truststore.password: password
 #xpack.management.elasticsearch.ssl.keystore.path: /path/to/file
@@ -294,3 +371,7 @@ pipeline.ordered: auto
 #xpack.management.elasticsearch.ssl.verification_mode: certificate
 #xpack.management.elasticsearch.sniffing: false
 #xpack.management.logstash.poll_interval: 5s
+
+# X-Pack GeoIP plugin
+# https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html#plugins-filters-geoip-manage_update
+#xpack.geoip.download.endpoint: "https://geoip.elastic.co/v1/database"

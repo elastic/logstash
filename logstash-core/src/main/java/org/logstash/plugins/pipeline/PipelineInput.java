@@ -24,14 +24,21 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.stream.Stream;
 
+/**
+ * Represents the in endpoint of a pipeline to pipeline communication.
+ * */
 public interface PipelineInput {
+
+    enum ReceiveStatus {CLOSING, COMPLETED, FAIL}
+
     /**
      * Accepts an event. It might be rejected if the input is stopping.
      *
      * @param events a collection of events
-     * @return true if the event was successfully received
+     * @return response instance which contains the status of the execution, if events were successfully received
+     *      or reached an error or the input was closing.
      */
-    boolean internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events);
+    ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events);
 
     /**
      * @return true if the input is running

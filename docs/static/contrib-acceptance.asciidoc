@@ -1,0 +1,19 @@
+[discrete]
+[[plugin-acceptance]]
+==== Acceptance guidelines
+
+Start with the end in mind. 
+These guidelines and best practices can help you build a better plugin, even if you choose not to share it with the world.
+
+* **Consistency.** Your plugin must be consistent in quality and naming conventions used by other plugins. 
+The plugin name must be unique and in this format: `logstash-plugintype-pluginname`. 
+If the plugin name is more than one word, separate words after plugin type with underscores. 
+Example: _logstash-output-elastic_app_search_
+* **Documentation.** Documentation is a required component of your plugin. 
+If we list your plugin in the Logstash Reference, we point to your documentation--a readme.md, docs/index.asciidoc, or both--in your plugin repo.
+* **Code Review.** Your plugin must be reviewed by members of the community for coherence, quality, readability, stability and security.
+* **Tests.** Your plugin must contain tests to be accepted. You can refer to http://betterspecs.org/ for examples. 
+** Step 1. Enable travis on your account
+** Step 2. Import our standard travis.yml https://github.com/logstash-plugins/.ci/blob/1.x/travis/travis.yml, as shown in the
+https://github.com/logstash-plugins/logstash-filter-fingerprint/blob/main/.travis.yml[fingerprint filter example].
+** Step 3. Have specs in the spec folder.

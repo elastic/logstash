@@ -9,6 +9,11 @@ export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 export OSS=true
 
+if [ -n "$BUILD_JAVA_HOME" ]; then
+  GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
+fi
+
+
 SELECTED_TEST_SUITE=$1
 
 # The acceptance test in our CI infrastructure doesn't clear the workspace between run
@@ -27,6 +32,7 @@ QA_DIR="$PWD/qa"
 
 # Always run the halt, even if the test times out or an exit is sent
 cleanup() {
+
   cd $QA_DIR
   bundle check || bundle install
   bundle exec rake qa:vm:halt
@@ -39,6 +45,7 @@ cleanup
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:rpm
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
@@ -52,6 +59,7 @@ if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:deb
   echo "Acceptance: Installing dependencies"
   cd $QA_DIR
@@ -65,6 +73,7 @@ elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
 elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
   echo "Building Logstash artifacts"
   cd $LS_HOME
+  ./gradlew clean bootstrap
   rake artifact:all
 
   echo "Acceptance: Installing dependencies"

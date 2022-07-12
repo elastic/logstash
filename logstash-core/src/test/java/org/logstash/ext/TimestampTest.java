@@ -21,13 +21,14 @@
 package org.logstash.ext;
 
 import org.junit.Test;
+import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public final class TimestampTest {
+public final class TimestampTest extends RubyTestBase {
 
     @Test
     public void testClone() {

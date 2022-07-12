@@ -76,15 +76,17 @@ module LogStash
   end
 end
 
-# when launched as a script, not require'd, (currently from bin/logstash and bin/logstash-plugin) the first
-# argument is the path of a Ruby file to require and a LogStash::Runner class is expected to be
-# defined and exposing the LogStash::Runner#main instance method which will be called with the current ARGV
-# currently lib/logstash/runner.rb and lib/pluginmanager/main.rb are called using this.
+# when launched as a script, not require'd, (currently from bin/logstash)
 if $0 == __FILE__
-  LogStash::Bundler.setup!({:without => [:build, :development]})
+  bundler_options = {:without => [:build, :development]}
+  ## Check for dev flags - this needs to be done before the runner is invoked to set bundler options
+  if ARGV.include?("--enable-local-plugin-development")
+    bundler_options[:allow_gemfile_changes] = true
+  end
+  LogStash::Bundler.setup!(bundler_options)
   require_relative "patches/jar_dependencies"
 
-  require ARGV.shift
+  require 'logstash/runner'
   exit_status = LogStash::Runner.run("bin/logstash", ARGV)
   exit(exit_status || 0)
 end

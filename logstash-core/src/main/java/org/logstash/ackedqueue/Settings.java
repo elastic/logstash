@@ -20,6 +20,9 @@
 
 package org.logstash.ackedqueue;
 
+/**
+ * Persistent queue settings definition.
+ * */
 public interface Settings {
 
     Class<? extends Queueable> getElementClass();
@@ -38,6 +41,9 @@ public interface Settings {
 
     boolean getCheckpointRetry();
 
+    /**
+     * Persistent queue Setting's fluent builder definition
+     * */
     interface Builder {
 
         Builder elementClass(Class<? extends Queueable> elementClass);

@@ -34,6 +34,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
+/**
+ * JRuby extension to provide slow logger functionality to Ruby classes
+ * */
 @JRubyClass(name = "SlowLogger")
 public class SlowLoggerExt extends RubyObject {
 
@@ -45,7 +48,7 @@ public class SlowLoggerExt extends RubyObject {
     private static final RubySymbol EVENT = RubyUtil.RUBY.newSymbol("event");
     private static final RubyNumeric NANO_TO_MILLI = RubyUtil.RUBY.newFixnum(1000000);
 
-    private Logger slowLogger;
+    private transient Logger slowLogger;
     private long warnThreshold;
     private long infoThreshold;
     private long debugThreshold;

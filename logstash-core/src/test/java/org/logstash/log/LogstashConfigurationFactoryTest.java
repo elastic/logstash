@@ -90,7 +90,7 @@ public class LogstashConfigurationFactoryTest {
     private void verifyPipelineReceived(String pipelineSubAppenderName, String expectedMessage) {
         LoggerContext context = LoggerContext.getContext(false);
         final Configuration config = context.getConfiguration();
-        RoutingAppender routingApp = config.getAppender(LogstashConfigurationFactory.PIPELINE_ROUTING_APPENDER_NAME);
+        PipelineRoutingAppender routingApp = config.getAppender(LogstashConfigurationFactory.PIPELINE_ROUTING_APPENDER_NAME);
         Map<String, AppenderControl> appenders = routingApp.getAppenders();
         assertNotNull("Routing appenders MUST be defined", appenders);
         AppenderControl appenderControl = appenders.get(pipelineSubAppenderName);

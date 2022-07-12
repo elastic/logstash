@@ -45,6 +45,9 @@ en:
         %{plugin} output plugin: setting 'workers => %{worker_count}' is not
         supported by this plugin. I will continue working as if you had not set
         this setting. Reason: %{message}
+      effective_ecs_compatibility: >-
+        Pipeline `%{pipeline_id}` is configured with `pipeline.ecs_compatibility: %{ecs_compatibility}` setting.
+        All plugins in this pipeline will default to `ecs_compatibility => %{ecs_compatibility}` unless explicitly configured otherwise.
     plugin:
       deprecated_milestone: >-
         %{plugin} plugin is using the 'milestone' method to declare the version
@@ -58,28 +61,11 @@ en:
         0-1-x: >-
          Using version 0.1.x %{type} plugin '%{name}'. This plugin isn't well
          supported by the community and likely has no maintainer.
-    agent:
-      sighup: >-
-        SIGHUP received.
-      sigint: >-
-        SIGINT received. Shutting down.
-      sigterm: >-
-        SIGTERM received. Shutting down.
-      slow_shutdown: |-
-        Received shutdown signal, but pipeline is still waiting for in-flight events
-        to be processed. Sending another ^C will force quit Logstash, but this may cause
-        data loss.
-      forced_sigint: >-
-        SIGINT received. Terminating immediately..
-      non_reloadable_config_reload: >-
-        Unable to reload configuration because it does not support dynamic reloading
-      non_reloadable_config_register: |-
-        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       cant_bind_to_port: |-
-        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --http.port option."
+        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --api.http.port option."
       cant_bind_to_port_in_range: |-
-        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logstash with the --http.port option."
+        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logstash with the --api.http.port option."
       hot_threads:
         title: |-
           ::: {%{hostname}}
@@ -120,6 +106,9 @@ en:
           bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash --help
+      invalid-settings: >-
+        Your settings are invalid.
+        Reason: %{error}
       invalid-configuration: >-
         The given configuration is invalid. Reason: %{error}
       missing-configuration: >-
@@ -152,7 +141,9 @@ en:
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can use to validate
         logstash's configuration before you choose to restart a running system.
-      configuration:
+      # YAML named reference to the logstash.runner.configuration
+      # so we can later alias it from logstash.agent.configuration
+      configuration: &runner_configuration
         obsolete: >-
           The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
           longer available. %{extra} If you have any questions about this, you
@@ -228,24 +219,31 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
-        field-reference-parser: |+
-          (DEPRECATED) This option is no longer
-          configurable.
+        field-reference-escape-style: |+
+          Use the given STYLE when parsing field
+          references. This allows you to reference fields
+          whose name includes characters that are
+          meaningful in a field reference including square
+          brackets (`[` and `]`).
 
-          Use the given MODE when parsing field
-          references.
+          This feature is in TECHNICAL PREVIEW, and
+          implementations are subject to change.
 
-          The field reference parser is used to expand
-          field references in your pipeline configs,
-          and has become more strict to better handle
-          ambiguous- and illegal-syntax inputs.
-
-          The only available MODE is:
-           - `STRICT`: parse in a strict manner; when
-             given ambiguous- or illegal-syntax input,
-             raises a runtime exception that should
-             be handled by the calling plugin.
-
+          Available escape styles are:
+           - `none`: escape sequences in field references
+             are not processed, which means fields that
+             contain special characters cannot be
+             referenced.
+           - `percent`: characters may be encoded with
+             URI-style percent notation represeting UTF-8
+             bytes (`[` is `%5B`; `]` is `%5D`).
+             Unlike URI-encoding, literal percent characters
+             do not need to be escaped unless followed by a
+             sequence of 2 capital hexadecimal characters.
+           - `ampersand`: characters may be encoded with
+             HTML-style ampersand-hash encoding notation
+             representing decimal unicode codepoints
+             (`[` is `&#91;`; `]` is `&#93;`).
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances
@@ -285,8 +283,25 @@ en:
         http_enabled: |+
           Can be used to disable the Web API, which is
           enabled by default.
-        http_host: Web API binding host
-        http_port: Web API http port
+          DEPRECATED: use `--api.enabled=false`
+        http_host: |+
+          Web API binding host
+          DEPRECATED: use `--api.http.host=IP`
+        http_port: |+
+          Web API http port
+          DEPRECATED: use `--api.http.port=PORT`
+        api_enabled: |+
+          Can be used to disable the Web API, which is
+          enabled by default.
+        api_http_host: Web API binding host
+        api_http_port: Web API http port
+        enable-local-plugin-development: |+
+          Allow Gemfile to be manipulated directly
+          to facilitate simpler local plugin
+          development.
+          This is an advanced setting, intended
+          only for use by Logstash developers,
+          and should not be used in production.
         pipeline-id: |+
           Sets the ID of the pipeline.
         pipeline-workers: |+
@@ -303,8 +318,6 @@ en:
           from starting if there are multiple workers.
           Use `false` to disable any extra processing necessary for preserving
           ordering.
-        java-execution: |+
-          Use Java execution engine.
         plugin-classloaders: |+
           (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
         pipeline-batch-size: |+
@@ -362,6 +375,21 @@ en:
           if there are still inflight events in memory.
           By default, logstash will refuse to quit until all
           received events have been pushed to the outputs.
+        ecs_compatibility: |+
+          Sets the pipeline's default value for `ecs_compatibility`,
+          a setting that is available to plugins that implement
+          an ECS Compatibility mode for use with the Elastic Common
+          Schema.
+          Possible values are:
+           - disabled (default)
+           - v1
+           - v8
+          This option allows the early opt-in (or preemptive opt-out)
+          of ECS Compatibility modes in plugins, which is scheduled to
+          be on-by-default in a future major release of Logstash.
+
+          Values other than `disabled` are currently considered BETA,
+          and may produce unintended consequences when upgrading Logstash.
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"
@@ -384,3 +412,52 @@ en:
         quiet: |+
           Set the log level to info.
           DEPRECATED: use --log.level=info instead.
+      java:
+        home: >-
+          The use of JAVA_HOME has been deprecated. Logstash 8.0 and later ignores JAVA_HOME and uses the bundled JDK.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
+        version: >-
+          Starting from Logstash 8.0, the minimum required version of Java is Java 11; your Java version from
+          %{java_home} does not meet this requirement. Please reconfigure your version of Java to one that is supported.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
+    agent:
+      sighup: >-
+        SIGHUP received.
+      sigint: >-
+        SIGINT received. Shutting down.
+      sigterm: >-
+        SIGTERM received. Shutting down.
+      slow_shutdown: |-
+        Received shutdown signal, but pipeline is still waiting for in-flight events
+        to be processed. Sending another ^C will force quit Logstash, but this may cause
+        data loss.
+      forced_sigint: >-
+        SIGINT received. Terminating immediately..
+      non_reloadable_config_reload: >-
+        Unable to reload configuration because it does not support dynamic reloading
+      non_reloadable_config_register: |-
+        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
+      # LEGACY: many plugins refer to logstash.agent.configuration.*
+      # so we alias the canonical logstash.runner.configuration.*
+      configuration:
+        <<: *runner_configuration
+    settings:
+      deprecation:
+        set: >-
+          The setting `%{deprecated_alias}` is a deprecated alias for `%{canonical_name}`
+          and will be removed in a future release of Logstash. Please use %{canonical_name} instead
+        queried: >-
+          The value of setting `%{canonical_name}` has been queried by its deprecated alias `%{deprecated_alias}`.
+          Code should be updated to query `%{canonical_name}` instead
+        ambiguous: >-
+          Both `%{canonical_name}` and its deprecated alias `%{deprecated_alias}` have been set.
+          Please only set `%{canonical_name}`
+      technical_preview:
+        set: >-
+          The setting `%{canonical_name}` is in TECHNICAL PREVIEW and its implementation
+          is subject to change in a future release of Logstash
+

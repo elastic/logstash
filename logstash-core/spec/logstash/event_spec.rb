@@ -17,7 +17,7 @@
 
 require "spec_helper"
 require "logstash/util"
-require "logstash/event"
+
 require "json"
 require "java"
 
@@ -192,6 +192,15 @@ describe LogStash::Event do
         expect { e.set('[', 'value') }.to raise_exception(::RuntimeError)
       end
     end
+
+    context 'with map value whose keys have FieldReference-special characters' do
+      let(:event) { LogStash::Event.new }
+      let(:value) { {"this[field]" => "okay"} }
+      it 'sets the value correctly' do
+        event.set('[some][field]', value.dup)
+        expect(event.get('[some][field]')).to eq(value)
+      end
+    end
   end
 
   context "timestamp" do
@@ -314,15 +323,9 @@ describe LogStash::Event do
       end
     end
 
-    it "should raise TypeError on nil string" do
-      expect{LogStash::Event.from_json(nil)}.to raise_error TypeError
-    end
-
     it "should consistently handle nil" do
-      blank_strings.each do |s|
-        expect{LogStash::Event.from_json(nil)}.to raise_error
-        expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error
-      end
+      expect{LogStash::Event.from_json(nil)}.to raise_error(TypeError)
+      expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error # java.lang.ClassCastException
     end
 
     it "should consistently handle bare string" do
@@ -330,6 +333,12 @@ describe LogStash::Event do
         expect{LogStash::Event.from_json(s)}.to raise_error LogStash::Json::ParserError
         expect{LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
        end
+    end
+
+    it "should allow to pass a block that acts as an event factory" do
+      events = LogStash::Event.from_json(source_json) { |data| LogStash::Event.new(data).tap { |e| e.set('answer', 42) } }
+      expect( events.size ).to eql 1
+      expect( events.first.get('answer') ).to eql 42
     end
   end
 
@@ -351,6 +360,11 @@ describe LogStash::Event do
       expect(e.timestamp.to_iso8601).to eq("2016-05-28T23:02:05.350Z")
     end
 
+    it 'accepts maps whose keys contain FieldReference-special characters' do
+      e = LogStash::Event.new({"nested" => {"i][egal" => "okay"}, "n[0]" => "bene"})
+      expect(e.get('nested')).to eq({"i][egal" => "okay"})
+      expect(e.to_hash).to include("n[0]" => "bene")
+    end
   end
 
   context "method missing exception messages" do

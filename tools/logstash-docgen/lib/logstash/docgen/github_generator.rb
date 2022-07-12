@@ -86,7 +86,7 @@ module LogStash module Docgen
         g = Git.init(path)
         g.reset
         g.fetch
-        g.merge("origin/master")
+        g.merge("origin/main")
       else
         g = Git.clone(repository, path, :depth => 1 )
       end
@@ -120,7 +120,7 @@ module LogStash module Docgen
 
     def run_in_directory(cmd = nil, &block)
       Dir.chdir(path) do
-        Bundler.with_clean_env do
+        Bundler.with_unbundled_env do
           stdin, stdout, stderr, wait_thr = Open3.popen3(cmd)
           if wait_thr.value.success?
             return stdout

@@ -1,17 +1,14 @@
-[role="xpack"]
 [[logstash-centralized-pipeline-management]]
 === Centralized Pipeline Management
 
 The pipeline management feature centralizes the creation and
 management of Logstash configuration pipelines in {kib}. 
 
-NOTE: Centralized pipeline management is an {xpack} feature that is not included
-with the basic license. If you want to try all of the features, you can start a
-30-day trial. At the end of the trial period, you can purchase a subscription to
-keep using the full functionality of the {xpack} components. For more
-information, see https://www.elastic.co/subscriptions and
-{kibana-ref}/managing-licenses.html[License
-Management].
+NOTE: Centralized pipeline management is a subscription feature.
+If you want to try the full set of features, you can activate a free 30-day trial. 
+To view the status of your license, start a trial, or install a new
+license, open the {kib} main menu and click *Stack Management > License Management*.
+For more information, see https://www.elastic.co/subscriptions and {kibana-ref}/managing-licenses.html[License Management].
 
 You can control multiple Logstash instances from the pipeline management UI in
 {kib}. You can add, edit, and delete pipeline configurations. On the Logstash
@@ -77,7 +74,7 @@ The internal queueing model for event buffering. Options are *memory* for
 in-memory queueing, or *persisted* for disk-based acknowledged queueing. 
 
 Queue max bytes::
-The total capacity of the queue.
+The total capacity of the queue when persistent queues are enabled.
 
 Queue checkpoint writes::
 The maximum number of events written before a checkpoint is forced when
@@ -98,7 +95,7 @@ pipeline.  {kib} saves the new configuration, and Logstash will attempt to load
 it. There is no validation done at the UI level.
 
 * You need to check the local Logstash logs for configuration errors. If you're
-using the Logstash monitoring feature in {xpack}, use the Monitoring tab to
+using the Logstash monitoring feature in {kib}, use the Monitoring tab to
 check the status of your Logstash nodes.
 
 * You can specify multiple pipeline configurations that run in parallel on the

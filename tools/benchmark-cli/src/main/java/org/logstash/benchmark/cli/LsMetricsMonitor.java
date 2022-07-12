@@ -108,15 +108,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
                 return new long[]{-1L, -1L};
             }
             final Map<String, Object> data = LsBenchJsonUtil.deserializeMetrics(baos.toByteArray());
-            final long count;
-            if (data.containsKey("pipeline")) {
-                count = readNestedLong(data, "pipeline", "events", "filtered");
-
-            } else if (data.containsKey("events")) {
-                count = readNestedLong(data, "events", "filtered");
-            } else {
-                count = -1L;
-            }
+            final long count = getEventCount(data);
             final long cpu;
             if (count == -1L) {
                 cpu = -1L;
@@ -142,6 +134,19 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             nested = (Map<String, Object>) nested.get(path[i]);
         }
         return ((Number) nested.get(path[path.length - 1])).longValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private long getEventCount(Map<String, Object> data) {
+        final long count;
+        if (data.containsKey("pipeline") && ((Map<String, Object>) data.get("pipeline")).containsKey("events")) {
+            count = readNestedLong(data, "pipeline", "events", "filtered");
+        } else if (data.containsKey("events")) {
+            count = readNestedLong(data, "events", "filtered");
+        } else {
+            count = -1L;
+        }
+        return count;
     }
 
     /**

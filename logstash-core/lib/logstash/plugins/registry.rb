@@ -113,7 +113,7 @@ module LogStash module Plugins
 
     attr_reader :hooks
 
-    def initialize
+    def initialize(alias_registry = nil)
       @mutex = Mutex.new
       # We need a threadsafe class here because we may perform
       # get/set operations concurrently despite the fact we don't use
@@ -123,6 +123,7 @@ module LogStash module Plugins
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @java_plugins = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
+      @alias_registry = alias_registry || Java::org.logstash.plugins.AliasRegistry.instance
     end
 
     def setup!
@@ -151,12 +152,13 @@ module LogStash module Plugins
 
       GemRegistry.logstash_plugins.each do |plugin_context|
         if plugin_context.spec.metadata.key?('java_plugin')
-          jar_files = plugin_context.spec.files.select {|f| f =~ /.*\.jar/}
+          # Find *.jar file from the require path
+          jar_files = plugin_context.spec.matches_for_glob("**/*.jar")
           expected_jar_name = plugin_context.spec.name + "-" + plugin_context.spec.version.to_s + ".jar"
-          if (jar_files.length != 1 || !jar_files[0].end_with?(expected_jar_name))
+          if jar_files.length != 1 || !jar_files.first.end_with?(expected_jar_name)
             raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a single jar file with the plugin's name and version"
           end
-          @java_plugins[plugin_context.spec.name] = [plugin_context.spec.loaded_from, jar_files[0]]
+          @java_plugins[plugin_context.spec.name] = jar_files.first
         end
 
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
@@ -196,41 +198,47 @@ module LogStash module Plugins
     # a plugin and will do a lookup on the namespace of the required class to find a matching
     # plugin with the appropriate type.
     def legacy_lookup(type, plugin_name)
-      begin
-        path = "logstash/#{type}s/#{plugin_name}"
+      klass = load_plugin_class(type, plugin_name)
 
-        klass = begin
-          namespace_lookup(type, plugin_name)
-        rescue UnknownPlugin => e
-          # Plugin not registered. Try to load it.
-          begin
-            require path
-            namespace_lookup(type, plugin_name)
-          rescue LoadError => e
-            logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
-            raise
-          end
-        end
-
-        plugin = lazy_add(type, plugin_name, klass)
-      rescue => e
-        logger.error("Problems loading a plugin with",
-                    :type => type,
-                    :name => plugin_name,
-                    :path => path,
-                    :error_message => e.message,
-                    :error_class => e.class,
-                    :error_backtrace => e.backtrace)
-
-        raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
+      if !klass && @alias_registry.alias?(type.to_java, plugin_name)
+        resolved_plugin_name = @alias_registry.original_from_alias(type.to_java, plugin_name)
+        logger.debug("Loading #{type} plugin #{resolved_plugin_name} via its alias #{plugin_name}...")
+        klass = load_plugin_class(type, resolved_plugin_name)
+        lazy_add(type, resolved_plugin_name, klass) if klass
       end
 
-      plugin
+      unless klass
+        logger.error("Unable to load plugin.", :type => type, :name => plugin_name)
+        raise LoadError, "Unable to load the requested plugin named #{plugin_name} of type #{type}. The plugin is not installed."
+      end
+
+      lazy_add(type, plugin_name, klass)
     end
 
+    # load a plugin's class, or return nil if the plugin cannot be loaded.
+    # attempts to load the class purely through namespace lookup,
+    # and falls back to requiring the path of the expected plugin.
+    # @param type [String]: plugin type, such as "input", "output", "filter", "codec"
+    # @param plugin_name [String]: plugin name, such as "grok", "elasticsearch"
+    # @return [Class,nil] the plugin class, or nil
+    private
+    def load_plugin_class(type, plugin_name)
+      klass = namespace_lookup(type, plugin_name)
+
+      unless klass
+        require("logstash/#{type}s/#{plugin_name}")
+        klass = namespace_lookup(type, plugin_name)
+      end
+      klass
+    rescue LoadError => e
+      logger.debug("Tried to load a plugin's code, but failed.", :exception => e, :path => e.path, :type => type, :name => plugin_name)
+      nil
+    end
+
+    public
     def lookup_pipeline_plugin(type, name)
       LogStash::PLUGIN_REGISTRY.lookup(type, name) do |plugin_klass, plugin_name|
-        is_a_plugin?(plugin_klass, plugin_name)
+        is_a_plugin_or_alias?(plugin_klass, type.to_java, plugin_name)
       end
     rescue LoadError, NameError => e
       logger.debug("Problems loading the plugin with", :type => type, :name => name)
@@ -268,8 +276,7 @@ module LogStash module Plugins
     # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
     # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
-    # @return [Class] the plugin class or raises NameError
-    # @raise NameError if plugin class does not exist or is invalid
+    # @return [Class,nil] the plugin class or nil
     def namespace_lookup(type, name)
       type_const = "#{type.capitalize}s"
       namespace = LogStash.const_get(type_const)
@@ -277,10 +284,7 @@ module LogStash module Plugins
       # namespace.constants is the shallow collection of all constants symbols in namespace
       # note that below namespace.const_get(c) should never result in a NameError since c is from the constants collection
       klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), name) }
-      klass = klass_sym && namespace.const_get(klass_sym)
-
-      raise(UnknownPlugin) unless klass
-      klass
+      klass_sym && namespace.const_get(klass_sym)
     end
 
     # check if klass is a valid plugin for name
@@ -289,8 +293,19 @@ module LogStash module Plugins
     # @return [Boolean] true if klass is a valid plugin for name
     def is_a_plugin?(klass, name)
       (klass.class == Java::JavaLang::Class && klass.simple_name.downcase == name.gsub('_','')) ||
-      (klass.class == Java::JavaClass && klass.simple_name.downcase == name.gsub('_','')) ||
-      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name)
+      (klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) &&
+        klass.config_name == name)
+    end
+
+    # check if klass is a valid plugin for name,
+    # including alias resolution
+    def is_a_plugin_or_alias?(klass, type, plugin_name)
+      return true if is_a_plugin?(klass, plugin_name)
+
+      resolved_plugin_name = @alias_registry.resolve_alias(type, plugin_name)
+      return true if is_a_plugin?(klass, resolved_plugin_name)
+
+      false
     end
 
     def add_plugin(type, name, klass)
@@ -302,13 +317,11 @@ module LogStash module Plugins
           else
             raise LoadError,  "Could not find metadata for Java plugin: #{full_name}"
           end
-
           java_import org.logstash.plugins.PluginClassLoader
           java_import org.logstash.Logstash
 
-          classloader = PluginClassLoader.create(plugin_paths[0], plugin_paths[1], Logstash.java_class.class_loader)
+          classloader = PluginClassLoader.create(plugin_paths, Logstash.java_class.class_loader)
           klazz = classloader.load_class(klass.javaClass.name)
-
           @registry[key_for(type, name)] = PluginSpecification.new(type, name, klazz.ruby_class.java_class)
         else
           @registry[key_for(type, name)] = PluginSpecification.new(type, name, klass.javaClass)

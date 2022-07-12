@@ -81,10 +81,6 @@ The `logstash.yml` file includes the following settings.
 | The ID of the pipeline.
 | `main`
 
-| `pipeline.java_execution`
-| Use the Java execution engine.
-| true
-
 | `pipeline.workers` 
 | The number of workers that will, in parallel, execute the filter and output
 stages of the pipeline. This setting uses the
@@ -120,19 +116,31 @@ increasing this number to better utilize machine processing power.
 
 | `pipeline.ordered`
 a|
-Set the pipeline event ordering.Valid options are:
+Set the pipeline event ordering. Valid options are:
 
-* `auto`
-* `true`
-* `false`
-
-`auto` will  automatically enable ordering if the `pipeline.workers` setting is also set to `1`.
-`true` will enforce ordering on the pipeline and prevent logstash from starting
+* `auto`. Automatically enables ordering if the `pipeline.workers` setting is `1`, and disables otherwise.
+* `true`. Enforces ordering on the pipeline and prevents Logstash from starting
 if there are multiple workers.
-`false` will disable the processing required to preserve order. Ordering will not be
+* `false`. Disables the processing required to preserve order. Ordering will not be
 guaranteed, but you save the processing cost of preserving order.
 
 | `auto`
+
+| `pipeline.ecs_compatibility`
+a|
+Sets the pipeline's default value for `ecs_compatibility`, a setting that is available to plugins that implement an ECS compatibility mode for use with the Elastic Common Schema.
+Possible values are:
+
+* `disabled`
+* `v1`
+* `v8`
+
+This option allows the <<ecs-ls,early opt-in (or preemptive opt-out) of ECS compatibility>> modes in plugins,
+which is scheduled to be on-by-default in a future major release of {ls}.
+
+Values other than `disabled` are currently considered BETA, and may produce unintended consequences when upgrading {ls}.
+
+| `disabled`
 
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
@@ -142,7 +150,7 @@ guaranteed, but you save the processing cost of preserving order.
 | `config.string`
 | A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
   the config file.
-| None
+| _N/A_
 
 | `config.test_and_exit`
 | When set to `true`, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
@@ -170,9 +178,22 @@ guaranteed, but you save the processing cost of preserving order.
 | When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
 | `false`
 
+| `config.field_reference.escape_style`
+a| Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`.
+
+NOTE: This feature is in *technical preview* and may change in the future.
+
+Current options are:
+
+* `percent`: URI-style `%`{plus}`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`)
+* `ampersand`: HTML-style `&#`{plus}`DD`{plus}`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`)
+* `none`: field names containing special characters _cannot_ be referenced.
+
+| `none`
+
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.
-| None
+| _N/A_
 
 | `queue.type`
 | The internal queuing model to use for event buffering. Specify `memory` for legacy in-memory based queuing, or `persisted` for disk-based ACKed queueing (<<persistent-queues,persistent queues>>).
@@ -191,7 +212,7 @@ guaranteed, but you save the processing cost of preserving order.
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
+| The total capacity of the queue (`queue.type: persisted`) in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
@@ -203,11 +224,11 @@ guaranteed, but you save the processing cost of preserving order.
 | 1024
 
 | `queue.checkpoint.retry`
-| When enabled, Logstash will retry once per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances.
-| `false`
+| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (`queue.type: persisted`)
+| `true`
 
 | `queue.drain`
-| When enabled, Logstash waits until the persistent queue is drained before shutting down.
+| When enabled, Logstash waits until the persistent queue (`queue.type: persisted`) is drained before shutting down.
 | `false`
 
 | `dead_letter_queue.enable`
@@ -219,17 +240,74 @@ guaranteed, but you save the processing cost of preserving order.
   would increase the size of the dead letter queue beyond this setting.
 | `1024mb`
 
+| `dead_letter_queue.storage_policy`
+| Defines the action to take when the dead_letter_queue.max_bytes setting is reached: `drop_newer` stops accepting new values that would push the file size over the limit, and `drop_older` removes the oldest events to make space for new ones.
+| `drop_newer`
+
 | `path.dead_letter_queue`
 | The directory path where the data files will be stored for the dead-letter queue.
 | `path.data/dead_letter_queue`
 
-| `http.host`
-| The bind address for the metrics REST endpoint.
+| `api.enabled`
+|  The HTTP API is enabled by default. It can be disabled, but features that rely on it will not work as intended.
+| `true`
+
+| `api.environment`
+| The API returns the provided string as a part of its response. Setting your environment may help to disambiguate between similarly-named nodes in production vs test environments.
+| `production`
+
+| `api.http.host`
+| The bind address for the HTTP API endpoint.
+  By default, the {ls} HTTP API binds only to the local loopback interface.
+  When configured securely (`api.ssl.enabled: true` and `api.auth.type: basic`), the HTTP API binds to _all_ available interfaces.
 | `"127.0.0.1"`
 
-| `http.port`
-| The bind port for the metrics REST endpoint.
-| `9600`
+| `api.http.port`
+| The bind port for the HTTP API endpoint.
+| `9600-9700`
+
+| `api.ssl.enabled`
+| Set to `true` to enable SSL on the HTTP API.
+  Doing so requires both `api.ssl.keystore.path` and `api.ssl.keystore.password` to be set.
+| `false`
+
+| `api.ssl.keystore.path`
+| The path to a valid JKS or PKCS12 keystore for use in securing the {ls} API.
+  The keystore must be password-protected, and must contain a single certificate chain and a private key.
+  This setting is ignored unless `api.ssl.enabled` is set to `true`.
+| _N/A_
+
+| `api.ssl.keystore.password`
+| The password to the keystore provided with `api.ssl.keystore.path`.
+  This setting is ignored unless `api.ssl.enabled` is set to `true`.
+| _N/A_
+
+| `api.auth.type`
+| Set to `basic` to require HTTP Basic auth on the API using the credentials supplied with `api.auth.basic.username` and `api.auth.basic.password`.
+| `none`
+
+| `api.auth.basic.username`
+| The username to require for HTTP Basic auth
+  Ignored unless `api.auth.type` is set to `basic`.
+| _N/A_
+
+| `api.auth.basic.password`
+a| The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`.
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter.
+The default password policy can be customized by following options:
+
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
+
+| _N/A_
+
+| `api.auth.basic.password_policy.mode`
+| Raises either `WARN` or `ERROR` message when password requirements are not met.
+Ignored unless `api.auth.type` is set to `basic`.
+| `WARN`
 
 | `log.level`
 a|
@@ -265,4 +343,7 @@ separating each log lines per pipeline could be helpful in case you need to trou
   and `NAME` is the name of the plugin.
 | Platform-specific. See <<dir-layout>>.
 
+| `allow_superuser`
+| Setting to `true` to allow or `false` to block running Logstash as a superuser.
+| `true`
 |=======================================================================

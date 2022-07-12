@@ -48,6 +48,9 @@ import org.apache.logging.log4j.message.Message;
 
 import java.util.List;
 
+/**
+ * Customized Logstash log event
+ * */
 @JsonSerialize(using = CustomLogEventSerializer.class)
 public class CustomLogEvent extends Log4jLogEvent {
 

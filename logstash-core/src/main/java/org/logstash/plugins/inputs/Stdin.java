@@ -43,6 +43,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+/**
+ * Java implementation of the "stdin" input
+ * */
 @LogstashPlugin(name = "java_stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 

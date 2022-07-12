@@ -30,6 +30,8 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Output
 
   def register
     @pipeline_bus = execution_context.agent.pipeline_bus
+    # add list of pipelines to send to the plugin metrics
+    metric.gauge(:send_to, send_to)
     pipeline_bus.registerSender(self, @send_to)
   end
 

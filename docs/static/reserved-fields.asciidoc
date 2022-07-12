@@ -15,7 +15,7 @@ Ruby-based Plugin API: value is an
 https://javadoc.io/static/org.jruby/jruby-core/9.2.5.0/org/jruby/RubyHash.html[org.jruby.RubyHash]. 
 
 Java-based Plugin API: value is an 
-https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/ConvertedMap.java[org.logstash.ConvertedMap].
+https://github.com/elastic/logstash/blob/main/logstash-core/src/main/java/org/logstash/ConvertedMap.java[org.logstash.ConvertedMap].
  
 In serialized form (such as JSON): a key/value map where the keys must be
 strings and the values are not constrained to a particular type.

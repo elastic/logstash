@@ -1,0 +1,87 @@
+[[ecs-ls]]
+=== ECS in Logstash
+
+// LS8 will ship with ECS v8, but until ECS v8 is ready we rely on ECS v1 as an approximation.
+:ls8-ecs-major-version: v8
+
+The {ecs-ref}/index.html[Elastic Common Schema (ECS)] is an open source specification, developed with support from the Elastic user community.
+ECS defines a common set of fields to be used for storing event data, such as logs and metrics, in {es}.
+With ECS, users can normalize event data to better analyze, visualize, and correlate the data represented in their events.
+
+[[ecs-compatibility]]
+==== ECS compatibility
+
+Many plugins implement an ECS-compatibility mode, which causes them to produce and manipulate events in a manner that is compatible with the Elastic Common Schema (ECS).
+
+Any plugin that supports this mode will also have an `ecs_compatibility` option, which allows you to configure which mode the individual plugin instance should operate in.
+If left unspecified for an individual plugin, the pipeline's `pipeline.ecs_compatibility` setting will be observed.
+This allows you to configure plugins to use a specific version of ECS or to use their legacy non-ECS behavior.
+
+ECS compatibility modes do not prevent you from explicitly configuring a plugin in a manner that conflicts with ECS.
+Instead, they ensure that _implicit_ configuration avoids conflicts.
+
+[[ecs-configuration]]
+===== Configuring ECS
+
+In {ls} 8, all plugins are run in ECS compatibility {ls8-ecs-major-version} mode by default, but you can opt out at the plugin, pipeline, or system level to maintain legacy behavior.
+This can be helpful if you have very complex pipelines that were defined pre-ECS, to allow you to either upgrade them or to avoid doing so independently of your {ls} 8.x upgrade.
+
+====== Specific plugin instance
+
+Use a plugin's `ecs_compatibility` option to override the default value on the plugin instance.
+
+For example, if you want a specific instance of the GeoIP Filter to behave without ECS compatibility, you can adjust its definition in your pipeline without affecting any other plugin instances.
+
+[source,text]
+-----
+filter {
+  geoip {
+    source => "[host][ip]"
+    ecs_compatibility => disabled
+  }
+}
+-----
+
+Alternatively, if you had a UDP input with a CEF codec, and wanted both to use an ECS mode while still running {ls} 7, you can adjust their definitions to specify the major version of ECS to use.
+
+[source,text,subs="attributes"]
+-----
+input {
+  udp {
+    port => 1234
+    ecs_compatibility => {ls8-ecs-major-version}
+    codec => cef {
+      ecs_compatibility => {ls8-ecs-major-version}
+    }
+  }
+}
+-----
+
+[[ecs-configuration-pipeline]]
+====== All plugins in a given pipeline
+
+If you wish to provide a specific default value for `ecs_compatibility` to _all_ plugins in a pipeline, you can do so with the `pipeline.ecs_compatibility` setting in your pipeline definition in `config/pipelines.yml` or Central Management.
+This setting will be used unless overridden by a specific plugin instance.
+If unspecified for an individual pipeline, the global value will be used.
+
+For example, setting `pipeline.ecs_compatibility: disabled` for a pipeline _locks in_ that pipeline's pre-{ls} 8 behavior.
+
+[source,yaml,subs="attributes"]
+-----
+- pipeline.id: my-legacy-pipeline
+  path.config: "/etc/path/to/legacy-pipeline.config"
+  pipeline.ecs_compatibility: disabled
+- pipeline.id: my-ecs-pipeline
+  path.config: "/etc/path/to/ecs-pipeline.config"
+  pipeline.ecs_compatibility: {ls8-ecs-major-version}
+-----
+
+[[ecs-configuration-all]]
+====== All plugins in all pipelines
+
+Similarly, you can set the default value for the whole {ls} process by setting the `pipeline.ecs_compatibility` value in `config/logstash.yml`.
+
+[source,yaml]
+-----
+pipeline.ecs_compatibility: disabled
+-----

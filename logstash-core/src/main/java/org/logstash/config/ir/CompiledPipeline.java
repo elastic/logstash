@@ -19,12 +19,10 @@
 
 package org.logstash.config.ir;
 
-import co.elastic.logstash.api.Codec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -38,6 +36,7 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -48,6 +47,8 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -164,8 +165,9 @@ public final class CompiledPipeline {
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             res.put(v.getId(), pluginFactory.buildOutput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         });
         return res;
@@ -181,8 +183,9 @@ public final class CompiledPipeline {
         for (final PluginVertex vertex : filterPlugins) {
             final PluginDefinition def = vertex.getPluginDefinition();
             final SourceWithMetadata source = vertex.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             res.put(vertex.getId(), pluginFactory.buildFilter(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve)
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source
             ));
         }
         return res;
@@ -197,93 +200,83 @@ public final class CompiledPipeline {
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
+            final Map<String, Object> args = expandArguments(def, cve);
             IRubyObject o = pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), source, convertArgs(def), convertJavaArgs(def, cve));
+                RubyUtil.RUBY.newString(def.getName()), convertArgs(args), source);
             nodes.add(o);
         });
         return nodes;
     }
 
-    /**
-     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
-     * Ruby types.
-     * @param def PluginDefinition as provided by {@link PipelineIR}
-     * @return RubyHash of plugin arguments as understood by {@link RubyIntegration.PluginFactory}
-     * methods
-     */
-    private RubyHash convertArgs(final PluginDefinition def) {
+    final RubyHash convertArgs(final Map<String, Object> input) {
         final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
-        for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+        for (final Map.Entry<String, Object> entry : input.entrySet()) {
             final Object value = entry.getValue();
             final String key = entry.getKey();
-            final Object toput;
-            if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
-                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
-                toput = pluginFactory.buildCodec(
-                    RubyUtil.RUBY.newString(codec.getName()),
-                    source,
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    codec.getArguments()
-                );
-            } else {
-                toput = value;
-            }
-            converted.put(key, toput);
+            converted.put(key, value);
         }
+
         return converted;
     }
 
-    /**
-     * Converts plugin arguments from the format provided by {@link PipelineIR} into coercible
-     * Java types for consumption by Java plugins.
-     * @param def PluginDefinition as provided by {@link PipelineIR}
-     * @return Map of plugin arguments as understood by the {@link RubyIntegration.PluginFactory}
-     * methods that create Java plugins
-     */
-    private Map<String, Object> convertJavaArgs(final PluginDefinition def, ConfigVariableExpander cve) {
-        Map<String, Object> args = expandConfigVariables(cve, def.getArguments());
-        for (final Map.Entry<String, Object> entry : args.entrySet()) {
-            final Object value = entry.getValue();
+
+    private Map<String, Object> expandArguments(final PluginDefinition pluginDefinition, final ConfigVariableExpander cve) {
+        Map<String, Object> arguments = expandConfigVariables(cve, pluginDefinition.getArguments());
+
+        // Intercept codec definitions from LIR
+        for (final Map.Entry<String, Object> entry : arguments.entrySet()) {
             final String key = entry.getKey();
-            final IRubyObject toput;
+            final Object value = entry.getValue();
             if (value instanceof PluginStatement) {
-                final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
-                SourceWithMetadata source = ((PluginStatement) value).getSourceWithMetadata();
-                Map<String, Object> codecArgs = expandConfigVariables(cve, codec.getArguments());
-                toput = pluginFactory.buildCodec(
-                    RubyUtil.RUBY.newString(codec.getName()),
-                    source,
-                    Rubyfier.deep(RubyUtil.RUBY, codec.getArguments()),
-                    codecArgs
-                );
-                Codec javaCodec = (Codec)JavaUtil.unwrapJavaValue(toput);
-                args.put(key, javaCodec);
+                final PluginStatement codecPluginStatement = (PluginStatement) value;
+                final PluginDefinition codecDefinition = codecPluginStatement.getPluginDefinition();
+                final SourceWithMetadata codecSource = codecPluginStatement.getSourceWithMetadata();
+                final Map<String, Object> codecArguments = expandArguments(codecDefinition, cve);
+                IRubyObject codecInstance = pluginFactory.buildCodec(RubyUtil.RUBY.newString(codecDefinition.getName()),
+                        Rubyfier.deep(RubyUtil.RUBY, codecArguments),
+                        codecSource);
+                arguments.put(key, codecInstance);
             }
         }
-        return args;
+
+        return arguments;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs, boolean keepSecrets) {
         Map<String, Object> expandedConfig = new HashMap<>();
         for (Map.Entry<String, Object> e : configArgs.entrySet()) {
-            if (e.getValue() instanceof List) {
-                List list = (List) e.getValue();
-                List<Object> expandedObjects = new ArrayList<>();
-                for (Object o : list) {
-                    expandedObjects.add(cve.expand(o));
-                }
-                expandedConfig.put(e.getKey(), expandedObjects);
-            } else if (e.getValue() instanceof Map) {
-                expandedConfig.put(e.getKey(), expandConfigVariables(cve, (Map<String, Object>) e.getValue()));
-            } else if (e.getValue() instanceof String) {
-                expandedConfig.put(e.getKey(), cve.expand(e.getValue()));
-            } else {
-                expandedConfig.put(e.getKey(), e.getValue());
-            }
+            expandedConfig.put(e.getKey(), expandConfigVariable(cve, e.getValue(), keepSecrets));
         }
         return expandedConfig;
+    }
+
+    public static Map<String, Object> expandConfigVariables(ConfigVariableExpander cve, Map<String, Object> configArgs) {
+        return expandConfigVariables(cve, configArgs, false);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Object expandConfigVariable(ConfigVariableExpander cve, Object valueToExpand, boolean keepSecrets) {
+        if (valueToExpand instanceof List) {
+            List list = (List) valueToExpand;
+            List<Object> expandedObjects = new ArrayList<>();
+            for (Object o : list) {
+                expandedObjects.add(cve.expand(o, keepSecrets));
+            }
+            return expandedObjects;
+        }
+        if (valueToExpand instanceof Map) {
+            // hidden recursion here expandConfigVariables -> expandConfigVariable
+            return expandConfigVariables(cve, (Map<String, Object>) valueToExpand, keepSecrets);
+        }
+        if (valueToExpand instanceof String) {
+            return cve.expand(valueToExpand, keepSecrets);
+        }
+        return valueToExpand;
+    }
+
+    public static Object expandConfigVariableKeepingSecrets(ConfigVariableExpander cve, Object valueToExpand) {
+        return expandConfigVariable(cve, valueToExpand, true);
     }
 
     /**
@@ -309,12 +302,12 @@ public final class CompiledPipeline {
         @SuppressWarnings({"unchecked"})  private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
 
         @Override
-        public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-           compute(batch.events(), flush, shutdown);
+        public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
+           return compute(batch.events(), flush, shutdown);
         }
 
         @Override
-        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+        public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             if (!batch.isEmpty()) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
@@ -324,11 +317,14 @@ public final class CompiledPipeline {
                     _compute(filterBatch, outputBatch, flush, shutdown);
                 }
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                return outputBatch.size();
             } else if (flush || shutdown) {
                 @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                return outputBatch.size();
             }
+            return 0;
         }
 
         private void _compute(final RubyArray<RubyEvent> batch, final RubyArray<RubyEvent> outputBatch, final boolean flush, final boolean shutdown) {
@@ -341,18 +337,19 @@ public final class CompiledPipeline {
     public final class CompiledUnorderedExecution extends CompiledExecution {
 
         @Override
-        public void compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-            compute(batch.events(), flush, shutdown);
+        public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
+            return compute(batch.events(), flush, shutdown);
         }
 
         @Override
-        public void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+        public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             // we know for now this comes from batch.collection() which returns a LinkedHashSet
             final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
             @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
             compiledOutputs.compute(outputBatch, flush, shutdown);
+            return outputBatch.size();
         }
     }
 
@@ -382,9 +379,13 @@ public final class CompiledPipeline {
             compiledOutputs = compileOutputs();
         }
 
-        public abstract void compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
+        /**
+         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
+         *  the pipeline drops or clones events during the filter stage.
+         * */
+        public abstract int compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
 
-        public abstract void compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
+        public abstract int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
 
         /**
          * Instantiates the graph of compiled filter section {@link Dataset}.
@@ -538,7 +539,7 @@ public final class CompiledPipeline {
                     } else if (isOutput(dependency)) {
                         return outputDataset(dependency, datasets);
                     } else {
-                        // We know that it's an if vertex since the the input children are either
+                        // We know that it's an if vertex since the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
                         final SplitDataset ifDataset = split(

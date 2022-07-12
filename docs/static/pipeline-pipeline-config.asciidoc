@@ -1,9 +1,13 @@
 [[pipeline-to-pipeline]]
-=== Pipeline-to-Pipeline Communication
+=== Pipeline-to-pipeline communication
 
 When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 
 If you need to set up communication _between_ Logstash instances, use either {logstash-ref}/ls-to-ls.html[Logstash-to-Logstash] communications, or an intermediary queue, such as Kafka or Redis.
+
+TIP: Persistent queues (PQs) can help keep data moving through pipelines.  
+See <<pq-pline-pline>> to learn how PQs can enhance your
+pipeline-to-pipeline communication strategy. 
 
 [[pipeline-to-pipeline-overview]]
 ==== Configuration overview
@@ -134,7 +138,6 @@ Here is an example of this scenario using the output isolator pattern.
 ----
 # config/pipelines.yml
 - pipeline.id: intake
-  queue.type: persisted
   config.string: |
     input { beats { port => 5044 } }
     output { pipeline { send_to => [es, http] } }
@@ -150,7 +153,7 @@ Here is an example of this scenario using the output isolator pattern.
     output { http { } }
 ----
 
-In this architecture, each stage has its own queue with its own tuning and settings. Note that this approach uses up to three times as much disk space and incurs three times as much serialization/deserialization cost as a single pipeline.
+In this architecture, each output has its own queue with its own tuning and settings. Note that this approach uses up to twice as much disk space and incurs three times as much serialization/deserialization cost as a single pipeline.
 
 If any of the persistent queues of the downstream pipelines (in the example above, `buffered-es` and `buffered-http`) become full, both outputs will stop.
 

@@ -38,11 +38,15 @@ import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
 
+/**
+ * JRuby extension to wrap a persistent queue istance.
+ * */
 @JRubyClass(name = "AckedQueue")
 public final class JRubyAckedQueueExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressWarnings("serial")
     private Queue queue;
 
     public JRubyAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {

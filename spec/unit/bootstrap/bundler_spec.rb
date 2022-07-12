@@ -68,7 +68,21 @@ describe LogStash::Bundler do
     end
 
     it 'should call Bundler::CLI.start with the correct arguments' do
+      allow(ENV).to receive(:replace)
       expect(::Bundler::CLI).to receive(:start).with(bundler_args)
+      expect(ENV).to receive(:replace) do |args|
+        expect(args).to include("BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                                                            "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+                                                            "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                                                            "BUNDLE_WITHOUT" => "development")
+      end
+      expect(ENV).to receive(:replace) do |args|
+        expect(args).not_to include(
+                                "BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+                                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+                                "BUNDLE_WITHOUT" => "development")
+      end
+
       LogStash::Bundler.invoke!(options)
     end
 
@@ -92,20 +106,20 @@ describe LogStash::Bundler do
   end
 
   context 'when generating bundler arguments' do
-    subject { LogStash::Bundler.bundler_arguments(options) }
+    subject(:bundler_arguments) { LogStash::Bundler.bundler_arguments(options) }
     let(:options) { {} }
 
     context 'when installing' do
       let(:options) { { :install => true } }
 
       it 'should call bundler install' do
-        expect(subject).to include('install')
+        expect(bundler_arguments).to include('install')
       end
 
       context 'with the cleaning option' do
         it 'should add the --clean arguments' do
           options.merge!(:clean => true)
-          expect(subject).to include('install','--clean')
+          expect(bundler_arguments).to include('install','--clean')
         end
       end
     end
@@ -115,14 +129,39 @@ describe LogStash::Bundler do
 
       context 'with a specific plugin' do
         it 'should call `bundle update plugin-name`' do
-          expect(subject).to include('update', 'logstash-input-stdin')
+          expect(bundler_arguments).to include('update', 'logstash-input-stdin')
         end
       end
 
       context 'with the cleaning option' do
         it 'should ignore the clean option' do
           options.merge!(:clean => true)
-          expect(subject).not_to include('--clean')
+          expect(bundler_arguments).not_to include('--clean')
+        end
+      end
+
+      context 'with ecs_compatibility' do
+        let(:plugin_name) { 'logstash-output-elasticsearch' }
+        let(:options) { { :update => plugin_name } }
+
+        it "also update dependencies" do
+          expect(bundler_arguments).to include('logstash-mixin-ecs_compatibility_support', plugin_name)
+
+          mixin_libs = bundler_arguments - ["update", plugin_name]
+          mixin_libs.each do |gem_name|
+            dep = ::Gem::Dependency.new(gem_name)
+            expect(dep.type).to eq(:runtime)
+            expect(gem_name).to start_with('logstash-mixin-')
+          end
+        end
+
+        it "do not include core lib" do
+          expect(bundler_arguments).not_to include('logstash-core', 'logstash-core-plugin-api')
+        end
+
+        it "raise error when fetcher failed" do
+          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [StandardError.new("boom")]])
+          expect { bundler_arguments }.to raise_error(StandardError, /boom/)
         end
       end
     end
@@ -130,7 +169,7 @@ describe LogStash::Bundler do
     context "when only specifying clean" do
       let(:options) { { :clean => true } }
       it 'should call the `bundle clean`' do
-        expect(subject).to include('clean')
+        expect(bundler_arguments).to include('clean')
       end
     end
   end

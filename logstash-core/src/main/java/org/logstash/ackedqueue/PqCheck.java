@@ -30,6 +30,9 @@ import java.util.Comparator;
 import java.util.stream.StreamSupport;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 
+/**
+ * Utility application to detect corrupted persistent queues.
+ * */
 public final class PqCheck {
 
     private static final String DEFAULT_PQ_DIR = "data/queue/main";
@@ -58,7 +61,7 @@ public final class PqCheck {
         }
         System.out.println(String.format("Checking queue dir: %s", path));
         try (
-            DirectoryStream<Path> checkpoints = Files.newDirectoryStream(path, "checkpoint.*")
+            DirectoryStream<Path> checkpoints = Files.newDirectoryStream(path, "checkpoint.{[0-9]*,head}")
         ) {
             StreamSupport.stream(
                 checkpoints.spliterator(), true

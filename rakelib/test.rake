@@ -18,7 +18,6 @@
 # we need to call exit explicitly  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
-require "pluginmanager/util"
 require 'pathname'
 
 namespace "test" do
@@ -58,6 +57,10 @@ namespace "test" do
   desc "run all installed plugins specs"
   task "plugins"  => "bootstrap" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
+    # the module LogStash::PluginManager requires the file `lib/pluginmanager/plugin_aliases.yml`,
+    # that file is created during the bootstrap task
+    require "pluginmanager/util"
+
     # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
     # not be run because they were not under the vendor/bundle/jruby/2.0/gems path

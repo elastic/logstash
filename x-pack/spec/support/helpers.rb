@@ -33,6 +33,32 @@ def apply_settings(settings_values, settings = nil)
   settings
 end
 
+##
+# yields to the provided block with the ENV modified by
+# the provided overrides. Values given as `nil` will be deleted
+# if present in the base ENV.
+#
+# @param replacement [Hash{String=>[String,nil]}]
+def with_environment(overrides)
+  replacement = ENV.to_hash
+                   .merge(overrides)
+                   .reject { |_,v| v.nil? }
+
+  with_environment!(replacement) { yield }
+end
+
+##
+# yields to the provided block with the ENV replaced
+# @param replacement [Hash{String=>String}]
+def with_environment!(replacement)
+  original = ENV.to_hash.dup.freeze
+  ENV.replace(replacement)
+
+  yield
+ensure
+  ENV.replace(original)
+end
+
 def start_agent(agent)
   agent_task = Stud::Task.new do
     begin

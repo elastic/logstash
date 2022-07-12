@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'tempfile'
 require_relative "../../vagrant/helpers"
 require_relative "system_helpers"
 
@@ -75,6 +76,29 @@ module ServiceTester
       plugins_list.include?(search_token)
     end
 
+    ##
+    # Determines whether a specific gem is included in the vendored distribution.
+    #
+    # Returns `true` if _any version_ of the gem is vendored.
+    #
+    # @param host [???]
+    # @param gem_name [String]
+    # @return [Boolean]
+    #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
+    def gem_vendored?(host, gem_name)
+      cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
+      matches = cmd.stdout.lines
+      matches.map do |path_to_gemspec|
+        filename = path_to_gemspec.split('/').last
+        gemspec_contents = run_command("cat #{path_to_gemspec}", host).stdout
+        Tempfile.create(filename) do |tempfile|
+          tempfile.write(gemspec_contents)
+          tempfile.flush
+          Gem::Specification::load(tempfile.path)
+        end
+      end.select { |gemspec| gemspec.name == gem_name }.any?
+    end
+
     def download(from, to, host)
       run_command("wget #{from} -O #{to}", host)
     end
@@ -83,21 +107,17 @@ module ServiceTester
       run_command("rm -rf #{path}", host)
     end
 
-    def package_for(filename, skip_jdk_infix, bundled_jdk, base=ServiceTester::Base::LOCATION)
-      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+    def package_for(filename, skip_jdk_infix, base=ServiceTester::Base::LOCATION)
+      jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix)
       File.join(base, "#{filename}#{jdk_arch_ext}.#{package_extension}")
     end
 
     private
-    def jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+    def jdk_architecture_extension(skip_jdk_infix)
       if skip_jdk_infix
         ""
       else
-        if bundled_jdk
-          "-" + architecture_extension
-        else
-          "-no-jdk"
-        end
+        "-" + architecture_extension
       end
     end
   end

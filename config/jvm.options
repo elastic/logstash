@@ -17,9 +17,9 @@
 ################################################################
 
 ## GC configuration
--XX:+UseConcMarkSweepGC
--XX:CMSInitiatingOccupancyFraction=75
--XX:+UseCMSInitiatingOccupancyOnly
+11-13:-XX:+UseConcMarkSweepGC
+11-13:-XX:CMSInitiatingOccupancyFraction=75
+11-13:-XX:+UseCMSInitiatingOccupancyOnly
 
 ## Locale
 # Set the locale language
@@ -49,8 +49,6 @@
 -Djruby.compile.invokedynamic=true
 # Force Compilation
 -Djruby.jit.threshold=0
-# Make sure joni regexp interruptability is enabled
--Djruby.regexp.interruptible=true
 
 ## heap dumps
 
@@ -63,12 +61,7 @@
 #-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof
 
 ## GC logging
-#-XX:+PrintGCDetails
-#-XX:+PrintGCTimeStamps
-#-XX:+PrintGCDateStamps
-#-XX:+PrintClassHistogram
-#-XX:+PrintTenuringDistribution
-#-XX:+PrintGCApplicationStoppedTime
+#-Xlog:gc*,gc+age=trace,safepoint:file=@loggc@:utctime,pid,tags:filecount=32,filesize=64m
 
 # log GC status to a file with time stamps
 # ensure the directory exists

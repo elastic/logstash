@@ -1,5 +1,5 @@
 [[tips]] 
-== Tips and Best Practices
+== Tips and best practices
 
 We are adding more tips and best practices, so please check back soon. 
 If you have something to add, please:
@@ -13,11 +13,11 @@ https://github.com/elastic/logstash/issues, or
 Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
 forum].
 
-[float] 
+[discrete] 
 [[tip-cli]] 
 === Command line
 
-[float] 
+[discrete] 
 [[tip-windows-cli]] 
 ==== Shell commands on Windows OS
 
@@ -38,11 +38,11 @@ Use this format on Windows systems:
 bin\logstash -e "input { stdin { } } output { stdout {} }"
 -----
 
-[float]
+[discrete]
 [[tip-pipelines]]
 === Pipelines
 
-[float]
+[discrete]
 [[tip-pipeline-mgmt]]
 ==== Pipeline management
 
@@ -55,15 +55,55 @@ no longer specify local pipeline configurations. The `pipelines.yml` file and
 settings such as `path.config` and `config.string` are inactive when centralized
 pipeline management is enabled.
 
-[float]
+
+[discrete]
+[[tip-filters]]
+=== Tips using filters
+
+[discrete]
+[[tip-check-field]]
+==== Check to see if a boolean field exists
+
+You can use the mutate filter to see if a boolean field exists.
+
+{ls} supports [@metadata] fields--fields that are not visible for output plugins and live only in the filtering state. 
+You can use [@metadata] fields with the mutate filter to see if a field exists. 
+
+[source,ruby]
+-----
+filter {
+  mutate {
+    # we use a "temporal" field with a predefined arbitrary known value that
+    # lives only in filtering stage.
+    add_field => { "[@metadata][test_field_check]" => "a null value" }
+
+    # we copy the field of interest into that temporal field.
+    # If the field doesn't exist, copy is not executed.
+    copy => { "test_field" => "[@metadata][test_field_check]" }
+  }
+
+
+  # now we now if testField didn't exists, our field will have 
+  # the initial arbitrary value
+  if [@metadata][test_field_check] == "a null value" {
+    # logic to execute when [test_field] did not exist
+    mutate { add_field => { "field_did_not_exist" => true }}
+  } else {
+    # logic to execute when [test_field] existed
+    mutate { add_field => { "field_did_exist" => true }}
+  }
+}
+-----
+
+[discrete]
 [[tip-kafka]]
 === Kafka
 
-[float]
+[discrete]
 [[tip-kafka-settings]]
 ==== Kafka settings
 
-[float]
+[discrete]
 [[tip-kafka-partitions]]
 ===== Partitions per topic
 
@@ -80,7 +120,7 @@ exceed 2000.
 Err on the side of over-partitioning up to a total 1000
 partitions overall. Try not to exceed 1000 partitions.
 
-[float]
+[discrete]
 [[tip-kafka-threads]]
 ===== Consumer threads
 
@@ -91,11 +131,11 @@ value of `1` then iterate your way up. The value should in general be lower than
 the number of pipeline workers. Values larger than 4 rarely result in
 performance improvement.
 
-[float]
+[discrete]
 [[tip-kafka-pq-persist]]
 ==== Kafka input and persistent queue (PQ)
 
-[float]
+[discrete]
 [[tip-kafka-offset-commit]]
 ===== Kafka offset commits
 
@@ -106,6 +146,4 @@ performance improvement.
 No, we can’t make that guarantee. Offsets are committed to Kafka periodically. If
 writes to the PQ are slow or blocked, offsets for events that haven’t safely
 reached the PQ can be committed.
-
-
 
