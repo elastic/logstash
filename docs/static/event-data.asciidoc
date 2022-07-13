@@ -5,7 +5,7 @@ A Logstash pipeline usually has three stages: inputs -> filters -> outputs.
 Inputs generate events, filters modify them, and outputs ship them elsewhere.
 
 All events have properties. 
-For example, an Apache access log would have properties
+For example, an Apache access log has properties
 like status code (200, 404), request path ("/", "index.html"), HTTP verb
 (GET, POST), client IP address, and so forth. 
 Logstash calls these properties "fields".
