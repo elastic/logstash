@@ -57,12 +57,10 @@ describe "Ruby codec when used in" do
 
     it "should encode correctly to file and don't log any ERROR" do
       logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
-#       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.start_with_stdin(config)
-#       logstash_service.wait_for_logstash
 
       # wait for Logstash to fully start
-      logstash_service.wait_for_rest
+      logstash_service.wait_for_rest_api
 
       logstash_service.write_to_stdin('{"project": "Teleport"}')
       sleep(2)
@@ -86,7 +84,7 @@ describe "Ruby codec when used in" do
       logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.wait_for_logstash
-      logstash_service.wait_for_rest
+      logstash_service.wait_for_rest_api
 
       logstash_service.write_to_stdin('Teleport ray')
       sleep(2)
@@ -109,7 +107,7 @@ describe "Ruby codec when used in" do
     it "should encode correctly without any ERROR log" do
       logstash_service.spawn_logstash("-w", "1" , "-e", config)
       logstash_service.wait_for_logstash
-      logstash_service.wait_for_rest
+      logstash_service.wait_for_rest_api
 
       logstash_service.teardown
 

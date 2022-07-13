@@ -189,7 +189,7 @@ class LogstashService < Service
   end
 
   # check REST API is responsive
-  def is_rest_active?
+  def rest_active?
     result = monitoring_api.node_info
     started = !result.nil?
   end
@@ -214,10 +214,10 @@ class LogstashService < Service
   end
 
   # wait until LS respond to REST HTTP API request
-  def wait_for_rest
+  def wait_for_rest_api
     tries = RETRY_ATTEMPTS
     while tries > 0
-      if is_rest_active?
+      if rest_active?
         return
       else
         sleep 1
