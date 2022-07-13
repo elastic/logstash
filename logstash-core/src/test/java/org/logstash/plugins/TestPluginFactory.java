@@ -21,6 +21,7 @@
 package org.logstash.plugins;
 
 import co.elastic.logstash.api.Codec;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.common.SourceWithMetadata;
@@ -59,5 +60,10 @@ public class TestPluginFactory implements RubyIntegration.PluginFactory {
     @Override
     public Codec buildDefaultCodec(String codecName) {
         return new Line(new ConfigurationImpl(Collections.emptyMap()), new ContextImpl(null, null));
+    }
+
+    @Override
+    public Codec buildRubyCodecWrapper(RubyObject rubyCodec) {
+        return null;
     }
 }
