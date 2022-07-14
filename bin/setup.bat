@@ -106,5 +106,6 @@ IF not defined CLASSPATH (
 ) ELSE (
   set CLASSPATH=%CLASSPATH%;%~1
 )
+goto :eof
 
 set RUBYLIB=%LS_HOME%\lib
