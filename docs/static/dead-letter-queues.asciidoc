@@ -125,25 +125,24 @@ Use the `dead_letter_queue.storage_policy` option to control which entries shoul
 Set the value to `drop_newer` (default) to stop accepting new values that would push the file size over the limit. 
 Set the value to `drop_older` to remove the oldest events to make space for new ones.
 
+[[auto-clean]]
 ===== Automatic cleaning of consumed events
 
-By default, dead letter queue input plugin doesn't remove the events that it consumes, it just commits a reference
-to avoid re-processing.
-With `clean_consumed` setting in dead letter queue input plugin, it removes the segments that are fully consumed,
-freeing space while processing.
-The setting can be configured in input plugin, for example:
+By default, the dead letter queue input plugin does not remove the events that it consumes.
+Instead, it commits a reference to avoid re-processing events.
+Use the `clean_consumed` setting in the dead letter queue input plugin in order
+to remove segments that have been fully consumed, freeing space while processing.
 
 [source,yaml]
--------------------------------------------------------------------------------
+-----
 input {
   dead_letter_queue {
   	path => "/path/to/data/dead_letter_queue"
   	pipeline_id => "main"
-    clean_consumed => true <1>
+    clean_consumed => true 
   }
 }
--------------------------------------------------------------------------------
-<1> The setting to enable to let the input plugin automatically delete the segments it processes.
+-----
 
 [[processing-dlq-events]]
 ==== Processing events in the dead letter queue
