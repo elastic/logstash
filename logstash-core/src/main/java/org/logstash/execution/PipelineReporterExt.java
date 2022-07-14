@@ -81,8 +81,6 @@ public final class PipelineReporterExt extends RubyBasicObject {
     private static final RubyString DEAD_STATUS =
         RubyUtil.RUBY.newString("dead").newFrozen();
 
-    private transient IRubyObject logger;
-
     private transient IRubyObject pipeline;
 
     public PipelineReporterExt(final Ruby runtime, final RubyClass metaClass) {
@@ -90,9 +88,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
     }
 
     @JRubyMethod
-    public PipelineReporterExt initialize(final ThreadContext context, final IRubyObject logger,
-        final IRubyObject pipeline) {
-        this.logger = logger;
+    public PipelineReporterExt initialize(final ThreadContext context, final IRubyObject pipeline) {
         this.pipeline = pipeline;
         return this;
     }
@@ -100,11 +96,6 @@ public final class PipelineReporterExt extends RubyBasicObject {
     @JRubyMethod
     public IRubyObject pipeline() {
         return pipeline;
-    }
-
-    @JRubyMethod
-    public IRubyObject logger() {
-        return logger;
     }
 
     /**

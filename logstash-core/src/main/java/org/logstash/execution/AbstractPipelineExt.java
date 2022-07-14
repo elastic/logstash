@@ -170,12 +170,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod
     public final AbstractPipelineExt initialize(final ThreadContext context,
-        final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
-        final IRubyObject rubyLogger)
+        final IRubyObject pipelineConfig, final IRubyObject namespacedMetric)
         throws NoSuchAlgorithmException {
         reporter = new PipelineReporterExt(
-            context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
-        );
+            context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, this);
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
         configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
