@@ -18,7 +18,8 @@
 require "logstash/modules/logstash_config"
 
 describe LogStash::Modules::LogStashConfig do
-  let(:mod) { instance_double("module", :directory => Stud::Temporary.directory, :module_name => "testing") }
+  let(:module_name) { "testing" }
+  let(:mod) { instance_double("module", :directory => Stud::Temporary.directory, :module_name => module_name) }
   let(:settings) { {"var.logstash.testing.pants" => "fancy", "var.elasticsearch.password" => LogStash::Util::Password.new('correct_horse_battery_staple') }}
   subject { described_class.new(mod, settings) }
 
@@ -52,9 +53,21 @@ describe LogStash::Modules::LogStashConfig do
     end
   end
 
-  describe 'elastic_search_config' do
+  describe 'elasticsearch_config_output' do
+    let(:args) { nil }
+    let(:config) { subject.elasticsearch_output_config(*args) }
     it 'should put the password in correctly' do
-      expect(subject.elasticsearch_output_config()).to include("password => \"correct_horse_battery_staple\"")
+      expect(config).to include("password => \"correct_horse_battery_staple\"")
+    end
+    it 'appends the timestamp expression to the index name' do
+      expect(config).to include("index => \"#{module_name}-%{+YYYY.MM.dd}\"")
+    end
+    context "when index_suffix is customized" do
+      let(:custom_suffix) { "-new_suffix" }
+      let(:args) { ["my_custom", custom_suffix] }
+      it 'the index name uses the custom suffix instead' do
+        expect(config).to include("index => \"#{module_name}#{custom_suffix}\"")
+      end
     end
   end
 
