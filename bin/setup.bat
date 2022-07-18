@@ -62,5 +62,50 @@ if not exist %JRUBY_BIN% (
   echo "could not find jruby in %LS_HOME%\vendor\jruby" 1>&2
   exit /b 1
 )
+rem iterate over the command line args and look for the argument
+rem after --path.settings to see if the jvm.options file is in
+rem that path and set LS_JVM_OPTS accordingly
+:loop
+for /F "usebackq tokens=1-2* delims= " %%A in (!params!) do (
+    set current=%%A
+    set next=%%B
+    set params='%%B %%C'
+
+    if "!current!" == "--path.settings" (
+    	if exist !next!\jvm.options (
+    	  set "LS_JVM_OPTS=!next!\jvm.options"
+    	)
+    )
+
+    if not "x!params!" == "x" (
+		goto loop
+	)
+)
+
+rem setup CLASSPATH for Java process
+set "JRUBY_HOME=%LS_HOME%\vendor\jruby"
+
+set "CLASSPATH=%JRUBY_HOME%\lib\jruby.jar"
+for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
+	call :concat "%%i"
+)
+
+@setlocal
+for /F "usebackq delims=" %%a in (`CALL "%JAVACMD%" -cp "!CLASSPATH!" "org.logstash.launchers.JvmOptionsParser" "!LS_HOME!" "!LS_JVM_OPTS!" ^|^| echo jvm_options_parser_failed`) do set LS_JAVA_OPTS=%%a
+@endlocal & set "MAYBE_JVM_OPTIONS_PARSER_FAILED=%LS_JAVA_OPTS%" & set LS_JAVA_OPTS=%LS_JAVA_OPTS%
+
+if "%MAYBE_JVM_OPTIONS_PARSER_FAILED%" == "jvm_options_parser_failed" (
+  echo "error: jvm options parser failed; exiting"
+  exit /b 1
+)
+set JAVA_OPTS=%LS_JAVA_OPTS%
+
+:concat
+IF not defined CLASSPATH (
+  set CLASSPATH=%~1
+) ELSE (
+  set CLASSPATH=%CLASSPATH%;%~1
+)
+goto :eof
 
 set RUBYLIB=%LS_HOME%\lib
