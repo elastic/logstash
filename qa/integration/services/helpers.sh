@@ -35,20 +35,16 @@ test_port_nc() {
 }
 
 test_port_ruby() {
-  if command -v ruby 2>/dev/null; then
-    ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
-  else
-    if [[ -z $LS_RUBY_HOME ]]; then
-      if [[ -n $LS_HOME ]]; then
-        LS_RUBY_HOME=$LS_HOME
-      else
-        LS_RUBY_HOME=$current_dir/../../..
-      fi
-      echo "Setting logstash ruby home to $LS_RUBY_HOME"
+  if [[ -z $LS_RUBY_HOME ]]; then
+    if [[ -n $LS_HOME ]]; then
+      LS_RUBY_HOME=$LS_HOME
+    else
+      LS_RUBY_HOME=$current_dir/../../..
     fi
-    export LS_GEM_HOME="$GEM_HOME"
-    $LS_RUBY_HOME/bin/ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
+    echo "Setting logstash ruby home to $LS_RUBY_HOME"
   fi
+  export LS_GEM_HOME="$GEM_HOME"
+  $LS_RUBY_HOME/bin/ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
 }
 
 clean_install_dir() {
