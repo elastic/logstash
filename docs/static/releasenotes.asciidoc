@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-3,Logstash 8.3.3>>
 * <<logstash-8-3-2,Logstash 8.3.2>>
 * <<logstash-8-3-1,Logstash 8.3.1>>
 * <<logstash-8-3-0,Logstash 8.3.0>>
@@ -21,6 +22,37 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-3-3]]
+=== Logstash 8.3.3 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.3.3
+
+* Fix broken link to image https://github.com/elastic/logstash/pull/14343[#14343]
+* Backport PR #14343 to 8.3: Fix broken link to image https://github.com/elastic/logstash/pull/14345[#14345]
+* Update dependencies https://github.com/elastic/logstash/pull/14348[#14348]
+* Backport PR #14348 to 8.3: Update dependencies https://github.com/elastic/logstash/pull/14349[#14349]
+* Fix windows scripts to also pull settings from JvmOptionsParser https://github.com/elastic/logstash/pull/14355[#14355]
+* Backport PR #14355 to 8.3: Fix windows scripts to also pull settings from JvmOptionsParser https://github.com/elastic/logstash/pull/14356[#14356]
+
+=== Logstash Commits between 8.3 and 8.3.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.3.2..8.3"
+
+be9fa9af4 - (HEAD -> 8.3, origin/8.3) Update version of jdk11 to openjdk11 to allow aarch64 builds (#14310) (#14315) (2 hours ago) <github-actions[bot]>
+261ad60ce - Fix windows scripts to also pull settings from JvmOptionsParser (#14355) (#14356) (26 hours ago) <github-actions[bot]>
+12327f72a - Backport PR #14348 to 8.3: Update dependencies (#14349) (6 days ago) <github-actions[bot]>
+c20c22a13 - Fix broken link to image (#14343) (#14345) (7 days ago) <github-actions[bot]>
+e07e1e03d - Bump version to 8.3.3 (#14334) (12 days ago) <João Duarte>
+f007d0ec0 - Release notes for 8.3.2 (#14327) (12 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.3.2..8.3 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-3-2]]
 === Logstash 8.3.2 Release Notes
