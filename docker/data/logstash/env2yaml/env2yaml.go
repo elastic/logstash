@@ -71,6 +71,7 @@ func normalizeSetting(setting string) (string, error) {
 		"config.reload.interval",
 		"config.debug",
 		"config.support_escapes",
+		"config.field_reference.escape_style",
 		"queue.type",
 		"path.queue",
 		"queue.page_capacity",
