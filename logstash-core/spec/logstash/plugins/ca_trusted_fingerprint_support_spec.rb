@@ -6,6 +6,7 @@ require 'logstash/inputs/base'
 require 'logstash/filters/base'
 require 'logstash/codecs/base'
 require 'logstash/outputs/base'
+java_import "org.logstash.util.CATrustedFingerprintTrustStrategy"
 
 describe LogStash::Plugins::CATrustedFingerprintSupport do
 
@@ -47,7 +48,7 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
           end
           context '#trust_strategy_for_ca_trusted_fingerprint' do
             it 'builds an appropriate trust strategy' do
-              expect(org.logstash.util.CATrustedFingerprintTrustStrategy).to receive(:new).with(normalized).and_call_original
+              expect(CATrustedFingerprintTrustStrategy).to receive(:new).with(normalized).and_call_original
               expect(plugin.trust_strategy_for_ca_trusted_fingerprint).to be_a_kind_of(org.apache.http.conn.ssl.TrustStrategy)
             end
           end
