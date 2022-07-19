@@ -107,11 +107,11 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     protected abstract IRubyObject reloadable(final ThreadContext context);
 
     @JRubyMethod(name = "threadsafe?")
-    public IRubyObject concurrency(final ThreadContext context) {
-        return getConcurrency(context);
+    public IRubyObject threadsafe(final ThreadContext context) {
+        return isThreadsafe(context);
     }
 
-    protected abstract IRubyObject getConcurrency(final ThreadContext context);
+    protected abstract IRubyObject isThreadsafe(final ThreadContext context);
 
     @JRubyMethod(name = "config_name")
     public IRubyObject configName(final ThreadContext context) {
