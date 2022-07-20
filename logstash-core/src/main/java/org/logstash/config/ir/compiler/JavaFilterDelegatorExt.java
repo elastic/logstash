@@ -48,8 +48,6 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     private static final long serialVersionUID = 1L;
 
-    private static final RubySymbol CONCURRENCY = RubyUtil.RUBY.newSymbol("java");
-
     private RubyString configName;
 
     private transient Filter filter;
@@ -128,8 +126,8 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
-    protected IRubyObject getConcurrency(final ThreadContext context) {
-        return CONCURRENCY;
+    protected IRubyObject isThreadsafe(final ThreadContext context) {
+        return context.tru;
     }
 
     @Override
