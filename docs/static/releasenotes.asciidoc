@@ -37,7 +37,7 @@ This section summarizes the changes in the following releases:
 *Date Filter - 3.1.15*
 
 * Build: review build to be more reliable/portable https://github.com/logstash-plugins/logstash-filter-date/pull/139[#139]
-* cleaned up Java dependencies
+* Cleaned up Java dependencies
 
 *Fingerprint Filter - 3.4.1*
 
@@ -45,15 +45,15 @@ This section summarizes the changes in the following releases:
 
 *Http_poller Input - 5.3.1*
 
-* Fix: make sure plugin is closing the http client https://github.com/logstash-plugins/logstash-input-http_poller/pull/130[#130]
+* Fix: Make sure plugin is closing the http client https://github.com/logstash-plugins/logstash-input-http_poller/pull/130[#130]
 
 *Scheduler Mixin - 1.0.1*
 
-* Refactor: initialize time zone data eagerly https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/2[#2]
+* Refactor: Initialize time zone data eagerly https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/2[#2]
 
 *Core Patterns - 4.3.4*
 
-* Fix: typo in CISCOFW302013_302014_302015_302016 grok pattern https://github.com/logstash-plugins/logstash-patterns-core/pull/313[#313]
+* Fix: Correct typo in CISCOFW302013_302014_302015_302016 grok pattern https://github.com/logstash-plugins/logstash-patterns-core/pull/313[#313]
 
 
 [[logstash-8-3-2]]
