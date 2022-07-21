@@ -1,20 +1,20 @@
 [[environment-variables]]
-=== Using environment variables in the configuration
+=== Using environment variables
 
 ==== Overview
 
 * You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
-* At Logstash startup, each reference will be replaced by the value of the environment variable.
+* At Logstash startup, each reference is replaced by the value of the environment variable.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
 * You can give a default value by using the form `${var:default value}`. Logstash uses the default value if the
 environment variable is undefined.
-* You can add environment variable references in any plugin option type : string, number, boolean, array, or hash.
+* You can add environment variable references in any plugin option type: string, number, boolean, array, or hash.
 * Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
 
 ==== Examples
 
-The following examples show you how to use environment variables to set the values of some commonly used
+These examples show you how to use environment variables to set the values of some commonly used
 configuration options.
 
 ===== Setting the TCP port
@@ -37,7 +37,7 @@ Now let's set the value of `TCP_PORT`:
 export TCP_PORT=12345
 ----
 
-At startup, Logstash uses the following configuration:
+At startup, Logstash uses this configuration:
 
 [source,ruby]
 ----------------------------------
@@ -94,7 +94,7 @@ Let's set the value of `ENV_TAG`:
 export ENV_TAG="tag2"
 ----
 
-At startup, Logstash uses the following configuration:
+At startup, Logstash uses this configuration:
 
 [source,ruby]
 ----
