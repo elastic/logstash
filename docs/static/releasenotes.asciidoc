@@ -28,8 +28,9 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.3.3]]
 ==== Notable issue fixed
-* We fixed an issue running the plugin manager or the keystore using the bundled JVM on
-  windows https://github.com/elastic/logstash/pull/14355[#14355]
+* We fixed an issue which occurred when users ran the plugin manager or the keystore with the bundled JVM.
+  Some mandatory JVM options were not being picked up from the JvmOptionsParser,
+  breaking compatibility with Windows on certain versions of the JDK. https://github.com/elastic/logstash/pull/14355[#14355]
 
 [[plugins-8.3.3]]
 ==== Plugin releases
