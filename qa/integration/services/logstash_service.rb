@@ -122,6 +122,7 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
+      puts "THE VALUE OF LS_JAVA_HOME IS #{ENV['LS_JAVA_HOME']}. the value of BUILD_JAVA_HOME is #{ENV['BUILD_JAVA_HOME']}the value of java.home is #{java.lang.System.getProperty('java.home')}"
       java_home = java.lang.System.getProperty('java.home')
       @process.environment['LS_JAVA_HOME'] = java_home
       @process.start
@@ -146,7 +147,9 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true # enable stdin to be written
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
+
       java_home = java.lang.System.getProperty('java.home')
+      puts "THE VALUE OF LS_JAVA_HOME IS #{ENV['LS_JAVA_HOME']}. the value of BUILD_JAVA_HOME is #{ENV['BUILD_JAVA_HOME']}the value of java.home is #{java.lang.System.getProperty('java.home')}"
       @process.environment['LS_JAVA_HOME'] = java_home
       @process.io.inherit!
       @process.start
