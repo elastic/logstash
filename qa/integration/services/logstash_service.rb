@@ -235,7 +235,7 @@ class LogstashService < Service
   end
 
   def get_version
-    `#{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
+    `LS_JAVA_HOME=#{java.lang.System.getProperty('java.home')} #{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
   end
 
   def get_version_yml
