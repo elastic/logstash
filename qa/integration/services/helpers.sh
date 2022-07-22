@@ -22,29 +22,8 @@ wait_for_port() {
     test_port "$1"
 }
 
-test_port() {
-    if command -v nc 2>/dev/null; then
-      test_port_nc "$1"
-    else
-      test_port_ruby "$1"
-    fi
-}
-
-test_port_nc() {
-  nc -z localhost $1
-}
-
-test_port_ruby() {
-  if [[ -z $LS_RUBY_HOME ]]; then
-    if [[ -n $LS_HOME ]]; then
-      LS_RUBY_HOME=$LS_HOME
-    else
-      LS_RUBY_HOME=$current_dir/../../..
-    fi
-    echo "Setting logstash ruby home to $LS_RUBY_HOME"
-  fi
-  export LS_GEM_HOME="$GEM_HOME"
-  $LS_RUBY_HOME/bin/ruby -rsocket -e "TCPSocket.new('localhost', $1) rescue exit(1)"
+test_port(){
+  /bin/bash -c "(echo >/dev/tcp/localhost/$1) >/dev/null 2>&1"
 }
 
 clean_install_dir() {
