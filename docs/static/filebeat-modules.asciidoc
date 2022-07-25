@@ -74,8 +74,9 @@ output {
     elasticsearch {
       hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
       manage_template => false
-      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
-      pipeline => "%{[@metadata][pipeline]}" <1>
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}" <1>
+      action => "create" <2>
+      pipeline => "%{[@metadata][pipeline]}" <3>
       user => "elastic"
       password => "secret"
     }
@@ -83,15 +84,18 @@ output {
     elasticsearch {
       hosts => "https://061ab24010a2482e9d64729fdb0fd93a.us-east-1.aws.found.io:9243"
       manage_template => false
-      index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+      index => "%{[@metadata][beat]}-%{[@metadata][version]}" <1>
+      action => "create"
       user => "elastic"
       password => "secret"
     }
   }
 }
 -----
-<1> Set the `pipeline` option to `%{[@metadata][pipeline]}`. This setting
-configures {ls} to select the correct ingest pipeline based on metadata
+<1> If data streams are disabled in your configuration, set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`. Data streams are enabled by default.
+<2> If you are disabling the use of Data Streams on your configuration, you can
+remove this setting, or set it to a different value as appropriate.
+<3> Configures {ls} to select the correct ingest pipeline based on metadata
 passed in the event.
 
 See the {filebeat} {filebeat-ref}/filebeat-modules-overview.html[Modules]
