@@ -92,13 +92,10 @@ output {
   }
 }
 -----
-<1> Set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`
-if you are disabling the use of Data Streams in your configuration. Data Streams is
-enabled by default starting from 8.0.
+<1> If data streams are disabled in your configuration, set the `index` option to `%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}`. Data streams are enabled by default.
 <2> If you are disabling the use of Data Streams on your configuration, you can
 remove this setting, or set it to a different value as appropriate.
-<3> Set the `pipeline` option to `%{[@metadata][pipeline]}`. This setting
-configures {ls} to select the correct ingest pipeline based on metadata
+<3> Configures {ls} to select the correct ingest pipeline based on metadata
 passed in the event.
 
 See the {filebeat} {filebeat-ref}/filebeat-modules-overview.html[Modules]
