@@ -168,10 +168,10 @@ dependencies {
     runtimeOnly 'commons-logging:commons-logging:1.2'
     // also handle libraries relying on log4j 1.x to redirect their logs
     runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
-    implementation('org.reflections:reflections:0.9.12') {
+    implementation('org.reflections:reflections:0.10.2') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    implementation 'commons-codec:commons-codec:1.14'
+    implementation 'commons-codec:commons-codec:1.15'
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
@@ -179,11 +179,11 @@ dependencies {
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
-    implementation('com.google.googlejavaformat:google-java-format:1.13.0') {
+    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+    implementation('com.google.googlejavaformat:google-java-format:1.15.0') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    implementation 'org.javassist:javassist:3.26.0-GA'
+    implementation 'org.javassist:javassist:3.29.0-GA'
     testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
