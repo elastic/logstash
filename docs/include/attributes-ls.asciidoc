@@ -8,3 +8,6 @@ with a corresponding change to the VPR settings in
 logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
 /////
 
+:lsyml: Available in`logstash.yml`.
+:plyml: Available in`pipelines.yml`.
+:bothyml: Available in `logstash.yml` and `pipelines.yml`.

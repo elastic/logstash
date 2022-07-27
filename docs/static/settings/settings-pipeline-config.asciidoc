@@ -1,0 +1,46 @@
+`path.config`::
+The path to the Logstash pipeline configuration for the main pipeline. 
+If you specify a directory or wildcard, config files are read from the directory in alphabetical order. 
+This setting is platform-specific. See <<dir-layout>> for more info.
+ 
+`config.string`::
+A string that contains the pipeline configuration for the main pipeline. Use the same syntax as the config file.
+
+`config.test_and_exit`::
+When set to `true`, at startup checks to ensure that the configuration is valid and then exits. Logstash can read multiple config files from a directory. 
+Note that grok patterns are not checked for correctness. 
+If you combine this setting with `log.level: debug`, Logstash logs the combined config file, annotating each config block with the source file it came from. 
+Default is `false`. 
+
+`config.reload.automatic`::
+Periodically checks to see if the pipeline configuration has changed and reloads the pipeline after changes. 
+This can also be triggered manually through the SIGHUP signal. Default is `false`. 
+
+`config.reload.interval`::
+How often to check if the pipeline configuration has changed (in seconds). 
+Note that the unit value (s) is required. Values without a qualifier (such as 60) are treated as nanoseconds. Default is 3s. 
+IMPORTANT: Setting the interval this way is not recommended and might change in later versions. 
+
+`config.debug`::
+When set to `true`, shows the fully compiled configuration as a debug log message. 
+You must also set log.level: debug. Default is `false`. 
+WARNING: The log message will include any password options passed to plugin configs as plaintext, and may result in plaintext passwords appearing in your logs.
+
+`config.support_escapes`::
+When enabled, process escaped characters such as \n and \" in strings in the pipeline configuration files. Default is `false`. 
+When set to `true`, quoted strings process these escape sequences: 
+`\n` becomes a literal newline (ASCII 10).
+`\r` becomes a literal carriage return (ASCII 13).
+`\t` becomes a literal tab (ASCII 9).
+`\\` becomes a literal backslash (`\`).  
+`\"` becomes a literal double quotation mark.
+`\'` becomes a literal single quotation mark.
+
+`config.field_reference.escape_style`::
+[Technical preview]. Provides a way to reference fields that contain <<formal-grammar-escape-sequences,field reference special characters>> `[` and `]`. 
+Current options are:   
+* `percent`: URI-style `%`+`HH` hexadecimal encoding of UTF-8 bytes (`[` -> `%5B`; `]` -> `%5D`). 
+* `ampersand`: HTML-style `&#`+`DD`+`;` encoding of decimal Unicode code-points (`[` -> `&#91;`; `]` -> `&#93;`). 
+* `none`: field names containing special characters _cannot_ be referenced. 
+
+NOTE: This feature is in *technical preview* and may change in the future.

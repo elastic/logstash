@@ -1,0 +1,10 @@
+`log-level`::
+Options for log.level are `fatal`, `error`, `warn`, `info`, `debug`, `trace`. Default is  `info`.
+
+`pathlogs`::
+The directory where Logstash writes its logs.
+Default is `LOGSTASH_HOME/logs`.
+
+`logformat`::
+The format to use for outputting logs. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`. +
+Default is `plain`.

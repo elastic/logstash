@@ -1,0 +1,53 @@
+[[logstash-yml-settings]]
+=== Logstash settings
+
+The `logstash.yml` file, located in the Logstash `/config/` directory includes these settings. 
+
+
+[[settings-general]]
+==== Set up and general settings
+
+include::settings-general.asciidoc[]
+
+[[settings-queue]]
+==== Queue settings
+
+`queue.type`:: The internal queuing model to use for event buffering.  
+Specify `persisted` to enable <<persistent-queues,persistent queues>> for disk-based ACKed queueing, or `memory` for legacy <<memory-queue,in-memory based queueing>>. 
+Default is `memory`.
+
+
+[[settings-pq]]
+===== Persisted queue (PQ) settings
+
+include::settings-pq.asciidoc[]
+
+
+[[settings-dlq]]
+===== Dead letter queue (DLQ) settings
+
+include::settings-dlq.asciidoc[]
+
+
+[[settings-pipeline]]
+==== Pipeline settings
+
+include::settings-pipeline.asciidoc[]
+
+
+[[settings-pipeline-config]]
+==== Pipeline configuration settings
+
+include::settings-pipeline-config.asciidoc[]
+
+
+[[settings-api]]
+===== API settings
+
+include::settings-api.asciidoc[]
+
+
+[[settings-debug]]
+===== Debug settings
+
+include::settings-debug.asciidoc[]
