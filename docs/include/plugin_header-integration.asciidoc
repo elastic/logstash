@@ -1,35 +1,15 @@
-ifeval::["{versioned_docs}"!="true"]
 [subs="attributes"]
 ++++
 <titleabbrev>{plugin}</titleabbrev>
 ++++
-endif::[]
-ifeval::["{versioned_docs}"=="true"]
-[subs="attributes"]
-++++
-<titleabbrev>{version}</titleabbrev>
-++++
-endif::[]
 
 * A component of the <<plugins-integrations-{integration},{integration} integration plugin>> 
 * Integration version: {version}
 * Released on: {release_date}
 * {changelog_url}[Changelog]
 
-ifeval::["{versioned_docs}"!="true"]
-
 For other versions, see the
 {lsplugindocs}/{type}-{plugin}-index.html[Versioned plugin docs].
-
-endif::[]
-
-ifeval::["{versioned_docs}"=="true"]
-
-For other versions, see the <<{type}-{plugin}-index,overview list>>.
-
-To learn more about Logstash, see the {logstash-ref}/index.html[Logstash Reference].
-
-endif::[]
 
 ==== Getting Help
 

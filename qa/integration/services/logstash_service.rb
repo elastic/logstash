@@ -112,15 +112,16 @@ class LogstashService < Service
 
   # Can start LS in stdin and can send messages to stdin
   # Useful to test metrics and such
-  def start_with_stdin
-    puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
+  def start_with_stdin(pipeline_config = STDIN_CONFIG)
+    puts "Starting Logstash #{@logstash_bin} -e #{pipeline_config}"
     Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true
-      @process = build_child_process("-e", STDIN_CONFIG)
+      @process = build_child_process("-e", pipeline_config)
       # pipe STDOUT and STDERR to a file
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
+      @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
       @process.environment['LS_JAVA_HOME'] = java_home
       @process.start
@@ -138,7 +139,12 @@ class LogstashService < Service
   # Spawn LS as a child process
   def spawn_logstash(*args)
     Bundler.with_unbundled_env do
+      out = Tempfile.new("duplex")
+      out.sync = true
       @process = build_child_process(*args)
+      # pipe STDOUT and STDERR to a file
+      @process.io.stdout = @process.io.stderr = out
+      @process.duplex = true # enable stdin to be written
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       java_home = java.lang.System.getProperty('java.home')
       @process.environment['LS_JAVA_HOME'] = java_home
@@ -182,6 +188,12 @@ class LogstashService < Service
     end
   end
 
+  # check REST API is responsive
+  def rest_active?
+    result = monitoring_api.node_info
+    started = !result.nil?
+  end
+
   def monitoring_api
     raise "Logstash is not up, but you asked for monitoring API" unless alive?
     @monitoring_api
@@ -201,6 +213,20 @@ class LogstashService < Service
     raise "Logstash REST API did not come up after #{RETRY_ATTEMPTS}s."
   end
 
+  # wait until LS respond to REST HTTP API request
+  def wait_for_rest_api
+    tries = RETRY_ATTEMPTS
+    while tries > 0
+      if rest_active?
+        return
+      else
+        sleep 1
+      end
+      tries -= 1
+    end
+    raise "Logstash REST API did not come up after #{RETRY_ATTEMPTS}s."
+  end
+
   # this method only overwrites existing config with new config
   # it does not assume that LS pipeline is fully reloaded after a
   # config change. It is up to the caller to validate that.
@@ -209,7 +235,7 @@ class LogstashService < Service
   end
 
   def get_version
-    `#{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
+    `LS_JAVA_HOME=#{java.lang.System.getProperty('java.home')} #{Shellwords.escape(@logstash_bin)} --version`.split("\n").last
   end
 
   def get_version_yml

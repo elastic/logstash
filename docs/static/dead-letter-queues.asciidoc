@@ -145,6 +145,25 @@ The age policy is verified and applied on event writes and during pipeline shutd
 For that reason, your dead-letter-queue folder may store expired events for longer than specified,
 and the reader pipeline could possibly encounter outdated events.
 
+[[auto-clean]]
+===== Automatic cleaning of consumed events
+
+By default, the dead letter queue input plugin does not remove the events that it consumes.
+Instead, it commits a reference to avoid re-processing events.
+Use the `clean_consumed` setting in the dead letter queue input plugin in order
+to remove segments that have been fully consumed, freeing space while processing.
+
+[source,yaml]
+-----
+input {
+  dead_letter_queue {
+  	path => "/path/to/data/dead_letter_queue"
+  	pipeline_id => "main"
+    clean_consumed => true 
+  }
+}
+-----
+
 [[processing-dlq-events]]
 ==== Processing events in the dead letter queue
 

@@ -363,8 +363,8 @@
     "skip-list": false
   },
   "logstash-input-s3": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-snmp": {
     "default-plugins": true,
@@ -375,8 +375,8 @@
     "skip-list": false
   },
   "logstash-input-sqs": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-stdin": {
     "default-plugins": true,
@@ -420,9 +420,13 @@
     "default-plugins": true,
     "skip-list": false
   },
-  "logstash-output-cloudwatch": {
+  "logstash-integration-aws": {
     "default-plugins": true,
     "skip-list": false
+  },
+  "logstash-output-cloudwatch": {
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-csv": {
     "default-plugins": true,
@@ -512,20 +516,20 @@
     "skip-list": false
   },
   "logstash-output-s3": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-slack": {
     "default-plugins": false,
     "skip-list": true
   },
   "logstash-output-sns": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-sqs": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-output-stdout": {
     "default-plugins": true,
