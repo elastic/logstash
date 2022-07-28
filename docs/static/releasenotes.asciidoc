@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-3-3,Logstash 8.3.3>>
 * <<logstash-8-3-2,Logstash 8.3.2>>
 * <<logstash-8-3-1,Logstash 8.3.1>>
 * <<logstash-8-3-0,Logstash 8.3.0>>
@@ -21,6 +22,40 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-3-3]]
+=== Logstash 8.3.3 Release Notes
+
+[[notable-8.3.3]]
+==== Notable issue fixed
+* We fixed an issue which occurred when users ran the plugin manager or the keystore with the bundled JVM.
+  Some mandatory JVM options were not being picked up from the JvmOptionsParser,
+  breaking compatibility with Windows on certain versions of the JDK. https://github.com/elastic/logstash/pull/14355[#14355]
+
+[[plugins-8.3.3]]
+==== Plugin releases
+
+*Date Filter - 3.1.15*
+
+* Build: review build to be more reliable/portable https://github.com/logstash-plugins/logstash-filter-date/pull/139[#139]
+* Cleaned up Java dependencies
+
+*Fingerprint Filter - 3.4.1*
+
+* Added backward compatibility of timestamp format to provide consistent fingerprint https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/67[#67]
+
+*Http_poller Input - 5.3.1*
+
+* Fix: Make sure plugin is closing the http client https://github.com/logstash-plugins/logstash-input-http_poller/pull/130[#130]
+
+*Scheduler Mixin - 1.0.1*
+
+* Refactor: Initialize time zone data eagerly https://github.com/logstash-plugins/logstash-mixin-scheduler/pull/2[#2]
+
+*Core Patterns - 4.3.4*
+
+* Fix: Correct typo in CISCOFW302013_302014_302015_302016 grok pattern https://github.com/logstash-plugins/logstash-patterns-core/pull/313[#313]
+
 
 [[logstash-8-3-2]]
 === Logstash 8.3.2 Release Notes
