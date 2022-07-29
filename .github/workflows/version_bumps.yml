@@ -5,7 +5,7 @@ on:
       branch:
         description: 'Release Branch'     
         required: true
-        default: '8.3'
+        default: '8.4'
         type: string
       bump:
         description: 'Bump type'     
@@ -45,7 +45,7 @@ jobs:
       - run: git config --global user.name "logstashmachine"
       - run: ./gradlew clean installDefaultGems
       - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ github.event.inputs.bump }} --strict
-      - run: mv Gemfile.lock Gemfile.jruby-2.5.lock.release
+      - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
       - run: echo "BRANCH=update_lock_${T}" >> $GITHUB_ENV
       - run: |
