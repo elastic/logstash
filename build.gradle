@@ -303,7 +303,7 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-def bundlerVersion = "~> 2"
+def bundlerVersion = "2.3.18"
 
 tasks.register("installBundler") {
     dependsOn assemblyDeps
