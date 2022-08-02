@@ -1,54 +1,53 @@
-:apienabled: api.enabled
-:apienabled-desc: The HTTP API is enabled by default. It can be disabled, but features that rely on it will not work as intended. Default is `true`.
+api.enabled::
+The HTTP API is enabled by default. It can be disabled, but features that rely on it will not work as intended. Default is `true`.
 
-:apienvironment: api.environment
-:apienvironment-desc: The API returns the provided string as a part of its response. Setting your environment may help to disambiguate between similarly-named nodes in production vs test environments. +
+api.environment:: 
+The API returns the provided string as a part of its response. Setting your environment may help to disambiguate between similarly-named nodes in production vs test environments. 
 Default is `production`.
 
-:apihttp_host: api.http.host
-:apihttp_host-desc: The bind address for the HTTP API endpoint. +
+api.http.host::
+The bind address for the HTTP API endpoint. 
 By default, the {ls} HTTP API binds only to the local loopback interface.
-When configured securely (`api.ssl.enabled: true` and `api.auth.type: basic`), the HTTP API binds to _all_ available interfaces. +
+When configured securely (`api.ssl.enabled: true` and `api.auth.type: basic`), the HTTP API binds to _all_ available interfaces. 
 Default is `"127.0.0.1"`.
 
-:apihttp_port: api.http.port
-:apihttp_port-desc: The bind port for the HTTP API endpoint. +
+api.http.port::
+The bind port for the HTTP API endpoint. 
 Default is `9600-9700`.
 
-:apissl_enabled: api.ssl.enabled
-:apissl_enabled-desc: Set to `true` to enable SSL on the HTTP API. +
+api.ssl.enabled::
+Set to `true` to enable SSL on the HTTP API. 
 Doing so requires both `api.ssl.keystore.path` and `api.ssl.keystore.password` to be set. +
 Default is `false.`
 
-:apissl_keystore_path: api.ssl.keystore.path
-:apissl_keystore_path-desc: The path to a valid JKS or PKCS12 keystore for use in securing the {ls} API. +
+api.ssl.keystore.path::
+The path to a valid JKS or PKCS12 keystore for use in securing the {ls} API. 
 The keystore must be password-protected, and must contain a single certificate chain and a private key.  This setting is ignored unless `api.ssl.enabled` is set to `true`.
 
-:apissl_keystore_password: api.ssl.keystore.password
-:apissl_keystore_password-desc: The password to the keystore provided with `api.ssl.keystore.path`. +
+api.ssl.keystore.password::
+The password to the keystore provided with `api.ssl.keystore.path`. 
 This setting is ignored unless `api.ssl.enabled` is set to `true`.
 
-:apiauthtype: api.auth.type
-:apiauthtype-desc: Set to `basic` to require HTTP Basic auth on the API using the credentials supplied with `api.auth.basic.username` and `api.auth.basic.password`. +
+api.auth.type::
+Set to `basic` to require HTTP Basic auth on the API using the credentials supplied with `api.auth.basic.username` and `api.auth.basic.password`. 
 Default is `none`.
 
-:apiauth_basic_username: api.auth.basic.username
-:apiauth_basic_username-desc: The username to require for HTTP Basic auth. +
+api.auth.basic.username::
+The username to require for HTTP Basic auth. 
 Ignored unless `api.auth.type` is set to `basic`.
 
-:apiauth_basic_pw: api.auth.basic.password
-:apiauth_basic_pw-desc: The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`. +
-It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter. +
+api.auth.basic.password::
+The password to require for HTTP Basic auth. Ignored unless `api.auth.type` is set to `basic`. 
+It should meet default password policy which requires non-empty minimum 8 char string that includes a digit, upper case letter and lower case letter. 
 You can customize the default password policy with these options:
 
-//Additional password_policy options are sourced from api-setting.asciidoc to allow for more formatting flexibility
-:apiauth.basic.pw_policy.digit: api.auth.basic.password_policy.include.digit
-:apiauth.basic.pw_policy.upper: api.auth.basic.password_policy.include.upper
-:apiauth.basic.pw_policy.lower: api.auth.basic.password_policy.include.lower
-:apiauth.basic.pw_policy.symbol: api.auth.basic.password_policy.include.symbol
-:apiauth.basic.pw_policy.minimum: api.auth.basic.password_policy.length.minimum
+* Set `api.auth.basic.password_policy.include.digit` `REQUIRED` (default) to accept only passwords that include at least one digit or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.upper` `REQUIRED` (default) to accept only passwords that include at least one upper case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.lower` `REQUIRED` (default) to accept only passwords that include at least one lower case letter or `OPTIONAL` to exclude from requirement.
+* Set `api.auth.basic.password_policy.include.symbol` `REQUIRED` to accept only passwords that include at least one special character or `OPTIONAL` (default) to exclude from requirement.
+* Set `api.auth.basic.password_policy.length.minimum` to a value from 9 to 1024 if you want to require more than the 8 character default setting for passwords.
 
-:apiauth_basic_pw_policy_mode: api.auth.basic.password_policy.mode
-:apiauth_basic_pw_policy_mode-desc: Raises either `WARN` or `ERROR` message when password requirements are not met. +
+api.auth.basic.password_policy.mode:: 
+Raises either `WARN` or `ERROR` message when password requirements are not met. 
 Ignored unless `api.auth.type` is set to `basic`. Default is  `WARN`.
 
