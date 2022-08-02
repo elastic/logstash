@@ -25,7 +25,6 @@ PATH
       racc (~> 1.5.2)
       rack (~> 2)
       rubyzip (~> 1)
-      rufus-scheduler (~> 3.0.9)
       sinatra (~> 2.1.0)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.6)
@@ -46,14 +45,35 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.2.0)
-    aws-sdk (2.11.632)
-      aws-sdk-resources (= 2.11.632)
-    aws-sdk-core (2.11.632)
-      aws-sigv4 (~> 1.0)
-      jmespath (~> 1.0)
-    aws-sdk-resources (2.11.632)
-      aws-sdk-core (= 2.11.632)
-    aws-sigv4 (1.5.0)
+    aws-partitions (1.613.0)
+    aws-sdk-cloudfront (1.65.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-cloudwatch (1.65.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-core (3.131.5)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.525.0)
+      aws-sigv4 (~> 1.1)
+      jmespath (~> 1, >= 1.6.1)
+    aws-sdk-kms (1.58.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-resourcegroups (1.45.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.114.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.4)
+    aws-sdk-sns (1.53.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-sqs (1.51.1)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sigv4 (1.5.1)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
     backports (3.23.0)
@@ -473,11 +493,6 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (>= 4.0.1, < 5)
-    logstash-input-s3 (3.8.4)
-      logstash-core-plugin-api (>= 2.1.12, <= 2.99)
-      logstash-mixin-aws (>= 5.1.0)
-      logstash-mixin-ecs_compatibility_support (~> 1.2)
-      stud (~> 0.0.18)
     logstash-input-snmp (1.3.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -492,10 +507,6 @@ GEM
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
       snmp
-    logstash-input-sqs (3.3.2)
-      logstash-codec-json
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-aws (>= 5.1.0)
     logstash-input-stdin (3.4.0)
       jruby-stdin-channel
       logstash-codec-line
@@ -537,6 +548,20 @@ GEM
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
+    logstash-integration-aws (7.0.0)
+      aws-sdk-cloudfront
+      aws-sdk-cloudwatch
+      aws-sdk-core (~> 3)
+      aws-sdk-resourcegroups
+      aws-sdk-s3
+      aws-sdk-sns
+      aws-sdk-sqs
+      concurrent-ruby
+      logstash-codec-json
+      logstash-codec-plain
+      logstash-core-plugin-api (>= 2.1.12, <= 2.99)
+      rufus-scheduler (>= 3.0.9)
+      stud (~> 0.0.22)
     logstash-integration-elastic_enterprise_search (2.2.1)
       elastic-app-search (~> 7.8.0)
       elastic-enterprise-search (~> 7.16.0)
@@ -571,10 +596,6 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       march_hare (~> 4.0)
       stud (~> 0.0.22)
-    logstash-mixin-aws (5.1.0)
-      aws-sdk (~> 2)
-      logstash-codec-plain
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-mixin-ca_trusted_fingerprint_support (1.0.1-java)
       logstash-core (>= 6.8.0)
     logstash-mixin-deprecation_logger_support (1.0.0-java)
@@ -592,10 +613,6 @@ GEM
       rufus-scheduler (>= 3.0.9)
     logstash-mixin-validator_support (1.0.2-java)
       logstash-core (>= 6.8)
-    logstash-output-cloudwatch (3.0.10)
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-aws (>= 1.0.0)
-      rufus-scheduler (>= 3.0.9)
     logstash-output-csv (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-filter-json
@@ -639,17 +656,6 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 4)
       stud
-    logstash-output-s3 (4.3.7)
-      concurrent-ruby
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-aws (>= 4.3.0)
-      stud (~> 0.0.22)
-    logstash-output-sns (4.0.8)
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-aws (>= 1.0.0)
-    logstash-output-sqs (6.0.0)
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-aws (>= 4.3.0)
     logstash-output-stdout (3.1.4)
       logstash-codec-rubydebug
       logstash-core-plugin-api (>= 1.60.1, < 2.99)
@@ -875,23 +881,21 @@ DEPENDENCIES
   logstash-input-jms
   logstash-input-pipe
   logstash-input-redis
-  logstash-input-s3
   logstash-input-snmp
   logstash-input-snmptrap
-  logstash-input-sqs
   logstash-input-stdin
   logstash-input-syslog
   logstash-input-tcp
   logstash-input-twitter
   logstash-input-udp
   logstash-input-unix
+  logstash-integration-aws
   logstash-integration-elastic_enterprise_search
   logstash-integration-jdbc
   logstash-integration-kafka
   logstash-integration-rabbitmq
-  logstash-output-cloudwatch
   logstash-output-csv
-  logstash-output-elasticsearch (>= 10.4.2)
+  logstash-output-elasticsearch (>= 11.6.0)
   logstash-output-email
   logstash-output-file
   logstash-output-graphite
@@ -901,9 +905,6 @@ DEPENDENCIES
   logstash-output-null
   logstash-output-pipe
   logstash-output-redis
-  logstash-output-s3
-  logstash-output-sns
-  logstash-output-sqs
   logstash-output-stdout
   logstash-output-tcp
   logstash-output-udp
@@ -911,12 +912,14 @@ DEPENDENCIES
   octokit (~> 4.25)
   paquet (~> 0.2)
   pleaserun (~> 0.0.28)
+  polyglot
   rack-test
   rake (~> 12)
   rspec (~> 3.5)
   ruby-progressbar (~> 1)
   rubyzip (~> 1)
   stud (~> 0.0.22)
+  treetop
   webmock (~> 3)
 
 BUNDLED WITH
