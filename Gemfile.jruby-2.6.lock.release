@@ -384,7 +384,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-dead_letter_queue (1.1.12)
+    logstash-input-dead_letter_queue (2.0.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-elasticsearch (4.14.0)
