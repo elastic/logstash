@@ -7,6 +7,13 @@ repositories {
     mavenCentral()
 }
 
+if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
+    tasks.withType(Test).configureEach {
+        jvmArgs(["--add-opens=java.base/java.lang=ALL-UNNAMED",
+                 "--add-opens=java.base/java.util=ALL-UNNAMED"])
+    }
+}
+
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
