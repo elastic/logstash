@@ -66,7 +66,10 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(required = 3)
+    // This method uses effectively 3 parameters, but a forth (was an unused logger), valued to nil,
+    // is needed to distinguish from the constructor with 3 arguments defined in Ruby's subclass
+    // named JavaPipeline and present in java_pipeline.rb
+    @JRubyMethod(required = 3, optional = 1)
     public JavaBasePipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
         throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1]);

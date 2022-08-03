@@ -45,7 +45,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
-    super pipeline_config, namespaced_metric, agent
+    super pipeline_config, namespaced_metric, agent, nil
     open_queue
 
     @worker_threads = []
