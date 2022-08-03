@@ -45,6 +45,9 @@ filebeat modules enable system
 You can further configure the module by editing the config file under the
 {filebeat} `modules.d` directory. For example, if the log files are not in the
 location expected by the module, you can set the `var.paths` option.
++
+NOTE: You must enable at least one fileset in the module.
+**Filesets are disabled by default.** 
 
 . Run the `setup` command with the `--pipelines` and `--modules` options
 specified to load ingest pipelines for the modules you've enabled. This step
