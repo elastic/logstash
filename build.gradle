@@ -590,6 +590,7 @@ project(":logstash-integration-tests") {
     tasks.getByPath(":logstash-integration-tests:integrationTests").configure {
         systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
         environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
+        environment "CUSTOM_VM", System.getenv('CUSTOM_VM')
         workingDir integrationTestPwd
         dependsOn = [installIntegrationTestGems, copyProductionLog4jConfiguration]
     }
