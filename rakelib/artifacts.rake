@@ -167,6 +167,13 @@ namespace "artifact" do
     build_tar('ELASTIC-LICENSE')
   end
 
+  desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
+  task "bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
+    @bundles_jdk = true
+    system("./gradlew copyJdk")
+    build_tar('ELASTIC-LICENSE')
+  end
+
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
