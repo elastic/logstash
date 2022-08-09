@@ -29,3 +29,4 @@ gem "logstash-devutils", "~> 2", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
+gem "jar-dependencies", "= 0.4.1" # Gem::LoadError with jar-dependencies 0.4.2
