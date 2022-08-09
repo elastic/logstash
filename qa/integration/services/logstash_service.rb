@@ -146,7 +146,7 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true # enable stdin to be written
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
-      if @env_variables['CUSTOM_VM']
+      if !@env_variables.nil? && @env_variables['CUSTOM_JDK']
         java_home = java.lang.System.getProperty('java.home')
         @process.environment['LS_JAVA_HOME'] = java_home
         puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
