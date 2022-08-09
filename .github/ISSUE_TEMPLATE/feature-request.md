@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Request a new feature we haven't thought of
+about: Request a new feature or suggest an enhancement to an existing one
 labels: "enhancement,status:needs-triage"
 
 ---
