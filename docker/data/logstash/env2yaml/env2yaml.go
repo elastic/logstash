@@ -106,6 +106,7 @@ func normalizeSetting(setting string) (string, error) {
 		"api.auth.basic.password_policy.include.digit",
 		"api.auth.basic.password_policy.include.symbol",
 		"allow_superuser",
+		"monitoring.cluster_uuid",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",
