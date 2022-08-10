@@ -216,7 +216,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   How frequently to poll the configuration location for changes. The default value is "3s".
   Note that the unit qualifier (`s`) is required.
 
-*`--api-enabled ENABLED`*::
+*`--api.enabled ENABLED`*::
   The HTTP API is enabled by default, but can be disabled by passing `false` to this option.
 
 *`--api.http.host HTTP_HOST`*::
