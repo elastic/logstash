@@ -124,7 +124,8 @@ RUN \
     mkdir /licenses/ && \
     mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
     mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
-    find /usr/share/logstash -type d -exec chmod g+s {} \; && \
+{% if image_flavor != 'ironbank' -%}  find /usr/share/logstash -type d -exec chmod g+s {} \; && \
+{% endif -%}
     ln -s /usr/share/logstash /opt/logstash
 
 {% if image_flavor != 'ironbank' -%}
