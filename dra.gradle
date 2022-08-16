@@ -49,22 +49,22 @@ logstash {
       docker dir: "build", name: 'logstash-ubi8', classifier: 'docker-build-context'
       docker dir: "build", name: 'logstash-ironbank', classifier: 'docker-build-context'
   }
-//
-//  Closure logstashArmArtifacts =  {
-//      generic = false
-//      docker dir: '.', repo: 'docker.elastic.co', org: 'logstash', name: 'logstash', classifier: 'docker-image', architecture: 'aarch64'
-//      docker dir: '.', repo: 'docker.elastic.co', org: 'logstash', name: 'logstash-oss', classifier: 'docker-image', architecture: 'aarch64'
-//  }
-//
-//  // Artifact set configuration for use from logstash-ci.
-//  artifactSet('main') {
-//    artifacts(logstashArtifacts)
-//    artifacts(logstashArmArtifacts)
-//    artifacts {
-//      csvDependencyReport dir: 'build/distributions', name: 'dependencies'
-//    }
-//  }
-//
+
+  Closure logstashArmArtifacts =  {
+      generic = false
+      docker dir: '.', repo: 'docker.elastic.co', org: 'logstash', name: 'logstash', classifier: 'docker-image', architecture: 'aarch64'
+      docker dir: '.', repo: 'docker.elastic.co', org: 'logstash', name: 'logstash-oss', classifier: 'docker-image', architecture: 'aarch64'
+  }
+
+  // Artifact set configuration for use from logstash-ci.
+  artifactSet('main') {
+    artifacts(logstashArtifacts)
+    artifacts(logstashArmArtifacts)
+    artifacts {
+      csvDependencyReport dir: 'build/distributions', name: 'dependencies'
+    }
+  }
+
   String buildArgs = ""
   if (versionQualifier) {
     buildArgs = "VERSION_QUALIFIER=${versionQualifier}"
@@ -72,10 +72,10 @@ logstash {
 
   localBuild('local') {
     buildSnapshotCommands = [
-      'export JAVA_HOME="$HOME/.java/adoptopenjdk11"',
-      'export LS_JAVA_HOME="$HOME/.java/adoptopenjdk11"',
-//      'export JAVA_HOME="/home/andrea/.sdkman/candidates/java/11.0.15-tem/"',
-//      'export LS_JAVA_HOME="/home/andrea/.sdkman/candidates/java/11.0.15-tem/"',
+//      'export JAVA_HOME="$HOME/.java/adoptopenjdk11"',
+//      'export LS_JAVA_HOME="$HOME/.java/adoptopenjdk11"',
+      'export JAVA_HOME="/home/andrea/.sdkman/candidates/java/11.0.15-tem/"',
+      'export LS_JAVA_HOME="/home/andrea/.sdkman/candidates/java/11.0.15-tem/"',
       'export PATH=$HOME/.rbenv/shims:$PATH', // Logstash build use rbenv but rbenv shims aren't in jenkins user PATH
       "${buildArgs} rake artifact:all",
       'bin/dependencies-report --csv=$DEPENDENCIES_REPORTS_DIR/$DEPENDENCIES_REPORT'
@@ -88,7 +88,7 @@ logstash {
       'bin/dependencies-report --csv=$DEPENDENCIES_REPORTS_DIR/$DEPENDENCIES_REPORT'
     ]
 
-//    artifacts(logstashArtifacts)
+    artifacts(logstashArtifacts)
   }
 
   localBuild('aarch64') {
@@ -117,6 +117,6 @@ logstash {
             '[artifact:' : 'building distributions'
     ]
 
-//    artifacts(logstashArmArtifacts)
+    artifacts(logstashArmArtifacts)
   }
 }

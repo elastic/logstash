@@ -3,6 +3,8 @@ package org.logstash.gradle.dra
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.logstash.gradle.dra.artifactset.ArtifactSet
+import org.logstash.gradle.dra.artifactset.ArtifactSetHandler
 import org.logstash.gradle.dra.configuration.StackConfigurationPluginExtension
 import org.logstash.gradle.dra.localbuild.LocalBuild
 import org.logstash.gradle.dra.localbuild.LocalBuildHandler
@@ -23,6 +25,8 @@ class StackProject {
     private final StackArtifactHandler stackArtifactHandler = new StackArtifactHandler()
 
     private final LocalBuildHandler localBuildHandler = new LocalBuildHandler()
+
+    private final ArtifactSetHandler artifactSetHandler = new ArtifactSetHandler()
 
     private Map<String, String> statusMessages = [:]
 
@@ -63,6 +67,12 @@ class StackProject {
         // only configure artifacts if we're actually building this localBuild
         boolean configureArtifacts = true/*stackConfiguration.localBuild == name*/
         localBuildHandler.localBuild(name, stackArtifactHandler, configureArtifacts, closure)
+    }
+
+    public void artifactSet(final String name, final Closure closure) {
+        // only configure artifacts if we're actually handling this artifactSet
+        final boolean configureArtifacts = true/*stackConfiguration.artifactSet == name*/
+        artifactSetHandler.artifactSet(name, stackArtifactHandler, configureArtifacts, closure)
     }
 
     /** Set the shell commands to build a release of the project. */
@@ -112,41 +122,43 @@ class StackProject {
             }
         }
 
-        // TODO
-//        Collection<ArtifactSet> specifiedArtifactSets = List.of()
-//
-//        if (artifactSetHandler.getArtifactSets().size() > 0) {
-//            specifiedArtifactSets = artifactSetHandler.getArtifactSets().values().findAll({ final ArtifactSet artifactSet ->
-//                artifactSet.name == stackConfiguration.artifactSet
-//            })
-//
-//            // if an artifact set is set, but we didn't find one, it does not exist so throw an exception
-//            if (stackConfiguration.artifactSet != '' && specifiedArtifactSets.size() == 0) {
-//                throw new IllegalArgumentException("The artifact set '${stackConfiguration.artifactSet}' does not appear to exist.")
-//            }
-//
-//            artifactSetDefinedAndSpecified = specifiedArtifactSets.size() > 0
-//        }
+        Collection<ArtifactSet> specifiedArtifactSets = List.of()
+
+        if (artifactSetHandler.getArtifactSets().size() > 0) {
+            specifiedArtifactSets = artifactSetHandler.getArtifactSets().values().findAll({ final ArtifactSet artifactSet ->
+                artifactSet.name == stackConfiguration.artifactSet
+            })
+
+            // if an artifact set is set, but we didn't find one, it does not exist so throw an exception
+            if (stackConfiguration.artifactSet != '' && specifiedArtifactSets.size() == 0) {
+                throw new IllegalArgumentException("The artifact set '${stackConfiguration.artifactSet}' does not appear to exist.")
+            }
+
+            artifactSetDefinedAndSpecified = specifiedArtifactSets.size() > 0
+        }
+
+        if (!localBuildCommandsDefinedAndSpecified && !artifactSetDefinedAndSpecified) {
+            throw new IllegalArgumentException("local builds and artifacts are not configured for '${projectName}'. There is not any DSL that release-manager needs in order to do anything for this project.")
+        }
 
         Task buildTask = null
 
-//        if (specifiedArtifactSets.size() > 0) {
-            //TODO
-//            final List<Task> artifactSetTasks = new ArrayList<>()
-//
-//            for (final ArtifactSet artifactSet in specifiedArtifactSets) {
-//                // an artifactSetTask doesn't do anything, it just needs to end up being the buildTask
-//                final Task artifactSetTask = gradleProject.tasks.create("artifactSet-${projectName}-${artifactSet.name}-${type}")
-//                artifactSetTasks.add(artifactSetTask)
-//            }
-//
-//            // boilerplate to be in control of task ordering
-//            for (int i = artifactSetTasks.size() - 1; i > 0; i--) {
-//                artifactSetTasks.get(i).shouldRunAfter(artifactSetTasks.get(i - 1))
-//            }
-//            // set the single "buildTask" to the last task in our set of artifact set tasks
-//            buildTask = artifactSetTasks.get(artifactSetTasks.size() - 1)
-//        }
+        if (specifiedArtifactSets.size() > 0) {
+            final List<Task> artifactSetTasks = new ArrayList<>()
+
+            for (final ArtifactSet artifactSet in specifiedArtifactSets) {
+                // an artifactSetTask doesn't do anything, it just needs to end up being the buildTask
+                final Task artifactSetTask = gradleProject.tasks.create("artifactSet-${projectName}-${artifactSet.name}-${type}")
+                artifactSetTasks.add(artifactSetTask)
+            }
+
+            // boilerplate to be in control of task ordering
+            for (int i = artifactSetTasks.size() - 1; i > 0; i--) {
+                artifactSetTasks.get(i).shouldRunAfter(artifactSetTasks.get(i - 1))
+            }
+            // set the single "buildTask" to the last task in our set of artifact set tasks
+            buildTask = artifactSetTasks.get(artifactSetTasks.size() - 1)
+        }
 
         if (localBuildCommandsDefinedAndSpecified && specifiedLocalBuilds.size() > 0) {
             List<LocalBuildTask> localBuildTasks = new ArrayList<>()
@@ -166,7 +178,8 @@ class StackProject {
         }
 
         // All build tasks must depend on all check tasks
-        // TODO re-enable when checks task is included buildTask.dependsOn(gradleProject.tasks.findByName('checks'))
+        // TODO re-enable when checks task is included
+//        buildTask.dependsOn(gradleProject.tasks.findByName('checks'))
 
 //        Task checksumTask = createChecksumTask(type, artifactsDirectory, version, 'SHA-512')
 //        // calculate checksums after signing, because signing can modify some artifacts, like .deb packages
