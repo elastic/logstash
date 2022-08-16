@@ -698,7 +698,7 @@ GEM
     mustermann (1.0.3)
     naught (1.1.0)
     nio4r (2.5.8-java)
-    nokogiri (1.12.5-java)
+    nokogiri (1.13.8-java)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
