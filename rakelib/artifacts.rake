@@ -161,10 +161,23 @@ namespace "artifact" do
     system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
+  # Create an archive pack using settings appropriate for the running machine
+  def create_local_archive_pack(bundle_jdk)
+    @bundles_jdk = bundle_jdk
+    system("./gradlew copyJdk") if bundle_jdk
+    build_tar('ELASTIC-LICENSE')
+    system("./gradlew deleteLocalJdk") if bundle_jdk
+  end
+
+
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
-    @bundles_jdk = false
-    build_tar('ELASTIC-LICENSE')
+    create_local_archive_pack(false)
+  end
+
+  desc "Build a JDK bundled tar.gz of default logstash plugins with all dependencies"
+  task "bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
+    create_local_archive_pack(true)
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
