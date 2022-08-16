@@ -340,7 +340,7 @@ tasks.register("assembleTarDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
-      rake(projectDir, buildDir, 'artifact:no_bundle_jdk_tar')
+      rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
   }
 }
 

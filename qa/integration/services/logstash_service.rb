@@ -140,11 +140,15 @@ class LogstashService < Service
     Bundler.with_unbundled_env do
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
-      java_home = java.lang.System.getProperty('java.home')
-      @process.environment['LS_JAVA_HOME'] = java_home
+      if ENV['RUNTIME_JAVA_HOME']
+        logstash_java = @process.environment['LS_JAVA_HOME'] = ENV['RUNTIME_JAVA_HOME']
+      else
+        ENV.delete('LS_JAVA_HOME') if ENV['LS_JAVA_HOME']
+        logstash_java = 'bundled java'
+      end
       @process.io.inherit!
       @process.start
-      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if @process.alive?
+      puts "Logstash started with PID #{@process.pid}, using java: #{logstash_java}" if @process.alive?
     end
   end
 
