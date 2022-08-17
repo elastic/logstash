@@ -381,7 +381,8 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
     logstash-filter-uuid (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.1.3)
+    logstash-filter-xml (4.2.0)
+      logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
