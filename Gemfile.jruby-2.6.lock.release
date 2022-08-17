@@ -380,9 +380,10 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
     logstash-filter-uuid (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.1.3)
+    logstash-filter-xml (4.2.0)
+      logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      nokogiri
+      nokogiri (>= 1.13.8)
       xml-simple
     logstash-input-azure_event_hubs (1.4.4)
       logstash-codec-json
@@ -404,8 +405,8 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
     logstash-input-dead_letter_queue (2.0.0)
-      logstash-core (>= 8.4.0)
       logstash-codec-plain
+      logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-elasticsearch (4.14.0)
       elasticsearch (>= 7.17.1)
