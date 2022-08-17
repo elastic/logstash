@@ -21,7 +21,7 @@ gem "stud", "~> 0.0.22", :group => :build
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
-gem "flores", "~> 0.0.6", :group => :development
+gem "flores", "~> 0.0.8", :group => :development
 gem "json-schema", "~> 2", :group => :development
 gem "logstash-devutils", "~> 1", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
