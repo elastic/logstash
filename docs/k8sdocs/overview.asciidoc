@@ -1,4 +1,6 @@
 [[overview]]
 == Overview
 
+preview::[]
+
 This guide provides information about using {ls} with Kubernetes.
