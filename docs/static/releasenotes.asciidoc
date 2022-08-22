@@ -69,67 +69,31 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-6]]
 === Logstash 7.17.6 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.6
+[[notable-7-17-6]]
+==== Notable issues fixed
 
-* Support ironbank docker build https://github.com/elastic/logstash/pull/14298[#14298]
-* Fix broken link to image on docs https://github.com/elastic/logstash/pull/14317[#14317]
+* Support Ironbank Docker build https://github.com/elastic/logstash/pull/14298[#14298]
 * Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14319[#14319]
-* Backport PR #14319 to 7.17: Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14320[#14320]
-* Fix broken link to image https://github.com/elastic/logstash/pull/14343[#14343]
-* Backport PR #14343 to 7.17: Fix broken link to image https://github.com/elastic/logstash/pull/14344[#14344]
-* pin bundler 2.3.18 to avoid bug in .19 https://github.com/elastic/logstash/pull/14394[#14394]
-* Backport PR #14394 to 7.17: pin bundler 2.3.18 to avoid bug in .19 https://github.com/elastic/logstash/pull/14404[#14404]
-* bump jdk to 11.0.16+8 https://github.com/elastic/logstash/pull/14430[#14430]
-* update flores dependency to at least 0.0.8 https://github.com/elastic/logstash/pull/14437[#14437]
-* remove sinatra constraint https://github.com/elastic/logstash/pull/14446[#14446]
-* Backport PR #14437 to 7.17: update flores dependency to at least 0.0.8 https://github.com/elastic/logstash/pull/14449[#14449]
-* Backport PR #14446 to 7.17: remove sinatra constraint https://github.com/elastic/logstash/pull/14451[#14451]
 
-=== Logstash Commits between 7.17 and 7.17.5
+[[dependencies-7-17-6]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.5..7.17"
+* Pin bundler 2.3.18 to avoid bug in .19 https://github.com/elastic/logstash/pull/14394[#14394]
+* Bump jdk to 11.0.16+8 https://github.com/elastic/logstash/pull/14430[#14430]
+* Update flores dependency to at least 0.0.8 https://github.com/elastic/logstash/pull/14437[#14437]
+* Remove sinatra constraint https://github.com/elastic/logstash/pull/14446[#14446]
 
-780cefc82 - (HEAD -> 7.17, origin/7.17) bump lock file for 7.17 (#14461) (2 minutes ago) <github-actions[bot]>
-2bf294f29 - remove sinatra constraint (#14446) (#14451) (5 days ago) <github-actions[bot]>
-ee24f3ce3 - update flores dependency to at least 0.0.8 (#14437) (#14449) (6 days ago) <github-actions[bot]>
-b7344f43e - bump jdk to 11.0.16+8 (#14430) (11 days ago) <João Duarte>
-44b1913a1 - pin bundler 2.3.18 to avoid bug in .19 (#14394) (#14404) (3 weeks ago) <github-actions[bot]>
-c8419c209 - Fix broken link to image (#14343) (#14344) (6 weeks ago) <github-actions[bot]>
-a7ad66015 - Fix artifact path for integration with ubireleaser (#14319) (#14320) (8 weeks ago) <github-actions[bot]>
-7f9b477ba - Support ironbank docker build (#14298) (#14306) (8 weeks ago) <github-actions[bot]>
-6f0bcb45d - Bump for 7.17.6 (#14309) (8 weeks ago) <Ry Biesemeyer>
-8fe63b388 - Release notes for 7.17.5 (#14303) (8 weeks ago) <Logstash Machine>
-c9b3046f3 - make retries in pip and go get extra shell compatible (#14282) (#14294) (8 weeks ago) <github-actions[bot]>
-054f53edd - improve resiliency of make venv and golang Dockerfile with retries (#14239) (#14277) (8 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.5..7.17 *.release"
-Changed plugin versions:
-logstash-filter-date: 3.1.14 -> 3.1.15
-logstash-filter-translate: 3.3.0 -> 3.3.1
-logstash-input-azure_event_hubs: 1.4.3 -> 1.4.4
-logstash-input-dead_letter_queue: 1.1.11 -> 1.1.12
-logstash-input-file: 4.4.2 -> 4.4.3
-logstash-input-gelf: 3.3.1 -> 3.3.2
-logstash-input-jms: 3.2.1 -> 3.2.2
-logstash-integration-jdbc: 5.2.5 -> 5.2.6
-logstash-output-s3: 4.3.5 -> 4.3.7
-logstash-patterns-core: 4.3.3 -> 4.3.4
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-7-17-6]]
 ==== Plugins
 
 *Date Filter - 3.1.15*
 
-* Build: review build to be more reliable/portable https://github.com/logstash-plugins/logstash-filter-date/pull/139[#139]
-    * cleaned up Java dependencies 
+* Build: Review build to be more reliable/portable and cleaned up Java dependencies https://github.com/logstash-plugins/logstash-filter-date/pull/139[#139]
 
 *Translate Filter - 3.3.1*
 
-* Refactor: reading .csv for JRuby 9.3 compatibility https://github.com/logstash-plugins/logstash-filter-translate/pull/94[#94]
-
-    NOTE: these changes are essential for the plugin to work properly under Logstash 8.3 and later.
+* Refactor: reading .csv for JRuby 9.3 compatibility. 
+These changes are essential for the plugin to work properly under Logstash 8.3 and later. https://github.com/logstash-plugins/logstash-filter-translate/pull/94[#94]
 
 *Azure_event_hubs Input - 1.4.4*
 
@@ -138,17 +102,17 @@ logstash-patterns-core: 4.3.3 -> 4.3.4
 *Dead_letter_queue Input - 1.1.12*
 
 * Fix: Replace use of block with lambda to fix wrong number of arguments error on jruby-9.3.4.0 https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/42[#42]
-* Refactor: separated sinceDb management is its separate class https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/40[#40]
-* Build: cleanup/review (unused) dependencies https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/36[#36]
-* Build: refactor tasks (runnable on windows) https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/37[#37]
+* Refactor: Separated sinceDb management is its separate class https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/40[#40]
+* Build: Cleanup/review (unused) dependencies https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/36[#36]
+* Build: Refactor tasks (runnable on windows) https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/37[#37]
 
 *File Input - 4.4.3*
 
-* Fixes read mode to restart the read from reference stored in sincedb in case the file wasn't completely consumed. https://github.com/logstash-plugins/logstash-input-file/pull/307[#307]
+* Fix: Read mode to restart the read from reference stored in sincedb in case the file wasn't completely consumed. https://github.com/logstash-plugins/logstash-input-file/pull/307[#307]
 
 *Gelf Input - 3.3.2*
 
-* Fix: avoid panic when handling very-large exponent-notation `_@timestamp` values https://github.com/logstash-plugins/logstash-input-gelf/pull/71[#71]
+* Fix: Avoid panic when handling very-large exponent-notation `_@timestamp` values https://github.com/logstash-plugins/logstash-input-gelf/pull/71[#71]
 
 *Jms Input - 3.2.2*
 
@@ -157,18 +121,18 @@ logstash-patterns-core: 4.3.3 -> 4.3.4
 
 *Jdbc Integration - 5.2.6*
 
-* Fix: change default path of 'last_run_metadata_path' to be rooted in the LS data.path folder and not in $HOME https://github.com/logstash-plugins/logstash-integration-jdbc/pull/106[#106]
+* Fix: Change default path of 'last_run_metadata_path' to be rooted in the LS data.path folder and not in $HOME https://github.com/logstash-plugins/logstash-integration-jdbc/pull/106[#106]
 
 *S3 Output - 4.3.7*
 
-* Refactor: avoid usage of CHM (JRuby 9.3.4 work-around) https://github.com/logstash-plugins/logstash-output-s3/pull/248[#248]
+* Refactor: Avoid usage of CHM (JRuby 9.3.4 work-around) https://github.com/logstash-plugins/logstash-output-s3/pull/248[#248]
 
-* Docs: more documentation on restore + temp dir https://github.com/logstash-plugins/logstash-output-s3/pull/236[#236]
+* [DOC] Add more documentation on restore + temp dir https://github.com/logstash-plugins/logstash-output-s3/pull/236[#236]
     * minor logging improvements - use the same path: naming convention
 
 *Core Patterns - 4.3.4*
 
-* Fix: typo in CISCOFW302013_302014_302015_302016 grok pattern https://github.com/logstash-plugins/logstash-patterns-core/pull/313[#313]
+* [DOC] Fix typo in CISCOFW302013_302014_302015_302016 grok pattern https://github.com/logstash-plugins/logstash-patterns-core/pull/313[#313]
 
 
 [[logstash-7-17-5]]
