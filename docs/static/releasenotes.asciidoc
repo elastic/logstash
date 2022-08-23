@@ -32,15 +32,17 @@ This section summarizes the changes in the following releases:
 [[features-8.4.0]]
 ==== New features and enhancements
 
-* Significant improvements to the DLQ, particularly with regards to managing DLQ sizes:
- ** An age retention policy to remove segments from the DLQ who's latest event creation is over a given schedule
- ** The introduction of a `clean_consumed` option on the Dead Letter Queue input to automatically delete events once they
-   have been consumed by a logstash pipeline
- ** Exposing extra dead letter queue metrics on the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
-* Logstash now uses JDK17 by default.
-* Logstash now available for download for M1 equipped MacOS with a native version of the JDK
-* Introduction of AWS integration plugin
- ** Several AWS plugins are now available in a single plugin, and now use version 3 of the AWS SDK
+* This release brings some significant improvements to helping users manage their dead letter queues, including:
+ ** The introduction of a `clean_consumed` option on the Dead Letter Queue input plugin, that will automatically
+    delete segments from a dead letter queue, once all their events have been consumed by a logstash pipeline.
+ ** The introduction of an age retention policy, enabling the automatic removal of segments from a dead letter queue
+    based on the age of events within those segments.
+ ** We now expose further dead letter queue metrics on the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
+* Many AWS plugins are now bundled in a single integration plugin, enabling easier maintenance and upgrades of AWS based
+  plugins, which are now using version 3 of the AWS Ruby SDK.
+* Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11.
+* Logstash is now available for download on M1 equipped MacOS devices, and come bundled with M1 native JDK17.
+
 
 
 [[notable-8.4.0]]
