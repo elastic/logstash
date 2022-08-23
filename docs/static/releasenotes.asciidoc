@@ -80,8 +80,8 @@ This section summarizes the changes in the following releases:
 
 * Pin bundler 2.3.18 to avoid bug in .19 https://github.com/elastic/logstash/pull/14394[#14394]
 * Bump jdk to 11.0.16+8 https://github.com/elastic/logstash/pull/14430[#14430]
-* Update flores dependency to at least 0.0.8 https://github.com/elastic/logstash/pull/14437[#14437]
-* Remove sinatra constraint https://github.com/elastic/logstash/pull/14446[#14446]
+* Update flores dependency to 0.0.8 https://github.com/elastic/logstash/pull/14437[#14437]
+* Update Sinatra dependency to 2.2.1 https://github.com/elastic/logstash/pull/14446[#14446]
 
 [[plugins-7-17-6]]
 ==== Plugins
