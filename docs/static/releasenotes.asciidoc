@@ -33,14 +33,14 @@ This section summarizes the changes in the following releases:
 ==== New features and enhancements
 
 * Significant improvements to the DLQ, particularly with regards to managing DLQ sizes:
- * An age retention policy to remove segments from the DLQ who's latest event creation is over a given schedule
- * The introduction of a `clean_consumed` option on the Dead Letter Queue input to automatically delete events once they
+ ** An age retention policy to remove segments from the DLQ who's latest event creation is over a given schedule
+ ** The introduction of a `clean_consumed` option on the Dead Letter Queue input to automatically delete events once they
    have been consumed by a logstash pipeline
- * Exposing extra dead letter queue metrics on the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
+ ** Exposing extra dead letter queue metrics on the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
 * Logstash now uses JDK17 by default.
 * Logstash now available for download for M1 equipped MacOS with a native version of the JDK
 * Introduction of AWS integration plugin
- * Several AWS plugins are now available in a single plugin, and now use version 3 of the AWS SDK
+ ** Several AWS plugins are now available in a single plugin, and now use version 3 of the AWS SDK
 
 
 [[notable-8.4.0]]
