@@ -60,12 +60,6 @@ This section summarizes the changes in the following releases:
 * The version of Sinatra has been update to 2.2.2  https://github.com/elastic/logstash/pull/14454[#14454]
 * The version of Nokogiri has been update to 1.13.8 https://github.com/elastic/logstash/pull/14454[#14454]
 
-[[core-8.4.0]]
-==== Other changes to Logstash core
-8ad5090fd - update flores dependency to at least 0.0.8 (#14437) (#14448) (31 hours ago) <github-actions[bot]>
-41967c48b - Update version of the bundled JDK to 17.0.4+8 (#14424) (#14427) (9 days ago) <github-actions[bot]>
-
-
 [[plugins-8.4.0]]
 ==== Plugin releases
 
