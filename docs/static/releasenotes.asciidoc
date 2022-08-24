@@ -36,6 +36,7 @@ This section summarizes the changes in the following releases:
 ===== Improvements to the dead letter queue (DLQ)
 
 This release brings significant improvements to help users manage their dead letter queues, including:
+
 * A new `clean_consumed` option on the Dead Letter Queue input plugin.
 It can automatically delete segments from a dead letter queue after all events in the segment have been consumed by a Logstash pipeline.
  * A new age retention policy, enabling the automatic removal of segments from a dead letter queue
