@@ -36,7 +36,7 @@ Take these considerations into account before you implement:
 
 For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
 
-// Ready to see more configuration details? See <<ls-to-ls-http>>.
+Ready to see more configuration details? See <<ls-to-ls-http>>.
 
 NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
 
