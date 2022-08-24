@@ -72,7 +72,9 @@ This section summarizes the changes in the following releases:
 [[dependencies-7-17-6]]
 ==== Updates to dependencies
 
-* Bump jdk to 11.0.16+8 https://github.com/elastic/logstash/pull/14430[#14430]
+* Bump jdk to 11.0.16+8 https://github.com/elastic/logstash/pull/14430[#14430].
+The JDK update pertains to a potential security vulnerability. 
+Please see our link:https://discuss.elastic.co/c/announcements/security-announcements/31[security statement for details].
 * Update flores dependency to 0.0.8 https://github.com/elastic/logstash/pull/14437[#14437]
 * Update Sinatra dependency to 2.2.1 https://github.com/elastic/logstash/pull/14446[#14446]
 
