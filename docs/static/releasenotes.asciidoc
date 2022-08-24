@@ -36,13 +36,16 @@ This section summarizes the changes in the following releases:
 ===== Improvements to the dead letter queue (DLQ)
 
 This release brings significant improvements to help users manage their dead letter queues, including:
- ** The introduction of a `clean_consumed` option on the Dead Letter Queue input plugin, that will automatically
-    delete segments from a dead letter queue, once all their events have been consumed by a logstash pipeline.
+* A new `clean_consumed` option on the Dead Letter Queue input plugin.
+It can automatically delete segments from a dead letter queue after all events in the segment have been consumed by a Logstash pipeline.
  * A new age retention policy, enabling the automatic removal of segments from a dead letter queue
     based on the age of events within those segments.
  * Additional dead letter queue metrics available from the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
-* Many AWS plugins are now bundled in a single integration plugin, enabling easier maintenance and upgrades of AWS based
-  plugins, which are now using version 3 of the AWS Ruby SDK.
+[[aws-8.4.0]]
+===== New AWS integration plugin
+
+Several AWS plugins are now bundled in a single {ls-ref}/plugins-integrations-aws.html[AWS integration plugin], enabling easier maintenance and upgrades of AWS-based
+  plugins. They all use version 3 of the AWS Ruby SDK.
 [[jdk-8.4.0]]
 ===== JDK17 support
 
@@ -88,13 +91,13 @@ Logstash is now available for download on M1 equipped MacOS devices, and comes b
 
 * This new integration plugin incorporates and replaces the use of the these individual plugins:
   individual plugins:
-  ** logstash-input-s3 (3.8.4)
-  ** logstash-input-sqs (3.3.2)
-  ** logstash-mixin-aws (5.1.0)
-  ** logstash-output-cloudwatch (3.0.10)
-  ** logstash-output-s3 (4.3.7)
-  ** logstash-output-sns (4.0.8)
-  ** logstash-output-sqs (6.0.0)
+  ** logstash-input-s3 
+  ** logstash-input-sqs 
+  ** logstash-mixin-aws 
+  ** logstash-output-cloudwatch 
+  ** logstash-output-s3 
+  ** logstash-output-sns 
+  ** logstash-output-sqs 
 * This replaces the use of the single combined aws `2.x` sdk gem, with the modularized
   aws `3.x` gems.
 
