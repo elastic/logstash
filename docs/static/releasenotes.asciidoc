@@ -48,17 +48,18 @@ It can automatically delete segments from a dead letter queue after all events i
 
 Several AWS plugins are now bundled in a single {logstash-ref}/plugins-integrations-aws.html[AWS integration plugin], enabling easier maintenance and upgrades of AWS-based
   plugins. They all use version 3 of the AWS Ruby SDK.
+  
 [[jdk-8.4.0]]
 ===== JDK17 support
 
-Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11.
+Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11. 
+The JDK update pertains to a potential security vulnerability. 
+Please see our link:https://discuss.elastic.co/c/announcements/security-announcements/31[security statement for details].
 
 [[m1-8.4.0]]
 ===== Logstash M1 download
 
 Logstash is now available for download on M1 equipped MacOS devices, and comes bundled with M1 native JDK17.
-
-
 
 [[notable-8.4.0]]
 ==== Notable issues fixed
