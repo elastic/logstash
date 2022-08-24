@@ -42,6 +42,7 @@ It can automatically delete segments from a dead letter queue after all events i
  * A new age retention policy, enabling the automatic removal of segments from a dead letter queue
     based on the age of events within those segments.
  * Additional dead letter queue metrics available from the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
+
 [[aws-8.4.0]]
 ===== New AWS integration plugin
 
