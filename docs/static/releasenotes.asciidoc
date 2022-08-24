@@ -32,25 +32,35 @@ This section summarizes the changes in the following releases:
 [[features-8.4.0]]
 ==== New features and enhancements
 
-* This release brings some significant improvements to helping users manage their dead letter queues, including:
+[[dlq-8.4.0]]
+===== Improvements to the dead letter queue (DLQ)
+
+This release brings significant improvements to help users manage their dead letter queues, including:
  ** The introduction of a `clean_consumed` option on the Dead Letter Queue input plugin, that will automatically
     delete segments from a dead letter queue, once all their events have been consumed by a logstash pipeline.
- ** The introduction of an age retention policy, enabling the automatic removal of segments from a dead letter queue
+ * A new age retention policy, enabling the automatic removal of segments from a dead letter queue
     based on the age of events within those segments.
- ** We now expose further dead letter queue metrics on the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
+ * Additional dead letter queue metrics available from the monitoring API https://github.com/elastic/logstash/pull/14324[#14324]
 * Many AWS plugins are now bundled in a single integration plugin, enabling easier maintenance and upgrades of AWS based
   plugins, which are now using version 3 of the AWS Ruby SDK.
-* Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11.
-* Logstash is now available for download on M1 equipped MacOS devices, and come bundled with M1 native JDK17.
+[[jdk-8.4.0]]
+===== JDK17 support
+
+Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11.
+
+[[m1-8.4.0]]
+===== Logstash M1 download
+
+Logstash is now available for download on M1 equipped MacOS devices, and comes bundled with M1 native JDK17.
 
 
 
 [[notable-8.4.0]]
 ==== Notable issues fixed
 
-* Only remove `/etc/systemd/system/logstash.service` when file is installed by Logstash https://github.com/elastic/logstash/pull/14200[#14200]
+* Remove `/etc/systemd/system/logstash.service` only when file is installed by Logstash https://github.com/elastic/logstash/pull/14200[#14200]
 * Fix Arcsight module compatibility with Elasticsearch `8.x` https://github.com/elastic/logstash/pull/13874[#13874]
-* Ensure timestamp values are serialized with a minimum of 3 decimal places to ensure millisecond precision timestamps match those from Logstash `7.x` https://github.com/elastic/logstash/pull/14299[#14299]
+* Ensure that timestamp values are serialized with a minimum of 3 decimal places to guarantee that millisecond precision timestamps match those from Logstash `7.x` https://github.com/elastic/logstash/pull/14299[#14299]
 * Fix issue with native Java plugin thread-safety and concurrency https://github.com/elastic/logstash/pull/14360[#14360]
 * Allow the ability to use Ruby codecs inside native Java plugins https://github.com/elastic/logstash/pull/13523[#13523]
 
@@ -59,8 +69,8 @@ This section summarizes the changes in the following releases:
 ==== Updates to dependencies
 
 * The bundled JDK has been updated to 17.0.4+8 https://github.com/elastic/logstash/pull/14427[#14427]
-* The version of Sinatra has been update to 2.2.2  https://github.com/elastic/logstash/pull/14454[#14454]
-* The version of Nokogiri has been update to 1.13.8 https://github.com/elastic/logstash/pull/14454[#14454]
+* The version of Sinatra has been updated to 2.2.2  https://github.com/elastic/logstash/pull/14454[#14454]
+* The version of Nokogiri has been updated to 1.13.8 https://github.com/elastic/logstash/pull/14454[#14454]
 
 [[plugins-8.4.0]]
 ==== Plugin releases
@@ -68,15 +78,15 @@ This section summarizes the changes in the following releases:
 *Dead Letter Queue Input - 2.0.0*
 
 * Introduce the boolean `clean_consumed` setting to enable the automatic removal of completely consumed segments. Requires Logstash 8.4.0 or above https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/43[#43]
-* Exposes metrics about segments and events cleaned by this plugin https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/45[#45]
+* Expose metrics about segments and events cleaned by this plugin https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/45[#45]
 
 *Xml Filter - 4.2.0*
 
 * Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/78[#78]
 
-* Aws Integration Plugin - 7.0.0*
+*Aws Integration Plugin - 7.0.0*
 
-* Introduce AWS Integration Plugin. This is an integrated plugin, incorporating and replace the use of the following
+* This new integration plugin incorporates and replaces the use of the these individual plugins:
   individual plugins:
   ** logstash-input-s3 (3.8.4)
   ** logstash-input-sqs (3.3.2)
