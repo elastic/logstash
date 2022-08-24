@@ -45,7 +45,7 @@ It can automatically delete segments from a dead letter queue after all events i
 [[aws-8.4.0]]
 ===== New AWS integration plugin
 
-Several AWS plugins are now bundled in a single {ls-ref}/plugins-integrations-aws.html[AWS integration plugin], enabling easier maintenance and upgrades of AWS-based
+Several AWS plugins are now bundled in a single {logstash-ref}/plugins-integrations-aws.html[AWS integration plugin], enabling easier maintenance and upgrades of AWS-based
   plugins. They all use version 3 of the AWS Ruby SDK.
 [[jdk-8.4.0]]
 ===== JDK17 support
