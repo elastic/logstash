@@ -69,12 +69,6 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-6]]
 === Logstash 7.17.6 Release Notes
 
-[[notable-7-17-6]]
-==== Notable issues fixed
-
-* Support Ironbank Docker build https://github.com/elastic/logstash/pull/14298[#14298]
-* Fix artifact path for integration with ubireleaser https://github.com/elastic/logstash/pull/14319[#14319]
-
 [[dependencies-7-17-6]]
 ==== Updates to dependencies
 
