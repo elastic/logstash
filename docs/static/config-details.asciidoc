@@ -76,6 +76,17 @@ process.
 info, see <<profiling-the-heap>>.
 // end::heap-size-tips[]
 
+
+[[off-heap-size]]
+==== Setting the off-heap size
+
+The operating system, persistent queue mmap pages, direct memory, and other processes require memory in addition to memory allocated to heap size.
+Keep the overall memory requirements in mind when you allocate memory.
+
+By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
+Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
+
+
 [[stacks-size]]
 ==== Setting the JVM stack size
 
