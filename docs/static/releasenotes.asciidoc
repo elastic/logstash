@@ -53,7 +53,7 @@ Several AWS plugins are now bundled in a single {logstash-ref}/plugins-integrati
 ===== JDK17 support
 
 Logstash now comes bundled with JDK17, while still providing compatibility with user-supplied JDK11. 
-The JDK update pertains to a potential security vulnerability. 
+The new JDK includes an update pertaining to a potential security vulnerability.
 Please see our link:https://discuss.elastic.co/c/announcements/security-announcements/31[security statement for details].
 
 [[m1-8.4.0]]
