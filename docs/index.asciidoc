@@ -124,6 +124,9 @@ include::static/azure-module.asciidoc[]
 // Working with Filebeat Modules
 include::static/filebeat-modules.asciidoc[]
 
+// Working with Winlogbeat Modules
+include::static/winlogbeat-modules.asciidoc[]
+
 // Data resiliency
 include::static/resiliency.asciidoc[]
 
