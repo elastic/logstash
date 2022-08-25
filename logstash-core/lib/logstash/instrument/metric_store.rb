@@ -299,36 +299,18 @@ module LogStash module Instrument
     # create it.
     #
     # @param [Array] The path where values should be located
-    # @raise [ConcurrentMapExpected] Raise if the retrieved object isn't a `Concurrent::Map`
+    # @raise [NamespacesExpectedError] Raise if the retrieved object isn't a `Concurrent::Map`
     # @return [Concurrent::Map] Map where the metrics should be saved
     def fetch_or_store_namespaces(namespaces_path)
-      path_map = fetch_or_store_namespace_recursively(@store, namespaces_path)
+      namespaces_path.each_with_index.reduce(@store) do |memo, (current, index)|
+        node = memo.compute_if_absent(current) { Concurrent::Map.new }
 
-      # This mean one of the namespace and key are colliding
-      # and we have to deal it upstream.
-      unless path_map.is_a?(Concurrent::Map)
-        raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{path_map.class.name} for namespaces_path: #{namespaces_path}"
+        unless node.kind_of?(Concurrent::Map)
+          raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{node.class.name} for namespaces_path: #{namespaces_path.first(index+1)}"
+        end
+
+        node
       end
-
-      return path_map
-    end
-
-    # Recursively fetch or create the namespace paths through the `MetricStove`
-    # This algorithm use an index to known which keys to search in the map.
-    # This doesn't cloning the array if we want to give a better feedback to the user
-    #
-    # @param [Concurrent::Map] Map to search for the key
-    # @param [Array] List of path to create
-    # @param [Integer] Which part from the list to create
-    #
-    def fetch_or_store_namespace_recursively(map, namespaces_path, idx = 0)
-      current = namespaces_path[idx]
-
-      # we are at the end of the namespace path, break out of the recursion
-      return map if current.nil?
-
-      new_map = map.fetch_or_store(current) { Concurrent::Map.new }
-      return fetch_or_store_namespace_recursively(new_map, namespaces_path, idx + 1)
     end
 
     def delete_from_map(map, keys)
