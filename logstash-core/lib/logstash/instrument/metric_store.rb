@@ -63,20 +63,21 @@ module LogStash module Instrument
       # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
       # the value of the key). If the metric is already present in the `@fast_lookup`, then that value is sent
       # back directly to the caller.
-      #
-      # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and we assume that we don't
-      # have it in the `@metric_store` for structured search so we add it there too.
+      fast_lookup_key = namespaces.dup << key
+      existing_value = @fast_lookup.get(fast_lookup_key)
+      return existing_value unless existing_value.nil?
 
-      value = @fast_lookup.get(namespaces.dup << key)
-      if value.nil?
-        value = block_given? ? yield(key) : default_value
-        @fast_lookup.put(namespaces.dup << key, value)
-        @structured_lookup_mutex.synchronize do
-            # If we cannot find the value this mean we need to save it in the store.
-          fetch_or_store_namespaces(namespaces).fetch_or_store(key, value)
+      # BUT. If the value was not present in the `@fast_lookup` we acquire the structured_lookup_lock
+      # before modifying _either_ the fast-lookup or the structured store.
+      @structured_lookup_mutex.synchronize do
+        # by using compute_if_absent, we ensure that we don't overwrite a value that was
+        # written by another thread that beat us to the @structured_lookup_mutex lock.
+        @fast_lookup.compute_if_absent(fast_lookup_key) do
+          generated_value = block_given? ? yield(key) : default_value
+          fetch_or_store_namespaces(namespaces).fetch_or_store(key, generated_value)
+          generated_value
         end
       end
-      return value;
     end
 
     # This method allow to retrieve values for a specific path,
