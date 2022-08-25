@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-4-1,Logstash 8.4.1>>
 * <<logstash-8-4-0,Logstash 8.4.0>>
 * <<logstash-8-3-3,Logstash 8.3.3>>
 * <<logstash-8-3-2,Logstash 8.3.2>>
@@ -23,6 +24,46 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-4-1]]
+=== Logstash 8.4.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.4.1
+
+* [Doc] add off-heap memory session https://github.com/elastic/logstash/pull/14431[#14431]
+
+=== Logstash Commits between 8.4 and 8.4.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.4.0..8.4"
+
+80eb94703 - (HEAD -> 8.4, origin/8.4) Bump lockfile for 8.4.1 (#14471) (8 hours ago) <Rob Bavey>
+eb440f802 - Doc: Update release notes with security notice [8.4] (#14468) (13 hours ago) <Karen Metts>
+c1183c5bd - Bump version to 8.4.1 (#14465) (18 hours ago) <Rob Bavey>
+935bc2b21 - Release notes for 8.4.0 (#14458) (29 hours ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.4.0..8.4 *.release"
+Changed plugin versions:
+logstash-input-beats: 6.4.0 -> 6.4.1
+logstash-input-gelf: 3.3.1 -> 3.3.2
+logstash-output-tcp: 6.1.0 -> 6.1.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Beats Input - 6.4.1*
+
+* [DOC] Add direct memory example https://github.com/logstash-plugins/logstash-input-beats/pull/454[#454]
+
+*Gelf Input - 3.3.2*
+
+* Fix: avoid panic when handling very-large exponent-notation `_@timestamp` values https://github.com/logstash-plugins/logstash-input-gelf/pull/71[#71]
+
+*Tcp Output - 6.1.1*
+
+* Fixes an issue where payloads larger than a connection's current TCP window could be silently truncated https://github.com/logstash-plugins/logstash-output-tcp/pull/49[#49]
 
 
 [[logstash-8-4-0]]
