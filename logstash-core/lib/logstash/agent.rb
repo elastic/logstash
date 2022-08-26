@@ -65,6 +65,7 @@ class LogStash::Agent
     @name = setting("node.name")
     # Generate / load the persistent uuid
     id
+    clean_jruby_dir
 
     # Initialize, but do not start the webserver.
     @webserver = LogStash::WebServer.from_settings(@logger, self, settings)
@@ -271,6 +272,30 @@ class LogStash::Agent
 
   def id_path
     @id_path ||= ::File.join(settings.get("path.data"), "uuid")
+  end
+
+  # write pid to path.data/pid for cleaning up /tmp/jruby-$pid
+  # logstash shutdown by SIGKILL left many jar files in tmp
+  # After several ungraceful restart, jar files occupy certain amount of space. GH #11051
+  def clean_jruby_dir
+    pid_path = ::File.join(settings.get("path.data"), "pid")
+
+    begin
+      if ::File.exists?(pid_path)
+        pid = ::File.read(pid_path).chomp.strip
+        tmp_path = ::File.join("/tmp", "jruby-#{pid}")
+        FileUtils.remove_dir(tmp_path) if ::File.exists?(tmp_path)
+      end
+    rescue => e
+      logger.warn("Cannot remove /tmp/jruby directory", :error => e.message, :exception => e.class)
+    end
+
+
+    begin
+      ::File.open(pid_path, 'w') { |f| f.write(Process.pid) }
+    rescue => e
+      logger.warn("Cannot write pid file in #{pid_path}", :error => e.message, :exception => e.class)
+    end
   end
 
   #
