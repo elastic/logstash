@@ -45,4 +45,24 @@ public final class MetricKeys {
     public static final RubySymbol FILTERED_KEY = RubyUtil.RUBY.newSymbol("filtered");
 
     public static final RubySymbol STATS_KEY = RubyUtil.RUBY.newSymbol("stats");
+
+    public static final RubySymbol TYPE_KEY = RubyUtil.RUBY.newSymbol("type");
+
+    public static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
+
+    public static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
+
+    public static final RubySymbol FLOW_KEY = RubyUtil.RUBY.newSymbol("flow");
+
+    public static final RubySymbol CONCURRENCY_KEY = RubyUtil.RUBY.newSymbol("concurrency");
+
+    public static final RubySymbol INPUT_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("input_throughput");
+
+    public static final RubySymbol FILTER_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("filter_throughput");
+
+    public static final RubySymbol OUTPUT_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("output_throughput");
+
+    public static final RubySymbol BACKPRESSURE_KEY = RubyUtil.RUBY.newSymbol("backpressure");
+
+    public static final RubySymbol[] FLOW_KEYS = { CONCURRENCY_KEY, INPUT_THROUGHPUT_KEY, FILTER_THROUGHPUT_KEY, OUTPUT_THROUGHPUT_KEY, BACKPRESSURE_KEY };
 }

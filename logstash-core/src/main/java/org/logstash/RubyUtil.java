@@ -657,4 +657,12 @@ public final class RubyUtil {
 
         return objectAsCasted;
     }
+
+    public static IRubyObject toSymbolArray(final String... strings) {
+        final IRubyObject[] res = new IRubyObject[strings.length];
+        for (int i = 0; i < strings.length; ++i) {
+            res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
+        }
+        return RubyUtil.RUBY.newArray(res);
+    }
 }

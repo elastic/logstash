@@ -81,6 +81,16 @@ module LogStash
           {}
         end
 
+        def flow
+          extract_metrics(
+            [:stats, :flow],
+            :concurrency
+          )
+        rescue LogStash::Instrument::MetricStore::MetricNotFound
+          # if the stats/events metrics have not yet been populated, return an empty map
+          {}
+        end
+
         def pipeline(pipeline_id = nil, opts={})
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
@@ -165,6 +175,7 @@ module LogStash
           def report(stats, extended_stats=nil, opts={})
             ret = {
               :events => stats[:events],
+              :flow => stats[:flow],
               :plugins => {
                 :inputs => plugin_stats(stats, :inputs),
                 :codecs => plugin_stats(stats, :codecs),

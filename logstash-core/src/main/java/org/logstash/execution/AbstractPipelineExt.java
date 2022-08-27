@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -109,12 +110,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol STORAGE_TYPE = RubyUtil.RUBY.newSymbol("storage_type");
 
     private static final RubySymbol PATH = RubyUtil.RUBY.newSymbol("path");
-
-    private static final RubySymbol TYPE_KEY = RubyUtil.RUBY.newSymbol("type");
-
-    private static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
-
-    private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
     private static final RubySymbol STORAGE_POLICY =
             RubyUtil.RUBY.newSymbol("storage_policy");
@@ -215,7 +210,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     /**
-     * queue opening needs to happen out of the the initialize method because the
+     * queue opening needs to happen out of the initialize method because the
      * AbstractPipeline is used for pipeline config validation and the queue
      * should not be opened for this. This should be called only in the actual
      * Pipeline/JavaPipeline initialisation.
@@ -412,10 +407,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
             context,
             RubyArray.newArray(
                 context.runtime,
-                Arrays.asList(MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId.asString().intern(), QUEUE_KEY)
+                Arrays.asList(MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
+                        pipelineId.asString().intern(), MetricKeys.QUEUE_KEY)
             )
         );
-        pipelineMetric.gauge(context, TYPE_KEY, getSetting(context, "queue.type"));
+        pipelineMetric.gauge(context, MetricKeys.TYPE_KEY, getSetting(context, "queue.type"));
         if (queue instanceof JRubyWrappedAckedQueueExt) {
             final JRubyAckedQueueExt inner = ((JRubyWrappedAckedQueueExt) queue).rubyGetQueue();
             final RubyString dirPath = inner.ruby_dir_path(context);
@@ -520,17 +516,19 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private AbstractNamespacedMetricExt getDlqMetric(final ThreadContext context) {
-        if (dlqMetric == null) {
-            dlqMetric = metric.namespace(
-                context, RubyArray.newArray(
-                    context.runtime,
-                    Arrays.asList(
-                        MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
-                        pipelineId.asString().intern(), DLQ_KEY
-                    )
-                )
-            );
+        if (Objects.isNull(dlqMetric)) {
+            dlqMetric = getMetric(context,
+                    MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
+                    pipelineId.asString().intern(), MetricKeys.DLQ_KEY);
         }
         return dlqMetric;
+    }
+
+    protected AbstractNamespacedMetricExt getMetric(final ThreadContext context,
+                                                  final IRubyObject... keys) {
+        return metric().namespace(context,
+                RubyArray.newArray(
+                        context.runtime,
+                        Arrays.asList(keys)));
     }
 }

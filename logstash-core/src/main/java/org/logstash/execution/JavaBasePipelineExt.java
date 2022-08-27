@@ -26,6 +26,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
+import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -36,12 +37,25 @@ import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.FlowMetric;
+import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.UptimeMetric;
+import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
 import org.logstash.plugins.factory.PluginMetricsFactoryExt;
 import org.logstash.plugins.factory.PluginFactoryExt;
 
 import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -61,6 +75,12 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
     private @SuppressWarnings("rawtypes") RubyArray filters;
 
     private @SuppressWarnings("rawtypes") RubyArray outputs;
+
+    private Map<RubySymbol, FlowMetric> flowMetrics;
+
+    private AbstractNamespacedMetricExt eventsMetric;
+
+    private AbstractNamespacedMetricExt flowMetric;
 
     public JavaBasePipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -147,6 +167,58 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
     }
 
+    @JRubyMethod(name = "register_pipeline_flow_rates")
+    public IRubyObject registerPipelineFlowRatesMetric(final ThreadContext context) {
+        UptimeMetric uptimeMetric = new UptimeMetric(pipelineId().asJavaString() + ".uptime_in_millis", ChronoUnit.MILLIS);
+        // TODO: generate and add all target metrics
+        Map<RubySymbol, FlowMetric> metricMap = new HashMap<>();
+        Arrays.asList(MetricKeys.FLOW_KEYS).forEach(key -> {
+            if (MetricKeys.CONCURRENCY_KEY.eql(key)) {
+
+            } else if (MetricKeys.INPUT_THROUGHPUT_KEY.eql(key)) {
+                metricMap.put(key, createFlowMetric(context, MetricKeys.IN_KEY, uptimeMetric));
+            } else if (MetricKeys.FILTER_THROUGHPUT_KEY.eql(key)) {
+                metricMap.put(key, createFlowMetric(context, MetricKeys.FILTERED_KEY, uptimeMetric));
+            } else if (MetricKeys.OUTPUT_THROUGHPUT_KEY.eql(key)) {
+                metricMap.put(key, createFlowMetric(context, MetricKeys.OUT_KEY, uptimeMetric));
+            } else if (MetricKeys.BACKPRESSURE_KEY.eql(key)) {
+
+            }
+        });
+        flowMetrics = Map.copyOf(metricMap);
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "collect_pipeline_flow_rates")
+    public IRubyObject collectPipelineFlowRates(final ThreadContext context) {
+        for (RubySymbol key : flowMetrics.keySet()) {
+            flowMetrics.get(key).capture();
+        }
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "store_pipeline_flow_rates")
+    public IRubyObject fetchPipelineFlowRates(final ThreadContext context) {
+        if (Objects.isNull(flowMetric)) {
+            flowMetric = getMetric(context,
+                    MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY,
+                    pipelineId().asString().intern(), MetricKeys.FLOW_KEY);
+        }
+
+        for (RubySymbol key : flowMetrics.keySet()) {
+            final AbstractNamespacedMetricExt metric = flowMetric.namespace(
+                    context, RubyArray.newArray(context.runtime, key));
+            Map<String, Double> rates = flowMetrics.get(key).getAvailableRates();
+            System.out.println("Available rates, size: " + rates.size());
+            rates.forEach((rateKey, value) -> {
+                System.out.println("[Rates] Name: " + key + ", rate: " + value);
+                metric.gauge(context, RubyUtil.RUBY.newSymbol(rateKey), context.runtime.newFloat(value));
+            });
+        }
+
+        return context.nil;
+    }
+
     public QueueWriter getQueueWriter(final String inputName) {
         return new JRubyWrappedWriteClientExt(RubyUtil.RUBY, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
             .initialize(
@@ -156,5 +228,17 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
                     metric(), RubyUtil.RUBY.newSymbol(inputName)
                 }
             );
+    }
+
+    private FlowMetric createFlowMetric(final ThreadContext context,
+                               final RubySymbol metricKey,
+                               final UptimeMetric uptimeMetric) {
+        if (Objects.isNull(eventsMetric)) {
+            eventsMetric = getMetric(context,
+                    MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId(), MetricKeys.EVENTS_KEY);
+        }
+
+        LongCounter inMetric = LongCounter.fromRubyBase(eventsMetric, metricKey);
+        return new FlowMetric(inMetric, uptimeMetric);
     }
 }

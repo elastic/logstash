@@ -21,6 +21,7 @@ module LogStash; module Config;
       # It is important that we iterate via the agent's pipelines vs. the
       # metrics pipelines. This prevents race conditions as pipeline stats may be
       # populated before the agent has it in its own pipelines state
+      # TODO: analyze/investigate if we are okay to use metric store
       stats = metric_store.get_with_path("/stats/pipelines").dig(:stats, :pipelines) || {}
       agent.running_pipelines.map do |pipeline_id, pipeline|
         p_stats = stats.fetch(pipeline_id) { Hash.new }
@@ -33,6 +34,7 @@ module LogStash; module Config;
           "hash" => pipeline.lir.unique_hash,
           "ephemeral_id" => pipeline.ephemeral_id,
           "events" => format_pipeline_events(p_stats[:events]),
+          "flow" => format_pipeline_flow(p_stats[:flow]),
           "queue" => format_queue_stats(pipeline_id, metric_store),
           "reloads" => {
             "successes" => (p_stats.dig(:reloads, :successes)&.value || 0),
@@ -44,6 +46,20 @@ module LogStash; module Config;
         end
         res
       end.compact
+    end
+
+    def self.format_pipeline_flow(stats, result = {})
+      (stats || {}).each do |stage, counter|
+        if counter.class.eql?(Hash)
+          result[stage.to_s] = {}
+          (counter || {}).each do |key, value|
+            result[stage.to_s] = format_pipeline_flow(counter, result[stage.to_s])
+          end
+        else
+          result[stage.to_s] = counter.value
+        end
+      end
+      result
     end
 
     def self.format_pipeline_events(stats)

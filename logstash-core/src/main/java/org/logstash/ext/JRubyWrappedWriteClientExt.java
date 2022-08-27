@@ -146,15 +146,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private static AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
         final String... keys) {
-        return base.namespace(RubyUtil.RUBY.getCurrentContext(), toSymbolArray(keys));
-    }
-
-    private static IRubyObject toSymbolArray(final String... strings) {
-        final IRubyObject[] res = new IRubyObject[strings.length];
-        for (int i = 0; i < strings.length; ++i) {
-            res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
-        }
-        return RubyUtil.RUBY.newArray(res);
+        return base.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.toSymbolArray(keys));
     }
 
     @Override
