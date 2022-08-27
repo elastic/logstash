@@ -30,6 +30,7 @@ require "stud/trap"
 require "uri"
 require "socket"
 require "securerandom"
+require 'tmpdir'
 
 LogStash::Environment.load_locale!
 
@@ -283,11 +284,12 @@ class LogStash::Agent
     begin
       if ::File.exists?(pid_path)
         pid = ::File.read(pid_path).chomp.strip
-        tmp_path = ::File.join("/tmp", "jruby-#{pid}")
+        tmp_path = ::File.join(Dir.tmpdir(), "jruby-#{pid}")
         FileUtils.remove_dir(tmp_path) if ::File.exists?(tmp_path)
       end
     rescue => e
-      logger.warn("Cannot remove /tmp/jruby directory", :error => e.message, :exception => e.class)
+      tmp_path ||= "jruby dir in OS temp dir" 
+      logger.warn("Cannot remove #{tmp_path}", :error => e.message, :exception => e.class)
     end
 
 
