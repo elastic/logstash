@@ -24,12 +24,12 @@ into {es} and configure {ls} to use them.
 
 On the system where {winlogbeat} is installed, run the `setup` command with the
 `--pipelines` option specified to load ingest pipelines for specific modules.
-For example, the following command loads ingest pipelines for the system and
-nginx modules:
+For example, the following command loads ingest pipelines for the security and
+sysmon modules:
 
 [source,shell]
 -----
-winlogbeat setup --pipelines --modules nginx,system
+winlogbeat setup --pipelines --modules security,sysmon
 -----
 
 A connection to {es} is required for this setup step because {winlogbeat} needs to
