@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-4-1,Logstash 8.4.1>>
 * <<logstash-8-4-0,Logstash 8.4.0>>
 * <<logstash-8-3-3,Logstash 8.3.3>>
 * <<logstash-8-3-2,Logstash 8.3.2>>
@@ -23,6 +24,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-4-1]]
+=== Logstash 8.4.1 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Beats Input - 6.4.1*
+
+* [DOC] Add direct memory example https://github.com/logstash-plugins/logstash-input-beats/pull/454[#454]
+
+*Gelf Input - 3.3.2*
+
+* Fix: avoid panic when handling very-large exponent-notation `_@timestamp` values https://github.com/logstash-plugins/logstash-input-gelf/pull/71[#71]
+
+*Tcp Output - 6.1.1*
+
+* Fixes an issue where payloads larger than a connection's current TCP window could be silently truncated https://github.com/logstash-plugins/logstash-output-tcp/pull/49[#49]
 
 
 [[logstash-8-4-0]]
