@@ -84,6 +84,6 @@ remove this setting, or set it to a different value as appropriate.
 <3> Configures {ls} to select the correct ingest pipeline based on metadata
 passed in the event.
 
-See the {winlogbeat} {winlogbeat-ref}/winlogbeat-modules-overview.html[Modules]
+See the {winlogbeat} {winlogbeat-ref}/winlogbeat-modules.html[Modules]
 documentation for more information about setting up and running modules.
 
