@@ -1,0 +1,22 @@
+[[logstash-and-kubernetes]]
+= Logstash and Kubernetes Reference
+
+include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
+include::{docs-root}/shared/attributes.asciidoc[]
+
+
+[[introduction]]
+== Logstash and Kubernetes introduction
+
+This guide helps you to run and work with {ls} in a Kubernetes environment.
+
+Are you trying out {ls} for the first time? We recommend beginning with our guide {logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash].
+
+If you're already familiar with Logstash, then it's time to try it out in a Kubernetes environment. The <<getting-started-logstash-and-kubernetes,Getting Started with Logstash and Kubernetes>> demo guides you through the steps of configuring Logstash inside a single-node Kubernetes environment running on Minikube.
+
+// Getting Started with Logstash and Kubernetes
+include::getting-started/getting-started-logstash-and-kubernetes.asciidoc[]
+
+// List of sample configuration files and what they're used for
+include::getting-started/sample-configuration-files.asciidoc[]
+

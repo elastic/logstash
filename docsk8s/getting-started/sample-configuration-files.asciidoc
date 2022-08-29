@@ -1,0 +1,7 @@
+[[sample-configuration-files]]
+=== Sample configuration files
+
+preview::[]
+
+These files are available as part of our <<getting-started-logstash-and-kubernetes,Getting Started with {ls} and Kubernetes guide>>. They can also be used as templates when you configure Logstash together with the rest of the Elastic Stack in a Kubernetes environment.
+

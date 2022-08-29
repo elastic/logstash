@@ -1,0 +1,61 @@
+[[getting-started-logstash-and-kubernetes]]
+== Getting Started with {ls} and Kubernetes
+
+preview::[]
+
+This section guides you through the process of setting up {ls} in a Kubernetes environment running on Minikube.
+
+This section includes the following topics:
+
+* <<gs-prerequisites>>
+* <<gs-set-up>>
+* <<gs-cleaning-up>>
+
+[float]
+[[gs-prerequisites]]
+=== Prerequisites
+
+Before you start, there are a couple of things you'll need:
+
+. link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
+. link:https://minikube.sigs.k8s.io[Minikube] - Easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
+. Our <<sample-configuration-files,sample configuration files>> - Download these into a directory on your local system.
+
+[float]
+[[gs-set-up]]
+=== Set up your environment
+
+Let's start by getting your Minikube Kubernetes cluster up and running:
+
+[source,sh]
+--
+minikube start
+--
+
+Helm charts are available to install the Elastic Stack. Add the Elastic Helm charts repository to your Helm repository list:
+
+[source,sh]
+--
+helm repo add elastic https://helm.elastic.co && helm repo update
+--
+
+Install the `elastic-operator` which will be used to control the Elastic applications in your cluster:
+
+[source,sh]
+--
+helm install elastic-operator elastic/eck-operator
+--
+
+Check the Kubernetes pods status. So far, only the `elastic-operator` pod should be running:
+
+[source,sh]
+--
+kubectl get pods
+--
+
+[float]
+[[gs-cleaning-up]]
+=== Cleaning up
+
+I am a cleaning up section!
+
