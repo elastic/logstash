@@ -25,14 +25,16 @@ require "pathname"
 class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   TYPES = [ "input", "filter", "output", "codec" ]
+  LANGUAGES = ["ruby", "java"]
 
   option "--type", "TYPE", "Type of the plugin {input, filter, codec, output}s", :required => true
+  option "--language", "LANGUAGE", "Implementation language of the plugin (Ruby, Java)", :default => "ruby"
   option "--name", "PLUGIN", "Name of the new plugin", :required => true
   option "--path", "PATH", "Location where the plugin skeleton will be created", :default => Dir.pwd
 
   def execute
     validate_params
-    source = File.join(File.dirname(__FILE__), "templates", "#{type}-plugin")
+    source = File.join(File.dirname(__FILE__), "templates", "#{language}", "#{type}-plugin")
     @target_path = File.join(path, full_plugin_name)
     FileUtils.mkdir(@target_path)
     puts " Creating #{@target_path}"
@@ -50,6 +52,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   def validate_params
     raise(ArgumentError, "should be one of: input, filter, codec or output") unless TYPES.include?(type)
+    raise(ArgumentError, "should be one of: Ruby or Java") unless LANGUAGES.include?(language.downcase)
   end
 
   def create_scaffold(source, target)
