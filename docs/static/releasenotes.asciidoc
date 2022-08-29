@@ -29,7 +29,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-4-1]]
 === Logstash 8.4.1 Release Notes
 
-No user-facing changes in this release.
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
