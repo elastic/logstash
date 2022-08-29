@@ -10,10 +10,10 @@ ingest node pipelines, {es} templates, {winlogbeat} input configurations, and
 {kib} dashboards.
 
 You can use {winlogbeat} modules with {ls}, but you need to do some extra setup.
-The simplest approach is to <<use-ingest-pipelines,set up and use the ingest
+The simplest approach is to <<use-winlogbeat-ingest-pipelines,set up and use the ingest
 pipelines>> provided by {winlogbeat}.
 
-[[use-ingest-pipelines]]
+[[use-winlogbeat-ingest-pipelines]]
 === Use ingest pipelines for parsing
 
 When you use {winlogbeat} modules with {ls}, you can use the ingest pipelines
