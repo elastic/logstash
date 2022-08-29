@@ -71,7 +71,15 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       else
         # copy the new file, in case of being an .erb file should render first
         if source_entry.end_with?("erb")
-          target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
+          context = LogStash::PluginManager::RenderContext.new(options)
+          if language == "ruby"
+            target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
+          elsif language == "java"
+            target_entry = target_entry.gsub(/.erb$/,"").gsub("JavaInputExample", context.classify(name))
+          else
+            raise(ArgumentError, "Can't recognize language #{language}")
+          end
+
           File.open(target_entry, "w") { |f| f.write(render(source_entry)) }
         else
           FileUtils.cp(source_entry, target_entry)
@@ -92,6 +100,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
     git_data = get_git_info
     @options ||= {
       :plugin_name => name,
+      :plugin_type => type,
       :author => git_data.author,
       :email  => git_data.email,
       :min_version => "2.0",
