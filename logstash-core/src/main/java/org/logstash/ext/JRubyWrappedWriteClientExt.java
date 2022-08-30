@@ -44,7 +44,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private static final long serialVersionUID = 1L;
 
-    private static final RubySymbol PUSH_DURATION_KEY =
+    public static final RubySymbol PUSH_DURATION_KEY =
         RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
 
     private JRubyAbstractQueueWriteClientExt writeClient;

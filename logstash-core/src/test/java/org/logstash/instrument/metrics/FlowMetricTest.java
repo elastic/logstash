@@ -20,16 +20,16 @@ public class FlowMetricTest {
         final ManualAdvanceClock clock = new ManualAdvanceClock(Instant.now());
         final LongCounter numeratorMetric = new LongCounter("events");
         final Metric<Long> denominatorMetric = new UptimeMetric("uptime", TimeUnit.SECONDS, clock::nanoTime);
-        final FlowMetric instance = new FlowMetric(numeratorMetric, denominatorMetric);
+        final FlowMetric instance = new FlowMetric("flow", numeratorMetric, denominatorMetric);
 
-        final Map<String, Double> ratesBeforeCaptures = instance.getAvailableRates();
+        final Map<String, Double> ratesBeforeCaptures = instance.getValue();
         assertTrue(ratesBeforeCaptures.isEmpty());
 
         // 5 seconds pass, during which 1000 events are processed
         clock.advance(Duration.ofSeconds(5));
         numeratorMetric.increment(1000);
         instance.capture();
-        final Map<String, Double> ratesAfterFirstCapture = instance.getAvailableRates();
+        final Map<String, Double> ratesAfterFirstCapture = instance.getValue();
         assertFalse(ratesAfterFirstCapture.isEmpty());
         assertEquals(Map.of(LIFETIME_KEY, 200.0, CURRENT_KEY, 200.0), ratesAfterFirstCapture);
 
@@ -37,7 +37,7 @@ public class FlowMetricTest {
         clock.advance(Duration.ofSeconds(5));
         numeratorMetric.increment(2000);
         instance.capture();
-        final Map<String, Double> ratesAfterSecondCapture = instance.getAvailableRates();
+        final Map<String, Double> ratesAfterSecondCapture = instance.getValue();
         assertFalse(ratesAfterSecondCapture.isEmpty());
         assertEquals(Map.of(LIFETIME_KEY, 300.0, CURRENT_KEY, 400.0), ratesAfterSecondCapture);
 
@@ -47,7 +47,7 @@ public class FlowMetricTest {
             numeratorMetric.increment(eventCount);
             instance.capture();
         }
-        final Map<String, Double> ratesAfterNthCapture = instance.getAvailableRates();
+        final Map<String, Double> ratesAfterNthCapture = instance.getValue();
         assertFalse(ratesAfterNthCapture.isEmpty());
         assertEquals(Map.of(LIFETIME_KEY, 367.5, CURRENT_KEY, 378.4), ratesAfterNthCapture);
     }

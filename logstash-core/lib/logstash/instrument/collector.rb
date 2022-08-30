@@ -67,6 +67,19 @@ module LogStash module Instrument
       end
     end
 
+    def register?(namespaces_path, key, metric_instance)
+      registered = false
+
+      # Relies on MetricStore#fetch_or_store yielding the block
+      # EXACTLY ONCE to the winner in a race-condition.
+      @metric_store.fetch_or_store(namespaces_path, key) do
+        registered = true
+        metric_instance
+      end
+
+      registered
+    end
+
     # Snapshot the current Metric Store and return it immediately,
     # This is useful if you want to get access to the current metric store without
     # waiting for a periodic call.

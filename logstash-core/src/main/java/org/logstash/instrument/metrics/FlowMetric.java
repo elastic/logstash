@@ -1,11 +1,13 @@
 package org.logstash.instrument.metrics;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class FlowMetric {
+public class FlowMetric extends AbstractMetric<Map<String,Double>> {
 
     // metric sources
     private final Metric<? extends Number> numeratorMetric;
@@ -20,7 +22,10 @@ public class FlowMetric {
     static final String LIFETIME_KEY = "lifetime";
     static final String CURRENT_KEY = "current";
 
-    public FlowMetric(final Metric<? extends Number> numeratorMetric, final Metric<? extends Number> denominatorMetric) {
+    public FlowMetric(final String name,
+                      final Metric<? extends Number> numeratorMetric,
+                      final Metric<? extends Number> denominatorMetric) {
+        super(name);
         this.numeratorMetric = numeratorMetric;
         this.denominatorMetric = denominatorMetric;
 
@@ -33,7 +38,7 @@ public class FlowMetric {
         instant.set(previousHead);
     }
 
-    public Map<String,Double> getAvailableRates() {
+    public Map<String,Double> getValue() {
         final Capture headCapture = head.get();
         if (Objects.isNull(headCapture)) {
             return Map.of();
@@ -53,12 +58,16 @@ public class FlowMetric {
             rates.put(CURRENT_KEY, currentRate);
         }
 
-
         return Map.copyOf(rates);
     }
 
     Capture doCapture() {
         return new Capture(numeratorMetric.getValue(), denominatorMetric.getValue());
+    }
+
+    @Override
+    public MetricType getType() {
+        return MetricType.FLOW_RATES;
     }
 
     private static class Capture {
@@ -77,7 +86,10 @@ public class FlowMetric {
             final double deltaNumerator = this.numerator.doubleValue() - baseline.numerator.doubleValue();
             final double deltaDenominator = this.denominator.doubleValue() - baseline.denominator.doubleValue();
 
-            return deltaNumerator / deltaDenominator;
+            // To prevent the appearance of false-precision, we round to 3 decimal places.
+            return BigDecimal.valueOf(deltaNumerator)
+                    .divide(BigDecimal.valueOf(deltaDenominator), 3, RoundingMode.HALF_UP)
+                    .doubleValue();
         }
     }
 }

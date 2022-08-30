@@ -55,7 +55,13 @@ public enum MetricType {
     /**
      * A gauge backed by a {@link org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp} type. Note - Java consumers should not use this, exist for legacy Ruby code.
      */
-    GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp");
+    GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp"),
+
+    /**
+     * A flow-rate {@link FlowMetric}, instantiated with one or more backing {@link Metric}{@code <Number>}.
+     */
+    FLOW_RATES("flow/rate"),
+    ;
 
     private final String type;
 

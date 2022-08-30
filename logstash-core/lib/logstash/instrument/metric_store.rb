@@ -51,11 +51,20 @@ module LogStash module Instrument
 
     # This method use the namespace and key to search the corresponding value of
     # the hash, if it doesn't exist it will create the appropriate namespaces
-    # path in the hash and return `new_value`
-    #
-    # @param [Array] The path where the values should be located
-    # @param [Symbol] The metric key
-    # @return [Object] Return the new_value of the retrieve object in the tree
+    # path in the hash and return `new_value`.
+    # @overload fetch_or_store(namespaces, key, default_value)
+    #   @param [Array<Symbol>] namespaces: The path where the values should be located
+    #   @param [Symbol] key: The metric key
+    #   @param [Metric] default_value: if no metric exists at this address, the
+    #                                  provided default_value will be stored
+    #   @return [Metric] the value as it exists in the tree after this operation
+    # @overload fetch_or_store(namespaces, key, &default_value_generator)
+    #   @param [Array<Symbol>] namespaces: The path where the values should be located
+    #   @param [Symbol] key: The metric key
+    #   @yield EXACTLY ONCE to the provided block IFF the metric does not exist
+    #   @yieldreturn [Metric] if no metric exists at this address, the result of yielding
+    #                         to the provided default_value_generator block will be stored.
+    #   @return [Metric] the value as it exists in the tree after this operation
     def fetch_or_store(namespaces, key, default_value = nil)
 
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
