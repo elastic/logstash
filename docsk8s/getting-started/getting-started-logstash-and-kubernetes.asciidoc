@@ -9,17 +9,17 @@ This section includes the following topics:
 
 * <<gs-prerequisites>>
 * <<gs-set-up>>
-* <<gs-cleaning-up>>
+* <<gs-tidy-up>>
 
 [float]
 [[gs-prerequisites]]
 === Prerequisites
 
-Before you start, there are a couple of things you'll need:
+Before you start, there are a few things you'll need:
 
 . link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
 . link:https://minikube.sigs.k8s.io[Minikube] - Easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
-. Our <<sample-configuration-files,sample configuration files>> - Download these into a directory on your local system.
+. link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/getting-started.zip,[Sample configuration files] - Download and expand this set of files into an empty directory on your local system.
 
 [float]
 [[gs-set-up]]
@@ -54,8 +54,8 @@ kubectl get pods
 --
 
 [float]
-[[gs-cleaning-up]]
-=== Cleaning up
+[[gs-tidy-up]]
+=== Tidy up
 
 I am a cleaning up section!
 

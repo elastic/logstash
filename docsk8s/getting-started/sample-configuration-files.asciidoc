@@ -3,5 +3,36 @@
 
 preview::[]
 
-These files are available as part of our <<getting-started-logstash-and-kubernetes,Getting Started with {ls} and Kubernetes guide>>. They can also be used as templates when you configure Logstash together with the rest of the Elastic Stack in a Kubernetes environment.
+These configuration files are used in the <<getting-started-logstash-and-kubernetes,Getting Started with {ls} and Kubernetes guide>>. You can use them as templates when you configure Logstash together with the rest of the Elastic Stack in a Kubernetes environment.
 
+You can download the files together as a link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-getting-started.zip[zip archive].
+
+`cert/generate_cert.sh`::
+Description...
+
+`cert/openssl.conf`::
+Description...
+
+`000-elasticsearch.yaml`::
+Description...
+
+`001-configmap.yaml`::
+Description...
+
+`002-deployment.yaml`::
+Description...
+
+`003-service.yaml`::
+Description...
+
+`004-hpa.yaml`::
+Description...
+
+`005-filebeat.yaml`::
+Description...
+
+`006-metricbeat.yaml`::
+Description...
+
+`007-kibana`::
+Description...
