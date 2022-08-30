@@ -34,7 +34,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   def execute
     validate_params
-    source = File.join(File.dirname(__FILE__), "templates", "#{language}", "#{type}-plugin")
+    source = File.join(File.dirname(__FILE__), "templates", "#{language.downcase}", "#{type}-plugin")
     @target_path = File.join(path, full_plugin_name)
     FileUtils.mkdir(@target_path)
     puts " Creating #{@target_path}"
