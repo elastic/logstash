@@ -9,15 +9,15 @@ apply from: LOGSTASH_CORE_PATH + "/../rubyUtils.gradle"
 // ===========================================================================
 group                      'org.logstashplugins' // must match the package of the main plugin class
 version                    "${file("VERSION").text.trim()}" // read from required VERSION file
-description                = "Example Java codec implementation"
+description                = "Example Java codec <%= classify(plugin_name) %>"
 pluginInfo.licenses        = ['Apache-2.0'] // list of SPDX license IDs
 pluginInfo.longDescription = "This gem is a Logstash plugin required to be installed on top of the Logstash core pipeline using \$LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
-pluginInfo.authors         = ['Elasticsearch']
-pluginInfo.email           = ['info@elastic.co']
+pluginInfo.authors         = ['<%= author %>']
+pluginInfo.email           = ['<%= email %>']
 pluginInfo.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
-pluginInfo.pluginType      = "codec"
-pluginInfo.pluginClass     = "JavaCodecExample"
-pluginInfo.pluginName      = "java_codec_example" // must match the @LogstashPlugin annotation in the main plugin class
+pluginInfo.pluginType      = "<%= plugin_type %>"
+pluginInfo.pluginClass     = "<%= classify(plugin_name) %>"
+pluginInfo.pluginName      = "<%= plugin_name %>" // must match the @LogstashPlugin annotation in the main plugin class
 // ===========================================================================
 
 sourceCompatibility = 1.8
@@ -45,16 +45,16 @@ shadowJar {
 }
 
 dependencies {
-    implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
-    implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
-    implementation "com.fasterxml.jackson.core:jackson-core:2.9.5"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.5"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.9.5"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.5"
-    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/logstash-core-?.?.?.jar")
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    compileOnly 'org.apache.logging.log4j:log4j-api:2.17.0' // provided by Logstash
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.17.0' // provided by Logstash
+ 
+    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/lib/jars/logstash-core.jar")
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.jruby:jruby-complete:9.1.13.0'
+    testImplementation 'org.apache.logging.log4j:log4j-api:2.17.0' // provided by Logstash
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.17.0' // provided by Logstash
+    testImplementation 'org.jruby:jruby-complete:9.2.20.1'
 }
 
 clean {
@@ -101,7 +101,7 @@ tasks.register("removeObsoleteJars") {
 }
 
 tasks.register("gem"){
-    dependsOn [downloadAndInstallJRuby, removeObsoleteJars, vendor, generateRubySupportFiles]
+    dependsOn = [downloadAndInstallJRuby, removeObsoleteJars, vendor, generateRubySupportFiles]
     doLast {
         buildGem(projectDir, buildDir, pluginInfo.pluginFullName() + ".gemspec")
     }

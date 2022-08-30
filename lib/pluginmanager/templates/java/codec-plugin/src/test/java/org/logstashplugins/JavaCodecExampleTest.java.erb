@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class JavaCodecExampleTest {
+public class  <%= classify(plugin_name) %>Test {
 
     @Test
     public void testJavaCodec_decode() {
         String delimiter = "/";
         Map<String, Object> configValues = new HashMap<>();
-        configValues.put(JavaCodecExample.DELIMITER_CONFIG.name(), delimiter);
+        configValues.put( <%= classify(plugin_name) %>.DELIMITER_CONFIG.name(), delimiter);
         Configuration config = new ConfigurationImpl(configValues);
-        JavaCodecExample codec = new JavaCodecExample(config, null);
+         <%= classify(plugin_name) %> codec = new  <%= classify(plugin_name) %>(config, null);
 
         TestConsumer testConsumer = new TestConsumer();
         String[] inputs = {"foo", "bar", "baz"};
@@ -41,9 +41,9 @@ public class JavaCodecExampleTest {
     public void testJavaCodec_encode() throws IOException {
         String delimiter = "/";
         Map<String, Object> configValues = new HashMap<>();
-        configValues.put(JavaCodecExample.DELIMITER_CONFIG.name(), delimiter);
+        configValues.put( <%= classify(plugin_name) %>.DELIMITER_CONFIG.name(), delimiter);
         Configuration config = new ConfigurationImpl(configValues);
-        JavaCodecExample codec = new JavaCodecExample(config, null);
+         <%= classify(plugin_name) %> codec = new  <%= classify(plugin_name) %>(config, null);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         Event e = new Event();
@@ -59,17 +59,17 @@ public class JavaCodecExampleTest {
     public void testClone() throws IOException {
         String delimiter = "/";
         Map<String, Object> configValues = new HashMap<>();
-        configValues.put(JavaCodecExample.DELIMITER_CONFIG.name(), delimiter);
+        configValues.put( <%= classify(plugin_name) %>.DELIMITER_CONFIG.name(), delimiter);
         Configuration config = new ConfigurationImpl(configValues);
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
         ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
 
-        JavaCodecExample codec1 = new JavaCodecExample(config, null);
+         <%= classify(plugin_name) %> codec1 = new  <%= classify(plugin_name) %>(config, null);
         Event e = new Event();
         e.setField("message", "foo");
         codec1.encode(e, bos1);
 
-        JavaCodecExample codec2 = (JavaCodecExample) codec1.cloneCodec();
+         <%= classify(plugin_name) %> codec2 = ( <%= classify(plugin_name) %>) codec1.cloneCodec();
         codec2.encode(e, bos2);
 
         Assert.assertEquals(bos1.toString(), bos2.toString());

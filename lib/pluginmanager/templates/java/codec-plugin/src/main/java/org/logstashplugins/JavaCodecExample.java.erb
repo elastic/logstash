@@ -19,8 +19,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 // class name must match plugin name
-@LogstashPlugin(name="java_codec_example")
-public class JavaCodecExample implements Codec {
+@LogstashPlugin(name="<%= plugin_name %>")
+public class  <%= classify(plugin_name) %> implements Codec {
 
     public static final PluginConfigSpec<String> DELIMITER_CONFIG =
             PluginConfigSpec.stringSetting("delimiter", ",");
@@ -29,11 +29,11 @@ public class JavaCodecExample implements Codec {
     private final String delimiter;
 
     // all codec plugins must provide a constructor that accepts Configuration and Context
-    public JavaCodecExample(final Configuration config, final Context context) {
+    public  <%= classify(plugin_name) %>(final Configuration config, final Context context) {
         this(config.get(DELIMITER_CONFIG));
     }
 
-    private JavaCodecExample(String delimiter) {
+    private  <%= classify(plugin_name) %>(String delimiter) {
         this.id = UUID.randomUUID().toString();
         this.delimiter = delimiter;
     }
@@ -76,7 +76,7 @@ public class JavaCodecExample implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new JavaCodecExample(this.delimiter);
+        return new  <%= classify(plugin_name) %>(this.delimiter);
     }
 
     @Override
