@@ -77,9 +77,9 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
         # copy the new file, in case of being an .erb file should render first
         if source_entry.end_with?("erb")
           context = LogStash::PluginManager::RenderContext.new(options)
-          if language == "ruby"
+          if language.downcase == "ruby"
             target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
-          elsif language == "java"
+          elsif language.downcase == "java"
             target_entry = target_entry.gsub(/.erb$/,"").gsub("JavaInputExample", context.classify(name))
           else
             raise(ArgumentError, "Can't recognize language #{language}")
