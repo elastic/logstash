@@ -35,6 +35,11 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
   def execute
     validate_params
     source = File.join(File.dirname(__FILE__), "templates", "#{language.downcase}", "#{type}-plugin")
+    unless Dir.exist?(source)
+      puts "ERROR: Template project for #{language.downcase} #{type} plugin is not yet available"
+      return
+    end
+
     @target_path = File.join(path, full_plugin_name)
     FileUtils.mkdir(@target_path)
     puts " Creating #{@target_path}"
