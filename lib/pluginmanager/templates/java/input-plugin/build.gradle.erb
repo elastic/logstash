@@ -52,6 +52,8 @@ dependencies {
     implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/lib/jars/logstash-core.jar")
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.apache.logging.log4j:log4j-api:2.17.0' // provided by Logstash
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.17.0' // provided by Logstash
     testImplementation 'org.jruby:jruby-complete:9.2.20.1'
 }
 

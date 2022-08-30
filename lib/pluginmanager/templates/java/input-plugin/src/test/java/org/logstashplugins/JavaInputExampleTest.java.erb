@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.ConfigurationImpl;
-//import org.logstashplugins.<%= classify(plugin_name) %>;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +19,8 @@ public class <%= classify(plugin_name) %>Test {
         String prefix = "This is message";
         long eventCount = 5;
         Map<String, Object> configValues = new HashMap<>();
-        configValues.put(JavaInputExample.PREFIX_CONFIG.name(), prefix);
-        configValues.put(JavaInputExample.EVENT_COUNT_CONFIG.name(), eventCount);
+        configValues.put(<%= classify(plugin_name) %>.PREFIX_CONFIG.name(), prefix);
+        configValues.put(<%= classify(plugin_name) %>.EVENT_COUNT_CONFIG.name(), eventCount);
         Configuration config = new ConfigurationImpl(configValues);
         <%= classify(plugin_name) %> input = new <%= classify(plugin_name) %>("test-id", config, null);
         TestConsumer testConsumer = new TestConsumer();
