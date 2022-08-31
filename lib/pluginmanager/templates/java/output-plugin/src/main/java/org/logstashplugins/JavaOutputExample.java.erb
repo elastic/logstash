@@ -15,8 +15,8 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 // class name must match plugin name
-@LogstashPlugin(name = "java_output_example")
-public class JavaOutputExample implements Output {
+@LogstashPlugin(name = "<%= plugin_name %>")
+public class <%= classify(plugin_name) %> implements Output {
 
     public static final PluginConfigSpec<String> PREFIX_CONFIG =
             PluginConfigSpec.stringSetting("prefix", "");
@@ -28,11 +28,11 @@ public class JavaOutputExample implements Output {
     private volatile boolean stopped = false;
 
     // all plugins must provide a constructor that accepts id, Configuration, and Context
-    public JavaOutputExample(final String id, final Configuration configuration, final Context context) {
+    public <%= classify(plugin_name) %>(final String id, final Configuration configuration, final Context context) {
         this(id, configuration, context, System.out);
     }
 
-    JavaOutputExample(final String id, final Configuration config, final Context context, OutputStream targetStream) {
+    <%= classify(plugin_name) %>(final String id, final Configuration config, final Context context, OutputStream targetStream) {
         // constructors should validate configuration options
         this.id = id;
         prefix = config.get(PREFIX_CONFIG);
