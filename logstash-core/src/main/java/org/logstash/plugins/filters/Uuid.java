@@ -74,6 +74,12 @@ public class Uuid implements Filter {
     }
 
     @Override
+    public void close() {
+        // no-op operation for UUID generator filter
+        return;
+    }
+
+    @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         return PluginHelper.commonFilterSettings(Arrays.asList(TARGET_CONFIG, OVERWRITE_CONFIG));
     }

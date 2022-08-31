@@ -53,6 +53,8 @@ public interface Filter extends Plugin {
      */
     Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener);
 
+    void close();
+
     /**
      * If this filter maintains state between calls to {@link #filter(Collection, FilterMatchListener)}, this
      * method should return events for all state currently held by the filter. This method will never be called
