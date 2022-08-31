@@ -13,14 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JavaFilterExampleTest {
+public class <%= classify(plugin_name) %>Test {
 
     @Test
-    public void testJavaExampleFilter() {
+    public void test<%= classify(plugin_name) %>() {
         String sourceField = "foo";
         Configuration config = new ConfigurationImpl(Collections.singletonMap("source", sourceField));
-        Context context = new ContextImpl(null);
-        JavaFilterExample filter = new JavaFilterExample("test-id", config, context);
+        Context context = new ContextImpl(null, null);
+        <%= classify(plugin_name) %> filter = new <%= classify(plugin_name) %>("test-id", config, context);
 
         Event e = new org.logstash.Event();
         TestMatchListener matchListener = new TestMatchListener();

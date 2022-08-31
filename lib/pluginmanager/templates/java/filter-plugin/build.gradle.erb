@@ -9,15 +9,15 @@ apply from: LOGSTASH_CORE_PATH + "/../rubyUtils.gradle"
 // ===========================================================================
 group                      'org.logstashplugins' // must match the package of the main plugin class
 version                    "${file("VERSION").text.trim()}" // read from required VERSION file
-description                = "Example Java filter implementation"
+description                = "Example Java filter <%= classify(plugin_name) %>"
 pluginInfo.licenses        = ['Apache-2.0'] // list of SPDX license IDs
 pluginInfo.longDescription = "This gem is a Logstash plugin required to be installed on top of the Logstash core pipeline using \$LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
-pluginInfo.authors         = ['Elasticsearch']
-pluginInfo.email           = ['info@elastic.co']
+pluginInfo.authors         = ['<%= author %>']
+pluginInfo.email           = ['<%= email %>']
 pluginInfo.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
-pluginInfo.pluginType      = "filter"
-pluginInfo.pluginClass     = "JavaFilterExample"
-pluginInfo.pluginName      = "java_filter_example" // must match the @LogstashPlugin annotation in the main plugin class
+pluginInfo.pluginType      = "<%= plugin_type %>"
+pluginInfo.pluginClass     = "<%= classify(plugin_name) %>"
+pluginInfo.pluginName      = "<%= plugin_name %>" // must match the @LogstashPlugin annotation in the main plugin class
 // ===========================================================================
 
 sourceCompatibility = 1.8
@@ -48,9 +48,12 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
     compileOnly 'org.apache.logging.log4j:log4j-api:2.17.0' // provided by Logstash
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.0' // provided by Logstash
-    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "build/libs/logstash-core*.jar")
+
+    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/lib/jars/logstash-core.jar")
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.apache.logging.log4j:log4j-api:2.17.0' // provided by Logstash
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.17.0' // provided by Logstash
     testImplementation 'org.jruby:jruby-complete:9.2.20.1'
 }
 
