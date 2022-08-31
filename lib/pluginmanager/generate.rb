@@ -80,7 +80,8 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
           if language.downcase == "ruby"
             target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
           elsif language.downcase == "java"
-            target_entry = target_entry.gsub(/.erb$/,"").gsub("JavaInputExample", context.classify(name))
+            example_filename = "Java#{type.capitalize}Example"
+            target_entry = target_entry.gsub(/.erb$/,"").gsub(example_filename, context.classify(name))
           else
             raise(ArgumentError, "Can't recognize language #{language}")
           end
