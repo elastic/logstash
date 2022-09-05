@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class SettingsImplTest {
 
     @Test
-    public void checkpointRetrySetting() {
+    public void verifyConfiguredValues() {
         Settings settings =  SettingsImpl.fileSettingsBuilder("PATH/TO/Q")
                 .capacity(10)
                 .maxUnread(1024)
