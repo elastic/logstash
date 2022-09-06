@@ -94,6 +94,7 @@ func normalizeSetting(setting string) (string, error) {
 		"modules",
 		"path.logs",
 		"path.plugins",
+		"monitoring.cluster_uuid",
 		"xpack.monitoring.enabled",
 		"xpack.monitoring.collection.interval",
 		"xpack.monitoring.elasticsearch.hosts",
