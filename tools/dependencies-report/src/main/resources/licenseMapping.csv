@@ -39,6 +39,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "commons-codec:commons-codec:",http://commons.apache.org/proper/commons-codec/,Apache-2.0
 "commons-logging:commons-logging:",http://commons.apache.org/proper/commons-logging/,Apache-2.0
 "concurrent-ruby:",http://www.concurrent-ruby.com,MIT
+"csv:",https://github.com/ruby/csv,BSD-2-Clause
 "dalli:",https://github.com/petergoldstein/dalli,MIT
 "domain_name:",https://github.com/knu/ruby-domain_name,BSD-2-Clause
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
