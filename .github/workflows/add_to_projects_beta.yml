@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: octokit/graphql-action@v2.x
-        id: add_to_ingest_project
+        id: add_to_project
         with:
           headers: '{"GraphQL-Features": "projects_next_graphql"}'
           query: |
@@ -22,18 +22,5 @@ jobs:
               }
              }
           projectid: "PVT_kwDOAGc3Zs0SEg"
-          contentid: ${{ github.event.issue.node_id }}
-          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-      - uses: octokit/graphql-action@v2.x
-        id: add_to_logstash_project
-        with:
-          headers: '{"GraphQL-Features": "projects_next_graphql"}'
-          query: |
-            mutation add_to_project($projectid:ID!,$contentid:ID!) {
-               addProjectV2ItemById(input:{projectId:$projectid contentId:$contentid}) {
-                clientMutationId
-              }
-             }
-          projectid: "PVT_kwDOAGc3Zs4AA7P8"
           contentid: ${{ github.event.issue.node_id }}
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
