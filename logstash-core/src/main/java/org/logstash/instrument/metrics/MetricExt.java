@@ -20,7 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
-import java.util.concurrent.TimeUnit;
+import co.elastic.logstash.api.TimerMetric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -43,6 +43,9 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     private static final long serialVersionUID = 1L;
 
     public static final RubySymbol COUNTER = RubyUtil.RUBY.newSymbol("counter");
+
+    public static final RubySymbol TIMER = RubyUtil.RUBY.newSymbol("timer");
+    public static final RubySymbol REPORT_UNTRACKED = RubyUtil.RUBY.newSymbol("report_untracked");
 
     private static final RubyFixnum ONE = RubyUtil.RUBY.newFixnum(1);
 
@@ -145,7 +148,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         final IRubyObject key, final IRubyObject duration) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
-            context, "push", new IRubyObject[]{namespace, key, COUNTER, INCREMENT, duration}
+            context, "push", new IRubyObject[]{namespace, key, TIMER, REPORT_UNTRACKED, duration}
         );
     }
 
@@ -153,17 +156,12 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     protected IRubyObject doTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final Block block) {
         MetricExt.validateKey(context, null, key);
+
+        final TimerMetric timer = this.collector.callMethod(context, "get", new IRubyObject[]{namespace, key, TIMER}).toJava(TimerMetric.class);
         if (!block.isGiven()) {
-            return MetricExt.TimedExecution.create(this, namespace, key);
+            return MetricExt.TimedExecution.create(timer.begin());
         }
-        final long startTime = System.nanoTime();
-        final IRubyObject res = block.call(context);
-        this.reportTime(context, namespace, key, RubyFixnum.newFixnum(
-            context.runtime, TimeUnit.MILLISECONDS.convert(
-                System.nanoTime() - startTime, TimeUnit.NANOSECONDS
-            )
-        ));
-        return res;
+        return timer.time(() -> block.call(context));
     }
 
     @Override
@@ -181,33 +179,20 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
         private static final long serialVersionUID = 1L;
 
-        private final long startTime = System.nanoTime();
+        private TimerMetric.Committer committer;
 
-        private MetricExt metric;
-
-        private transient IRubyObject namespace;
-
-        private transient IRubyObject key;
-
-        public static MetricExt.TimedExecution create(final MetricExt metric,
-            final IRubyObject namespace, final IRubyObject key) {
+        public static MetricExt.TimedExecution create(final TimerMetric.Committer timerMetricCommitter) {
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
             final MetricExt.TimedExecution res =
                 new MetricExt.TimedExecution(RubyUtil.RUBY, RubyUtil.TIMED_EXECUTION_CLASS);
-            res.metric = metric;
-            res.namespace = namespace;
-            res.key = key;
+            res.committer = timerMetricCommitter;
             return res;
         }
 
         @JRubyMethod
         public RubyFixnum stop(final ThreadContext context) {
-            final RubyFixnum result = RubyFixnum.newFixnum(
-                context.runtime, TimeUnit.MILLISECONDS.convert(
-                    System.nanoTime() - startTime, TimeUnit.NANOSECONDS
-                )
-            );
-            metric.reportTime(context, namespace, key, result);
-            return result;
+            final long executionTime = committer.commit();
+            return RubyFixnum.newFixnum(context.runtime, executionTime);
         }
 
         public TimedExecution(final Ruby runtime, final RubyClass metaClass) {

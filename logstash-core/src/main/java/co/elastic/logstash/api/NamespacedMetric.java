@@ -20,6 +20,8 @@
 
 package co.elastic.logstash.api;
 
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
+
 import java.util.function.Supplier;
 
 /**
@@ -42,6 +44,14 @@ public interface NamespacedMetric extends Metric {
      * @return an instance tracking a counter metric allowing easy incrementing and resetting
      */
     CounterMetric counter(String metric);
+
+    /**
+     * Creates a timer with the name {@code metric}.
+     *
+     * @param metric name of the timer
+     * @return an instance tracking a timer metric allowing easy execution timing
+     */
+    TimerMetric timer(String metric);
 
     /**
      * Increment the {@code metric} metric by 1.

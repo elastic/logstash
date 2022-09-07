@@ -44,6 +44,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     }
 
     @JRubyMethod
+    public IRubyObject timer(final ThreadContext context, final IRubyObject key) {
+        return getTimer(context, key);
+    }
+
+    @JRubyMethod
     public IRubyObject gauge(final ThreadContext context, final IRubyObject key,
         final IRubyObject value) {
         return getGauge(context, key, value);
@@ -88,6 +93,8 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract RubyArray getNamespaceName(ThreadContext context);
 
     protected abstract IRubyObject getCounter(ThreadContext context, IRubyObject key);
+
+    protected abstract IRubyObject getTimer(ThreadContext context, IRubyObject key);
 
     protected abstract IRubyObject doTime(ThreadContext context, IRubyObject key, Block block);
 

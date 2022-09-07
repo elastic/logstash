@@ -78,6 +78,13 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
+        return collector(context).callMethod(
+                context, "get", new IRubyObject[]{namespaceName, key, MetricExt.TIMER}
+        );
+    }
+
+    @Override
     protected IRubyObject getGauge(final ThreadContext context, final IRubyObject key,
         final IRubyObject value) {
         return metric.gauge(context, namespaceName, key, value);

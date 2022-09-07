@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import co.elastic.logstash.api.TimerMetric;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -76,6 +77,7 @@ import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
@@ -451,6 +453,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             dataMetrics.gauge(context, PATH, dirPath);
             pipelineMetric.gauge(context, MetricKeys.EVENTS_KEY, inner.ruby_unread_count(context));
         }
+
         return context.nil;
     }
 
@@ -479,13 +482,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.flowMetrics.add(outputThroughput);
         storeMetric(context, flowNamespace, outputThroughput);
 
-        final LongCounter queuePushWaitInMillis = initOrGetCounterMetric(context, eventsNamespace, JRubyWrappedWriteClientExt.PUSH_DURATION_KEY);
-        final FlowMetric backpressureFlow = new FlowMetric("backpressure", queuePushWaitInMillis, uptimeInMillis);
+        final ExecutionMillisTimer queuePushWaitInMillis = initOrGetTimerMetric(context, eventsNamespace, JRubyWrappedWriteClientExt.PUSH_DURATION_KEY);
+        final FlowMetric backpressureFlow = new FlowMetric("queue_backpressure", queuePushWaitInMillis, uptimeInMillis);
         this.flowMetrics.add(backpressureFlow);
         storeMetric(context, flowNamespace, backpressureFlow);
 
-        final LongCounter durationInMillis = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
-        final FlowMetric concurrencyFlow = new FlowMetric("concurrency", durationInMillis, uptimeInMillis);
+        final ExecutionMillisTimer durationInMillis = initOrGetTimerMetric(context, eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
+        final FlowMetric concurrencyFlow = new FlowMetric("worker_concurrency", durationInMillis, uptimeInMillis);
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
@@ -516,6 +519,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, uptimeMetricName, context.runtime.newSymbol("uptime")});
         return retrievedMetric.toJava(UptimeMetric.class);
+    }
+
+    ExecutionMillisTimer initOrGetTimerMetric(final ThreadContext context,
+                                     final RubySymbol[] subPipelineNamespacePath,
+                                     final RubySymbol uptimeMetricName) {
+        final IRubyObject collector = this.metric.collector(context);
+        final IRubyObject fullNamespace = RubyArray.newArray(context.runtime, fullNamespacePath(subPipelineNamespacePath));
+
+        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, uptimeMetricName, context.runtime.newSymbol("timer")});
+        return retrievedMetric.toJava(ExecutionMillisTimer.class);
     }
 
 

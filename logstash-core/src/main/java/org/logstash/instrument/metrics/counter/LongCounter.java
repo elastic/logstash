@@ -115,5 +115,4 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         //replacing since LongAdder#reset "is only effective if there are no concurrent updates", we can not make that guarantee
         longAdder = new LongAdder();
     }
-
 }

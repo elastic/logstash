@@ -31,6 +31,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
 
 @JRubyClass(name = "NamespacedNullMetric", parent = "AbstractNamespacedMetric")
 public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
@@ -42,6 +43,8 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     private @SuppressWarnings("rawtypes") RubyArray namespaceName;
 
     private NullMetricExt metric;
+
+    private static final IRubyObject NULL_TIMER = RubyUtil.toRubyObject(ExecutionMillisTimer.nullTimer());
 
     public static AbstractNamespacedMetricExt create(final NullMetricExt metric,
         final @SuppressWarnings("rawtypes") RubyArray namespaceName) {
@@ -124,6 +127,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     @Override
     public AbstractMetricExt getMetric() { return this.metric; }
+
+    @Override
+    protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
+        return NULL_TIMER;
+    }
 
     @JRubyClass(name = "NullCounter")
     public static final class NullCounter extends RubyObject {

@@ -22,6 +22,8 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
+import co.elastic.logstash.api.TimerMetric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -37,6 +39,7 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
 
 @JRubyClass(name = "AbstractOutputDelegator")
 public abstract class AbstractOutputDelegatorExt extends RubyObject {
@@ -57,7 +60,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
     private transient LongCounter eventMetricIn;
 
-    private transient LongCounter eventMetricTime;
+    private transient TimerMetric eventMetricTime;
 
     public AbstractOutputDelegatorExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -117,9 +120,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         final RubyArray batch = (RubyArray) events;
         final int count = batch.size();
         eventMetricIn.increment((long) count);
-        final long start = System.nanoTime();
-        doOutput(batch);
-        eventMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        eventMetricTime.<Void>time(() -> { doOutput(batch); return null; });
         eventMetricOut.increment((long) count);
         return this;
     }
@@ -134,7 +135,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
             namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
             eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
             eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
-            eventMetricTime = LongCounter.fromRubyBase(metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY);
+            eventMetricTime = ExecutionMillisTimer.fromRubyBase(metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY);
         }
     }
 

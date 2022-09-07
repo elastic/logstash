@@ -20,6 +20,7 @@
 
 package org.logstash.execution;
 
+import co.elastic.logstash.api.TimerMetric;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
@@ -34,10 +35,13 @@ import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.timer.CombinedMillisTimer;
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Common code shared by Persistent and In-Memory queues clients implementation
@@ -52,14 +56,16 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     protected long waitForMillis = 50;
 
     private final ConcurrentHashMap<Long, QueueBatch> inflightBatches = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, Long> inflightClocks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, TimerMetric.Committer> inflightTimerCommitters = new ConcurrentHashMap<>();
 
     private transient LongCounter eventMetricOut;
     private transient LongCounter eventMetricFiltered;
-    private transient LongCounter eventMetricTime;
+    private transient TimerMetric eventMetricTime;
     private transient LongCounter pipelineMetricOut;
     private transient LongCounter pipelineMetricFiltered;
-    private transient LongCounter pipelineMetricTime;
+    private transient TimerMetric pipelineMetricTime;
+
+    private transient AtomicReference<TimerMetric> combinedMetricTime = new AtomicReference<>(ExecutionMillisTimer.nullTimer());
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -78,7 +84,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         synchronized(namespacedMetric.getMetric()) {
             eventMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
             eventMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            eventMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            eventMetricTime = ExecutionMillisTimer.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            combinedMetricTime.updateAndGet(existing -> CombinedMillisTimer.combine(existing, eventMetricTime));
         }
         return this;
     }
@@ -89,7 +96,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         synchronized(namespacedMetric.getMetric()) {
             pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
             pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            pipelineMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricTime = ExecutionMillisTimer.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            combinedMetricTime.updateAndGet(existing -> CombinedMillisTimer.combine(existing, pipelineMetricTime));
         }
         return this;
     }
@@ -131,12 +139,14 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     public void closeBatch(QueueBatch batch) throws IOException {
         batch.close();
         inflightBatches.remove(Thread.currentThread().getId());
-        Long startTime = inflightClocks.remove(Thread.currentThread().getId());
-        if (startTime != null && batch.filteredSize() > 0) {
-            // stop timer and record metrics iff the batch is non-empty.
-            long elapsedTimeMillis = (System.nanoTime() - startTime) / 1_000_000;
-            eventMetricTime.increment(elapsedTimeMillis);
-            pipelineMetricTime.increment(elapsedTimeMillis);
+        TimerMetric.Committer committer = inflightTimerCommitters.remove(Thread.currentThread().getId());
+        if (committer != null) {
+            final long executionTimeInMillis = committer.commit();
+            if (batch.filteredSize() <= 0) {
+//                System.err.format("OVER-REPORTING: %sms\n", executionTimeInMillis);
+                // TODO: abort tracking? undo?
+                // previous implementation late-reported execution time after execution was complete IFF there were events in the batch.
+            }
         }
     }
 
@@ -196,7 +206,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     public void startMetrics(QueueBatch batch) {
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
-        inflightClocks.put(threadId, System.nanoTime());
+        final TimerMetric selectedMetricTime = batch.filteredSize() > 0 ? combinedMetricTime.getPlain() : ExecutionMillisTimer.nullTimer();
+        inflightTimerCommitters.computeIfAbsent(threadId, (k) -> selectedMetricTime.begin());
     }
 
     @Override

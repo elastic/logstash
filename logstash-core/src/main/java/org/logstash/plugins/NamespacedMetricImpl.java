@@ -23,6 +23,7 @@ package org.logstash.plugins;
 import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
+import co.elastic.logstash.api.TimerMetric;
 import org.jruby.RubyArray;
 import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
@@ -30,9 +31,11 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Rubyfier;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.timer.ExecutionMillisTimer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -58,6 +61,11 @@ public class NamespacedMetricImpl implements NamespacedMetric {
     @Override
     public CounterMetric counter(final String metric) {
         return new CounterMetricImpl(this.threadContext, this.metrics, metric);
+    }
+
+    @Override
+    public TimerMetric timer(String metric) {
+        return this.metrics.timer(this.threadContext, this.getSymbol(metric)).toJava(TimerMetric.class);
     }
 
     @Override
@@ -87,16 +95,16 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public <T> T time(final String key, final Supplier<T> callable) {
-        final long start = System.nanoTime();
-        final T ret = callable.get();
-        final long end = System.nanoTime();
-        this.reportTime(key, TimeUnit.NANOSECONDS.toMillis(end - start));
-        return ret;
+        try {
+            return timer(key).time(callable::get);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void reportTime(final String key, final long duration) {
-        this.metrics.reportTime(this.threadContext, this.getSymbol(key), this.convert(duration));
+        timer(key).reportUntracked(duration);
     }
 
     @Override
