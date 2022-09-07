@@ -1,0 +1,6 @@
+[[getting-started-external-elasticsearch]]
+=== Send data to an external Elasticsearch cluster
+
+preview::[]
+
+The <<getting-started-logstash-and-kubernetes,Getting started with {ls} and Kubernetes>> guide demonstrates how to send Kubernetes monitoring data into an Elasticsearch cluster in your Kubernetes environment. As a follow-on, this guide shows you how to send that same data into an external Elasticsearch cluster either that on a locally installed system or in Elasticsearch Service.

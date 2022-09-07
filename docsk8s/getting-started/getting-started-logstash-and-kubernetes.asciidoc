@@ -1,14 +1,18 @@
 [[getting-started-logstash-and-kubernetes]]
-== Getting Started with {ls} and Kubernetes
+== Getting started with {ls} and Kubernetes
 
 preview::[]
 
-This section guides you through the process of setting up {ls} in a Kubernetes environment running on Minikube.
+This section guides you through the process of setting up {ls} to monitor a Kubernetes environment running on Minikube. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
+
+To deliver the monitoring data into an external Elasticsearch cluster, whether on your local machine or on Elasticsearch Service, refer to <<getting-started-external-elasticsearch,Send data to an external Elasticsearch cluster>>.
 
 This section includes the following topics:
 
 * <<gs-prerequisites>>
 * <<gs-set-up>>
+* <<gs-generate-certificate>>
+* <<gs-create-elastic-stack>>
 * <<gs-tidy-up>>
 
 [float]
@@ -19,7 +23,7 @@ Before you start, there are a few things you'll need:
 
 . link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
 . link:https://minikube.sigs.k8s.io[Minikube] - Easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
-. link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/getting-started.zip,[Sample configuration files] - Download and expand this set of files into an empty directory on your local system.
+. link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-gs.zip[Sample configuration files] - Download and expand this set of files into an empty directory on your local system.
 
 [float]
 [[gs-set-up]]
@@ -32,26 +36,118 @@ Let's start by getting your Minikube Kubernetes cluster up and running:
 minikube start
 --
 
-Helm charts are available to install the Elastic Stack. Add the Elastic Helm charts repository to your Helm repository list:
+The Elastic Helm repository contains the Elastic Stack custom resource definition (CRD) files. Add the repository to your Helm repository list:
 
 [source,sh]
 --
 helm repo add elastic https://helm.elastic.co && helm repo update
 --
 
-Install the `elastic-operator` which will be used to control the Elastic applications in your cluster:
+Install the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
 
 [source,sh]
 --
 helm install elastic-operator elastic/eck-operator
 --
 
-Check the Kubernetes pods status. So far, only the `elastic-operator` pod should be running:
+Check the Kubernetes pods status to confirm that the `elastic-operator` pod is running:
 
 [source,sh]
 --
 kubectl get pods
 --
+
+[source,sh]
+--
+NAME                 READY   STATUS    RESTARTS      AGE
+elastic-operator-0   1/1     Running   4 (12m ago)   13d
+--
+
+[float]
+[[gs-generate-certificate]]
+=== Generate certificate files
+
+To enable secure communication throughout your Kubernetes resources, run the sample script to generate CA certificate files:
+
+[source,sh]
+--
+./cert/generate_cert.sh
+--
+
+[source,sh]
+--
+Generating RSA private key, 2048 bit long modulus
+.......................+++
+...........................................................................+++
+e is 65537 (0x10001)
+Generating RSA private key, 2048 bit long modulus
+..............................................+++
+.............................................+++
+e is 65537 (0x10001)
+Signature ok
+subject=/C=EU/ST=NA/O=Elastic/CN=ServerHostName
+Getting CA Private Key
+Generating RSA private key, 2048 bit long modulus
+............+++
+.......................................................................................................................................+++
+e is 65537 (0x10001)
+Signature ok
+subject=/C=EU/ST=NA/O=Elastic/CN=ClientName
+Getting CA Private Key
+--
+
+Your `logstash-k8s-gs/cert` folder should now contain a set of certificate files, including `client` certificates for Filebeat and Metricbeat, and `server` certificates for Logstash. 
+
+The parent `logstash-k8s-gs` directory also has a new `001-secret.yaml` resources file that stores a hash of the client and server certificates.
+
+image::./images/gs-cert-files.png[generated CA certificate files]
+
+[float]
+[[gs-create-elastic-stack]]
+=== Create an Elastic Stack
+
+Now that your environment and certificates are set up, it's time to create an Elastic Stack. Run the following command to deploy the example using the sample CRDs:
+
+[source,sh]
+--
+kubectl apply -f .
+--
+
+The resources are created:
+
+[source,sh]
+--
+elasticsearch.elasticsearch.k8s.elastic.co/demo created
+configmap/logstash-pipeline created
+configmap/logstash-config created
+secret/logstash-beats-tls created
+deployment.apps/logstash created
+service/logstash created
+horizontalpodautoscaler.autoscaling/logstash created
+beat.beat.k8s.elastic.co/demo created
+beat.beat.k8s.elastic.co/demo configured
+kibana.kibana.k8s.elastic.co/demo created
+--
+
+[source,sh]
+--
+kubectl get pods
+--
+
+The pods are up and running! It may take two or three minutes for all of them to be ready.
+
+[source,sh]
+--
+NAME                                    READY   STATUS    RESTARTS       AGE
+demo-beat-filebeat-7f4d97f69f-qkkbl     1/1     Running   0              42s
+demo-beat-metricbeat-59f4b68cc7-9zrrn   1/1     Running   0              39s
+demo-es-default-0                       1/1     Running   0              41s
+demo-kb-d7f585494-vbf6s                 0/1     Running   0              39s
+elastic-operator-0                      1/1     Running   4 (164m ago)   13d
+logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
+--
+
+
 
 [float]
 [[gs-tidy-up]]
