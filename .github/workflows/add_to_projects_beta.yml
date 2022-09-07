@@ -6,46 +6,21 @@ on:
   issues:
     types:
       - opened
+
 jobs:
-  track_pr:
+  add-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Get project data
-        env:
-          GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
-          ORGANIZATION: elastic
-          PROJECT_NUMBER: 614
-        run: |
-          gh api graphql -f query='
-            query($org: String!, $number: Int!) {
-              organization(login: $org){
-                projectNext(number: $number) {
-                  id
-                  fields(first:20) {
-                    nodes {
-                      id
-                      name
-                      settings
-                    }
-                  }
-                }
+      - uses: octokit/graphql-action@v2.x
+        id: add_to_project
+        with:
+          headers: '{"GraphQL-Features": "projects_next_graphql"}'
+          query: |
+            mutation add_to_project($projectid:ID!,$contentid:ID!) {
+               addProjectV2ItemById(input:{projectId:$projectid contentId:$contentid}) {
+                clientMutationId
               }
-            }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
-
-          echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
-          
-      - name: Adds Issues/PRs to Projects Beta
-        env:
-          GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
-          EVENT_ID: ${{ github.event.issue.node_id || github.event.pull_request.node_id }}
-        run: |
-          item_id="$( gh api graphql -f query='
-            mutation($project:ID!, $event:ID!) {
-              addProjectNextItem(input: {projectId: $project, contentId: $event}) {
-                projectNextItem {
-                  id
-                }
-              }
-            }' -f project=$PROJECT_ID -f event=$EVENT_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
-          
-          echo 'ITEM_ID='$item_id >> $GITHUB_ENV
+             }
+          projectid: "MDExOlByb2plY3ROZXh0NDYyNg=="
+          contentid: ${{ github.event.issue.node_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
