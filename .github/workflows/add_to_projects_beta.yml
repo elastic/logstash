@@ -2,7 +2,7 @@ name: Add to project
 on:
   pull_request:
     types:
-      - ready_for_review
+      - opened
   issues:
     types:
       - opened
