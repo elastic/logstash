@@ -21,6 +21,6 @@ jobs:
                 clientMutationId
               }
              }
-          projectid: "MDExOlByb2plY3ROZXh0NDYyNg=="
+          projectid: "PVT_kwDOAGc3Zs0SEg"
           contentid: ${{ github.event.issue.node_id }}
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
