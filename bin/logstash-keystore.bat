@@ -9,7 +9,7 @@ if errorlevel 1 (
 	exit /B %ERRORLEVEL%
 )
 
-%JRUBY_BIN% %JAVA_OPTS% "%LS_HOME%\lib\secretstore\cli.rb" %*
+%JRUBY_BIN% "%LS_HOME%\lib\secretstore\cli.rb" %*
 if errorlevel 1 (
   exit /B 1
 )
