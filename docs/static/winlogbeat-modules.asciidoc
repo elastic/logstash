@@ -13,6 +13,7 @@ You can use {winlogbeat} modules with {ls}, but you need to do some extra setup.
 The simplest approach is to <<use-winlogbeat-ingest-pipelines,set up and use the ingest
 pipelines>> provided by {winlogbeat}.
 
+[discrete]
 [[use-winlogbeat-ingest-pipelines]]
 === Use ingest pipelines for parsing
 
