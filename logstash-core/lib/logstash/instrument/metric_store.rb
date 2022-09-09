@@ -51,11 +51,20 @@ module LogStash module Instrument
 
     # This method use the namespace and key to search the corresponding value of
     # the hash, if it doesn't exist it will create the appropriate namespaces
-    # path in the hash and return `new_value`
-    #
-    # @param [Array] The path where the values should be located
-    # @param [Symbol] The metric key
-    # @return [Object] Return the new_value of the retrieve object in the tree
+    # path in the hash and return `new_value`.
+    # @overload fetch_or_store(namespaces, key, default_value)
+    #   @param [Array<Symbol>] namespaces: The path where the values should be located
+    #   @param [Symbol] key: The metric key
+    #   @param [Metric] default_value: if no metric exists at this address, the
+    #                                  provided default_value will be stored
+    #   @return [Metric] the value as it exists in the tree after this operation
+    # @overload fetch_or_store(namespaces, key, &default_value_generator)
+    #   @param [Array<Symbol>] namespaces: The path where the values should be located
+    #   @param [Symbol] key: The metric key
+    #   @yield EXACTLY ONCE to the provided block IFF the metric does not exist
+    #   @yieldreturn [Metric] if no metric exists at this address, the result of yielding
+    #                         to the provided default_value_generator block will be stored.
+    #   @return [Metric] the value as it exists in the tree after this operation
     def fetch_or_store(namespaces, key, default_value = nil)
 
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
@@ -63,20 +72,21 @@ module LogStash module Instrument
       # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
       # the value of the key). If the metric is already present in the `@fast_lookup`, then that value is sent
       # back directly to the caller.
-      #
-      # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and we assume that we don't
-      # have it in the `@metric_store` for structured search so we add it there too.
+      fast_lookup_key = namespaces.dup << key
+      existing_value = @fast_lookup.get(fast_lookup_key)
+      return existing_value unless existing_value.nil?
 
-      value = @fast_lookup.get(namespaces.dup << key)
-      if value.nil?
-        value = block_given? ? yield(key) : default_value
-        @fast_lookup.put(namespaces.dup << key, value)
-        @structured_lookup_mutex.synchronize do
-            # If we cannot find the value this mean we need to save it in the store.
-          fetch_or_store_namespaces(namespaces).fetch_or_store(key, value)
+      # BUT. If the value was not present in the `@fast_lookup` we acquire the structured_lookup_lock
+      # before modifying _either_ the fast-lookup or the structured store.
+      @structured_lookup_mutex.synchronize do
+        # by using compute_if_absent, we ensure that we don't overwrite a value that was
+        # written by another thread that beat us to the @structured_lookup_mutex lock.
+        @fast_lookup.compute_if_absent(fast_lookup_key) do
+          generated_value = block_given? ? yield(key) : default_value
+          fetch_or_store_namespaces(namespaces).fetch_or_store(key, generated_value)
+          generated_value
         end
       end
-      return value;
     end
 
     # This method allow to retrieve values for a specific path,
@@ -298,36 +308,18 @@ module LogStash module Instrument
     # create it.
     #
     # @param [Array] The path where values should be located
-    # @raise [ConcurrentMapExpected] Raise if the retrieved object isn't a `Concurrent::Map`
+    # @raise [NamespacesExpectedError] Raise if the retrieved object isn't a `Concurrent::Map`
     # @return [Concurrent::Map] Map where the metrics should be saved
     def fetch_or_store_namespaces(namespaces_path)
-      path_map = fetch_or_store_namespace_recursively(@store, namespaces_path)
+      namespaces_path.each_with_index.reduce(@store) do |memo, (current, index)|
+        node = memo.compute_if_absent(current) { Concurrent::Map.new }
 
-      # This mean one of the namespace and key are colliding
-      # and we have to deal it upstream.
-      unless path_map.is_a?(Concurrent::Map)
-        raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{path_map.class.name} for namespaces_path: #{namespaces_path}"
+        unless node.kind_of?(Concurrent::Map)
+          raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{node.class.name} for namespaces_path: #{namespaces_path.first(index+1)}"
+        end
+
+        node
       end
-
-      return path_map
-    end
-
-    # Recursively fetch or create the namespace paths through the `MetricStove`
-    # This algorithm use an index to known which keys to search in the map.
-    # This doesn't cloning the array if we want to give a better feedback to the user
-    #
-    # @param [Concurrent::Map] Map to search for the key
-    # @param [Array] List of path to create
-    # @param [Integer] Which part from the list to create
-    #
-    def fetch_or_store_namespace_recursively(map, namespaces_path, idx = 0)
-      current = namespaces_path[idx]
-
-      # we are at the end of the namespace path, break out of the recursion
-      return map if current.nil?
-
-      new_map = map.fetch_or_store(current) { Concurrent::Map.new }
-      return fetch_or_store_namespace_recursively(new_map, namespaces_path, idx + 1)
     end
 
     def delete_from_map(map, keys)
