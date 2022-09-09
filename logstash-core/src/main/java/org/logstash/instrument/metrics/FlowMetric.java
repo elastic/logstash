@@ -67,7 +67,7 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
 
     @Override
     public MetricType getType() {
-        return MetricType.FLOW_RATES;
+        return MetricType.FLOW_RATE;
     }
 
     private static class Capture {

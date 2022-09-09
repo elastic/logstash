@@ -60,7 +60,7 @@ public enum MetricType {
     /**
      * A flow-rate {@link FlowMetric}, instantiated with one or more backing {@link Metric}{@code <Number>}.
      */
-    FLOW_RATES("flow/rate"),
+    FLOW_RATE("flow/rate"),
     ;
 
     private final String type;
