@@ -75,6 +75,20 @@ describe LogStash::Api::Commands::Stats do
     end
   end
 
+  # TODO: complete test case and run
+  describe "#metric flows" do
+    let(:report_method) { :flow }
+
+    it "return metric flow information" do
+      expect(report.keys).to include(
+                               :input_throughput,
+                               :output_throughput,
+                               :filter_throughput,
+                               :backpressure,
+                               :concurrency)
+    end
+  end
+
   describe "#hot_threads" do
     let(:report_method) { :hot_threads }
 
@@ -144,6 +158,7 @@ describe LogStash::Api::Commands::Stats do
       it "returns information on pipeline" do
         expect(report[:main].keys).to include(
           :events,
+          :flows,
           :plugins,
           :reloads,
           :queue,
@@ -157,6 +172,15 @@ describe LogStash::Api::Commands::Stats do
           :out,
           :queue_push_duration_in_millis
         )
+      end
+      it "returns flow metric information" do
+        expect(report[:main][:flow].keys).to include(
+                                                 :output_throughput,
+                                                 :filter_throughput,
+                                                 :backpressure,
+                                                 :concurrency,
+                                                 :input_throughput
+                                               )
       end
     end
     context "when using multiple pipelines" do

@@ -97,6 +97,28 @@ describe LogStash::Api::Modules::NodeStats do
          "out" => Numeric,
          "queue_push_duration_in_millis" => Numeric
        },
+       "flow" => {
+         "output_throughput" => {
+           "lifetime" => Numeric,
+           "current" => Numeric
+         },
+         "filter_throughput" => {
+           "lifetime" => Numeric,
+           "current" => Numeric
+         },
+         "backpressure" => {
+           "lifetime" => Numeric,
+           "current" => Numeric
+         },
+         "concurrency" => {
+           "lifetime" => Numeric,
+           "current" => Numeric
+         },
+         "input_throughput" => {
+           "lifetime" => Numeric,
+           "current" => Numeric
+         }
+       },
        "plugins" => {
           "inputs" => Array,
           "codecs" => Array,
