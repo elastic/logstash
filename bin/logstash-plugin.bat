@@ -9,7 +9,7 @@ if errorlevel 1 (
 	exit /B %ERRORLEVEL%
 )
 
-%JRUBY_BIN% %JAVA_OPTS% "%LS_HOME%\lib\pluginmanager\main.rb" %*
+%JRUBY_BIN% "%LS_HOME%\lib\pluginmanager\main.rb" %*
 if errorlevel 1 (
   exit /B 1
 )
