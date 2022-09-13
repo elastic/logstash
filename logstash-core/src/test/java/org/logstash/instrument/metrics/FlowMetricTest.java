@@ -5,10 +5,8 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.logstash.instrument.metrics.FlowMetric.CURRENT_KEY;
@@ -19,7 +17,7 @@ public class FlowMetricTest {
     public void testBaselineFunctionality() {
         final ManualAdvanceClock clock = new ManualAdvanceClock(Instant.now());
         final LongCounter numeratorMetric = new LongCounter(MetricKeys.EVENTS_KEY.asJavaString());
-        final Metric<Long> denominatorMetric = new UptimeMetric("uptime", TimeUnit.SECONDS, clock::nanoTime);
+        final Metric<Number> denominatorMetric = new UptimeMetric("uptime", clock::nanoTime).withUnitsPrecise(UptimeMetric.ScaleUnits.SECONDS);
         final FlowMetric instance = new FlowMetric("flow", numeratorMetric, denominatorMetric);
 
         final Map<String, Double> ratesBeforeCaptures = instance.getValue();
@@ -50,5 +48,16 @@ public class FlowMetricTest {
         final Map<String, Double> ratesAfterNthCapture = instance.getValue();
         assertFalse(ratesAfterNthCapture.isEmpty());
         assertEquals(Map.of(LIFETIME_KEY, 367.5, CURRENT_KEY, 378.4), ratesAfterNthCapture);
+
+        // less than half a second passes, during which 0 events are seen by our numerator.
+        // when our two most recent captures are very close together, we want to make sure that
+        // we continue to provide _meaningful_ metrics, namely that:
+        // (a) our CURRENT_KEY and LIFETIME_KEY account for newest capture, and
+        // (b) our CURRENT_KEY does not report _only_ the delta since the very-recent capture
+        clock.advance(Duration.ofMillis(10));
+        instance.capture();
+        final Map<String, Double> ratesAfterSmallAdvanceCapture = instance.getValue();
+        assertFalse(ratesAfterNthCapture.isEmpty());
+        assertEquals(Map.of(LIFETIME_KEY, 367.408, CURRENT_KEY, 377.645), ratesAfterSmallAdvanceCapture);
     }
 }

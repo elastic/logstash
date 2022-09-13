@@ -2,10 +2,12 @@ package org.logstash.instrument.metrics;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongSupplier;
 
 public class FlowMetric extends AbstractMetric<Map<String,Double>> {
 
@@ -19,13 +21,23 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
     private final AtomicReference<Capture> head;
     private final AtomicReference<Capture> instant = new AtomicReference<>();
 
+    private final LongSupplier nanoTimeSupplier;
+
     static final String LIFETIME_KEY = "lifetime";
     static final String CURRENT_KEY = "current";
 
     public FlowMetric(final String name,
                       final Metric<? extends Number> numeratorMetric,
                       final Metric<? extends Number> denominatorMetric) {
+        this(System::nanoTime, name, numeratorMetric, denominatorMetric);
+    }
+
+    FlowMetric(final LongSupplier nanoTimeSupplier,
+               final String name,
+               final Metric<? extends Number> numeratorMetric,
+               final Metric<? extends Number> denominatorMetric) {
         super(name);
+        this.nanoTimeSupplier = nanoTimeSupplier;
         this.numeratorMetric = numeratorMetric;
         this.denominatorMetric = denominatorMetric;
 
@@ -34,8 +46,13 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
     }
 
     public void capture() {
-        final Capture previousHead = head.getAndSet(doCapture());
-        instant.set(previousHead);
+        final Capture newestHead = doCapture();
+        final Capture previousHead = head.getAndSet(newestHead);
+        // rotate our instant forward only
+        instant.getAndAccumulate(previousHead, (current, given) -> {
+            // keep our current value if the given one is less than ~1s older than our newestHead
+            return (newestHead.calculateCapturePeriod(given).toMillis() > 900) ? given : current;
+        });
     }
 
     public Map<String, Double> getValue() {
@@ -62,7 +79,7 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
     }
 
     Capture doCapture() {
-        return new Capture(numeratorMetric.getValue(), denominatorMetric.getValue());
+        return new Capture(numeratorMetric.getValue(), denominatorMetric.getValue(), nanoTimeSupplier.getAsLong());
     }
 
     @Override
@@ -74,14 +91,20 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
         private final Number numerator;
         private final Number denominator;
 
-        public Capture(final Number numerator, final Number denominator) {
+        private final long nanoTimestamp;
+
+        public Capture(final Number numerator, final Number denominator, final long nanoTimestamp) {
             this.numerator = numerator;
             this.denominator = denominator;
+            this.nanoTimestamp = nanoTimestamp;
         }
 
         Double calculateRate(final Capture baseline) {
             if (Objects.isNull(baseline)) { return null; }
             if (baseline == this) { return null; }
+
+            // divide-by-zero safeguard
+            if (this.denominator.doubleValue() == baseline.denominator.doubleValue()) { return null; }
 
             final double deltaNumerator = this.numerator.doubleValue() - baseline.numerator.doubleValue();
             final double deltaDenominator = this.denominator.doubleValue() - baseline.denominator.doubleValue();
@@ -93,6 +116,10 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
             return BigDecimal.valueOf(deltaNumerator)
                     .divide(BigDecimal.valueOf(deltaDenominator), 3, RoundingMode.HALF_UP)
                     .doubleValue();
+        }
+
+        Duration calculateCapturePeriod(final Capture baseline) {
+            return Duration.ofNanos(Math.subtractExact(this.nanoTimestamp, baseline.nanoTimestamp));
         }
     }
 }

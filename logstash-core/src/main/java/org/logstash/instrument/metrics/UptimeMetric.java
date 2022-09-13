@@ -1,5 +1,6 @@
 package org.logstash.instrument.metrics;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
@@ -13,6 +14,19 @@ public class UptimeMetric extends AbstractMetric<Long> {
     private final LongSupplier nanoTimeSupplier;
     private final long startNanos;
 
+    public enum ScaleUnits {
+        NANOSECONDS(0),
+        MICROSECONDS(3),
+        MILLISECONDS(6),
+        SECONDS(9),
+        ;
+
+        private final int nanoRelativeDecimalShift;
+
+        ScaleUnits(final int nanoRelativeDecimalShift) {
+            this.nanoRelativeDecimalShift = nanoRelativeDecimalShift;
+        }
+    }
     private final TimeUnit timeUnit;
 
     /**
@@ -22,24 +36,19 @@ public class UptimeMetric extends AbstractMetric<Long> {
         this(MetricKeys.UPTIME_IN_MILLIS_KEY.asJavaString());
     }
 
-    public UptimeMetric(final String name) {
-        this(name, TimeUnit.MILLISECONDS);
-    }
-
     /**
-     * Constructs an {@link UptimeMetric} with the provided name and units.
+     * Constructs an {@link UptimeMetric} with the provided name.
      * @param name the name of the metric, which is used by our metric store, API retrieval, etc.
-     * @param timeUnit the units in which to keep track of uptime (millis, seconds, etc.)
      */
-    public UptimeMetric(final String name, final TimeUnit timeUnit) {
-        this(name, timeUnit, System::nanoTime);
+    public UptimeMetric(final String name) {
+        this(name, System::nanoTime);
     }
 
-    UptimeMetric(final String name, final TimeUnit timeUnit, final LongSupplier nanoTimeSupplier) {
-        this(name, timeUnit, nanoTimeSupplier, nanoTimeSupplier.getAsLong());
+    UptimeMetric(final String name, final LongSupplier nanoTimeSupplier) {
+        this(name, nanoTimeSupplier, nanoTimeSupplier.getAsLong(), TimeUnit.MILLISECONDS);
     }
 
-    UptimeMetric(final String name, final TimeUnit timeUnit, final LongSupplier nanoTimeSupplier, final long startNanos) {
+    private UptimeMetric(final String name, final LongSupplier nanoTimeSupplier, final long startNanos, final TimeUnit timeUnit) {
         super(Objects.requireNonNull(name, "name"));
         this.nanoTimeSupplier = Objects.requireNonNull(nanoTimeSupplier, "nanoTimeSupplier");
         this.timeUnit = Objects.requireNonNull(timeUnit, "timeUnit");
@@ -52,9 +61,11 @@ public class UptimeMetric extends AbstractMetric<Long> {
      */
     @Override
     public Long getValue() {
-        final long elapsedNanos = this.nanoTimeSupplier.getAsLong() - this.startNanos;
+        return this.timeUnit.convert(getElapsedNanos(), TimeUnit.NANOSECONDS);
+    }
 
-        return this.timeUnit.convert(elapsedNanos, TimeUnit.NANOSECONDS);
+    long getElapsedNanos() {
+        return this.nanoTimeSupplier.getAsLong() - this.startNanos;
     }
 
     /**
@@ -82,6 +93,59 @@ public class UptimeMetric extends AbstractMetric<Long> {
      * @return a _copy_ of this {@link UptimeMetric}.
      */
     public UptimeMetric withTimeUnit(final String name, final TimeUnit timeUnit) {
-        return new UptimeMetric(name, timeUnit, this.nanoTimeSupplier, this.startNanos);
+        return new UptimeMetric(name, this.nanoTimeSupplier, this.startNanos, timeUnit);
+    }
+
+    /**
+     * Constructs a _view_ into this {@link UptimeMetric} whose value is a decimal number
+     * containing subunit precision.
+     *
+     * @param name the name of the metric
+     * @param scaleUnits the desired scale
+     * @return a {@link BigDecimal} representing the whole-and-fractional number
+     *         of {@link ScaleUnits} that have elapsed.
+     */
+    public ScaledView withUnitsPrecise(final String name, final ScaleUnits scaleUnits) {
+        return new ScaledView(name, this::getElapsedNanos, scaleUnits.nanoRelativeDecimalShift);
+    }
+
+    /**
+     * {@code name} defaults to something vaguely descriptive.
+     * Useful when the caller doesn't need the metric name.
+     *
+     * @see UptimeMetric#withUnitsPrecise(String, ScaleUnits)
+     */
+    public ScaledView withUnitsPrecise(final ScaleUnits scaleUnits) {
+        final String name = String.format("%s_scaled_to_%s", getName(), scaleUnits.name());
+        return this.withUnitsPrecise(name, scaleUnits);
+    }
+
+    static class ScaledView implements Metric<Number> {
+        private final String name;
+        private final int nanoRelativeDecimalShift;
+        private final LongSupplier elapsedNanosSupplier;
+
+        ScaledView(final String name,
+                   final LongSupplier elapsedNanosSupplier,
+                   final int nanoRelativeDecimalShift) {
+            this.name = name;
+            this.nanoRelativeDecimalShift = nanoRelativeDecimalShift;
+            this.elapsedNanosSupplier = elapsedNanosSupplier;
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public MetricType getType() {
+            return MetricType.COUNTER_DECIMAL;
+        }
+
+        @Override
+        public BigDecimal getValue() {
+            return BigDecimal.valueOf(elapsedNanosSupplier.getAsLong(), nanoRelativeDecimalShift);
+        }
     }
 }
