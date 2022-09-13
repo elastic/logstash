@@ -102,11 +102,11 @@
           "lifetime": 0.231,
           "current": 4.0
         },
-        "backpressure": {
+        "queue_backpressure": {
           "lifetime": 0.0,
           "current": 0.0
         },
-        "concurrency": {
+        "worker_concurrency": {
           "lifetime": 0.018,
           "current": 0.288
         },

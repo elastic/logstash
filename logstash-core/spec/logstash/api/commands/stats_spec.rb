@@ -84,8 +84,8 @@ describe LogStash::Api::Commands::Stats do
                                :input_throughput,
                                :output_throughput,
                                :filter_throughput,
-                               :backpressure,
-                               :concurrency)
+                               :queue_backpressure,
+                               :worker_concurrency)
     end
   end
 

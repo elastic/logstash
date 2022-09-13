@@ -106,11 +106,11 @@ describe LogStash::Api::Modules::NodeStats do
            "lifetime" => Numeric,
            "current" => Numeric
          },
-         "backpressure" => {
+         "queue_backpressure" => {
            "lifetime" => Numeric,
            "current" => Numeric
          },
-         "concurrency" => {
+         "worker_concurrency" => {
            "lifetime" => Numeric,
            "current" => Numeric
          },

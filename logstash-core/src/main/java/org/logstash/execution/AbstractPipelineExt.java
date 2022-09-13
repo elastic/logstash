@@ -480,12 +480,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
         storeMetric(context, flowNamespace, outputThroughput);
 
         final LongCounter queuePushWaitInMillis = initOrGetCounterMetric(context, eventsNamespace, JRubyWrappedWriteClientExt.PUSH_DURATION_KEY);
-        final FlowMetric backpressureFlow = new FlowMetric("backpressure", queuePushWaitInMillis, uptimeInMillis);
+        final FlowMetric backpressureFlow = new FlowMetric("queue_backpressure", queuePushWaitInMillis, uptimeInMillis);
         this.flowMetrics.add(backpressureFlow);
         storeMetric(context, flowNamespace, backpressureFlow);
 
         final LongCounter durationInMillis = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
-        final FlowMetric concurrencyFlow = new FlowMetric("concurrency", durationInMillis, uptimeInMillis);
+        final FlowMetric concurrencyFlow = new FlowMetric("worker_concurrency", durationInMillis, uptimeInMillis);
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 

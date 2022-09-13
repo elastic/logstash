@@ -84,7 +84,7 @@ module LogStash
         def flow
           extract_metrics(
             [:stats, :flow],
-            :concurrency, :backpressure, :output_throughput, :filter_throughput, :input_throughput
+            :worker_concurrency, :queue_backpressure, :output_throughput, :filter_throughput, :input_throughput
           )
         rescue LogStash::Instrument::MetricStore::MetricNotFound
           # if the stats/events metrics have not yet been populated, return an empty map

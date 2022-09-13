@@ -124,13 +124,13 @@ describe LogStash::WrappedWriteClient do
           expect(snapshot_metric[:flow][:filter_throughput][:current].value).to be_kind_of(Numeric)
           expect(snapshot_metric[:flow][:filter_throughput][:lifetime].value).to be_kind_of(Numeric)
         end
-        it "records backpressure metrics" do
-          expect(snapshot_metric[:flow][:backpressure][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:backpressure][:lifetime].value).to be_kind_of(Numeric)
+        it "records queue_backpressure metrics" do
+          expect(snapshot_metric[:flow][:queue_backpressure][:current].value).to be_kind_of(Numeric)
+          expect(snapshot_metric[:flow][:queue_backpressure][:lifetime].value).to be_kind_of(Numeric)
         end
-        it "records concurrency metrics" do
-          expect(snapshot_metric[:flow][:concurrency][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:concurrency][:lifetime].value).to be_kind_of(Numeric)
+        it "records worker_concurrency metrics" do
+          expect(snapshot_metric[:flow][:worker_concurrency][:current].value).to be_kind_of(Numeric)
+          expect(snapshot_metric[:flow][:worker_concurrency][:lifetime].value).to be_kind_of(Numeric)
         end
       end
     end
