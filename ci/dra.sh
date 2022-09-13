@@ -6,9 +6,6 @@
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
-# install rake's gme
-gem install rake
-
 if [ -z "$VERSION_QUALIFIER_OPT" ]; then
   RELEASE=1 rake artifact:all
 else
