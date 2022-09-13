@@ -17,6 +17,6 @@ fi
 
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
-echo "Creating dependencies for ${STACK_VERSION}"
+echo "Creating dependencies report for ${STACK_VERSION}"
 mkdir -p build/reports/dependencies-reports/
 bin/dependencies-report --csv=build/reports/dependencies-reports/logstash-${STACK_VERSION}.csv
