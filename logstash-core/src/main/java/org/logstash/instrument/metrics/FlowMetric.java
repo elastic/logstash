@@ -48,10 +48,12 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
     public void capture() {
         final Capture newestHead = doCapture();
         final Capture previousHead = head.getAndSet(newestHead);
-        // rotate our instant forward only
         instant.getAndAccumulate(previousHead, (current, given) -> {
-            // keep our current value if the given one is less than ~1s older than our newestHead
-            return (newestHead.calculateCapturePeriod(given).toMillis() > 900) ? given : current;
+            // keep our current value if the given one is less than ~100ms older than our newestHead
+            // this is naive and when captures happen too frequently without relief can result in
+            // our "current" window growing indefinitely, but we are shipping with a 5s cadence
+            // and shouldn't hit this edge-case in practice.
+            return (newestHead.calculateCapturePeriod(given).toMillis() > 100) ? given : current;
         });
     }
 
@@ -102,9 +104,6 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
         Double calculateRate(final Capture baseline) {
             if (Objects.isNull(baseline)) { return null; }
             if (baseline == this) { return null; }
-
-            // divide-by-zero safeguard
-            if (this.denominator.doubleValue() == baseline.denominator.doubleValue()) { return null; }
 
             final double deltaNumerator = this.numerator.doubleValue() - baseline.numerator.doubleValue();
             final double deltaDenominator = this.denominator.doubleValue() - baseline.denominator.doubleValue();
