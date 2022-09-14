@@ -83,17 +83,17 @@ public final class MetricKeys {
     // Flow metric keys
     public static final RubySymbol FLOW_KEY = RubyUtil.RUBY.newSymbol("flow");
 
-    public static final String INPUT_THROUGHPUT_KEY = "input_throughput";
+    public static final RubySymbol INPUT_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("input_throughput");
 
-    public static final String OUTPUT_THROUGHPUT_KEY = "output_throughput";
+    public static final RubySymbol OUTPUT_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("output_throughput");
 
-    public static final String FILTER_THROUGHPUT_KEY = "filter_throughput";
+    public static final RubySymbol FILTER_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("filter_throughput");
 
-    public static final String QUEUE_BACKPRESSURE_KEY = "queue_backpressure";
+    public static final RubySymbol QUEUE_BACKPRESSURE_KEY = RubyUtil.RUBY.newSymbol("queue_backpressure");
 
-    public static final String WORKER_CONCURRENCY_KEY = "worker_concurrency";
+    public static final RubySymbol WORKER_CONCURRENCY_KEY = RubyUtil.RUBY.newSymbol("worker_concurrency");
 
-    public static final String UPTIME_IN_SECONDS_KEY = "uptime_in_seconds";
+    public static final RubySymbol UPTIME_IN_SECONDS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_seconds");
 
-    public static final String UPTIME_IN_MILLIS_KEY = "uptime_in_millis";
+    public static final RubySymbol UPTIME_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_millis");
 }

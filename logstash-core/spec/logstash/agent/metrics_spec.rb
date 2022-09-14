@@ -252,9 +252,9 @@ describe LogStash::Agent do
         expect(subject.converge_state_and_update.success?).to be_truthy
 
         # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :flow) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error
+        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :flow) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
       end
     end
   end
