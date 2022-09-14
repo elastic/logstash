@@ -245,6 +245,32 @@ describe "Test Monitoring API" do
     logging_get_assert logstash_service, "INFO", "TRACE"
   end
 
+  it "should retrieve the pipeline flow statuses" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    number_of_events.times { logstash_service.write_to_stdin("Testing flow metrics") }
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # node_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+      flow_status = result.fetch('pipelines').fetch('main')['flow']
+      expect(flow_status['concurrency']['lifetime']).not_to be_nil
+      expect(flow_status['concurrency']['current']).not_to be_nil
+      expect(flow_status['input_throughput']['lifetime']).to eq(number_of_events)
+      expect(flow_status['input_throughput']['current']).to eq(number_of_events)
+      expect(flow_status['backpressure']['lifetime']).not_to be_nil
+      expect(flow_status['backpressure']['current']).not_to be_nil
+      expect(flow_status['filter_throughput']['lifetime']).not_to be_nil
+      expect(flow_status['filter_throughput']['current']).not_to be_nil
+      expect(flow_status['output_throughput']['lifetime']).not_to be_nil
+      expect(flow_status['output_throughput']['current']).not_to be_nil
+    end
+  end
+
   private
 
   def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')

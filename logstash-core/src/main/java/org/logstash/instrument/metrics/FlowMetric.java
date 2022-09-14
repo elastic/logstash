@@ -38,7 +38,7 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
         instant.set(previousHead);
     }
 
-    public Map<String,Double> getValue() {
+    public Map<String, Double> getValue() {
         final Capture headCapture = head.get();
         if (Objects.isNull(headCapture)) {
             return Map.of();
@@ -85,6 +85,9 @@ public class FlowMetric extends AbstractMetric<Map<String,Double>> {
 
             final double deltaNumerator = this.numerator.doubleValue() - baseline.numerator.doubleValue();
             final double deltaDenominator = this.denominator.doubleValue() - baseline.denominator.doubleValue();
+
+            // divide-by-zero safeguard
+            if (deltaDenominator == 0.0) { return null; }
 
             // To prevent the appearance of false-precision, we round to 3 decimal places.
             return BigDecimal.valueOf(deltaNumerator)

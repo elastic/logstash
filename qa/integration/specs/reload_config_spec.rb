@@ -84,7 +84,14 @@ describe "Test Logstash service when config reload is enabled" do
     pipeline_event_stats = logstash_service.monitoring_api.pipeline_stats("main")["events"]
     expect(pipeline_event_stats["in"]).to eq(1)
     expect(pipeline_event_stats["out"]).to eq(1)
-    
+
+    # make sure the pipeline is not facing a backpressure and has zero input throughput when reloaded
+    pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
+    expect(pipeline_flow_stats["input_throughput"]["lifetime"]).to eq(0)
+    expect(pipeline_flow_stats["input_throughput"]["current"]).to eq(0)
+    expect(pipeline_flow_stats["backpressure"]["lifetime"]).to eq(0)
+    expect(pipeline_flow_stats["backpressure"]["current"]).to eq(0)
+
     # check reload stats
     pipeline_reload_stats = logstash_service.monitoring_api.pipeline_stats("main")["reloads"]
     instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]
