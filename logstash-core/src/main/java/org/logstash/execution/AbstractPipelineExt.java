@@ -98,7 +98,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("data"));
 
     private static final @SuppressWarnings("rawtypes") RubyArray EVENTS_METRIC_NAMESPACE = RubyArray.newArray(
-        RubyUtil.RUBY, new IRubyObject[]{MetricKeys.STATS_KEY, MetricKeys.EVENTS_KEY}
+        RubyUtil.RUBY, new IRubyObject[]{STATS_KEY, EVENTS_KEY}
     );
 
     @SuppressWarnings("serial")

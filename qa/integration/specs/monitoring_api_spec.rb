@@ -259,12 +259,12 @@ describe "Test Monitoring API" do
       # and trigger the retry block
       flow_status = result.fetch("pipelines").fetch("main").fetch("flow")
       expect(flow_status).not_to be_nil
-      expect(flow_status["concurrency"]["lifetime"]).not_to be_nil
-      expect(flow_status["concurrency"]["current"]).not_to be_nil
+      expect(flow_status["worker_concurrency"]["lifetime"]).not_to be_nil
+      expect(flow_status["worker_concurrency"]["current"]).not_to be_nil
       expect(flow_status["input_throughput"]["lifetime"]).to eq(number_of_events)
       expect(flow_status["input_throughput"]["current"]).to eq(number_of_events)
-      expect(flow_status["backpressure"]["lifetime"]).not_to be_nil
-      expect(flow_status["backpressure"]["current"]).not_to be_nil
+      expect(flow_status["queue_backpressure"]["lifetime"]).not_to be_nil
+      expect(flow_status["queue_backpressure"]["current"]).not_to be_nil
       expect(flow_status["filter_throughput"]["lifetime"]).not_to be_nil
       expect(flow_status["filter_throughput"]["current"]).not_to be_nil
       expect(flow_status["output_throughput"]["lifetime"]).not_to be_nil
