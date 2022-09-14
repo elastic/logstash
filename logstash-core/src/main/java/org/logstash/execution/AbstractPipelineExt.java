@@ -73,6 +73,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.MetricsUtil;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -458,36 +459,41 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject initializeFlowMetrics(final ThreadContext context) {
         if (metric.collector(context).isNil()) { return context.nil; }
 
-        final UptimeMetric uptimeInMillis = initOrGetUptimeMetric(context, buildNamespace(), context.runtime.newSymbol("uptime_in_millis"));
-        final UptimeMetric uptimeInSeconds = uptimeInMillis.withTimeUnit("uptime_in_seconds", TimeUnit.SECONDS);
+        final UptimeMetric uptimeInMillis = initOrGetUptimeMetric(context, MetricsUtil.buildNamespace(),
+                RubyUtil.RUBY.newSymbol(MetricKeys.UPTIME_IN_MILLIS_KEY));
+        final UptimeMetric uptimeInSeconds = uptimeInMillis.withTimeUnit(MetricKeys.UPTIME_IN_SECONDS_KEY,
+                TimeUnit.SECONDS);
 
-        final RubySymbol flowKey = context.runtime.newSymbol("flow");
-        final RubySymbol[] flowNamespace = buildNamespace(flowKey);
-
-        final RubySymbol[] eventsNamespace = buildNamespace(MetricKeys.EVENTS_KEY);
+        final RubySymbol[] flowNamespace = MetricsUtil.buildNamespace(MetricKeys.FLOW_KEY);
+        final RubySymbol[] eventsNamespace = MetricsUtil.buildNamespace(MetricKeys.EVENTS_KEY);
 
         final LongCounter eventsInCounter = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.IN_KEY);
-        final FlowMetric inputThroughput = new FlowMetric("input_throughput", eventsInCounter, uptimeInSeconds);
+        final FlowMetric inputThroughput = new FlowMetric(MetricKeys.INPUT_THROUGHPUT_KEY,
+                eventsInCounter, uptimeInSeconds);
         this.flowMetrics.add(inputThroughput);
         storeMetric(context, flowNamespace, inputThroughput);
 
         final LongCounter eventsFilteredCounter = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.FILTERED_KEY);
-        final FlowMetric filterThroughput = new FlowMetric("filter_throughput", eventsFilteredCounter, uptimeInSeconds);
+        final FlowMetric filterThroughput = new FlowMetric(MetricKeys.FILTER_THROUGHPUT_KEY,
+                eventsFilteredCounter, uptimeInSeconds);
         this.flowMetrics.add(filterThroughput);
         storeMetric(context, flowNamespace, filterThroughput);
 
         final LongCounter eventsOutCounter = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.OUT_KEY);
-        final FlowMetric outputThroughput = new FlowMetric("output_throughput", eventsOutCounter, uptimeInSeconds);
+        final FlowMetric outputThroughput = new FlowMetric(MetricKeys.OUTPUT_THROUGHPUT_KEY,
+                eventsOutCounter, uptimeInSeconds);
         this.flowMetrics.add(outputThroughput);
         storeMetric(context, flowNamespace, outputThroughput);
 
-        final LongCounter queuePushWaitInMillis = initOrGetCounterMetric(context, eventsNamespace, JRubyWrappedWriteClientExt.PUSH_DURATION_KEY);
-        final FlowMetric backpressureFlow = new FlowMetric("queue_backpressure", queuePushWaitInMillis, uptimeInMillis);
+        final LongCounter queuePushWaitInMillis = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.PUSH_DURATION_KEY);
+        final FlowMetric backpressureFlow = new FlowMetric(MetricKeys.QUEUE_BACKPRESSURE_KEY,
+                queuePushWaitInMillis, uptimeInMillis);
         this.flowMetrics.add(backpressureFlow);
         storeMetric(context, flowNamespace, backpressureFlow);
 
         final LongCounter durationInMillis = initOrGetCounterMetric(context, eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
-        final FlowMetric concurrencyFlow = new FlowMetric("worker_concurrency", durationInMillis, uptimeInMillis);
+        final FlowMetric concurrencyFlow = new FlowMetric(MetricKeys.WORKER_CONCURRENCY_KEY,
+                durationInMillis, uptimeInMillis);
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
