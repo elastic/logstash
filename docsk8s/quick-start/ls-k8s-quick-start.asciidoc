@@ -1,22 +1,22 @@
-[[getting-started-logstash-and-kubernetes]]
-== Getting started with {ls} and Kubernetes
+[[ls-k8s-quick-start]]
+== Quick start
 
 preview::[]
 
-This section guides you through the process of setting up {ls} to monitor a Kubernetes environment running on Minikube. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
-
-To deliver the monitoring data into an external Elasticsearch cluster, whether on your local machine or on Elasticsearch Service, refer to <<getting-started-external-elasticsearch,Send data to an external Elasticsearch cluster>>.
+This guide describes how to set up {ls} to monitor a Kubernetes environment running on Minikube. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
 
 This section includes the following topics:
 
-* <<gs-prerequisites>>
-* <<gs-set-up>>
-* <<gs-generate-certificate>>
-* <<gs-create-elastic-stack>>
-* <<gs-tidy-up>>
+* <<qs-prerequisites>>
+* <<qs-set-up>>
+* <<qs-generate-certificate>>
+* <<qs-create-elastic-stack>>
+* <<qs-view-monitoring-data>>
+* <<qs-tidy-up>>
+* <<qs-learn-more>>
 
 [float]
-[[gs-prerequisites]]
+[[qs-prerequisites]]
 === Prerequisites
 
 Before you start, there are a few things you'll need:
@@ -26,7 +26,7 @@ Before you start, there are a few things you'll need:
 . link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-gs.zip[Sample configuration files] - Download and expand this set of files into an empty directory on your local system.
 
 [float]
-[[gs-set-up]]
+[[qs-set-up]]
 === Set up your environment
 
 Let's start by getting your Minikube Kubernetes cluster up and running:
@@ -64,7 +64,7 @@ elastic-operator-0   1/1     Running   4 (12m ago)   13d
 --
 
 [float]
-[[gs-generate-certificate]]
+[[qs-generate-certificate]]
 === Generate certificate files
 
 To enable secure communication throughout your Kubernetes resources, run the sample script to generate CA certificate files:
@@ -103,7 +103,7 @@ The parent `logstash-k8s-gs` directory also has a new `001-secret.yaml` resource
 image::./images/gs-cert-files.png[generated CA certificate files]
 
 [float]
-[[gs-create-elastic-stack]]
+[[qs-create-elastic-stack]]
 === Create an Elastic Stack
 
 Now that your environment and certificates are set up, it's time to create an Elastic Stack. Run the following command to deploy the example using the sample CRDs:
@@ -147,11 +147,28 @@ elastic-operator-0                      1/1     Running   4 (164m ago)   13d
 logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 --
 
+[float]
+[[qs-view-monitoring-data]]
+=== View the monitoring data
 
+Now that your monitoring data is flowing, let's access it in Kibana.
 
 [float]
-[[gs-tidy-up]]
+[[qs-tidy-up]]
 === Tidy up
 
 I am a cleaning up section!
 
+[float]
+[[qs-learn-more]]
+=== Learn more
+
+Now that you're familiar with how to get a Logstash and Kubernetes environment up and running, here are a few suggested next steps:
+
+* <<ls-k8s-external-resource>>
+* <<ls-k8s-designing>>
+* <<ls-k8s-sizing>>
+* <<ls-k8s-secure>>
+* <<ls-k8s-stack-monitoring>>
+
+As well, we have a variety of <<ls-k8s-recipes,recipes>> that you can use as templates to configure an environment to match your specific use case.

@@ -1,0 +1,17 @@
+[[ls-k8s-secure]]
+=== Secure your environment
+
+preview::[]
+
+In order to prepare your environment to be production ready, you'll need to set up secure communication between each of your Elastic resources.
+
+[[security-set-up-tls]]]
+==== Set up TLS
+
+It's important to set up transport layer security (TLS) to ensure safe communication between the Elastic Stack components running in Kubernetes.
+
+[[security-eck-secrets]]]
+
+==== Using secrets from an ECK installation
+Description.
+
