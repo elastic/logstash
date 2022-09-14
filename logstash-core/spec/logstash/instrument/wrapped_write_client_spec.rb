@@ -110,40 +110,6 @@ describe LogStash::WrappedWriteClient do
           expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
         end
       end
-
-      context "with flow metrics" do
-        it "records input throughput metrics" do
-          input_throughput_metrics = snapshot_metric[:pipelines][:main][:flow][:input_throughput]
-          expect(input_throughput_metrics.name).eql?("input_throughput")
-          expect(input_throughput_metrics.value.get("current")).eql?(0.0)
-          expect(input_throughput_metrics.value.get("lifetime")).eql?(0.0)
-        end
-        it "records output throughput metrics" do
-          output_throughput_metrics = snapshot_metric[:pipelines][:main][:flow][:output_throughput]
-          expect(output_throughput_metrics.name).eql?("output_throughput")
-          expect(output_throughput_metrics.value.get("current")).eql?(0.0)
-          expect(output_throughput_metrics.value.get("lifetime")).eql?(0.0)
-        end
-        it "records filter throughput metrics" do
-          filter_throughput_metrics = snapshot_metric[:pipelines][:main][:flow][:filter_throughput]
-          puts "filter_throughput_metrics: #{filter_throughput_metrics}"
-          expect(filter_throughput_metrics.name).eql?("filter_throughput")
-          expect(filter_throughput_metrics.value.get("current")).eql?(0.0)
-          expect(filter_throughput_metrics.value.get("lifetime")).eql?(0.0)
-        end
-        it "records queue backpressure metrics" do
-          queue_backpressure_metrics = snapshot_metric[:pipelines][:main][:flow][:queue_backpressure]
-          expect(queue_backpressure_metrics.name).eql?("queue_backpressure")
-          expect(queue_backpressure_metrics.value.get("current")).eql?(0.0)
-          expect(queue_backpressure_metrics.value.get("lifetime")).eql?(0.0)
-        end
-        it "records worker concurrency metrics" do
-          worker_concurrency_metrics = snapshot_metric[:pipelines][:main][:flow][:worker_concurrency]
-          expect(worker_concurrency_metrics.name).eql?("worker_concurrency")
-          expect(worker_concurrency_metrics.value.get("current")).eql?(0.0)
-          expect(worker_concurrency_metrics.value.get("lifetime")).eql?(0.0)
-        end
-      end
     end
   end
 
