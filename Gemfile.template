@@ -30,4 +30,3 @@ gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
 gem "jar-dependencies", "= 0.4.1" # Gem::LoadError with jar-dependencies 0.4.2
-gem "csv", "~> 3" # Bundled version of CSV with jruby >=9.3.0.0 < 9.3.8.0 has a thread leak
