@@ -43,7 +43,6 @@ public final class MetricKeys {
 
     public static final RubySymbol INPUTS_KEY = RubyUtil.RUBY.newSymbol("inputs");
 
-    // DLQ related metric keys
     public static final RubySymbol DURATION_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("duration_in_millis");
 
     public static final RubySymbol PUSH_DURATION_KEY = RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");

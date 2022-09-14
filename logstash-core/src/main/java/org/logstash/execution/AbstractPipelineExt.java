@@ -186,7 +186,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     /**
-     * queue opening needs to happen out of the the initialize method because the
+     * queue opening needs to happen out of the initialize method because the
      * AbstractPipeline is used for pipeline config validation and the queue
      * should not be opened for this. This should be called only in the actual
      * Pipeline/JavaPipeline initialisation.
@@ -211,8 +211,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 RubyArray.newArray(
                     context.runtime,
                     new IRubyObject[]{
-                        STATS_KEY, PIPELINES_KEY,
-                        pipelineId.convertToString().intern(), EVENTS_KEY
+                            STATS_KEY,
+                            PIPELINES_KEY,
+                            pipelineId.convertToString().intern(),
+                            EVENTS_KEY
                     }
                 )
             )
