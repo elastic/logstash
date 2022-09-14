@@ -257,17 +257,18 @@ describe "Test Monitoring API" do
       expect(result).not_to be_nil
       # we use fetch here since we want failed fetches to raise an exception
       # and trigger the retry block
-      flow_status = result.fetch('pipelines').fetch('main')['flow']
-      expect(flow_status['concurrency']['lifetime']).not_to be_nil
-      expect(flow_status['concurrency']['current']).not_to be_nil
-      expect(flow_status['input_throughput']['lifetime']).to eq(number_of_events)
-      expect(flow_status['input_throughput']['current']).to eq(number_of_events)
-      expect(flow_status['backpressure']['lifetime']).not_to be_nil
-      expect(flow_status['backpressure']['current']).not_to be_nil
-      expect(flow_status['filter_throughput']['lifetime']).not_to be_nil
-      expect(flow_status['filter_throughput']['current']).not_to be_nil
-      expect(flow_status['output_throughput']['lifetime']).not_to be_nil
-      expect(flow_status['output_throughput']['current']).not_to be_nil
+      flow_status = result.fetch("pipelines").fetch("main").fetch("flow")
+      expect(flow_status).not_to be_nil
+      expect(flow_status["concurrency"]["lifetime"]).not_to be_nil
+      expect(flow_status["concurrency"]["current"]).not_to be_nil
+      expect(flow_status["input_throughput"]["lifetime"]).to eq(number_of_events)
+      expect(flow_status["input_throughput"]["current"]).to eq(number_of_events)
+      expect(flow_status["backpressure"]["lifetime"]).not_to be_nil
+      expect(flow_status["backpressure"]["current"]).not_to be_nil
+      expect(flow_status["filter_throughput"]["lifetime"]).not_to be_nil
+      expect(flow_status["filter_throughput"]["current"]).not_to be_nil
+      expect(flow_status["output_throughput"]["lifetime"]).not_to be_nil
+      expect(flow_status["output_throughput"]["current"]).not_to be_nil
     end
   end
 

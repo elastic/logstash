@@ -85,7 +85,8 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
             eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
 
             final AbstractNamespacedMetricExt pipelineEventMetrics =
-                getMetric(metric, MetricKeys.STATS_KEY.asJavaString(),
+                getMetric(metric,
+                        MetricKeys.STATS_KEY.asJavaString(),
                         MetricKeys.PIPELINES_KEY.asJavaString(),
                         pipelineId,
                         MetricKeys.EVENTS_KEY.asJavaString());
