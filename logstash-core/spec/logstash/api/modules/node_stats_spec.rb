@@ -88,7 +88,7 @@ describe LogStash::Api::Modules::NodeStats do
         # load_average is not supported on Windows, set it below
       }
     },
-   "pipelines" => {
+    "pipelines" => {
      "main" => {
        "events" => {
          "duration_in_millis" => Numeric,
@@ -98,26 +98,11 @@ describe LogStash::Api::Modules::NodeStats do
          "queue_push_duration_in_millis" => Numeric
        },
        "flow" => {
-         "output_throughput" => {
-           "lifetime" => Numeric,
-           "current" => Numeric
-         },
-         "filter_throughput" => {
-           "lifetime" => Numeric,
-           "current" => Numeric
-         },
-         "queue_backpressure" => {
-           "lifetime" => Numeric,
-           "current" => Numeric
-         },
-         "worker_concurrency" => {
-           "lifetime" => Numeric,
-           "current" => Numeric
-         },
-         "input_throughput" => {
-           "lifetime" => Numeric,
-           "current" => Numeric
-         }
+         "output_throughput" => Hash,
+         "filter_throughput" => Hash,
+         "queue_backpressure" => Hash,
+         "worker_concurrency" => Hash,
+         "input_throughput" => Hash
        },
        "plugins" => {
           "inputs" => Array,

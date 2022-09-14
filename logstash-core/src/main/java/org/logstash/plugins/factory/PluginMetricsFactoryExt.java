@@ -21,8 +21,6 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
 
     private static final long serialVersionUID = 1L;
 
-    private static final RubySymbol PLUGINS = RubyUtil.RUBY.newSymbol("plugins");
-
     private RubySymbol pipelineId;
 
     private AbstractMetricExt metric;
@@ -49,10 +47,10 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
             RubyArray.newArray(
                 context.runtime,
                 Arrays.asList(
-                    MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS
-                )
-            )
-        );
+                        MetricKeys.STATS_KEY,
+                        MetricKeys.PIPELINES_KEY,
+                        pipelineId,
+                        MetricKeys.PLUGINS_KEY)));
     }
 
     @JRubyMethod
