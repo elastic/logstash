@@ -94,7 +94,6 @@ GEM
     concurrent-ruby (1.1.9)
     crack (0.4.5)
       rexml
-    csv (3.2.5)
     dalli (2.7.11)
     diff-lcs (1.5.0)
     domain_name (0.5.20190701)
@@ -809,7 +808,6 @@ DEPENDENCIES
   benchmark-ips
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
-  csv (~> 3)
   faraday (~> 1)
   flores (~> 0.0.8)
   fpm (~> 1, >= 1.14.1)
