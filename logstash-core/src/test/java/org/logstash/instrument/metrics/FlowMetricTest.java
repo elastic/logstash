@@ -18,7 +18,7 @@ public class FlowMetricTest {
         final ManualAdvanceClock clock = new ManualAdvanceClock(Instant.now());
         final LongCounter numeratorMetric = new LongCounter(MetricKeys.EVENTS_KEY.asJavaString());
         final Metric<Number> denominatorMetric = new UptimeMetric("uptime", clock::nanoTime).withUnitsPrecise(UptimeMetric.ScaleUnits.SECONDS);
-        final FlowMetric instance = new FlowMetric("flow", numeratorMetric, denominatorMetric);
+        final FlowMetric instance = new FlowMetric(clock::nanoTime, "flow", numeratorMetric, denominatorMetric);
 
         final Map<String, Double> ratesBeforeCaptures = instance.getValue();
         assertTrue(ratesBeforeCaptures.isEmpty());
