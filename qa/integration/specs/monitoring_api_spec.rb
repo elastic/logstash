@@ -249,7 +249,10 @@ describe "Test Monitoring API" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
-    number_of_events.times { logstash_service.write_to_stdin("Testing flow metrics") }
+    number_of_events.times {
+      logstash_service.write_to_stdin("Testing flow metrics")
+      sleep(1)
+    }
 
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # node_stats can fail if the stats subsystem isn't ready
@@ -258,6 +261,7 @@ describe "Test Monitoring API" do
       # we use fetch here since we want failed fetches to raise an exception
       # and trigger the retry block
       flow_status = result.fetch("pipelines").fetch("main").fetch("flow")
+      puts "Flow status: #{flow_status}"
       expect(flow_status).not_to be_nil
       expect(flow_status["worker_concurrency"]["lifetime"]).not_to be_nil
       expect(flow_status["worker_concurrency"]["current"]).not_to be_nil
