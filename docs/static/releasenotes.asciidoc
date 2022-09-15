@@ -26,45 +26,16 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
-
 [[logstash-8-4-2]]
 === Logstash 8.4.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.4.2
-
-* fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14425[#14425]
-* winlogbeat-modules: add docs for interfacing winlogbeat with logstash https://github.com/elastic/logstash/pull/14472[#14472]
 * Backport PR #14425 to 8.4: fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14496[#14496]
-* drop support for all DES ciphers and simplify cipher list https://github.com/elastic/logstash/pull/14499[#14499]
 * Backport PR #14499 to 8.4: drop support for all DES ciphers and simplify cipher list https://github.com/elastic/logstash/pull/14501[#14501]
-* Manually import CSV gem to work around thread leak https://github.com/elastic/logstash/pull/14507[#14507]
 * Backport PR #14507 to 8.4: Manually import CSV gem to work around thread leak https://github.com/elastic/logstash/pull/14508[#14508]
 * Backport PR #14472 to 8.4: winlogbeat-modules: add docs for interfacing winlogbeat with logstash https://github.com/elastic/logstash/pull/14512[#14512]
 * Fix Windows scripts https://github.com/elastic/logstash/pull/14515[#14515]
 * Backport PR #14515 to 8.4: Fix Windows scripts https://github.com/elastic/logstash/pull/14516[#14516]
 * Backport PR#14524 to 8.4: Upgrade jruby to 9.3.8.0 https://github.com/elastic/logstash/pull/14526[#14526]
-
-=== Logstash Commits between 8.4 and 8.4.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.4.1..8.4"
-
-fc8d99db2 - (HEAD -> 8.4, origin/8.4) Backport PR#14524 to 8.4: Upgrade jruby to 9.3.8.0 (#14526) (25 hours ago) <Rob Bavey>
-db1a3c91c - Update patch plugin versions in gemfile lock (#14523) (25 hours ago) <github-actions[bot]>
-0272f0c21 - Fix Windows scripts (#14515) (#14516) (6 days ago) <github-actions[bot]>
-a7f1e1d79 - winlogbeat-modules: add docs for interfacing winlogbeat with logstash (#14472) (#14512) (7 days ago) <github-actions[bot]>
-fae275dc0 - Manually import CSV gem to work around thread leak (#14507) (#14508) (8 days ago) <github-actions[bot]>
-611bfd438 - drop support for all DES ciphers in OpenSSL and simplify cipher list (#14499) (#14501) (8 days ago) <github-actions[bot]>
-0d3a517a8 - Backport PR #14425 to 8.4: fix(env2yaml): Add monitoring.cluster_uuid #14496 (9 days ago) <github-actions[bot]>
-ee12d030c - Bump version to 8.4.2 for next development cycle (#14481) (2 weeks ago) <Andrea Selva>
-839d9f2df - Release notes for 8.4.1 (#14473) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.4.1..8.4 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
 
 [[logstash-8-4-1]]
 === Logstash 8.4.1 Release Notes
