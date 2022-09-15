@@ -85,14 +85,20 @@ describe "Test Logstash service when config reload is enabled" do
     expect(pipeline_event_stats["in"]).to eq(1)
     expect(pipeline_event_stats["out"]).to eq(1)
 
-    # make sure the pipeline is not facing a backpressure and has zero input throughput when reloaded
+    # a window to capture the flow metrics
     sleep(5)
+    # make sure the pipeline keeps the metrics when reloaded
     pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
-    puts "Pipeline flow stats: #{pipeline_flow_stats}"
-    expect(pipeline_flow_stats["input_throughput"]["lifetime"]).to eq(0)
-    expect(pipeline_flow_stats["input_throughput"]["current"]).to eq(0)
-    expect(pipeline_flow_stats["queue_backpressure"]["lifetime"]).to eq(0)
-    expect(pipeline_flow_stats["queue_backpressure"]["current"]).to eq(0)
+    expect(pipeline_flow_stats["input_throughput"]["lifetime"]).to be >= 0
+    expect(pipeline_flow_stats["input_throughput"]["current"]).to be >= 0
+    expect(pipeline_flow_stats["filter_throughput"]["lifetime"]).to be >= 0
+    expect(pipeline_flow_stats["filter_throughput"]["current"]).to be >= 0
+    expect(pipeline_flow_stats["output_throughput"]["lifetime"]).to be >= 0
+    expect(pipeline_flow_stats["output_throughput"]["current"]).to be >= 0
+    expect(pipeline_flow_stats["worker_concurrency"]["lifetime"]).to be >= 0
+    expect(pipeline_flow_stats["worker_concurrency"]["current"]).to be >= 0
+    expect(pipeline_flow_stats["queue_backpressure"]["lifetime"]).to be >= 0
+    expect(pipeline_flow_stats["queue_backpressure"]["current"]).to be >= 0
 
     # check reload stats
     pipeline_reload_stats = logstash_service.monitoring_api.pipeline_stats("main")["reloads"]
