@@ -15,6 +15,9 @@ spec:
       labels:
         app: logstash-pq-demo
     spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
       containers:
         - name: logstash-pq
           image: "docker.elastic.co/logstash/logstash:8.3.2"
@@ -86,6 +89,7 @@ spec:
           app: logstash-pq-demo
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: "standard"
         resources:
           requests:
-            storage: 2.1Gi
+            storage: 2Gi
