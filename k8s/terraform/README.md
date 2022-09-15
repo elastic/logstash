@@ -14,6 +14,9 @@ kubectl get nodes
 
 Deploy example
 ```bash
+# install CRD
+kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
+kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
 kubectl apply -f ../example/beats_ls_es
 ```
 
