@@ -11,9 +11,14 @@ if [ -z "$VERSION_QUALIFIER_OPT" ]; then
 else
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:all
 fi
+echo "GENERATED ARTIFACTS"
+for file in build/logstash-*; do shasum $file;done
 
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
 echo "Creating dependencies report for ${STACK_VERSION}"
 mkdir -p build/reports/dependencies-reports/
 bin/dependencies-report --csv=build/reports/dependencies-reports/logstash-${STACK_VERSION}.csv
+
+echo "GENERATED DEPENDENCIES REPORT"
+shasum build/reports/dependencies-reports/logstash-${STACK_VERSION}.csv
