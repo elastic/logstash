@@ -110,29 +110,6 @@ describe LogStash::WrappedWriteClient do
           expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
         end
       end
-
-      context "with flow metrics" do
-        it "records input throughput metrics" do
-          expect(snapshot_metric[:flow][:input_throughput][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:input_throughput][:lifetime].value).to be_kind_of(Numeric)
-        end
-        it "records output throughput metrics" do
-          expect(snapshot_metric[:flow][:output_throughput][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:output_throughput][:lifetime].value).to be_kind_of(Numeric)
-        end
-        it "records filter throughput metrics" do
-          expect(snapshot_metric[:flow][:filter_throughput][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:filter_throughput][:lifetime].value).to be_kind_of(Numeric)
-        end
-        it "records queue_backpressure metrics" do
-          expect(snapshot_metric[:flow][:queue_backpressure][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:queue_backpressure][:lifetime].value).to be_kind_of(Numeric)
-        end
-        it "records worker_concurrency metrics" do
-          expect(snapshot_metric[:flow][:worker_concurrency][:current].value).to be_kind_of(Numeric)
-          expect(snapshot_metric[:flow][:worker_concurrency][:lifetime].value).to be_kind_of(Numeric)
-        end
-      end
     end
   end
 

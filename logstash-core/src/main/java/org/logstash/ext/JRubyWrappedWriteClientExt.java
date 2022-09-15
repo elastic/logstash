@@ -27,7 +27,6 @@ import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
-import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -44,18 +43,18 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private static final long serialVersionUID = 1L;
 
-    public static final RubySymbol PUSH_DURATION_KEY =
-        RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
-
     private JRubyAbstractQueueWriteClientExt writeClient;
 
     private transient LongCounter eventsMetricsCounter;
+
     private transient LongCounter eventsMetricsTime;
 
     private transient LongCounter pipelineMetricsCounter;
+
     private transient LongCounter pipelineMetricsTime;
 
     private transient LongCounter pluginMetricsCounter;
+
     private transient LongCounter pluginMetricsTime;
 
     public JRubyWrappedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -70,27 +69,44 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
     }
 
     public JRubyWrappedWriteClientExt initialize(
-        final JRubyAbstractQueueWriteClientExt queueWriteClientExt, final String pipelineId,
-        final AbstractMetricExt metric, final IRubyObject pluginId) {
+        final JRubyAbstractQueueWriteClientExt queueWriteClientExt,
+        final String pipelineId,
+        final AbstractMetricExt metric,
+        final IRubyObject pluginId) {
         this.writeClient = queueWriteClientExt;
         // Synchronize on the metric since setting up new fields on it is not threadsafe
         synchronized (metric) {
             final AbstractNamespacedMetricExt eventsMetrics =
-                getMetric(metric, "stats", "events");
+                getMetric(metric,
+                        MetricKeys.STATS_KEY.asJavaString(),
+                        MetricKeys.EVENTS_KEY.asJavaString());
+
             eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.IN_KEY);
-            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, PUSH_DURATION_KEY);
-            final AbstractNamespacedMetricExt pipelineMetrics =
-                getMetric(metric, "stats", "pipelines", pipelineId, "events");
-            pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineMetrics, MetricKeys.IN_KEY);
-            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineMetrics, PUSH_DURATION_KEY);
+            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
+
+            final AbstractNamespacedMetricExt pipelineEventMetrics =
+                getMetric(metric,
+                        MetricKeys.STATS_KEY.asJavaString(),
+                        MetricKeys.PIPELINES_KEY.asJavaString(),
+                        pipelineId,
+                        MetricKeys.EVENTS_KEY.asJavaString());
+
+            pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.IN_KEY);
+            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.PUSH_DURATION_KEY);
+
             final AbstractNamespacedMetricExt pluginMetrics = getMetric(
-                metric, "stats", "pipelines", pipelineId, "plugins", "inputs",
-                pluginId.asJavaString(), "events"
-            );
+                    metric,
+                    MetricKeys.STATS_KEY.asJavaString(),
+                    MetricKeys.PIPELINES_KEY.asJavaString(),
+                    pipelineId,
+                    MetricKeys.PLUGINS_KEY.asJavaString(),
+                    MetricKeys.INPUTS_KEY.asJavaString(),
+                    pluginId.asJavaString(), MetricKeys.EVENTS_KEY.asJavaString());
             pluginMetricsCounter =
                 LongCounter.fromRubyBase(pluginMetrics, MetricKeys.OUT_KEY);
-            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, PUSH_DURATION_KEY);
+            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, MetricKeys.PUSH_DURATION_KEY);
         }
+
         return this;
     }
 

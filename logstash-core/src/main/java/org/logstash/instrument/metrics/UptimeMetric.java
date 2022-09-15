@@ -19,7 +19,7 @@ public class UptimeMetric extends AbstractMetric<Long> {
      * Constructs an {@link UptimeMetric} whose name is "uptime_in_millis" and whose units are milliseconds
      */
     public UptimeMetric() {
-        this("uptime_in_millis");
+        this(MetricKeys.UPTIME_IN_MILLIS_KEY.asJavaString());
     }
 
     public UptimeMetric(final String name) {

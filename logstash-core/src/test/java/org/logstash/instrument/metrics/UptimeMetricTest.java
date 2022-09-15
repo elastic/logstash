@@ -13,7 +13,7 @@ public class UptimeMetricTest {
     @Test
     public void testDefaultConstructor() {
         final UptimeMetric defaultConstructorUptimeMetric = new UptimeMetric();
-        assertEquals("uptime_in_millis", defaultConstructorUptimeMetric.getName());
+        assertEquals(MetricKeys.UPTIME_IN_MILLIS_KEY.asJavaString(), defaultConstructorUptimeMetric.getName());
         assertEquals(TimeUnit.MILLISECONDS, defaultConstructorUptimeMetric.getTimeUnit());
     }
 

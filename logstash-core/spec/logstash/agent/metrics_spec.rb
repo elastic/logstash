@@ -245,14 +245,16 @@ describe LogStash::Agent do
         # so we try a few times
         try(20) do
           expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipeline stats should exist"
+          expect { mhash(:stats, :pipelines, :main, :flow) }.not_to raise_error , "Events pipeline stats should exist"
           expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
         end
 
         expect(subject.converge_state_and_update.success?).to be_truthy
 
         # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error
+        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :flow) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
       end
     end
   end

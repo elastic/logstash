@@ -18,7 +18,7 @@ public class FlowMetricTest {
     @Test
     public void testBaselineFunctionality() {
         final ManualAdvanceClock clock = new ManualAdvanceClock(Instant.now());
-        final LongCounter numeratorMetric = new LongCounter("events");
+        final LongCounter numeratorMetric = new LongCounter(MetricKeys.EVENTS_KEY.asJavaString());
         final Metric<Long> denominatorMetric = new UptimeMetric("uptime", TimeUnit.SECONDS, clock::nanoTime);
         final FlowMetric instance = new FlowMetric("flow", numeratorMetric, denominatorMetric);
 
