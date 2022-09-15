@@ -462,6 +462,10 @@ The following request returns a JSON document containing pipeline stats,
 including:
 
 * the number of events that were input, filtered, or output by each pipeline
+* the current and lifetime _flow_ rates for useful pipeline metrics:
+** `input_throughput`, `filter_throughput`, and `output_throughput`, expressed in _events-per-second_
+** `worker_concurrency`, expressed as a ratio of worker execution-time to wall-clock time
+** `queue_backpressure`, expressed as a ratio of time inputs are blocked pushing to the queue to wall-clock time (_NOTE: magnitude of this flow rate is heavily dependent on pipeline structure and is not comparable across pipelines_)
 * stats for each configured filter or output stage
 * info about config reload successes and failures
 (when <<reloading-config,config reload>> is enabled)
@@ -486,6 +490,28 @@ Example response:
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
+      },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.277,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 1.973,
+          "lifetime": 1.721
+        }
       },
       "plugins" : {
         "inputs" : [ {
@@ -546,6 +572,28 @@ Example response:
         "out" : 87247,
         "queue_push_duration_in_millis" : 1532
       },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.871,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 4.71,
+          "lifetime": 1.201
+        }
+      },
       "plugins" : {
         "inputs" : [ {
           "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-1",
@@ -600,6 +648,28 @@ Example response:
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
+      },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.277,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 1.973,
+          "lifetime": 1.721
+        }
       },
       "plugins" : {
         "inputs" : [ {
