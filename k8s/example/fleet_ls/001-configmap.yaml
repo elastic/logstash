@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+data:
+  logstash.conf: |
+    input {
+      elastic_agent {
+        port => 5044
+        ssl => true
+        ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
+        ssl_certificate => "/usr/share/logstash/config/server.crt"
+        ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
+        ssl_verify_mode => "force_peer"
+      }
+    }
+    output {
+      elasticsearch {
+        cloud_id => "YOUR_CLOUD_ID"
+        api_key => "YOUR_API_KEY"
+        data_stream => true
+        ssl => true
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: logstash-agent-pipeline
+  labels:
+    app: logstash-agent-demo
+---
+apiVersion: v1
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+kind: ConfigMap
+metadata:
+  name: logstash-agent-config
+  labels:
+    app: logstash-agent-demo

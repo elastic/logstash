@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => "5044"
+        ssl => true
+        ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
+        ssl_certificate => "/usr/share/logstash/config/server.crt"
+        ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
+        ssl_verify_mode => "force_peer"
+      }
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://demo-es-http:9200"]
+        index => "kube-apiserver-%{+YYYY.MM.dd}"
+        cacert => "/usr/share/logstash/config/es_ca.crt"
+        user => 'elastic'
+        password => '${ELASTICSEARCH_PASSWORD}'
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline
+  labels:
+    app: logstash-demo
+---
+apiVersion: v1
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  labels:
+    app: logstash-demo

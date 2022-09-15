@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+data:
+  logstash.conf: |
+    input {
+      exec {
+        command => "uptime"
+        interval => 5
+      }
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://demo2-es-http:9200"]
+        index => "uptime-%{+YYYY.MM.dd}"
+        cacert => "/usr/share/logstash/config/ca.crt"
+        user => 'elastic'
+        password => '${ELASTICSEARCH_PASSWORD}'
+      }
+    }
+  dlq.conf: |
+    input {
+      dead_letter_queue {
+        path => "/usr/share/logstash/data/dead_letter_queue"
+        commit_offsets => true
+        pipeline_id => "main"
+      }
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://demo2-es-http:9200"]
+        index => "dlq-%{+YYYY.MM.dd}"
+        cacert => "/usr/share/logstash/config/ca.crt"
+        user => 'elastic'
+        password => '${ELASTICSEARCH_PASSWORD}'
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: logstash-pq-pipeline
+  labels:
+    app: logstash-pq-demo
+---
+apiVersion: v1
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+    queue.type: persisted
+    dead_letter_queue.enable: true
+    dead_letter_queue.flush_interval: 1000
+  pipelines.yml: |
+    - pipeline.id: main
+      path.config: "/usr/share/logstash/pipeline/logstash.conf"
+    - pipeline.id: dlq
+      path.config: "/usr/share/logstash/pipeline/dlq.conf"
+kind: ConfigMap
+metadata:
+  name: logstash-pq-config
+  labels:
+    app: logstash-pq-demo

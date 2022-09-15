@@ -1,0 +1,64 @@
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: demo
+  labels:
+    app: logstash-demo
+spec:
+  type: metricbeat
+  version: 8.3.2
+  elasticsearchRef:
+    name: demo
+  config:
+    metricbeat.modules:
+      - module: elasticsearch
+        ssl.enabled: true
+        metricsets:
+          - ccr
+          - cluster_stats
+          - index
+          - index_recovery
+          - index_summary
+          - ml_job
+          - node
+          - node_stats
+          - pending_tasks
+          - shard
+          - enrich
+        period: 10s
+        hosts:
+          - "https://demo-es-http:9200"
+        username: default-demo-beat-user
+        password: ${ES_PW}
+        ssl.certificate_authorities: ["/usr/share/metricbeat/es_ca.crt"]
+        xpack.enabled: true
+      - module: logstash
+        metricsets:
+          - node
+          - node_stats
+        period: 10s
+        hosts:
+          - logstash:9600
+        xpack.enabled: true
+  deployment:
+    podTemplate:
+      spec:
+        dnsPolicy: ClusterFirstWithHostNet
+        securityContext:
+          runAsUser: 0
+        containers:
+          - name: metricbeat
+            volumeMounts:
+              - name: es-ca
+                mountPath: /usr/share/metricbeat/es_ca.crt
+                subPath: ca.crt
+            env:
+              - name: ES_PW
+                valueFrom:
+                  secretKeyRef:
+                    name: demo-beat-user
+                    key: default-demo-beat-user
+        volumes:
+          - name: es-ca
+            secret:
+              secretName: demo-beat-es-ca

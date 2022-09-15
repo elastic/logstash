@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  labels:
+    app: logstash-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash-demo
+  template:
+    metadata:
+      labels:
+        app: logstash-demo
+    spec:
+      containers:
+        - name: logstash
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          image: "docker.elastic.co/logstash/logstash:8.3.2"
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xmx1g -Xms1g"
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo-es-elastic-user
+                  key: elastic
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+          ports:
+            - containerPort: 9600
+              name: stats
+            - containerPort: 5044
+              name: beats
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: logstash-pipeline
+              mountPath: /usr/share/logstash/pipeline
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: es-certs
+              mountPath: /usr/share/logstash/config/es_ca.crt
+              subPath: ca.crt
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/ca.crt
+              subPath: ca.crt
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/server.pkcs8.key
+              subPath: server.pkcs8.key
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/server.crt
+              subPath: server.crt
+      volumes:
+        - name: logstash-pipeline
+          configMap:
+            name: logstash-pipeline
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+        - name: es-certs
+          secret:
+            secretName: demo-es-http-certs-public
+        - name: es-user
+          secret:
+            secretName: demo-es-elastic-user
+        - name: logstash-beats-tls
+          secret:
+            secretName: logstash-beats-tls

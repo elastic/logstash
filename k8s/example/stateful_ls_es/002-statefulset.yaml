@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: logstash-pq
+  labels:
+    app: logstash-pq-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logstash-pq-demo
+  serviceName: logstash-pq
+  template:
+    metadata:
+      labels:
+        app: logstash-pq-demo
+    spec:
+      containers:
+        - name: logstash-pq
+          image: "docker.elastic.co/logstash/logstash:8.3.2"
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xmx1g -Xms1g"
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo2-es-elastic-user
+                  key: elastic
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+          ports:
+            - containerPort: 9600
+              name: stats
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: logstash-data
+              mountPath: /usr/share/logstash/data
+            - name: logstash-pq-pipeline
+              mountPath: /usr/share/logstash/pipeline
+            - name: logstash-pq-config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: logstash-pq-config
+              mountPath: /usr/share/logstash/config/pipelines.yml
+              subPath: pipelines.yml
+            - name: es-certs
+              mountPath: /usr/share/logstash/config/ca.crt
+              subPath: ca.crt
+      volumes:
+        - name: logstash-pq-pipeline
+          configMap:
+            name: logstash-pq-pipeline
+        - name: logstash-pq-config
+          configMap:
+            name: logstash-pq-config
+        - name: es-certs
+          secret:
+            secretName: demo2-es-http-certs-public
+        - name: es-user
+          secret:
+            secretName: demo2-es-elastic-user
+  volumeClaimTemplates:
+    - metadata:
+        name: logstash-data
+        labels:
+          app: logstash-pq-demo
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2.1Gi

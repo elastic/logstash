@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  labels:
+      app: logstash-demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9600
+      name: "stats"
+      protocol: TCP
+      targetPort: 9600
+    - port: 5044
+      name: "beats"
+      protocol: TCP
+      targetPort: 5044
+  selector:
+    app: logstash-demo
