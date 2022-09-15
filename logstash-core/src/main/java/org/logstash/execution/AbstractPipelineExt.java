@@ -432,6 +432,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "initialize_flow_metrics")
     public final IRubyObject initializeFlowMetrics(final ThreadContext context) {
+        if (metric.collector(context).isNil()) { return context.nil; }
+
         final UptimeMetric uptimeInMillis = initOrGetUptimeMetric(context, buildNamespace(),
                 RubyUtil.RUBY.newSymbol(UPTIME_IN_MILLIS_KEY.asJavaString()));
         final UptimeMetric uptimeInSeconds = uptimeInMillis.withTimeUnit(UPTIME_IN_SECONDS_KEY.asJavaString(),
