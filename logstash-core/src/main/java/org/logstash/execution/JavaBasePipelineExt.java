@@ -66,10 +66,13 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(required = 4)
+    // This method uses effectively 3 parameters, but a forth (was an unused logger), valued to nil,
+    // is needed to distinguish from the constructor with 3 arguments defined in Ruby's subclass
+    // named JavaPipeline and present in java_pipeline.rb
+    @JRubyMethod(required = 3, optional = 1)
     public JavaBasePipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
         throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
-        initialize(context, args[0], args[1], args[2]);
+        initialize(context, args[0], args[1]);
         lirExecution = new CompiledPipeline(
             lir,
             new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
@@ -79,7 +82,7 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt {
                 ).initialize(context, pipelineId(), metric()),
                 new ExecutionContextFactoryExt(
                     context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
-                ).initialize(context, args[3], this, dlqWriter(context)),
+                ).initialize(context, args[2], this, dlqWriter(context)),
                 RubyUtil.FILTER_DELEGATOR_CLASS
             ),
             getSecretStore(context)
