@@ -23,7 +23,7 @@ Before you start, there are a few things you'll need:
 
 . link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
 . link:https://minikube.sigs.k8s.io[Minikube] - Easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
-. link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-gs.zip[Sample configuration files] - Download and expand this set of files into an empty directory on your local system.
+. A link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-qs.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
 [float]
 [[qs-set-up]]
@@ -67,7 +67,7 @@ elastic-operator-0   1/1     Running   4 (12m ago)   13d
 [[qs-generate-certificate]]
 === Generate certificate files
 
-To enable secure communication throughout your Kubernetes resources, run the sample script to generate CA certificate files:
+To enable secure communication throughout your Kubernetes resources, run the sample script to generate the CA certificate files. Details about these files are in <<sample-configuration-files,Sample configuration files>>.
 
 [source,sh]
 --
@@ -134,7 +134,7 @@ kibana.kibana.k8s.elastic.co/demo created
 kubectl get pods
 --
 
-The pods are up and running! It may take two or three minutes for all of them to be ready.
+The pods are starting up. You may need to wait a minute or two for all of them to be ready.
 
 [source,sh]
 --
@@ -142,7 +142,7 @@ NAME                                    READY   STATUS    RESTARTS       AGE
 demo-beat-filebeat-7f4d97f69f-qkkbl     1/1     Running   0              42s
 demo-beat-metricbeat-59f4b68cc7-9zrrn   1/1     Running   0              39s
 demo-es-default-0                       1/1     Running   0              41s
-demo-kb-d7f585494-vbf6s                 0/1     Running   0              39s
+demo-kb-d7f585494-vbf6s                 1/1     Running   0              39s
 elastic-operator-0                      1/1     Running   4 (164m ago)   13d
 logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 --
@@ -151,19 +151,112 @@ logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 [[qs-view-monitoring-data]]
 === View the monitoring data
 
-Now that your monitoring data is flowing, let's access it in Kibana.
+Now that your monitoring data is flowing, let's access it in {kib}. 
+
+First, enable port forwarding for the {kib} service on port `5601`. Open a second shell window and run the following:
+
+[source,sh]
+--
+kubectl port-forward service/demo-kb-http 5601
+--
+
+Then, open up a web browser at address `https://localhost:5601`. Depending on your browser you may need to accept the site certificate.
+
+Log in to {kib} using the `elastic` username and password. To obtain the password, run:
+
+[source,sh]
+--
+kubectl get secret demo-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
+--
+
+Open the {kib} main menu and select **Management**, then **Dev Tools**.
+
+In the **Console**, get a list of all indexes:
+
+[source,sh]
+--
+GET _cat/indices
+--
+
+[source,sh]
+--
+yellow open kube-apiserver-2022.09.15                       AfR_vGb3SgSVMwV5Rhpx7w 1 1 197 0  70.6kb  70.6kb
+yellow open .ds-.monitoring-es-8-mb-2022.09.15-000001       MHR5bKM-TOyKKvZwh7baFA 1 1 377 0   1.2mb   1.2mb
+yellow open .ds-metricbeat-8.3.2-2022.09.15-000001          Vu5Arre4TvKBWd26K0nBLA 1 1  26 0  16.1kb  16.1kb
+yellow open .ds-.monitoring-logstash-8-mb-2022.09.15-000001 DMZjKo1bRR6nXA4_w4-pRg 1 1 222 0 245.5kb 245.5kb
+--
+
+Indices have been created for {es}, {ls}, {metricbeat}, and the Kubernetes API server.
+
+You can run a `_count` query to find out the number of available records from the Kubernetes API server:
+
+[source,sh]
+--
+GET kube-apiserver-2022.09.15/_count
+--
+
+[source,sh]
+--
+{
+  "count": 19,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  }
+}
+--
+
+Run a `_search` query to access the records:
+
+[source,txt]
+--
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 24,
+      "relation": "eq"
+    },
+    "max_score": 1,
+    "hits": [
+...
+--
+
+Next, you can check the {kib} visualizations.
+
+. Open the {kib} main menu and select **Management**, then **Stack Monitoring**.
+
+. Select the {ls} **Overview**, and under the **Nodes** tab select the link for the {ls} node.
+
+image::./images/gs-logstash-node-metrics.png[{ls} metrics data in {kib}]
+
+That's it! The Kubernetes API server metrics data is flowing through {ls} into {es} and {kib}. You can monitor the JVM Heap, CPU Utilization, and System Load data as it updates in real time.
 
 [float]
 [[qs-tidy-up]]
 === Tidy up
 
-I am a cleaning up section!
+After finishing with this demo, you can run the following command to remove all of the created resources:
+ 
+[source,sh]
+--
+kubectl delete service,pods,deployment,hpa,configmap,secret,beat,elasticsearch,kibana -l app=logstash-demo
+--
 
 [float]
 [[qs-learn-more]]
 === Learn more
 
-Now that you're familiar with how to get a Logstash and Kubernetes environment up and running, here are a few suggested next steps:
+Now that you're familiar with how to get a {ls} monitoring setup running in your Kubernetes environment, here are a few suggested next steps:
 
 * <<ls-k8s-external-resource>>
 * <<ls-k8s-designing>>
