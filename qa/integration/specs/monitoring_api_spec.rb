@@ -260,18 +260,20 @@ describe "Test Monitoring API" do
       expect(result).not_to be_nil
       # we use fetch here since we want failed fetches to raise an exception
       # and trigger the retry block
-      flow_status = result.fetch("pipelines").fetch("main").fetch("flow")
-      expect(flow_status).not_to be_nil
-      expect(flow_status["worker_concurrency"]["lifetime"]).to be > 0
-      expect(flow_status["worker_concurrency"]["current"]).to be > 0
-      expect(flow_status["input_throughput"]["lifetime"]).to be > 0
-      expect(flow_status["input_throughput"]["current"]).to be > 0
-      expect(flow_status["queue_backpressure"]["lifetime"]).not_to be_nil
-      expect(flow_status["queue_backpressure"]["current"]).not_to be_nil
-      expect(flow_status["filter_throughput"]["lifetime"]).to be > 0
-      expect(flow_status["filter_throughput"]["current"]).to be > 0
-      expect(flow_status["output_throughput"]["lifetime"]).to be > 0
-      expect(flow_status["output_throughput"]["current"]).to be > 0
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('flow')))
+      flow_status = result.dig("pipelines", "main", "flow")
+      expect(flow_status).to_not be_nil
+      expect(flow_status).to include(
+        # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
+        # to be zero, so we are just looking for these to be _populated_
+        'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
+        # should be non-zero so long as pipeline uptime is less than ~10 minutes.
+        'input_throughput'   => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
+      )
     end
   end
 
