@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.logstash.RubyUtil.RUBY;
 import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
+import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 @SuppressWarnings("rawtypes")
 @NotThreadSafe
@@ -203,7 +204,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     }
 
     private RubyHash getMetricStore() {
-        return getMetricStore(new String[]{"output", "foo", MetricKeys.EVENTS_KEY.asJavaString()});
+        return getMetricStore(new String[]{"output", "foo", EVENTS_KEY.asJavaString()});
     }
 
     private long getMetricLongValue(String symbolName) {

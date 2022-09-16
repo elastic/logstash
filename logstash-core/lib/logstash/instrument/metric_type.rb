@@ -23,8 +23,8 @@ module LogStash module Instrument
   module MetricType
     METRIC_TYPE_LIST = {
       :counter => LogStash::Instrument::MetricType::Counter,
-      :gauge => LogStash::Instrument::MetricType::Gauge,
-      :uptime => LogStash::Instrument::MetricType::Uptime,
+      :gauge   => LogStash::Instrument::MetricType::Gauge,
+      :uptime  => LogStash::Instrument::MetricType::Uptime,
     }.freeze
 
     # Use the string to generate a concrete class for this metrics

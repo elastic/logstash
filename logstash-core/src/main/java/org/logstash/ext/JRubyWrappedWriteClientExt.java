@@ -23,10 +23,12 @@ package org.logstash.ext;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
+import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -37,6 +39,8 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
+
+import static org.logstash.instrument.metrics.MetricKeys.*;
 
 @JRubyClass(name = "WrappedWriteClient")
 public final class JRubyWrappedWriteClientExt extends RubyObject implements QueueWriter {
@@ -68,40 +72,31 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
             (AbstractMetricExt) args[2], args[3]);
     }
 
-    public JRubyWrappedWriteClientExt initialize(
-        final JRubyAbstractQueueWriteClientExt queueWriteClientExt,
-        final String pipelineId,
-        final AbstractMetricExt metric,
-        final IRubyObject pluginId) {
+    public JRubyWrappedWriteClientExt initialize(final JRubyAbstractQueueWriteClientExt queueWriteClientExt,
+                                                 final String pipelineId,
+                                                 final AbstractMetricExt metric,
+                                                 final IRubyObject pluginId) {
         this.writeClient = queueWriteClientExt;
+
+        final RubySymbol pipelineIdSym = getRuntime().newSymbol(pipelineId);
+        final RubySymbol pluginIdSym = pluginId.asString().intern();
+
         // Synchronize on the metric since setting up new fields on it is not threadsafe
         synchronized (metric) {
             final AbstractNamespacedMetricExt eventsMetrics =
-                getMetric(metric,
-                        MetricKeys.STATS_KEY.asJavaString(),
-                        MetricKeys.EVENTS_KEY.asJavaString());
+                getMetric(metric, STATS_KEY, EVENTS_KEY);
 
             eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.IN_KEY);
             eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
 
             final AbstractNamespacedMetricExt pipelineEventMetrics =
-                getMetric(metric,
-                        MetricKeys.STATS_KEY.asJavaString(),
-                        MetricKeys.PIPELINES_KEY.asJavaString(),
-                        pipelineId,
-                        MetricKeys.EVENTS_KEY.asJavaString());
+                getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, EVENTS_KEY);
 
             pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.IN_KEY);
             pipelineMetricsTime = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.PUSH_DURATION_KEY);
 
-            final AbstractNamespacedMetricExt pluginMetrics = getMetric(
-                    metric,
-                    MetricKeys.STATS_KEY.asJavaString(),
-                    MetricKeys.PIPELINES_KEY.asJavaString(),
-                    pipelineId,
-                    MetricKeys.PLUGINS_KEY.asJavaString(),
-                    MetricKeys.INPUTS_KEY.asJavaString(),
-                    pluginId.asJavaString(), MetricKeys.EVENTS_KEY.asJavaString());
+            final AbstractNamespacedMetricExt pluginMetrics =
+                    getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, PLUGINS_KEY, INPUTS_KEY, pluginIdSym, EVENTS_KEY);
             pluginMetricsCounter =
                 LongCounter.fromRubyBase(pluginMetrics, MetricKeys.OUT_KEY);
             pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, MetricKeys.PUSH_DURATION_KEY);
@@ -160,17 +155,10 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
         pluginMetricsTime.increment(increment);
     }
 
-    private static AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
-        final String... keys) {
-        return base.namespace(RubyUtil.RUBY.getCurrentContext(), toSymbolArray(keys));
-    }
 
-    private static IRubyObject toSymbolArray(final String... strings) {
-        final IRubyObject[] res = new IRubyObject[strings.length];
-        for (int i = 0; i < strings.length; ++i) {
-            res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
-        }
-        return RubyUtil.RUBY.newArray(res);
+    private AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
+                                                  final RubySymbol... keys) {
+        return base.namespace(getRuntime().getCurrentContext(), getRuntime().newArray(keys));
     }
 
     @Override
