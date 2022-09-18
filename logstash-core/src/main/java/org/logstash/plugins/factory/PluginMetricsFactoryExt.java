@@ -8,10 +8,11 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 import java.util.Arrays;
+
+import static org.logstash.instrument.metrics.MetricKeys.*;
 
 /**
  * JRuby extension to implement a factory class for Plugin's metrics
@@ -46,11 +47,7 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
             context,
             RubyArray.newArray(
                 context.runtime,
-                Arrays.asList(
-                        MetricKeys.STATS_KEY,
-                        MetricKeys.PIPELINES_KEY,
-                        pipelineId,
-                        MetricKeys.PLUGINS_KEY)));
+                Arrays.asList(STATS_KEY, PIPELINES_KEY, pipelineId, PLUGINS_KEY)));
     }
 
     @JRubyMethod

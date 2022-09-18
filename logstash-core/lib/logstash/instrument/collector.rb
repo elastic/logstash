@@ -67,6 +67,15 @@ module LogStash module Instrument
       end
     end
 
+    ##
+    # Ensures that a metric on the provided `namespaces_path` with the provided `key`
+    # is registered, using the provided `metric_instance` IFF it is not already present.
+    #
+    # @param namespaces_path [Array<Symbol>]
+    # @param key [Symbol]
+    # @param metric_instance [Metric]
+    #
+    # @return [Boolean] true IFF the provided `metric_instance` was registered
     def register?(namespaces_path, key, metric_instance)
       registered = false
 

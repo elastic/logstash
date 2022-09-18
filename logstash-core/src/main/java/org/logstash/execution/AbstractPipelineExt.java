@@ -31,9 +31,7 @@ import java.time.temporal.TemporalUnit;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -345,35 +343,24 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "collect_dlq_stats")
     public final IRubyObject collectDlqStats(final ThreadContext context) {
         if (dlqEnabled(context).isTrue()) {
-            getDlqMetric(context).gauge(
-                    context,
-                    QUEUE_SIZE_IN_BYTES_KEY,
-                    dlqWriter(context).callMethod(context, "get_current_queue_size")
-            );
-            getDlqMetric(context).gauge(
-                    context,
-                    STORAGE_POLICY_KEY,
-                    dlqWriter(context).callMethod(context, "get_storage_policy")
-            );
-            getDlqMetric(context).gauge(
-                    context,
-                    MAX_QUEUE_SIZE_IN_BYTES_KEY,
-                    getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
-            getDlqMetric(context).gauge(
-                    context,
-                    DROPPED_EVENTS_KEY,
-                    dlqWriter(context).callMethod(context, "get_dropped_events")
-            );
-            getDlqMetric(context).gauge(
-                    context,
-                    LAST_ERROR_KEY,
-                    dlqWriter(context).callMethod(context, "get_last_error")
-            );
-            getDlqMetric(context).gauge(
-                    context,
-                    EXPIRED_EVENTS_KEY,
-                    dlqWriter(context).callMethod(context, "get_expired_events")
-            );
+            getDlqMetric(context).gauge(context,
+                                        QUEUE_SIZE_IN_BYTES_KEY,
+                                        dlqWriter(context).callMethod(context, "get_current_queue_size"));
+            getDlqMetric(context).gauge(context,
+                                        STORAGE_POLICY_KEY,
+                                        dlqWriter(context).callMethod(context, "get_storage_policy"));
+            getDlqMetric(context).gauge(context,
+                                        MAX_QUEUE_SIZE_IN_BYTES_KEY,
+                                        getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
+            getDlqMetric(context).gauge(context,
+                                        DROPPED_EVENTS_KEY,
+                                        dlqWriter(context).callMethod(context, "get_dropped_events"));
+            getDlqMetric(context).gauge(context,
+                                        LAST_ERROR_KEY,
+                                        dlqWriter(context).callMethod(context, "get_last_error"));
+            getDlqMetric(context).gauge(context,
+                                        EXPIRED_EVENTS_KEY,
+                                        dlqWriter(context).callMethod(context, "get_expired_events"));
         }
         return context.nil;
     }
@@ -390,15 +377,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "collect_stats")
     public final IRubyObject collectStats(final ThreadContext context) throws IOException {
-        final AbstractNamespacedMetricExt pipelineMetric = metric.namespace(
-            context,
-            RubyArray.newArray(
-                context.runtime,
-                Arrays.asList(
-                        STATS_KEY,
-                        PIPELINES_KEY,
-                        pipelineId.asString().intern(),
-                        QUEUE_KEY)));
+        final AbstractNamespacedMetricExt pipelineMetric =
+                metric.namespace(context, pipelineNamespacedPath(QUEUE_KEY));
 
         pipelineMetric.gauge(context, TYPE_KEY, getSetting(context, "queue.type"));
         if (queue instanceof JRubyWrappedAckedQueueExt) {
@@ -406,28 +386,19 @@ public class AbstractPipelineExt extends RubyBasicObject {
             final RubyString dirPath = inner.ruby_dir_path(context);
             final AbstractNamespacedMetricExt capacityMetrics =
                 pipelineMetric.namespace(context, CAPACITY_NAMESPACE);
-            capacityMetrics.gauge(
-                context, PAGE_CAPACITY_IN_BYTES_KEY, inner.ruby_page_capacity(context)
-            );
-            capacityMetrics.gauge(
-                context, MAX_QUEUE_SIZE_IN_BYTES_KEY, inner.ruby_max_size_in_bytes(context)
-            );
-            capacityMetrics.gauge(
-                context, MAX_QUEUE_UNREAD_EVENTS_KEY, inner.ruby_max_unread_events(context)
-            );
-            capacityMetrics.gauge(
-                context, QUEUE_SIZE_IN_BYTES_KEY, inner.ruby_persisted_size_in_bytes(context)
-            );
+
+            capacityMetrics.gauge(context, PAGE_CAPACITY_IN_BYTES_KEY, inner.ruby_page_capacity(context));
+            capacityMetrics.gauge(context, MAX_QUEUE_SIZE_IN_BYTES_KEY, inner.ruby_max_size_in_bytes(context));
+            capacityMetrics.gauge(context, MAX_QUEUE_UNREAD_EVENTS_KEY, inner.ruby_max_unread_events(context));
+            capacityMetrics.gauge(context, QUEUE_SIZE_IN_BYTES_KEY, inner.ruby_persisted_size_in_bytes(context));
+
             final AbstractNamespacedMetricExt dataMetrics =
                 pipelineMetric.namespace(context, DATA_NAMESPACE);
             final FileStore fileStore = Files.getFileStore(Paths.get(dirPath.asJavaString()));
-            dataMetrics.gauge(
-                context,
-                FREE_SPACE_IN_BYTES_KEY,
-                context.runtime.newFixnum(fileStore.getUnallocatedSpace())
-            );
+            dataMetrics.gauge(context, FREE_SPACE_IN_BYTES_KEY, context.runtime.newFixnum(fileStore.getUnallocatedSpace()));
             dataMetrics.gauge(context, STORAGE_TYPE_KEY, context.runtime.newString(fileStore.type()));
             dataMetrics.gauge(context, PATH_KEY, dirPath);
+
             pipelineMetric.gauge(context, EVENTS_KEY, inner.ruby_unread_count(context));
         }
         return context.nil;
@@ -438,7 +409,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject initializeFlowMetrics(final ThreadContext context) {
         if (metric.collector(context).isNil()) { return context.nil; }
 
-        final UptimeMetric uptimeMetric = initOrGetUptimeMetric(context, buildNamespace(), context.runtime.newSymbol("uptime_in_millis"));
+        final UptimeMetric uptimeMetric = initOrGetUptimeMetric(context, buildNamespace(), UPTIME_IN_MILLIS_KEY);
         final Metric<Number> uptimeInPreciseMillis = uptimeMetric.withUnitsPrecise(MILLISECONDS);
         final Metric<Number> uptimeInPreciseSeconds = uptimeMetric.withUnitsPrecise(SECONDS);
 
@@ -485,31 +456,31 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return new FlowMetric(name.asJavaString(), numeratorMetric, denominatorMetric);
     }
 
-    LongCounter initOrGetCounterMetric(final ThreadContext context,
-                                       final RubySymbol[] subPipelineNamespacePath,
-                                       final RubySymbol metricName) {
+    private LongCounter initOrGetCounterMetric(final ThreadContext context,
+                                               final RubySymbol[] subPipelineNamespacePath,
+                                               final RubySymbol metricName) {
         final IRubyObject collector = this.metric.collector(context);
-        final IRubyObject fullNamespace = RubyArray.newArray(context.runtime, fullNamespacePath(subPipelineNamespacePath));
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("counter")});
         return retrievedMetric.toJava(LongCounter.class);
     }
 
-    UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
-                                       final RubySymbol[] subPipelineNamespacePath,
-                                       final RubySymbol uptimeMetricName) {
+    private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
+                                               final RubySymbol[] subPipelineNamespacePath,
+                                               final RubySymbol uptimeMetricName) {
         final IRubyObject collector = this.metric.collector(context);
-        final IRubyObject fullNamespace = RubyArray.newArray(context.runtime, fullNamespacePath(subPipelineNamespacePath));
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, uptimeMetricName, context.runtime.newSymbol("uptime")});
         return retrievedMetric.toJava(UptimeMetric.class);
     }
 
-    <T> void storeMetric(final ThreadContext context,
-                         final RubySymbol[] subPipelineNamespacePath,
-                         final Metric<T> metric) {
+    private <T> void storeMetric(final ThreadContext context,
+                                 final RubySymbol[] subPipelineNamespacePath,
+                                 final Metric<T> metric) {
         final IRubyObject collector = this.metric.collector(context);
-        final IRubyObject fullNamespace = RubyArray.newArray(context.runtime, fullNamespacePath(subPipelineNamespacePath));
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
         final IRubyObject metricKey = context.runtime.newSymbol(metric.getName());
 
         final IRubyObject wasRegistered = collector.callMethod(context, "register?", new IRubyObject[]{fullNamespace, metricKey, JavaUtil.convertJavaToUsableRubyObject(context.runtime, metric)});
@@ -520,17 +491,23 @@ public class AbstractPipelineExt extends RubyBasicObject {
         }
     }
 
-    RubySymbol[] fullNamespacePath(RubySymbol... subPipelineNamespacePath) {
+    private RubyArray<RubySymbol> pipelineNamespacedPath(final RubySymbol... subPipelineNamespacePath) {
         final RubySymbol[] pipelineNamespacePath = new RubySymbol[] { STATS_KEY, PIPELINES_KEY, pipelineId.asString().intern() };
         if (subPipelineNamespacePath.length == 0) {
-            return pipelineNamespacePath;
+            return rubySymbolArray(pipelineNamespacePath);
         }
         final RubySymbol[] fullNamespacePath = Arrays.copyOf(pipelineNamespacePath, pipelineNamespacePath.length + subPipelineNamespacePath.length);
         System.arraycopy(subPipelineNamespacePath, 0, fullNamespacePath, pipelineNamespacePath.length, subPipelineNamespacePath.length);
-        return fullNamespacePath;
+
+        return rubySymbolArray(fullNamespacePath);
     }
 
-    RubySymbol[] buildNamespace(final RubySymbol... namespace) {
+    @SuppressWarnings("unchecked")
+    private RubyArray<RubySymbol> rubySymbolArray(final RubySymbol[] symbols) {
+        return getRuntime().newArray(symbols);
+    }
+
+    private RubySymbol[] buildNamespace(final RubySymbol... namespace) {
         return namespace;
     }
 
@@ -608,14 +585,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractNamespacedMetricExt getDlqMetric(final ThreadContext context) {
         if (dlqMetric == null) {
-            dlqMetric = metric.namespace(
-                context, RubyArray.newArray(
-                    context.runtime,
-                    Arrays.asList(
-                            STATS_KEY,
-                            PIPELINES_KEY,
-                            pipelineId.asString().intern(),
-                            DLQ_KEY)));
+            dlqMetric = metric.namespace(context, pipelineNamespacedPath(DLQ_KEY));
         }
         return dlqMetric;
     }

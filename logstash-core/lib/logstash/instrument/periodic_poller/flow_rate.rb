@@ -27,10 +27,8 @@ module LogStash module Instrument module PeriodicPoller
 
     def collect
       pipelines = @agent.running_user_defined_pipelines
-      pipelines.each do |_, pipeline|
-        unless pipeline.nil?
-          pipeline.collect_flow_metrics
-        end
+      pipelines.each_value do |pipeline|
+        pipeline.collect_flow_metrics unless pipeline.nil?
       end
     end
   end
