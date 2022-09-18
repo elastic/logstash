@@ -81,6 +81,16 @@ module LogStash
           {}
         end
 
+        def flow
+          extract_metrics(
+            [:stats,:flow],
+            :input_throughput, :filter_throughput, :output_throughput, :queue_backpressure, :worker_concurrency
+          )
+        rescue LogStash::Instrument::MetricStore::MetricNotFound
+          # if the stats/events metrics have not yet been populated, return an empty map
+          {}
+        end
+
         def pipeline(pipeline_id = nil, opts={})
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,

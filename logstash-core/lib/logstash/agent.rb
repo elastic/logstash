@@ -92,6 +92,7 @@ class LogStash::Agent
     @pipeline_reload_metric = metric.namespace([:stats, :pipelines])
     @instance_reload_metric = metric.namespace([:stats, :reloads])
     initialize_agent_metrics
+    initialize_flow_metrics
 
     initialize_geoip_database_metrics(metric)
     
@@ -533,6 +534,51 @@ class LogStash::Agent
     @instance_reload_metric.increment(:successes, 0)
     @instance_reload_metric.increment(:failures, 0)
   end
+
+  def initialize_flow_metrics
+    if collect_metrics? && metric.collector
+
+      java_import org.logstash.instrument.metrics.UptimeMetric
+      java_import org.logstash.instrument.metrics.UptimeMetric::ScaleUnits
+
+      uptime_metric = UptimeMetric.new
+      uptime_precise_millis = uptime_metric.with_units_precise(ScaleUnits::MILLISECONDS)
+      uptime_precise_seconds = uptime_metric.with_units_precise(ScaleUnits::SECONDS)
+
+      events_namespace = metric.namespace([:stats,:events])
+      flow_metrics = []
+      flow_metrics << create_flow_metric("input_throughput", get_counter(events_namespace, :in), uptime_precise_seconds)
+      flow_metrics << create_flow_metric("filter_throughput", get_counter(events_namespace, :out), uptime_precise_seconds)
+      flow_metrics << create_flow_metric("output_throughput", get_counter(events_namespace, :filtered), uptime_precise_seconds)
+      flow_metrics << create_flow_metric("queue_backpressure", get_counter(events_namespace, :queue_push_duration_in_millis), uptime_precise_millis)
+      flow_metrics << create_flow_metric("worker_concurrency", get_counter(events_namespace, :duration_in_millis), uptime_precise_millis)
+
+      registered, unregistered = flow_metrics.partition do |flow_metric|
+        @metric.collector.register?([:stats,:flow], flow_metric.name.to_sym, flow_metric)
+      end
+
+      unregistered.each do |unregistered_flow_metric|
+        logger.warn("Failed to register global flow metric #{unregistered_flow_metric.name}.")
+      end
+
+      @flow_metrics = registered.freeze
+    end
+  end
+
+  def get_counter(namespace, key)
+    org.logstash.instrument.metrics.counter.LongCounter.fromRubyBase(namespace, key)
+  end
+  private :get_counter
+
+  def create_flow_metric(name, numerator_metric, denominator_metric)
+    org.logstash.instrument.metrics.FlowMetric.new(name, numerator_metric, denominator_metric)
+  end
+  private :create_flow_metric
+
+  def capture_flow_metrics
+    @flow_metrics&.each(&:capture)
+  end
+  public :capture_flow_metrics
 
   def initialize_pipeline_metrics(action)
     @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
