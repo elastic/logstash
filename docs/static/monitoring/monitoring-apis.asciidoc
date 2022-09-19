@@ -315,7 +315,7 @@ Gets process stats, including stats about file descriptors, memory consumption, 
 <<event-stats,`events`>>::
 Gets event-related statistics for the Logstash instance (regardless of how many
 pipelines were created and destroyed).
-<<event-stats,`flow`>>::
+<<flow-stats,`flow`>>::
 Gets flow-related statistics for the Logstash instance (regardless of how many
 pipelines were created and destroyed).
 <<pipeline-stats,`pipelines`>>::
@@ -499,13 +499,16 @@ Example response:
 }
 --------------------------------------------------
 
+Flow rates provide visibility into how a Logstash instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
+This allows us to attach _meaning_ to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
+
 [%autowidth.stretch]
 |===
 |Flow Rate | Definition
 
 | `input_throughput` |
 This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second).
-It includes events that are blocked by the queue and not yet accepted.
+It includes events that are blocked by the queue and have not yet been accepted.
 
 | `filter_throughput` |
 This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
@@ -516,10 +519,10 @@ This metric is expressed in events-per-second, and is the rate of events flowing
 | `worker_concurrency` |
 This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (`duration_in_millis` / millisecond).
 
-A pipeline is considered "saturated" when its `worker_concurrency` flow metric approaches its available `pipeline.workers`, because it indicates that all of its available workers are being kept busy.
+A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric approaches its available `pipeline.workers`, because it indicates that all of its available workers are being kept busy.
 Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
 
-A process is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
+A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
 
 | `queue_backpressure` |
 This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
