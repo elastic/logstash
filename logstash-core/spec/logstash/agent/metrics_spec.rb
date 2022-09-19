@@ -73,6 +73,15 @@ describe LogStash::Agent do
       expect(mval(:stats, :reloads, :successes)).to eq(0)
       expect(mval(:stats, :reloads, :failures)).to eq(0)
     end
+
+    it "should validate empty flow metrics" do
+      expect(mval(:stats, :flow, :input_throughput)).to eq({})
+      expect(mval(:stats, :flow, :output_throughput)).to eq({})
+      expect(mval(:stats, :flow, :filter_throughput)).to eq({})
+      expect(mval(:stats, :flow, :queue_backpressure)).to eq({})
+      expect(mval(:stats, :flow, :worker_concurrency)).to eq({})
+    end
+
   end
 
   context "when we try to start one pipeline" do

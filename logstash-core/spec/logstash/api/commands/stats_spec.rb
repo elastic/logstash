@@ -75,6 +75,19 @@ describe LogStash::Api::Commands::Stats do
     end
   end
 
+  describe "#metric flows" do
+    let(:report_method) { :flow }
+
+    it "should validate flow metric keys are exist" do
+      expect(report.keys).to include(
+                               :input_throughput,
+                               :output_throughput,
+                               :filter_throughput,
+                               :queue_backpressure,
+                               :worker_concurrency)
+    end
+  end
+
   describe "#hot_threads" do
     let(:report_method) { :hot_threads }
 
