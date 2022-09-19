@@ -7,8 +7,13 @@ on:
     types:
       - opened
 
+permissions: {}
+
 jobs:
   add-to-project:
+    permissions:
+      repository-projects: write # to add to projects
+
     runs-on: ubuntu-latest
     steps:
       - uses: octokit/graphql-action@v2.x
