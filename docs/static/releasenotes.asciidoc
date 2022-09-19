@@ -29,13 +29,18 @@ This section summarizes the changes in the following releases:
 [[logstash-8-4-2]]
 === Logstash 8.4.2 Release Notes
 
-* Backport PR #14425 to 8.4: fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14496[#14496]
-* Backport PR #14499 to 8.4: drop support for all DES ciphers and simplify cipher list https://github.com/elastic/logstash/pull/14501[#14501]
-* Backport PR #14507 to 8.4: Manually import CSV gem to work around thread leak https://github.com/elastic/logstash/pull/14508[#14508]
-* Backport PR #14472 to 8.4: winlogbeat-modules: add docs for interfacing winlogbeat with logstash https://github.com/elastic/logstash/pull/14512[#14512]
-* Fix Windows scripts https://github.com/elastic/logstash/pull/14515[#14515]
-* Backport PR #14515 to 8.4: Fix Windows scripts https://github.com/elastic/logstash/pull/14516[#14516]
-* Backport PR#14524 to 8.4: Upgrade jruby to 9.3.8.0 https://github.com/elastic/logstash/pull/14526[#14526]
+[[notable-8.4.2]]
+==== Notable issues fixed
+
+* Fixed the inability to configure "monitoring.cluster_uuid" in docker https://github.com/elastic/logstash/pull/14496[#14496]
+* Disabled DES-CBC3-SHA cipher in some plugins that still supported it https://github.com/elastic/logstash/pull/14501[#14501]
+* Upgraded JRuby and updated the CSV gem fix a thread leak issue in Logstash 8.4.0 when using the CSV filter https://github.com/elastic/logstash/pull/14508[#14508] https://github.com/elastic/logstash/pull/14526[#14526]
+* Fixed Windows .bat scripts that prevented the use of the Plugin Manager and Keystore in Logstash 8.3.3/8.4.0 https://github.com/elastic/logstash/pull/14516[#14516]
+
+[[docs-8-4-2]]
+==== Documentation improvements
+
+* Added documentation for interfacing Winlogbeat with Logstash, which you can see https://www.elastic.co/guide/en/logstash/8.4/winlogbeat-modules.html[here] https://github.com/elastic/logstash/pull/14512[#14512]
 
 [[logstash-8-4-1]]
 === Logstash 8.4.1 Release Notes
