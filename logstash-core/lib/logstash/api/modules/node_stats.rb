@@ -35,6 +35,7 @@ module LogStash
             :jvm => jvm_payload,
             :process => process_payload,
             :events => events_payload,
+            :flow => flow_payload,
             :pipelines => pipeline_payload,
             :reloads => reloads_payload,
             :os => os_payload,
@@ -59,6 +60,10 @@ module LogStash
 
         def events_payload
           @stats.events
+        end
+
+        def flow_payload
+          @stats.flow
         end
 
         def jvm_payload
