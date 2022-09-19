@@ -34,7 +34,7 @@ This section summarizes the changes in the following releases:
 
 * Fixed the inability to configure "monitoring.cluster_uuid" in docker https://github.com/elastic/logstash/pull/14496[#14496]
 * Disabled DES-CBC3-SHA cipher in some plugins that still supported it https://github.com/elastic/logstash/pull/14501[#14501]
-* Upgraded JRuby and updated the CSV gem fix a thread leak issue in Logstash 8.4.0 when using the CSV filter https://github.com/elastic/logstash/pull/14508[#14508] https://github.com/elastic/logstash/pull/14526[#14526]
+* Upgraded JRuby the CSV gem to fix a thread leak in Logstash 8.4.0 when using the CSV filter https://github.com/elastic/logstash/pull/14508[#14508] https://github.com/elastic/logstash/pull/14526[#14526]
 * Fixed Windows .bat scripts that prevented the use of the Plugin Manager and Keystore in Logstash 8.3.3/8.4.0 https://github.com/elastic/logstash/pull/14516[#14516]
 
 [[docs-8-4-2]]
