@@ -23,6 +23,7 @@ package org.logstash.ext;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -39,23 +40,25 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
+import static org.logstash.instrument.metrics.MetricKeys.*;
+
 @JRubyClass(name = "WrappedWriteClient")
 public final class JRubyWrappedWriteClientExt extends RubyObject implements QueueWriter {
 
     private static final long serialVersionUID = 1L;
 
-    private static final RubySymbol PUSH_DURATION_KEY =
-        RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
-
     private JRubyAbstractQueueWriteClientExt writeClient;
 
     private transient LongCounter eventsMetricsCounter;
+
     private transient LongCounter eventsMetricsTime;
 
     private transient LongCounter pipelineMetricsCounter;
+
     private transient LongCounter pipelineMetricsTime;
 
     private transient LongCounter pluginMetricsCounter;
+
     private transient LongCounter pluginMetricsTime;
 
     public JRubyWrappedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -69,28 +72,36 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
             (AbstractMetricExt) args[2], args[3]);
     }
 
-    public JRubyWrappedWriteClientExt initialize(
-        final JRubyAbstractQueueWriteClientExt queueWriteClientExt, final String pipelineId,
-        final AbstractMetricExt metric, final IRubyObject pluginId) {
+    public JRubyWrappedWriteClientExt initialize(final JRubyAbstractQueueWriteClientExt queueWriteClientExt,
+                                                 final String pipelineId,
+                                                 final AbstractMetricExt metric,
+                                                 final IRubyObject pluginId) {
         this.writeClient = queueWriteClientExt;
+
+        final RubySymbol pipelineIdSym = getRuntime().newSymbol(pipelineId);
+        final RubySymbol pluginIdSym = pluginId.asString().intern();
+
         // Synchronize on the metric since setting up new fields on it is not threadsafe
         synchronized (metric) {
             final AbstractNamespacedMetricExt eventsMetrics =
-                getMetric(metric, "stats", "events");
+                getMetric(metric, STATS_KEY, EVENTS_KEY);
+
             eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.IN_KEY);
-            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, PUSH_DURATION_KEY);
-            final AbstractNamespacedMetricExt pipelineMetrics =
-                getMetric(metric, "stats", "pipelines", pipelineId, "events");
-            pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineMetrics, MetricKeys.IN_KEY);
-            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineMetrics, PUSH_DURATION_KEY);
-            final AbstractNamespacedMetricExt pluginMetrics = getMetric(
-                metric, "stats", "pipelines", pipelineId, "plugins", "inputs",
-                pluginId.asJavaString(), "events"
-            );
+            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
+
+            final AbstractNamespacedMetricExt pipelineEventMetrics =
+                getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, EVENTS_KEY);
+
+            pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.IN_KEY);
+            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.PUSH_DURATION_KEY);
+
+            final AbstractNamespacedMetricExt pluginMetrics =
+                    getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, PLUGINS_KEY, INPUTS_KEY, pluginIdSym, EVENTS_KEY);
             pluginMetricsCounter =
                 LongCounter.fromRubyBase(pluginMetrics, MetricKeys.OUT_KEY);
-            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, PUSH_DURATION_KEY);
+            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, MetricKeys.PUSH_DURATION_KEY);
         }
+
         return this;
     }
 
@@ -144,17 +155,10 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
         pluginMetricsTime.increment(increment);
     }
 
-    private static AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
-        final String... keys) {
-        return base.namespace(RubyUtil.RUBY.getCurrentContext(), toSymbolArray(keys));
-    }
 
-    private static IRubyObject toSymbolArray(final String... strings) {
-        final IRubyObject[] res = new IRubyObject[strings.length];
-        for (int i = 0; i < strings.length; ++i) {
-            res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
-        }
-        return RubyUtil.RUBY.newArray(res);
+    private AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
+                                                  final RubySymbol... keys) {
+        return base.namespace(getRuntime().getCurrentContext(), getRuntime().newArray(keys));
     }
 
     @Override

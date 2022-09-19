@@ -121,6 +121,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # this is useful in the context of pipeline reloading
     collect_stats
     collect_dlq_stats
+    initialize_flow_metrics
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
@@ -533,6 +534,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       # we want to keep other metrics like reload counts and error messages
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
+      collector.clear("stats/pipelines/#{pipeline_id}/flow")
     end
   end
 

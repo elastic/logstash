@@ -93,6 +93,28 @@
         "out" : 357125,
         "duration_in_millis" : 168492
       },
+      "flow": {
+        "output_throughput": {
+          "lifetime": 0.231,
+          "current": 4.0
+        },
+        "filter_throughput": {
+          "lifetime": 0.231,
+          "current": 4.0
+        },
+        "queue_backpressure": {
+          "lifetime": 0.0,
+          "current": 0.0
+        },
+        "worker_concurrency": {
+          "lifetime": 0.018,
+          "current": 0.288
+        },
+        "input_throughput": {
+          "lifetime": 0.25,
+          "current": 4.4
+        }
+      },
       "plugins" : {
         "inputs" : [ {
           "id" : "3ca119230f5eaf03a261b674ee2f2dfe1491894c1b2b8f21e1d9a02b656b36f1",

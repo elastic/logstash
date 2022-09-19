@@ -315,6 +315,9 @@ Gets process stats, including stats about file descriptors, memory consumption, 
 <<event-stats,`events`>>::
 Gets event-related statistics for the Logstash instance (regardless of how many
 pipelines were created and destroyed).
+<<flow-stats,`flow`>>::
+Gets flow-related statistics for the Logstash instance (regardless of how many
+pipelines were created and destroyed).
 <<pipeline-stats,`pipelines`>>::
 Gets runtime stats about each Logstash pipeline.
 <<reload-stats,`reloads`>>::
@@ -455,6 +458,85 @@ Example response:
 --------------------------------------------------
 
 [discrete]
+[[flow-stats]]
+==== Flow stats
+
+The following request returns a JSON document containing flow-rates
+for the Logstash instance:
+
+[source,js]
+--------------------------------------------------
+curl -XGET 'localhost:9600/_node/stats/flow?pretty'
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "flow" : {
+    "input_throughput" : {
+      "current": 189.720,
+      "lifetime": 201.841
+    },
+    "filter_throughput" : {
+      "current": 187.810,
+      "lifetime": 201.799
+    },
+    "output_throughput" : {
+      "current": 191.087,
+      "lifetime": 201.761
+    },
+    "queue_backpressure" : {
+      "current": 0.277,
+      "lifetime": 0.031
+    },
+    "worker_concurrency" : {
+      "current": 1.973,
+      "lifetime": 1.721
+    }
+  }
+}
+--------------------------------------------------
+
+Flow rates provide visibility into how a Logstash instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
+This allows us to attach _meaning_ to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
+
+[%autowidth.stretch]
+|===
+|Flow Rate | Definition
+
+| `input_throughput` |
+This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second).
+It includes events that are blocked by the queue and have not yet been accepted.
+
+| `filter_throughput` |
+This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
+
+| `output_throughput` |
+This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
+
+| `worker_concurrency` |
+This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (`duration_in_millis` / millisecond).
+
+A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric approaches its available `pipeline.workers`, because it indicates that all of its available workers are being kept busy.
+Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
+
+| `queue_backpressure` |
+This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
+It is typically most useful when looking at the stats for an <<pipeline-stats,individual pipeline>>.
+
+While a "zero" value indicates no back-pressure to the queue, the magnitude of this metric is highly dependent on the _shape_ of the pipelines and their inputs.
+It cannot be used to compare one pipeline to another or even one process to _itself_ if the quantity or shape of its pipelines changes.
+A pipeline with only one single-threaded input may contribute up to 1.00, a pipeline whose inputs have hundreds of inbound connections may contribute much higher numbers to this combined value.
+
+Additionally, some amount of back-pressure is both _normal_ and _expected_ for pipelines that are _pulling_ data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
+
+|===
+
+[discrete]
 [[pipeline-stats]]
 ==== Pipeline stats
 
@@ -462,6 +544,7 @@ The following request returns a JSON document containing pipeline stats,
 including:
 
 * the number of events that were input, filtered, or output by each pipeline
+* the current and lifetime <<flow-stats,_flow_ rates>> for each pipeline
 * stats for each configured filter or output stage
 * info about config reload successes and failures
 (when <<reloading-config,config reload>> is enabled)
@@ -486,6 +569,28 @@ Example response:
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
+      },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.277,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 1.973,
+          "lifetime": 1.721
+        }
       },
       "plugins" : {
         "inputs" : [ {
@@ -546,6 +651,28 @@ Example response:
         "out" : 87247,
         "queue_push_duration_in_millis" : 1532
       },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.871,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 4.71,
+          "lifetime": 1.201
+        }
+      },
       "plugins" : {
         "inputs" : [ {
           "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-1",
@@ -600,6 +727,28 @@ Example response:
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
+      },
+      "flow" : {
+        "input_throughput" : {
+          "current": 189.720,
+          "lifetime": 201.841
+        },
+        "filter_throughput" : {
+          "current": 187.810,
+          "lifetime": 201.799
+        },
+        "output_throughput" : {
+          "current": 191.087,
+          "lifetime": 201.761
+        },
+        "queue_backpressure" : {
+          "current": 0.277,
+          "lifetime": 0.031
+        },
+        "worker_concurrency" : {
+          "current": 1.973,
+          "lifetime": 1.721
+        }
       },
       "plugins" : {
         "inputs" : [ {

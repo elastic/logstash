@@ -15,26 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/instrument/metric_type/counter"
-require "logstash/instrument/metric_type/gauge"
-require "logstash/instrument/metric_type/uptime"
+require 'logstash/instrument/periodic_poller/base'
 
-module LogStash module Instrument
-  module MetricType
-    METRIC_TYPE_LIST = {
-      :counter => LogStash::Instrument::MetricType::Counter,
-      :gauge   => LogStash::Instrument::MetricType::Gauge,
-      :uptime  => LogStash::Instrument::MetricType::Uptime,
-    }.freeze
+module LogStash module Instrument module PeriodicPoller
+  class FlowRate < Base
+    def initialize(metric, agent, options = {})
+      super(metric, options)
+      @metric = metric
+      @agent = agent
+    end
 
-    # Use the string to generate a concrete class for this metrics
-    #
-    # @param [String] The name of the class
-    # @param [Array] Namespaces list
-    # @param [String] The metric key
-    # @raise [NameError] If the class is not found
-    def self.create(type, namespaces, key)
-      METRIC_TYPE_LIST[type].new(namespaces, key)
+    def collect
+      @agent.capture_flow_metrics
+
+      pipelines = @agent.running_user_defined_pipelines
+      pipelines.values.compact.each(&:collect_flow_metrics)
     end
   end
-end; end
+end end end

@@ -245,6 +245,38 @@ describe "Test Monitoring API" do
     logging_get_assert logstash_service, "INFO", "TRACE"
   end
 
+  it "should retrieve the pipeline flow statuses" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    number_of_events.times {
+      logstash_service.write_to_stdin("Testing flow metrics")
+      sleep(1)
+    }
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # node_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('flow')))
+      flow_status = result.dig("pipelines", "main", "flow")
+      expect(flow_status).to_not be_nil
+      expect(flow_status).to include(
+        # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
+        # to be zero, so we are just looking for these to be _populated_
+        'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
+        # should be non-zero so long as pipeline uptime is less than ~10 minutes.
+        'input_throughput'   => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
+      )
+    end
+  end
+
   private
 
   def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')
