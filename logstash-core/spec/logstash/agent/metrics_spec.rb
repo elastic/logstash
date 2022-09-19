@@ -74,12 +74,12 @@ describe LogStash::Agent do
       expect(mval(:stats, :reloads, :failures)).to eq(0)
     end
 
-    it "should validate empty flow metrics" do
-      expect(mval(:stats, :flow, :input_throughput)).to eq({})
-      expect(mval(:stats, :flow, :output_throughput)).to eq({})
-      expect(mval(:stats, :flow, :filter_throughput)).to eq({})
-      expect(mval(:stats, :flow, :queue_backpressure)).to eq({})
-      expect(mval(:stats, :flow, :worker_concurrency)).to eq({})
+    it "makes the top-level flow metrics available" do
+      expect(mval(:stats, :flow, :input_throughput)).to be_a_kind_of Hash
+      expect(mval(:stats, :flow, :output_throughput)).to be_a_kind_of Hash
+      expect(mval(:stats, :flow, :filter_throughput)).to be_a_kind_of Hash
+      expect(mval(:stats, :flow, :queue_backpressure)).to be_a_kind_of Hash
+      expect(mval(:stats, :flow, :worker_concurrency)).to be_a_kind_of Hash
     end
 
   end
