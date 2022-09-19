@@ -75,11 +75,11 @@ describe LogStash::Agent do
     end
 
     it "makes the top-level flow metrics available" do
-      expect(mval(:stats, :flow, :input_throughput)).to be_a_kind_of Hash
-      expect(mval(:stats, :flow, :output_throughput)).to be_a_kind_of Hash
-      expect(mval(:stats, :flow, :filter_throughput)).to be_a_kind_of Hash
-      expect(mval(:stats, :flow, :queue_backpressure)).to be_a_kind_of Hash
-      expect(mval(:stats, :flow, :worker_concurrency)).to be_a_kind_of Hash
+      expect(mval(:stats, :flow, :input_throughput).is_a?(Hash)).to be_truthy
+      expect(mval(:stats, :flow, :output_throughput).is_a?(Hash)).to be_truthy
+      expect(mval(:stats, :flow, :filter_throughput).is_a?(Hash)).to be_truthy
+      expect(mval(:stats, :flow, :queue_backpressure).is_a?(Hash)).to be_truthy
+      expect(mval(:stats, :flow, :worker_concurrency).is_a?(Hash)).to be_truthy
     end
 
   end
