@@ -5,12 +5,12 @@ preview::[]
 
 We have a few recommended heuristics to help you determine the optimal memory and queue sizings for your {ls} instances.
 
-[[sizing-jvm-memory-pods]]]
+[[sizing-jvm-memory-pods]]
 ==== Memory settings on JVMs and pods
 
-Description.
+Description...
 
-[[sizing-pd-dlq]]]
+[[sizing-pd-dlq]]
 ==== Sizing your {ls} PQ and DLQ
 
-Description.
+Description...

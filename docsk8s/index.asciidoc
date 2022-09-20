@@ -20,17 +20,23 @@ include::quick-start/ls-k8s-quick-start.asciidoc[]
 // List of sample configuration files and what they're used for
 include::quick-start/sample-configuration-files.asciidoc[]
 
+// Ship to an external resource
+include::quick-start/ls-k8s-external-resource.asciidoc[]
+
 // Setting up
 include::setting-up/ls-k8s-setting-up.asciidoc[]
 
-// Designing Logstash instances
-include::setting-up/ls-k8s-designing.asciidoc[]
+// Persistent storage requirements
+include::setting-up/ls-k8s-persistent-storage.asciidoc[]
+
+// Designing your installation based on plugin usage
+include::setting-up/ls-k8s-design-for-plugins.asciidoc[]
 
 // Sizing Logstash instances
 include::setting-up/ls-k8s-sizing.asciidoc[]
 
-// Ship to an external resource
-include::setting-up/ls-k8s-external-resource.asciidoc[]
+// Secure your environment
+include::setting-up/ls-k8s-secure.asciidoc[]
 
 // Administering
 include::administering/ls-k8s-administering.asciidoc[]
@@ -38,11 +44,14 @@ include::administering/ls-k8s-administering.asciidoc[]
 // Set up stack monitoring
 include::administering/ls-k8s-stack-monitoring.asciidoc[]
 
-// Secure your environment
-include::administering/ls-k8s-secure.asciidoc[]
-
 // Upgrade Logstash
 include::administering/ls-k8s-upgrade.asciidoc[]
+
+// Logstash logging
+include::administering/ls-k8s-logging.asciidoc[]
+
+// Recipes
+include::ls-k8s-recipes.asciidoc[]
 
 // Troubleshooting
 include::troubleshooting/ls-k8s-troubleshooting.asciidoc[]
@@ -52,6 +61,3 @@ include::troubleshooting/ls-k8s-common-problems.asciidoc[]
 
 // Troubleshooting methods
 include::troubleshooting/ls-k8s-troubleshooting-methods.asciidoc[]
-
-// Recipes
-include::ls-k8s-recipes.asciidoc[]

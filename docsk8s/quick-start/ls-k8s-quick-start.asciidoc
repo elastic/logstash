@@ -259,7 +259,7 @@ kubectl delete service,pods,deployment,hpa,configmap,secret,beat,elasticsearch,k
 Now that you're familiar with how to get a {ls} monitoring setup running in your Kubernetes environment, here are a few suggested next steps:
 
 * <<ls-k8s-external-resource>>
-* <<ls-k8s-designing>>
+* <<ls-k8s-design-for-plugins>>
 * <<ls-k8s-sizing>>
 * <<ls-k8s-secure>>
 * <<ls-k8s-stack-monitoring>>

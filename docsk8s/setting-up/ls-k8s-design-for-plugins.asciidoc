@@ -1,11 +1,11 @@
-[[ls-k8s-designing]]
-=== Designing your installation based on plugin usage
+[[ls-k8s-design-for-plugins]]
+=== Design your installation based on plugin usage
 
 preview::[]
 
 Our recommandations for your {ls} Kubernetes installation vary depending on the types of plugins that you plan to use, and their respective requirements.
 
-[[designing-pull-based]]]
+[[designing-pull-based]]
 ==== Pull-based plugins
 
 Designing recommendations for pull-based plugins depend on whether or not the plugins support autoscaling.
@@ -22,7 +22,7 @@ Description.
 
 Recipe link.
 
-[[designing-push-based]]]
+[[designing-push-based]]
 ==== Push-based plugins
 
 Designing recommendations for push-based plugins depend on whether or not the plugins support autoscaling.

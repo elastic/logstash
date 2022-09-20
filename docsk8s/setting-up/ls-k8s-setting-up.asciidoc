@@ -6,8 +6,11 @@
 
 preview::[]
 
-The following topics describe the configuration steps to get your {ls} and Kubernetes environment up and running. Note that before putting your environment into production, you should also follow our guidelines for <<ls-k8s-administering,administering your system>>.
+The following topics describe important design considerations for your {ls} setup, as well as the steps to get your {ls} and Kubernetes environment up and running.
 
-* <<ls-k8s-designing>>
+Note that before putting your environment into production, you should also follow our guidelines for <<ls-k8s-administering,administering your system>>.
+
+* <<ls-k8s-persistent-storage>>
+* <<ls-k8s-design-for-plugins>>
 * <<ls-k8s-sizing>>
-* <<ls-k8s-external-resource>>
+* <<ls-k8s-secure>>
