@@ -44,6 +44,7 @@ filebeat.inputs:
 - type: log
   paths:
     - /path/to/file/logstash-tutorial.log <1>
+  enabled: true
 output.logstash:
   hosts: ["localhost:5044"]
 --------------------------------------------------------------------------------
