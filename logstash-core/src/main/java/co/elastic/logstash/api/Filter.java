@@ -53,7 +53,7 @@ public interface Filter extends Plugin {
      */
     Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener);
 
-    void close();
+    default void close() { return; };
 
     /**
      * If this filter maintains state between calls to {@link #filter(Collection, FilterMatchListener)}, this
