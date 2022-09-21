@@ -92,7 +92,10 @@ import static org.logstash.instrument.metrics.UptimeMetric.ScaleUnits.MILLISECON
 import static org.logstash.instrument.metrics.UptimeMetric.ScaleUnits.SECONDS;
 
 /**
- * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
+ * JRuby extension to provide ancestor class for the ruby-defined {@code LogStash::JavaPipeline} class.
+ *
+ * <p>NOTE: Although this class' name implies that it is "abstract", we instantiated it directly
+ *          as a lightweight temporary-scoped pipeline in the ruby-defined {@code LogStash::PipelineAction::Reload}
  * */
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {

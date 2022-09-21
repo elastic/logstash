@@ -26,7 +26,7 @@ require "logstash/compiler"
 require "logstash/config/lir_serializer"
 require "logstash/worker_loop_thread"
 
-module LogStash; class JavaPipeline < JavaBasePipeline
+module LogStash; class JavaPipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
   java_import org.apache.logging.log4j.ThreadContext
