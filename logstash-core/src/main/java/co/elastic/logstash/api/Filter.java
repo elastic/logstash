@@ -53,7 +53,12 @@ public interface Filter extends Plugin {
      */
     Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener);
 
-    default void close() { return; };
+    /**
+     * After a pipeline has been shut down, its filters are closed.
+     * If your plugin holds additional resources such as database connections,
+     * implementing this method will allow you to free up those resources.
+     */
+    default void close() { return; }
 
     /**
      * If this filter maintains state between calls to {@link #filter(Collection, FilterMatchListener)}, this
