@@ -61,7 +61,13 @@ public class JavaFilterExample implements Filter {
     @Override
     public String getId() {
         return this.id;
-    }      
+    }
+
+    @Override
+    public void close() {
+        this.sourceField = null;
+        return;
+    }
 }
 -----
 
@@ -211,6 +217,22 @@ public String getId() {
 
 For filter plugins, the `getId` method should always return the id that was provided to the plugin through its
 constructor at instantiation time.
+
+[float]
+==== close method
+
+[source,java]
+-----
+@Override
+public void close() {
+    this.sourceField = null;
+    return;
+}
+-----
+
+After a pipeline has been shut down, its filters are closed.
+If your plugin holds additional resources such as database connections,
+implementing this method will allow you to free up those resources.
 
 [float]
 ==== Unit tests
