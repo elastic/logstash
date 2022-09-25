@@ -25,223 +25,223 @@ require_relative "../../../support/matchers"
 require "spec_helper"
 require "webmock/rspec"
 
-describe LogStash::Config::Source::Local::ConfigStringLoader do
-  subject { described_class }
-  let(:config_string) { "input { generator {} } output { stdout {} }"}
+# describe LogStash::Config::Source::Local::ConfigStringLoader do
+#   subject { described_class }
+#   let(:config_string) { "input { generator {} } output { stdout {} }"}
+#
+#   it "returns one config_parts" do
+#     expect(subject.read(config_string).size).to eq(1)
+#   end
+#
+#   it "returns a valid config part" do
+#     config_part = subject.read(config_string).first
+#     expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
+#   end
+# end
 
-  it "returns one config_parts" do
-    expect(subject.read(config_string).size).to eq(1)
-  end
-
-  it "returns a valid config part" do
-    config_part = subject.read(config_string).first
-    expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
-  end
-end
-
-describe LogStash::Config::Source::Local::ConfigPathLoader do
-  subject { described_class }
-
-  context "no configs" do
-    context "in the directory" do
-      let(:directory) do
-        p =  Stud::Temporary.pathname
-        FileUtils.mkdir_p(p)
-        p
-      end
-
-      it "returns an empty array" do
-        expect(subject.read(directory)).to be_empty
-      end
-    end
-
-    context "target file doesn't exist" do
-      let(:directory) do
-        p =  Stud::Temporary.pathname
-        FileUtils.mkdir_p(p)
-        ::File.join(p, "ls.conf")
-      end
-
-      it "returns an empty array" do
-        expect(subject.read(directory)).to be_empty
-      end
-    end
-  end
-
-  context "when it exist" do
-    shared_examples "read config from files" do
-      let(:directory) { Stud::Temporary.pathname }
-
-      before do
-        files.each do |file, content|
-          temporary_file(content, file, directory)
-        end
-
-        expect(files.size).to be >= 1
-        expect(Dir.glob(::File.join(directory, "*")).size).to eq(files.size)
-      end
-
-      it "returns a `config_parts` per file" do
-        expect(subject.read(reader_config).size).to eq(files.size)
-      end
-
-      it "returns alphabetically sorted parts" do
-        parts = subject.read(reader_config)
-        expect(parts.collect { |part| ::File.basename(part.id) }).to eq(files.keys.sort)
-      end
-
-      it "returns valid `config_parts`" do
-        parts = subject.read(reader_config)
-
-        parts.each do |part|
-          basename = ::File.basename(part.id)
-          file_path = ::File.expand_path(::File.join(directory, basename))
-          content = files[basename]
-          expect(part).to be_a_source_with_metadata("file", file_path, content)
-        end
-      end
-    end
-
-    context "when the files have invalid encoding" do
-      let(:config_string) { "\x80" }
-      let(:file_path) { Stud::Temporary.pathname }
-      let(:file) { ::File.join(file_path, "wrong_encoding.conf") }
-
-      before do
-        FileUtils.mkdir_p(file_path)
-        f = File.open(file, "wb") do |file|
-          file.write(config_string)
-        end
-      end
-
-      it "raises an exception" do
-        # check against base name because on Windows long paths are shrinked in the exception message
-        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /.+#{::File.basename(file_path)}/
-      end
-    end
-
-    context "when we target one file" do
-      let(:reader_config) { ::File.join(directory, files.keys.first) }
-      let(:files) {
-        {
-          "config1.conf" => "input1",
-        }
-      }
-
-      include_examples "read config from files"
-    end
-
-    context "when we target a path with multiples files" do
-      let(:reader_config) { directory }
-
-      let(:files) {
-        {
-          "config1.conf" => "input1",
-          "config2.conf" => "input2",
-          "config3.conf" => "input3",
-          "config4.conf" => "input4"
-        }
-      }
-
-      include_examples "read config from files"
-    end
-
-    context "when there temporary files in the directory" do
-      let(:reader_config) { ::File.join(directory, "conf*.conf") }
-
-      let(:files) {
-        {
-          "config1.conf" => "input1",
-          "config2.conf" => "input2",
-          "config3.conf" => "input3",
-          "config4.conf" => "input4"
-        }
-      }
-
-      let(:other_files) do
-        {
-          "config1.conf~" => "input1",
-          "config2.conf~" => "input2",
-          "config3.conf~" => "input3",
-          "config4.conf~" => "input4"
-        }
-      end
-
-      include_examples "read config from files" do
-        before do
-          other_files.keys.shuffle.each do |file|
-            content = files[file]
-            temporary_file(content, file, directory)
-          end
-
-          # make sure we actually do some filtering
-          expect(Dir.glob(::File.join(directory, "*")).size).to eq(other_files.size + files.size)
-        end
-      end
-    end
-
-    context "when the path is a wildcard" do
-      let(:reader_config) { ::File.join(directory, "conf*.conf") }
-
-      let(:files) {
-        {
-          "config1.conf" => "input1",
-          "config2.conf" => "input2",
-          "config3.conf" => "input3",
-          "config4.conf" => "input4"
-        }
-      }
-
-      let(:other_files) do
-        {
-          "bad1.conf" => "input1",
-          "bad2.conf" => "input2",
-          "bad3.conf" => "input3",
-          "bad4.conf" => "input4"
-        }
-      end
-
-      include_examples "read config from files" do
-        before do
-          other_files.keys.shuffle.each do |file|
-            content = files[file]
-            temporary_file(content, file, directory)
-          end
-
-          # make sure we actually do some filtering
-          expect(Dir.glob(::File.join(directory, "*")).size).to eq(other_files.size + files.size)
-        end
-      end
-    end
-
-    context "URI defined path (file://..)" do
-      let(:reader_config) { "file://#{::File.join(directory, files.keys.first)}" }
-      let(:files) {
-        {
-          "config1.conf" => "input1",
-        }
-      }
-
-      include_examples "read config from files"
-    end
-
-    context "relative path" do
-      let(:reader_config) do
-        FileUtils.mkdir_p(::File.join(directory, "inside"))
-        ::File.join(directory, "inside", "../")
-      end
-
-      let(:files) {
-        {
-          "config2.conf" => "input1",
-          "config1.conf" => "input2",
-        }
-      }
-
-      include_examples "read config from files"
-    end
-  end
-end
+# describe LogStash::Config::Source::Local::ConfigPathLoader do
+#   subject { described_class }
+#
+#   context "no configs" do
+#     context "in the directory" do
+#       let(:directory) do
+#         p =  Stud::Temporary.pathname
+#         FileUtils.mkdir_p(p)
+#         p
+#       end
+#
+#       it "returns an empty array" do
+#         expect(subject.read(directory)).to be_empty
+#       end
+#     end
+#
+#     context "target file doesn't exist" do
+#       let(:directory) do
+#         p =  Stud::Temporary.pathname
+#         FileUtils.mkdir_p(p)
+#         ::File.join(p, "ls.conf")
+#       end
+#
+#       it "returns an empty array" do
+#         expect(subject.read(directory)).to be_empty
+#       end
+#     end
+#   end
+#
+#   context "when it exist" do
+#     shared_examples "read config from files" do
+#       let(:directory) { Stud::Temporary.pathname }
+#
+#       before do
+#         files.each do |file, content|
+#           temporary_file(content, file, directory)
+#         end
+#
+#         expect(files.size).to be >= 1
+#         expect(Dir.glob(::File.join(directory, "*")).size).to eq(files.size)
+#       end
+#
+#       it "returns a `config_parts` per file" do
+#         expect(subject.read(reader_config).size).to eq(files.size)
+#       end
+#
+#       it "returns alphabetically sorted parts" do
+#         parts = subject.read(reader_config)
+#         expect(parts.collect { |part| ::File.basename(part.id) }).to eq(files.keys.sort)
+#       end
+#
+#       it "returns valid `config_parts`" do
+#         parts = subject.read(reader_config)
+#
+#         parts.each do |part|
+#           basename = ::File.basename(part.id)
+#           file_path = ::File.expand_path(::File.join(directory, basename))
+#           content = files[basename]
+#           expect(part).to be_a_source_with_metadata("file", file_path, content)
+#         end
+#       end
+#     end
+#
+#     context "when the files have invalid encoding" do
+#       let(:config_string) { "\x80" }
+#       let(:file_path) { Stud::Temporary.pathname }
+#       let(:file) { ::File.join(file_path, "wrong_encoding.conf") }
+#
+#       before do
+#         FileUtils.mkdir_p(file_path)
+#         f = File.open(file, "wb") do |file|
+#           file.write(config_string)
+#         end
+#       end
+#
+#       it "raises an exception" do
+#         # check against base name because on Windows long paths are shrinked in the exception message
+#         expect { subject.read(file_path) }.to raise_error Java.OrgLogstashConfigSource.ConfigLoadingException, /.+#{::File.basename(file_path)}/
+#       end
+#     end
+#
+#     context "when we target one file" do
+#       let(:reader_config) { ::File.join(directory, files.keys.first) }
+#       let(:files) {
+#         {
+#           "config1.conf" => "input1",
+#         }
+#       }
+#
+#       include_examples "read config from files"
+#     end
+#
+#     context "when we target a path with multiples files" do
+#       let(:reader_config) { directory }
+#
+#       let(:files) {
+#         {
+#           "config1.conf" => "input1",
+#           "config2.conf" => "input2",
+#           "config3.conf" => "input3",
+#           "config4.conf" => "input4"
+#         }
+#       }
+#
+#       include_examples "read config from files"
+#     end
+#
+#     context "when there temporary files in the directory" do
+#       let(:reader_config) { ::File.join(directory, "conf*.conf") }
+#
+#       let(:files) {
+#         {
+#           "config1.conf" => "input1",
+#           "config2.conf" => "input2",
+#           "config3.conf" => "input3",
+#           "config4.conf" => "input4"
+#         }
+#       }
+#
+#       let(:other_files) do
+#         {
+#           "config1.conf~" => "input1",
+#           "config2.conf~" => "input2",
+#           "config3.conf~" => "input3",
+#           "config4.conf~" => "input4"
+#         }
+#       end
+#
+#       include_examples "read config from files" do
+#         before do
+#           other_files.keys.shuffle.each do |file|
+#             content = files[file]
+#             temporary_file(content, file, directory)
+#           end
+#
+#           # make sure we actually do some filtering
+#           expect(Dir.glob(::File.join(directory, "*")).size).to eq(other_files.size + files.size)
+#         end
+#       end
+#     end
+#
+#     context "when the path is a wildcard" do
+#       let(:reader_config) { ::File.join(directory, "conf*.conf") }
+#
+#       let(:files) {
+#         {
+#           "config1.conf" => "input1",
+#           "config2.conf" => "input2",
+#           "config3.conf" => "input3",
+#           "config4.conf" => "input4"
+#         }
+#       }
+#
+#       let(:other_files) do
+#         {
+#           "bad1.conf" => "input1",
+#           "bad2.conf" => "input2",
+#           "bad3.conf" => "input3",
+#           "bad4.conf" => "input4"
+#         }
+#       end
+#
+#       include_examples "read config from files" do
+#         before do
+#           other_files.keys.shuffle.each do |file|
+#             content = files[file]
+#             temporary_file(content, file, directory)
+#           end
+#
+#           # make sure we actually do some filtering
+#           expect(Dir.glob(::File.join(directory, "*")).size).to eq(other_files.size + files.size)
+#         end
+#       end
+#     end
+#
+#     context "URI defined path (file://..)" do
+#       let(:reader_config) { "file://#{::File.join(directory, files.keys.first)}" }
+#       let(:files) {
+#         {
+#           "config1.conf" => "input1",
+#         }
+#       }
+#
+#       include_examples "read config from files"
+#     end
+#
+#     context "relative path" do
+#       let(:reader_config) do
+#         FileUtils.mkdir_p(::File.join(directory, "inside"))
+#         ::File.join(directory, "inside", "../")
+#       end
+#
+#       let(:files) {
+#         {
+#           "config2.conf" => "input1",
+#           "config1.conf" => "input2",
+#         }
+#       }
+#
+#       include_examples "read config from files"
+#     end
+#   end
+# end
 
 describe LogStash::Config::Source::Local::ConfigRemoteLoader do
   before :all do
