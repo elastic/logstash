@@ -45,7 +45,7 @@ module LogStash
       end
 
       def match?
-        @settings.get("xpack.management.enabled")
+        settings.get("xpack.management.enabled")
       end
 
       def config_conflict?
@@ -102,7 +102,7 @@ module LogStash
         config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s, config_string, pipeline_metadata_str)
 
         # We don't support multiple pipelines, so use the global settings from the logstash.yml file
-        settings = @settings.clone
+        update_settings(settings.clone)
         settings.set("pipeline.id", pipeline_id)
 
         # override global settings with pipeline settings from ES, if any
@@ -183,7 +183,7 @@ module LogStash
 
       private
       def pipeline_ids
-        @settings.get("xpack.management.pipeline.id")
+        settings.get("xpack.management.pipeline.id")
       end
 
       def client

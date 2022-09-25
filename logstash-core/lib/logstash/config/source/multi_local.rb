@@ -37,13 +37,13 @@ module LogStash module Config module Source
       end
       detect_duplicate_pipelines(pipelines_settings)
       pipeline_configs = pipelines_settings.map do |pipeline_settings|
-        @settings = pipeline_settings
+        update_settings(pipeline_settings)
         # this relies on instance variable @settings and the parent class' pipeline_configs
         # method. The alternative is to refactor most of the Local source methods to accept
         # a settings object instead of relying on @settings.
         local_pipeline_configs # create a PipelineConfig object based on @settings
       end.flatten
-      @settings = @original_settings
+      update_settings(@original_settings)
       pipeline_configs
     end
 
@@ -60,21 +60,21 @@ module LogStash module Config module Source
     end
 
     def config_conflict?
-      @conflict_messages.clear
+      conflict_messages.clear
       # are there any auto-reload conflicts?
       if !(modules_cli? || modules? || config_string? || config_path?)
         detect_pipelines if !@detect_pipelines_called
         if @detected_marker.nil?
-          @conflict_messages << I18n.t("logstash.runner.config-pipelines-failed-read", :path => pipelines_yaml_location)
+          conflict_messages << I18n.t("logstash.runner.config-pipelines-failed-read", :path => pipelines_yaml_location)
         elsif @detected_marker == false
-          @conflict_messages << I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
+          conflict_messages << I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
         elsif @detected_marker.is_a?(Class)
-          @conflict_messages << I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => @detected_marker, :path => pipelines_yaml_location)
+          conflict_messages << I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => @detected_marker, :path => pipelines_yaml_location)
         end
       else
         do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because modules or command line options are specified")
       end
-      @conflict_messages.any?
+      conflict_messages.any?
     end
 
     def retrieve_yaml_pipelines

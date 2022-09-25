@@ -30,7 +30,7 @@ class DummySource < LogStash::Config::Source::Base
   end
 
   def match?
-    @settings.get("path.config") =~ /dummy/
+    settings.get("path.config") =~ /dummy/
   end
 end
 
@@ -40,7 +40,7 @@ class AnotherDummySource < LogStash::Config::Source::Base
   end
 
   def match?
-    @settings.get("path.config") =~ /another/
+    settings.get("path.config") =~ /another/
   end
 end
 
@@ -50,7 +50,7 @@ class FailingSource < LogStash::Config::Source::Base
   end
 
   def match?
-    @settings.get("path.config") =~ /fail/
+    settings.get("path.config") =~ /fail/
   end
 end
 

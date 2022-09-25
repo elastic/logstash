@@ -172,7 +172,7 @@ module LogStash module Config module Source
 
     def pipeline_configs
       if config_conflict?
-        raise ConfigurationError, @conflict_messages.join(", ")
+        raise ConfigurationError, conflict_messages.join(", ")
       end
       local_pipeline_configs
     end
@@ -183,18 +183,18 @@ module LogStash module Config module Source
     end
 
     def config_conflict?
-      @conflict_messages.clear
+      conflict_messages.clear
 
       # Check if configuration auto-reload is used that -f is specified
       if automatic_reload_with_config_string?
-        @conflict_messages << I18n.t("logstash.runner.reload-with-config-string")
+        conflict_messages << I18n.t("logstash.runner.reload-with-config-string")
       end
       # Check if both -f and -e are present
       if config_string? && config_path?
-        @conflict_messages << I18n.t("logstash.runner.config-string-path-exclusive")
+        conflict_messages << I18n.t("logstash.runner.config-string-path-exclusive")
       end
 
-      @conflict_messages.any?
+      conflict_messages.any?
     end
 
     private
@@ -212,7 +212,7 @@ module LogStash module Config module Source
 
       return [] if config_parts.empty?
 
-      [org.logstash.config.ir.PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
+      [org.logstash.config.ir.PipelineConfig.new(self.class, settings.get("pipeline.id").to_sym, config_parts, settings)]
     end
 
     def automatic_reload_with_config_string?
