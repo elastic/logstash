@@ -496,6 +496,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final RubySymbol[] eventsNamespace = buildNamespace(EVENTS_KEY);
         final RubySymbol[] queueNamespace = buildNamespace(QUEUE_KEY);
         final RubySymbol[] queueCapacityNamespace = buildNamespace(QUEUE_KEY, CAPACITY_KEY);
+        final RubySymbol[] queueFlowNamespace = buildNamespace(QUEUE_KEY, FLOW_KEY);
 
         final LongCounter eventsInCounter = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric inputThroughput = createFlowMetric(INPUT_THROUGHPUT_KEY, eventsInCounter, uptimeInPreciseSeconds);
@@ -529,7 +530,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             if (events.isPresent()) {
                 final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_GROWTH_EVENTS_KEY, events.get(), uptimeInPreciseMillis);
                 this.flowMetrics.add(growthEventsFlow);
-                storeMetric(context, flowNamespace, growthEventsFlow);
+                storeMetric(context, queueFlowNamespace, growthEventsFlow);
             } else {
                 LOGGER.warn(String.format("Cannot initialize `%s` metric. Retrieving `%s` number gauge from `%s` namespace(s) failed.",
                         QUEUE_GROWTH_EVENTS_KEY,
@@ -541,7 +542,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             if (queueSizeInBytes.isPresent()) {
                 final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_GROWTH_BYTES_KEY, queueSizeInBytes.get(), uptimeInPreciseMillis);
                 this.flowMetrics.add(growthBytesFlow);
-                storeMetric(context, flowNamespace, growthBytesFlow);
+                storeMetric(context, queueFlowNamespace, growthBytesFlow);
             } else {
                 LOGGER.warn(String.format("Cannot initialize `%s` metric. Retrieving `%s` number gauge from `%s` namespace(s) failed.",
                         QUEUE_GROWTH_BYTES_KEY,
