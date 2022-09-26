@@ -67,7 +67,7 @@ installation, you may get an error message, and {ls} will not start properly.
 [[jdk17-upgrade]]
 ==== Using JDK 17
 
-{ls} supports JDK 17, but you need to update settings in `jvm.options` and
+{ls} uses JDK 17 by default, but you need to update settings in `jvm.options` and
 `log4j2.properties` if you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later.
 
 
