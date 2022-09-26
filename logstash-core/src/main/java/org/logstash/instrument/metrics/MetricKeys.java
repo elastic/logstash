@@ -65,6 +65,8 @@ public final class MetricKeys {
 
     public static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
 
+    public static final RubySymbol CAPACITY_KEY = RubyUtil.RUBY.newSymbol("capacity");
+
     public static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
 
     public static final RubySymbol STORAGE_POLICY_KEY = RubyUtil.RUBY.newSymbol("storage_policy");
@@ -92,7 +94,9 @@ public final class MetricKeys {
 
     public static final RubySymbol WORKER_CONCURRENCY_KEY = RubyUtil.RUBY.newSymbol("worker_concurrency");
 
-    public static final RubySymbol UPTIME_IN_SECONDS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_seconds");
-
     public static final RubySymbol UPTIME_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_millis");
+
+    public static final RubySymbol QUEUE_GROWTH_EVENTS_KEY = RubyUtil.RUBY.newSymbol("growth_events");
+
+    public static final RubySymbol QUEUE_GROWTH_BYTES_KEY = RubyUtil.RUBY.newSymbol("growth_bytes");
 }

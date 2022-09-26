@@ -33,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -76,9 +78,12 @@ import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.Metric;
+import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
+import org.logstash.instrument.metrics.gauge.NumberGauge;
 import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
@@ -105,7 +110,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
     private static final @SuppressWarnings("rawtypes") RubyArray CAPACITY_NAMESPACE =
-        RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("capacity"));
+        RubyArray.newArray(RubyUtil.RUBY, CAPACITY_KEY);
 
     private static final @SuppressWarnings("rawtypes") RubyArray DATA_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("data"));
@@ -489,6 +494,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final RubySymbol[] flowNamespace = buildNamespace(FLOW_KEY);
         final RubySymbol[] eventsNamespace = buildNamespace(EVENTS_KEY);
+        final RubySymbol[] queueNamespace = buildNamespace(QUEUE_KEY);
+        final RubySymbol[] queueCapacityNamespace = buildNamespace(QUEUE_KEY, CAPACITY_KEY);
 
         final LongCounter eventsInCounter = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric inputThroughput = createFlowMetric(INPUT_THROUGHPUT_KEY, eventsInCounter, uptimeInPreciseSeconds);
@@ -515,6 +522,33 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
+        // collect the growth_events & growth_bytes metrics if only persisted queue is enabled.
+        if (getSetting(context, QueueFactoryExt.CONTEXT_NAME).asJavaString()
+                .equals(QueueFactoryExt.PERSISTED_TYPE)) {
+            final Optional<NumberGauge> events = initOrGetNumberGaugeMetric(context, queueNamespace, EVENTS_KEY);
+            if (events.isPresent()) {
+                final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_GROWTH_EVENTS_KEY, events.get(), uptimeInPreciseMillis);
+                this.flowMetrics.add(growthEventsFlow);
+                storeMetric(context, flowNamespace, growthEventsFlow);
+            } else {
+                LOGGER.warn(String.format("Cannot initialize `%s` metric. Retrieving `%s` number gauge from `%s` namespace(s) failed.",
+                        QUEUE_GROWTH_EVENTS_KEY,
+                        EVENTS_KEY,
+                        Arrays.stream(queueNamespace).map(RubySymbol::asString).collect(Collectors.toList())));
+            }
+
+            final Optional<NumberGauge> queueSizeInBytes = initOrGetNumberGaugeMetric(context, queueCapacityNamespace, QUEUE_SIZE_IN_BYTES_KEY);
+            if (queueSizeInBytes.isPresent()) {
+                final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_GROWTH_BYTES_KEY, queueSizeInBytes.get(), uptimeInPreciseMillis);
+                this.flowMetrics.add(growthBytesFlow);
+                storeMetric(context, flowNamespace, growthBytesFlow);
+            } else {
+                LOGGER.warn(String.format("Cannot initialize `%s` metric. Retrieving `%s` number gauge from `%s` namespace(s) failed.",
+                        QUEUE_GROWTH_BYTES_KEY,
+                        QUEUE_SIZE_IN_BYTES_KEY,
+                        Arrays.stream(queueCapacityNamespace).map(RubySymbol::asString).collect(Collectors.toList())));
+            }
+        }
         return context.nil;
     }
 
@@ -538,6 +572,22 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("counter")});
         return retrievedMetric.toJava(LongCounter.class);
+    }
+
+    private Optional<NumberGauge> initOrGetNumberGaugeMetric(final ThreadContext context,
+                                                             final RubySymbol[] subPipelineNamespacePath,
+                                                             final RubySymbol metricName) {
+        final IRubyObject collector = this.metric.collector(context);
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
+
+        LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
+        if (MetricType.GAUGE_NUMBER.asString().equals(delegatingGauge.getType().asString()) == false) {
+            return Optional.empty();
+        }
+
+        NumberGauge castedNumberGauge = (NumberGauge) delegatingGauge.getMetric().get();
+        return Optional.of(castedNumberGauge);
     }
 
     private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
