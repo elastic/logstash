@@ -7,7 +7,3 @@
 preview::[]
 
 These pages describe the steps to take after you've gotten your system <<ls-k8s-setting-up,up and running>>. These include both routine tasks to manage and maintain your {ls} and Kubernetes resources, as well as recommended "hardening" steps, such as setting up security and external health monitoring, that prepare your environment for production.
-
-* <<ls-k8s-stack-monitoring>>
-* <<ls-k8s-upgrade>>
-* <<ls-k8s-logging>>

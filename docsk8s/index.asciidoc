@@ -4,9 +4,10 @@
 include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
 include::{docs-root}/shared/attributes.asciidoc[]
 
-
 [[introduction]]
 == Introduction
+
+preview::[]
 
 This guide helps you to run and work with {ls} in a Kubernetes environment.
 
@@ -14,7 +15,7 @@ Are you trying out {ls} for the first time? We recommend beginning with our guid
 
 If you're already familiar with Logstash, then it's time to try it out in a Kubernetes environment. The <<ls-k8s-quick-start,Getting started with Logstash and Kubernetes>> demo guides you through the steps of configuring Logstash inside a single-node Kubernetes environment running on Minikube.
 
-// Getting Started with Logstash and Kubernetes
+// Logstash and Kubernetes Quick start
 include::quick-start/ls-k8s-quick-start.asciidoc[]
 
 // List of sample configuration files and what they're used for

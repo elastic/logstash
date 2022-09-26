@@ -10,5 +10,3 @@ preview::[]
 
 As you set up and run Logstash in Kubernetes you may at occasionally run into problems. The pages below describe how to resolve some of the more typical problems that may come up, as well as steps that you can use to diagnose issues and assess how your system is running in general.
 
-* <<ls-k8s-common-problems>>
-* <<ls-k8s-troubleshooting-methods>>
