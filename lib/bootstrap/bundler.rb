@@ -153,6 +153,7 @@ module LogStash
         else
           options[:verbose] = true
           execute_bundler(options)
+          ""
         end
       end
     end
